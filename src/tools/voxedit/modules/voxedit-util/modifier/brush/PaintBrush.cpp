@@ -19,12 +19,19 @@ namespace voxedit {
 
 voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 	if (_paintMode == PaintMode::Replace) {
-		return _voxel;
+		voxel::Voxel result = _voxel;
+		result.setNormal(old.getNormal());
+		result.setFlags(old.getFlags());
+		result.setBoneIdx(old.getBoneIdx());
+		return result;
 	}
 	if (_paintMode == PaintMode::Random) {
 		int n = _palette.colorCount();
-		int idx = rand() % n;
-		return voxel::createVoxel(_palette, idx, old.getFlags());
+		if (n == 0) {
+			return old;
+		}
+		const int idx = rand() % n;
+		return voxel::createVoxel(_palette, idx, old.getNormal(), old.getFlags(), old.getBoneIdx());
 	}
 
 	bool brighten = _paintMode == PaintMode::Brighten;
@@ -51,9 +58,9 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 		_palette.markDirty();
 		_palette.markSave();
 		// TODO: MEMENTO: no memento state handling for the palette here
-		return voxel::createVoxel(_palette, newColorIndex, old.getFlags());
+		return voxel::createVoxel(_palette, newColorIndex, old.getNormal(), old.getFlags(), old.getBoneIdx());
 	}
-	return voxel::createVoxel(_palette, index, old.getFlags());
+	return voxel::createVoxel(_palette, index, old.getNormal(), old.getFlags(), old.getBoneIdx());
 }
 
 static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from, const voxel::Voxel &to,
@@ -66,7 +73,7 @@ static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from
 	if (index == palette::PaletteColorNotFound) {
 		return from;
 	}
-	return voxel::createVoxel(palette, index);
+	return voxel::createVoxel(palette, index, to.getNormal(), to.getFlags(), to.getBoneIdx());
 }
 
 static voxel::Voxel mixBlend(palette::Palette &palette, const voxel::Voxel &from, const voxel::Voxel &to,
@@ -75,7 +82,7 @@ static voxel::Voxel mixBlend(palette::Palette &palette, const voxel::Voxel &from
 		return from;
 	}
 	if (factor >= 1.0f) {
-		return voxel::createVoxel(palette, to.getColor(), from.getNormal(), from.getFlags());
+		return voxel::createVoxel(palette, to.getColor(), from.getNormal(), from.getFlags(), from.getBoneIdx());
 	}
 
 	const color::RGBA colorA = palette.color(from.getColor());
@@ -85,13 +92,13 @@ static voxel::Voxel mixBlend(palette::Palette &palette, const voxel::Voxel &from
 	if (palette.tryAdd(newColor, false, &newColorIndex, false, from.getColor())) {
 		palette.markSave();
 		// TODO: MEMENTO: no memento state handling for the palette here
-		return voxel::createVoxel(palette, newColorIndex, from.getNormal(), from.getFlags());
+		return voxel::createVoxel(palette, newColorIndex, from.getNormal(), from.getFlags(), from.getBoneIdx());
 	}
 	const int index = palette.getClosestMatch(newColor, from.getColor());
 	if (index == palette::PaletteColorNotFound) {
 		return from;
 	}
-	return voxel::createVoxel(palette, index, from.getNormal(), from.getFlags());
+	return voxel::createVoxel(palette, index, from.getNormal(), from.getFlags(), from.getBoneIdx());
 }
 
 static float blendFactor(const glm::ivec3 &pos, const glm::vec3 &center, float falloffRadius, float opacity) {
@@ -139,13 +146,13 @@ static voxel::Voxel gaussianBlurVoxel(ModifierVolumeWrapper &wrapper, palette::P
 	if (palette.tryAdd(mixed, false, &newColorIndex, false, old.getColor())) {
 		palette.markSave();
 		// TODO: MEMENTO: no memento state handling for the palette here
-		return voxel::createVoxel(palette, newColorIndex, old.getNormal(), old.getFlags());
+		return voxel::createVoxel(palette, newColorIndex, old.getNormal(), old.getFlags(), old.getBoneIdx());
 	}
 	const int index = palette.getClosestMatch(mixed, old.getColor());
 	if (index == palette::PaletteColorNotFound) {
 		return old;
 	}
-	return voxel::createVoxel(palette, index, old.getNormal(), old.getFlags());
+	return voxel::createVoxel(palette, index, old.getNormal(), old.getFlags(), old.getBoneIdx());
 }
 
 bool PaintBrush::beginBrush(const BrushContext &ctx) {
