@@ -57,6 +57,10 @@ static math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ive
 
 bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &parameters, ModifierVolumeWrapper &wrapper) {
 	const voxel::Region &region = parameters.region;
+	if (!region.isValid() || settings.thickness < 1 || settings.shape < ShapeType::Min ||
+		settings.shape >= ShapeType::Max) {
+		return false;
+	}
 	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
 	int width = 0;
 	int height = 0;

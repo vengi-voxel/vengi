@@ -111,6 +111,36 @@ protected:
 	}
 };
 
+TEST_F(ShapeBrushTest, testCapturedShapeParametersAreValidated) {
+	voxel::RawVolume volume(voxel::Region(0, 4));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	const voxel::Voxel original = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	volume.setVoxel(0, 0, 0, original);
+	ShapeSettings settings;
+	ShapeParameters parameters;
+	parameters.region = voxel::Region(1, 1, 1, 3, 3, 3);
+	parameters.voxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	parameters.voxel.setOutline();
+	ModifierVolumeWrapper output(node, ModifierType::Override);
+	ASSERT_TRUE(evaluateShape(settings, parameters, output));
+	EXPECT_EQ(parameters.voxel, volume.voxel(2, 2, 2));
+	EXPECT_EQ(original, volume.voxel(0, 0, 0));
+	EXPECT_EQ(parameters.region, output.dirtyRegion());
+	const voxel::RawVolume before(volume);
+	ModifierVolumeWrapper invalid(node, ModifierType::Override);
+	settings.thickness = 0;
+	EXPECT_FALSE(evaluateShape(settings, parameters, invalid));
+	settings.thickness = 1;
+	settings.shape = ShapeType::Max;
+	EXPECT_FALSE(evaluateShape(settings, parameters, invalid));
+	settings.shape = ShapeType::Box;
+	parameters.region = voxel::Region::InvalidRegion;
+	EXPECT_FALSE(evaluateShape(settings, parameters, invalid));
+	EXPECT_FALSE(invalid.dirtyRegion().isValid());
+	EXPECT_EQ(0, core_memcmp(before.data(), volume.data(), voxel::RawVolume::size(volume.region())));
+}
+
 TEST_F(ShapeBrushTest, testMovingMirrorPlaneInvalidatesPreview) {
 	ShapeBrush brush;
 	ASSERT_TRUE(brush.setMirrorAxis(math::Axis::X, glm::ivec3(0)));
