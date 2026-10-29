@@ -431,4 +431,39 @@ TEST_F(PaintBrushTest, testPaletteChangingModesMatchSerialEvaluation) {
 	}
 }
 
+TEST_F(PaintBrushTest, testAllModesPreserveVoxelMetadata) {
+	class RegionPaintBrush : public PaintBrush {
+	public:
+		using PaintBrush::generate;
+	};
+	const voxel::Region region(0, 7);
+	for (int mode = 0; mode < (int)PaintBrush::PaintMode::Max; ++mode) {
+		SCOPED_TRACE(mode);
+		scenegraph::SceneGraph scene;
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setVolume(new voxel::RawVolume(region));
+		node.volume()->fill(voxel::createVoxel(voxel::VoxelType::Generic, 0, 7, voxel::FlagOutline, 9));
+		node.volume()->setVoxel(3, 3, 3, voxel::createVoxel(voxel::VoxelType::Generic, 1, 7, voxel::FlagOutline, 9));
+		node.palette().setColor(0, color::RGBA(80, 112, 144));
+		node.palette().setColor(1, color::RGBA(200, 220, 240));
+		node.palette().setSize(2);
+		RegionPaintBrush brush;
+		brush.setBoxMode();
+		brush.setPaintMode((PaintBrush::PaintMode)mode);
+		brush.setStrength(1.5f);
+		brush.setBlendOpacity(1.0f);
+		BrushContext input;
+		input.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		ModifierVolumeWrapper output(node, ModifierType::Paint);
+		brush.generate(scene, output, input, region);
+		EXPECT_TRUE(output.dirtyRegion().isValid());
+		voxelutil::visitVolume(*node.volume(), [&](int x, int y, int z, const voxel::Voxel &value) {
+			EXPECT_FALSE(voxel::isAir(value.getMaterial()));
+			EXPECT_EQ(7, value.getNormal());
+			EXPECT_EQ(voxel::FlagOutline, value.getFlags());
+			EXPECT_EQ(9, value.getBoneIdx());
+		});
+	}
+}
+
 } // namespace voxedit
