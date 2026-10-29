@@ -35,6 +35,7 @@ set(SRCS
 	modifier/brush/TransformOperation.cpp modifier/brush/TransformOperation.h
 	modifier/brush/RulerBrush.cpp modifier/brush/RulerBrush.h
 	modifier/brush/SculptBrush.cpp modifier/brush/SculptBrush.h
+	modifier/brush/SculptOperation.cpp modifier/brush/SculptOperation.h
 	modifier/brush/SnapshotHelper.cpp modifier/brush/SnapshotHelper.h
 	modifier/brush/TextureBrush.cpp modifier/brush/TextureBrush.h
 
