@@ -222,7 +222,7 @@ Selections are useful for protecting parts of your model while editing other are
 
 ## Color picker
 
-You can either use it from the modifiers panel or by default with the key `p` to pick the color from the current selected voxel.
+Press **C** over a voxel to pick its color with the default model-editing [bindings](../Configuration.md). You can also choose tje color picker in the modifier controls and click a voxel. **P** selects the Stamp brush in the default bindings.
 
 ## Editable operations and preview
 
