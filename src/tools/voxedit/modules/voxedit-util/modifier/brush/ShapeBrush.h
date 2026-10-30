@@ -6,7 +6,7 @@
 
 #include "../ShapeType.h"
 #include "AABBBrush.h"
-#include "ShapeOperation.h"
+#include "operation/ShapeOperation.h"
 
 namespace voxedit {
 
@@ -54,6 +54,7 @@ protected:
 	 * @brief Change the active shape type
 	 * @param[in] type The new shape to generate
 	 */
+public:
 	void setShapeType(ShapeType type);
 
 public:

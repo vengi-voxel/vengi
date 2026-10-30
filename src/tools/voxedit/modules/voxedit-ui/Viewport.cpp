@@ -3,6 +3,7 @@
  */
 
 #include "Viewport.h"
+#include "BrushHandleUI.h"
 #include "memento/MementoHandler.h"
 #include "voxelrender/CameraMovement.h"
 #include "voxedit-util/modifier/Modifier.h"
@@ -1099,122 +1100,7 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 }
 
 bool Viewport::runBrushGizmo(const video::Camera &camera, float headerSize) {
-	if (isSceneMode()) {
-		return false;
-	}
-	Modifier &modifier = _sceneMgr->modifier();
-
-	Brush *brush = modifier.currentBrush();
-	if (brush == nullptr) {
-		modifier.setBrushGizmoActive(false);
-		return false;
-	}
-
-	const BrushContext &ctx = modifier.brushContext();
-	if (!brush->wantBrushGizmo(ctx)) {
-		modifier.setBrushGizmoActive(false);
-		return false;
-	}
-
-	BrushGizmoState state;
-	brush->brushGizmoState(ctx, state);
-	if (state.operations == BrushGizmo_None) {
-		modifier.setBrushGizmoActive(false);
-		return false;
-	}
-
-	// Map BrushGizmoOperation to ImGuizmo::OPERATION
-	uint32_t imguizmoOp = 0;
-	if (state.operations & (BrushGizmo_Translate | BrushGizmo_BezierControl)) {
-		imguizmoOp |= ImGuizmo::TRANSLATE;
-	}
-	if (state.operations & BrushGizmo_TranslateX) {
-		imguizmoOp |= ImGuizmo::TRANSLATE_X;
-	}
-	if (state.operations & BrushGizmo_TranslateY) {
-		imguizmoOp |= ImGuizmo::TRANSLATE_Y;
-	}
-	if (state.operations & BrushGizmo_TranslateZ) {
-		imguizmoOp |= ImGuizmo::TRANSLATE_Z;
-	}
-	if (state.operations & BrushGizmo_Rotate) {
-		imguizmoOp |= ImGuizmo::ROTATE;
-	}
-	if (state.operations & BrushGizmo_Scale) {
-		imguizmoOp |= ImGuizmo::SCALE;
-	}
-	if (state.operations & BrushGizmo_Bounds) {
-		imguizmoOp |= ImGuizmo::BOUNDS;
-	}
-	if (state.operations & BrushGizmo_Line) {
-		if (state.numPositions >= 2) {
-			ImVec2 windowPos = ImGui::GetWindowPos();
-			windowPos.y += headerSize;
-			const glm::vec2 scale = dpiScale();
-			ImDrawList *drawList = ImGui::GetWindowDrawList();
-			const ImU32 lineColor = ImGui::GetColorU32(ImVec4(style::color(style::ColorBrushGizmoLine)));
-			const float lineThickness = 2.0f;
-			for (int i = 0; i < state.numPositions - 1; ++i) {
-				const glm::ivec2 screenA = camera.worldToScreen(state.positions[i]);
-				const glm::ivec2 screenB = camera.worldToScreen(state.positions[i + 1]);
-				const ImVec2 a(windowPos.x + (float)screenA.x / scale.x,
-							   windowPos.y + (float)screenA.y / scale.y);
-				const ImVec2 b(windowPos.x + (float)screenB.x / scale.x,
-							   windowPos.y + (float)screenB.y / scale.y);
-				drawList->AddLine(a, b, lineColor, lineThickness);
-			}
-		}
-	}
-
-	if (state.operations & BrushGizmo_ScreenPolygon) {
-		if (state.screenPolygon != nullptr && state.screenPolygon->size() >= 2) {
-			const auto &points = *state.screenPolygon;
-			ImDrawList *drawList = ImGui::GetWindowDrawList();
-			const ImVec2 windowPos = ImGui::GetWindowPos();
-			const float offsetY = headerSize;
-			const glm::vec2 scale = dpiScale();
-			const int n = (int)points.size();
-			ImVec2 *imPoints = (ImVec2 *)alloca(sizeof(ImVec2) * n);
-			for (int i = 0; i < n; ++i) {
-				imPoints[i] = ImVec2(windowPos.x + points[i].x / scale.x,
-									 windowPos.y + offsetY + points[i].y / scale.y);
-			}
-			drawList->AddConcavePolyFilled(imPoints, n, ImGui::GetColorU32(ImVec4(style::color(style::ColorBrushGizmoPolygon))));
-			const glm::vec4 outlineColor = glm::vec4(glm::vec3(style::color(style::ColorBrushGizmoPolygon)), 0.8f);
-			drawList->AddPolyline(imPoints, n, ImGui::GetColorU32(ImVec4(outlineColor)), 1.5f, ImDrawFlags_Closed);
-		}
-	}
-
-	if (imguizmoOp == 0) {
-		modifier.setBrushGizmoActive(false);
-		return false;
-	}
-
-	const ImGuizmo::MODE mode = state.localMode ? ImGuizmo::MODE::LOCAL : ImGuizmo::MODE::WORLD;
-	const float *snapPtr = (state.snap[0] > 0.0f || state.snap[1] > 0.0f || state.snap[2] > 0.0f) ? state.snap : nullptr;
-	const float *boundsPtr = state.hasBounds ? state.bounds : nullptr;
-	static const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
-
-	glm::mat4 matrix = state.matrix;
-	glm::mat4 deltaMatrix(1.0f);
-	float *mPtr = glm::value_ptr(matrix);
-	float *dMatPtr = glm::value_ptr(deltaMatrix);
-	const float *vMatPtr = glm::value_ptr(camera.viewMatrix());
-	const float *pMatPtr = glm::value_ptr(camera.projectionMatrix());
-
-	const bool manipulated = ImGuizmo::Manipulate(vMatPtr, pMatPtr, (ImGuizmo::OPERATION)imguizmoOp, mode, mPtr,
-												  dMatPtr, snapPtr, boundsPtr, boundsSnap);
-
-	// Track whether the brush gizmo is being interacted with so the action
-	// button (ModifierButton) does not commit intermediate transforms
-	modifier.setBrushGizmoActive(ImGuizmo::IsUsing());
-
-	if (!manipulated) {
-		return false;
-	}
-
-	BrushContext &mutableCtx = modifier.brushContext();
-	return brush->applyBrushGizmo(mutableCtx, matrix, deltaMatrix, imguizmoOp);
+	return !isSceneMode() && drawBrushHandles(_sceneMgr->modifier(), camera, headerSize, dpiScale(), _id);
 }
 
 void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) {

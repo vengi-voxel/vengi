@@ -210,6 +210,15 @@ static int luaSelection_targetvolumeregion_jsonhelp(lua_State *s) {
 LUASelectionMode::LUASelectionMode(const io::FilesystemPtr &filesystem) : _filesystem(filesystem) {
 }
 
+LUASelectionMode::LUASelectionMode(const LUASelectionMode &other)
+	: _filesystem(other._filesystem), _scriptFilename(other._scriptFilename), _scriptSource(other._scriptSource),
+	  _description(other._description), _iconName(other._iconName), _scriptLoaded(other._scriptLoaded),
+	  _hasGizmo(other._hasGizmo), _parameterDescription(other._parameterDescription), _parameters(other._parameters) {
+	if (!initLuaState() || luaL_dostring(_lua, _scriptSource.c_str())) {
+		_scriptLoaded = false;
+	}
+}
+
 bool LUASelectionMode::initLuaState() {
 	_lua.resetState();
 	if (!_noise.init()) {
@@ -383,11 +392,11 @@ bool LUASelectionMode::loadScript(const core::String &filename) {
 	return true;
 }
 
-void LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+bool LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 							   const BrushContext &ctx, const voxel::Region &region,
 							   const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace) {
 	if (!_scriptLoaded) {
-		return;
+		return false;
 	}
 
 	_dirtyRegions.clear();
@@ -406,7 +415,7 @@ void LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolum
 	if (luaL_dostring(s, _scriptSource.c_str())) {
 		Log::error("Failed to reload selection mode script: %s", lua_tostring(s, -1));
 		lua_pop(s, 1);
-		return;
+		return false;
 	}
 	lua_settop(s, top);
 
@@ -414,21 +423,21 @@ void LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolum
 	if (!lua_isfunction(s, -1)) {
 		Log::error("Selection mode script lost its select() function");
 		lua_pop(s, 1);
-		return;
+		return false;
 	}
 
 	scenegraph::SceneGraphNode &node = wrapper.node();
 	if (voxelgenerator::luaVoxel_pushscenegraphnode(s, node) == 0) {
 		Log::error("Failed to push scene graph node for selection mode script");
 		lua_pop(s, 1);
-		return;
+		return false;
 	}
 
 	if (voxelgenerator::luaVoxel_pushregion(s, region) == 0) {
 		Log::error("Failed to push region for selection mode script");
 		lua_pop(s, 2);
 		lua_gc(s, LUA_GCCOLLECT, 0);
-		return;
+		return false;
 	}
 
 	int nargs = 2;
@@ -438,7 +447,7 @@ void LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolum
 			Log::error("Failed to push selection mode script arguments");
 			lua_settop(s, top);
 			lua_gc(s, LUA_GCCOLLECT, 0);
-			return;
+			return false;
 		}
 		nargs += (int)_parameterDescription.size();
 	}
@@ -447,12 +456,13 @@ void LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolum
 		Log::error("Error executing selection mode script: %s", lua_tostring(s, -1));
 		lua_pop(s, 1);
 		lua_gc(s, LUA_GCCOLLECT, 0);
-		return;
+		return false;
 	}
 
 	// Force GC to collect the LuaRawVolumeWrapper now so that _dirtyRegions
 	// gets populated via the volume wrapper's GC callback.
 	lua_gc(s, LUA_GCCOLLECT, 0);
+	return true;
 }
 
 bool LUASelectionMode::callGizmo(lua_State *s) const {
@@ -478,7 +488,7 @@ bool LUASelectionMode::callGizmo(lua_State *s) const {
 	return lua_istable(s, -1);
 }
 
-bool LUASelectionMode::wantBrushGizmo(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos,
+bool LUASelectionMode::hasHandle(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos,
 									  voxel::FaceNames aabbFace) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		return false;
@@ -497,7 +507,7 @@ bool LUASelectionMode::wantBrushGizmo(const BrushContext &ctx, const glm::ivec3 
 	return hasGizmo;
 }
 
-void LUASelectionMode::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
+void LUASelectionMode::describeHandle(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
 									   voxel::FaceNames aabbFace) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		state.operations = BrushGizmo_None;

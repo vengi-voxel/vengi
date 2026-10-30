@@ -93,42 +93,34 @@ bool ShapeBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, modifierType);
 
 	// Get and configure the shape brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	ShapeBrush &shapeBrush = modifier.shapeBrush();
-
-	// Save previous state
-	const ShapeType prevShapeType = shapeBrush.shapeType();
-	const BrushType prevBrushType = modifier.brushType();
+	ShapeBrush shapeBrush;
 
 	// Configure the shape brush via command (command is "shape" + type, e.g., "shapeaabb")
-	command::Command::execute(core::String::format("shape%s", shapeTypeStr.c_str()));
-	modifier.setBrushType(BrushType::Shape);
+	for (int i = 0; i < (int)ShapeType::Max; ++i) {
+		if (shapeTypeStr == ShapeTypeCmdStr[i]) {
+			shapeBrush.setShapeType((ShapeType)i);
+			break;
+		}
+	}
 	shapeBrush.setBoxMode();
 
-	// Set up the AABB region
-	brushContext.cursorPosition = mins;
-	shapeBrush.beginBrush(brushContext);
+	brushContext.evaluatedRegion = voxel::Region(mins, maxs);
 	brushContext.cursorPosition = maxs;
-	shapeBrush.step(brushContext);
 
 	// Execute the brush
-	shapeBrush.preExecute(brushContext, volume);
-	const bool success = shapeBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const BrushApplyResult applied = modifier.executeRequest(shapeBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	shapeBrush.endBrush(brushContext);
 
-	// Restore previous state
-	command::Command::execute(
-		core::String::format("shape%s", core::String::lower(ShapeTypeStr[prevShapeType]).c_str()));
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id, core::String::format("Shape '%s' created successfully", shapeTypeStr.c_str()), false);
 	}
 

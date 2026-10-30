@@ -19,6 +19,10 @@
 
 namespace voxedit {
 
+ExtrudeBrush::ExtrudeBrush(const ExtrudeBrush &other) : Super(other), ExtrudeOperation() {
+	setParameters(other.parameters());
+}
+
 void ExtrudeBrush::onSceneChange() {
 	Super::onSceneChange();
 	_active = false;
@@ -27,35 +31,15 @@ void ExtrudeBrush::onSceneChange() {
 }
 
 void ExtrudeBrush::onActivated() {
-	reset();
-	_sceneModifiedFlags = SceneModifiedFlags::NoUndo;
-}
-
-bool ExtrudeBrush::hasPendingChanges() const {
-	return _depth != 0 && _hasCachedSelection;
-}
-
-bool ExtrudeBrush::onDeactivated() {
-	_sceneModifiedFlags = SceneModifiedFlags::All;
-	return hasPendingChanges();
-}
-
-voxel::Region ExtrudeBrush::revertChanges(voxel::RawVolume *volume) {
-	voxel::RawVolumeWrapper wrapper(volume);
-	for (const voxel::VoxelPosition &entry : _history) {
-		wrapper.setVoxel(entry.pos, entry.voxel);
-	}
-	_history.clear();
-	return wrapper.dirtyRegion();
+	clearOperation();
 }
 
 void ExtrudeBrush::reset() {
 	Super::reset();
-	_sceneModifiedFlags = SceneModifiedFlags::All;
-	_depth = 0;
-	_offsetU = 0;
-	_offsetV = 0;
-	_face = voxel::FaceNames::Max;
+	_parameters.depth = 0;
+	_parameters.offsetU = 0;
+	_parameters.offsetV = 0;
+	_parameters.face = voxel::FaceNames::Max;
 	_active = false;
 	_history.clear();
 	_cachedSelectedPositions.clear();
@@ -64,8 +48,7 @@ void ExtrudeBrush::reset() {
 	_hasCachedSelection = false;
 	_capturedVolumeLower = glm::ivec3(0);
 	_cachedSelBBoxValid = false;
-	_fillWalls = true;
-	_lastVolume = nullptr;
+	_parameters.fillWalls = true;
 }
 
 bool ExtrudeBrush::beginBrush(const BrushContext &ctx) {
@@ -75,78 +58,18 @@ bool ExtrudeBrush::beginBrush(const BrushContext &ctx) {
 	// Only update the stored face when the cursor is actually over a voxel face.
 	// When triggered from the panel (cursorFace == Max), keep the last face from a viewport click.
 	if (ctx.cursorFace != voxel::FaceNames::Max && !ctx.brushGizmoActive) {
-		_face = ctx.cursorFace;
+		_parameters.face = ctx.cursorFace;
 	}
 	_active = true;
 	return true;
 }
 
 void ExtrudeBrush::endBrush(BrushContext &) {
-	// Prune interior voxels after final commit - voxels fully enclosed by 6 solid
-	// neighbors are invisible and waste sparse storage.
-	if (_lastVolume && _depth > 0) {
-		const voxel::Region &volRegion = _lastVolume->region();
-		const voxel::Voxel air;
-		auto isInterior = [&](const glm::ivec3 &pos) {
-			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
-				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
-				if (!volRegion.containsPoint(nb) || voxel::isAir(_lastVolume->voxel(nb).getMaterial())) {
-					return false;
-				}
-			}
-			return true;
-		};
-
-		core::DynamicArray<glm::ivec3> toPrune;
-		toPrune.reserve(_history.size() + _cachedSelectedPositions.size());
-		for (const voxel::VoxelPosition &entry : _history) {
-			if (!voxel::isAir(_lastVolume->voxel(entry.pos).getMaterial()) && isInterior(entry.pos)) {
-				toPrune.push_back(entry.pos);
-			}
-		}
-		for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
-			if (!voxel::isAir(_lastVolume->voxel(selPos).getMaterial()) && isInterior(selPos)) {
-				toPrune.push_back(selPos);
-			}
-		}
-		for (const glm::ivec3 &pos : toPrune) {
-			_lastVolume->setVoxel(pos, air);
-		}
-	}
-	_lastVolume = nullptr;
 	_active = false;
-	// _face is intentionally kept: the user sets it by clicking a voxel face in the viewport,
-	// then adjusts depth via the panel without needing to hover the viewport again.
 }
 
 void ExtrudeBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
-	Super::preExecute(ctx, volume);
-	_cachedSelBBoxValid = false;
-	if (!volume) {
-		return;
-	}
-
-	const voxel::Region &volRegion = volume->region();
-
-	// Detect volume region shift and adjust cached data
-	if (_hasCachedSelection) {
-		const glm::ivec3 delta = volRegion.getLowerCorner() - _capturedVolumeLower;
-		if (delta != glm::ivec3(0)) {
-			adjustCacheForRegionShift(delta);
-		}
-	}
-
-	// Build the full selection cache (positions + wall candidates) once when
-	// the face is set and no cache exists yet. Subsequent frames reuse it.
-	if (!_hasCachedSelection && _face != voxel::FaceNames::Max) {
-		cacheSelection(volume, volRegion);
-	}
-
-	// Use cached bbox for calcRegion() if available
-	if (_hasCachedSelection) {
-		_cachedSelBBox = _cachedSelectedBBox;
-		_cachedSelBBoxValid = true;
-	}
+	prepare(volume, ctx.targetVolumeRegion);
 }
 
 bool ExtrudeBrush::active() const {
@@ -154,19 +77,19 @@ bool ExtrudeBrush::active() const {
 }
 
 voxel::Region ExtrudeBrush::calcRegion(const BrushContext &ctx) const {
-	if (!_cachedSelBBoxValid || _face == voxel::FaceNames::Max) {
+	if (!_cachedSelBBoxValid || _parameters.face == voxel::FaceNames::Max) {
 		return ctx.targetVolumeRegion;
 	}
 	// Expand the selection bbox along the extrusion direction to cover the
 	// extruded/carved voxels, plus lateral offsets and a small side-wall margin
 	// on perpendicular axes. Only expand in the direction that is actually affected
 	// to keep the region tight (large regions exceed maxPreviewRegion).
-	const math::Axis axis = voxel::faceToAxis(_face);
+	const math::Axis axis = voxel::faceToAxis(_parameters.face);
 	const int axisIdx = math::getIndexForAxis(axis);
-	const int faceSign = voxel::isNegativeFace(_face) ? -1 : 1;
-	const bool carving = _depth < 0;
+	const int faceSign = voxel::isNegativeFace(_parameters.face) ? -1 : 1;
+	const bool carving = _parameters.depth < 0;
 	const int dirSign = carving ? -faceSign : faceSign;
-	const int steps = glm::abs(_depth);
+	const int steps = glm::abs(_parameters.depth);
 
 	static constexpr int NumAxes = 3;
 	const int perp1 = (axisIdx + 1) % NumAxes;
@@ -183,15 +106,15 @@ voxel::Region ExtrudeBrush::calcRegion(const BrushContext &ctx) const {
 	}
 
 	// Lateral offset shifts
-	if (_offsetU > 0) {
-		hi[perp1] += _offsetU;
-	} else if (_offsetU < 0) {
-		lo[perp1] += _offsetU;
+	if (_parameters.offsetU > 0) {
+		hi[perp1] += _parameters.offsetU;
+	} else if (_parameters.offsetU < 0) {
+		lo[perp1] += _parameters.offsetU;
 	}
-	if (_offsetV > 0) {
-		hi[perp2] += _offsetV;
-	} else if (_offsetV < 0) {
-		lo[perp2] += _offsetV;
+	if (_parameters.offsetV > 0) {
+		hi[perp2] += _parameters.offsetV;
+	} else if (_parameters.offsetV < 0) {
+		lo[perp2] += _parameters.offsetV;
 	}
 
 	// Small margin for side walls on perpendicular axes
@@ -207,53 +130,64 @@ voxel::Region ExtrudeBrush::calcRegion(const BrushContext &ctx) const {
 }
 
 void ExtrudeBrush::setDepth(int depth) {
-	if (_depth == depth) {
+	markSettingsChanged();
+	if (_parameters.depth == depth) {
 		return;
 	}
-	_depth = depth;
+	_parameters.depth = depth;
 	markDirty();
 }
 
 void ExtrudeBrush::setOffsetU(int offset) {
-	if (_offsetU == offset) {
+	markSettingsChanged();
+	if (_parameters.offsetU == offset) {
 		return;
 	}
-	_offsetU = offset;
+	_parameters.offsetU = offset;
 	markDirty();
 }
 
 void ExtrudeBrush::setOffsetV(int offset) {
-	if (_offsetV == offset) {
+	markSettingsChanged();
+	if (_parameters.offsetV == offset) {
 		return;
 	}
-	_offsetV = offset;
+	_parameters.offsetV = offset;
 	markDirty();
 }
 
 void ExtrudeBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 							const voxel::Region &) {
-	_lastVolume = wrapper.volume();
-	evaluate(wrapper, ctx.cursorVoxel);
+	_parameters.voxel = ctx.cursorVoxel;
+	evaluate(wrapper);
+	}
+
+void ExtrudeBrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const {
+	if (hasHandle(ctx)) {
+		BrushGizmoState handle;
+		describeHandle(ctx, handle);
+		output.push_back(handle);
+	}
 }
 
-bool ExtrudeBrush::wantBrushGizmo(const BrushContext &ctx) const {
-	return _cachedSelBBoxValid && _face != voxel::FaceNames::Max;
+bool ExtrudeBrush::hasHandle(const BrushContext &ctx) const {
+	return _cachedSelBBoxValid && _parameters.face != voxel::FaceNames::Max;
 }
 
-void ExtrudeBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-	if (!_cachedSelBBoxValid || _face == voxel::FaceNames::Max) {
+void ExtrudeBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state) const {
+	if (!_cachedSelBBoxValid || _parameters.face == voxel::FaceNames::Max) {
 		state.operations = BrushGizmo_None;
 		return;
 	}
 
 	const glm::vec3 center = glm::vec3(_cachedSelBBox.getCenter());
-	const glm::vec3 normal = voxel::faceNormal(_face);
+	const glm::vec3 normal = voxel::faceNormal(_parameters.face);
 
 	// Position the gizmo at the selection center, offset by current depth along the face normal
-	state.matrix = glm::translate(glm::mat4(1.0f), center + normal * (float)_depth);
+	state.matrix = glm::translate(glm::mat4(1.0f), center + normal * (float)_parameters.depth);
 
 	// Only allow translation along the extrusion axis
-	const math::Axis axis = voxel::faceToAxis(_face);
+	const math::Axis axis = voxel::faceToAxis(_parameters.face);
 	switch (axis) {
 	case math::Axis::X:
 		state.operations = BrushGizmo_TranslateX;
@@ -273,13 +207,13 @@ void ExtrudeBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &sta
 	state.localMode = false;
 }
 
-bool ExtrudeBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+bool ExtrudeBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
 								   const glm::mat4 &deltaMatrix, uint32_t operation) {
-	if (_face == voxel::FaceNames::Max) {
+	if (_parameters.face == voxel::FaceNames::Max) {
 		return false;
 	}
 
-	const math::Axis axis = voxel::faceToAxis(_face);
+	const math::Axis axis = voxel::faceToAxis(_parameters.face);
 	const int axisIdx = math::getIndexForAxis(axis);
 	const glm::vec3 translation(deltaMatrix[3]);
 	const int delta = (int)glm::round(translation[axisIdx]);
@@ -288,8 +222,8 @@ bool ExtrudeBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
 	}
 
 	// Convert the axis translation to a signed depth change
-	const int faceSign = voxel::isNegativeFace(_face) ? -1 : 1;
-	setDepth(_depth + delta * faceSign);
+	const int faceSign = voxel::isNegativeFace(_parameters.face) ? -1 : 1;
+	setDepth(_parameters.depth + delta * faceSign);
 	return true;
 }
 

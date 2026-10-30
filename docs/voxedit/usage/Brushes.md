@@ -4,6 +4,19 @@
 
 VoxEdit provides several specialized brushes for different types of voxel editing.
 
+In Shape and ordinary Paint, a press-and-drag action is one undo step, including
+edits to multiple grouped models. Stroke mode completes the path to the last cursor
+position on release. Box and center modes apply when the shape is finished; if the
+first drag is still a plane, move to set depth and click again. An edit that changes
+no voxels preserves redo history. Switching tools, changing brush settings, or
+changing the slice finishes the current edit; press again to start another. Shape
+and Paint keep their settings when you switch away and back.
+
+Voxel deletion previews mark affected existing voxels with a red hatch. Updates
+show their prospective colors. These overlays respect scene occlusion.
+Deletion shows the material that will be
+removed; newly exposed interior faces appear after applying the edit.
+
 ## Shape brush
 
 The shape brush creates geometric primitives by spanning a box in the viewport. Click and drag to define the size of the shape. The orientation is determined by which face you clicked on initially.
@@ -24,7 +37,15 @@ This allows you to naturally create shapes aligned with your viewing direction.
 
 The Transform brush adjusts selected voxels with move, rotate, scale, or shear.
 Panel values and the viewport handle control the same operation. Changes appear
-as a preview while the model remains unchanged.
+as a preview while the model remains unchanged. Use **Apply** to commit the
+operation as one undo step, or **Cancel** (or Escape) to discard it. Switching to
+another tool applies a valid preview. Switching transform modes applies the
+previous mode before starting the next operation.
+
+Undo, redo, slice changes, and replacing or removing an edited model discard the
+pending transform preview. Saving applies a valid preview first; autosave keeps
+the last committed model. Invalid parameters display an error and disable Apply
+until corrected or cancelled.
 
 ## Paint brush
 
@@ -52,7 +73,7 @@ The paint brush provides various methods for coloring and modifying existing vox
 
 ## Plane brush
 
-The plane brush creates or extrudes entire planar surfaces in a single action. When you click a face, it generates voxels across that entire plane. If you drag after clicking, you can extrude the plane outward to create thickness.
+The plane brush creates or extrudes entire planar surfaces in a single action. Press on a face and hold the mouse button to preview the voxels across that surface. Move the cursor while holding to adjust the thickness, then release to apply the result. Plane editing uses the voxel preview without a gizmo.
 
 This brush is particularly useful for quickly creating walls, floors, or large flat surfaces without having to manually span regions.
 
@@ -137,3 +158,15 @@ Selections are useful for protecting parts of your model while editing other are
 ## Color picker
 
 You can either use it from the modifiers panel or by default with the key `p` to pick the color from the current selected voxel.
+
+## Editable operations and preview
+
+Transform, Extrude, adjustable Sculpt modes and Bezier lines keep an editable preview until Apply.
+Sculpt Extend Plane paints continuously as a stroke, with one undo action on release.
+Cancel or Escape discards the draft. Leaving a tool applies its valid draft;
+undo/redo and external model changes discard it. Autosave writes committed data.
+The preview includes removed source voxels and does not modify the saved model.
+
+While defining a Shape box, its Minimum and Maximum fields and viewport bounds
+handle edit the same region. Stroke release and the box depth step keep their
+usual completion behavior. Bezier segments expose start, end and control handles.

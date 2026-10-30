@@ -34,6 +34,9 @@ ShapeType ShapeBrush::shapeType() const {
 }
 
 void ShapeBrush::setShapeType(ShapeType type) {
+	if (_shapeType != type) {
+		markSettingsChanged();
+	}
 	_shapeType = type;
 	markDirty();
 }
@@ -81,6 +84,9 @@ int ShapeBrush::thickness() const {
 }
 
 void ShapeBrush::setThickness(int thickness) {
+	if (_thickness != core_max(1, thickness)) {
+		markSettingsChanged();
+	}
 	_thickness = core_max(1, thickness);
 	markDirty();
 }

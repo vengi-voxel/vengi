@@ -319,6 +319,10 @@ void SceneRenderer::handleCommandBuffer() {
 	}
 }
 
+void SceneRenderer::waitForPendingExtractions() {
+	_meshState->extractAllPending();
+}
+
 void SceneRenderer::update() {
 	core_trace_scoped(SceneRendererUpdate);
 

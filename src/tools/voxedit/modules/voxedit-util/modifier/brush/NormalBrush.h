@@ -47,6 +47,21 @@ public:
 	NormalBrush() : Super(BrushType::Normal, ModifierType::Place, ModifierType::Place | ModifierType::Erase) {
 		setStrokeMode();
 	}
+	int previewPadding() const override {
+		return 1;
+	}
+	BrushPreviewStyle previewStyle() const override {
+		return BrushPreviewStyle::Changes;
+	}
+	bool previewNeedsExistingVolume() const override {
+		return true;
+	}
+	ModifierType volumeModifier(ModifierType requested) const override {
+		return ModifierType::NormalPaint | (requested & ModifierType::Erase);
+	}
+	bool autoSelectPlacement() const override {
+		return false;
+	}
 	virtual ~NormalBrush() = default;
 
 	PaintMode paintMode() const;
@@ -58,6 +73,7 @@ inline NormalBrush::PaintMode NormalBrush::paintMode() const {
 }
 
 inline void NormalBrush::setPaintMode(PaintMode mode) {
+	markSettingsChanged();
 	_paintMode = mode;
 	markDirty();
 }

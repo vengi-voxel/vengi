@@ -1,6 +1,7 @@
 set(LIB voxedit-ui)
 
 set(SRCS
+	BrushHandleUI.h BrushHandleUI.cpp
 	AnimationTimeline.h AnimationTimeline.cpp
 	AnimationPanel.h AnimationPanel.cpp
 	ImageAssetPanel.h ImageAssetPanel.cpp

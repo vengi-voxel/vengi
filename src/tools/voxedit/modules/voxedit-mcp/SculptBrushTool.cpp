@@ -154,20 +154,12 @@ bool SculptBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
 
 	// Get and configure the sculpt brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	SculptBrush &sculptBrush = modifier.sculptBrush();
-
-	// Save previous state
-	const BrushType prevBrushType = modifier.brushType();
-	const SculptMode prevSculptMode = sculptBrush.sculptMode();
-	const float prevStrength = sculptBrush.strength();
-	const int prevIterations = sculptBrush.iterations();
+	SculptBrush sculptBrush;
 
 	// Configure the sculpt brush
-	modifier.setBrushType(BrushType::Sculpt);
 	sculptBrush.setSculptMode(sculptMode);
 	sculptBrush.setStrength(strength);
 	sculptBrush.setIterations(iterations);
@@ -184,21 +176,16 @@ bool SculptBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 
 	// Begin and execute the brush
 	sculptBrush.beginBrush(brushContext);
-	sculptBrush.preExecute(brushContext, volume);
-	const bool success = sculptBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const BrushApplyResult applied = modifier.executeRequest(sculptBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	sculptBrush.endBrush(brushContext);
 
-	// Restore previous state
-	sculptBrush.setSculptMode(prevSculptMode);
-	sculptBrush.setStrength(prevStrength);
-	sculptBrush.setIterations(prevIterations);
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id,
 						  core::String::format("Sculpt '%s' executed successfully (strength=%.2f, iterations=%d)",
 											   sculptModeStr.c_str(), strength, iterations),

@@ -11,6 +11,7 @@
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "color/RGBA.h"
 #include "voxel/RawVolume.h"
@@ -59,13 +60,8 @@ private:
 	core::VarPtr _maxSuggestedVolumeSizePreview;
 	BrushPreview _brushPreview;
 	palette::Palette _previewPalette;
+	palette::NormalPalette _previewNormalPalette;
 	double _nextPreviewUpdateSeconds = 0;
-
-	/**
-	 * @brief Check if the current brush/modifier combination needs an existing volume
-	 * for preview generation (e.g. Paint, Select, Extrude, Transform, Sculpt)
-	 */
-	bool previewNeedsExistingVolume(const Modifier &modifier) const;
 
 	/**
 	 * @brief Check if the brush can use a simple wireframe preview instead of a full volume
@@ -78,6 +74,9 @@ public:
 	void shutdown();
 
 	const BrushPreview &brushPreview() const;
+	palette::NormalPalette *previewNormalPalette() {
+		return &_previewNormalPalette;
+	}
 	palette::Palette *previewPalette() {
 		return &_previewPalette;
 	}

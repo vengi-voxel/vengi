@@ -62,6 +62,7 @@ protected:
 public:
 	StampBrush(SceneManager *sceneMgr) : Super(BrushType::Stamp), _sceneMgr(sceneMgr) {
 	}
+	StampBrush(const StampBrush &other);
 	virtual ~StampBrush() = default;
 	void construct() override;
 	void setVolume(const voxel::RawVolume &volume, const palette::Palette &palette);
@@ -99,6 +100,7 @@ inline bool StampBrush::centerMode() const {
 }
 
 inline void StampBrush::setCenterMode(bool center) {
+	markSettingsChanged();
 	if (center != _center) {
 		markDirty();
 	}
@@ -110,6 +112,7 @@ inline bool StampBrush::continuousMode() const {
 }
 
 inline void StampBrush::setContinuousMode(bool continuous) {
+	markSettingsChanged();
 	_continuous = continuous;
 }
 
@@ -122,6 +125,7 @@ inline bool StampBrush::active() const {
 }
 
 inline void StampBrush::setOffset(const glm::ivec3 &offset) {
+	markSettingsChanged();
 	if (offset == _offset) {
 		return;
 	}

@@ -62,6 +62,7 @@ void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 }
 
 void TextBrush::setSize(int size) {
+	markSettingsChanged();
 	if (_size == size) {
 		return;
 	}
@@ -70,6 +71,7 @@ void TextBrush::setSize(int size) {
 }
 
 void TextBrush::setThickness(int thickness) {
+	markSettingsChanged();
 	if (_thickness == thickness) {
 		return;
 	}
@@ -95,6 +97,7 @@ void TextBrush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
 void TextBrush::setInput(const core::String &input) {
+	markSettingsChanged();
 	if (_input == input) {
 		return;
 	}
@@ -103,6 +106,7 @@ void TextBrush::setInput(const core::String &input) {
 }
 
 void TextBrush::setSpacing(int spacing) {
+	markSettingsChanged();
 	if (_spacing == spacing) {
 		return;
 	}

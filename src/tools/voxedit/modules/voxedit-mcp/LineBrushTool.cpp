@@ -89,34 +89,23 @@ bool LineBrushTool::execute(const json::Json &id, const json::Json &args, ToolCo
 	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, modifierType);
 
 	// Get and configure the line brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	LineBrush &lineBrush = modifier.lineBrush();
-
-	// Save previous state
-	const BrushType prevBrushType = modifier.brushType();
-	const bool prevContinuous = lineBrush.continuous();
-
-	// Configure the line brush
-	modifier.setBrushType(BrushType::Line);
+	LineBrush lineBrush;
 	lineBrush.setContinuous(continuous);
 
 	// Execute the brush
-	lineBrush.preExecute(brushContext, volume);
-	const bool success = lineBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const auto applied = modifier.executeRequest(lineBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	lineBrush.endBrush(brushContext);
 
-	// Restore previous state
-	lineBrush.setContinuous(prevContinuous);
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id, "Line drawn successfully", false);
 	}
 

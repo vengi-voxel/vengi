@@ -28,6 +28,33 @@ namespace voxedit {
 
 void BrushPanel::init() {
 	_ctx.renderNormals = core::getVar(cfg::RenderNormals);
+	_companions.clear();
+	auto &registry = _ctx.sceneMgr->modifier().registry();
+	for (const Brush *tool : registry.tools()) {
+		auto &presentation = registry.presentation(registry.id(*tool));
+		if (presentation.icon.empty()) {
+			presentation.icon = BrushTypeIcons[(int)tool->type()];
+			presentation.command = "brush" + tool->name().toLower();
+			presentation.normalPaletteOnly = tool->volumeModifier(ModifierType::None) == ModifierType::NormalPaint;
+		}
+	}
+	registerPanel<BrushPanelShape>("shape");
+	registerPanel<BrushPanelStamp>("stamp");
+	registerPanel<BrushPanelPlane>("plane");
+	registerPanel<BrushPanelLine>("line");
+	registerPanel<BrushPanelPaint>("paint");
+	registerPanel<BrushPanelText>("text");
+	registerPanel<BrushPanelSelect>("select");
+	registerPanel<BrushPanelNormal>("normal");
+	registerPanel<BrushPanelExtrude>("extrude");
+	registerPanel<BrushPanelTransform>("transform");
+	registerPanel<BrushPanelSculpt>("sculpt");
+	registerPanel<BrushPanelRuler>("ruler");
+	registerPanel<BrushPanelScript>("script");
+	auto texture = registerPanel<BrushPanelTexture>("texture");
+	_companions.back().popups = [texture](BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
+		texture->createPopups(ctx, listener);
+	};
 }
 
 float BrushPanel::toolbarDockHeight() const {
@@ -45,39 +72,31 @@ float BrushPanel::toolbarDockHeight() const {
 }
 
 void BrushPanel::brushSettings(command::CommandExecutionListener &listener) {
-	const Modifier &modifier = _ctx.sceneMgr->modifier();
-	const BrushType brushType = modifier.brushType();
-	if (brushType == BrushType::None && !modifier.isMode(ModifierType::ColorPicker)) {
+	Modifier &modifier = _ctx.sceneMgr->modifier();
+	if (!modifier.currentBrush() && !modifier.isMode(ModifierType::ColorPicker)) {
 		return;
 	}
-	if (brushType == BrushType::Shape) {
-		_shape.update(_ctx, listener);
-	} else if (brushType == BrushType::Stamp) {
-		_stamp.update(_ctx, listener);
-	} else if (brushType == BrushType::Plane) {
-		_plane.update(_ctx, listener);
-	} else if (brushType == BrushType::Line) {
-		_line.update(_ctx, listener);
-	} else if (brushType == BrushType::Paint) {
-		_paint.update(_ctx, listener);
-	} else if (brushType == BrushType::Text) {
-		_text.update(_ctx, listener);
-	} else if (brushType == BrushType::Select) {
-		_select.update(_ctx, listener);
-	} else if (brushType == BrushType::Texture) {
-		_texture.update(_ctx, listener);
-	} else if (brushType == BrushType::Normal) {
-		_normal.update(_ctx, listener);
-	} else if (brushType == BrushType::Extrude) {
-		_extrude.update(_ctx, listener);
-	} else if (brushType == BrushType::Transform) {
-		_transform.update(_ctx, listener);
-	} else if (brushType == BrushType::Sculpt) {
-		_sculpt.update(_ctx, listener);
-	} else if (brushType == BrushType::Ruler) {
-		_ruler.update(_ctx, listener);
-	} else if (brushType == BrushType::Script) {
-		_script.update(_ctx, listener);
+	for (const Companion &companion : _companions) {
+		if (modifier.currentBrush() &&
+			companion.id == modifier.registry().presentation(modifier.registry().id(*modifier.currentBrush())).panel) {
+			companion.update(_ctx, listener);
+			break;
+		}
+	}
+	modifier.flushPendingBrushChanges();
+
+	if (modifier.operationError()) {
+		ImGui::TextWrappedUnformatted(_(modifier.operationError()));
+	}
+	if (modifier.isAdjustable() && modifier.hasDraft()) {
+		ImGui::BeginDisabled(modifier.operationError() != nullptr);
+		if (ImGui::ButtonFullWidth(_("Apply"))) {
+			_ctx.sceneMgr->modifier().applyDraft();
+	}
+		ImGui::EndDisabled();
+		if (ImGui::ButtonFullWidth(_("Cancel"))) {
+			_ctx.sceneMgr->modifier().cancelDraft();
+	}
 	}
 
 	if (modifier.isMode(ModifierType::ColorPicker)) {
@@ -90,48 +109,28 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 	style.pushFontSize(imguiApp()->bigFontSize());
 
 	voxedit::Modifier &modifier = _ctx.sceneMgr->modifier();
-	const BrushType brushType = modifier.brushType();
 	const bool normalPaletteMode = core::getVar(cfg::VoxEditShowNormalPalette)->boolVal();
 
 	ui::Toolbar toolbarBrush("brushes", &listener);
-	for (int i = 0; i < (int)BrushType::Max; ++i) {
-		if (i == (int)BrushType::Normal && !normalPaletteMode) {
+	const auto &registry = modifier.registry();
+	for (const Brush *tool : registry.tools()) {
+		const core::String id = registry.id(*tool);
+		const auto &presentation = registry.presentation(id);
+		if (presentation.normalPaletteOnly && !normalPaletteMode) {
 			continue;
 		}
-		if (i == (int)BrushType::Script) {
-			continue;
-		}
-		core::String cmd = core::String::format("brush%s", BrushTypeStr[i]).toLower();
-		auto func = [&listener, cmd]() { command::executeCommands(cmd, &listener); };
-		core::String tooltip = command::help(cmd);
-		if (tooltip.empty()) {
-			tooltip = BrushTypeStr[i];
-		}
-		const bool currentBrush = (int)brushType == i;
+		const bool active = modifier.currentBrush() == tool;
 		ui::ScopedStyle styleButton;
-		if (currentBrush) {
+		if (active) {
 			styleButton.setButtonColor(style::color(style::ColorActiveBrush));
 		}
-		toolbarBrush.button(BrushTypeIcons[i], tooltip.c_str(), func, !currentBrush);
-	}
-
-	// Render per-script brush buttons
-	ScriptManager &scriptMgr = modifier.scriptManager();
-	const core::DynamicArray<LUABrush *> &luaBrushes = scriptMgr.luaBrushes();
-	const int activeLuaIdx = scriptMgr.activeLuaBrushIndex();
-	for (int i = 0; i < (int)luaBrushes.size(); ++i) {
-		const LUABrush *lb = luaBrushes[i];
-		const bool isActive = brushType == BrushType::Script && activeLuaIdx == i;
-		ui::ScopedStyle styleButton;
-		if (isActive) {
-			styleButton.setButtonColor(style::color(style::ColorActiveBrush));
-		}
-		const int idx = i;
-		auto func = [&modifier, &scriptMgr, idx]() {
-			modifier.setBrushType(BrushType::Script);
-			scriptMgr.setActiveLuaBrushIndex(idx);
+		const core::String tooltip =
+			presentation.command.empty() ? presentation.label : command::help(presentation.command);
+		auto activate = [&modifier, id]() {
+			modifier.setTool(id);
 		};
-		toolbarBrush.button(lb->iconString(), lb->scriptName().c_str(), func, !isActive);
+		const char *icon = presentation.icon.empty() ? ICON_LC_BRUSH : presentation.icon.c_str();
+		toolbarBrush.button(icon, tooltip.empty() ? presentation.label.c_str() : tooltip.c_str(), activate, !active);
 	}
 
 	toolbarBrush.end();
@@ -159,7 +158,11 @@ void BrushPanel::addModifiers(command::CommandExecutionListener &listener) {
 }
 
 void BrushPanel::createPopups(command::CommandExecutionListener &listener) {
-	_texture.createPopups(_ctx, listener);
+	for (const Companion &companion : _companions) {
+		if (companion.popups) {
+			companion.popups(_ctx, listener);
+		}
+	}
 }
 
 void BrushPanel::updateToolbar(const char *id, bool sceneMode, command::CommandExecutionListener &listener) {

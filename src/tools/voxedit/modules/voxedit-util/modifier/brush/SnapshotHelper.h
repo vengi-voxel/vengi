@@ -20,24 +20,15 @@ namespace voxedit {
 class ModifierVolumeWrapper;
 
 /**
- * @brief Manages snapshot capture and history tracking for brushes that modify voxels
- * with a preview/commit lifecycle (Extrude, Transform, Sculpt).
- *
- * The pattern:
- * 1. On activation: capture original selected voxels into a snapshot
- * 2. On each generate: restore history, clear it, re-apply operation from snapshot
- * 3. On deactivation/commit: create single undo entry
- * 4. On cancel: revert all changes from history
- *
- * The snapshot stores the original voxels. The history stores the original state
- * of each position modified during generate(), enabling per-frame undo without
- * touching the undo stack.
+ * @brief Sparse selected input and scratch write journal for one target evaluator.
+ * Reevaluation restores previous scratch writes before deriving a result from the
+ * original selection. This helper does not publish scene data or record editor history.
  */
 class SnapshotHelper {
 private:
 	// Original selected voxels captured at brush activation
 	voxel::SparseVolume _snapshot;
-	// Per-generate bookkeeping: tracks positions modified during a generate() call
+	// Per-evaluate bookkeeping: tracks positions modified during an evaluate() call
 	// so the previous state can be restored before re-applying.
 	// Stores the original voxel at each modified position (with empty voxel storage enabled).
 	voxel::SparseVolume _history;
@@ -81,7 +72,7 @@ public:
 
 	/**
 	 * @brief Restore history entries into the volume and clear history.
-	 * Used at the start of generate() to undo the previous frame's changes
+	 * Used at the start of evaluate() to undo the previous frame's changes
 	 * before re-applying the operation from the snapshot.
 	 */
 	void restoreHistory(voxel::RawVolume *vol, ModifierVolumeWrapper &wrapper);

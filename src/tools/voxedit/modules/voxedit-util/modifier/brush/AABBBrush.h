@@ -5,8 +5,8 @@
 #pragma once
 
 #include "Brush.h"
-#include "BoxGesture.h"
-#include "StrokeGesture.h"
+#include "gesture/BoxGesture.h"
+#include "gesture/StrokeGesture.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 
@@ -55,7 +55,7 @@ enum BrushFlags : uint32_t {
  *
  * 1. **beginBrush()** - Sets the first corner position
  * 2. **step()** - Updates the second corner as the cursor moves
- * 3. **execute()** - Generates voxels in the final region
+ * 3. **executeSample()** - Generates voxels in the current region
  * 4. **endBrush()** - Completes the operation
  *
  * # Modes
@@ -80,7 +80,7 @@ enum BrushFlags : uint32_t {
  * @sa PaintBrush - recolors voxels within the AABB
  * @sa SelectBrush - selects voxels within the AABB
  * @sa BoxGesture - captures the box anchors and constrains the depth step
- * @sa StrokeGesture - samples a continuous path and accumulates its dirty region
+ * @sa StrokeGesture - samples a continuous path between cursor positions
  */
 class AABBBrush : public Brush {
 private:
@@ -91,7 +91,7 @@ private:
 
 protected:
 	BoxGesture _boxGesture;
-	StrokeGesture _strokeGesture;
+	voxel::Region _editedRegion = voxel::Region::InvalidRegion;
 	uint32_t _mode = BRUSH_MODE_BOX; ///< User preference for box, center or stroke interaction
 	int _radius = 0; ///< Radius for stroke mode (0 = single voxel dab)
 
@@ -138,17 +138,32 @@ public:
 	AABBBrush(BrushType type, ModifierType defaultModifier = ModifierType::Place,
 			  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override));
 	virtual ~AABBBrush() = default;
+	bool interpolatedStroke() const override {
+		return anyStrokeMode();
+	}
+	AABBBrush *aabb() override {
+		return this;
+	}
+	const AABBBrush *aabb() const override {
+		return this;
+	}
+	void syncInput(const Brush &input) override;
+	bool boxActive() const {
+		return _boxGesture.active();
+	}
+	bool setRegion(const voxel::Region &region);
+	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &delta,
+					uint32_t operation) override;
 	void construct() override;
 	void onSceneChange() override;
 	void reset() override;
+	void resetRuntime() override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
-
-	/**
-	 * @brief After a continuous stroke, return the accumulated dirty region for one undo entry
-	 */
-	voxel::Region consumePendingUndoRegion() override;
+	bool executeSample(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+					   const BrushContext &ctx) override;
 
 	/**
 	 * @brief Get the current effective cursor position during multi-step AABB creation
@@ -177,7 +192,7 @@ public:
 	 * @param[in] ctx The brush context with the current cursor position
 	 * @return True if the brush started successfully, false if already active
 	 *
-	 * @note This is typically called on mouse down in input handlers
+	 * @note Typically called by the host when the action button is pressed.
 	 *
 	 * @sa step() - sets/updates the second position
 	 * @sa endBrush() - completes the operation
@@ -193,7 +208,7 @@ public:
 	 *
 	 * @param[in] ctx The brush context with current cursor position
 	 *
-	 * @note This is typically called on mouse move in input handlers
+	 * @note Typically called by the host while dragging to capture the second corner or depth.
 	 *
 	 * @sa beginBrush() - initiates the AABB spanning
 	 * @sa endBrush() - completes the operation
@@ -263,7 +278,6 @@ public:
 	/**
 	 * @return True while a stroke drag is in progress (after beginBrush, before endBrush)
 	 */
-	bool strokeActive() const;
 
 	/**
 	 * @brief Enable box mode (default) - span a rectangular region
@@ -314,6 +328,7 @@ inline bool AABBBrush::centerMode() const {
 }
 
 inline void AABBBrush::setCenterMode() {
+	markSettingsChanged();
 	setMode(BRUSH_MODE_CENTER);
 }
 
@@ -321,15 +336,12 @@ inline bool AABBBrush::anyStrokeMode() const {
 	return strokeMode() || strokeNoOverlap();
 }
 
-inline bool AABBBrush::strokeActive() const {
-	return _strokeGesture.active();
-}
-
 inline bool AABBBrush::strokeMode() const {
 	return isMode(BRUSH_MODE_STROKE);
 }
 
 inline void AABBBrush::setStrokeMode() {
+	markSettingsChanged();
 	setMode(BRUSH_MODE_STROKE);
 }
 
@@ -338,6 +350,7 @@ inline bool AABBBrush::strokeNoOverlap() const {
 }
 
 inline void AABBBrush::setStrokeNoOverlap() {
+	markSettingsChanged();
 	setMode(BRUSH_MODE_STROKE_NO_OVERLAP);
 }
 
@@ -346,6 +359,7 @@ inline bool AABBBrush::boxMode() const {
 }
 
 inline void AABBBrush::setBoxMode() {
+	markSettingsChanged();
 	setMode(BRUSH_MODE_BOX);
 }
 

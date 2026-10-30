@@ -6,9 +6,9 @@
 #include "core/collection/DynamicArray.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxedit-util/modifier/brush/BoxGesture.h"
+#include "voxedit-util/modifier/brush/gesture/BoxGesture.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
-#include "voxedit-util/modifier/brush/StrokeGesture.h"
+#include "voxedit-util/modifier/brush/gesture/StrokeGesture.h"
 
 namespace voxedit {
 
@@ -92,22 +92,14 @@ TEST_F(BrushGestureTest, testStrokeFillsGapsAndRepeatsStationarySamples) {
 	EXPECT_EQ(positions[0], glm::ivec3(10));
 }
 
-TEST_F(BrushGestureTest, testStrokeDefersUndoUntilRelease) {
+TEST_F(BrushGestureTest, testStrokeEndDiscardsSamplingState) {
 	StrokeGesture gesture;
 	gesture.begin();
-	gesture.accumulate(voxel::Region(1, 2, 3, 2, 3, 4));
-	gesture.accumulate(voxel::Region::InvalidRegion);
-	gesture.accumulate(voxel::Region(-1, 0, 2, 1, 2, 3));
-	EXPECT_FALSE(gesture.consumePendingUndoRegion().isValid());
+	gesture.visit(glm::ivec3(4), [](const glm::ivec3 &) {});
+	EXPECT_TRUE(gesture.sampled(glm::ivec3(4)));
 	gesture.end();
 	EXPECT_FALSE(gesture.active());
-	EXPECT_EQ(gesture.consumePendingUndoRegion(), voxel::Region(-1, 0, 2, 2, 3, 4));
-	EXPECT_FALSE(gesture.consumePendingUndoRegion().isValid());
-	gesture.begin();
-	gesture.accumulate(voxel::Region(0, 2));
-	gesture.reset();
-	gesture.end();
-	EXPECT_FALSE(gesture.consumePendingUndoRegion().isValid());
+	EXPECT_FALSE(gesture.sampled(glm::ivec3(4)));
 }
 
 TEST_F(BrushGestureTest, testStrokeFootprint) {
@@ -128,7 +120,13 @@ TEST_F(BrushGestureTest, testPreviewDoesNotAdvanceShapeStroke) {
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	ModifierVolumeWrapper first(node, ModifierType::Place);
-	ASSERT_TRUE(brush.execute(sceneGraph, first, ctx));
+	StrokeGesture stroke;
+	stroke.begin();
+	stroke.visit(ctx.cursorPosition, [&](const glm::ivec3 &position) {
+		BrushContext dab = ctx;
+		dab.cursorPosition = position;
+		brush.executeSample(sceneGraph, first, dab);
+	});
 
 	voxel::RawVolume previewVolume(volume.region());
 	scenegraph::SceneGraphNode previewNode(scenegraph::SceneGraphNodeType::Model);
@@ -141,7 +139,11 @@ TEST_F(BrushGestureTest, testPreviewDoesNotAdvanceShapeStroke) {
 	ctx.cursorPosition.x = 3;
 	ctx.preview = false;
 	ModifierVolumeWrapper last(node, ModifierType::Place);
-	ASSERT_TRUE(brush.execute(sceneGraph, last, ctx));
+	stroke.visit(ctx.cursorPosition, [&](const glm::ivec3 &position) {
+		BrushContext dab = ctx;
+		dab.cursorPosition = position;
+		brush.executeSample(sceneGraph, last, dab);
+	});
 	brush.endBrush(ctx);
 	for (int x = 0; x <= 3; ++x) {
 		EXPECT_FALSE(voxel::isAir(volume.voxel(x, 0, 0).getMaterial())) << x;
@@ -149,8 +151,6 @@ TEST_F(BrushGestureTest, testPreviewDoesNotAdvanceShapeStroke) {
 	for (int x = 4; x <= 10; ++x) {
 		EXPECT_TRUE(voxel::isAir(volume.voxel(x, 0, 0).getMaterial())) << x;
 	}
-	EXPECT_EQ(brush.consumePendingUndoRegion(), voxel::Region(0, 0, 0, 3, 0, 0));
-	EXPECT_FALSE(brush.consumePendingUndoRegion().isValid());
 	brush.shutdown();
 }
 
@@ -171,10 +171,9 @@ TEST_F(BrushGestureTest, testBrushResetPreservesSettingsButDiscardsGesture) {
 	brush.setStrokeMode();
 	ASSERT_TRUE(brush.beginBrush(ctx)) << "Stroke must replace an unfinished box gesture";
 	EXPECT_EQ(brush.radius(), 3);
-	EXPECT_TRUE(brush.strokeActive());
+	EXPECT_TRUE(brush.anyStrokeMode());
 	brush.onSceneChange();
-	EXPECT_FALSE(brush.strokeActive());
-	EXPECT_FALSE(brush.consumePendingUndoRegion().isValid());
+	EXPECT_FALSE(brush.boxActive());
 	EXPECT_TRUE(brush.strokeMode());
 	EXPECT_EQ(brush.radius(), 3);
 	brush.shutdown();

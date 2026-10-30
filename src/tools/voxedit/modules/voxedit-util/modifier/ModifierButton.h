@@ -22,10 +22,9 @@ private:
 	using Super = command::ActionButton;
 	SceneManager *_sceneMgr;
 	ModifierType _newType;
-	ModifierType _oldType = ModifierType::None;
-	// some actions might need a second action to complete the command
-	bool _furtherAction = false;
 	bool _sliceAction = false;
+	bool _ownsPress = false;
+	uint64_t _editId = 0;
 public:
 	/**
 	 * @param[in] newType This ModifierType is set if the action button is triggered. No matter which type is
@@ -39,13 +38,14 @@ public:
 	 * @param continuous @c true for mid-stroke dabs (keep the brush open). @c false ends the brush
 	 *        after this execution (mouse up / final dab).
 	 *
-	 * @sa Modifier::aabbStart()
-	 * @sa Modifier::aabbAction()
-	 * @sa Modifier::aabbAbort()
-	 * @sa Modifier::aabbStep()
+	 * @sa Modifier::beginEdit()
+	 * @sa Modifier::updateEdit()
+	 * @sa Modifier::finishEdit()
+	 * @sa Modifier::abort()
 	 */
 	void execute(bool continuous);
 	bool slicePressed() const { return _sliceAction && pressed(); }
+	bool ownsPress() const { return _ownsPress && pressed(); }
 	bool handleDown(int32_t key, double pressedMillis) override;
 	bool handleUp(int32_t key, double releasedMillis) override;
 };

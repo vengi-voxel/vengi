@@ -77,6 +77,4 @@ inline constexpr const char *SmoothWallInterpStr[] = {
 	NC_("Sculpt smooth wall interpolation", "Edge Aware")};
 static_assert(lengthof(SmoothWallInterpStr) == (int)voxelutil::SmoothWallInterp::Max, "SmoothWallInterpStr size mismatch");
 
-inline constexpr size_t BrushPanelDeferredTransformThreshold = 10000;
-
 } // namespace voxedit

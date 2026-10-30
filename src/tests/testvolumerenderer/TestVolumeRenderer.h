@@ -5,6 +5,7 @@
 #pragma once
 
 #include "palette/Palette.h"
+#include "render/ShapeRenderer.h"
 #include "scenegraph/SceneGraph.h"
 #include "testcore/TestApp.h"
 #include "voxel/MeshState.h"
@@ -21,6 +22,8 @@ private:
 	palette::Palette _palette;
 	scenegraph::SceneGraph _sceneGraph;
 	bool _ownsVolumes = true;
+	render::ShapeRenderer _previewShapes;
+	int32_t _previewMesh = -1;
 
 	void doRender() override;
 	bool createMaterialScene();

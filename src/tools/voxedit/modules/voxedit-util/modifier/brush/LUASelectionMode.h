@@ -75,6 +75,7 @@ private:
 
 public:
 	explicit LUASelectionMode(const io::FilesystemPtr &filesystem);
+	LUASelectionMode(const LUASelectionMode &other);
 	~LUASelectionMode() = default;
 
 	bool init();
@@ -97,14 +98,14 @@ public:
 	 * @param aabbFirstPos The position of the first click (from AABBBrush)
 	 * @param aabbFace The face from the initial click (from AABBBrush)
 	 */
-	void execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				 const voxel::Region &region, const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace);
 
 	bool hasGizmo() const;
 
-	bool wantBrushGizmo(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace) const;
+	bool hasHandle(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace) const;
 
-	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
 						 voxel::FaceNames aabbFace) const;
 
 	/**

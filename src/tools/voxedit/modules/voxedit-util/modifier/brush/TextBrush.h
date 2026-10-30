@@ -34,6 +34,10 @@ protected:
 public:
 	TextBrush() : Super(BrushType::Text) {
 	}
+	TextBrush(const TextBrush &other)
+		: Super(other), _font(other._font), _input(other._input), _lastCursorPosition(other._lastCursorPosition),
+		  _size(other._size), _spacing(other._spacing), _thickness(other._thickness), _axis(other._axis) {
+	}
 	virtual ~TextBrush() = default;
 	void construct() override;
 
@@ -81,6 +85,7 @@ inline core::String &TextBrush::font() {
 }
 
 inline void TextBrush::setFont(const core::String &font) {
+	markSettingsChanged();
 	_font = font;
 }
 

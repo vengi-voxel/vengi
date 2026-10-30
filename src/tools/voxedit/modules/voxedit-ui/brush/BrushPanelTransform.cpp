@@ -17,27 +17,11 @@
 
 namespace voxedit {
 
-void BrushPanelTransform::executeTransformBrush(BrushPanelContext &ctx) {
-	Modifier &modifier = ctx.sceneMgr->modifier();
-	if (!modifier.beginBrushFromPanel()) {
-		return;
-	}
-	auto func = [&](scenegraph::SceneGraphNode &node) {
-		if (!node.visible()) {
-			return;
-		}
-		auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-			ctx.sceneMgr->modified(node.uuid(), region, flags);
-		};
-		modifier.execute(ctx.sceneMgr->sceneGraph(), node, callback);
-	};
-	ctx.sceneMgr->nodeForeachGroup(func);
-	modifier.endBrush();
-}
-
 void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
 	Modifier &modifier = ctx.sceneMgr->modifier();
 	TransformBrush &brush = modifier.transformBrush();
+	TransformParameters parameters = brush.parameters();
+	bool changed = false;
 
 	if (!ctx.sceneMgr->hasSelection(ctx.sceneMgr->activeNodeUUID())) {
 		ImGui::TextWrappedUnformatted(_("No selection active - use the Select brush first"));
@@ -51,12 +35,11 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 			const bool active = (TransformMode)i == currentTransformMode;
 			toolbar.button(
 				TransformModeIcons[i], _(TransformModeStr[i]),
-				[this, &ctx, &brush, i]() {
-					if (_dirty || brush.hasSnapshot()) {
-						executeTransformBrush(ctx);
-						_dirty = false;
-					}
-					brush.setTransformMode((TransformMode)i);
+				[&modifier, &brush, i]() {
+					TransformParameters next;
+					next.mode = (TransformMode)i;
+					next.sampling = brush.voxelSampling();
+					modifier.updateParameters<TransformBrush>("transform", next);
 				},
 				!active);
 		}
@@ -66,8 +49,8 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 	case TransformMode::Move: {
 		_moveOffset = brush.moveOffset();
 		if (ImGui::AxisSliders(_moveOffset, -TransformBrush::MaxMoveOffset, TransformBrush::MaxMoveOffset)) {
-			brush.setMoveOffset(_moveOffset);
-			executeTransformBrush(ctx);
+			parameters.translation = _moveOffset;
+			changed = true;
 		}
 		break;
 	}
@@ -75,8 +58,8 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 	case TransformMode::Shear: {
 		_shearOffset = brush.shearOffset();
 		if (ImGui::AxisSliders(_shearOffset, -TransformBrush::MaxShearOffset, TransformBrush::MaxShearOffset)) {
-			brush.setShearOffset(_shearOffset);
-			executeTransformBrush(ctx);
+			parameters.shear = _shearOffset;
+			changed = true;
 		}
 		break;
 	}
@@ -95,7 +78,7 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 		}
 		bool scaleChanged = false;
 		if (_useVoxelSize) {
-			const voxel::Region &snapshotRegion = brush.snapshotRegion();
+			const voxel::Region snapshotRegion = ctx.sceneMgr->selectionCalculateRegion(ctx.sceneMgr->activeNodeUUID());
 			const glm::ivec3 originalSize =
 				snapshotRegion.isValid() ? snapshotRegion.getDimensionsInVoxels() : glm::ivec3(1);
 			if (_targetSize.x <= 0 || _targetSize.y <= 0 || _targetSize.z <= 0) {
@@ -106,10 +89,10 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 			const glm::ivec3 prevTargetSize = _targetSize;
 			if (ImGui::AxisSliders(_targetSize, MinTargetSize, MaxTargetSize)) {
 				if (_maintainAspectRatio && originalSize.x > 0 && originalSize.y > 0 && originalSize.z > 0) {
-					const glm::ivec3 changed = _targetSize - prevTargetSize;
+					const glm::ivec3 delta = _targetSize - prevTargetSize;
 					int changedAxis = -1;
 					for (int i = 0; i < 3; ++i) {
-						if (changed[i] != 0) {
+						if (delta[i] != 0) {
 							changedAxis = i;
 							break;
 						}
@@ -142,12 +125,8 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 			}
 		}
 		if (scaleChanged) {
-			brush.setScale(_scale);
-			if (brush.snapshotVoxelCount() <= BrushPanelDeferredTransformThreshold) {
-				executeTransformBrush(ctx);
-			} else {
-				_dirty = true;
-			}
+			parameters.scale = _scale;
+			changed = true;
 		}
 		break;
 	}
@@ -155,12 +134,8 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 	case TransformMode::Rotate: {
 		_rotation = brush.rotationDegrees();
 		if (ImGui::AxisSliders(_rotation, -360.0f, 360.0f, "%.1f")) {
-			brush.setRotationDegrees(_rotation);
-			if (brush.snapshotVoxelCount() <= BrushPanelDeferredTransformThreshold) {
-				executeTransformBrush(ctx);
-			} else {
-				_dirty = true;
-			}
+			parameters.rotationDegrees = _rotation;
+			changed = true;
 		}
 		break;
 	}
@@ -170,19 +145,14 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 	}
 
 	if (brush.transformMode() == TransformMode::Scale || brush.transformMode() == TransformMode::Rotate) {
-		if (_dirty) {
-			if (ImGui::ButtonFullWidth(_("Apply"))) {
-				executeTransformBrush(ctx);
-				_dirty = false;
-			}
-		}
+
 		int samplingInt = (int)brush.voxelSampling();
 		if (ImGui::BeginCombo(_("Sampling"), _(VoxelSamplingStr[samplingInt]))) {
 			for (int i = 0; i < (int)voxel::VoxelSampling::Max; ++i) {
 				const bool selected = samplingInt == i;
 				if (ImGui::Selectable(_(VoxelSamplingStr[i]), selected)) {
-					brush.setVoxelSampling((voxel::VoxelSampling)i);
-					_dirty = true;
+					parameters.sampling = (voxel::VoxelSampling)i;
+					changed = true;
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -190,6 +160,9 @@ void BrushPanelTransform::update(BrushPanelContext &ctx, command::CommandExecuti
 			}
 			ImGui::EndCombo();
 		}
+	}
+	if (changed) {
+		modifier.updateParameters<TransformBrush>("transform", parameters);
 	}
 }
 

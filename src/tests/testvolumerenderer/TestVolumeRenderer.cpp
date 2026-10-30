@@ -17,6 +17,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "testcore/TestAppMain.h"
 #include "video/Renderer.h"
+#include "video/ScopedState.h"
 #include "video/Types.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -66,6 +67,7 @@ app::AppState TestVolumeRenderer::onConstruct() {
 	registerArg("--lsystem").setDescription("Render the named L-system template with separate wood and leaf colors");
 	registerArg("--instances")
 		.setDescription("Add N mesh-reference copies of volume 0 (MDI batching stress; default 0)");
+	registerArg("--preview").setDescription("Show a coplanar erase or update overlay on the first material cube");
 
 	core::getVar(cfg::ClientBloom)->setVal(true);
 	core::getVar(cfg::ClientShadowMap)->setVal(true);
@@ -303,6 +305,15 @@ app::AppState TestVolumeRenderer::onInit() {
 	addReferenceInstances(instances);
 
 	flushMeshes();
+	if (hasArg("--preview")) {
+		if (!_previewShapes.init()) {
+			return app::AppState::InitFailure;
+		}
+		video::ShapeBuilder builder;
+		builder.setColor(glm::vec4(0.1f, 0.4f, 1.0f, 1.0f));
+		builder.cube(glm::vec3(0), glm::vec3(12));
+		_previewShapes.createOrUpdate(_previewMesh, builder);
+	}
 	return state;
 }
 
@@ -321,7 +332,14 @@ void TestVolumeRenderer::doRender() {
 	_renderer.render(_meshState, _renderContext, camera(), true);
 	_renderContext.resolveMultisampling();
 	_renderContext.applyBloom();
-	_renderContext.frameBuffer.unbind();
+	_renderContext.beginOverlays();
+	if (_previewMesh >= 0 && _renderContext.surfaceOverlay.begin(_renderContext.frameBuffer.dimension())) {
+		const video::ScopedState depth(video::State::DepthTest, true);
+		_previewShapes.render(_previewMesh, camera());
+		const bool erase = getArgVal("--preview") == "erase";
+		_renderContext.surfaceOverlay.end(erase ? glm::vec4(0.95f, 0.12f, 0.08f, 0.75f) : glm::vec4(0));
+	}
+	_renderContext.endFrame();
 	presentFrameBuffer();
 }
 
@@ -333,6 +351,7 @@ void TestVolumeRenderer::onWindowResize(void *windowHandle, int windowWidth, int
 }
 
 app::AppState TestVolumeRenderer::onCleanup() {
+	_previewShapes.shutdown();
 	if (_meshState) {
 		// clear() resets each slot and drops the pointer; delete owned volumes first.
 		if (_ownsVolumes) {

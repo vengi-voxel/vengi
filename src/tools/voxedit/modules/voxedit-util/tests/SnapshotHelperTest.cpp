@@ -138,7 +138,7 @@ TEST_F(SnapshotHelperTest, testRestoreHistory) {
 	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(10));
 	EXPECT_EQ(10, volume.voxel(0, 0, 0).getColor());
 
-	// Restore history (like generate() does between frames)
+	// Restore history (like evaluate() does between frames)
 	helper.restoreHistory(&volume, wrapper);
 	EXPECT_EQ(1, volume.voxel(0, 0, 0).getColor());
 	EXPECT_TRUE(helper.historyEmpty());

@@ -434,7 +434,7 @@ TEST_F(ExtrudeBrushTest, testApplyGizmoKeepsFace) {
 
 	glm::mat4 delta(1.0f);
 	delta[3][0] = 2.0f;
-	EXPECT_TRUE(brush.applyBrushGizmo(ctx, glm::mat4(1.0f), delta, BrushGizmo_TranslateX));
+	EXPECT_TRUE(brush.editHandle(0, ctx, glm::mat4(1.0f), delta, BrushGizmo_TranslateX));
 	EXPECT_EQ(brush.depth(), 2);
 	EXPECT_EQ(brush.face(), voxel::FaceNames::PositiveX);
 	brush.shutdown();
@@ -491,8 +491,8 @@ TEST_F(ExtrudeBrushTest, testEndBrushResetsState) {
 	brush.shutdown();
 }
 
-// onDeactivated returns true when there are pending changes to commit
-TEST_F(ExtrudeBrushTest, testOnDeactivatedReturnsTrueWithPendingChanges) {
+// Selected input is captured for subsequent extrude evaluations.
+TEST_F(ExtrudeBrushTest, testCapturesSelectedInput) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
@@ -509,26 +509,26 @@ TEST_F(ExtrudeBrushTest, testOnDeactivatedReturnsTrueWithPendingChanges) {
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 
 	// Before any execution, cache is not built yet
-	EXPECT_FALSE(brush.onDeactivated()) << "No cached selection yet - nothing to commit";
+	EXPECT_FALSE(brush.hasSnapshot()) << "No cached selection yet - nothing to commit";
 
 	// Execute to build cache
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeExtrude(brush, node, ctx);
 
-	// After execution with depth != 0 and cached selection, onDeactivated should return true
+	// Evaluation captures both the cached selection and its source snapshot.
 	EXPECT_TRUE(brush.hasCachedSelection());
-	EXPECT_TRUE(brush.onDeactivated()) << "Should have pending changes to commit";
+	EXPECT_TRUE(brush.hasSnapshot());
 
 	brush.shutdown();
 }
 
-// onDeactivated returns false when depth is zero
-TEST_F(ExtrudeBrushTest, testOnDeactivatedReturnsFalseAtDepthZero) {
+// An unprepared brush has no selected input snapshot.
+TEST_F(ExtrudeBrushTest, testNoSnapshotBeforePreparation) {
 	ExtrudeBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setDepth(0);
 
-	EXPECT_FALSE(brush.onDeactivated()) << "Depth 0 means no changes to commit";
+	EXPECT_FALSE(brush.hasSnapshot());
 
 	brush.shutdown();
 }

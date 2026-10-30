@@ -189,7 +189,7 @@ TEST_F(PaintBrushTest, testBlendOncePerStroke) {
 	EXPECT_EQ(secondColor.r, firstColor.r);
 
 	brush.endBrush(brushContext);
-
+	brush.seedRuntime(1);
 	ASSERT_TRUE(brush.beginBrush(brushContext));
 	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
 	const voxel::Voxel third = wrapper.voxel(brushContext.cursorPosition);
@@ -261,9 +261,15 @@ TEST_F(PaintBrushTest, testBlendStrokePath) {
 	ASSERT_TRUE(brush.beginBrush(brushContext));
 	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
 
-	// Jump several voxels away - Bresenham should fill the path between dabs
+	StrokeGesture stroke;
+	stroke.begin();
+	stroke.visit(brushContext.cursorPosition, [](const glm::ivec3 &) {});
 	brushContext.cursorPosition.x += 4;
-	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
+	stroke.visit(brushContext.cursorPosition, [&](const glm::ivec3 &position) {
+		BrushContext dab = brushContext;
+		dab.cursorPosition = position;
+		brush.executeSample(sceneGraph, wrapper, dab);
+	});
 
 	int painted = 0;
 	for (int x = wrapper.region().getLowerCenter().x; x <= brushContext.cursorPosition.x; ++x) {
@@ -276,8 +282,7 @@ TEST_F(PaintBrushTest, testBlendStrokePath) {
 	EXPECT_GE(painted, 4) << "Stroke path should paint along the line between cursor positions";
 
 	brush.endBrush(brushContext);
-	const voxel::Region undoRegion = brush.consumePendingUndoRegion();
-	EXPECT_TRUE(undoRegion.isValid()) << "Stroke should produce one pending undo region";
+	EXPECT_TRUE(wrapper.dirtyRegion().isValid());
 	brush.shutdown();
 }
 
@@ -370,15 +375,23 @@ TEST_F(PaintBrushTest, testBlendPreviewDoesNotBlockContinuousStroke) {
 	// visited voxels or advance the stroke path on the real volume.
 	BrushContext previewCtx = brushContext;
 	previewCtx.preview = true;
+	PaintBrush previewBrush(brush);
 	voxel::RawVolume previewVolume(*node.volume());
 	scenegraph::SceneGraphNode previewNode(scenegraph::SceneGraphNodeType::Model);
 	previewNode.setUnownedVolume(&previewVolume);
 	previewNode.setPalette(node.palette());
 	ModifierVolumeWrapper previewWrapper(previewNode, brush.modifierType());
-	ASSERT_TRUE(brush.execute(sceneGraph, previewWrapper, previewCtx));
+	ASSERT_TRUE(previewBrush.execute(sceneGraph, previewWrapper, previewCtx));
 
+	StrokeGesture stroke;
+	stroke.begin();
+	stroke.visit(brushContext.cursorPosition, [](const glm::ivec3 &) {});
 	brushContext.cursorPosition.x += 3;
-	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
+	stroke.visit(brushContext.cursorPosition, [&](const glm::ivec3 &position) {
+		BrushContext dab = brushContext;
+		dab.cursorPosition = position;
+		brush.executeSample(sceneGraph, wrapper, dab);
+	});
 
 	int painted = 0;
 	for (int x = wrapper.region().getLowerCenter().x; x <= brushContext.cursorPosition.x; ++x) {

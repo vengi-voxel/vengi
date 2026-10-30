@@ -23,6 +23,38 @@ SelectBrush::SelectBrush(SceneManager *sceneManager)
 	_strategies[(int)SelectMode::Script] = &_scriptStrategy;
 }
 
+SelectBrush::SelectBrush(const SelectBrush &other)
+	: Super(other), _sceneManager(other._sceneManager), _lassoStrategy(other._sceneManager),
+	  _scriptStrategy(other._sceneManager) {
+	_strategies[(int)SelectMode::All] = &_selectAll;
+	_strategies[(int)SelectMode::Surface] = &_selectSurface;
+	_strategies[(int)SelectMode::SameColor] = &_selectSameColor;
+	_strategies[(int)SelectMode::FuzzyColor] = &_fuzzyColorStrategy;
+	_strategies[(int)SelectMode::Connected] = &_selectConnected;
+	_strategies[(int)SelectMode::FlatSurface] = &_flatSurfaceStrategy;
+	_strategies[(int)SelectMode::Box3D] = &_box3DStrategy;
+	_strategies[(int)SelectMode::Circle] = &_circleStrategy;
+	_strategies[(int)SelectMode::Lasso] = &_lassoStrategy;
+	_strategies[(int)SelectMode::Paint] = &_paintStrategy;
+	_strategies[(int)SelectMode::Script] = &_scriptStrategy;
+	_selectMode = other._selectMode;
+	_luaSelectionModeIndex = other._luaSelectionModeIndex;
+	_circleStrategy = other._circleStrategy;
+	_lassoStrategy = other._lassoStrategy;
+	_paintStrategy = other._paintStrategy;
+	_box3DStrategy = other._box3DStrategy;
+	_fuzzyColorStrategy = other._fuzzyColorStrategy;
+	_flatSurfaceStrategy = other._flatSurfaceStrategy;
+	_scriptStrategy = other._scriptStrategy;
+}
+
+void SelectBrush::syncInput(const Brush &input) {
+	Super::syncInput(input);
+	const auto &source = (const SelectBrush &)input;
+	_lassoStrategy = source._lassoStrategy;
+	_circleStrategy = source._circleStrategy;
+}
+
 select::AABBBrushState SelectBrush::buildState(const BrushContext &ctx) const {
 	select::AABBBrushState state;
 	state.boxMode = _boxGesture.active();
@@ -45,7 +77,6 @@ void SelectBrush::reset() {
 	for (int i = 0; i < (int)SelectMode::Max; ++i) {
 		_strategies[i]->reset();
 	}
-	_sceneModifiedFlags = SceneModifiedFlags::All;
 }
 
 void SelectBrush::onSceneChange() {
@@ -55,28 +86,12 @@ void SelectBrush::onSceneChange() {
 
 void SelectBrush::abort(BrushContext &ctx) {
 	activeStrategy()->abort(ctx);
-	_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
 	Super::abort(ctx);
-}
-
-bool SelectBrush::hasPendingChanges() const {
-	if (_selectMode == SelectMode::Paint) {
-		return _paintStrategy.hasPendingChanges();
-	}
-	return Super::hasPendingChanges();
 }
 
 void SelectBrush::endBrush(BrushContext &ctx) {
 	activeStrategy()->endBrush(ctx);
-	_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
 	Super::endBrush(ctx);
-}
-
-voxel::Region SelectBrush::consumePendingUndoRegion() {
-	if (_selectMode == SelectMode::Paint) {
-		return _paintStrategy.consumeFinalUndoRegion();
-	}
-	return Super::consumePendingUndoRegion();
 }
 
 void SelectBrush::update(const BrushContext &ctx, double nowSeconds) {
@@ -85,10 +100,10 @@ void SelectBrush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
 void SelectBrush::setSelectMode(SelectMode mode) {
+	markSettingsChanged();
 	if (_selectMode != mode) {
 		if (_selectMode == SelectMode::Paint) {
 			setBoxMode();
-			_sceneModifiedFlags = SceneModifiedFlags::All;
 		}
 		activeStrategy()->reset();
 		_circleStrategy.reset();
@@ -103,6 +118,7 @@ void SelectBrush::setSelectMode(SelectMode mode) {
 }
 
 void SelectBrush::setLuaSelectionMode(int index, LUASelectionMode *mode) {
+	markSettingsChanged();
 	_luaSelectionModeIndex = index;
 	_scriptStrategy.setActiveLuaMode(mode);
 	if (index >= 0 && mode != nullptr) {
@@ -122,7 +138,6 @@ bool SelectBrush::needsAdditionalAction(const BrushContext &ctx) const {
 bool SelectBrush::beginBrush(const BrushContext &ctx) {
 	const select::AABBBrushState state = buildState(ctx);
 	if (activeStrategy()->beginBrush(ctx, state)) {
-		_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
 		// When the strategy handles beginBrush itself (e.g. Lasso), Super::beginBrush
 		// is not called, so capture the face here for buildState() to work.
 		_boxGesture.setFace(ctx.cursorFace != voxel::FaceNames::Max ? ctx.cursorFace : voxel::FaceNames::PositiveY);
@@ -158,25 +173,36 @@ void SelectBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		_box3DStrategy.reset();
 	}
 	const select::AABBBrushState state = buildState(ctx);
-	activeStrategy()->generate(sceneGraph, wrapper, ctx, selectionRegion, state);
-	_sceneModifiedFlags = activeStrategy()->_modifiedFlags;
+	if (!activeStrategy()->evaluate(sceneGraph, wrapper, ctx, selectionRegion, state)) {
+		setErrorReason(N_("Selection script execution failed"));
+	}
 }
 
-bool SelectBrush::wantBrushGizmo(const BrushContext &ctx) const {
-	return activeStrategy()->wantBrushGizmo(ctx, buildState(ctx));
+void SelectBrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const {
+	if (hasHandle(ctx)) {
+		BrushGizmoState handle;
+		describeHandle(ctx, handle);
+		output.push_back(handle);
+	} else {
+		Super::handles(ctx, output);
+	}
 }
 
-void SelectBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-	activeStrategy()->brushGizmoState(ctx, buildState(ctx), state);
+bool SelectBrush::hasHandle(const BrushContext &ctx) const {
+	return activeStrategy()->hasHandle(ctx, buildState(ctx));
 }
 
-bool SelectBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+void SelectBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state) const {
+	activeStrategy()->describeHandle(ctx, buildState(ctx), state);
+}
+
+bool SelectBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 								  uint32_t operation) {
-	if (activeStrategy()->applyBrushGizmo(ctx, matrix, deltaMatrix, operation)) {
+	if (activeStrategy()->editHandle(handleId, ctx, matrix, deltaMatrix, operation)) {
 		markDirty();
 		return true;
 	}
-	return false;
+	return Super::editHandle(handleId, ctx, matrix, deltaMatrix, operation);
 }
 
 } // namespace voxedit

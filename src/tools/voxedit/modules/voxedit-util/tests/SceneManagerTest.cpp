@@ -1558,7 +1558,7 @@ TEST_F(SceneManagerTest, testStrokeGestureInputAndUndo) {
 		EXPECT_FALSE(voxel::isAir(volume->voxel(x, 0, 0).getMaterial())) << x;
 	}
 	command::executeCommands("-actionexecute 1 1.0");
-	EXPECT_FALSE(modifier.shapeBrush().strokeActive());
+	EXPECT_FALSE(modifier.isEditActive());
 	ASSERT_TRUE(_sceneMgr->undo());
 	volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, volume);

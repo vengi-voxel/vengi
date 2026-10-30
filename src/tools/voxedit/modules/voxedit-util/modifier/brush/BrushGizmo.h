@@ -36,12 +36,13 @@ enum BrushGizmoOperation : uint32_t {
 /**
  * @brief Describes a gizmo that a brush wants to contribute to the viewport
  *
- * The Viewport queries the active brush each frame via @c Brush::wantBrushGizmo()
- * and, when true, reads this state via @c Brush::brushGizmoState(). The Viewport
- * then uses ImGuizmo to render and interact with the gizmo, feeding results back
- * through @c Brush::applyBrushGizmo().
+ * The active brush appends these descriptions through @c Brush::handles().
+ * BrushHandleUI renders handles and overlays, and forwards captured interactions
+ * through Modifier to @c Brush::editHandle().
  */
 struct BrushGizmoState {
+	uint32_t id = 0;
+	uint64_t operationId = 0;
 	/** The gizmo transform matrix (position/rotation/scale of the gizmo) */
 	glm::mat4 matrix{1.0f};
 
@@ -60,13 +61,24 @@ struct BrushGizmoState {
 	/** Whether to use LOCAL or WORLD mode for the gizmo */
 	bool localMode = true;
 
-	/** Line positions for BrushGizmo_Line – drawn as a polyline from positions[0..numPositions-1] */
+	/** Line positions for BrushGizmo_Line - drawn as a polyline from positions[0..numPositions-1] */
 	glm::vec3 positions[8] = {};
 	/** Number of valid entries in positions[] */
 	int numPositions = 0;
 
 	/** Screen-space polygon points for BrushGizmo_ScreenPolygon (e.g. lasso) */
 	const core::DynamicArray<glm::vec2> *screenPolygon = nullptr;
+};
+
+enum class BrushHandlePhase { Begin, Change, End };
+struct BrushHandleEvent {
+	uint64_t operationId = 0;
+	uint32_t handleId = 0;
+	int viewportId = -1;
+	BrushHandlePhase phase = BrushHandlePhase::Change;
+	glm::mat4 matrix{1.0f};
+	glm::mat4 delta{1.0f};
+	uint32_t operation = BrushGizmo_None;
 };
 
 } // namespace voxedit

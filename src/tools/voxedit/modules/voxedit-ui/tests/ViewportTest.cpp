@@ -4,14 +4,18 @@
 
 #include "../Viewport.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/PreviewManager.h"
 #include "../WindowTitles.h"
 #include "command/CommandHandler.h"
+#include "app/Async.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
+#include "image/Image.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "util/VarUtil.h"
+#include "ui/dearimgui/ImGuizmo.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
@@ -21,6 +25,195 @@
 namespace voxedit {
 
 void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
+	IM_REGISTER_TEST(engine, testCategory(), "transform draft render")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(activateViewportEditMode(ctx, _app));
+		const int viewportId = viewportEditMode(ctx, _app);
+		Viewport *viewport = viewportById(_app, viewportId);
+		IM_CHECK(viewport != nullptr);
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(_sceneMgr->activeNodeUUID());
+		IM_CHECK(node != nullptr);
+		voxel::RawVolume *volume = node->volume();
+		const core::UUID uuid = node->uuid();
+		const glm::ivec3 position = node->region().getCenter();
+		const voxel::Region selection(position - glm::ivec3(2), position + glm::ivec3(2));
+		voxel::Voxel selected = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		selected.setOutline();
+		voxelutil::visitVolume(
+			*volume, selection,
+			[&](int x, int y, int z, const voxel::Voxel &) { volume->setVoxel(x, y, z, selected); },
+			voxelutil::VisitAll());
+		_sceneMgr->modified(uuid, selection);
+		Modifier &modifier = _sceneMgr->modifier();
+		modifier.setBrushType(BrushType::Transform);
+		TransformParameters parameters;
+		parameters.translation = glm::ivec3(8, 0, 0);
+		IM_CHECK(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
+		ctx->Yield(5);
+		IM_CHECK(viewport->_renderContext.sceneGraph == &modifier.renderSceneGraph());
+		const scenegraph::SceneGraphNode *preview = viewport->_renderContext.sceneGraph->findNodeByUUID(uuid);
+		IM_CHECK(preview != nullptr);
+		const voxel::RawVolume *previewVolume = preview->volume();
+		IM_CHECK(previewVolume != volume);
+		IM_CHECK(voxel::isAir(previewVolume->voxel(position).getMaterial()));
+		IM_CHECK(previewVolume->voxel(position + parameters.translation) == selected);
+		IM_CHECK(volume->voxel(position) == selected);
+		modifier.cancelDraft();
+		ctx->Yield(5);
+		IM_CHECK(viewport->_renderContext.sceneGraph == &_sceneMgr->sceneGraph());
+		IM_CHECK(volume->voxel(position) == selected);
+		IM_CHECK(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
+		IM_CHECK(modifier.applyDraft().changed());
+		ctx->Yield(5);
+		IM_CHECK(viewport->_renderContext.sceneGraph == &_sceneMgr->sceneGraph());
+		IM_CHECK(voxel::isAir(volume->voxel(position).getMaterial()));
+		IM_CHECK(volume->voxel(position + parameters.translation) == selected);
+		IM_CHECK(_sceneMgr->undo());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "drag shape keeps viewport input")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		if (isSceneMode()) {
+			toggleScene();
+		}
+		IM_CHECK(focusWindow(ctx, Viewport::viewportId(_id).c_str()));
+		ctx->Yield(2);
+		resetCamera();
+		util::ScopedVarChange brushGizmo(cfg::VoxEditBrushGizmo, "true");
+		util::ScopedVarChange showAxis(cfg::VoxEditShowaxis, "true");
+		util::ScopedVarChange showGrid(cfg::VoxEditShowgrid, "true");
+		Modifier &modifier = _sceneMgr->modifier();
+		modifier.setBrushType(BrushType::Shape);
+		ShapeBrush &brush = modifier.shapeBrush();
+		brush.setBoxMode();
+		brush.setRadius(0);
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, _id));
+		ctx->Yield(2);
+		command::executeCommands("+actionexecute 1 1");
+		IM_CHECK(modifier.isEditActive());
+		ctx->MouseDown(ImGuiMouseButton_Left);
+		ctx->Yield(3);
+		const bool capturedByGizmo = ImGuizmo::IsUsingAny();
+		command::executeCommands("-actionexecute 1 1");
+		ctx->MouseUp(ImGuiMouseButton_Left);
+		ctx->Yield(3);
+		IM_CHECK(!capturedByGizmo);
+		IM_CHECK(!ImGuizmo::IsUsingAny());
+		struct GridImages {
+			image::ImagePtr withoutGrid;
+			image::ImagePtr withGrid;
+		};
+		const core::SharedPtr<GridImages> images = core::make_shared<GridImages>();
+		core::getVar(cfg::VoxEditShowgrid)->setVal(false);
+		ctx->Yield(5);
+		IM_CHECK(app::runOnMainThread(
+			[this, images]() {
+				video::FrameBuffer &display =
+					_renderContext.enableMultisampling ? _renderContext.resolveFrameBuffer : _renderContext.frameBuffer;
+				images->withoutGrid = display.image("without grid");
+			},
+			false));
+		ctx->Yield(3);
+		core::getVar(cfg::VoxEditShowgrid)->setVal(true);
+		ctx->Yield(5);
+		IM_CHECK(app::runOnMainThread(
+			[this, images]() {
+				video::FrameBuffer &display =
+					_renderContext.enableMultisampling ? _renderContext.resolveFrameBuffer : _renderContext.frameBuffer;
+				images->withGrid = display.image("with grid");
+			},
+			false));
+		ctx->Yield(3);
+		const image::ImagePtr &withoutGrid = images->withoutGrid;
+		const image::ImagePtr &withGrid = images->withGrid;
+		IM_CHECK(withoutGrid && withGrid);
+		IM_CHECK(withoutGrid->size() == withGrid->size());
+		const size_t bytes = (size_t)withGrid->width() * withGrid->height() * withGrid->components();
+		IM_CHECK(core_memcmp(withoutGrid->data(), withGrid->data(), bytes) != 0);
+		brush.setStrokeMode();
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, _id, ImVec2(40, 0)));
+		ctx->Yield(3);
+		IM_CHECK(!_sceneMgr->isViewportGizmoActive());
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(_sceneMgr->activeNodeUUID());
+		IM_CHECK(node != nullptr);
+		voxel::RawVolume *volume = node->volume();
+		const int before = voxelutil::countVoxels(*volume);
+		executeViewportClick();
+		IM_CHECK(voxelutil::countVoxels(*volume) > before);
+		modifier.setBrushType(BrushType::Paint);
+		PaintBrush &paint = modifier.paintBrush();
+		paint.setStrokeMode();
+		paint.setPaintMode(PaintBrush::PaintMode::Replace);
+		modifier.setCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 3));
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, _id, ImVec2(40, 0)));
+		ctx->Yield(3);
+		executeViewportClick();
+		IM_CHECK(!ImGuizmo::IsUsingAny());
+		int painted = 0;
+		voxelutil::visitVolume(*volume, [&](int, int, int, const voxel::Voxel &value) {
+			if (value.getColor() == 3) {
+				++painted;
+			}
+		});
+		IM_CHECK(painted > 0);
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "plane drag previews voxels until release")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		if (isSceneMode()) {
+			toggleScene();
+		}
+		IM_CHECK(focusWindow(ctx, Viewport::viewportId(_id).c_str()));
+		ctx->Yield(2);
+		resetCamera();
+		util::ScopedVarChange brushGizmo(cfg::VoxEditBrushGizmo, "true");
+		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(_sceneMgr->activeNodeUUID());
+		IM_CHECK(node != nullptr);
+		voxel::RawVolume *volume = node->volume();
+		const voxel::Region surface(0, 16, 0, 31, 16, 31);
+		const voxel::Voxel ground(voxel::VoxelType::Generic, 1);
+		voxelutil::visitVolume(*volume, surface,
+			[&](int x, int y, int z, const voxel::Voxel &) { volume->setVoxel(x, y, z, ground); },
+			voxelutil::VisitAll());
+		_sceneMgr->modified(node->uuid(), surface);
+		Modifier &modifier = _sceneMgr->modifier();
+		modifier.setBrushType(BrushType::Plane);
+		modifier.setModifierType(ModifierType::Place);
+		modifier.setCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 2));
+		IM_CHECK(centerOnViewport(ctx, _sceneMgr, _id));
+		ctx->Yield(5);
+		IM_CHECK(modifier.cursorFace() == voxel::FaceNames::PositiveY);
+		const int originalCount = voxelutil::countVoxels(*volume);
+		const ImVec2 start = ImGui::GetIO().MousePos;
+		command::executeCommands("+actionexecute 1 1");
+		ctx->MouseDown(ImGuiMouseButton_Left);
+		ctx->Yield(3);
+		IM_CHECK(modifier.isEditActive());
+		const voxel::RawVolume *preview = modifier.previewManager().previewVolume();
+		IM_CHECK(preview != nullptr);
+		IM_CHECK(preview->region().getHeightInVoxels() == 1);
+		ctx->MouseMoveToPos(ImVec2(start.x, start.y - 60.0f));
+		ctx->Yield(5);
+		preview = modifier.previewManager().previewVolume();
+		IM_CHECK(preview != nullptr);
+		const voxel::Region filled = preview->region();
+		const int height = filled.getHeightInVoxels();
+		const int previewCount = voxelutil::countVoxels(*preview);
+		core::DynamicArray<BrushGizmoState> handles;
+		modifier.brushHandles(handles);
+		const bool gizmoActive = ImGuizmo::IsUsingAny();
+		const int heldCount = voxelutil::countVoxels(*volume);
+		command::executeCommands("-actionexecute 1 1");
+		ctx->MouseUp(ImGuiMouseButton_Left);
+		ctx->Yield(3);
+		IM_CHECK(height > 1);
+		IM_CHECK(handles.empty());
+		IM_CHECK(!gizmoActive);
+		IM_CHECK(heldCount == originalCount);
+		IM_CHECK(!modifier.isEditActive());
+		IM_CHECK(voxelutil::countVoxels(*volume) == originalCount + previewCount);
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "set voxel")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		IM_CHECK(activateViewportEditMode(ctx, _app));

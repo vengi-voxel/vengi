@@ -20,7 +20,11 @@
 #include "brush/BrushPanelText.h"
 #include "brush/BrushPanelTexture.h"
 #include "brush/BrushPanelTransform.h"
+#include "core/Function.h"
+#include "core/SharedPtr.h"
+#include "core/collection/DynamicArray.h"
 #include "ui/Panel.h"
+#include "voxedit-util/modifier/brush/BrushType.h"
 
 namespace command {
 struct CommandExecutionListener;
@@ -33,21 +37,27 @@ private:
 	using Super = ui::Panel;
 
 	BrushPanelContext _ctx;
-	BrushPanelShape _shape;
-	BrushPanelStamp _stamp;
-	BrushPanelPlane _plane;
-	BrushPanelLine _line;
-	BrushPanelPaint _paint;
-	BrushPanelText _text;
-	BrushPanelSelect _select;
-	BrushPanelTexture _texture;
-	BrushPanelNormal _normal;
-	BrushPanelExtrude _extrude;
-	BrushPanelTransform _transform;
-	BrushPanelSculpt _sculpt;
-	BrushPanelRuler _ruler;
-	BrushPanelScript _script;
+	struct Companion {
+		core::String id;
+		core::Function<void(BrushPanelContext &, command::CommandExecutionListener &)> update;
+		core::Function<void(BrushPanelContext &, command::CommandExecutionListener &)> popups;
+	};
+	core::DynamicArray<Companion> _companions;
 
+public:
+	template<class T>
+	core::SharedPtr<T> registerPanel(const core::String &id) {
+		auto panel = core::make_shared<T>();
+		Companion companion;
+		companion.id = id;
+		companion.update = [panel](BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
+			panel->update(ctx, listener);
+		};
+		_companions.push_back(core::move(companion));
+		return panel;
+	}
+
+private:
 	void createPopups(command::CommandExecutionListener &listener);
 	void addModifiers(command::CommandExecutionListener &listener);
 	void brushSettings(command::CommandExecutionListener &listener);

@@ -65,10 +65,10 @@ TEST_F(LineBrushTest, testBezierExecuteAndGizmo) {
 	brushContext.gridResolution = glm::ivec3(1);
 
 	brush.setBezier(true);
-	EXPECT_TRUE(brush.wantBrushGizmo(brushContext));
+	EXPECT_TRUE(brush.hasHandle(brushContext));
 
 	BrushGizmoState state;
-	brush.brushGizmoState(brushContext, state);
+	brush.describeHandle(brushContext, state);
 	EXPECT_EQ(BrushGizmo_BezierControl | BrushGizmo_Line, state.operations);
 	EXPECT_EQ(glm::vec3(5.0f, 0.0f, 0.0f), glm::vec3(state.matrix[3]));
 	EXPECT_EQ(3, state.numPositions);
@@ -79,12 +79,12 @@ TEST_F(LineBrushTest, testBezierExecuteAndGizmo) {
 
 	ASSERT_TRUE(brush.beginBrush(brushContext));
 	brush.preExecute(brushContext, &volume);
-	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
+	EXPECT_TRUE(brush.execute(sceneGraph, previewWrapper, brushContext));
 	brush.endBrush(brushContext);
 	EXPECT_EQ(glm::ivec3(10, 0, 0), brushContext.referencePos);
 	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(glm::ivec3(5, 3, 0)).getMaterial()));
 
-	EXPECT_TRUE(brush.applyBrushGizmo(brushContext, matrix, glm::mat4(1.0f), BrushGizmo_Translate));
+	EXPECT_TRUE(brush.editHandle(0, brushContext, matrix, glm::mat4(1.0f), BrushGizmo_Translate));
 	brush.preExecute(brushContext, &volume);
 	EXPECT_TRUE(brush.execute(sceneGraph, previewWrapper, brushContext));
 
@@ -94,13 +94,14 @@ TEST_F(LineBrushTest, testBezierExecuteAndGizmo) {
 	EXPECT_TRUE(voxel::isBlocked(previewWrapper.voxel(expectedMid).getMaterial())) << previewWrapper.dirtyRegion().toString();
 	EXPECT_FALSE(voxel::isBlocked(wrapper.voxel(expectedMid).getMaterial()));
 
-	EXPECT_TRUE(brush.onDeactivated());
+	EXPECT_EQ(1, brush.pendingSegmentCount());
 	ASSERT_TRUE(brush.beginBrush(brushContext));
 	brush.preExecute(brushContext, &volume);
 	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
 	brush.endBrush(brushContext);
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(expectedMid).getMaterial())) << wrapper.dirtyRegion().toString();
-	EXPECT_FALSE(brush.hasPendingChanges());
+	brush.resetRuntime();
+	EXPECT_EQ(0, brush.pendingSegmentCount());
 
 	brush.shutdown();
 }
@@ -128,28 +129,26 @@ TEST_F(LineBrushTest, testBezierNoFlushOnCursorMove) {
 	ASSERT_TRUE(brush.beginBrush(brushContext));
 	brush.preExecute(brushContext, &volume);
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
-	EXPECT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
+	EXPECT_EQ(1, brush.pendingSegmentCount());
 	brush.endBrush(brushContext);
 	EXPECT_EQ(1, brush.pendingSegmentCount());
-	EXPECT_TRUE(brush.hasPendingChanges());
+	EXPECT_EQ(1, brush.pendingSegmentCount());
 
-	// needsPerFrameFlush must be false - this is the core fix
-	EXPECT_FALSE(brush.needsPerFrameFlush());
+	// Pending bezier segments must not write the real volume until the line is executed.
+	EXPECT_TRUE(voxel::isAir(volume.voxel(0, 0, 0).getMaterial()));
 
 	// Simulate cursor movement: update should mark dirty but must NOT add segments
 	brushContext.cursorPosition = glm::ivec3(8, 0, 0);
 	brush.update(brushContext, 1.0);
 	EXPECT_EQ(1, brush.pendingSegmentCount()) << "cursor move must not add segments";
 
-	// Simulate what flushPendingBrushChanges would do if it ran (it shouldn't):
-	// executing on the real volume with _lastVolume == real volume would call lockSegment.
-	// Verify that after another preExecute+execute on the real volume the segment count
-	// only grows by one (the intentional click), not on every frame.
+	// Another begin/end on the real volume should add only the intentional click,
+	// not a segment for every cursor move.
 	brushContext.cursorPosition = glm::ivec3(10, 0, 0);
 	ASSERT_TRUE(brush.beginBrush(brushContext));
 	brush.preExecute(brushContext, &volume);
 	ModifierVolumeWrapper wrapper2(node, brush.modifierType());
-	EXPECT_TRUE(brush.execute(sceneGraph, wrapper2, brushContext));
+	EXPECT_EQ(2, brush.pendingSegmentCount());
 	brush.endBrush(brushContext);
 	EXPECT_EQ(2, brush.pendingSegmentCount()) << "only explicit clicks should add segments";
 
@@ -194,6 +193,32 @@ TEST_F(LineBrushTest, testSag) {
 	EXPECT_TRUE(voxel::isBlocked(wrapper.voxel(belowMid).getMaterial())) << "sag should place voxels below the straight line";
 
 	brush.shutdown();
+}
+
+TEST_F(LineBrushTest, testHandleIdentitySurvivesRemovingAnEarlierSegment) {
+	LineBrush brush;
+	brush.setBezier(true);
+	BrushContext input;
+	input.cursorPosition = glm::ivec3(3, 0, 0);
+	ASSERT_TRUE(brush.beginBrush(input));
+	brush.endBrush(input);
+	input.cursorPosition.x = 6;
+	ASSERT_TRUE(brush.beginBrush(input));
+	brush.endBrush(input);
+	core::DynamicArray<BrushGizmoState> before;
+	brush.handles(input, before);
+	ASSERT_EQ(6u, before.size());
+	const uint32_t id = before[3].id;
+	ASSERT_TRUE(brush.removeSegment(0));
+	core::DynamicArray<BrushGizmoState> after;
+	brush.handles(input, after);
+	ASSERT_EQ(3u, after.size());
+	EXPECT_EQ(id, after[0].id);
+	glm::mat4 matrix(1);
+	matrix[3] = glm::vec4(4, 2, 0, 1);
+	ASSERT_TRUE(brush.editHandle(id, input, matrix, glm::mat4(1), BrushGizmo_Translate));
+	ASSERT_NE(nullptr, brush.segment(0));
+	EXPECT_EQ(glm::ivec3(4, 2, 0), brush.segment(0)->control);
 }
 
 } // namespace voxedit

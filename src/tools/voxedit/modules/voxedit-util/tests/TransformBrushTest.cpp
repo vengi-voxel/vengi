@@ -214,8 +214,8 @@ TEST_F(TransformBrushTest, testCommitOnModeSwitch) {
 	brush.shutdown();
 }
 
-// onDeactivated returns true when snapshot exists
-TEST_F(TransformBrushTest, testOnDeactivatedWithSnapshot) {
+// Transform evaluation captures its selected input.
+TEST_F(TransformBrushTest, testSnapshotCapturedForEvaluation) {
 	voxel::RawVolume volume(voxel::Region(-5, 5));
 	volume.setVoxel(0, 0, 0, selectedVoxel());
 
@@ -231,7 +231,7 @@ TEST_F(TransformBrushTest, testOnDeactivatedWithSnapshot) {
 	ctx.targetVolumeRegion = volume.region();
 
 	// Before execute, no snapshot
-	EXPECT_FALSE(brush.onDeactivated()) << "No snapshot yet";
+	EXPECT_FALSE(brush.hasSnapshot()) << "No snapshot yet";
 
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
@@ -239,17 +239,16 @@ TEST_F(TransformBrushTest, testOnDeactivatedWithSnapshot) {
 
 	// After execute, snapshot exists
 	EXPECT_TRUE(brush.hasSnapshot());
-	EXPECT_TRUE(brush.onDeactivated()) << "Should commit pending transform";
 
 	brush.shutdown();
 }
 
-// onDeactivated returns false when no snapshot
-TEST_F(TransformBrushTest, testOnDeactivatedWithoutSnapshot) {
+// An unprepared transform has no selected input snapshot.
+TEST_F(TransformBrushTest, testNoSnapshotBeforeEvaluation) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 
-	EXPECT_FALSE(brush.onDeactivated()) << "No snapshot - nothing to commit";
+	EXPECT_FALSE(brush.hasSnapshot());
 
 	brush.shutdown();
 }

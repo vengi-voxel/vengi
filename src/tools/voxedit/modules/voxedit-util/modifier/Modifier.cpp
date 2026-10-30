@@ -9,7 +9,9 @@
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
 #include "core/Trace.h"
+#include "core/collection/DynamicArray.h"
 #include "math/Axis.h"
+#include "memento/MementoHandler.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -32,21 +34,9 @@
 namespace voxedit {
 
 Modifier::Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer)
-	: _stampBrush(sceneMgr), _selectBrush(sceneMgr), _textureBrush(sceneMgr), _actionExecuteButton(sceneMgr),
+	: _actionExecuteButton(sceneMgr),
 	  _deleteExecuteButton(sceneMgr, ModifierType::Erase), _modifierRenderer(modifierRenderer), _sceneMgr(sceneMgr) {
-	_brushes.push_back(&_planeBrush);
-	_brushes.push_back(&_shapeBrush);
-	_brushes.push_back(&_stampBrush);
-	_brushes.push_back(&_lineBrush);
-	_brushes.push_back(&_paintBrush);
-	_brushes.push_back(&_textBrush);
-	_brushes.push_back(&_selectBrush);
-	_brushes.push_back(&_textureBrush);
-	_brushes.push_back(&_normalBrush);
-	_brushes.push_back(&_extrudeBrush);
-	_brushes.push_back(&_transformBrush);
-	_brushes.push_back(&_sculptBrush);
-	_brushes.push_back(&_rulerBrush);
+	registerBuiltinBrushes(_registry, sceneMgr);
 	// Note: LUABrush instances are added dynamically during init() via discoverBrushScripts()
 }
 
@@ -76,7 +66,7 @@ void Modifier::construct() {
 			setModifierType(ModifierType::Override);
 		}).setHelp(_("Change the modifier type to 'override'"));
 
-	for (const Brush *b : _brushes) {
+	for (const Brush *b : _registry.tools()) {
 		const BrushType type = b->type();
 		const core::String hlp = core::String::format(_("Change the brush type to '%s'"), b->name().c_str());
 		command::Command::registerCommand("brush" + b->name().toLower())
@@ -136,26 +126,34 @@ void Modifier::construct() {
 	_previewManager.construct();
 	_scriptManager.construct();
 
-	for (Brush *b : _brushes) {
+	for (Brush *b : _registry.tools()) {
 		b->construct();
 	}
 }
 
 void Modifier::setLockedAxis(math::Axis axis, bool unlock) {
-	if (unlock) {
-		_brushContext.lockedAxis &= ~axis;
-	} else {
-		_brushContext.lockedAxis |= axis;
+	const math::Axis lockedAxis = unlock ? _brushContext.lockedAxis & ~axis : _brushContext.lockedAxis | axis;
+	if (_brushContext.lockedAxis != lockedAxis) {
+		finishEdit(BrushEditFinishReason::SettingsChange);
+		_brushContext.lockedAxis = lockedAxis;
 	}
 }
 
 bool Modifier::init() {
-	for (Brush *b : _brushes) {
+	for (Brush *b : _registry.tools()) {
 		if (!b->init()) {
 			Log::error("Failed to initialize the %s brush", b->name().c_str());
 		}
 	}
-	_scriptManager.setSelectBrush(&_selectBrush);
+	_scriptManager.setRegistry(_registry);
+	_scriptManager.setBeforeScriptChange([this]() {
+		++_operationEpoch;
+		_handleViewport = -1;
+		setBrushGizmoActive(false);
+		finishEdit(BrushEditFinishReason::SettingsChange);
+		cancelDraft();
+	});
+	_scriptManager.setSelectBrush(&selectBrush());
 	if (!_scriptManager.init()) {
 		Log::error("Failed to initialize script manager");
 	}
@@ -172,10 +170,10 @@ bool Modifier::init() {
 void Modifier::shutdown() {
 	resetPreview();
 	reset();
-	for (Brush *b : _brushes) {
+	_scriptManager.shutdown();
+	for (Brush *b : _registry.tools()) {
 		b->shutdown();
 	}
-	_scriptManager.shutdown();
 	_previewManager.shutdown();
 	_modifierRenderer->shutdown();
 }
@@ -205,13 +203,25 @@ void Modifier::update(double nowSeconds, const video::Camera *camera) {
 }
 
 void Modifier::onSceneChange() {
+	++_operationEpoch;
+	_handleViewport = -1;
+	setBrushGizmoActive(false);
+	cancelDraft();
+	if (_editSession.isActive()) {
+		// Identity of captured volumes is gone; do not write stale runtime onto replacements.
+		finishEdit(BrushEditFinishReason::ExternalInvalidate);
+	}
 	_sliceVolume = nullptr;
-	for (Brush *b : _brushes) {
+	for (Brush *b : _registry.tools()) {
 		b->onSceneChange();
 	}
 }
 
 void Modifier::reset() {
+	cancelDraft();
+	if (_editSession.isActive()) {
+		finishEdit(BrushEditFinishReason::Interrupt);
+	}
 	_sliceRegion = voxel::Region::InvalidRegion;
 	_sliceVolume = nullptr;
 	_brushContext.gridResolution = glm::ivec3(1);
@@ -220,7 +230,7 @@ void Modifier::reset() {
 	_brushContext.brushGizmoActive = false;
 
 	_brushContext.modifierType = ModifierType::Place;
-	for (Brush *b : _brushes) {
+	for (Brush *b : _registry.tools()) {
 		b->reset();
 	}
 	setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 0));
@@ -235,13 +245,358 @@ bool Modifier::beginBrush() {
 	return false;
 }
 
-bool Modifier::beginBrushFromPanel() {
-	if (Brush *brush = currentBrush()) {
-		BrushContext ctx = _brushContext;
-		ctx.cursorFace = voxel::FaceNames::Max;
-		return brush->beginBrush(ctx);
+bool Modifier::usesEditSession() const {
+	return !_brushGizmoActive && currentBrush() && !isAdjustable();
+}
+
+bool Modifier::isStrokeEdit() const {
+	return currentBrush() && currentBrush()->interpolatedStroke();
+}
+
+bool Modifier::isEditActive() const {
+	return _editSession.isActive();
+}
+
+void Modifier::restoreEditOverride() {
+	if (!_editSession.hasOverride()) {
+		return;
 	}
-	return false;
+	const ModifierType persistent = _editSession.persistentOperation();
+	_brushContext.modifierType = currentBrush() ? currentBrush()->modifierType(persistent) : persistent;
+}
+
+void Modifier::captureEditTargets() {
+	auto addNode = [&](scenegraph::SceneGraphNode &node) {
+		if (!node.visible()) {
+			return;
+		}
+		if (_sceneMgr->volume(node.uuid()) == nullptr) {
+			return;
+		}
+		// Capture the model, never the reusable slice scratch volume.
+		voxel::RawVolume *volume = node.volume();
+		if (volume == nullptr) {
+			return;
+		}
+		_editSession.addTarget(node.uuid(), volume);
+		if (auto *target = _editSession.findTarget(node.uuid())) {
+			target->evaluator = _registry.evaluation(currentBrush());
+			if (target->evaluator) {
+				target->evaluator->seedRuntime((uint32_t)_editSession.id());
+			}
+		}
+	};
+
+	if (_editSession.sliceAction()) {
+		if (scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(_sceneMgr->activeNode())) {
+			if (!node->locked()) {
+				addNode(*node);
+			}
+		}
+		return;
+	}
+	_sceneMgr->sceneGraph().foreachGroup(addNode);
+}
+
+BrushSample Modifier::currentEditSample() const {
+	BrushSample sample;
+	sample.position = _brushContext.cursorPosition;
+	sample.face = _brushContext.cursorFace;
+	sample.operation = _editSession.isActive() ? _editSession.resolvedOperation() : _brushContext.modifierType;
+	sample.lockedAxis = _brushContext.lockedAxis;
+	sample.gridResolution = _brushContext.gridResolution;
+	sample.cursorVoxel = _brushContext.cursorVoxel;
+	sample.hitCursorVoxel = _brushContext.hitCursorVoxel;
+	sample.voxelAtCursor = _brushContext.voxelAtCursor;
+	sample.fixedOrthoSideView = _brushContext.fixedOrthoSideView;
+	sample.normalPaint = _brushContext.normalPaint;
+	sample.normalIndex = _brushContext.normalIndex;
+	return sample;
+}
+
+BrushApplyResult Modifier::evaluateSample(const BrushSample &sample, BrushApplyTarget &target, bool preview) {
+	BrushApplyResult result;
+	Brush *brush = currentBrush();
+	if (brush == nullptr || _locked || _sceneMgr == nullptr || (!preview && aborted())) {
+		result.status = BrushApplyStatus::Failed;
+		return result;
+	}
+	BrushApplyOptions options;
+	options.preview = preview;
+	options.applySelectionPolicy = !preview;
+	options.autoSelect = autoSelect();
+	const BrushEditTarget *active = preview ? _editSession.findTarget(_sceneMgr->activeNodeUUID()) : nullptr;
+	auto evaluation = _registry.evaluation(brush, active ? active->evaluator.get() : nullptr);
+	if (evaluation) {
+		evaluation->syncInput(*brush);
+		if (preview && !active) {
+			evaluation->seedRuntime((uint32_t)(_editSession.id() + 1));
+		}
+	}
+	if (!evaluation) {
+		result.status = BrushApplyStatus::Failed;
+		return result;
+	}
+	return applyBrushSample(*evaluation.get(), _sceneMgr->sceneGraph(), sample, target, _brushContext, options);
+}
+
+void Modifier::notifySessionSample(const BrushEditTarget &target, const BrushApplyResult &result) {
+	if (!result.dirtyRegion.isValid() || _sceneMgr == nullptr) {
+		return;
+	}
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(target.nodeUUID);
+	if (node == nullptr || node->volume() != target.volume) {
+		return;
+	}
+	const SceneModifiedFlags flags = SceneModifiedFlags::NoUndo & ~SceneModifiedFlags::ResetTrace;
+	_sceneMgr->modified(target.nodeUUID, result.dirtyRegion, flags);
+}
+
+BrushApplyResult Modifier::applySessionSample(BrushEditTarget &target, const glm::ivec3 &samplePos) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(target.nodeUUID);
+	if (node == nullptr || !node->visible() || node->volume() != target.volume) {
+		BrushApplyResult result;
+		result.status = BrushApplyStatus::InvalidTarget;
+		return result;
+	}
+	voxel::RawVolume *writeVolume = workingVolume(*node);
+	if (writeVolume == nullptr) {
+		BrushApplyResult result;
+		result.status = BrushApplyStatus::InvalidTarget;
+		return result;
+	}
+
+	BrushSample sample = currentEditSample();
+	sample.position = samplePos;
+
+	BrushApplyTarget applyTarget;
+	applyTarget.node = node;
+	applyTarget.volume = target.volume;
+	applyTarget.writeVolume = writeVolume;
+	applyTarget.selectionRegion = selectBrush().box3D().selectionRegion();
+	applyTarget.sliceRegion = _sliceRegion;
+
+	BrushApplyResult result;
+	if (!target.evaluator) {
+		result.status = BrushApplyStatus::Failed;
+		return result;
+	}
+	target.evaluator->syncInput(*currentBrush());
+	BrushApplyOptions options;
+	options.applySelectionPolicy = true;
+	options.autoSelect = autoSelect();
+	result =
+		applyBrushSample(*target.evaluator.get(), _sceneMgr->sceneGraph(), sample, applyTarget, _brushContext, options);
+	if (result.status == BrushApplyStatus::InvalidTarget) {
+		return result;
+	}
+	if (result.dirtyRegion.isValid()) {
+		if (writeVolume != node->volume()) {
+			node->volume()->copyInto(*writeVolume);
+		}
+		notifySessionSample(target, result);
+	}
+	target.paletteChanged |= result.paletteChanged;
+	target.normalPaletteChanged |= result.normalPaletteChanged;
+	return result;
+}
+
+bool Modifier::applySessionTargets() {
+	_lastApplyResult = {};
+	if (!_editSession.isActive()) {
+		return false;
+	}
+	const glm::ivec3 position = _brushContext.cursorPosition;
+	bool anyApplied = false;
+	for (BrushEditTarget &target : _editSession.targets()) {
+		const BrushApplyResult result = applySessionSample(target, position);
+		_editSession.accumulate(target, result.dirtyRegion);
+		anyApplied |= result.changed();
+		_lastApplyResult.accumulate(result);
+		if (result.failed()) {
+			return false;
+		}
+	}
+	return anyApplied;
+}
+
+bool Modifier::beginEdit(ModifierType overrideType, bool sliceAction) {
+	if (_registry.activeDraft()) {
+		commit();
+	}
+	_lastApplyResult = {};
+	if (_editSession.isActive()) {
+		finishEdit(BrushEditFinishReason::Interrupt);
+	}
+	if (_locked || !usesEditSession()) {
+		return false;
+	}
+
+	const ModifierType persistent = _brushContext.modifierType;
+	const bool hasOverride = overrideType != ModifierType::None;
+	if (hasOverride) {
+		setModifierType(overrideType);
+		if (!sliceAction) {
+			_sceneMgr->trace(false, true);
+		}
+	}
+
+	if (!beginBrush()) {
+		if (hasOverride) {
+			_brushContext.modifierType = currentBrush() ? currentBrush()->modifierType(persistent) : persistent;
+		}
+		return false;
+	}
+
+	if (aborted()) {
+	if (Brush *brush = currentBrush()) {
+			brush->endBrush(_brushContext);
+			brush->resetRuntime();
+		}
+		if (hasOverride) {
+			_brushContext.modifierType = currentBrush() ? currentBrush()->modifierType(persistent) : persistent;
+		}
+		return false;
+	}
+
+	++_operationEpoch;
+	_editSettingsRevision = currentBrush()->settingsRevision();
+	_editSession.begin(_brushType, _brushContext.modifierType, persistent, hasOverride, sliceAction);
+	captureEditTargets();
+	if (_editSession.targets().empty()) {
+		finishEdit(BrushEditFinishReason::Interrupt);
+		return false;
+	}
+	return true;
+}
+
+bool Modifier::updateEdit() {
+	_lastApplyResult = {};
+	if (!_editSession.isActive()) {
+		return false;
+	}
+	if (currentBrush() && currentBrush()->settingsRevision() != _editSettingsRevision) {
+		finishEdit(BrushEditFinishReason::SettingsChange);
+		return false;
+	}
+	if (_locked || aborted()) {
+		return false;
+	}
+	Brush *brush = currentBrush();
+	if (brush == nullptr) {
+		return false;
+	}
+
+	if (!isStrokeEdit()) {
+		return brush->wantsContinuousExecution() ? applySessionTargets() : true;
+	}
+
+	const bool previousSliceMode = _sliceMode;
+	if (_editSession.sliceAction()) {
+		setSliceMode(true);
+	}
+
+	core::DynamicArray<glm::ivec3> samples;
+	const glm::ivec3 end = brush->currentCursorPosition(_brushContext);
+	_editSession.stroke().visit(end, [&](const glm::ivec3 &position) {
+		samples.push_back(position);
+	});
+
+	bool anyApplied = false;
+	for (BrushEditTarget &target : _editSession.targets()) {
+		for (const glm::ivec3 &sample : samples) {
+			const BrushApplyResult result = applySessionSample(target, sample);
+			_editSession.accumulate(target, result.dirtyRegion);
+			anyApplied |= result.changed();
+			_lastApplyResult.accumulate(result);
+			if (result.failed()) {
+				setSliceMode(previousSliceMode);
+				finishEdit(BrushEditFinishReason::Interrupt);
+				return false;
+			}
+		}
+	}
+
+	setSliceMode(previousSliceMode);
+	_lastApplyResult.status = anyApplied ? BrushApplyStatus::Changed : BrushApplyStatus::Unchanged;
+	return anyApplied;
+}
+
+bool Modifier::finishEdit(BrushEditFinishReason reason) {
+	if (!_editSession.isActive()) {
+		return true;
+	}
+	if (currentBrush() && currentBrush()->settingsRevision() != _editSettingsRevision) {
+		reason = BrushEditFinishReason::SettingsChange;
+	}
+	if (reason == BrushEditFinishReason::Release) {
+		if (isStrokeEdit()) {
+			if (Brush *brush = currentBrush()) {
+				// Finish the path without adding an extra stationary paint dab.
+				if (!_editSession.stroke().sampled(brush->currentCursorPosition(_brushContext))) {
+					updateEdit();
+				}
+			}
+		} else if (_editSession.awaitingSecondAction()) {
+			applySessionTargets();
+		} else if (needsAdditionalAction()) {
+			executeAdditionalAction();
+			_editSession.setAwaitingSecondAction(true);
+			return true;
+		} else {
+			applySessionTargets();
+		}
+	}
+
+	restoreEditOverride();
+
+	if (Brush *brush = currentBrush()) {
+		brush->endBrush(_brushContext);
+		brush->resetRuntime();
+	}
+
+	const bool previousSliceMode = _sliceMode;
+	if (_editSession.sliceAction()) {
+		setSliceMode(true);
+	}
+
+	core::DynamicArray<const BrushEditTarget *> changedTargets;
+	for (const BrushEditTarget &target : _editSession.targets()) {
+		const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(target.nodeUUID);
+		if ((target.dirtyRegion.isValid() || target.paletteChanged || target.normalPaletteChanged) && node != nullptr &&
+			node->volume() == target.volume) {
+			changedTargets.push_back(&target);
+		}
+	}
+	// Opening even an empty group truncates redo, so validate targets first.
+	if (!changedTargets.empty()) {
+		memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "edit");
+		for (const BrushEditTarget *target : changedTargets) {
+			const auto &node = *_sceneMgr->sceneGraphNodeByUUID(target->nodeUUID);
+			if (target->paletteChanged) {
+				_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
+			}
+			if (target->normalPaletteChanged) {
+				_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), node);
+			}
+			if (target->dirtyRegion.isValid()) {
+				// Keep the live pick valid after voxels change under the cursor (e.g. plane extrude).
+				_sceneMgr->modified(target->nodeUUID, target->dirtyRegion,
+									SceneModifiedFlags::MarkUndo | SceneModifiedFlags::ResetTrace);
+			}
+		}
+	}
+
+	setSliceMode(previousSliceMode);
+	const bool refreshTrace = _editSession.hasOverride() && !_editSession.sliceAction();
+	_editSession.end();
+	++_operationEpoch;
+	_handleViewport = -1;
+	setBrushGizmoActive(false);
+	if (refreshTrace) {
+		_sceneMgr->trace(false, true);
+	}
+	return true;
 }
 
 void Modifier::executeAdditionalAction() {
@@ -308,13 +663,20 @@ void Modifier::setSliceRegion(const voxel::Region &region) {
 	if (_sliceRegion == region) {
 		return;
 	}
-	if (Brush *brush = currentBrush()) {
-		if (brush->hasPendingChanges()) {
-			const core::UUID &uuid = _sliceRegion.isValid() ? _sliceNodeUUID : _sceneMgr->activeNodeUUID();
-			if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(uuid)) {
-				_sceneMgr->modified(uuid, _sliceRegion.isValid() ? _sliceRegion : node->region(), SceneModifiedFlags::MarkUndo);
+	if (_editSession.isActive()) {
+		// The 3D viewport clears the slice region every frame. That is not a user
+		// slice change. Keep a held 2D edit on its captured plane, and do not abort
+		// a 3D stroke just because a viewport reset the slice state.
+		if (!region.isValid()) {
+			if (_editSession.sliceAction()) {
+				return;
 			}
+		} else {
+			finishEdit(BrushEditFinishReason::SliceChange);
 		}
+	}
+	cancelDraft();
+	if (Brush *brush = currentBrush()) {
 		brush->onSceneChange();
 	}
 	_sliceRegion = region;
@@ -363,47 +725,9 @@ bool Modifier::execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGrap
 	if (_brushContext.modifierType == ModifierType::NormalPaint) {
 		_brushContext.cursorVoxel.setNormal(_brushContext.normalIndex + NORMAL_PALETTE_OFFSET);
 	}
-	const bool success =
-		executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
+	const bool success = executeBrush(sceneGraph, node, _brushContext.modifierType, _brushContext.cursorVoxel, callback);
 	_brushContext.cursorVoxel = cursorVoxel; // set back the original voxel
 	return success;
-}
-
-/**
- * change the cursor position if the brush region is outside the volume
- * this allows us to keep all voxels inside the volume boundaries even on the
- * +x, +y and +z sides where the voxels are currently flowing out of the volume
- */
-static glm::ivec3 updateCursor(const voxel::Region &region, const voxel::Region &brushRegion,
-							   const glm::ivec3 &cursor) {
-	if (!brushRegion.isValid()) {
-		return cursor;
-	}
-	if (region.containsRegion(brushRegion)) {
-		return cursor;
-	}
-	glm::ivec3 delta(0);
-	if (brushRegion.getUpperX() > region.getUpperX()) {
-		delta.x = region.getUpperX() - brushRegion.getUpperX();
-	}
-	if (brushRegion.getUpperY() > region.getUpperY()) {
-		delta.y = region.getUpperY() - brushRegion.getUpperY();
-	}
-	if (brushRegion.getUpperZ() > region.getUpperZ()) {
-		delta.z = region.getUpperZ() - brushRegion.getUpperZ();
-	}
-
-	if (brushRegion.getLowerX() < region.getLowerX()) {
-		delta.x = glm::abs(region.getLowerX() - brushRegion.getUpperX());
-	}
-	if (brushRegion.getLowerY() < region.getLowerY()) {
-		delta.y = glm::abs(region.getLowerY() - brushRegion.getLowerY());
-	}
-	if (brushRegion.getLowerZ() < region.getLowerZ()) {
-		delta.z = glm::abs(region.getLowerZ() - brushRegion.getLowerZ());
-	}
-
-	return cursor + delta;
 }
 
 void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
@@ -417,7 +741,7 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 	if (brush->clampToVolume()) {
 		const voxel::Region brushRegion = brush->calcRegion(_brushContext);
 		_brushContext.cursorPosition =
-			updateCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
+			clampBrushCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
 	}
 	if (_sliceRegion.isValid()) {
 		_brushContext.cursorPosition = glm::clamp(_brushContext.cursorPosition, _sliceRegion.getLowerCorner(), _sliceRegion.getUpperCorner());
@@ -428,146 +752,78 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 bool Modifier::executeBrush(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							ModifierType modifierType, const voxel::Voxel &voxel,
 							const ModifiedRegionCallback &callback, bool preview) {
-	core_trace_scoped(ModifierExecuteBrush);
-	Brush *brush = currentBrush();
-	if (!brush) {
-		return false;
+	BrushSample sample = currentEditSample();
+	sample.operation = modifierType;
+	sample.cursorVoxel = voxel;
+	BrushApplyTarget target;
+	target.node = &node;
+	target.volume = node.volume();
+	target.writeVolume = workingVolume(node);
+	target.selectionRegion = selectBrush().box3D().selectionRegion();
+	target.sliceRegion = _sliceRegion;
+	const auto result = evaluateSample(sample, target, preview);
+	if (!preview && result.dirtyRegion.isValid() && target.writeVolume != target.volume) {
+		target.volume->copyInto(*target.writeVolume);
 	}
-	ModifierType volumeModifierType = modifierType;
-	if (brush->type() == BrushType::Normal) {
-		volumeModifierType = ModifierType::NormalPaint | (modifierType & ModifierType::Erase);
-	}
-	ModifierVolumeWrapper wrapper(node, volumeModifierType, _selectBrush.box3D().selectionRegion());
-	if (_sliceRegion.isValid()) {
-		voxel::RawVolume *slice = workingVolume(node);
-		if (slice == nullptr) {
-			return false;
-		}
-		wrapper.setVolume(slice);
-	}
-	voxel::Voxel prevVoxel = _brushContext.cursorVoxel;
-	glm::ivec3 prevCursorPos = _brushContext.cursorPosition;
-	const bool prevPreview = _brushContext.preview;
-	_brushContext.preview = preview;
-	if (brush->clampToVolume()) {
-		const voxel::Region brushRegion = brush->calcRegion(_brushContext);
-		_brushContext.cursorPosition = updateCursor(_brushContext.targetVolumeRegion, brushRegion, prevCursorPos);
-	}
-	if (_sliceRegion.isValid()) {
-		_brushContext.cursorPosition = glm::clamp(_brushContext.cursorPosition, _sliceRegion.getLowerCorner(), _sliceRegion.getUpperCorner());
-	}
-	_brushContext.cursorVoxel = voxel;
-	const bool success = brush->execute(sceneGraph, wrapper, _brushContext);
-	const bool isPlacementBrush = brush->type() != BrushType::Select && brush->type() != BrushType::Paint
-		&& brush->type() != BrushType::Normal;
-	const bool isPlacementModifier = modifierType == ModifierType::Place;
-	if (autoSelect() && isPlacementBrush && isPlacementModifier) {
-		wrapper.autoSelectNewVoxels();
-	} else if (!brush->managesOwnSelection()) {
-		wrapper.growSelectionToNewVoxels();
-	}
-	if (_sliceRegion.isValid()) {
-		// The brush sees a real one-voxel-thick volume, including algorithms that
-		// access raw volume data. Only this plane is copied back to the model.
-		node.volume()->copyInto(*_sliceVolume.get());
-	}
-	const voxel::Region &modifiedRegion = wrapper.dirtyRegion();
-	if (modifiedRegion.isValid()) {
-		voxel::logRegion("Dirty region", modifiedRegion);
-		if (callback) {
-			const SceneModifiedFlags flags = brush->sceneModifiedFlags();
-			// Allow brushes to provide tighter dirty regions (e.g. source + destination
-			// separately) to avoid extracting empty space in between.
-			core::Buffer<voxel::Region> regions;
-			if (brush->dirtyRegions(regions)) {
-				for (const voxel::Region &r : regions) {
-					if (r.isValid()) {
-						callback(r, _brushContext.modifierType, flags);
+	if (callback && result.dirtyRegion.isValid()) {
+						callback(result.dirtyRegion, modifierType, SceneModifiedFlags::All);
 					}
-				}
-			} else {
-				callback(modifiedRegion, _brushContext.modifierType, flags);
-			}
-		}
-	}
-	_brushContext.cursorPosition = prevCursorPos;
-	_brushContext.cursorVoxel = prevVoxel;
-	_brushContext.preview = prevPreview;
-	return success;
+	return !result.failed();
 }
 
 Brush *Modifier::currentBrush() {
-	if (_brushType == BrushType::Script) {
-		return _scriptManager.activeLuaBrush();
+	if (Brush *tool = _registry.find(_toolId)) {
+		return tool;
 	}
-	for (Brush *b : _brushes) {
-		if (b->type() == _brushType) {
-			return b;
-		}
-	}
-	return nullptr;
+	return _brushType == BrushType::Script ? _scriptManager.activeLuaBrush() : nullptr;
 }
 
 const Brush *Modifier::currentBrush() const {
-	if (_brushType == BrushType::Script) {
-		return _scriptManager.activeLuaBrush();
+	if (Brush *tool = _registry.find(_toolId)) {
+		return tool;
 	}
-	for (Brush *b : _brushes) {
-		if (b->type() == _brushType) {
-			return b;
-		}
-	}
-	return nullptr;
+	return _brushType == BrushType::Script ? _scriptManager.activeLuaBrush() : nullptr;
 }
 
 AABBBrush *Modifier::currentAABBBrush() {
-	if (_brushType == BrushType::Shape) {
-		return &_shapeBrush;
-	}
-	if (_brushType == BrushType::Paint) {
-		return &_paintBrush;
-	}
-	if (_brushType == BrushType::Select) {
-		return &_selectBrush;
-	}
-	if (_brushType == BrushType::Plane) {
-		return &_planeBrush;
-	}
-	if (_brushType == BrushType::Texture) {
-		return &_textureBrush;
-	}
-	if (_brushType == BrushType::Normal) {
-		return &_normalBrush;
-	}
-	if (_brushType == BrushType::Script) {
-		return static_cast<AABBBrush *>(_scriptManager.activeLuaBrush());
-	}
-	return nullptr;
+	Brush *brush = currentBrush();
+	return brush ? brush->aabb() : nullptr;
 }
 
 const AABBBrush *Modifier::currentAABBBrush() const {
-	if (_brushType == BrushType::Shape) {
-		return &_shapeBrush;
+	const Brush *brush = currentBrush();
+	return brush ? brush->aabb() : nullptr;
+}
+
+bool Modifier::setTool(const core::String &id) {
+	Brush *tool = _registry.find(id);
+	if (!tool) {
+		return false;
 	}
-	if (_brushType == BrushType::Paint) {
-		return &_paintBrush;
+	if (_toolId != id) {
+		commit();
+		_operationError = nullptr;
+		++_operationEpoch;
+		_handleViewport = -1;
+		setBrushGizmoActive(false);
+		_toolId = id;
+		_brushType = tool->type();
+		_brushContext.modifierType = tool->modifierType(_brushContext.modifierType);
+		if ((tool->volumeModifier(tool->modifierType()) & ModifierType::NormalPaint) == ModifierType::None) {
+			_brushContext.normalIndex = NO_NORMAL;
+			_brushContext.cursorVoxel.setNormal(NO_NORMAL);
 	}
-	if (_brushType == BrushType::Select) {
-		return &_selectBrush;
+		const auto &scripts = _scriptManager.luaBrushes();
+		for (size_t i = 0; i < scripts.size(); ++i) {
+			if (scripts[i] == tool) {
+				_scriptManager.setActiveLuaBrushIndex((int)i);
+				break;
 	}
-	if (_brushType == BrushType::Plane) {
-		return &_planeBrush;
+		}
+		tool->onActivated();
+		resetPreview();
 	}
-	if (_brushType == BrushType::Texture) {
-		return &_textureBrush;
-	}
-	if (_brushType == BrushType::Normal) {
-		return &_normalBrush;
-	}
-	if (_brushType == BrushType::Script) {
-		return static_cast<const AABBBrush *>(_scriptManager.activeLuaBrush());
-	}
-	return nullptr;
+	return true;
 }
 
 void Modifier::endBrush() {
@@ -577,53 +833,31 @@ void Modifier::endBrush() {
 }
 
 void Modifier::abort() {
-	Brush *brush = currentBrush();
-	if (!brush) {
+	if (isAdjustable()) {
+		cancelDraft();
 		return;
 	}
-	if (brush->hasPendingChanges()) {
-		_sceneMgr->nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
-			if (!node.visible()) {
-				return;
-			}
-			voxel::RawVolume *volume = node.volume();
-			if (volume == nullptr) {
-				return;
-			}
-			const voxel::Region dirtyRegion = brush->revertChanges(volume);
-			if (dirtyRegion.isValid()) {
-				_sceneMgr->modified(node.uuid(), dirtyRegion, SceneModifiedFlags::NoUndo);
-			}
-		});
-		brush->reset();
-		brush->onActivated();
+	if (_editSession.isActive()) {
+		finishEdit(BrushEditFinishReason::Interrupt);
 		return;
 	}
-	brush->abort(_brushContext);
+	if (Brush *brush = currentBrush()) {
+		brush->abort(_brushContext);
+		brush->resetRuntime();
+	}
 }
 
 void Modifier::commit() {
-	Brush *brush = currentBrush();
-	if (!brush) {
+	if (_registry.activeDraft()) {
+		if (applyDraft().failed()) {
+			cancelDraft();
+		}
 		return;
 	}
-	if (!brush->onDeactivated()) {
-		brush->reset();
-		return;
+	finishEdit(BrushEditFinishReason::ToolChange);
+	if (Brush *brush = currentBrush()) {
+		brush->resetRuntime();
 	}
-	if (beginBrushFromPanel()) {
-		_sceneMgr->nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
-			if (!node.visible()) {
-				return;
-			}
-			auto callback = [&](const voxel::Region &region, ModifierType modType, SceneModifiedFlags flags) {
-				_sceneMgr->modified(node.uuid(), region, flags);
-			};
-			execute(_sceneMgr->sceneGraph(), node, callback);
-		});
-		endBrush();
-	}
-	brush->reset();
 }
 
 void Modifier::brushApply() {
@@ -636,24 +870,39 @@ void Modifier::brushApply() {
 }
 
 bool Modifier::modifierTypeRequiresExistingVoxel() const {
-	return _brushType == BrushType::Normal || isMode(ModifierType::ExistingVoxelMask);
+	return (currentBrush() && (currentBrush()->volumeModifier(_brushContext.modifierType) &
+							   ModifierType::NormalPaint) != ModifierType::None) || isMode(ModifierType::ExistingVoxelMask);
 }
 
 BrushType Modifier::setBrushType(BrushType type) {
-	if (_brushType == type) {
+	const Brush *registered = type == BrushType::Script ? _scriptManager.activeLuaBrush() : _registry.find(type);
+	if (_brushType == type && currentBrush() == registered) {
 		return _brushType;
+	}
+	if (_editSession.isActive()) {
+		finishEdit(BrushEditFinishReason::ToolChange);
 	}
 
 	// Auto-commit pending changes from the current brush before switching.
 	// Must happen before changing _brushType so currentBrush() returns the old brush.
 	commit();
+	_operationError = nullptr;
 	resetPreview();
 
-	if (type != BrushType::Normal) {
+	if (!registered ||
+		(registered->volumeModifier(registered->modifierType()) & ModifierType::NormalPaint) == ModifierType::None) {
 		_brushContext.normalIndex = NO_NORMAL;
 		_brushContext.cursorVoxel.setNormal(NO_NORMAL);
 	}
+	++_operationEpoch;
+	_handleViewport = -1;
+	setBrushGizmoActive(false);
 	_brushType = type;
+	if (registered) {
+		_toolId = _registry.id(*registered);
+	} else {
+		_toolId.clear();
+	}
 	Brush *newBrush = currentBrush();
 	if (newBrush) {
 		setModifierType(newBrush->modifierType(_brushContext.modifierType));
@@ -663,7 +912,11 @@ BrushType Modifier::setBrushType(BrushType type) {
 }
 
 void Modifier::setGridResolution(const glm::ivec3 &gridSize) {
-	_brushContext.gridResolution = glm::max(glm::ivec3(1), gridSize);
+	const glm::ivec3 resolution = glm::max(glm::ivec3(1), gridSize);
+	if (_brushContext.gridResolution != resolution) {
+		finishEdit(BrushEditFinishReason::SettingsChange);
+		_brushContext.gridResolution = resolution;
+	}
 }
 
 void Modifier::setGridResolution(int gridSize) {
@@ -671,8 +924,15 @@ void Modifier::setGridResolution(int gridSize) {
 }
 
 ModifierType Modifier::setModifierType(ModifierType type) {
+	const ModifierType resolved = currentBrush() ? currentBrush()->modifierType(type) : type;
+	if (_brushContext.modifierType == resolved) {
+		return resolved;
+	}
+	if (_editSession.isActive()) {
+		finishEdit(BrushEditFinishReason::OperationChange);
+	}
 	const ModifierType oldType = _brushContext.modifierType;
-	if (_brushType != BrushType::None) {
+	if (currentBrush()) {
 		_brushContext.modifierType = currentBrush()->modifierType(type);
 		if (oldType != _brushContext.modifierType) {
 			currentBrush()->markDirty();
@@ -688,36 +948,23 @@ void Modifier::resetPreview() {
 }
 
 void Modifier::flushPendingBrushChanges() {
-	if (_locked) {
+	if (_editSession.isActive() && currentBrush() && currentBrush()->settingsRevision() != _editSettingsRevision) {
+		finishEdit(BrushEditFinishReason::SettingsChange);
+	}
+	if (_registry.activeDraft() && !isAdjustable()) {
+		commit();
+	}
+	if (isAdjustable()) {
+		if (currentBrush()->dirty()) {
+			parametersChanged();
+			currentBrush()->markClean();
+		}
 		return;
 	}
-	Brush *brush = currentBrush();
-	if (!brush || !brush->dirty() || !brush->needsPerFrameFlush()) {
-		return;
-	}
-	scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
-	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID());
-	if (!node) {
-		return;
-	}
-	resetPreview();
-	brush->markClean();
-	voxel::RawVolume *activeVolume = workingVolume(*node);
-	if (activeVolume == nullptr) {
-		return;
-	}
-	preExecuteBrush(activeVolume);
-	executeBrush(sceneGraph, *node, _brushContext.modifierType, _brushContext.cursorVoxel,
-		[this, &sceneGraph](const voxel::Region &region, ModifierType, SceneModifiedFlags flags) {
-			_sceneMgr->modified(sceneGraph.activeNodeUUID(), region, flags);
-		});
 }
 
 ModifierType Modifier::checkModifierType() {
-	if (_brushType == BrushType::None) {
-		return ModifierType::ColorPicker;
-	}
-	return currentBrush()->modifierType(ModifierType::Mask);
+	return currentBrush() ? currentBrush()->modifierType(ModifierType::Mask) : ModifierType::ColorPicker;
 }
 
 void Modifier::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
@@ -738,6 +985,12 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 	ctx.referencePosition = referencePosition();
 	ctx.palette = &activePalette;
 	ctx.brushActive = false;
+	if (brush) {
+		const ModifierType operation = brush->volumeModifier(_brushContext.modifierType);
+		ctx.previewErase = (operation & ModifierType::Erase) != ModifierType::None &&
+						   (operation & ModifierType::NormalPaint) == ModifierType::None &&
+						   brush->previewStyle() != BrushPreviewStyle::Selection;
+	}
 
 	// Mirror plane info
 	if (brush) {
@@ -746,21 +999,18 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 	}
 	if (const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(sceneGraph.activeNodeUUID())) {
 		ctx.activeRegion = node->region();
-		if (_brushType == BrushType::Normal || isMode(ModifierType::NormalPaint)) {
+		if (brush &&
+			(brush->volumeModifier(_brushContext.modifierType) & ModifierType::NormalPaint) != ModifierType::None) {
 			ctx.normalPalette = &node->normalPalette();
 		}
 	}
 
 	if (!_sliceRegion.isValid() && !isMode(ModifierType::ColorPicker)) {
-		ctx.brushActive = brush && brush->active();
-		// Bootstrap: TransformBrush/ExtrudeBrush need preview before internal state exists
-		if (!ctx.brushActive && brush &&
-			(brush->type() == BrushType::Transform || brush->type() == BrushType::Extrude || brush->type() == BrushType::Sculpt)) {
-			ctx.brushActive = true;
-		}
+		ctx.brushActive = brush && brush->active() && !isAdjustable();
 	}
 
-	if (!_sliceRegion.isValid() && _brushType == BrushType::Normal && !core::getVar(cfg::RenderNormals)->boolVal()) {
+	if (!_sliceRegion.isValid() && brush &&
+		(brush->volumeModifier(_brushContext.modifierType) & ModifierType::NormalPaint) != ModifierType::None && !core::getVar(cfg::RenderNormals)->boolVal()) {
 		ctx.brushActive = false;
 		brush->markDirty();
 	}
@@ -771,9 +1021,7 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 			// rendering, then regenerate immediately at the new position.
 			resetPreview();
 			brush->markClean();
-			if (!brush->needsPerFrameFlush()) {
-				_previewManager.scheduleUpdate(_nowSeconds);
-			}
+			_previewManager.scheduleUpdate(_nowSeconds);
 		}
 		voxel::RawVolume *activeVolume = _sceneMgr->volume(sceneGraph.activeNodeUUID());
 		_previewManager.checkPendingUpdate(_nowSeconds, *this, activePalette, activeVolume, sceneGraph);
@@ -795,6 +1043,9 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 		}
 		if (ctx.previewVolume || ctx.useSimplePreview || ctx.showOutlinePreview) {
 			ctx.palette = _previewManager.previewPalette();
+			if (ctx.previewVolume) {
+				ctx.normalPalette = _previewManager.previewNormalPalette();
+			}
 		}
 	} else {
 		// Clear cached preview state when the brush is not active to prevent stale

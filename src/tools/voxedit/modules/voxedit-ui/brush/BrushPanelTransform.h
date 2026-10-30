@@ -26,12 +26,9 @@ private:
 	glm::vec3 _scale{1.0f};
 	glm::vec3 _rotation{0.0f};
 	glm::ivec3 _targetSize{0};
-	bool _dirty = false;
 	bool _uniformScale = true;
 	bool _useVoxelSize = false;
 	bool _maintainAspectRatio = true;
-
-	void executeTransformBrush(BrushPanelContext &ctx);
 };
 
 } // namespace voxedit

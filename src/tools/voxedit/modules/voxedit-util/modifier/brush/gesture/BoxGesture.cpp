@@ -3,7 +3,7 @@
  */
 
 #include "BoxGesture.h"
-#include "Brush.h"
+#include "voxedit-util/modifier/brush/Brush.h"
 
 namespace voxedit {
 

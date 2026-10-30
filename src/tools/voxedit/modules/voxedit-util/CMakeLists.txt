@@ -1,22 +1,32 @@
 set(SRCS
 	modifier/brush/AABBBrush.cpp modifier/brush/AABBBrush.h
-	modifier/brush/BoxGesture.cpp modifier/brush/BoxGesture.h
-	modifier/brush/StrokeGesture.cpp modifier/brush/StrokeGesture.h
 	modifier/brush/BrushGizmo.h
 	modifier/brush/BrushGizmoUtil.cpp modifier/brush/BrushGizmoUtil.h
 	modifier/brush/Brush.cpp modifier/brush/Brush.h
 	modifier/brush/LineBrush.cpp modifier/brush/LineBrush.h
-	modifier/brush/LUABrush.cpp modifier/brush/LUABrush.h
+	modifier/brush/LUABrush.cpp modifier/brush/LUABrush.h modifier/brush/ScriptBrushTarget.h
 	modifier/brush/LUAIconMapping.cpp modifier/brush/LUAIconMapping.h
 	modifier/brush/NormalBrush.cpp modifier/brush/NormalBrush.h
 	modifier/brush/PaintBrush.cpp modifier/brush/PaintBrush.h
 	modifier/brush/PlaneBrush.cpp modifier/brush/PlaneBrush.h
 	modifier/brush/ShapeBrush.cpp modifier/brush/ShapeBrush.h
-	modifier/brush/ShapeOperation.cpp modifier/brush/ShapeOperation.h
 	modifier/brush/StampBrush.cpp modifier/brush/StampBrush.h
 	modifier/brush/TextBrush.cpp modifier/brush/TextBrush.h
 	modifier/brush/SelectBrush.cpp modifier/brush/SelectBrush.h
 	modifier/brush/LUASelectionMode.cpp modifier/brush/LUASelectionMode.h
+	modifier/brush/ExtrudeBrush.cpp modifier/brush/ExtrudeBrush.h
+	modifier/brush/TransformBrush.cpp modifier/brush/TransformBrush.h
+	modifier/brush/RulerBrush.cpp modifier/brush/RulerBrush.h
+	modifier/brush/SculptBrush.cpp modifier/brush/SculptBrush.h
+	modifier/brush/SnapshotHelper.cpp modifier/brush/SnapshotHelper.h
+	modifier/brush/TextureBrush.cpp modifier/brush/TextureBrush.h
+	modifier/brush/gesture/BoxGesture.cpp modifier/brush/gesture/BoxGesture.h
+	modifier/brush/gesture/StrokeGesture.cpp modifier/brush/gesture/StrokeGesture.h
+	modifier/brush/operation/LineOperation.h
+	modifier/brush/operation/ShapeOperation.cpp modifier/brush/operation/ShapeOperation.h
+	modifier/brush/operation/ExtrudeOperation.h modifier/brush/operation/ExtrudeOperation.cpp
+	modifier/brush/operation/TransformOperation.cpp modifier/brush/operation/TransformOperation.h
+	modifier/brush/operation/SculptOperation.cpp modifier/brush/operation/SculptOperation.h
 	modifier/brush/select/SelectStrategy.cpp modifier/brush/select/SelectStrategy.h
 	modifier/brush/select/All.cpp modifier/brush/select/All.h
 	modifier/brush/select/Surface.cpp modifier/brush/select/Surface.h
@@ -29,18 +39,14 @@ set(SRCS
 	modifier/brush/select/Lasso.cpp modifier/brush/select/Lasso.h
 	modifier/brush/select/Paint.cpp modifier/brush/select/Paint.h
 	modifier/brush/select/Script.cpp modifier/brush/select/Script.h
-	modifier/brush/ExtrudeBrush.cpp modifier/brush/ExtrudeBrush.h
-	modifier/brush/ExtrudeOperation.cpp modifier/brush/ExtrudeOperation.h
-	modifier/brush/TransformBrush.cpp modifier/brush/TransformBrush.h
-	modifier/brush/TransformOperation.cpp modifier/brush/TransformOperation.h
-	modifier/brush/RulerBrush.cpp modifier/brush/RulerBrush.h
-	modifier/brush/SculptBrush.cpp modifier/brush/SculptBrush.h
-	modifier/brush/SculptOperation.cpp modifier/brush/SculptOperation.h
-	modifier/brush/SnapshotHelper.cpp modifier/brush/SnapshotHelper.h
-	modifier/brush/TextureBrush.cpp modifier/brush/TextureBrush.h
 
 	modifier/IModifierRenderer.h
-	modifier/Modifier.h modifier/Modifier.cpp
+	modifier/BrushApply.h modifier/BrushApply.cpp
+	modifier/DraftEditSession.h modifier/BrushDraft.h
+	modifier/BrushRegistry.h modifier/BrushRegistry.cpp modifier/BuiltinBrushes.cpp
+	modifier/BrushEditSession.h modifier/BrushEditSession.cpp
+	modifier/brush/PaintStrokeState.h
+	modifier/Modifier.h modifier/Modifier.cpp modifier/ModifierOperation.cpp
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierType.h
@@ -152,6 +158,9 @@ set(TEST_SRCS
 	tests/ModifierVolumeWrapperTest.cpp
 	tests/PreviewManagerTest.cpp
 	tests/BrushRadiusPreviewTest.cpp
+	tests/BrushApplyTest.cpp
+	tests/BrushOperationTest.cpp
+	tests/BrushEditSessionTest.cpp
 	tests/BrushGestureTest.cpp
 	tests/BrushInputTest.cpp
 	tests/NormalBrushTest.cpp

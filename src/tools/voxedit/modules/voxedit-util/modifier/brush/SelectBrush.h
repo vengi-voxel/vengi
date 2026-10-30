@@ -120,6 +120,14 @@ private:
 
 public:
 	SelectBrush(SceneManager *sceneManager);
+	SelectBrush(const SelectBrush &other);
+	void syncInput(const Brush &input) override;
+	BrushPreviewStyle previewStyle() const override {
+		return BrushPreviewStyle::Selection;
+	}
+	bool previewNeedsExistingVolume() const override {
+		return true;
+	}
 	virtual ~SelectBrush() = default;
 
 	bool isSimplePreview() const override;
@@ -142,14 +150,12 @@ public:
 
 	void endBrush(BrushContext &ctx) override;
 
-	bool hasPendingChanges() const override;
-	voxel::Region consumePendingUndoRegion() override;
-
 	void abort(BrushContext &ctx) override;
 
-	bool wantBrushGizmo(const BrushContext &ctx) const override;
-	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
-	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
+	bool hasHandle(const BrushContext &ctx) const;
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 						 uint32_t operation) override;
 
 	select::Circle &circle();

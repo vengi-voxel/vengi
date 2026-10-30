@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Brush.h"
-#include "ExtrudeOperation.h"
+#include "operation/ExtrudeOperation.h"
 #include "core/GLM.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
@@ -20,7 +20,7 @@ namespace voxedit {
 /**
  * @brief Extrudes the current voxel selection along the clicked face normal
  *
- * In Place mode voxels are added outward from the selection by @c _depth steps.
+ * In Place mode voxels are added outward from the selection by @c _parameters.depth steps.
  * The perpendicular "side walls" are filled to keep the model manifold.
  * In Erase mode the outermost selected layer facing the cursor is removed.
  *
@@ -30,7 +30,6 @@ class ExtrudeBrush : public Brush, public ExtrudeOperation {
 private:
 	using Super = Brush;
 	bool _active = false;
-	voxel::RawVolume *_lastVolume = nullptr;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -39,14 +38,12 @@ protected:
 public:
 	ExtrudeBrush() : Super(BrushType::Extrude, ModifierType::Place, ModifierType::Place | ModifierType::Erase) {
 	}
+	ExtrudeBrush(const ExtrudeBrush &other);
 	virtual ~ExtrudeBrush() = default;
 
 	void onSceneChange() override;
 	void reset() override;
 	void onActivated() override;
-	bool hasPendingChanges() const override;
-	bool onDeactivated() override;
-	voxel::Region revertChanges(voxel::RawVolume *volume) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool beginBrush(const BrushContext &ctx) override;
 	void endBrush(BrushContext &ctx) override;
@@ -56,23 +53,35 @@ public:
 		return true;
 	}
 
+	void clearOperation() {
+		_history.clear();
+		_cachedSelectedPositions.clear();
+		_cachedWallCandidates.clear();
+		_hasCachedSelection = false;
+		_cachedSelBBoxValid = false;
+		_parameters.depth = 0;
+		_parameters.offsetU = 0;
+		_parameters.offsetV = 0;
+		_active = false;
+		markDirty();
+	}
 	void setDepth(int depth);
 	int depth() const {
-		return _depth;
+		return _parameters.depth;
 	}
 
 	void setOffsetU(int offset);
 	int offsetU() const {
-		return _offsetU;
+		return _parameters.offsetU;
 	}
 
 	void setOffsetV(int offset);
 	int offsetV() const {
-		return _offsetV;
+		return _parameters.offsetV;
 	}
 
 	voxel::FaceNames face() const {
-		return _face;
+		return _parameters.face;
 	}
 
 	bool hasCachedSelection() const {
@@ -80,19 +89,20 @@ public:
 	}
 
 	void setFillWalls(bool fill) {
-		if (_fillWalls == fill) {
+		if (_parameters.fillWalls == fill) {
 			return;
 		}
-		_fillWalls = fill;
+		_parameters.fillWalls = fill;
 		markDirty();
 	}
 	bool fillWalls() const {
-		return _fillWalls;
+		return _parameters.fillWalls;
 	}
 
-	bool wantBrushGizmo(const BrushContext &ctx) const override;
-	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
-	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
+	bool hasHandle(const BrushContext &ctx) const;
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
 						 const glm::mat4 &deltaMatrix, uint32_t operation) override;
 
 };

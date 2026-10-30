@@ -30,16 +30,16 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 		if (n == 0) {
 			return old;
 		}
-		const int idx = rand() % n;
+		int idx = _random.random(0, n - 1);
 		return voxel::createVoxel(_palette, idx, old.getNormal(), old.getFlags(), old.getBoneIdx());
 	}
 
 	bool brighten = _paintMode == PaintMode::Brighten;
 	if (_paintMode == PaintMode::Variation) {
-		if (rand() % _variationChance != 0) {
+		if (_random.random(0, _variationChance - 1) != 0) {
 			return old;
 		}
-		brighten = rand() % 2 == 0;
+		brighten = _random.random(0, 1) == 0;
 	}
 
 	const color::RGBA voxelColor = _palette.color(old.getColor());
@@ -57,7 +57,6 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 		}
 		_palette.markDirty();
 		_palette.markSave();
-		// TODO: MEMENTO: no memento state handling for the palette here
 		return voxel::createVoxel(_palette, newColorIndex, old.getNormal(), old.getFlags(), old.getBoneIdx());
 	}
 	return voxel::createVoxel(_palette, index, old.getNormal(), old.getFlags(), old.getBoneIdx());
@@ -91,7 +90,6 @@ static voxel::Voxel mixBlend(palette::Palette &palette, const voxel::Voxel &from
 	uint8_t newColorIndex = 0;
 	if (palette.tryAdd(newColor, false, &newColorIndex, false, from.getColor())) {
 		palette.markSave();
-		// TODO: MEMENTO: no memento state handling for the palette here
 		return voxel::createVoxel(palette, newColorIndex, from.getNormal(), from.getFlags(), from.getBoneIdx());
 	}
 	const int index = palette.getClosestMatch(newColor, from.getColor());
@@ -145,7 +143,6 @@ static voxel::Voxel gaussianBlurVoxel(ModifierVolumeWrapper &wrapper, palette::P
 	uint8_t newColorIndex = 0;
 	if (palette.tryAdd(mixed, false, &newColorIndex, false, old.getColor())) {
 		palette.markSave();
-		// TODO: MEMENTO: no memento state handling for the palette here
 		return voxel::createVoxel(palette, newColorIndex, old.getNormal(), old.getFlags(), old.getBoneIdx());
 	}
 	const int index = palette.getClosestMatch(mixed, old.getColor());
@@ -155,22 +152,14 @@ static voxel::Voxel gaussianBlurVoxel(ModifierVolumeWrapper &wrapper, palette::P
 	return voxel::createVoxel(palette, index, old.getNormal(), old.getFlags(), old.getBoneIdx());
 }
 
-bool PaintBrush::beginBrush(const BrushContext &ctx) {
-	_blendStroke.clear();
-	return Super::beginBrush(ctx);
-}
-
-void PaintBrush::endBrush(BrushContext &ctx) {
-	_blendStroke.clear();
-	Super::endBrush(ctx);
-}
-
 void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						  const voxel::Region &region) {
+	PaintStrokeState &runtime = _runtime;
 	if (_paintMode == PaintMode::Blend || _paintMode == PaintMode::Blur) {
 		palette::Palette &palette = wrapper.node().palette();
-		// Only track stroke weights on the real volume; preview must not fill the map.
-		const bool trackStroke = strokeActive() && !ctx.preview;
+		PaintStrokeMap &blendStroke = runtime.blendStroke;
+		// Preview receives its own runtime copy through the same contract.
+		const bool trackStroke = true;
 		glm::vec3 center;
 		float falloffRadius;
 		if (anyStrokeMode()) {
@@ -192,19 +181,19 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 			}
 			voxel::Voxel source = voxel;
 			if (trackStroke) {
-				BlendStrokeSample sample;
-				if (_blendStroke.get(pos, sample)) {
+				PaintStrokeSample sample;
+				if (blendStroke.get(pos, sample)) {
 					if (factor <= sample.factor) {
 						return;
 					}
 					// Stronger coverage: re-blend from the color at first contact.
 					source = sample.original;
 					sample.factor = factor;
-					_blendStroke.put(pos, sample);
+					blendStroke.put(pos, sample);
 				} else {
 					sample.original = voxel;
 					sample.factor = factor;
-					_blendStroke.put(pos, sample);
+					blendStroke.put(pos, sample);
 				}
 			}
 			positions.emplace_back(pos);
@@ -223,9 +212,10 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		return;
 	}
 
-	const bool changesPalette =
-		_paintMode == PaintMode::Brighten || _paintMode == PaintMode::Darken || _paintMode == PaintMode::Variation;
-	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _strength, _variationChance);
+	math::Random &random = runtime.random;
+	const bool serial =
+		_paintMode != PaintMode::Replace;
+	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _strength, _variationChance, random);
 	if (floodFill()) {
 		voxelutil::paintPlane(wrapper, region.getLowerCorner(), ctx.cursorFace, ctx.hitCursorVoxel,
 							  voxelColor.evaluate(ctx.hitCursorVoxel));
@@ -238,8 +228,8 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 			const voxel::Voxel newVoxel = mix(wrapper, ctx.hitCursorVoxel, evalVoxel, factor);
 			wrapper.setVoxel(x, y, z, newVoxel);
 		};
-		if (changesPalette) {
-			// Palette insertion and closest-color lookup share mutable state.
+		if (serial) {
+			// Palette changes and per-target RNG consumption require stable voxel order.
 			voxelutil::visitVolume(wrapper, region, func);
 		} else {
 			voxelutil::visitVolumeParallel(wrapper, region, func);
@@ -248,8 +238,8 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			wrapper.setVoxel(x, y, z, voxelColor.evaluate(voxel));
 		};
-		if (changesPalette) {
-			// Palette insertion and closest-color lookup share mutable state.
+		if (serial) {
+			// Palette changes and per-target RNG consumption require stable voxel order.
 			voxelutil::visitVolume(wrapper, region, func);
 		} else {
 			voxelutil::visitVolumeParallel(wrapper, region, func);
@@ -265,16 +255,25 @@ bool PaintBrush::wantBox() const {
 }
 
 void PaintBrush::setStrength(float strength) {
+	if (_strength != glm::clamp(strength, 0.1f, 10.0f)) {
+		markSettingsChanged();
+	}
 	_strength = glm::clamp(strength, 0.1f, 10.0f);
 	markDirty();
 }
 
 void PaintBrush::setBlendOpacity(float opacity) {
+	if (_blendOpacity != glm::clamp(opacity, 0.0f, 1.0f)) {
+		markSettingsChanged();
+	}
 	_blendOpacity = glm::clamp(opacity, 0.0f, 1.0f);
 	markDirty();
 }
 
 void PaintBrush::setVariationChance(int variationChance) {
+	if (_variationChance != glm::clamp(variationChance, 2, 20)) {
+		markSettingsChanged();
+	}
 	_variationChance = glm::clamp(variationChance, 2, 20);
 	markDirty();
 }

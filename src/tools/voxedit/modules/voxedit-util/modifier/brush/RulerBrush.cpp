@@ -70,12 +70,20 @@ voxel::Region RulerBrush::calcRegion(const BrushContext &ctx) const {
 	return voxel::Region::InvalidRegion;
 }
 
-bool RulerBrush::wantBrushGizmo(const BrushContext &ctx) const {
+void RulerBrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const {
+	if (hasHandle(ctx)) {
+		BrushGizmoState handle;
+		describeHandle(ctx, handle);
+		output.push_back(handle);
+	}
+}
+
+bool RulerBrush::hasHandle(const BrushContext &ctx) const {
 	return _state != State::Idle && _startPos != _endPos;
 }
 
-void RulerBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-	if (!wantBrushGizmo(ctx)) {
+void RulerBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state) const {
+	if (!hasHandle(ctx)) {
 		state.operations = BrushGizmo_None;
 		return;
 	}

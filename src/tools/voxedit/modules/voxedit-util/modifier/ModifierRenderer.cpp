@@ -158,6 +158,9 @@ void ModifierRenderer::clear() {
 }
 
 void ModifierRenderer::updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, palette::NormalPalette *normalPalette) {
+	if (_meshState->volume(idx) == volume) {
+		return;
+	}
 	// Note: We don't delete the returned old volume because ownership stays with the caller (Modifier)
 	// The caller manages the volume lifetime via ScopedPtr
 	(void)_volumeRenderer.setVolume(_meshState, idx, volume, palette, normalPalette, true);
@@ -276,6 +279,7 @@ void ModifierRenderer::handleCommandBuffer() {
 
 void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	handleCommandBuffer();
+	_previewErase = ctx.previewErase;
 
 	if (ctx.cursorFace == voxel::FaceNames::Max) {
 		_shapeRenderer.deleteMesh(_voxelCursorMesh);
@@ -311,7 +315,6 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	_gridRenderer.setGridResolution(_gridResolution);
 	_gridRenderer.setPlaneGridSize(_planeSize->intVal());
 	_gridRenderer.setRenderPlane(_showPlane->boolVal());
-	_gridRenderer.setColor(style::color(style::ColorGridBorder));
 	if (_activeRegion.isValid()) {
 		_gridRenderer.update(scenegraph::toAABB(_activeRegion));
 	}
@@ -357,6 +360,7 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 }
 
 void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) {
+	_gridRenderer.setColor(style::color(style::ColorGridBorder));
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	{
@@ -394,20 +398,17 @@ void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const v
 		video::polygonOffset(glm::vec2(0.0f));
 	}
 
-	// Apply a small world-space depth bias toward the camera to avoid z-fighting
-	// between the brush preview and the scene volume that share the same voxel
-	// positions. Polygon offset is unreliable for axis-aligned faces viewed
-	// head-on (slope factor becomes 0). A world-space translation along the
-	// negative camera forward direction (i.e. toward the camera) guarantees
-	// consistent depth separation regardless of view angle.
-	const glm::mat4 biasedModelMatrix =
-		glm::translate(glm::mat4(1.0f), -camera.forward() * 0.01f) * modelMatrix;
-
-	for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
-		_shapeRenderer.render(_aabbMeshes[i], camera, biasedModelMatrix);
+	const bool hasPreview = _meshState->volume(0) != nullptr || _meshState->volume(1) != nullptr ||
+							_aabbMeshes[0] >= 0 || _aabbMeshes[1] >= 0;
+	if (hasPreview && renderContext.surfaceOverlay.begin(renderContext.frameBuffer.dimension())) {
+		const video::ScopedState depthMask(video::State::DepthMask, true);
+		const video::ScopedState previewBlend(video::State::Blend, false);
+		for (int i = 0; i < lengthof(_aabbMeshes); ++i) {
+			_shapeRenderer.render(_aabbMeshes[i], camera, modelMatrix);
+		}
+		renderBrushVolume(renderContext, camera, modelMatrix);
+		renderContext.surfaceOverlay.end(_previewErase ? glm::vec4(0.95f, 0.12f, 0.08f, 0.75f) : glm::vec4(0.0f));
 	}
-
-	renderBrushVolume(renderContext, camera, biasedModelMatrix);
 
 	const video::ScopedState blend(video::State::Blend, true);
 	_shapeRenderer.render(_mirrorMeshIndex, camera, modelMatrix);

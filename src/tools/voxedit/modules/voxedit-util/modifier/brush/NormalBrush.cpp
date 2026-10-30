@@ -17,9 +17,7 @@ void NormalBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 						   const voxel::Region &region) {
 	if (_paintMode == PaintMode::Auto && (wrapper.modifierType() & ModifierType::Erase) == ModifierType::None) {
 		const voxel::RawVolume *source = wrapper.volume();
-		if (ctx.preview) {
-			source = sceneGraph.resolveVolume(sceneGraph.node(sceneGraph.activeNode()));
-		}
+
 		auto func = [&](int x, int y, int z, voxel::Voxel voxel) {
 			voxel::RawVolume::Sampler sampler(source);
 			sampler.setPosition(x, y, z);

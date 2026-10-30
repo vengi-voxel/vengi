@@ -7,23 +7,60 @@
 #include "command/Command.h"
 #include "core/Log.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 
 namespace voxedit {
 
-namespace {
-
-SceneModifiedFlags strokeAccumFlags() {
-	return SceneModifiedFlags::NoUndo & ~SceneModifiedFlags::ResetTrace;
-}
-
-} // namespace
-
 AABBBrush::AABBBrush(BrushType type, ModifierType defaultModifier, ModifierType supportedModifiers)
 	: Super(type, defaultModifier, supportedModifiers) {
+}
+
+void AABBBrush::syncInput(const Brush &input) {
+	if (const AABBBrush *source = input.aabb()) {
+		_boxGesture = source->_boxGesture;
+		_editedRegion = source->_editedRegion;
+	}
+}
+
+bool AABBBrush::setRegion(const voxel::Region &region) {
+	if (!region.isValid() || anyStrokeMode() || !_boxGesture.active()) {
+		return false;
+	}
+	_editedRegion = region;
+	markDirty();
+	return true;
+}
+
+void AABBBrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const {
+	Super::handles(ctx, output);
+	if (!output.empty() || !_boxGesture.active() || anyStrokeMode()) {
+		return;
+	}
+	const voxel::Region region = calcRegion(ctx);
+	if (!region.isValid()) {
+		return;
+	}
+	BrushGizmoState state;
+	state.operations = BrushGizmo_Translate | BrushGizmo_Bounds;
+	state.hasBounds = true;
+	state.matrix[3] = glm::vec4(glm::vec3(region.getLowerCorner()), 1.0f);
+	const glm::ivec3 size = region.getDimensionsInVoxels();
+	for (int i = 0; i < 3; ++i) {
+		state.bounds[i + 3] = (float)size[i];
+		state.snap[i] = (float)ctx.gridResolution[i];
+	}
+	output.push_back(state);
+}
+
+bool AABBBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &, uint32_t) {
+	const voxel::Region previous = calcRegion(ctx);
+	const glm::vec3 first = glm::vec3(matrix * glm::vec4(0, 0, 0, 1));
+	const glm::vec3 second = glm::vec3(matrix * glm::vec4(glm::vec3(previous.getDimensionsInVoxels()), 1));
+	const glm::ivec3 lower(glm::round(glm::min(first, second)));
+	const glm::ivec3 upper = glm::max(lower, glm::ivec3(glm::round(glm::max(first, second))) - 1);
+	return setRegion(voxel::Region(lower, upper));
 }
 
 void AABBBrush::construct() {
@@ -54,14 +91,17 @@ void AABBBrush::construct() {
 void AABBBrush::onSceneChange() {
 	Super::onSceneChange();
 	_boxGesture.end();
-	_strokeGesture.reset();
 }
 
 void AABBBrush::reset() {
 	Super::reset();
+}
+
+void AABBBrush::resetRuntime() {
+	Super::resetRuntime();
 	// Gesture state is transient; preserve the mode and radius preferences.
 	_boxGesture.reset();
-	_strokeGesture.reset();
+	_editedRegion = voxel::Region::InvalidRegion;
 }
 
 glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, const glm::ivec3 &resolution) const {
@@ -127,34 +167,17 @@ void AABBBrush::generateMirrored(scenegraph::SceneGraph &sceneGraph, ModifierVol
 	}
 }
 
-bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+bool AABBBrush::executeSample(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	setErrorReason("");
-
-	// Path accumulation is only for a live mouse-drag stroke on the real volume.
-	// Preview execute() must not advance the stroke gesture or dirty accumulation.
-	if (anyStrokeMode() && _strokeGesture.active() && !ctx.preview) {
-		const glm::ivec3 end = currentCursorPosition(ctx);
-		auto runDab = [&](const glm::ivec3 &center) {
-			BrushContext dabCtx = ctx;
-			dabCtx.cursorPosition = center;
-			voxel::Region region = calcRegion(dabCtx);
-			region = extendRegionInOrthoMode(region, wrapper.region(), dabCtx);
-			generateMirrored(sceneGraph, wrapper, dabCtx, region);
-		};
-
-		_strokeGesture.visit(end, runDab);
-		_strokeGesture.accumulate(wrapper.dirtyRegion());
-		return errorReason().empty();
-	}
-
 	voxel::Region region = calcRegion(ctx);
-	region = extendRegionInOrthoMode(region, wrapper.region(), ctx);
+	region = extendRegionInOrthoMode(region,
+									 ctx.targetVolumeRegion.isValid() ? ctx.targetVolumeRegion : wrapper.region(), ctx);
 	generateMirrored(sceneGraph, wrapper, ctx, region);
 	return errorReason().empty();
 }
 
-voxel::Region AABBBrush::consumePendingUndoRegion() {
-	return _strokeGesture.consumePendingUndoRegion();
+bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
+	return executeSample(sceneGraph, wrapper, ctx);
 }
 
 glm::ivec3 AABBBrush::currentCursorPosition(const BrushContext &ctx) const {
@@ -170,13 +193,10 @@ bool AABBBrush::beginBrush(const BrushContext &ctx) {
 	if (!anyStrokeMode() && _boxGesture.active()) {
 		return false;
 	}
+	_editedRegion = voxel::Region::InvalidRegion;
 	_boxGesture.begin(ctx, wantBox());
 	_lastCursorPos = ctx.cursorPosition;
-	_strokeGesture.reset();
-	if (anyStrokeMode()) {
-		_strokeGesture.begin();
-		_sceneModifiedFlags = strokeAccumFlags();
-	}
+
 	return true;
 }
 
@@ -213,12 +233,8 @@ void AABBBrush::step(const BrushContext &ctx) {
 }
 
 void AABBBrush::endBrush(BrushContext &ctx) {
-	if (anyStrokeMode()) {
-		_strokeGesture.end();
-	} else {
-		_strokeGesture.reset();
-	}
 	_boxGesture.end();
+	_editedRegion = voxel::Region::InvalidRegion;
 }
 
 bool AABBBrush::isMode(uint32_t mode) const {
@@ -226,21 +242,30 @@ bool AABBBrush::isMode(uint32_t mode) const {
 }
 
 void AABBBrush::setMode(uint32_t mode) {
+	if (_mode != mode) {
+		markSettingsChanged();
+	}
 	_mode = mode;
 	if (anyStrokeMode()) {
 		_boxGesture.stopSpanning();
-		_sceneModifiedFlags = strokeAccumFlags();
-	} else {
-		_sceneModifiedFlags = SceneModifiedFlags::All;
 	}
 }
 
 void AABBBrush::setRadius(int radius) {
+	if (_radius != glm::abs(radius)) {
+		markSettingsChanged();
+	}
 	_radius = glm::abs(radius);
 	markDirty();
 }
 
 voxel::Region AABBBrush::calcRegion(const BrushContext &ctx) const {
+	if (ctx.evaluatedRegion.isValid()) {
+		return ctx.evaluatedRegion;
+	}
+	if (_editedRegion.isValid()) {
+		return _editedRegion;
+	}
 	if (anyStrokeMode()) {
 		return StrokeGesture::region(currentCursorPosition(ctx), radius(), ctx.gridResolution);
 	}

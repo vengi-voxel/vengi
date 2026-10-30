@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include "BrushApply.h"
+#include "BrushDraft.h"
+#include "BrushEditSession.h"
+#include "BrushRegistry.h"
 #include "IModifierRenderer.h"
 #include "ModifierButton.h"
 #include "ModifierType.h"
@@ -53,13 +57,10 @@ namespace voxedit {
 class SceneManager;
 
 /**
- * @brief This class is responsible for manipulating the volume with the configured @c Brush and for
- * doing the selection.
+ * @brief Owns brushes, the live input context, and edit lifecycle.
  *
- * There are several modes available. E.g. having the starting point of the aabb on a corner - or
- * at the center, mirroring the modifications and so on.
- *
- * This class owns all brush instances and orchestrates preview volume generation
+ * Registered tools use the shared sample evaluator or an isolated typed draft.
+ * Input adapters forward events; the host owns targets, completion and history.
  */
 class Modifier : public core::IComponent {
 public:
@@ -87,25 +88,21 @@ protected:
 	double _nextContinuousExecution = 0;
 	double _nowSeconds = 0;
 
-	core::Buffer<Brush *> _brushes;
+	BrushRegistry _registry;
+	uint64_t _operationEpoch = 1;
+	int _handleViewport = -1;
+	uint32_t _capturedHandle = 0;
 	BrushContext _brushContext;
 	BrushType _brushType = BrushType::Shape;
-	PlaneBrush _planeBrush;
-	ShapeBrush _shapeBrush;
-	StampBrush _stampBrush;
-	LineBrush _lineBrush;
-	PaintBrush _paintBrush;
-	TextBrush _textBrush;
-	SelectBrush _selectBrush;
-	TextureBrush _textureBrush;
-	NormalBrush _normalBrush;
-	ExtrudeBrush _extrudeBrush;
-	TransformBrush _transformBrush;
-	SculptBrush _sculptBrush;
-	RulerBrush _rulerBrush;
+	core::String _toolId = "shape";
 
 	ScriptManager _scriptManager;
 	PreviewManager _previewManager;
+
+	BrushEditSession _editSession;
+	uint64_t _editSettingsRevision = 0;
+	BrushApplyResult _lastApplyResult;
+	const char *_operationError = nullptr;
 
 	ModifierButton _actionExecuteButton;
 	ModifierButton _deleteExecuteButton;
@@ -115,6 +112,12 @@ protected:
 	core::VarPtr _autoSelect;
 
 	void resetPreview();
+	void restoreEditOverride();
+	void captureEditTargets();
+	void notifySessionSample(const BrushEditTarget &target, const BrushApplyResult &result);
+	BrushApplyResult applySessionSample(BrushEditTarget &target, const glm::ivec3 &sample);
+	bool applySessionTargets();
+	bool isStrokeEdit() const;
 
 public:
 	Modifier(SceneManager *sceneMgr, const ModifierRendererPtr &modifierRenderer);
@@ -122,6 +125,9 @@ public:
 		_sliceMode = active;
 	}
 	void setSliceRegion(const voxel::Region &region);
+	const voxel::Region &sliceRegion() const {
+		return _sliceRegion;
+	}
 	bool isSliceMode() const {
 		return _sliceMode;
 	}
@@ -157,6 +163,10 @@ public:
 	inline bool isBrushGizmoActive() const {
 		return _brushGizmoActive;
 	}
+	/** Whether a brush action owns the current press, excluding presses routed to a gizmo. */
+	bool isBrushActionActive() const {
+		return _actionExecuteButton.ownsPress() || _deleteExecuteButton.ownsPress();
+	}
 
 	math::Axis lockedAxis() const;
 	void setLockedAxis(math::Axis axis, bool unlock);
@@ -169,8 +179,8 @@ public:
 	const ScriptManager &scriptManager() const;
 
 	/**
-	 * @brief Execute pending brush changes for brushes that modify the real volume (TransformBrush, etc).
-	 * Must be called before mesh extraction runs to avoid stale mesh data.
+	 * @brief Resolve pending edit-session or draft work before a renderer extraction.
+	 * Finishes an active edit if brush settings changed, and reevaluates a dirty adjustable draft.
 	 */
 	void flushPendingBrushChanges();
 	void setHighlightRegion(const voxel::Region &region, uint64_t renderRegionMillis);
@@ -189,14 +199,72 @@ public:
 	virtual void setCursorVoxel(const voxel::Voxel &voxel);
 
 	/**
-	 * @brief Pick the start position of the modifier execution bounding box
+	 * @brief Start the current brush gesture
 	 */
 	bool beginBrush();
+
 	/**
-	 * @brief Like beginBrush() but passes FaceNames::Max so the brush does not update its stored
-	 * face direction. Use when triggering execution from a UI panel rather than a viewport click.
+	 * @return true for tools executed by the shared sample session.
 	 */
-	bool beginBrushFromPanel();
+	bool usesEditSession() const;
+	bool isEditActive() const;
+	uint64_t editId() const {
+		return _editSession.id();
+	}
+	/**
+	 * @param overrideType Temporary operation (e.g. Erase from the delete button), or None
+	 * @param sliceAction Restrict captured targets to the active slice node
+	 */
+	bool beginEdit(ModifierType overrideType = ModifierType::None, bool sliceAction = false);
+	bool updateEdit();
+	const BrushApplyResult &lastApplyResult() const {
+		return _lastApplyResult;
+	}
+	bool finishEdit(BrushEditFinishReason reason = BrushEditFinishReason::Release);
+
+	/**
+	 * @brief Sample describing the current cursor, resolved operation, and constraints.
+	 * Evaluation uses this instead of rewriting the live BrushContext.
+	 */
+	BrushSample currentEditSample() const;
+	/**
+	 * @brief Evaluate one sample on one target. Does not notify the scene or record history.
+	 */
+	/** Execute an explicit request without selecting a tool or changing preferences. */
+	BrushApplyResult executeRequestFactory(const core::Function<core::SharedPtr<Brush>()> &create,
+										   const BrushContext &input, const core::Buffer<core::UUID> &targets);
+	template<class T>
+	BrushApplyResult executeRequest(const T &tool, const BrushContext &input, const core::Buffer<core::UUID> &targets) {
+		return executeRequestFactory([&tool]() { return core::SharedPtr<Brush>(core::make_shared<T>(tool)); }, input,
+									 targets);
+	}
+	BrushApplyResult evaluateSample(const BrushSample &sample, BrushApplyTarget &target, bool preview = false);
+
+	/** Shared entry point for panel and viewport parameter edits. */
+	BrushApplyResult invalidParameters();
+	template<class T, class Parameters>
+	BrushApplyResult updateParameters(const core::String &id, const Parameters &parameters) {
+		T &value = tool<T>(id);
+		if (currentBrush() != &value || !value.setParameters(parameters)) {
+			return invalidParameters();
+		}
+		return parametersChanged();
+	}
+	BrushApplyResult applyDraft();
+	void cancelDraft();
+	const char *operationError() const {
+		return _operationError;
+	}
+	bool hasDraft() const {
+		return _registry.activeDraft() != nullptr;
+	}
+	bool isAdjustable() const {
+		return _registry.draft(currentBrush()) != nullptr;
+	}
+	BrushApplyResult parametersChanged();
+	const scenegraph::SceneGraph &renderSceneGraph();
+	void brushHandles(core::DynamicArray<BrushGizmoState> &output);
+	bool editBrushHandle(const BrushHandleEvent &event);
 
 	void preExecuteBrush(const voxel::RawVolume *volume);
 
@@ -208,21 +276,20 @@ public:
 					  const voxel::Voxel &voxel, const ModifiedRegionCallback &callback = {}, bool preview = false);
 public:
 	/**
-	 * @brief End the current ModifierType execution and modify the given volume according to the type.
+	 * @brief Apply the current brush to one node volume
 	 * @param[out,in] node The model node to modify
 	 * @param callback Called for every region that was modified for the current active modifier.
-	 * @note @c start() and @c stop() must be called before and after this method
+	 * @note @c beginBrush() and @c endBrush() must be called before and after this method
 	 */
 	bool execute(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 				 const ModifiedRegionCallback &callback = {});
 	void endBrush();
 	/**
-	 * @brief Commit pending brush changes to all active group nodes.
+	 * @brief Publish a valid draft or finish the active edit session.
 	 */
 	void commit();
 	/**
-	 * @brief Apply pending brush changes without switching brushes.
-	 * Commits any accumulated state (e.g. sculpt iterations, extrude depth).
+	 * @brief Publish the current draft without switching tools, then reactivate the brush.
 	 */
 	void brushApply();
 	void abort();
@@ -232,6 +299,24 @@ public:
 	bool aborted() const;
 
 	BrushType setBrushType(BrushType type);
+	bool setTool(const core::String &id);
+	template<class T>
+	T &tool(const core::String &id) {
+		return _registry.get<T>(id);
+	}
+	template<class T>
+	const T &tool(const core::String &id) const {
+		return _registry.get<T>(id);
+	}
+	const core::String &toolId() const {
+		return _toolId;
+	}
+	BrushRegistry &registry() {
+		return _registry;
+	}
+	const BrushRegistry &registry() const {
+		return _registry;
+	}
 	BrushType brushType() const;
 
 	const Brush *currentBrush() const;
@@ -240,13 +325,13 @@ public:
 	AABBBrush *currentAABBBrush();
 	voxel::Region calcBrushRegion();
 
+	/** Built-in accessors return the same instances owned by the registry. */
 	ShapeBrush &shapeBrush();
 	TextBrush &textBrush();
 	LineBrush &lineBrush();
 	StampBrush &stampBrush();
 	PlaneBrush &planeBrush();
 	PaintBrush &paintBrush();
-	BrushContext &brushContext();
 	SelectBrush &selectBrush();
 	TextureBrush &textureBrush();
 	NormalBrush &normalBrush();
@@ -254,6 +339,7 @@ public:
 	TransformBrush &transformBrush();
 	SculptBrush &sculptBrush();
 	RulerBrush &rulerBrush();
+	bool updateBoxRegion(const voxel::Region &region);
 	const BrushContext &brushContext() const;
 
 	/**
@@ -261,9 +347,8 @@ public:
 	 */
 	void executeAdditionalAction();
 	/**
-	 * @return @c true if the aabb that was formed has a side that is only 1 voxel
-	 * high. This is our indicator for allowing to modify the aabb according to
-	 * it's detected axis
+	 * @return @c true if the current brush needs another gesture step
+	 * (for example AABB depth after spanning a plane)
 	 * @sa executeAdditionalAction()
 	 */
 	bool needsAdditionalAction();
@@ -312,16 +397,14 @@ inline uint8_t Modifier::normalColorIndex() const {
 inline void Modifier::setNormalColorIndex(uint8_t paletteIndex) {
 	if (_brushContext.normalIndex != paletteIndex) {
 		_brushContext.normalIndex = paletteIndex;
-		_normalBrush.markDirty();
+		if (Brush *brush = _registry.find("normal")) {
+			brush->markDirty();
+		}
 	}
 }
 
 inline math::Axis Modifier::lockedAxis() const {
 	return _brushContext.lockedAxis;
-}
-
-inline BrushContext &Modifier::brushContext() {
-	return _brushContext;
 }
 
 inline const BrushContext &Modifier::brushContext() const {
@@ -333,55 +416,55 @@ inline BrushType Modifier::brushType() const {
 }
 
 inline TextBrush &Modifier::textBrush() {
-	return _textBrush;
+	return _registry.get<TextBrush>("text");
 }
 
 inline LineBrush &Modifier::lineBrush() {
-	return _lineBrush;
+	return _registry.get<LineBrush>("line");
 }
 
 inline ShapeBrush &Modifier::shapeBrush() {
-	return _shapeBrush;
+	return _registry.get<ShapeBrush>("shape");
 }
 
 inline StampBrush &Modifier::stampBrush() {
-	return _stampBrush;
+	return _registry.get<StampBrush>("stamp");
 }
 
 inline PlaneBrush &Modifier::planeBrush() {
-	return _planeBrush;
+	return _registry.get<PlaneBrush>("plane");
 }
 
 inline PaintBrush &Modifier::paintBrush() {
-	return _paintBrush;
+	return _registry.get<PaintBrush>("paint");
 }
 
 inline NormalBrush &Modifier::normalBrush() {
-	return _normalBrush;
+	return _registry.get<NormalBrush>("normal");
 }
 
 inline SelectBrush &Modifier::selectBrush() {
-	return _selectBrush;
+	return _registry.get<SelectBrush>("select");
 }
 
 inline TextureBrush &Modifier::textureBrush() {
-	return _textureBrush;
+	return _registry.get<TextureBrush>("texture");
 }
 
 inline ExtrudeBrush &Modifier::extrudeBrush() {
-	return _extrudeBrush;
+	return _registry.get<ExtrudeBrush>("extrude");
 }
 
 inline TransformBrush &Modifier::transformBrush() {
-	return _transformBrush;
+	return _registry.get<TransformBrush>("transform");
 }
 
 inline SculptBrush &Modifier::sculptBrush() {
-	return _sculptBrush;
+	return _registry.get<SculptBrush>("sculpt");
 }
 
 inline RulerBrush &Modifier::rulerBrush() {
-	return _rulerBrush;
+	return _registry.get<RulerBrush>("ruler");
 }
 
 inline const glm::ivec3 &Modifier::gridResolution() const {
@@ -412,6 +495,10 @@ inline bool Modifier::aborted() const {
 }
 
 inline void Modifier::setCursorPosition(const glm::ivec3 &pos, voxel::FaceNames face) {
+	if ((_brushContext.cursorPosition != pos || _brushContext.cursorFace != face) && currentBrush() &&
+		!isAdjustable()) {
+		currentBrush()->markDirty();
+	}
 	_brushContext.cursorPosition = pos;
 	_brushContext.cursorFace = face;
 }
@@ -423,6 +510,9 @@ inline voxel::FaceNames Modifier::cursorFace() const {
 inline void Modifier::setCursorVoxel(const voxel::Voxel &voxel) {
 	if (voxel::isAir(voxel.getMaterial())) {
 		return;
+	}
+	if (!(_brushContext.cursorVoxel == voxel)) {
+		finishEdit(BrushEditFinishReason::SettingsChange);
 	}
 	_brushContext.cursorVoxel = voxel;
 }

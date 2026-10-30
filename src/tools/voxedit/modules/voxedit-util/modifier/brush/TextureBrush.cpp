@@ -66,6 +66,7 @@ void TextureBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWr
 }
 
 void TextureBrush::setImage(const image::ImagePtr &texture) {
+	markSettingsChanged();
 	_image = texture;
 	markDirty();
 }
@@ -75,6 +76,7 @@ const image::ImagePtr &TextureBrush::image() const {
 }
 
 void TextureBrush::setUV0(const glm::vec2 &uv0) {
+	markSettingsChanged();
 	_uv0 = uv0;
 	markDirty();
 }
@@ -84,6 +86,7 @@ const glm::vec2 &TextureBrush::uv0() const {
 }
 
 void TextureBrush::setUV1(const glm::vec2 &uv1) {
+	markSettingsChanged();
 	_uv1 = uv1;
 	markDirty();
 }
@@ -93,6 +96,7 @@ const glm::vec2 &TextureBrush::uv1() const {
 }
 
 void TextureBrush::setProjectOntoSurface(bool projectOntoSurface) {
+	markSettingsChanged();
 	_projectOntoSurface = projectOntoSurface;
 	markDirty();
 }

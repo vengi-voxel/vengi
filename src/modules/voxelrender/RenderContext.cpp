@@ -325,6 +325,7 @@ void RenderContext::endFrame() {
 }
 
 void RenderContext::shutdown() {
+	surfaceOverlay.shutdown();
 	frameBuffer.shutdown();
 	resolveFrameBuffer.shutdown();
 	oitFrameBuffer.shutdown();

@@ -5,8 +5,7 @@
 #pragma once
 
 #include "Brush.h"
-#include "TransformOperation.h"
-#include "SnapshotHelper.h"
+#include "operation/TransformOperation.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "core/GLM.h"
@@ -35,15 +34,16 @@ static_assert(lengthof(TransformModeIcons) == (int)TransformMode::Max, "Transfor
  * in preExecute() from the real volume.
  * Consecutive parameter changes always re-transform from the original snapshot
  * so transforms are absolute, not incremental.
- * On finalize (reset/brush switch) the final state is committed to the undo stack.
+ * Changes stay in a draft until Apply (or a tool change with a valid preview).
+ * Cancel or Escape discards the draft.
  *
  * @ingroup Brushes
  */
 class TransformBrush : public Brush, public TransformOperation {
 private:
 	using Super = Brush;
+
 	bool _active = false;
-	voxel::RawVolume *_lastVolume = nullptr;
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -55,14 +55,12 @@ public:
 
 	TransformBrush() : Super(BrushType::Transform, ModifierType::Override, ModifierType::Override) {
 	}
+	TransformBrush(const TransformBrush &other);
 	virtual ~TransformBrush() = default;
 
 	void onSceneChange() override;
 	void reset() override;
 	void onActivated() override;
-	bool hasPendingChanges() const override;
-	bool onDeactivated() override;
-	voxel::Region revertChanges(voxel::RawVolume *volume) override;
 	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool beginBrush(const BrushContext &ctx) override;
 	void endBrush(BrushContext &ctx) override;
@@ -76,8 +74,8 @@ public:
 	void setTransformMode(TransformMode mode);
 
 	/**
-	 * @brief Commit the current transform: clear history (keeping the volume as-is)
-	 * and re-capture the snapshot from the current volume state on next execute.
+	 * @brief Commit the current transform: keep the volume as-is and recapture
+	 * the snapshot from the current volume state on the next evaluate.
 	 * Called when switching transform modes so the new mode starts from the
 	 * result of the previous one rather than jumping back to the original.
 	 */
@@ -102,9 +100,10 @@ public:
 	size_t snapshotVoxelCount() const;
 	const voxel::Region &snapshotRegion() const;
 
-	bool wantBrushGizmo(const BrushContext &ctx) const override;
-	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
-	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
+	bool hasHandle(const BrushContext &ctx) const;
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 						 uint32_t operation) override;
 };
 
@@ -113,47 +112,52 @@ inline bool TransformBrush::managesOwnSelection() const {
 }
 
 inline TransformMode TransformBrush::transformMode() const {
-	return _transformMode;
+	return _parameters.mode;
 }
 
 inline voxel::VoxelSampling TransformBrush::voxelSampling() const {
-	return _voxelSampling;
+	return _parameters.sampling;
 }
 
 inline void TransformBrush::setVoxelSampling(voxel::VoxelSampling sampling) {
-	_voxelSampling = sampling;
+	markSettingsChanged();
+	_parameters.sampling = sampling;
 }
 
 inline const glm::ivec3 &TransformBrush::moveOffset() const {
-	return _moveOffset;
+	return _parameters.translation;
 }
 
 inline void TransformBrush::setMoveOffset(const glm::ivec3 &offset) {
-	_moveOffset = glm::clamp(offset, glm::ivec3(-MaxMoveOffset), glm::ivec3(MaxMoveOffset));
+	markSettingsChanged();
+	_parameters.translation = glm::clamp(offset, glm::ivec3(-MaxMoveOffset), glm::ivec3(MaxMoveOffset));
 }
 
 inline const glm::ivec3 &TransformBrush::shearOffset() const {
-	return _shearOffset;
+	return _parameters.shear;
 }
 
 inline void TransformBrush::setShearOffset(const glm::ivec3 &offset) {
-	_shearOffset = glm::clamp(offset, glm::ivec3(-MaxShearOffset), glm::ivec3(MaxShearOffset));
+	markSettingsChanged();
+	_parameters.shear = glm::clamp(offset, glm::ivec3(-MaxShearOffset), glm::ivec3(MaxShearOffset));
 }
 
 inline const glm::vec3 &TransformBrush::scale() const {
-	return _scale;
+	return _parameters.scale;
 }
 
 inline void TransformBrush::setScale(const glm::vec3 &scale) {
-	_scale = glm::max(scale, glm::vec3(0.01f));
+	markSettingsChanged();
+	_parameters.scale = glm::max(scale, glm::vec3(0.01f));
 }
 
 inline const glm::vec3 &TransformBrush::rotationDegrees() const {
-	return _rotationDegrees;
+	return _parameters.rotationDegrees;
 }
 
 inline void TransformBrush::setRotationDegrees(const glm::vec3 &degrees) {
-	_rotationDegrees = degrees;
+	markSettingsChanged();
+	_parameters.rotationDegrees = degrees;
 }
 
 inline bool TransformBrush::hasSnapshot() const {

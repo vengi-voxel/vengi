@@ -95,6 +95,7 @@ public:
 
 	// ISceneRenderer
 	void update() override;
+	void waitForPendingExtractions() override;
 	bool isVisible(const core::UUID &uuid, bool hideEmpty = true) const override;
 	void renderUI(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;
 	void renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) override;

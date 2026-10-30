@@ -3,6 +3,7 @@
  */
 
 #include "voxedit-util/SceneRenderer.h"
+#include "voxedit-util/modifier/ModifierRenderer.h"
 #include "video/tests/AbstractGLTest.h"
 #include "voxedit-util/Config.h"
 #include "voxel/Region.h"
@@ -62,6 +63,31 @@ protected:
 
 TEST_F(SceneRendererTest, testInit) {
 	// empty to test init and shutdown
+}
+
+TEST_F(SceneRendererTest, testUnchangedBrushPreviewDoesNotQueueExtractionAgain) {
+	const voxel::MeshStatePtr meshState = core::make_shared<voxel::MeshState>();
+	ModifierRenderer renderer(core::make_shared<core::TimeProvider>(), meshState);
+	ASSERT_TRUE(renderer.init());
+	voxel::RawVolume volume(voxel::Region(0, 7));
+	volume.setVoxel(1, 1, 1, voxel::Voxel(voxel::VoxelType::Generic, 1));
+	palette::Palette palette;
+	palette.nippon();
+	ModifierRendererContext context;
+	context.brushActive = true;
+	context.activeRegion = volume.region();
+	context.previewVolume = &volume;
+	context.palette = &palette;
+	renderer.update(context);
+	const int pending = meshState->pendingExtractions();
+	EXPECT_GT(pending, 0);
+	renderer.update(context);
+	EXPECT_EQ(pending, meshState->pendingExtractions());
+	renderer.waitForPendingExtractions();
+	renderer.update(context);
+	EXPECT_EQ(0, meshState->pendingExtractions());
+	renderer.clearBrushVolumes();
+	renderer.shutdown();
 }
 
 TEST_F(SceneRendererTest, testRemoveNodeCancelsPendingRegionExtraction) {

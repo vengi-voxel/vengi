@@ -127,21 +127,12 @@ bool ExtrudeBrushTool::execute(const json::Json &id, const json::Json &args, Too
 	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, modifierType);
 
 	// Get and configure the extrude brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	ExtrudeBrush &extrudeBrush = modifier.extrudeBrush();
-
-	// Save previous state
-	const BrushType prevBrushType = modifier.brushType();
-	const int prevDepth = extrudeBrush.depth();
-	const int prevOffsetU = extrudeBrush.offsetU();
-	const int prevOffsetV = extrudeBrush.offsetV();
-	const bool prevFillWalls = extrudeBrush.fillWalls();
+	ExtrudeBrush extrudeBrush;
 
 	// Configure the extrude brush
-	modifier.setBrushType(BrushType::Extrude);
 	extrudeBrush.setDepth(depth);
 	extrudeBrush.setOffsetU(offsetU);
 	extrudeBrush.setOffsetV(offsetV);
@@ -149,22 +140,16 @@ bool ExtrudeBrushTool::execute(const json::Json &id, const json::Json &args, Too
 
 	// Begin and execute the brush
 	extrudeBrush.beginBrush(brushContext);
-	extrudeBrush.preExecute(brushContext, volume);
-	const bool success = extrudeBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const BrushApplyResult applied = modifier.executeRequest(extrudeBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	extrudeBrush.endBrush(brushContext);
 
-	// Restore previous state
-	extrudeBrush.setDepth(prevDepth);
-	extrudeBrush.setOffsetU(prevOffsetU);
-	extrudeBrush.setOffsetV(prevOffsetV);
-	extrudeBrush.setFillWalls(prevFillWalls);
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id,
 						  core::String::format("Extrude executed successfully (face=%s, depth=%d)",
 											   faceStr.c_str(), depth),

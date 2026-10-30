@@ -3,7 +3,6 @@
  */
 
 #include "ShapeOperation.h"
-#include "core/Log.h"
 #include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxelgenerator/ShapeGenerator.h"
@@ -24,8 +23,8 @@ namespace voxedit {
  * @param[out] depth Shape depth perpendicular to face normal and width
  * @return The axis aligned with the face normal
  */
-static math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width,
-												int &height, int &depth) {
+static math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
+										   int &depth) {
 	core_assert(face != voxel::FaceNames::Max);
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
@@ -82,7 +81,6 @@ bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &paramet
 	if (!voxel::isAir(voxel.getMaterial())) {
 		const palette::Palette &palette = wrapper.node().palette();
 		if (palette.color(voxel.getColor()).a == 0) {
-			Log::warn("Can't place shape with fully transparent color");
 			return false;
 		}
 	}
@@ -101,7 +99,8 @@ bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &paramet
 		glm::ivec3 offset{0};
 		offset[axisIdx] = 1;
 		for (int i = 0; i < height; ++i) {
-			voxelgenerator::shape::createEllipsePlane(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ, voxel);
+			voxelgenerator::shape::createEllipsePlane(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ,
+													  voxel);
 			circleCenter += offset;
 		}
 		break;
@@ -122,13 +121,14 @@ bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &paramet
 		glm::ivec3 offset{0};
 		offset[axisIdx] = 1;
 		for (int i = 0; i < height; ++i) {
-			voxelgenerator::shape::createEllipseOutline(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ, settings.thickness, voxel);
+			voxelgenerator::shape::createEllipseOutline(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ,
+														settings.thickness, voxel);
 			circleCenter += offset;
 		}
 		break;
 	}
 	case ShapeType::Max:
-		Log::warn("Invalid shape type selected - can't perform action");
+		return false;
 	}
 	return true;
 }

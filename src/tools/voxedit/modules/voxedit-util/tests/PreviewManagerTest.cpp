@@ -105,6 +105,76 @@ protected:
 	}
 };
 
+TEST_F(PreviewManagerTest, testPlanePreviewTracksExtrusionHeightUntilRelease) {
+	for (ModifierType mode : {ModifierType::Place, ModifierType::Erase}) {
+		SCOPED_TRACE((int)mode);
+		core::SharedPtr<TrackingModifierRenderer> renderer = core::make_shared<TrackingModifierRenderer>();
+		SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
+						 core::make_shared<ISceneRenderer>(), renderer);
+		mgr.construct();
+		ASSERT_TRUE(mgr.init());
+		ASSERT_TRUE(mgr.newScene(true, "plane preview", voxel::Region(-2, 5)));
+		scenegraph::SceneGraphNode &node = mgr.sceneGraph().node(mgr.activeNode());
+		voxel::RawVolume *volume = node.volume();
+		const voxel::Voxel ground(voxel::VoxelType::Generic, 1);
+		for (int x = 0; x < 3; ++x) {
+			for (int z = 0; z < 3; ++z) {
+				volume->setVoxel(x, -1, z, ground);
+				volume->setVoxel(x, 0, z, ground);
+				volume->setVoxel(x, 1, z, ground);
+			}
+		}
+		mgr.modified(node.uuid(), voxel::Region(0, -1, 0, 2, 1, 2));
+		const voxel::RawVolume original(*volume);
+		const core::UUID uuid = node.uuid();
+		const size_t states = mgr.mementoHandler().stateSize();
+		Modifier &modifier = mgr.modifier();
+		modifier.setBrushType(BrushType::Plane);
+		modifier.setModifierType(mode);
+		modifier.setCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 2));
+		modifier.setHitCursorVoxel(ground);
+		const int initial = mode == ModifierType::Place ? 2 : 1;
+		const int direction = mode == ModifierType::Place ? 1 : -1;
+		modifier.setCursorPosition(glm::ivec3(1, initial, 1), voxel::FaceNames::PositiveY);
+		ASSERT_TRUE(modifier.beginEdit());
+		const int heights[] = {initial, initial + direction * 2, initial + direction};
+		for (int height : heights) {
+			SCOPED_TRACE(height);
+			modifier.setCursorPosition(glm::ivec3(1, height, 1), voxel::FaceNames::PositiveY);
+			modifier.previewManager().updateBrushVolumePreview(modifier, node.palette(), volume, mgr.sceneGraph());
+			const voxel::RawVolume *preview = modifier.previewManager().previewVolume();
+			ASSERT_NE(nullptr, preview);
+			EXPECT_EQ(voxel::Region(0, glm::min(initial, height), 0, 2, glm::max(initial, height), 2), preview->region());
+			EXPECT_FALSE(modifier.previewManager().brushPreview().useSimplePreview);
+			for (int x = 0; x < 3; ++x) {
+				for (int z = 0; z < 3; ++z) {
+					for (int y = glm::min(initial, height); y <= glm::max(initial, height); ++y) {
+						EXPECT_EQ(mode == ModifierType::Place ? 2 : 1, preview->voxel(x, y, z).getColor());
+						EXPECT_FALSE(voxel::isAir(preview->voxel(x, y, z).getMaterial()));
+					}
+				}
+			}
+			core::DynamicArray<BrushGizmoState> handles;
+			modifier.brushHandles(handles);
+			EXPECT_TRUE(handles.empty());
+			EXPECT_EQ(0, core_memcmp(original.data(), volume->data(), voxel::RawVolume::size(volume->region())));
+			EXPECT_EQ(states, mgr.mementoHandler().stateSize());
+		}
+		modifier.finishEdit();
+		EXPECT_FALSE(modifier.isEditActive());
+		if (mode == ModifierType::Place) {
+			EXPECT_EQ(2, volume->voxel(0, 3, 0).getColor());
+			EXPECT_TRUE(voxel::isAir(volume->voxel(0, 4, 0).getMaterial()));
+		} else {
+			EXPECT_TRUE(voxel::isAir(volume->voxel(0, 0, 0).getMaterial()));
+			EXPECT_EQ(ground, volume->voxel(0, -1, 0));
+		}
+		ASSERT_TRUE(mgr.undo());
+		volume = mgr.sceneGraphNodeByUUID(uuid)->volume();
+		EXPECT_EQ(0, core_memcmp(original.data(), volume->data(), voxel::RawVolume::size(volume->region())));
+		mgr.shutdown();
+	}
+}
 TEST_F(PreviewManagerTest, testNormalPreview) {
 	for (NormalBrush::PaintMode mode : {NormalBrush::PaintMode::Manual, NormalBrush::PaintMode::Auto}) {
 		auto renderer = core::make_shared<TrackingModifierRenderer>();
@@ -144,7 +214,9 @@ TEST_F(PreviewManagerTest, testNormalPreview) {
 		ASSERT_NE(nullptr, modifier.previewVolume());
 		EXPECT_EQ(expected, modifier.previewVolume()->voxel(pos).getNormal());
 		EXPECT_EQ(original.getColor(), modifier.previewVolume()->voxel(pos).getColor());
-		EXPECT_EQ(&node.normalPalette(), renderer->lastContext.normalPalette);
+		ASSERT_NE(nullptr, renderer->lastContext.normalPalette);
+		EXPECT_NE(&node.normalPalette(), renderer->lastContext.normalPalette);
+		EXPECT_EQ(node.normalPalette().hash(), renderer->lastContext.normalPalette->hash());
 		EXPECT_EQ(original, node.volume()->voxel(pos));
 		EXPECT_EQ(original, node.volume()->voxel(0, 0, 0));
 		EXPECT_EQ(canUndo, mgr.mementoHandler().canUndo());
@@ -334,7 +406,8 @@ TEST_F(PreviewManagerTest, testZeroRadiusStrokeCursorMoves) {
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	modifier.setGridResolution(1);
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 	for (int i = 0; i < 3; ++i) {
 		const glm::ivec3 pos(i, 0, 0);
 		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
@@ -385,7 +458,8 @@ TEST_F(PreviewManagerTest, testPreviewShapeAABB) {
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 
@@ -414,7 +488,8 @@ TEST_F(PreviewManagerTest, testPreviewShapeEllipse) {
 	prepare(modifier, glm::ivec3(-2), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 
@@ -464,7 +539,8 @@ TEST_F(PreviewManagerTest, testPreviewPaintNeedsExistingVoxels) {
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Paint, BrushType::Paint);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 
@@ -491,7 +567,8 @@ TEST_F(PreviewManagerTest, testPreviewReset) {
 	prepare(modifier, glm::ivec3(-2), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 	ASSERT_NE(modifier.previewVolume(), nullptr);
@@ -504,13 +581,18 @@ TEST_F(PreviewManagerTest, testPreviewReset) {
 	mgr.shutdown();
 }
 
-TEST_F(PreviewManagerTest, testPreviewEraseUsesPlace) {
-	auto renderer = core::make_shared<TrackingModifierRenderer>();
+TEST_F(PreviewManagerTest, testErasePreviewShowsOnlyRemovedSourceVoxels) {
+	core::SharedPtr<TrackingModifierRenderer> renderer = core::make_shared<TrackingModifierRenderer>();
 	SceneManager mgr(core::make_shared<core::TimeProvider>(), _testApp->filesystem(),
 					 core::make_shared<ISceneRenderer>(), core::make_shared<IModifierRenderer>());
 	mgr.construct();
 	ASSERT_TRUE(mgr.init());
 	mgr.newScene(true, "test", voxel::Region(-10, 10));
+	voxel::RawVolume *volume = mgr.volume(mgr.activeNodeUUID());
+	ASSERT_NE(nullptr, volume);
+	const voxel::Voxel source(voxel::VoxelType::Generic, 3);
+	volume->setVoxel(0, 0, 0, source);
+	volume->setVoxel(6, 0, 0, source);
 
 	ModifierEx modifier(&mgr, renderer);
 	modifier.construct();
@@ -520,24 +602,26 @@ TEST_F(PreviewManagerTest, testPreviewEraseUsesPlace) {
 	prepare(modifier, glm::ivec3(-2), glm::ivec3(2), ModifierType::Erase, BrushType::Shape);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 
 	ASSERT_NE(modifier.previewVolume(), nullptr) << "Erase preview should still create a volume";
-	int voxelCount = 0;
 	const voxel::RawVolume *pv = modifier.previewVolume();
 	const voxel::Region &pvRegion = pv->region();
 	for (int z = pvRegion.getLowerZ(); z <= pvRegion.getUpperZ(); ++z) {
 		for (int y = pvRegion.getLowerY(); y <= pvRegion.getUpperY(); ++y) {
 			for (int x = pvRegion.getLowerX(); x <= pvRegion.getUpperX(); ++x) {
-				if (!voxel::isAir(pv->voxel(x, y, z).getMaterial())) {
-					++voxelCount;
-				}
+				EXPECT_EQ(x == 0 && y == 0 && z == 0, !voxel::isAir(pv->voxel(x, y, z).getMaterial()));
 			}
 		}
 	}
-	EXPECT_GT(voxelCount, 0) << "Erase preview should still show voxels (using Place internally)";
+	EXPECT_EQ(source.getColor(), pv->voxel(0, 0, 0).getColor());
+	EXPECT_TRUE(pv->voxel(0, 0, 0).getFlags() & voxel::FlagOutline);
+	EXPECT_EQ(source, volume->voxel(0, 0, 0));
+	EXPECT_EQ(source, volume->voxel(6, 0, 0));
+	EXPECT_TRUE(renderer->lastContext.previewErase);
 	modifier.shutdown();
 	mgr.shutdown();
 }
@@ -559,7 +643,8 @@ TEST_F(PreviewManagerTest, testPreviewMirror) {
 	prepare(modifier, glm::ivec3(1, -1, -1), glm::ivec3(3, 1, 1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 
@@ -585,7 +670,8 @@ TEST_F(PreviewManagerTest, testPreviewSimpleMirror) {
 	prepare(modifier, glm::ivec3(1, -1, -1), glm::ivec3(3, 1, 1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 
@@ -610,7 +696,8 @@ TEST_F(PreviewManagerTest, testPreviewNoVolume) {
 	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
-	palette.tryAdd(color::RGBA{255, 0, 0, 255});
+	palette.setColor(1, color::RGBA{255, 0, 0, 255});
+	palette.setSize(2);
 
 	triggerPreviewUpdate(modifier, palette);
 

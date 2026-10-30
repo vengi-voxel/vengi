@@ -25,6 +25,12 @@
 
 namespace voxedit {
 
+SculptBrush::SculptBrush(const SculptBrush &other) : Super(other), SculptOperation() {
+	setParameters(other.parameters());
+	_skinSourceIdentity = _parameters.skin.get();
+	_skinFilePath = other._skinFilePath;
+}
+
 void SculptBrush::onSceneChange() {
 	Super::onSceneChange();
 	_active = false;
@@ -40,40 +46,11 @@ void SculptBrush::onSceneChange() {
 }
 
 void SculptBrush::onActivated() {
-	reset();
-	// Suppress undo registration during preview - only the final commit should create an undo entry.
-	// Also skip InvalidateNodeCache: selection bounding box does not change during sculpt preview,
-	// and regionForFlag() scans the full volume which is very expensive on large models.
-	_sceneModifiedFlags = SceneModifiedFlags::NoUndo & ~SceneModifiedFlags::InvalidateNodeCache;
-}
-
-bool SculptBrush::hasPendingChanges() const {
-	return _hasSnapshot;
-}
-
-voxel::Region SculptBrush::revertChanges(voxel::RawVolume *volume) {
-	voxel::RawVolumeWrapper wrapper(volume);
-	for (const voxel::VoxelPosition &entry : _historyEntries) {
-		wrapper.setVoxel(entry.pos.x, entry.pos.y, entry.pos.z, entry.voxel);
-	}
-	_historyEntries.clear();
-	_historyRegion = voxel::Region::InvalidRegion;
-	return wrapper.dirtyRegion();
-}
-
-bool SculptBrush::onDeactivated() {
-	// Restore undo registration so the final execute in setBrushType() records the undo entry
-	_sceneModifiedFlags = SceneModifiedFlags::All;
-	// Force re-apply so generate() runs and creates a dirty region for the undo entry
-	_paramsDirty = true;
-	// Clear _active so commit()'s beginBrushFromPanel() can succeed
-	_active = false;
-	return hasPendingChanges();
+	clearOperation();
 }
 
 void SculptBrush::reset() {
 	Super::reset();
-	_sceneModifiedFlags = SceneModifiedFlags::All;
 	_active = false;
 	_paramsDirty = false;
 	_hasSnapshot = false;
@@ -86,45 +63,47 @@ void SculptBrush::reset() {
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
 	_capturedVolumeLower = glm::ivec3(0);
-	_strength = 0.5f;
-	_iterations = 1;
-	_heightThreshold = 1;
-	_preserveTopHeight = false;
-	_trimPerStep = 1;
-	_kernelSize = 4;
-	_sigma = 4.0f;
-	_sculptMode = SculptMode::Erode;
-	_flattenFace = voxel::FaceNames::Max;
-	_smoothWallClearDepth = MaxSmoothWallClearDepth;
-	_smoothWallInterp = voxelutil::SmoothWallInterp::InverseDistance;
-	_smoothWallFillHoles = true;
-	_removeAboveDepth = 0;
-	_extendOnly = true;
-	_removeOnly = false;
-	_brushRadius = 3;
+	_parameters.strength = 0.5f;
+	_parameters.iterations = 1;
+	_parameters.heightThreshold = 1;
+	_parameters.preserveTopHeight = false;
+	_parameters.trimPerStep = 1;
+	_parameters.kernelSize = 4;
+	_parameters.sigma = 4.0f;
+	_parameters.mode = SculptMode::Erode;
+	_parameters.face = voxel::FaceNames::Max;
+	_parameters.smoothWallClearDepth = 256;
+	_parameters.smoothWallInterp = voxelutil::SmoothWallInterp::InverseDistance;
+	_parameters.smoothWallFillHoles = true;
+	_parameters.removeAboveDepth = 0;
+	_parameters.extendOnly = true;
+	_parameters.removeOnly = false;
+	_parameters.radius = 3;
 	_planeFitted = false;
 	_planeGradU = 0.0f;
 	_planeGradV = 0.0f;
 	_lastPaintPos = glm::ivec3(INT_MIN);
-	_reskinConfig.preview = true;
+	_parameters.reskin.preview = true;
 }
 
 bool SculptBrush::beginBrush(const BrushContext &ctx) {
 	if (_active) {
 		return false;
 	}
-	const bool needsFace = modeNeedsFace(_sculptMode);
+	const bool needsFace = modeNeedsFace(_parameters.mode);
 	if (needsFace && ctx.cursorFace != voxel::FaceNames::Max) {
 		// Only capture face on first click (when no face is set yet).
 		// Subsequent clicks should not re-trigger the full sculpt calculation.
-		if (_flattenFace == voxel::FaceNames::Max) {
-			_flattenFace = ctx.cursorFace;
+		if (_parameters.face == voxel::FaceNames::Max) {
+			_parameters.face = ctx.cursorFace;
 			_paramsDirty = true;
+			markDirty();
 		}
-		if (_sculptMode == SculptMode::SquashToPlane) {
-			const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(_flattenFace));
-			_squashPlaneCoord = ctx.cursorPosition[axisIdx];
+		if (_parameters.mode == SculptMode::SquashToPlane) {
+			const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(_parameters.face));
+			_parameters.plane = ctx.cursorPosition[axisIdx];
 			_paramsDirty = true;
+			markDirty();
 		}
 	}
 	_active = true;
@@ -137,7 +116,7 @@ void SculptBrush::endBrush(BrushContext &) {
 }
 
 bool SculptBrush::active() const {
-	return _active || _hasSnapshot;
+	return _parameters.mode == SculptMode::ExtendPlane || _active || _hasSnapshot;
 }
 
 void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
@@ -152,20 +131,25 @@ void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vo
 			adjustSnapshotForRegionShift(delta);
 		}
 	}
-	if (_hasSnapshot && _sculptMode == SculptMode::ExtendPlane && _planeFitted) {
+	if (_hasSnapshot && _parameters.mode == SculptMode::ExtendPlane && !_planeFitted &&
+		_parameters.face != voxel::FaceNames::Max) {
+		fitPlaneFromSnapshot();
+	}
+	if (_hasSnapshot && _parameters.mode == SculptMode::ExtendPlane && _planeFitted) {
 		if (_active && ctx.cursorPosition != _lastPaintPos) {
 			_paramsDirty = true;
+			markDirty();
 		}
 	}
 	if (_hasSnapshot) {
 		_cachedRegion = _snapshotRegion;
-		if (_sculptMode == SculptMode::Reskin) {
+		if (_parameters.mode == SculptMode::Reskin) {
 			// Expand along face normal for z offset + skin layers growing outward
-			const int expand = glm::abs(_reskinConfig.zOffset) + _reskinConfig.skinDepth;
+			const int expand = glm::abs(_parameters.reskin.zOffset) + _parameters.reskin.skinDepth;
 			_cachedRegion.grow(expand);
-		} else if (_sculptMode == SculptMode::ExtendPlane && _planeFitted) {
+		} else if (_parameters.mode == SculptMode::ExtendPlane && _planeFitted) {
 			// Show brush preview around cursor position
-			const int r = _brushRadius;
+			const int r = _parameters.radius;
 			glm::ivec3 lo = ctx.cursorPosition;
 			glm::ivec3 hi = ctx.cursorPosition;
 			lo[_planeUAxis] -= r;
@@ -190,12 +174,12 @@ void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vo
 			lo[_planeHeightAxis] = static_cast<int>(glm::floor(minH)) - 1;
 			hi[_planeHeightAxis] = static_cast<int>(glm::ceil(maxH)) + 1;
 			_cachedRegion = voxel::Region(lo, hi);
-		} else if (_sculptMode == SculptMode::ExtendPlane) {
+		} else if (_parameters.mode == SculptMode::ExtendPlane) {
 			// Plane not yet fitted - show snapshot region
-			_cachedRegion.grow(_iterations);
+			_cachedRegion.grow(_parameters.iterations);
 		} else {
 			// Expand by iterations since smoothing can grow surface by 1 voxel per iteration
-			_cachedRegion.grow(_iterations);
+			_cachedRegion.grow(_parameters.iterations);
 		}
 		_cachedRegionValid = true;
 	}
@@ -213,129 +197,63 @@ voxel::Region SculptBrush::calcRegion(const BrushContext &ctx) const {
 
 void SculptBrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						   const voxel::Region &) {
-	if (!_hasSnapshot) {
-		return;
-	}
-	if (!_paramsDirty) {
-		return;
-	}
-
-	_paramsDirty = false;
-
-	// Fast path for commit: when MarkUndo is set, the volume already has the
-	// correct data from the NoUndo preview run. Just report the dirty region
-	// from _historyEntries so the undo system records the change.
-	if ((_sceneModifiedFlags & SceneModifiedFlags::MarkUndo) == SceneModifiedFlags::MarkUndo) {
-		if (!_historyEntries.empty()) {
-			for (const voxel::VoxelPosition &entry : _historyEntries) {
-				wrapper.addToDirtyRegion(entry.pos);
-			}
-		}
-		return;
-	}
-
-	// ExtendPlane uses additive painting - no history restore between strokes
-	if (_sculptMode == SculptMode::ExtendPlane) {
-		if (!_planeFitted && _flattenFace != voxel::FaceNames::Max) {
-			fitPlaneFromSnapshot();
-			if (_planeFitted) {
-				// Initialize history tracking for dedup in saveToHistory().
-				// Must happen before any painting so the first write to each position
-				// is recorded as the original value.
-				voxel::RawVolume *vol = wrapper.volume();
-				_historyRegion = _snapshotRegion;
-				_historyRegion.grow(_brushRadius + _removeAboveDepth + 2);
-				_historyRegion.cropTo(vol->region());
-				_historyBits = voxel::BitVolume(_historyRegion);
-			}
-		}
-		if (_planeFitted && _active) {
-			paintExtendPlane(wrapper, ctx.cursorVoxel, ctx.cursorPosition);
-			_lastPaintPos = ctx.cursorPosition;
-			markDirty();
-		} else if (_planeFitted && !_active && !_historyEntries.empty()) {
-			// Commit path: _active is false, changes are already in the volume.
-			// Mark all modified positions as dirty so the undo system captures them.
-			for (const voxel::VoxelPosition &entry : _historyEntries) {
-				wrapper.addToDirtyRegion(entry.pos);
-			}
-			markDirty();
-		}
-		return;
-	}
-
-	voxel::RawVolume *vol = wrapper.volume();
-
-	// Restore previously modified state from flat history array (O(N) sequential iteration,
-	// no hash chain traversal). This undoes the previous sculpt so we re-apply from scratch.
-	for (const voxel::VoxelPosition &entry : _historyEntries) {
-		if (vol->setVoxel(entry.pos, entry.voxel)) {
-			wrapper.addToDirtyRegion(entry.pos);
-		}
-	}
-	_historyEntries.clear();
-
-	// Skip sculpt when the mode needs a face direction but none is set yet
-	const bool needsFace = modeNeedsFace(_sculptMode);
-	if (needsFace && _flattenFace == voxel::FaceNames::Max) {
-		return;
-	}
-
-	// Initialize history tracking BitVolume for this generate() pass.
-	// Sized to snapshot region + margin for modes that grow outward.
-	_historyRegion = _snapshotRegion;
-	_historyRegion.grow(_iterations + 2);
-	_historyRegion.cropTo(vol->region());
-	_historyBits = voxel::BitVolume(_historyRegion);
-
-	applySculpt(wrapper, ctx.cursorVoxel);
+	_parameters.voxel = ctx.cursorVoxel;
+	_parameters.cursor = ctx.cursorPosition;
+	evaluate(wrapper);
 }
 
 void SculptBrush::setSculptMode(SculptMode mode) {
+	markSettingsChanged();
 	const bool needsFace = modeNeedsFace(mode);
-	const bool hadFace = modeNeedsFace(_sculptMode);
+	const bool hadFace = modeNeedsFace(_parameters.mode);
 	if (needsFace && !hadFace) {
-		_flattenFace = voxel::FaceNames::Max;
+		_parameters.face = voxel::FaceNames::Max;
 	}
-	if (mode == SculptMode::SmoothGaussian && _sculptMode != SculptMode::SmoothGaussian) {
-		_iterations = 3;
+	if (mode == SculptMode::SmoothGaussian && _parameters.mode != SculptMode::SmoothGaussian) {
+		_parameters.iterations = 3;
 	}
-	if (mode == SculptMode::ExtendPlane && _sculptMode != SculptMode::ExtendPlane) {
+	if (mode == SculptMode::ExtendPlane && _parameters.mode != SculptMode::ExtendPlane) {
 		_planeFitted = false;
 		_lastPaintPos = glm::ivec3(INT_MIN);
 	}
-	_sculptMode = mode;
+	_parameters.mode = mode;
 	_paramsDirty = true;
+	markDirty();
 }
 
 void SculptBrush::setSkinVolume(const voxel::RawVolume *skinVolume) {
-	_skinVolume = skinVolume;
+	markSettingsChanged();
+	_skinSourceIdentity = skinVolume;
+	_parameters.skin =
+		skinVolume ? core::make_shared<voxel::RawVolume>(*skinVolume) : core::SharedPtr<voxel::RawVolume>();
 	if (skinVolume != nullptr) {
 		const voxel::Region &sr = skinVolume->region();
 		const glm::ivec3 extents = sr.getUpperCorner() - sr.getLowerCorner() + 1;
 		// Auto-detect depth axis from thinnest dimension (positive face = outward)
 		if (extents.x <= extents.y && extents.x <= extents.z) {
-			_reskinConfig.skinFace = voxel::FaceNames::PositiveX;
+			_parameters.reskin.skinFace = voxel::FaceNames::PositiveX;
 		} else if (extents.z <= extents.x && extents.z <= extents.y) {
-			_reskinConfig.skinFace = voxel::FaceNames::PositiveZ;
+			_parameters.reskin.skinFace = voxel::FaceNames::PositiveZ;
 		} else {
-			_reskinConfig.skinFace = voxel::FaceNames::PositiveY;
+			_parameters.reskin.skinFace = voxel::FaceNames::PositiveY;
 		}
-		const int upIdx = math::getIndexForAxis(voxel::faceToAxis(_reskinConfig.skinFace));
+		const int upIdx = math::getIndexForAxis(voxel::faceToAxis(_parameters.reskin.skinFace));
 		const int depthExtent = extents[upIdx];
-		_reskinConfig.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
+		_parameters.reskin.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
 	}
 	_paramsDirty = true;
+	markDirty();
 }
 
 void SculptBrush::setOwnedSkinVolume(voxel::RawVolume *skinVolume, const core::String &filePath,
 									 const palette::Palette *skinPalette) {
+	markSettingsChanged();
 	_ownedSkinVolume = skinVolume;
 	_skinFilePath = filePath;
 	if (skinPalette != nullptr) {
-		_skinPalette = *skinPalette;
+		_parameters.skinPalette = *skinPalette;
 	} else {
-		_skinPalette = {};
+		_parameters.skinPalette = {};
 	}
 	setSkinVolume(skinVolume);
 }

@@ -21,22 +21,7 @@ bool LineBrush::allowNextBezierPreview(const BrushContext &ctx, int selectedSegm
 }
 
 void LineBrush::onActivated() {
-	_commitPending = false;
 	_active = false;
-	_lastVolume = nullptr;
-}
-
-bool LineBrush::hasPendingChanges() const {
-	return _bezier && !_segments.empty();
-}
-
-bool LineBrush::needsPerFrameFlush() const {
-	return false;
-}
-
-bool LineBrush::onDeactivated() {
-	_commitPending = hasPendingChanges();
-	return _commitPending;
 }
 
 void LineBrush::construct() {
@@ -55,12 +40,17 @@ bool LineBrush::beginBrush(const BrushContext &ctx) {
 		return false;
 	}
 	_active = true;
+	if (_bezier) {
+		lockSegment(ctx);
+		markDirty();
+	}
 	return true;
 }
 
-void LineBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
-	Super::preExecute(ctx, volume);
-	_lastVolume = volume;
+void LineBrush::resetRuntime() {
+	Super::resetRuntime();
+	clearPendingSegments();
+	_active = false;
 }
 
 void LineBrush::shutdown() {
@@ -73,9 +63,7 @@ void LineBrush::shutdown() {
 void LineBrush::reset() {
 	_state = LineState();
 	clearPendingSegments();
-	_commitPending = false;
 	_active = false;
-	_lastVolume = nullptr;
 	_hasCustomControlPoint = false;
 	_controlPoint = glm::zero<glm::ivec3>();
 	_thickness = 1;
@@ -86,19 +74,6 @@ bool LineBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 		return Super::execute(sceneGraph, wrapper, ctx);
 	}
 
-	if (_commitPending) {
-		for (const BezierSegment &segment : _segments) {
-			voxelgenerator::shape::drawBezierSegment(wrapper, segment, ctx.cursorVoxel, _stipplePattern, _thickness);
-		}
-		return true;
-	}
-
-	if (wrapper.volume() == _lastVolume) {
-		lockSegment(ctx);
-		markDirty();
-		return true;
-	}
-
 	for (const BezierSegment &segment : _segments) {
 		voxelgenerator::shape::drawBezierSegment(wrapper, segment, ctx.cursorVoxel, _stipplePattern, _thickness);
 	}
@@ -106,8 +81,8 @@ bool LineBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 		ctx.referencePos != ctx.cursorPosition) {
 		const glm::ivec3 start = _segments.empty() ? ctx.referencePos : _segments.back().end;
 		if (start != ctx.cursorPosition) {
-			const BezierSegment previewSegment{start, ctx.cursorPosition, previewControlPoint(ctx)};
-			voxelgenerator::shape::drawBezierSegment(wrapper, previewSegment, ctx.cursorVoxel, _stipplePattern, _thickness);
+			voxelgenerator::shape::drawBezierSegment(wrapper,
+													 BezierSegment{start, ctx.cursorPosition, previewControlPoint(ctx)}, ctx.cursorVoxel, _stipplePattern, _thickness);
 		}
 	}
 	return true;
@@ -139,10 +114,6 @@ void LineBrush::endBrush(BrushContext &ctx) {
 	_active = false;
 	if (_bezier && !_segments.empty()) {
 		ctx.referencePos = _segments.back().end;
-	}
-	if (_commitPending) {
-		clearPendingSegments();
-		_commitPending = false;
 	}
 	_hasCustomControlPoint = false;
 	if (_continuous) {
@@ -240,12 +211,47 @@ void LineBrush::syncControlPoint(const BrushContext &ctx) {
 	_controlPoint += newDefault - oldDefault;
 }
 
-bool LineBrush::wantBrushGizmo(const BrushContext &ctx) const {
+void LineBrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const {
+	if (!_bezier) {
+		return;
+	}
+	if (_segments.empty()) {
+		if (hasHandle(ctx)) {
+			BrushGizmoState handle;
+			describeHandle(ctx, handle);
+			output.push_back(handle);
+		}
+		return;
+	}
+	for (size_t i = 0; i < _segments.size(); ++i) {
+		const auto &segment = _segments[i];
+		const glm::ivec3 points[] = {segment.control, segment.start, segment.end};
+		for (uint32_t point = 0; point < 3; ++point) {
+			BrushGizmoState handle;
+			handle.id = _segmentIds[i] * 3 + point + 1;
+			handle.operations = BrushGizmo_Translate;
+			handle.matrix[3] = glm::vec4(glm::vec3(points[point]), 1);
+			for (int axis = 0; axis < 3; ++axis) {
+				handle.snap[axis] = (float)ctx.gridResolution[axis];
+			}
+			if (point == 0) {
+				handle.operations |= BrushGizmo_Line;
+				handle.positions[0] = glm::vec3(segment.start) + 0.5f;
+				handle.positions[1] = glm::vec3(segment.control) + 0.5f;
+				handle.positions[2] = glm::vec3(segment.end) + 0.5f;
+				handle.numPositions = 3;
+			}
+			output.push_back(handle);
+		}
+	}
+}
+
+bool LineBrush::hasHandle(const BrushContext &ctx) const {
 	return _bezier && ((!_segments.empty() && _selectedSegment >= 0) || ctx.referencePos != ctx.cursorPosition);
 }
 
-void LineBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-	if (!wantBrushGizmo(ctx)) {
+void LineBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state) const {
+	if (!hasHandle(ctx)) {
 		state.operations = BrushGizmo_None;
 		return;
 	}
@@ -271,8 +277,35 @@ void LineBrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state)
 	state.numPositions = 3;
 }
 
-bool LineBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+bool LineBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 								uint32_t operation) {
+	if (handleId > 0) {
+		const uint32_t segmentId = (handleId - 1) / 3;
+		size_t index = 0;
+		while (index < _segmentIds.size() && _segmentIds[index] != segmentId) {
+			++index;
+		}
+		if (index >= _segments.size()) {
+			return false;
+		}
+		const glm::ivec3 position(glm::round(glm::vec3(matrix[3])));
+		auto &segment = _segments[index];
+		switch ((handleId - 1) % 3) {
+		case 0:
+			segment.control = position;
+			break;
+		case 1:
+			segment.start = position;
+			break;
+		case 2:
+			segment.end = position;
+			break;
+		}
+		_selectedSegment = (int)index;
+		markDirty();
+		return true;
+	}
+
 	const glm::ivec3 newControlPoint = glm::ivec3(glm::round(glm::vec3(matrix[3])));
 	if (newControlPoint == controlPoint(ctx)) {
 		return false;
@@ -287,7 +320,7 @@ bool LineBrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, cons
 }
 
 bool LineBrush::active() const {
-	return _bezier ? hasPendingChanges() || Super::active() : Super::active();
+	return _bezier ? !_segments.empty() || Super::active() : Super::active();
 }
 
 void LineBrush::lockSegment(const BrushContext &ctx) {
@@ -299,6 +332,7 @@ void LineBrush::lockSegment(const BrushContext &ctx) {
 	const glm::ivec3 segmentControl =
 		_hasCustomControlPoint ? _controlPoint : segmentStart + (segmentEnd - segmentStart) / 2;
 	_segments.push_back({segmentStart, segmentEnd, segmentControl});
+	_segmentIds.push_back(_nextSegmentId++);
 	_selectedSegment = (int)_segments.size() - 1;
 	_hasCustomControlPoint = false;
 	_controlPoint = glm::zero<glm::ivec3>();
@@ -306,6 +340,8 @@ void LineBrush::lockSegment(const BrushContext &ctx) {
 
 void LineBrush::clearPendingSegments() {
 	_segments.clear();
+	_segmentIds.clear();
+	_nextSegmentId = 1;
 	_selectedSegment = -1;
 }
 

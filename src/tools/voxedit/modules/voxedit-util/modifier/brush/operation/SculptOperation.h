@@ -4,19 +4,22 @@
 
 #pragma once
 
+#include "voxedit-util/modifier/brush/SnapshotHelper.h"
+#include "core/ArrayLength.h"
 #include "core/GLM.h"
-#include "core/collection/Buffer.h"
-#include "voxel/Voxel.h"
-#include "voxel/Face.h"
 #include "core/Optional.h"
-#include "core/ScopedPtr.h"
+#include "core/SharedPtr.h"
+#include "core/String.h"
 #include "palette/Palette.h"
 #include "voxel/BitVolume.h"
 #include "voxel/DynamicVoxelArray.h"
-#include "voxel/RawVolume.h"
+#include "voxel/Face.h"
 #include "voxel/SparseVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
+
 #include <climits>
+#include <glm/vec3.hpp>
 
 namespace voxedit {
 
@@ -38,35 +41,42 @@ enum class SculptMode : uint8_t {
 	Max
 };
 
-/** Geometry and captured voxel data used by SculptBrush. */
-class SculptOperation {
-public:
-	static constexpr int MaxSmoothWallClearDepth = 256;
+struct SculptParameters {
+	SculptMode mode = SculptMode::Erode;
+	float strength = 0.5f;
+	int iterations = 1;
+	int heightThreshold = 1;
+	bool preserveTopHeight = false;
+	int trimPerStep = 1;
+	int kernelSize = 4;
+	float sigma = 4.0f;
+	int smoothWallClearDepth = 256;
+	voxelutil::SmoothWallInterp smoothWallInterp = voxelutil::SmoothWallInterp::InverseDistance;
+	bool smoothWallFillHoles = true;
+	voxel::FaceNames face = voxel::FaceNames::Max;
+	int plane = 0;
+	int removeAboveDepth = 0;
+	bool extendOnly = true;
+	bool removeOnly = false;
+	int radius = 3;
+	voxel::Voxel voxel;
+	glm::ivec3 cursor{0};
+	voxelutil::ReskinConfig reskin;
+	core::SharedPtr<voxel::RawVolume> skin;
+	core::Optional<palette::Palette> skinPalette;
+};
 
+class SculptOperation {
 protected:
-	SculptMode _sculptMode = SculptMode::Erode;
-	float _strength = 0.5f;
-	int _iterations = 1;
-	int _heightThreshold = 1;
-	bool _preserveTopHeight = false;
-	int _trimPerStep = 1;
-	int _kernelSize = 4;
-	float _sigma = 4.0f;
-	int _smoothWallClearDepth = MaxSmoothWallClearDepth; ///< 0 = don't clear, max = clear entire depth
-	voxelutil::SmoothWallInterp _smoothWallInterp = voxelutil::SmoothWallInterp::InverseDistance;
-	bool _smoothWallFillHoles = true; ///< Fill enclosed empty areas with interpolated heights
-	voxel::FaceNames _flattenFace = voxel::FaceNames::Max;
-	int _squashPlaneCoord = 0;
+	SculptParameters _parameters;
+	voxel::Region _cachedRegion = voxel::Region::InvalidRegion;
+	bool _cachedRegionValid = false;
 	bool _active = false;
 	bool _hasSnapshot = false;
 	bool _paramsDirty = true;
 
 	// ExtendPlane parameters
-	int _removeAboveDepth = 0;
-	bool _extendOnly = true;
 	/** When set, ExtendPlane only removes voxels above the plane and never places new ones. */
-	bool _removeOnly = false;
-	int _brushRadius = 3;
 	float _planeGradU = 0.0f;
 	float _planeGradV = 0.0f;
 	int _planeSeedU = 0;
@@ -78,12 +88,6 @@ protected:
 	bool _planeFitted = false;
 	glm::ivec3 _lastPaintPos{INT_MIN};
 
-	// Reskin parameters
-	voxelutil::ReskinConfig _reskinConfig;
-	const voxel::RawVolume *_skinVolume = nullptr;
-	core::ScopedPtr<voxel::RawVolume> _ownedSkinVolume;
-	core::Optional<palette::Palette> _skinPalette;
-
 	// Original selected voxels captured at brush activation, stored as a flat array.
 	// Using DynamicVoxelArray instead of SparseVolume avoids O(N) hash insertions.
 	voxel::DynamicVoxelArray _snapshotEntries;
@@ -92,7 +96,7 @@ protected:
 	// Volume region lower corner at snapshot capture time (to detect region shifts)
 	glm::ivec3 _capturedVolumeLower{0};
 
-	// Per-generate bookkeeping: tracks positions written during a single generate()
+	// Per-evaluate bookkeeping: tracks positions written during a single evaluate()
 	// call so the previous state can be restored before re-applying.
 	// Using BitVolume + flat array instead of SparseVolume avoids O(N) hash chain traversal
 	// per lookup/insert. For 5M+ entries this reduces history operations from ~30s to ~50ms.
@@ -109,18 +113,33 @@ protected:
 
 	void rebuildCachedBitVolume();
 	void rebuildCachedVoxelMap();
-
-	// Cached region for preview
-	voxel::Region _cachedRegion;
-	bool _cachedRegionValid = false;
-
-	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &volRegion);
+	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &region);
 	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
-	void applySculpt(ModifierVolumeWrapper &wrapper, const voxel::Voxel &voxel);
-	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
+	void applySculpt(ModifierVolumeWrapper &wrapper);
+	void saveToHistory(voxel::RawVolume *volume, const glm::ivec3 &pos);
 	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
 	void fitPlaneFromSnapshot();
-	void paintExtendPlane(ModifierVolumeWrapper &wrapper, const voxel::Voxel &voxel, const glm::ivec3 &cursor);
+	void paintExtendPlane(ModifierVolumeWrapper &wrapper);
+
+public:
+	static constexpr bool requiresSelection = true;
+	using Parameters = SculptParameters;
+	static bool sameOperation(const Parameters &a, const Parameters &b) {
+		return a.mode == b.mode && a.face == b.face && a.skin.get() == b.skin.get();
+	}
+	static bool modeNeedsFace(SculptMode mode);
+	const Parameters &parameters() const {
+		return _parameters;
+	}
+	bool setParameters(const Parameters &parameters);
+	void prepare(const voxel::RawVolume *volume, const voxel::Region &region);
+	void evaluate(ModifierVolumeWrapper &wrapper);
+	bool hasSnapshot() const {
+		return _hasSnapshot;
+	}
+	const palette::Palette *skinPalette() const {
+		return _parameters.skinPalette.value();
+	}
 };
 
 } // namespace voxedit

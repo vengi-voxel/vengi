@@ -79,6 +79,9 @@ public:
 		int mappedNodes = 0;
 	};
 
+	virtual void waitForPendingExtractions() {
+	}
+
 	virtual void update() {
 	}
 

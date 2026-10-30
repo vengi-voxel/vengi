@@ -79,6 +79,16 @@ void BrushPanelShape::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		ImGui::SameLine();
 		ImGui::CommandRadioButton(_("Center"), "setshapebrushcenter", brush.centerMode(), &listener);
 		ImGui::TextWrappedUnformatted(_("Drag to define the shape's size."));
+		if (brush.boxActive()) {
+			const voxel::Region region = modifier.calcBrushRegion();
+			glm::ivec3 lower = region.getLowerCorner();
+			glm::ivec3 upper = region.getUpperCorner();
+			bool changed = ImGui::InputInt3(_("Minimum"), &lower.x);
+			changed |= ImGui::InputInt3(_("Maximum"), &upper.x);
+			if (changed) {
+				modifier.updateBoxRegion(voxel::Region(glm::min(lower, upper), glm::max(lower, upper)));
+			}
+		}
 	}
 
 	ImGui::SeparatorText(_("Mirror"));

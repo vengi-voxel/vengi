@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include <glm/mat4x4.hpp>
@@ -39,13 +38,16 @@ struct AABBBrushState {
  */
 class Strategy {
 public:
-	/** Scene modified flags set by the strategy - read by SelectBrush after method calls */
-	SceneModifiedFlags _modifiedFlags = SceneModifiedFlags::All;
-
 	virtual ~Strategy() = default;
 
 	virtual bool isSimplePreview() const {
 		return false;
+	}
+
+	virtual bool evaluate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						  const voxel::Region &region, const AABBBrushState &state) {
+		generate(sceneGraph, wrapper, ctx, region, state);
+		return true;
 	}
 
 	virtual void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -60,14 +62,14 @@ public:
 	virtual void update(const BrushContext &ctx, double nowSeconds);
 	virtual bool active() const;
 
-	virtual bool wantBrushGizmo(const BrushContext &ctx, const AABBBrushState &state) const {
+	virtual bool hasHandle(const BrushContext &ctx, const AABBBrushState &state) const {
 		return false;
 	}
 
-	virtual void brushGizmoState(const BrushContext &ctx, const AABBBrushState &state, BrushGizmoState &gizmoState) const {
+	virtual void describeHandle(const BrushContext &ctx, const AABBBrushState &state, BrushGizmoState &gizmoState) const {
 	}
 
-	virtual bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	virtual bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 								 uint32_t operation) {
 		return false;
 	}

@@ -16,7 +16,6 @@
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierType.h"
-#include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
@@ -26,9 +25,16 @@ namespace scenegraph {
 class SceneGraph;
 }
 
+namespace math {
+class Ray;
+}
+
 namespace voxedit {
 
 class ModifierVolumeWrapper;
+class AABBBrush;
+
+enum class BrushPreviewStyle { Footprint, Changes, Selection };
 
 /**
  * @brief Parse ve_gridsize style values into a per-axis resolution
@@ -75,17 +81,19 @@ struct BrushContext {
 
 	/** Used for clamping the brush region to stay within the target volume boundaries */
 	voxel::Region targetVolumeRegion;
+	/** Explicit operation bounds supplied by a request, or InvalidRegion to use gesture geometry. */
+	voxel::Region evaluatedRegion = voxel::Region::InvalidRegion;
 
 	/** The position of the cursor before any clamping or brush execution was applied */
 	glm::ivec3 prevCursorPosition{0};
 
-	/** True while the brush gizmo is actively being manipulated in the viewport */
+	/** True while viewport handle interaction owns or blocks brush input */
 	bool brushGizmoActive = false;
 
 	/**
-	 * True when execute() is building a hover/stroke volume preview, not committing
-	 * to the real scene. Stroke path accumulation and blend visited tracking must
-	 * ignore these calls or continuous click-and-drag painting breaks.
+	 * True when evaluating a private preview rather than a committed sample.
+	 * The host supplies isolated evaluator runtime; algorithms may update that
+	 * private runtime without affecting the active stroke or its random sequence.
 	 */
 	bool preview = false;
 
@@ -94,40 +102,42 @@ struct BrushContext {
 };
 
 /**
- * @brief Base class for all brushes in the voxel editor
+ * @brief Base class for brushes in the voxel editor
  * @ingroup Brushes
  *
- * The brush system provides different tools for placing, modifying, and selecting voxels.
- * Each brush defines its own behavior through the generate() method, while the base class
- * handles common functionality like mirroring, clamping, and the execution lifecycle.
+ * Each brush defines its algorithm through generate(). The base class provides
+ * mirroring, clamping settings, and default execution helpers. Modifier owns
+ * target resolution, input capture, preview lifetime, publication, and undo.
  *
- * # Brush Lifecycle
+ * A registered tool holds persistent settings and input geometry. For ordinary
+ * edits, the host calls beginBrush(), creates an evaluator copy for each target,
+ * and calls preExecute() followed by executeSample() for each sample. endBrush()
+ * finishes the input gesture; resetRuntime() discards transient state. Adjustable
+ * edits use a registered draft controller to evaluate captured operation parameters.
  *
- * A typical brush operation follows this sequence:
- * 1. **beginBrush()** - Called when the user starts an action (e.g., mouse down)
- * 2. **preExecute()** - Prepare any state before execution
- * 3. **execute()** - Main execution that calls generate() for the affected regions
- * 4. **endBrush()** - Cleanup after the operation completes
+ * Preview evaluates a private copy of the target runtime, so it must not change
+ * committed voxels, selection, palettes, random state, or undo history.
  *
- * Between beginBrush() and endBrush(), update() is called each frame to handle preview
- * updates. If the user cancels, abort() is called instead of endBrush().
- *
- * # Mirroring System
- *
- * Brushes support mirroring along X, Y, or Z axes. When mirroring is enabled, execute()
- * automatically generates voxels in both the primary region and the mirrored region.
- * The mirror position is typically set to the reference position and acts as the plane
- * of symmetry.
+ * Brushes support mirroring along X, Y, or Z. The mirror position defines the
+ * plane of symmetry and is normally captured from the reference position.
+ * Execution helpers generate the primary and mirrored regions as needed.
  *
  * @sa ModifierVolumeWrapper
  * @sa BrushContext
  */
 class Brush : public core::IComponent, public core::DirtyState {
+private:
+	uint64_t _settingsRevision = 0;
+
 protected:
+	/** Advance the settings revision when a persistent preference changes. */
+	void markSettingsChanged() {
+		++_settingsRevision;
+		markDirty();
+	}
 	const BrushType _brushType;				///< The type of this brush (Shape, Line, Paint, etc.)
 	const ModifierType _defaultModifier;	///< Default operation type if none specified
 	const ModifierType _supportedModifiers; ///< Bitfield of supported ModifierTypes
-	SceneModifiedFlags _sceneModifiedFlags = SceneModifiedFlags::All; ///< What scene state gets invalidated
 
 	glm::ivec3 _referencePosition{0}; ///< Cached reference position for mirror commands
 
@@ -148,6 +158,13 @@ protected:
 	 */
 	bool _clampToVolume = false;
 
+	Brush(const Brush &other)
+		: core::IComponent(), core::DirtyState(other), _brushType(other._brushType),
+		  _defaultModifier(other._defaultModifier), _supportedModifiers(other._supportedModifiers),
+		  _referencePosition(other._referencePosition), _errorReason(other._errorReason), _mirrorPos(other._mirrorPos),
+		  _mirrorAxis(other._mirrorAxis), _clampToVolume(other._clampToVolume) {
+	}
+
 	Brush(BrushType brushType, ModifierType defaultModifier = ModifierType::Place,
 		  ModifierType supportedModifiers = (ModifierType::Place | ModifierType::Erase | ModifierType::Override))
 		: _brushType(brushType), _defaultModifier(defaultModifier), _supportedModifiers(supportedModifiers) {
@@ -156,20 +173,20 @@ protected:
 	/**
 	 * @brief Generate the voxels for this brush operation
 	 *
-	 * This is the core method each brush must implement. It receives a region to fill
+	 * This is the core method each brush must implement. It receives a region to evaluate
 	 * and should use the ModifierVolumeWrapper to place/modify voxels. The method is
-	 * called by execute() - if mirroring is enabled, it will be called multiple times
+	 * called by the execution helpers; with mirroring enabled it may be called multiple times
 	 * with different regions.
 	 *
 	 * @param[in] sceneGraph The scene graph to operate on
-	 * @param[in] wrapper The volume wrapper providing voxel access and undo support
+	 * @param[in] wrapper The volume wrapper providing constrained voxel access and change tracking
 	 * @param[in] ctx The brush context with cursor position, voxel type, etc.
 	 * @param[in] region The region to operate in - may be invalid depending on the brush type
 	 *
 	 * @note When mirroring is active, this method is called once for the primary region
 	 *       and once for the mirrored region with adjusted bounds
 	 *
-	 * @sa execute() - orchestrates the generation with mirroring support
+	 * @sa executeSample() - evaluates a sample with the brush execution policy
 	 * @sa calcRegion() - defines the region passed to this method
 	 */
 	virtual void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -187,20 +204,28 @@ protected:
 	}
 
 public:
+	/** Revision used by the host to resolve settings changes before the next sample. */
+	uint64_t settingsRevision() const {
+		return _settingsRevision;
+	}
+
+	/** Return the standard AABB interaction adapter, or nullptr for other tools. */
+	virtual AABBBrush *aabb() {
+		return nullptr;
+	}
+	/** Const overload of aabb(). */
+	virtual const AABBBrush *aabb() const {
+		return nullptr;
+	}
+
 	void markDirty() override {
 		core::DirtyState::markDirty();
 	}
 
 	/**
-	 * @brief Override the dirty region reporting for mesh extraction.
-	 *
-	 * By default, executeBrush() uses the wrapper's dirty region (a single bounding box
-	 * of all modified positions). Brushes that modify positions far apart (e.g. TransformBrush
-	 * erasing at source and writing at destination) can override this to provide tighter
-	 * regions, avoiding extraction of empty space between them.
-	 *
-	 * @param[out] regions Buffer to fill with dirty regions
-	 * @return true if the brush provides its own regions (use them instead of wrapper's dirty region)
+	 * @brief Report separate changed regions provided by the brush algorithm
+	 * @param[out] regions Buffer to fill with changed regions
+	 * @return true if the brush supplies its own region list
 	 */
 	virtual bool dirtyRegions(core::Buffer<voxel::Region> &regions) const {
 		return false;
@@ -223,8 +248,8 @@ public:
 	 * @param[in] ctx The current brush context
 	 * @return true if the brush started successfully, false if already active or invalid state
 	 *
-	 * @sa preExecute() - called before execute() to prepare state
-	 * @sa execute() - performs the actual voxel modifications
+	 * @sa preExecute() - called before executeSample() to prepare state
+	 * @sa executeSample() - evaluates a sample with the brush execution policy
 	 * @sa endBrush() - called when the operation completes
 	 */
 	virtual bool beginBrush(const BrushContext &ctx);
@@ -232,15 +257,14 @@ public:
 	/**
 	 * @brief Prepare the brush state before execution
 	 *
-	 * Called immediately before execute() to allow brushes to capture any state they
-	 * need from the current volume. For example, the PlaneBrush caches the voxel that
-	 * was hit to know which voxels to extrude.
+	 * Called before executeSample() to allow brushes to capture any state they
+	 * need from the current volume, such as selected bounds or cached source geometry.
 	 *
 	 * @param[in] ctx The brush context
 	 * @param[in] volume The volume that is currently active - can be null if no volume loaded
 	 *
 	 * @sa beginBrush() - starts the brush operation
-	 * @sa execute() - main execution after this preparation
+	 * @sa executeSample() - evaluates a sample after this preparation
 	 * @sa endBrush() - cleanup after execution
 	 */
 	virtual void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume);
@@ -259,7 +283,7 @@ public:
 	 *    for both regions (or a combined region if they overlap)
 	 *
 	 * @param[in] sceneGraph The scene graph to operate on
-	 * @param[in] wrapper The volume wrapper providing voxel access with undo support
+	 * @param[in] wrapper The volume wrapper providing constrained voxel access and change tracking
 	 * @param[in] ctx The brush context with all necessary parameters
 	 * @return true if the brush action was successful
 	 *
@@ -271,7 +295,19 @@ public:
 	virtual bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx);
 
 	/**
-	 * @brief Called when brush action completes successfully
+	 * @brief Evaluate one sample without advancing the host's stroke sampler
+	 *
+	 * The default delegates to execute(). AABBBrush evaluates the current footprint;
+	 * the host handles path interpolation, target iteration, and grouped undo.
+	 * Preview uses the same entry point with an isolated evaluator and target.
+	 */
+	virtual bool executeSample(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
+							   const BrushContext &ctx) {
+		return execute(sceneGraph, wrapper, ctx);
+	}
+
+	/**
+	 * @brief Finish the current input gesture
 	 *
 	 * Perform any cleanup needed after the brush operation finishes. For continuous
 	 * brushes (like the LineBrush), this might update the reference position to
@@ -281,38 +317,25 @@ public:
 	 *
 	 * @sa beginBrush() - starts the operation
 	 * @sa execute() - performs the action
-	 * @sa abort() - alternative completion when user cancels
+	 * @note The host records history and may also finish a gesture after interruption.
 	 */
 	virtual void endBrush(BrushContext &ctx);
 
 	/**
-	 * @brief Abort the brush operation
+	 * @brief Discard tool-local gesture state when the host has no active edit session
 	 *
-	 * Called when the user cancels the brush action (e.g., pressing Escape).
-	 * Default implementation does nothing, but brushes can override to reset
-	 * state differently than endBrush().
-	 *
-	 * @param[out] ctx The brush context
-	 *
-	 * @sa beginBrush() - starts the operation
-	 * @sa endBrush() - normal completion path
+	 * Active sessions and adjustable drafts are resolved by Modifier. The default
+	 * implementation does nothing; it does not restore scene data or record undo.
+	 * @param[in,out] ctx The brush context, which may be updated during cleanup
 	 */
 	virtual void abort(BrushContext &ctx) {
-	}
-
-	/**
-	 * @brief Revert any NoUndo preview changes on the volume by restoring from
-	 * the brush's internal history. Returns the region that was modified.
-	 */
-	virtual voxel::Region revertChanges(voxel::RawVolume *volume) {
-		return voxel::Region::InvalidRegion;
 	}
 
 	/**
 	 * @brief Called when the scene has changed externally (e.g. via undo/redo)
 	 *
 	 * Brushes should override this to invalidate any cached state that depends
-	 * on the volume data (snapshots, history, cached regions, active operations)
+	 * on the volume data (cached regions and prepared input)
 	 * without resetting user preferences (mirror settings, brush configuration, etc.).
 	 *
 	 * The default implementation just marks the preview as dirty.
@@ -325,24 +348,47 @@ public:
 	virtual void onActivated() {
 	}
 
-	/**
-	 * @brief Check if the brush has pending preview changes on the real volume
-	 * that have not been committed to the undo stack yet.
-	 */
-	virtual bool hasPendingChanges() const {
+	/** Choose footprint, changed-voxel, or selection rendering for the evaluated preview. */
+	virtual BrushPreviewStyle previewStyle() const {
+		return BrushPreviewStyle::Footprint;
+	}
+	/** Whether preview evaluation needs a copy of existing voxels rather than an empty target. */
+	virtual bool previewNeedsExistingVolume() const {
+		return false;
+	}
+	/** Number of source voxels around the output footprint needed for neighbor reads. */
+	virtual int previewPadding() const {
+		return 0;
+	}
+	/** Output bounds for preview allocation; tools may inspect source geometry without changing their runtime. */
+	virtual voxel::Region previewRegion(const BrushContext &ctx, const voxel::RawVolume *volume) const {
+		return calcRegion(ctx);
+	}
+	/** Override surface picking while dragging, in model voxel coordinates. */
+	virtual bool projectCursor(const math::Ray &ray, glm::ivec3 &position) const {
+		return false;
+	}
+	/** Map the requested operation to the write policy enforced by ModifierVolumeWrapper. */
+	virtual ModifierType volumeModifier(ModifierType requested) const {
+		return requested;
+	}
+	/** Whether the host may apply its automatic selection policy to placed voxels. */
+	virtual bool autoSelectPlacement() const {
+		return !managesOwnSelection();
+	}
+	/** Whether the tool contributes interaction and presentation without publishing voxel edits. */
+	virtual bool readOnly() const {
 		return false;
 	}
 
-	/**
-	 * @brief Whether this brush needs its pending changes flushed to the real
-	 * volume every frame (e.g. TransformBrush, ExtrudeBrush, SculptBrush).
-	 * Brushes that accumulate state for a deferred commit (e.g. LineBrush in
-	 * bezier mode) should return false.
-	 */
-	virtual bool needsPerFrameFlush() const {
-		return hasPendingChanges();
+	/** Copy current input geometry into an evaluator without overwriting its per-target runtime. */
+	virtual void syncInput(const Brush &input) {
+	}
+	/** Initialize operation-local randomness; preview copies the evaluator without advancing it. */
+	virtual void seedRuntime(uint32_t seed) {
 	}
 
+	/** Whether to render an outline instead of evaluating a filled preview volume. */
 	virtual bool isSimplePreview() const {
 		return false;
 	}
@@ -368,33 +414,19 @@ public:
 	}
 
 	/**
-	 * @brief Consume and return a pending undo region accumulated during NoUndo operation.
-	 *
-	 * Called after endBrush() by the modifier button to push a single deferred undo entry
-	 * for brushes that accumulate changes across multiple executions (e.g., paint-select).
-	 * Returns InvalidRegion if no deferred undo is needed.
-	 */
-	virtual voxel::Region consumePendingUndoRegion() {
-		return voxel::Region::InvalidRegion;
-	}
-
-	/**
-	 * @brief Called when this brush is about to be replaced by another brush.
-	 * @return true if the brush has pending changes that should be committed
-	 * to the real volume before deactivation (via the normal execute path).
-	 */
-	virtual bool onDeactivated() {
-		return false;
-	}
-
-	/**
 	 * @brief Reset the brush to initial state
 	 *
 	 * Clears all brush state including mirroring, clamping, and internal modes.
-	 * Forces a recreation of the preview volume. Called when switching brushes
-	 * or resetting the editor state.
+	 * Forces a recreation of the preview volume. Called when resetting the editor state.
 	 */
 	virtual void reset();
+
+	/**
+	 * @brief Discard transient gesture and evaluation state while retaining settings
+	 * Used when an edit finishes or the active tool changes. The default marks the
+	 * preview dirty; overrides clear their own input geometry and runtime caches.
+	 */
+	virtual void resetRuntime();
 
 	/**
 	 * @brief Update the brush state each frame
@@ -422,11 +454,6 @@ public:
 	BrushType type() const;
 
 	/**
-	 * @return Flags indicating what scene state is invalidated by this brush
-	 */
-	SceneModifiedFlags sceneModifiedFlags() const;
-
-	/**
 	 * @return true if this brush directly manages voxel selection flags (FlagOutline).
 	 * When true, growSelectionToNewVoxels/autoSelectNewVoxels are skipped after execution
 	 * to avoid overwriting the brush's own selection logic.
@@ -435,9 +462,14 @@ public:
 		return false;
 	}
 
+	/** Whether the host should fill gaps between cursor samples using the shared stroke sampler. */
+	virtual bool interpolatedStroke() const {
+		return false;
+	}
+
 	/**
-	 * @return true if this brush should execute on every frame while the mouse button is held,
-	 * rather than only on mouse-up. Used for paint-drag style brushes.
+	 * @return true to evaluate samples while the action button is held, rather than
+	 * waiting for release. Used for painting and other continuous interactions.
 	 */
 	virtual bool wantsContinuousExecution() const {
 		return false;
@@ -452,10 +484,12 @@ public:
 	virtual void step(const BrushContext &ctx) {
 	}
 
+	/** Whether the current gesture needs another action, such as defining box depth. */
 	virtual bool needsAdditionalAction(const BrushContext &ctx) const {
 		return false;
 	}
 
+	/** Whether the current gesture state prevents further evaluation. */
 	virtual bool aborted(const BrushContext &ctx) const {
 		return false;
 	}
@@ -474,7 +508,7 @@ public:
 	 * - LineBrush: bounding box containing the line from reference to cursor
 	 * - StampBrush: region covered by the stamp volume
 	 *
-	 * This region does not include mirroring - the execute() method handles that.
+	 * This region does not include mirroring - the execution helpers handle that.
 	 *
 	 * @param[in] ctx The current brush context
 	 * @return The region that will be affected by the brush operation
@@ -529,7 +563,7 @@ public:
 	 * @brief Calculate the mirrored AABB coordinates
 	 *
 	 * Given an AABB, calculates where it would be positioned when mirrored
-	 * across the current mirror axis and position. Used internally by execute()
+	 * across the current mirror axis and position. Used by the execution helpers
 	 * to generate voxels symmetrically.
 	 *
 	 * @param[in,out] mins Lower corner of the AABB - will be updated to mirrored position
@@ -568,41 +602,33 @@ public:
 	const glm::ivec3 &mirrorPos() const;
 
 	/**
-	 * @brief Query whether this brush wants to display a gizmo in the viewport
+	 * @brief Append the brush's viewport handles and overlays
 	 *
-	 * Called each frame by the viewport. Return true when the brush has an active
-	 * gizmo to render (e.g. TransformBrush with a snapshot, AABBBrush spanning a region).
+	 * Populate each BrushGizmoState with a transform, supported operations, and
+	 * optional bounds or overlay geometry. Editable handles need stable IDs within
+	 * the operation. The host assigns operation ownership and routes viewport input.
 	 *
-	 * @param ctx The current brush context
-	 * @return true if the brush contributes a gizmo
+	 * @param[in] ctx The current brush context
+	 * @param[out] output Collection to append handle descriptions to
+	 * @sa editHandle()
 	 */
-	virtual bool wantBrushGizmo(const BrushContext &ctx) const;
+	virtual void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const;
 
 	/**
-	 * @brief Fill in the gizmo state for rendering
+	 * @brief Apply a viewport handle change to the corresponding tool parameters
 	 *
-	 * Called when wantBrushGizmo() returns true. The brush populates the
-	 * BrushGizmoState with its transform matrix, supported operations,
-	 * and optional bounds.
+	 * The host validates operation, handle, and viewport ownership before calling
+	 * this method. Update the same parameters used by the settings panel; the host
+	 * refreshes the preview and owns publication and undo.
 	 *
-	 * @param ctx The current brush context
-	 * @param[out] state The gizmo state to populate
+	 * @param[in] handleId Stable ID from handles()
+	 * @param[in,out] ctx The brush context
+	 * @param[in] matrix Manipulated transform in model voxel coordinates
+	 * @param[in] deltaMatrix Change to the transform in the same coordinate system
+	 * @param[in] operation Active BrushGizmoOperation flags
+	 * @return true if the tool parameters changed
 	 */
-	virtual void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const;
-
-	/**
-	 * @brief Apply the result of gizmo manipulation back to the brush
-	 *
-	 * Called when ImGuizmo::Manipulate() returns true (user interacted with the gizmo).
-	 * The brush should decompose the matrix/delta and update its internal parameters.
-	 *
-	 * @param ctx The brush context
-	 * @param matrix The manipulated world matrix
-	 * @param deltaMatrix The frame delta matrix
-	 * @param operation Which BrushGizmoOperation was active
-	 * @return true if the brush state changed and needs re-execution
-	 */
-	virtual bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+	virtual bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
 								const glm::mat4 &deltaMatrix, uint32_t operation);
 };
 

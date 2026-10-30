@@ -118,44 +118,30 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, brushContext.modifierType);
 
 	// Get and configure the select brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	SelectBrush &selectBrush = modifier.selectBrush();
-
-	// Save previous state
-	const BrushType prevBrushType = modifier.brushType();
-	const SelectMode prevSelectMode = selectBrush.selectMode();
-	const float prevColorThreshold = selectBrush.fuzzyColor().colorThreshold();
+	SelectBrush selectBrush(ctx.sceneMgr);
 
 	// Configure the select brush
-	modifier.setBrushType(BrushType::Select);
 	selectBrush.setSelectMode(selectMode);
 	selectBrush.fuzzyColor().setColorThreshold(colorThreshold);
 	selectBrush.setBoxMode();
 
-	// Set up the AABB region
-	brushContext.cursorPosition = mins;
-	selectBrush.beginBrush(brushContext);
+	brushContext.evaluatedRegion = voxel::Region(mins, maxs);
 	brushContext.cursorPosition = maxs;
-	selectBrush.step(brushContext);
 
 	// Execute the brush
-	selectBrush.preExecute(brushContext, volume);
-	const bool success = selectBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const BrushApplyResult applied = modifier.executeRequest(selectBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	selectBrush.endBrush(brushContext);
 
-	// Restore previous state
-	selectBrush.setSelectMode(prevSelectMode);
-	selectBrush.fuzzyColor().setColorThreshold(prevColorThreshold);
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		const char *action = clearSelection ? "cleared" : "created";
 		return ctx.result(
 			id, core::String::format("Selection %s successfully with mode '%s'", action, selectModeStr.c_str()), false);

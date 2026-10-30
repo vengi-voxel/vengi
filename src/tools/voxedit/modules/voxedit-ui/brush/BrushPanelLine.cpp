@@ -22,9 +22,6 @@ void BrushPanelLine::update(BrushPanelContext &ctx, command::CommandExecutionLis
 	ImGui::TooltipCommand("togglelinebrushcontinuous");
 	bool bezier = brush.bezier();
 	if (ImGui::Checkbox(_("Bezier"), &bezier)) {
-		if (!bezier && brush.hasPendingChanges()) {
-			modifier.brushApply();
-		}
 		brush.setBezier(bezier);
 	}
 	ImGui::TooltipCommand("togglelinebrushbezier");

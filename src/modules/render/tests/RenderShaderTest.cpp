@@ -8,6 +8,7 @@
 #include "GridShader.h"
 #include "LineShader.h"
 #include "TextureShader.h"
+#include "SurfaceoverlayShader.h"
 #include "video/tests/AbstractGLTest.h"
 #include "../BloomRenderer.h"
 
@@ -17,6 +18,12 @@ class RenderShaderTest : public video::AbstractShaderTest {};
 
 TEST_P(RenderShaderTest, testTextureShader) {
 	shader::TextureShader shader;
+	EXPECT_TRUE(shader.setup());
+	shader.shutdown();
+}
+
+TEST_P(RenderShaderTest, testSurfaceOverlayShader) {
+	shader::SurfaceoverlayShader shader;
 	EXPECT_TRUE(shader.setup());
 	shader.shutdown();
 }

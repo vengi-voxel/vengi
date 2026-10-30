@@ -44,6 +44,7 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
+#include "voxedit-util/modifier/Modifier.h"
 
 namespace voxedit {
 
@@ -377,6 +378,31 @@ TEST_F(ToolsTest, registeredToolsHaveValidMcpInputSchemas) {
 	for (const auto &tool : tools) {
 		assertValidMcpToolSchema(tool);
 	}
+}
+
+TEST_F(ToolsTest, brushRequestPreservesActiveToolAndSettings) {
+	auto &modifier = _sceneMgr->modifier();
+	modifier.setTool("paint");
+	modifier.shapeBrush().setRadius(5);
+	auto *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, node);
+	ShapeBrushTool tool;
+	TextResultCapture capture;
+	TextResultCapture::_instance = &capture;
+	ToolContext ctx;
+	ctx.sceneMgr = _sceneMgr.get();
+	ctx.result = TextResultCapture::capture;
+	json::Json args = json::Json::parse(
+		"{\"region\":{\"minX\":1,\"minY\":1,\"minZ\":1,\"maxX\":2,\"maxY\":2,\"maxZ\":2},\"colorIndex\":1}");
+	args.set("nodeUUID", node->uuid().str().c_str());
+	ASSERT_TRUE(tool.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_FALSE(capture.isError);
+	EXPECT_EQ(core::String("paint"), modifier.toolId());
+	EXPECT_EQ(5, modifier.shapeBrush().radius());
+	EXPECT_EQ(1, node->volume()->voxel(1, 1, 1).getColor());
+	EXPECT_EQ(1, node->volume()->voxel(2, 2, 2).getColor());
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(voxel::isAir(_sceneMgr->volume(node->uuid())->voxel(1, 1, 1).getMaterial()));
 }
 
 } // namespace voxedit

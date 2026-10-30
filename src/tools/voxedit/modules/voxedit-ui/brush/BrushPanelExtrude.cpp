@@ -13,24 +13,6 @@
 
 namespace voxedit {
 
-void BrushPanelExtrude::executeExtrudeBrush(BrushPanelContext &ctx) {
-	Modifier &modifier = ctx.sceneMgr->modifier();
-	if (!modifier.beginBrushFromPanel()) {
-		return;
-	}
-	ctx.sceneMgr->nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
-		if (!node.visible()) {
-			return;
-		}
-		auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-			ctx.sceneMgr->modified(node.uuid(), region, flags);
-		};
-		modifier.execute(ctx.sceneMgr->sceneGraph(), node, callback);
-	});
-	modifier.endBrush();
-	modifier.extrudeBrush().markDirty();
-}
-
 void BrushPanelExtrude::update(BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
 	Modifier &modifier = ctx.sceneMgr->modifier();
 	ExtrudeBrush &brush = modifier.extrudeBrush();
@@ -61,8 +43,8 @@ void BrushPanelExtrude::update(BrushPanelContext &ctx, command::CommandExecution
 	if (depth == 0 && node != nullptr && !ctx.sceneMgr->hasSelection(node->uuid())) {
 		ImGui::TextColored(warningTextColor, "%s", _("No selection active - use the Select brush first"));
 	}
-	// All depth/offset changes are preview-only. The preview system creates a fresh
-	// volume copy each frame and generate() writes to it. Commit happens on brush switch.
+	// Depth/offset changes reevaluate the draft preview. Apply (or a tool change
+	// with a valid draft) publishes the result.
 	ImGui::TextUnformatted(_("Depth"));
 	if (ImGui::Button("-##extrude_depth")) {
 		brush.setDepth(depth - 1);

@@ -5,6 +5,7 @@
 #include "../BrushPanel.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "command/CommandHandler.h"
+#include "core/Function.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-ui/WindowTitles.h"
@@ -16,6 +17,44 @@
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxedit {
+
+namespace {
+class PanelExtensionBrush : public Brush {
+protected:
+	void generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &, const BrushContext &,
+				  const voxel::Region &) override {
+	}
+
+public:
+	int parameter = 1;
+	PanelExtensionBrush() : Brush(BrushType::None) {
+	}
+	void setParameter(int value) {
+		if (parameter == value) {
+			return;
+		}
+		markSettingsChanged();
+		parameter = value;
+	}
+	bool readOnly() const override {
+		return true;
+	}
+	voxel::Region calcRegion(const BrushContext &input) const override {
+		return voxel::Region(input.cursorPosition, input.cursorPosition);
+	}
+};
+class PanelExtensionUI {
+public:
+	void update(BrushPanelContext &context, command::CommandExecutionListener &) {
+		Modifier &modifier = context.sceneMgr->modifier();
+		PanelExtensionBrush &brush = modifier.tool<PanelExtensionBrush>("ui-extension");
+		int parameter = brush.parameter;
+		if (ImGui::InputInt(_("Test value"), &parameter)) {
+			brush.setParameter(parameter);
+		}
+	}
+};
+} // namespace
 
 static bool activeBrush(BrushPanel *panel, ImGuiTestContext *ctx, const char *toolbarId, const SceneManagerPtr &sceneMgr,
 					   BrushType type) {
@@ -149,7 +188,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 
-		auto selectedCount = [&]() {
+		const core::Function<int()> selectedCount = [&]() {
 			int count = 0;
 			voxelutil::visitVolume(*node->volume(), [&count](int x, int y, int z, const voxel::Voxel &v) {
 				if ((v.getFlags() & voxel::FlagOutline) != 0u) {
@@ -585,6 +624,57 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 
 		command::executeCommands("select none");
 	};
+	IM_REGISTER_TEST(engine, testCategory(), "transform draft apply cancel")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(activeBrush(this, ctx, toolbarId, _ctx.sceneMgr, BrushType::Transform));
+		Modifier &modifier = _ctx.sceneMgr->modifier();
+		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
+		IM_CHECK(node != nullptr);
+		const core::UUID uuid = node->uuid();
+		const glm::ivec3 position = node->region().getCenter();
+		voxel::Voxel selected = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+		selected.setOutline();
+		node->volume()->setVoxel(position, selected);
+		_ctx.sceneMgr->modified(uuid, voxel::Region(position, position));
+		modifier.transformBrush().setTransformMode(TransformMode::Move);
+		ctx->Yield(2);
+		IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
+		ctx->ItemClick("##x/+");
+		ctx->Yield(2);
+		IM_CHECK(modifier.hasDraft());
+		IM_CHECK(node->volume()->voxel(position) == selected);
+		ctx->ItemClick("Cancel");
+		ctx->Yield(2);
+		IM_CHECK(!modifier.hasDraft());
+		IM_CHECK(node->volume()->voxel(position) == selected);
+		ctx->ItemClick("##x/+");
+		ctx->Yield(2);
+		IM_CHECK(modifier.hasDraft());
+		ctx->ItemClick("Apply");
+		ctx->Yield(2);
+		IM_CHECK(!modifier.hasDraft());
+		IM_CHECK(voxel::isAir(node->volume()->voxel(position).getMaterial()));
+		IM_CHECK(node->volume()->voxel(position + glm::ivec3(1, 0, 0)) == selected);
+		IM_CHECK(_ctx.sceneMgr->undo());
+		IM_CHECK(_ctx.sceneMgr->sceneGraphNodeByUUID(uuid)->volume()->voxel(position) == selected);
+	};
+	IM_REGISTER_TEST(engine, testCategory(), "registered UI companion without enum")->TestFunc =
+		[=](ImGuiTestContext *ctx) {
+			IM_CHECK(prepareUITest(ctx));
+			IM_CHECK(activateViewportEditMode(ctx, _app));
+			Modifier &modifier = _ctx.sceneMgr->modifier();
+			core::SharedPtr<PanelExtensionBrush> tool = core::make_shared<PanelExtensionBrush>();
+			IM_CHECK(modifier.registry().add("ui-extension", tool));
+			registerPanel<PanelExtensionUI>("ui-extension");
+			IM_CHECK(modifier.setTool("ui-extension"));
+			ctx->Yield(2);
+			IM_CHECK(focusWindow(ctx, TITLE_BRUSH_SETTINGS));
+			ctx->ItemInputValue("Test value", 42);
+			ctx->Yield();
+			IM_CHECK_EQ(tool->parameter, 42);
+			modifier.setTool("shape");
+			IM_CHECK(modifier.registry().remove(tool.get()));
+		};
 }
 
 } // namespace voxedit

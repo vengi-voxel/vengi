@@ -24,12 +24,14 @@ public:
 	explicit Script(SceneManager *sceneManager) : _sceneManager(sceneManager) {
 	}
 
+	bool evaluate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+				  const voxel::Region &region, const AABBBrushState &state) override;
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region, const AABBBrushState &state) override;
 	voxel::Region calcRegion(const BrushContext &ctx, const AABBBrushState &state) const override;
 
-	bool wantBrushGizmo(const BrushContext &ctx, const AABBBrushState &state) const override;
-	void brushGizmoState(const BrushContext &ctx, const AABBBrushState &state, BrushGizmoState &gizmoState) const override;
+	bool hasHandle(const BrushContext &ctx, const AABBBrushState &state) const override;
+	void describeHandle(const BrushContext &ctx, const AABBBrushState &state, BrushGizmoState &gizmoState) const override;
 	bool needsAdditionalAction(const BrushContext &ctx) const override;
 
 	LUASelectionMode *activeLuaMode() const {

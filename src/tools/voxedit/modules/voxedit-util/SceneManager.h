@@ -136,6 +136,7 @@ protected:
 	core::TimeProviderPtr _timeProvider;
 	SceneRendererPtr _sceneRenderer;
 	Modifier *_modifier = nullptr;
+	bool _resolvingEdit = false;
 	voxelgenerator::LUAApi *_luaApi = nullptr;
 	LUAApiListener _luaApiListener;
 	io::FilesystemPtr _filesystem;
@@ -795,6 +796,13 @@ public:
 	// component access
 	const Modifier &modifier() const;
 	Modifier &modifier();
+	void releasePreview(const scenegraph::SceneGraph &view);
+	void waitForPendingExtractions() {
+		_sceneRenderer->waitForPendingExtractions();
+	}
+	void updatePreviewRegion(const core::UUID &uuid, const voxel::Region &region) {
+		_sceneRenderer->updateNodeRegion(uuid, region);
+	}
 	const memento::MementoHandler &mementoHandler() const;
 	memento::MementoHandler &mementoHandler();
 	const scenegraph::SceneGraph &sceneGraph() const;
@@ -930,6 +938,8 @@ public:
 	 * gaps. This will also update the voxels.
 	 */
 	void nodeRemoveUnusedColors(const core::UUID &nodeUUID, bool reindexPalette = false);
+	/** Resolve captured brush edits before a conflicting editor mutation. */
+	void beforeSceneMutation();
 	/**
 	 * @note This is not related to the group node type
 	 * @note Visitor may accept @c int, @c core::UUID, or @c scenegraph::SceneGraphNode&
@@ -937,6 +947,7 @@ public:
 	 */
 	template<class FUNC>
 	void nodeForeachGroup(FUNC &&f) {
+		beforeSceneMutation();
 		memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "group");
 		_sceneGraph.foreachGroup(core::forward<FUNC>(f));
 	}

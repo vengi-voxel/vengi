@@ -21,24 +21,6 @@
 
 namespace voxedit {
 
-void BrushPanelSculpt::executeSculptBrush(BrushPanelContext &ctx) {
-	Modifier &modifier = ctx.sceneMgr->modifier();
-	if (!modifier.beginBrushFromPanel()) {
-		return;
-	}
-	auto func = [&](scenegraph::SceneGraphNode &node) {
-		if (!node.visible()) {
-			return;
-		}
-		auto callback = [&](const voxel::Region &region, ModifierType type, SceneModifiedFlags flags) {
-			ctx.sceneMgr->modified(node.uuid(), region, flags);
-		};
-		modifier.execute(ctx.sceneMgr->sceneGraph(), node, callback);
-	};
-	ctx.sceneMgr->nodeForeachGroup(func);
-	modifier.endBrush();
-}
-
 void BrushPanelSculpt::loadSkinFromFile(BrushPanelContext &ctx, const core::String &filename) {
 	const io::ArchivePtr &archive = io::openFilesystemArchive(ctx.app->filesystem());
 	scenegraph::SceneGraph sceneGraph;
@@ -58,10 +40,7 @@ void BrushPanelSculpt::loadSkinFromFile(BrushPanelContext &ctx, const core::Stri
 		return;
 	}
 
-	Modifier &modifier = ctx.sceneMgr->modifier();
-	SculptBrush &brush = modifier.sculptBrush();
-	brush.setOwnedSkinVolume(volume, filename);
-	executeSculptBrush(ctx);
+	ctx.sceneMgr->modifier().sculptBrush().setOwnedSkinVolume(volume, filename);
 }
 
 void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionListener &listener) {
@@ -93,7 +72,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 			const core::String sculptLabel = core::String::format("%s %s", SculptModeIcons[i], _(SculptModeStr[i]));
 			if (ImGui::Selectable(sculptLabel.c_str(), selected)) {
 				brush.setSculptMode(mode);
-				executeSculptBrush(ctx);
 			}
 			if (selected) {
 				ImGui::SetItemDefaultFocus();
@@ -117,13 +95,11 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		int threshold = brush.heightThreshold();
 		if (ImGui::SliderInt(_("Height threshold"), &threshold, 1, SculptBrush::MaxHeightThreshold)) {
 			brush.setHeightThreshold(threshold);
-			executeSculptBrush(ctx);
 		}
 	} else if (currentMode == SculptMode::SmoothErode) {
 		bool preserve = brush.preserveTopHeight();
 		if (ImGui::Checkbox(_("Preserve top height"), &preserve)) {
 			brush.setPreserveTopHeight(preserve);
-			executeSculptBrush(ctx);
 		}
 		if (preserve) {
 			int trimPerStep = brush.trimPerStep();
@@ -131,7 +107,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 			ImGui::SetNextItemWidth(-1);
 			if (ImGui::SliderIntWithButtons("##sculpt_trim_slider", &trimPerStep, 1, SculptBrush::MaxTrimPerStep)) {
 				brush.setTrimPerStep(trimPerStep);
-				executeSculptBrush(ctx);
 			}
 		}
 	} else if (currentMode == SculptMode::SmoothGaussian) {
@@ -140,12 +115,10 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		ImGui::SetNextItemWidth(-1);
 		if (ImGui::SliderIntWithButtons("##sculpt_kernel_slider", &kernelSize, 1, SculptBrush::MaxKernelSize)) {
 			brush.setKernelSize(kernelSize);
-			executeSculptBrush(ctx);
 		}
 		float sigma = brush.sigma();
 		if (ImGui::SliderFloat(_("Sigma"), &sigma, SculptBrush::MinSigma, SculptBrush::MaxSigma)) {
 			brush.setSigma(sigma);
-			executeSculptBrush(ctx);
 		}
 	} else if (currentMode == SculptMode::SmoothWall) {
 		// Interpolation mode
@@ -155,7 +128,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 				const bool selected = i == (int)interp;
 				if (ImGui::Selectable(_(SmoothWallInterpStr[i]), selected)) {
 					brush.setSmoothWallInterp((voxelutil::SmoothWallInterp)i);
-					executeSculptBrush(ctx);
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -167,7 +139,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		bool fillHoles = brush.smoothWallFillHoles();
 		if (ImGui::Checkbox(_("Fill holes"), &fillHoles)) {
 			brush.setSmoothWallFillHoles(fillHoles);
-			executeSculptBrush(ctx);
 		}
 		ImGui::SetItemTooltipUnformatted(_("Fill enclosed empty areas with interpolated heights"));
 
@@ -176,7 +147,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		ImGui::SetNextItemWidth(-1);
 		if (ImGui::SliderIntWithButtons("##smoothwall_clear_slider", &clearDepth, 0, SculptBrush::MaxSmoothWallClearDepth)) {
 			brush.setSmoothWallClearDepth(clearDepth);
-			executeSculptBrush(ctx);
 		}
 		ImGui::SetItemTooltipUnformatted(_("How many voxels above the smoothed surface to clear (0 = none)"));
 	} else if (currentMode == SculptMode::Reskin) {
@@ -208,7 +178,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 				const bool selected = i == (int)cfg.mode;
 				if (ImGui::Selectable(_(ReskinModeStr[i]), selected)) {
 					brush.setReskinMode((voxelutil::ReskinMode)i);
-					executeSculptBrush(ctx);
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -223,7 +192,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 				const bool selected = i == (int)cfg.follow;
 				if (ImGui::Selectable(_(ReskinFollowStr[i]), selected)) {
 					brush.setReskinFollow((voxelutil::ReskinFollow)i);
-					executeSculptBrush(ctx);
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -238,7 +206,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 				const bool selected = i == (int)cfg.rotation;
 				if (ImGui::Selectable(_(ReskinRotationStr[i]), selected)) {
 					brush.setReskinRotation((voxelutil::ReskinRotation)i);
-					executeSculptBrush(ctx);
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -253,7 +220,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 				const bool selected = i == (int)cfg.tile;
 				if (ImGui::Selectable(_(ReskinTileStr[i]), selected)) {
 					brush.setReskinTile((voxelutil::ReskinTile)i);
-					executeSculptBrush(ctx);
 				}
 				if (selected) {
 					ImGui::SetItemDefaultFocus();
@@ -269,7 +235,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 			ImGui::SetNextItemWidth(-1);
 			if (ImGui::SliderIntWithButtons("##reskin_ou_slider", &offsetU, -32, 32)) {
 				brush.setReskinOffsetU(offsetU);
-				executeSculptBrush(ctx);
 			}
 
 			int offsetV = cfg.offsetV;
@@ -277,7 +242,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 			ImGui::SetNextItemWidth(-1);
 			if (ImGui::SliderIntWithButtons("##reskin_ov_slider", &offsetV, -32, 32)) {
 				brush.setReskinOffsetV(offsetV);
-				executeSculptBrush(ctx);
 			}
 		}
 
@@ -288,7 +252,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		if (ImGui::SliderIntWithButtons("##reskin_so_slider", &surfaceOffset, -SculptBrush::MaxReskinDepth,
 									  SculptBrush::MaxReskinDepth)) {
 			brush.setReskinZOffset(surfaceOffset);
-			executeSculptBrush(ctx);
 		}
 		ImGui::SetItemTooltipUnformatted(_("Positive = skin floats above surface, negative = sinks below"));
 
@@ -297,14 +260,12 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		ImGui::SetNextItemWidth(-1);
 		if (ImGui::SliderIntWithButtons("##reskin_sd_slider", &skinDepth, 1, SculptBrush::MaxReskinDepth)) {
 			brush.setReskinSkinDepth(skinDepth);
-			executeSculptBrush(ctx);
 		}
 
 		// Invert checkbox
 		bool invertSkin = cfg.invertSkin;
 		if (ImGui::Checkbox(_("Invert skin"), &invertSkin)) {
 			brush.setReskinInvertSkin(invertSkin);
-			executeSculptBrush(ctx);
 		}
 	} else if (currentMode == SculptMode::ExtendPlane) {
 		int radius = brush.brushRadius();
@@ -336,7 +297,6 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		float strength = brush.strength();
 		if (ImGui::SliderFloat(_("Strength"), &strength, 0.0f, 1.0f)) {
 			brush.setStrength(strength);
-			executeSculptBrush(ctx);
 		}
 	}
 
@@ -349,12 +309,10 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 			ImGui::SetNextItemWidth(-1);
 			if (ImGui::SliderIntWithButtons("##sculpt_iter_slider", &iterations, 1, maxIter)) {
 				brush.setIterations(iterations);
-				executeSculptBrush(ctx);
 			}
 		} else {
 			if (ImGui::SliderInt(_("Iterations"), &iterations, 1, maxIter)) {
 				brush.setIterations(iterations);
-				executeSculptBrush(ctx);
 			}
 		}
 	}

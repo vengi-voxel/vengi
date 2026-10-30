@@ -49,6 +49,19 @@ public:
 		return mouseRayTrace(force, invModel);
 	}
 
+	int testLastRaytraceX() const {
+		return _lastRaytraceX;
+	}
+
+	int testLastRaytraceY() const {
+		return _lastRaytraceY;
+	}
+
+	void testSetLastRaytrace(int x, int y) {
+		_lastRaytraceX = x;
+		_lastRaytraceY = y;
+	}
+
 	void testFillHollow() {
 		nodeGroupFillHollow();
 	}

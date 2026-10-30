@@ -124,6 +124,27 @@ protected:
 
 };
 
+TEST_F(ModifierTest, testBuiltinAccessorsKeepTheirInstancesWhenAnotherToolIsSelected) {
+	Modifier modifier(nullptr, core::make_shared<IModifierRenderer>());
+	ShapeBrush &shape = modifier.shapeBrush();
+	PaintBrush &paint = modifier.paintBrush();
+	shape.setRadius(3);
+	paint.setStrength(2.0f);
+	auto custom = core::make_shared<ShapeBrush>();
+	custom->setRadius(7);
+	ASSERT_TRUE(modifier.registry().add("custom-shape", custom));
+	ASSERT_TRUE(modifier.setTool("custom-shape"));
+	EXPECT_EQ(custom.get(), modifier.currentBrush());
+	EXPECT_EQ(&shape, &modifier.shapeBrush());
+	EXPECT_EQ(&paint, &modifier.paintBrush());
+	modifier.shapeBrush().setRadius(4);
+	EXPECT_EQ(7, custom->radius());
+	modifier.setBrushType(BrushType::Shape);
+	EXPECT_EQ(&shape, modifier.currentBrush());
+	EXPECT_EQ(4, modifier.shapeBrush().radius());
+	EXPECT_FLOAT_EQ(2.0f, modifier.paintBrush().strength());
+}
+
 TEST_F(ModifierTest, testFailedBrushStillNotifiesPartialWrites) {
 	class FailingBrush : public AABBBrush {
 	protected:
@@ -142,11 +163,8 @@ TEST_F(ModifierTest, testFailedBrushStillNotifiesPartialWrites) {
 	public:
 		FailingModifier(SceneManager *sceneMgr, const core::SharedPtr<FailingBrush> &brush)
 			: Modifier(sceneMgr, core::make_shared<IModifierRenderer>()) {
-			for (Brush *&registered : _brushes) {
-				if (registered->type() == brush->type()) {
-					registered = brush.get();
-				}
-			}
+			_registry.add("failing", brush);
+			_toolId = "failing";
 			_brushType = brush->type();
 		}
 	};
@@ -193,20 +211,20 @@ TEST_F(ModifierTest, testGestureDispatchDoesNotRequireAABBBrush) {
 	};
 	class GestureModifier : public Modifier {
 	public:
-		GestureModifier(Brush *brush) : Modifier(nullptr, core::make_shared<IModifierRenderer>()) {
-			_brushes.clear();
-			_brushes.push_back(brush);
+		GestureModifier(const core::SharedPtr<Brush> &brush) : Modifier(nullptr, core::make_shared<IModifierRenderer>()) {
+			_registry.add("gesture", brush);
+			_toolId = "gesture";
 			_brushType = brush->type();
 		}
 	};
-	GestureBrush brush;
-	GestureModifier modifier(&brush);
+	auto brush = core::make_shared<GestureBrush>();
+	GestureModifier modifier(brush);
 	EXPECT_EQ(nullptr, modifier.currentAABBBrush());
 	EXPECT_EQ(glm::ivec3(3, 4, 5), modifier.currentCursorPosition());
 	EXPECT_TRUE(modifier.needsAdditionalAction());
 	EXPECT_FALSE(modifier.aborted());
 	modifier.executeAdditionalAction();
-	EXPECT_TRUE(brush.stepped);
+	EXPECT_TRUE(brush->stepped);
 	EXPECT_FALSE(modifier.needsAdditionalAction());
 	EXPECT_TRUE(modifier.aborted());
 }
@@ -734,14 +752,17 @@ TEST_F(ModifierTest, testAutoSelectExtrudeNewVoxels) {
 	ExtrudeBrush &brush = modifier.extrudeBrush();
 	brush.setDepth(1);
 
-	BrushContext &ctx = modifier.brushContext();
+	BrushContext ctx = modifier.brushContext();
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ASSERT_TRUE(modifier.beginBrush());
 
 	scenegraph::SceneGraph sceneGraph;
 	bool callbackFired = false;
-	modifier.execute(sceneGraph, node,
-					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
+	ModifierVolumeWrapper wrapper(node, ModifierType::Place);
+	brush.preExecute(ctx, &volume);
+	ASSERT_TRUE(brush.executeSample(sceneGraph, wrapper, ctx));
+	wrapper.autoSelectNewVoxels();
+	callbackFired = wrapper.dirtyRegion().isValid();
 	modifier.endBrush();
 	EXPECT_TRUE(callbackFired) << "Extrude should succeed";
 

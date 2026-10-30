@@ -26,6 +26,22 @@ protected:
 public:
 	PlaneBrush() : Super(BrushType::Plane) {
 	}
+	bool previewNeedsExistingVolume() const override {
+		return true;
+	}
+	int previewPadding() const override {
+		return 1;
+	}
+	BrushPreviewStyle previewStyle() const override {
+		return BrushPreviewStyle::Changes;
+	}
+	voxel::Region previewRegion(const BrushContext &ctx, const voxel::RawVolume *volume) const override;
+	bool projectCursor(const math::Ray &ray, glm::ivec3 &position) const override;
+	bool needsAdditionalAction(const BrushContext &) const override {
+		return false;
+	}
+	void handles(const BrushContext &, core::DynamicArray<BrushGizmoState> &) const override {
+	}
 	virtual ~PlaneBrush() = default;
 
 	void reset() override;

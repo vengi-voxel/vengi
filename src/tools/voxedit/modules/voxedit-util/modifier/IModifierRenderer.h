@@ -78,6 +78,7 @@ struct ModifierRendererContext {
 	bool useSimplePreview = false;
 	bool showOutlinePreview = false;
 	bool brushActive = false;
+	bool previewErase = false;
 };
 
 class IModifierRenderer : public core::IComponent {

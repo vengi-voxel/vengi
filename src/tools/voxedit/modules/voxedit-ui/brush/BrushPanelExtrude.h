@@ -20,7 +20,6 @@ public:
 	void update(BrushPanelContext &ctx, command::CommandExecutionListener &listener);
 
 private:
-	void executeExtrudeBrush(BrushPanelContext &ctx);
 };
 
 } // namespace voxedit

@@ -131,33 +131,26 @@ bool PlaneBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	brushContext.gridResolution = glm::ivec3(thickness);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, modifierType);
 
 	// Get and configure the plane brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	PlaneBrush &planeBrush = modifier.planeBrush();
-
-	// Save previous state
-	const BrushType prevBrushType = modifier.brushType();
+	PlaneBrush planeBrush;
 
 	// Configure the plane brush
-	modifier.setBrushType(BrushType::Plane);
 	planeBrush.setBoxMode();
 
 	// Begin and execute the brush
 	planeBrush.beginBrush(brushContext);
-	planeBrush.preExecute(brushContext, volume);
-	const bool success = planeBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const BrushApplyResult applied = modifier.executeRequest(planeBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	planeBrush.endBrush(brushContext);
 
-	// Restore previous state
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id, "Plane extrusion executed successfully", false);
 	}
 

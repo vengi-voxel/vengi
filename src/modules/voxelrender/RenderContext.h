@@ -6,6 +6,7 @@
 
 #include "core/NonCopyable.h"
 #include "render/BloomRenderer.h"
+#include "render/SurfaceOverlayRenderer.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "video/FrameBuffer.h"
 #include <glm/vec2.hpp>
@@ -24,6 +25,7 @@ struct RenderContext : public core::NonCopyable {
 	video::FrameBuffer frameBuffer;        // Main framebuffer (multisampled when MSAA is enabled)
 	video::FrameBuffer resolveFrameBuffer; // Resolve target for multisampled framebuffer
 	render::BloomRenderer bloomRenderer;
+	render::SurfaceOverlayRenderer surfaceOverlay;
 	video::FrameBuffer oitFrameBuffer; // Weighted blended OIT accum + reveal (non-MSAA)
 	const scenegraph::SceneGraph *sceneGraph = nullptr;
 	scenegraph::FrameIndex frame = 0;

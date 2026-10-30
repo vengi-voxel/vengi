@@ -7,10 +7,13 @@
 #include "brush/LUABrush.h"
 #include "brush/LUASelectionMode.h"
 #include "brush/SelectBrush.h"
+#include "core/Function.h"
 #include "core/IComponent.h"
 #include "core/collection/DynamicArray.h"
 
 namespace voxedit {
+
+class BrushRegistry;
 
 /**
  * @brief Manages discovery, loading, and lifecycle of Lua brush and selection mode scripts
@@ -18,6 +21,8 @@ namespace voxedit {
 class ScriptManager : public core::IComponent {
 private:
 	core::DynamicArray<LUABrush *> _luaBrushes;
+	core::DynamicArray<core::SharedPtr<LUABrush>> _luaBrushOwners;
+	core::Function<void()> _beforeScriptChange;
 	int _activeLuaBrushIndex = -1;
 
 	core::DynamicArray<LUASelectionMode *> _luaSelectionModes;
@@ -27,6 +32,7 @@ private:
 	 * to avoid dangling pointers
 	 */
 	SelectBrush *_selectBrush = nullptr;
+	BrushRegistry *_registry = nullptr;
 
 	void discoverBrushScripts();
 	void clearBrushScripts();
@@ -38,6 +44,12 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	void setBeforeScriptChange(const core::Function<void()> &callback) {
+		_beforeScriptChange = callback;
+	}
+	void setRegistry(BrushRegistry &registry) {
+		_registry = &registry;
+	}
 	void setSelectBrush(SelectBrush *selectBrush);
 
 	const core::DynamicArray<LUABrush *> &luaBrushes() const;

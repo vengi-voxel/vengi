@@ -133,22 +133,12 @@ bool TransformBrushTool::execute(const json::Json &id, const json::Json &args, T
 	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
 
 	// Get and configure the transform brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	TransformBrush &transformBrush = modifier.transformBrush();
-
-	// Save previous state
-	const BrushType prevBrushType = modifier.brushType();
-	const TransformMode prevTransformMode = transformBrush.transformMode();
-	const glm::ivec3 prevMoveOffset = transformBrush.moveOffset();
-	const glm::ivec3 prevShearOffset = transformBrush.shearOffset();
-	const glm::vec3 prevScale = transformBrush.scale();
-	const glm::vec3 prevRotation = transformBrush.rotationDegrees();
+	TransformBrush transformBrush;
 
 	// Configure the transform brush
-	modifier.setBrushType(BrushType::Transform);
 	transformBrush.setTransformMode(transformMode);
 
 	switch (transformMode) {
@@ -186,23 +176,16 @@ bool TransformBrushTool::execute(const json::Json &id, const json::Json &args, T
 
 	// Begin and execute the brush
 	transformBrush.beginBrush(brushContext);
-	transformBrush.preExecute(brushContext, volume);
-	const bool success = transformBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const BrushApplyResult applied = modifier.executeRequest(transformBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	transformBrush.endBrush(brushContext);
 
-	// Restore previous state
-	transformBrush.setTransformMode(prevTransformMode);
-	transformBrush.setMoveOffset(prevMoveOffset);
-	transformBrush.setShearOffset(prevShearOffset);
-	transformBrush.setScale(prevScale);
-	transformBrush.setRotationDegrees(prevRotation);
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id,
 						  core::String::format("Transform '%s' executed successfully", transformModeStr.c_str()),
 						  false);

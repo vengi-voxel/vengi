@@ -29,6 +29,15 @@
 
 namespace voxedit {
 
+StampBrush::StampBrush(const StampBrush &other)
+	: Super(other), _palette(other._palette), _lastCursorPosition(other._lastCursorPosition), _offset(other._offset),
+	  _center(other._center), _continuous(other._continuous), _sceneMgr(other._sceneMgr),
+	  _maxVolumeSize(other._maxVolumeSize) {
+	if (other._volume) {
+		_volume = new voxel::RawVolume(*other._volume);
+	}
+}
+
 void StampBrush::construct() {
 	Super::construct();
 	command::Command::registerCommand("togglestampbrushcenter")
@@ -140,6 +149,7 @@ void StampBrush::reset() {
 }
 
 void StampBrush::setSize(const glm::ivec3 &size) {
+	markSettingsChanged();
 	if (glm::any(glm::greaterThan(size, glm::ivec3(_maxVolumeSize->intVal())))) {
 		return;
 	}
@@ -151,6 +161,7 @@ void StampBrush::setSize(const glm::ivec3 &size) {
 }
 
 void StampBrush::setVolume(const voxel::RawVolume &volume, const palette::Palette &palette) {
+	markSettingsChanged();
 	_volume = voxelutil::cropVolume(&volume);
 	if (!_volume) {
 		_volume = new voxel::RawVolume(volume);
@@ -183,6 +194,7 @@ void StampBrush::update(const BrushContext &ctx, double nowSeconds) {
 }
 
 void StampBrush::setVoxel(const voxel::Voxel &voxel, const palette::Palette &palette) {
+	markSettingsChanged();
 	if (_volume) {
 		auto func = [&](int x, int y, int z, const voxel::Voxel &v) { _volume->setVoxel(x, y, z, voxel); };
 		voxelutil::visitVolumeParallel(*_volume, func);

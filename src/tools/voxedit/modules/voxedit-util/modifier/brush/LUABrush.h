@@ -57,6 +57,8 @@ private:
 
 	bool initLuaState();
 	void recordScriptFailure(ModifierVolumeWrapper &wrapper, int nodeId);
+	void generateTarget(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						const voxel::Region &region);
 
 	bool wantBox() const override;
 
@@ -66,6 +68,7 @@ protected:
 
 public:
 	LUABrush(const io::FilesystemPtr &filesystem);
+	LUABrush(const LUABrush &other);
 
 	/**
 	 * @brief Load a brush script from the given filename
@@ -98,15 +101,16 @@ public:
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 	bool needsAdditionalAction(const BrushContext &ctx) const override;
-	bool previewNeedsExistingVolume() const;
+	bool previewNeedsExistingVolume() const override;
 	bool active() const override;
 	void reset() override;
 	bool init() override;
 	void shutdown() override;
 
-	bool wantBrushGizmo(const BrushContext &ctx) const override;
-	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
-	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
+	bool hasHandle(const BrushContext &ctx) const;
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 						 uint32_t operation) override;
 
 	/**

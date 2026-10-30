@@ -136,20 +136,12 @@ bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	brushContext.gridResolution = glm::ivec3(1);
 
 	// Create the modifier wrapper
-	ModifierVolumeWrapper wrapper(*node, ModifierType::Paint);
 
 	// Get and configure the paint brush
 	Modifier &modifier = ctx.sceneMgr->modifier();
-	PaintBrush &paintBrush = modifier.paintBrush();
-
-	// Save previous state
-	const BrushType prevBrushType = modifier.brushType();
-	const PaintBrush::PaintMode prevPaintMode = paintBrush.paintMode();
-	const float prevStrength = paintBrush.strength();
-	const float prevOpacity = paintBrush.blendOpacity();
+	PaintBrush paintBrush;
 
 	// Configure the paint brush
-	modifier.setBrushType(BrushType::Paint);
 	paintBrush.setPaintMode(paintMode);
 	if (paintMode == PaintBrush::PaintMode::Blend || paintMode == PaintBrush::PaintMode::Blur) {
 		paintBrush.setBlendOpacity(opacity);
@@ -158,28 +150,20 @@ bool PaintBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	}
 	paintBrush.setBoxMode();
 
-	// Set up the AABB region
-	brushContext.cursorPosition = mins;
-	paintBrush.beginBrush(brushContext);
+	brushContext.evaluatedRegion = voxel::Region(mins, maxs);
 	brushContext.cursorPosition = maxs;
-	paintBrush.step(brushContext);
 
 	// Execute the brush
-	paintBrush.preExecute(brushContext, volume);
-	const bool success = paintBrush.execute(ctx.sceneMgr->sceneGraph(), wrapper, brushContext);
+	core::Buffer<core::UUID> targets;
+	targets.push_back(nodeUUID);
+	const BrushApplyResult applied = modifier.executeRequest(paintBrush, brushContext, targets);
+	const bool success = !applied.failed();
 
 	// End the brush operation
 	paintBrush.endBrush(brushContext);
 
-	// Restore previous state
-	paintBrush.setPaintMode(prevPaintMode);
-	paintBrush.setStrength(prevStrength);
-	paintBrush.setBlendOpacity(prevOpacity);
-	modifier.setBrushType(prevBrushType);
-
-	const voxel::Region &dirtyRegion = wrapper.dirtyRegion();
+	const voxel::Region &dirtyRegion = applied.dirtyRegion;
 	if (dirtyRegion.isValid()) {
-		ctx.sceneMgr->modified(node->uuid(), dirtyRegion);
 		return ctx.result(id, core::String::format("Paint brush '%s' executed successfully", paintModeStr.c_str()),
 						  false);
 	}

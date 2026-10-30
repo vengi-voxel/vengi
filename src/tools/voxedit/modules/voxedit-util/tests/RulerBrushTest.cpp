@@ -74,9 +74,9 @@ TEST_F(RulerBrushTest, testPreviewDoesNotModifyRealVolume) {
 	brush.update(ctx, 0.0);
 
 	// between clicks: gizmo shows tracking line
-	EXPECT_TRUE(brush.wantBrushGizmo(ctx));
+	EXPECT_TRUE(brush.hasHandle(ctx));
 	BrushGizmoState state;
-	brush.brushGizmoState(ctx, state);
+	brush.describeHandle(ctx, state);
 	EXPECT_EQ(state.operations, (uint32_t)BrushGizmo_Line);
 	EXPECT_EQ(state.numPositions, 2);
 	EXPECT_EQ(state.positions[0], glm::vec3(0.5f));
@@ -139,7 +139,7 @@ TEST_F(RulerBrushTest, testMeasurementPersistsAfterEndBrush) {
 	// measurement should persist after both clicks
 	EXPECT_TRUE(brush.active());
 	EXPECT_TRUE(brush.hasMeasurement());
-	EXPECT_TRUE(brush.wantBrushGizmo(ctx));
+	EXPECT_TRUE(brush.hasHandle(ctx));
 	EXPECT_EQ(brush.startPos(), glm::ivec3(0, 0, 0));
 	EXPECT_EQ(brush.endPos(), glm::ivec3(5, 5, 5));
 
@@ -186,9 +186,9 @@ TEST_F(RulerBrushTest, testReferencePositionMode) {
 	EXPECT_EQ(brush.startPos(), glm::ivec3(2, 3, 4));
 
 	// gizmo should show the line
-	EXPECT_TRUE(brush.wantBrushGizmo(ctx));
+	EXPECT_TRUE(brush.hasHandle(ctx));
 	BrushGizmoState state;
-	brush.brushGizmoState(ctx, state);
+	brush.describeHandle(ctx, state);
 	EXPECT_EQ(state.operations, (uint32_t)BrushGizmo_Line);
 	EXPECT_EQ(state.numPositions, 2);
 

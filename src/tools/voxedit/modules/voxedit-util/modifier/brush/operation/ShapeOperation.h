@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../ShapeType.h"
+#include "voxedit-util/modifier/ShapeType.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"

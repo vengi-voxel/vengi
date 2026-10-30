@@ -7,7 +7,6 @@
 #include "core/BindingContext.h"
 #include "math/Axis.h"
 #include "memento/MementoHandler.h"
-#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ModifierType.h"
@@ -109,6 +108,7 @@ TEST_F(BrushInputTest, testPersistentSettingsSurviveEdit) {
 	EXPECT_EQ(2, b->radius());
 	EXPECT_EQ(math::Axis::X, b->mirrorAxis());
 	EXPECT_EQ(3, modifier.shapeBrush().thickness());
+	EXPECT_FALSE(modifier.isEditActive());
 }
 
 TEST_F(BrushInputTest, testHiddenTargetIsNotWritten) {
@@ -131,8 +131,10 @@ TEST_F(BrushInputTest, testSliceGizmoPressRetainsInputWithoutStartingBrushEdit) 
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
 	EXPECT_TRUE(modifier.sliceActionPressed());
+	EXPECT_FALSE(modifier.isEditActive());
 	command::executeCommands("-actionexecute 1 0.1");
 	EXPECT_FALSE(modifier.sliceActionPressed());
+	EXPECT_FALSE(modifier.isEditActive());
 	EXPECT_EQ(_sceneMgr->mementoHandler().stateSize(), history);
 	{
 		core::ScopedBindingContext sceneContext(core::BindingContext::Context1);
@@ -219,11 +221,13 @@ TEST_F(BrushInputTest, testBoxAppliesOnceOnRelease) {
 	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
+	ASSERT_TRUE(m.isEditActive());
 	ASSERT_NE(nullptr, volumeOf(firstId));
 	ASSERT_NE(nullptr, volumeOf(secondId));
 	EXPECT_TRUE(voxel::isAir(volumeOf(firstId)->voxel(0, 0, 0).getMaterial()));
 	m.setCursorPosition(glm::ivec3(2, 2, 2), voxel::FaceNames::PositiveY);
 	command::executeCommands("-actionexecute 1 0.05");
+	EXPECT_FALSE(m.isEditActive());
 	for (int id : {firstId, secondId}) {
 		voxel::RawVolume *v = volumeOf(id);
 		ASSERT_NE(nullptr, v);
@@ -251,15 +255,18 @@ TEST_F(BrushInputTest, testBoxWaitsForDepthThenApplies) {
 	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
+	ASSERT_TRUE(m.isEditActive());
 	m.setCursorPosition(glm::ivec3(2, 0, 2), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(m.needsAdditionalAction());
 	command::executeCommands("-actionexecute 1 0.05");
+	ASSERT_TRUE(m.isEditActive());
 	voxel::RawVolume *v = volumeOf(_sceneMgr->activeNode());
 	ASSERT_NE(nullptr, v);
 	EXPECT_TRUE(voxel::isAir(v->voxel(0, 0, 0).getMaterial()));
 	m.setCursorPosition(glm::ivec3(2, 3, 2), voxel::FaceNames::PositiveY);
 	command::executeCommands("+actionexecute 1 0.1");
 	command::executeCommands("-actionexecute 1 0.15");
+	EXPECT_FALSE(m.isEditActive());
 	EXPECT_FALSE(voxel::isAir(v->voxel(0, 0, 0).getMaterial()));
 	EXPECT_FALSE(voxel::isAir(v->voxel(2, 3, 2).getMaterial()));
 }
@@ -278,6 +285,7 @@ TEST_F(BrushInputTest, testCenterAppliesOnRelease) {
 	command::executeCommands("+actionexecute 1 0.0");
 	m.setCursorPosition(glm::ivec3(6, 4, 6), voxel::FaceNames::PositiveY);
 	command::executeCommands("-actionexecute 1 0.05");
+	EXPECT_FALSE(m.isEditActive());
 	voxel::RawVolume *v = volumeOf(_sceneMgr->activeNode());
 	ASSERT_NE(nullptr, v);
 	EXPECT_FALSE(voxel::isAir(v->voxel(4, 2, 4).getMaterial()));
@@ -301,11 +309,46 @@ TEST_F(BrushInputTest, testPaintBoxAppliesExistingVoxels) {
 	command::executeCommands("+actionexecute 1 0.0");
 	m.setCursorPosition(glm::ivec3(2, 2, 2), voxel::FaceNames::PositiveY);
 	command::executeCommands("-actionexecute 1 0.05");
+	EXPECT_FALSE(m.isEditActive());
 	voxel::RawVolume *v = volumeOf(nodeId);
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(1, v->voxel(0, 0, 0).getColor());
 	EXPECT_EQ(1, v->voxel(2, 0, 2).getColor());
 	EXPECT_EQ(0, v->voxel(3, 0, 0).getColor());
+}
+
+TEST_F(BrushInputTest, testPlaneReleaseResetsTraceForNextClick) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "plane_again", voxel::Region(0, 0, 0, 8, 4, 8)));
+	const int nodeId = _sceneMgr->activeNode();
+	fillGround(nodeId, 1);
+	Modifier &m = _sceneMgr->modifier();
+	m.setBrushType(BrushType::Plane);
+	m.setModifierType(ModifierType::Place);
+	const voxel::Voxel placed = voxel::createVoxel(voxel::VoxelType::Generic, 2);
+	m.setCursorVoxel(placed);
+	m.setHitCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 1));
+	m.setCursorPosition(glm::ivec3(1, 1, 1), voxel::FaceNames::PositiveY);
+	sceneMgr()->testSetLastRaytrace(12, 34);
+	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
+	command::executeCommands("+actionexecute 1 0.0");
+	ASSERT_TRUE(m.isEditActive());
+	EXPECT_FALSE(m.needsAdditionalAction());
+	command::executeCommands("-actionexecute 1 0.05");
+	EXPECT_FALSE(m.isEditActive());
+	voxel::RawVolume *v = volumeOf(nodeId);
+	ASSERT_NE(nullptr, v);
+	EXPECT_EQ(2, v->voxel(1, 1, 1).getColor());
+	EXPECT_TRUE(voxel::isAir(v->voxel(1, 2, 1).getMaterial()));
+	EXPECT_EQ(-1, sceneMgr()->testLastRaytraceX());
+	EXPECT_EQ(-1, sceneMgr()->testLastRaytraceY());
+
+	m.setHitCursorVoxel(v->voxel(1, 1, 1));
+	m.setCursorPosition(glm::ivec3(1, 2, 1), voxel::FaceNames::PositiveY);
+	command::executeCommands("+actionexecute 1 0.1");
+	ASSERT_TRUE(m.isEditActive());
+	command::executeCommands("-actionexecute 1 0.15");
+	EXPECT_FALSE(m.isEditActive());
+	EXPECT_EQ(2, v->voxel(1, 2, 1).getColor());
 }
 
 } // namespace voxedit

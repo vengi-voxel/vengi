@@ -3,6 +3,7 @@
  */
 
 #include "PreviewManager.h"
+#include "BrushApply.h"
 #include "BrushRadiusPreview.h"
 #include "Modifier.h"
 #include "core/Log.h"
@@ -97,14 +98,15 @@ static void stripUnchangedVoxels(voxel::RawVolume *preview, const voxel::RawVolu
 			sampler.setPosition(region.getLowerX(), y, z);
 			for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
 				const voxel::Voxel &v = sampler.voxel();
-				if (!voxel::isAir(v.getMaterial())) {
-					if (!original->region().containsPoint(x, y, z)) {
-						sampler.movePositiveX();
-						continue;
-					}
+				if (original->region().containsPoint(x, y, z)) {
 					originalSampler.setPosition(x, y, z);
-					if (v == originalSampler.voxel()) {
+					const voxel::Voxel &source = originalSampler.voxel();
+					if (v == source) {
 						sampler.setVoxel(air);
+					} else if (voxel::isAir(v.getMaterial())) {
+						voxel::Voxel removed = source;
+						removed.setOutline();
+						sampler.setVoxel(removed);
 					}
 				}
 				sampler.movePositiveX();
@@ -146,36 +148,6 @@ static bool canAllocatePreviewRegion(const voxel::Region &region, int maxSuggest
 	return voxels > 0 && voxels <= maxVoxels;
 }
 
-bool PreviewManager::previewNeedsExistingVolume(const Modifier &modifier) const {
-	if (modifier.brushType() == BrushType::Normal || modifier.isMode(ModifierType::Paint) ||
-		modifier.isMode(ModifierType::NormalPaint)) {
-		return true;
-	}
-	const BrushType brushType = modifier.brushType();
-	if (brushType == BrushType::Select) {
-		return true;
-	}
-	if (brushType == BrushType::Script) {
-		const LUABrush *luaBrush = (const LUABrush *)modifier.currentBrush();
-		if (luaBrush && luaBrush->previewNeedsExistingVolume()) {
-			return true;
-		}
-	}
-	if (brushType == BrushType::Plane) {
-		return modifier.isMode(ModifierType::Place);
-	}
-	if (brushType == BrushType::Extrude) {
-		return true;
-	}
-	if (brushType == BrushType::Transform) {
-		return true;
-	}
-	if (brushType == BrushType::Sculpt) {
-		return true;
-	}
-	return false;
-}
-
 bool PreviewManager::isSimplePreview(const Brush *brush, const voxel::Region &region) const {
 	return brush->isSimplePreview();
 }
@@ -185,13 +157,14 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 											  scenegraph::SceneGraph &sceneGraph) {
 	// Voxel erase previews show the affected geometry; normal erase previews keep it and clear its normals.
 	const BrushContext &brushContext = modifier.brushContext();
-	const bool normalPaint = modifier.brushType() == BrushType::Normal || modifier.isMode(ModifierType::NormalPaint);
-	ModifierType modifierType = brushContext.modifierType;
-	if (modifierType == ModifierType::Erase && modifier.brushType() != BrushType::Normal) {
-		modifierType = ModifierType::Place;
+	const Brush *brush = modifier.currentBrush();
+	if (!brush || brush->readOnly() || modifier.isAdjustable()) {
+		return;
 	}
-	voxel::Voxel voxel = brushContext.cursorVoxel;
-	voxel.setOutline();
+	const ModifierType operation = brush->volumeModifier(brushContext.modifierType);
+	const bool normalPaint = (operation & ModifierType::NormalPaint) != ModifierType::None;
+	const bool erase = (operation & ModifierType::Erase) != ModifierType::None && !normalPaint &&
+					   brush->previewStyle() != BrushPreviewStyle::Selection;
 
 	// Allow subclasses to wait for pending operations before freeing old preview volumes
 	_modifierRenderer->waitForPendingExtractions();
@@ -208,16 +181,11 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 
 	// operate on existing voxels
 	voxel::RawVolume *existingVolume = nullptr;
-	if (previewNeedsExistingVolume(modifier)) {
+	if (brush->previewNeedsExistingVolume() || normalPaint || erase) {
 		existingVolume = activeVolume;
 	}
-
-	const Brush *brush = modifier.currentBrush();
-	if (!brush) {
-		return;
-	}
 	// Single-voxel stroke keeps the red face cursor; a 1x1x1 cube would hide it.
-	if (brush->preferFaceCursorPreview()) {
+	if (brush->preferFaceCursorPreview() && !erase) {
 		return;
 	}
 
@@ -240,69 +208,86 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		}
 	}
 
-	// Safety net: brushes with pending changes are handled in render() by
-	// executing on the real volume. If we reach here anyway, bail out to
-	// avoid corrupting brush history state against a temporary dummy volume.
-	if (brush->needsPerFrameFlush()) {
+	BrushContext previewContext = brushContext;
+	previewContext.targetVolumeRegion = activeVolume->region();
+	if (brush->clampToVolume()) {
+		previewContext.cursorPosition =
+			clampBrushCursor(activeVolume->region(), brush->previewRegion(previewContext, activeVolume),
+							 previewContext.cursorPosition);
+	}
+	if (modifier.sliceRegion().isValid()) {
+		previewContext.cursorPosition =
+			glm::clamp(previewContext.cursorPosition, modifier.sliceRegion().getLowerCorner(),
+					   modifier.sliceRegion().getUpperCorner());
+	}
+	voxel::Region region = brush->previewRegion(previewContext, activeVolume);
+	if (modifier.sliceRegion().isValid() && !region.cropTo(modifier.sliceRegion())) {
 		return;
 	}
-
-	modifier.preExecuteBrush(activeVolume);
-	const voxel::Region &region = brush->calcRegion(brushContext);
 	if (!region.isValid()) {
 		return;
 	}
 	const int maxPreviewExtent = _maxSuggestedVolumeSizePreview->intVal();
 	bool simplePreview = isSimplePreview(brush, region);
 
-	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
-		const bool paintPreview = modifier.brushType() == BrushType::Paint;
-		const bool needsNeighbors = paintPreview &&
-									modifier.paintBrush().paintMode() == PaintBrush::PaintMode::Blur;
-		auto generatePreview = [&](core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &outputRegion) {
+	auto previewOnNode = [&](scenegraph::SceneGraphNode &dummy) {
+		dummy.setPalette(_previewPalette);
+		BrushSample sample = modifier.currentEditSample();
+		sample.position = previewContext.cursorPosition;
+		sample.cursorVoxel.setOutline();
+		BrushApplyTarget target;
+		target.node = &dummy;
+		target.volume = dummy.volume();
+		target.writeVolume = dummy.volume();
+		target.bounds = activeVolume->region();
+		target.sliceRegion = modifier.sliceRegion();
+		target.selectionRegion = modifier.selectBrush().box3D().selectionRegion();
+		modifier.evaluateSample(sample, target, true);
+		_previewPalette = dummy.palette();
+		_previewNormalPalette = dummy.normalPalette();
+	};
+		auto generate = [&](core::ScopedPtr<voxel::RawVolume> &volume, const voxel::Region &outputRegion) {
 			voxel::Region readRegion = outputRegion;
-			if (needsNeighbors) {
-				readRegion.grow(1);
+		const int padding = brush->previewPadding();
+		if (padding > 0) {
+				readRegion =
+				voxel::Region(outputRegion.getLowerCorner() - padding, outputRegion.getUpperCorner() + padding);
 			}
-			if (!canAllocatePreviewRegion(readRegion, maxPreviewExtent + 2)) {
+			if (!canAllocatePreviewRegion(readRegion, maxPreviewExtent + padding * 2)) {
 				return;
 			}
 			createOrClearPreviewVolume(existingVolume, volume, readRegion);
-			scenegraph::SceneGraphNode dummyNode(scenegraph::SceneGraphNodeType::Model);
-			dummyNode.setUnownedVolume(volume);
-			if (paintPreview) {
-				dummyNode.setPalette(_previewPalette);
+			scenegraph::SceneGraphNode dummy(scenegraph::SceneGraphNodeType::Model);
+		dummy.setUnownedVolume(volume);
+			if (sceneGraph.hasNode(sceneGraph.activeNode())) {
+			dummy.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
 			}
-			if (normalPaint) {
-				dummyNode.setNormalPalette(sceneGraph.node(sceneGraph.activeNode()).normalPalette());
-			}
-			modifier.executeBrush(sceneGraph, dummyNode, modifierType, voxel, {}, true);
-			if (paintPreview) {
-				_previewPalette = dummyNode.palette();
-			}
+		previewOnNode(dummy);
 			if (readRegion != outputRegion) {
 				volume = new voxel::RawVolume(*volume, outputRegion);
 			}
 		};
+	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
 		glm::ivec3 minsMirror = region.getLowerCorner();
 		glm::ivec3 maxsMirror = region.getUpperCorner();
 		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
-			generatePreview(_previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
+			generate(_previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 		}
-		generatePreview(_previewVolume, region);
+		generate(_previewVolume, region);
 
 		// For selection brushes: remove voxels without FlagOutline from the preview
 		// volume. The preview is a copy of the real volume, and only voxels that the
 		// brush flagged should be visible - otherwise the unflagged copies brighten
 		// the underlying real volume when rendered as an overlay.
-		if (modifier.brushType() == BrushType::Select && existingVolume != nullptr) {
+		if (brush->previewStyle() == BrushPreviewStyle::Selection && existingVolume != nullptr) {
 			stripUnflaggedVoxels(_previewVolume);
 			if (_previewMirrorVolume) {
 				stripUnflaggedVoxels(_previewMirrorVolume);
 			}
 		}
 		// Paint: keep only voxels that actually changed color/material.
-		if ((modifier.brushType() == BrushType::Paint || normalPaint) && existingVolume != nullptr) {
+		if ((brush->previewStyle() == BrushPreviewStyle::Changes || normalPaint || erase) &&
+			existingVolume != nullptr) {
 			stripUnchangedVoxels(_previewVolume, existingVolume);
 			if (_previewMirrorVolume) {
 				stripUnchangedVoxels(_previewMirrorVolume, existingVolume);
@@ -312,7 +297,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 		if (simplePreview) {
 			_brushPreview.useSimplePreview = true;
 			_brushPreview.simplePreviewRegion = region;
-			if (modifier.brushType() == BrushType::Select) {
+			if (brush->previewStyle() == BrushPreviewStyle::Selection) {
 				// Selection brushes use a fixed high-contrast color so the preview
 				// is always visible regardless of the current palette color
 				_brushPreview.simplePreviewColor = color::RGBA(0, 200, 0, 100);

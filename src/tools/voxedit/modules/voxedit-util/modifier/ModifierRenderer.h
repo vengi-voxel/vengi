@@ -47,6 +47,7 @@ private:
 	glm::ivec3 _cursorPosition{0};
 	glm::ivec3 _gridResolution{1};
 	voxel::Region _activeRegion;
+	bool _previewErase = false;
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;
 

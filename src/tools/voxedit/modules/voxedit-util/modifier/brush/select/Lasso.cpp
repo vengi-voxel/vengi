@@ -20,11 +20,11 @@
 namespace voxedit {
 namespace select {
 
-bool Lasso::wantBrushGizmo(const BrushContext &ctx, const AABBBrushState &brushState) const {
+bool Lasso::hasHandle(const BrushContext &ctx, const AABBBrushState &brushState) const {
 	return _screenDragging && _screenPoints.size() >= 2;
 }
 
-void Lasso::brushGizmoState(const BrushContext &ctx, const AABBBrushState &brushState, BrushGizmoState &state) const {
+void Lasso::describeHandle(const BrushContext &ctx, const AABBBrushState &brushState, BrushGizmoState &state) const {
 	state.operations = BrushGizmo_ScreenPolygon;
 	state.screenPolygon = &_screenPoints;
 }
@@ -42,7 +42,6 @@ void Lasso::abort(BrushContext &ctx) {
 	if (_screenDragging) {
 		_screenDragging = false;
 		_screenPoints.clear();
-		_modifiedFlags = SceneModifiedFlags::All;
 	}
 }
 
@@ -68,7 +67,6 @@ bool Lasso::beginBrush(const BrushContext &ctx, const AABBBrushState &state) {
 	}
 	_screenPoints.clear();
 	_screenDragging = true;
-	_modifiedFlags = SceneModifiedFlags::NoUndo;
 	if (_sceneManager) {
 		const glm::ivec2 &mouse = _sceneManager->mousePos();
 		_screenPoints.push_back(glm::vec2((float)mouse.x, (float)mouse.y));
@@ -87,7 +85,6 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 		_screenPoints.clear();
 		return;
 	}
-	_modifiedFlags = SceneModifiedFlags::All;
 	_screenDragging = false;
 
 	const glm::mat4 invModel = _sceneManager->modifier().isSliceMode() ? glm::mat4(1.0f) : glm::inverse(_sceneManager->worldMatrix());

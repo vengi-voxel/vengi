@@ -4,6 +4,7 @@
 
 #include "LUABrush.h"
 #include "BrushGizmoUtil.h"
+#include "ScriptBrushTarget.h"
 #include "app/I18NMarkers.h"
 #include "commonlua/LUA.h"
 #include "commonlua/LUAFunctions.h"
@@ -381,6 +382,18 @@ LUABrush::LUABrush(const io::FilesystemPtr &filesystem)
 	  _filesystem(filesystem) {
 }
 
+LUABrush::LUABrush(const LUABrush &other)
+	: Super(other), _filesystem(other._filesystem), _scriptFilename(other._scriptFilename),
+	  _scriptSource(other._scriptSource), _description(other._description), _iconName(other._iconName),
+	  _scriptLoaded(other._scriptLoaded), _hasCalcRegion(other._hasCalcRegion), _hasGizmo(other._hasGizmo),
+	  _hasApplyGizmo(other._hasApplyGizmo), _useSimplePreview(other._useSimplePreview),
+	  _previewNeedsExistingVolume(other._previewNeedsExistingVolume), _wantBox(other._wantBox),
+	  _parameterDescription(other._parameterDescription), _parameters(other._parameters) {
+	if (!initLuaState() || luaL_dostring(_lua, _scriptSource.c_str())) {
+		_scriptLoaded = false;
+	}
+}
+
 bool LUABrush::initLuaState() {
 	_lua.resetState();
 	if (!_noise.init()) {
@@ -718,7 +731,20 @@ void LUABrush::recordScriptFailure(ModifierVolumeWrapper &wrapper, int nodeId) {
 	lua_settop(_lua, 0);
 }
 
-void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+void LUABrush::generate(scenegraph::SceneGraph &, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
+						const voxel::Region &region) {
+	if (!evaluateScriptTarget(wrapper, [&](scenegraph::SceneGraph &scene, ModifierVolumeWrapper &target) {
+			LUABrush invocation(*this);
+			invocation.generateTarget(scene, target, ctx, region);
+			if (!invocation.errorReason().empty()) {
+				setErrorReason(invocation.errorReason());
+			}
+		})) {
+		setErrorReason(N_("Brush scripts must preserve the target volume bounds"));
+	}
+}
+
+void LUABrush::generateTarget(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						const voxel::Region &region) {
 	if (!_scriptLoaded) {
 		setErrorReason(N_("Brush script execution failed"));
@@ -815,7 +841,15 @@ void LUABrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	lua_gc(s, LUA_GCCOLLECT, 0);
 }
 
-bool LUABrush::wantBrushGizmo(const BrushContext &ctx) const {
+void LUABrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const {
+	if (hasHandle(ctx)) {
+		BrushGizmoState handle;
+		describeHandle(ctx, handle);
+		output.push_back(handle);
+	}
+}
+
+bool LUABrush::hasHandle(const BrushContext &ctx) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		return false;
 	}
@@ -840,7 +874,7 @@ bool LUABrush::wantBrushGizmo(const BrushContext &ctx) const {
 	return hasGizmo;
 }
 
-void LUABrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
+void LUABrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		state.operations = BrushGizmo_None;
 		return;
@@ -953,7 +987,7 @@ void LUABrush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) 
 	lua_settop(s, top);
 }
 
-bool LUABrush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+bool LUABrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 							   uint32_t operation) {
 	if (!_hasApplyGizmo || !_scriptLoaded) {
 		return false;

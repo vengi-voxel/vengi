@@ -33,10 +33,6 @@ glm::ivec3 parseGridResolution(const core::String &str) {
 	return out;
 }
 
-SceneModifiedFlags Brush::sceneModifiedFlags() const {
-	return _sceneModifiedFlags;
-}
-
 void Brush::onSceneChange() {
 	markDirty();
 }
@@ -46,6 +42,10 @@ void Brush::reset() {
 	_referencePosition = glm::ivec3(0);
 	_mirrorAxis = math::Axis::None;
 	_mirrorPos = glm::ivec3(0);
+	resetRuntime();
+}
+
+void Brush::resetRuntime() {
 	markDirty();
 }
 
@@ -57,6 +57,7 @@ void Brush::setClampToVolume(bool clampToVolume) {
 	if (_clampToVolume == clampToVolume) {
 		return;
 	}
+	markSettingsChanged();
 	_clampToVolume = clampToVolume;
 	markDirty();
 }
@@ -77,6 +78,7 @@ bool Brush::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
 	if (_mirrorAxis == axis && _mirrorPos == mirrorPos) {
 		return false;
 	}
+	markSettingsChanged();
 	_mirrorPos = mirrorPos;
 	_mirrorAxis = axis;
 	markDirty();
@@ -84,7 +86,7 @@ bool Brush::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
 }
 
 bool Brush::beginBrush(const BrushContext &ctx) {
-	return false;
+	return true;
 }
 
 void Brush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) {
@@ -180,14 +182,10 @@ void Brush::shutdown() {
 	command::Command::unregisterCommand("mirroraxis" + cmdName + "none");
 }
 
-bool Brush::wantBrushGizmo(const BrushContext &ctx) const {
-	return false;
+void Brush::handles(const BrushContext &, core::DynamicArray<BrushGizmoState> &) const {
 }
 
-void Brush::brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const {
-}
-
-bool Brush::applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix,
+bool Brush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
 							const glm::mat4 &deltaMatrix, uint32_t operation) {
 	return false;
 }

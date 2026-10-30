@@ -19,12 +19,65 @@
 
 namespace voxedit {
 
+void ExtrudeOperation::prepare(const voxel::RawVolume *volume, const voxel::Region &region) {
+	if (volume && !_hasCachedSelection && _parameters.face != voxel::FaceNames::Max) {
+		cacheSelection(volume, region);
+	}
+	_cachedSelBBox = _cachedSelectedBBox;
+	_cachedSelBBoxValid = _hasCachedSelection;
+}
+
+bool ExtrudeOperation::setParameters(const Parameters &parameters) {
+	if (parameters.face > voxel::FaceNames::Max) {
+		return false;
+	}
+	if (_parameters.face != parameters.face) {
+		_hasCachedSelection = false;
+	}
+	_parameters = parameters;
+	return true;
+}
+
+void ExtrudeOperation::prune(ModifierVolumeWrapper &wrapper, PositionSet &saved) {
+	// Prune interior voxels after final commit - voxels fully enclosed by 6 solid
+	// neighbors are invisible and waste sparse storage.
+	if (wrapper.volume() && _parameters.depth > 0) {
+		const voxel::Region &volRegion = wrapper.volume()->region();
+		const voxel::Voxel air;
+		auto isInterior = [&](const glm::ivec3 &pos) {
+			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
+				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
+				if (!volRegion.containsPoint(nb) || voxel::isAir(wrapper.volume()->voxel(nb).getMaterial())) {
+					return false;
+				}
+			}
+			return true;
+		};
+
+		core::DynamicArray<glm::ivec3> toPrune;
+		toPrune.reserve(_history.size() + _cachedSelectedPositions.size());
+		for (const voxel::VoxelPosition &entry : _history) {
+			if (!voxel::isAir(wrapper.volume()->voxel(entry.pos).getMaterial()) && isInterior(entry.pos)) {
+				toPrune.push_back(entry.pos);
+			}
+		}
+		for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+			if (!voxel::isAir(wrapper.volume()->voxel(selPos).getMaterial()) && isInterior(selPos)) {
+				toPrune.push_back(selPos);
+			}
+		}
+		for (const glm::ivec3 &pos : toPrune) {
+			writeVoxel(wrapper, saved, pos, air);
+		}
+	}
+}
+
 void ExtrudeOperation::cacheSelection(const voxel::RawVolume *vol, const voxel::Region &volRegion) {
 	_cachedSelectedPositions.clear();
 	_cachedWallCandidates.clear();
 	_hasCachedSelection = false;
 
-	if (_face == voxel::FaceNames::Max) {
+	if (_parameters.face == voxel::FaceNames::Max) {
 		return;
 	}
 
@@ -43,10 +96,10 @@ void ExtrudeOperation::cacheSelection(const voxel::RawVolume *vol, const voxel::
 		for (int chunk = chunkStart; chunk < chunkEnd; ++chunk) {
 			const int sliceStart = zStart + (zRange * chunk) / chunkCount;
 			const int sliceEnd = zStart + (zRange * (chunk + 1)) / chunkCount;
-			const voxel::Region subRegion(
-				volRegion.getLowerX(), volRegion.getLowerY(), sliceStart,
-				volRegion.getUpperX(), volRegion.getUpperY(), sliceEnd - 1);
-			voxelutil::visitVolume(*vol, subRegion,
+			const voxel::Region subRegion(volRegion.getLowerX(), volRegion.getLowerY(), sliceStart,
+										  volRegion.getUpperX(), volRegion.getUpperY(), sliceEnd - 1);
+			voxelutil::visitVolume(
+				*vol, subRegion,
 				[&threadResults, chunk](int x, int y, int z, const voxel::Voxel &) {
 					threadResults[chunk].push_back(glm::ivec3(x, y, z));
 				},
@@ -76,7 +129,7 @@ void ExtrudeOperation::cacheSelection(const voxel::RawVolume *vol, const voxel::
 	// Compute wall candidates: for each selected voxel, check 4 perpendicular neighbors.
 	// A wall candidate is a (selectedPos, perpOffset) pair where the perpendicular neighbor
 	// is solid and not selected - indicating an edge that needs sealing during extrusion.
-	const math::Axis axis = voxel::faceToAxis(_face);
+	const math::Axis axis = voxel::faceToAxis(_parameters.face);
 	const int axisIdx = math::getIndexForAxis(axis);
 	static constexpr int NumAxes = 3;
 	const int perp1 = (axisIdx + 1) % NumAxes;
@@ -127,7 +180,8 @@ void ExtrudeOperation::adjustCacheForRegionShift(const glm::ivec3 &delta) {
 	_capturedVolumeLower += delta;
 }
 
-void ExtrudeOperation::writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &savedPositions, const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
+void ExtrudeOperation::writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &savedPositions, const glm::ivec3 &pos,
+								  const voxel::Voxel &newVoxel) {
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
 	if (!volRegion.containsPoint(pos)) {
@@ -141,10 +195,10 @@ void ExtrudeOperation::writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &s
 	wrapper.addToDirtyRegion(pos);
 }
 
-void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper, const voxel::Voxel &voxel) {
+void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper) {
 	voxel::RawVolume *vol = wrapper.volume();
 
-	// Step 1: Restore all positions modified by the previous generate() call.
+	// Step 1: Restore all positions modified by the previous evaluate() call.
 	// This makes depth/offset changes fully reversible without touching the undo stack.
 	// Track the bounding box of all restored positions for dirty region.
 	const voxel::Region &volRegion = vol->region();
@@ -161,16 +215,16 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper, const voxel::Vox
 	}
 	_history.clear();
 
-	if (_depth == 0 || _face == voxel::FaceNames::Max || !_hasCachedSelection) {
+	if (_parameters.depth == 0 || _parameters.face == voxel::FaceNames::Max || !_hasCachedSelection) {
 		return;
 	}
 
-	const math::Axis axis = voxel::faceToAxis(_face);
+	const math::Axis axis = voxel::faceToAxis(_parameters.face);
 	const int axisIdx = math::getIndexForAxis(axis);
-	const int faceSign = voxel::isNegativeFace(_face) ? -1 : 1;
+	const int faceSign = voxel::isNegativeFace(_parameters.face) ? -1 : 1;
 
-	const bool carving = _depth < 0;
-	const int steps = glm::abs(_depth);
+	const bool carving = _parameters.depth < 0;
+	const int steps = glm::abs(_parameters.depth);
 	const int dirSign = carving ? -faceSign : faceSign;
 
 	glm::ivec3 dir(0);
@@ -180,14 +234,14 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper, const voxel::Vox
 	const int perp1 = (axisIdx + 1) % NumAxes;
 	const int perp2 = (axisIdx + 2) % NumAxes;
 
-	const float stepU = static_cast<float>(_offsetU) / steps;
-	const float stepV = static_cast<float>(_offsetV) / steps;
+	const float stepU = static_cast<float>(_parameters.offsetU) / steps;
+	const float stepV = static_cast<float>(_parameters.offsetV) / steps;
 	auto lateralShift = [&](int step) -> glm::ivec3 {
 		glm::ivec3 shift(0);
-		if (_offsetU != 0) {
+		if (_parameters.offsetU != 0) {
 			shift[perp1] = static_cast<int>(stepU * step);
 		}
-		if (_offsetV != 0) {
+		if (_parameters.offsetV != 0) {
 			shift[perp2] = static_cast<int>(stepV * step);
 		}
 		return shift;
@@ -202,12 +256,12 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper, const voxel::Vox
 	// Step 3: Apply extrusion or carving
 	if (carving) {
 		// Loop 1: Place walls at each depth step before carving
-		if (_fillWalls) {
+		if (_parameters.fillWalls) {
 			for (int step = 0; step < steps; ++step) {
 				const glm::ivec3 shift = lateralShift(step);
 				for (const WallCandidate &wc : _cachedWallCandidates) {
 					const glm::ivec3 sidePos = wc.basePos + wc.perpOffset + dir * step + shift;
-					writeVoxel(wrapper, savedPositions, sidePos, voxel);
+					writeVoxel(wrapper, savedPositions, sidePos, _parameters.voxel);
 				}
 			}
 		}
@@ -223,13 +277,14 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper, const voxel::Vox
 		for (int step = 1; step <= steps; ++step) {
 			const glm::ivec3 shift = lateralShift(step);
 			for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
-				writeVoxel(wrapper, savedPositions, selPos + dir * step + shift, voxel);
+				writeVoxel(wrapper, savedPositions, selPos + dir * step + shift, _parameters.voxel);
 			}
 		}
 		// Include the original selected positions in the dirty region so that
 		// auto-select will re-select them along with the newly extruded voxels
 		wrapper.addToDirtyRegion(_cachedSelectedPositions);
 	}
+	prune(wrapper, savedPositions);
 }
 
 } // namespace voxedit

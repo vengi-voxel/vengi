@@ -817,15 +817,15 @@ TEST_F(SelectBrushTest, testSelectModeLuaLine_gizmo) {
 	ctx.targetVolumeRegion = volume.region();
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorPosition = glm::ivec3(-2, -2, -2);
-	EXPECT_FALSE(brush.wantBrushGizmo(ctx));
+	EXPECT_FALSE(brush.hasHandle(ctx));
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	ctx.cursorPosition = glm::ivec3(2, 2, 2);
 	brush.step(ctx);
 
-	EXPECT_TRUE(brush.wantBrushGizmo(ctx));
+	EXPECT_TRUE(brush.hasHandle(ctx));
 	BrushGizmoState gizmoState;
-	brush.brushGizmoState(ctx, gizmoState);
+	brush.describeHandle(ctx, gizmoState);
 	EXPECT_NE(gizmoState.operations & BrushGizmo_Line, 0u);
 	EXPECT_EQ(gizmoState.numPositions, 2);
 	EXPECT_FLOAT_EQ(gizmoState.positions[0].x, -1.5f);
@@ -902,15 +902,15 @@ TEST_F(SelectBrushTest, testSelectModeLuaRectangle_gizmo) {
 	ctx.targetVolumeRegion = volume.region();
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorPosition = glm::ivec3(-2, -2, -2);
-	EXPECT_FALSE(brush.wantBrushGizmo(ctx));
+	EXPECT_FALSE(brush.hasHandle(ctx));
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	ctx.cursorPosition = glm::ivec3(2, 2, 2);
 	brush.step(ctx);
 
-	EXPECT_TRUE(brush.wantBrushGizmo(ctx));
+	EXPECT_TRUE(brush.hasHandle(ctx));
 	BrushGizmoState gizmoState;
-	brush.brushGizmoState(ctx, gizmoState);
+	brush.describeHandle(ctx, gizmoState);
 	EXPECT_NE(gizmoState.operations & BrushGizmo_Line, 0u);
 	EXPECT_EQ(gizmoState.numPositions, 5);
 	EXPECT_FLOAT_EQ(gizmoState.positions[0].x, 2.5f);
@@ -1574,13 +1574,7 @@ TEST_F(SelectBrushTest, testSelectModePaint) {
 
 	brush.endBrush(ctx);
 
-	// After endBrush, pending undo region should be valid
-	voxel::Region pendingRegion = brush.consumePendingUndoRegion();
-	EXPECT_TRUE(pendingRegion.isValid()) << "Paint mode should produce a pending undo region";
-
-	// Second consume should return invalid
-	pendingRegion = brush.consumePendingUndoRegion();
-	EXPECT_FALSE(pendingRegion.isValid());
+	EXPECT_TRUE(wrapper.dirtyRegion().isValid());
 
 	brush.shutdown();
 }

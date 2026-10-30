@@ -42,6 +42,9 @@ protected:
 public:
 	RulerBrush() : Super(BrushType::Ruler, ModifierType::Place, ModifierType::Place) {
 	}
+	bool readOnly() const override {
+		return true;
+	}
 	virtual ~RulerBrush() = default;
 
 	void construct() override;
@@ -52,8 +55,9 @@ public:
 	bool active() const override;
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 
-	bool wantBrushGizmo(const BrushContext &ctx) const override;
-	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
+	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
+	bool hasHandle(const BrushContext &ctx) const;
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
 
 	const glm::ivec3 &startPos() const;
 	const glm::ivec3 &endPos() const;
@@ -87,6 +91,7 @@ inline bool RulerBrush::useReferencePos() const {
 }
 
 inline void RulerBrush::setUseReferencePos(bool use) {
+	markSettingsChanged();
 	_useReferencePos = use;
 	_state = State::Idle;
 }

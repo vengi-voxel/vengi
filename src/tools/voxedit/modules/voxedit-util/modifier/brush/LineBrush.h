@@ -52,14 +52,12 @@ protected:
 	LineState _state;
 	/** Finalized preview-only bezier segments */
 	core::DynamicArray<BezierSegment> _segments;
-	/** Volume passed into preExecute(); used to distinguish preview from commit */
-	const voxel::RawVolume *_lastVolume = nullptr;
+	core::Buffer<uint32_t> _segmentIds;
+	uint32_t _nextSegmentId = 1;
 	/** Currently selected pending bezier segment for gizmo editing */
 	int _selectedSegment = -1;
 	/** True between beginBrush() and endBrush() */
 	bool _active = false;
-	/** Set while auto-commit calls execute() during brush deactivation */
-	bool _commitPending = false;
 	/** If true, end position becomes next reference position */
 	bool _continuous = false;
 	/** If true, draw a quadratic bezier instead of a straight line */
@@ -101,12 +99,8 @@ public:
 	}
 	virtual ~LineBrush() = default;
 	void onActivated() override;
-	bool onDeactivated() override;
-	bool hasPendingChanges() const override;
-	bool needsPerFrameFlush() const override;
 	void construct() override;
 	bool beginBrush(const BrushContext &ctx) override;
-	void preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) override;
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) override;
 	void update(const BrushContext &ctx, double nowSeconds) override;
 
@@ -123,10 +117,12 @@ public:
 	void shutdown() override;
 
 	void reset() override;
+	void resetRuntime() override;
 	bool active() const override;
-	bool wantBrushGizmo(const BrushContext &ctx) const override;
-	void brushGizmoState(const BrushContext &ctx, BrushGizmoState &state) const override;
-	bool applyBrushGizmo(BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
+	bool hasHandle(const BrushContext &ctx) const;
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
 						 uint32_t operation) override;
 
 	/**
@@ -174,6 +170,10 @@ inline bool LineBrush::bezier() const {
 }
 
 inline void LineBrush::setContinuous(bool continuous) {
+	if (_continuous == continuous) {
+		return;
+	}
+	markSettingsChanged();
 	_continuous = continuous;
 }
 
@@ -182,7 +182,12 @@ inline int LineBrush::thickness() const {
 }
 
 inline void LineBrush::setThickness(int thickness) {
-	_thickness = glm::clamp(thickness, 1, 64);
+	thickness = glm::clamp(thickness, 1, 64);
+	if (_thickness == thickness) {
+		return;
+	}
+	markSettingsChanged();
+	_thickness = thickness;
 }
 
 inline int LineBrush::sag() const {
@@ -193,6 +198,7 @@ inline void LineBrush::setSag(int sag) {
 	if (_sag == sag) {
 		return;
 	}
+	markSettingsChanged();
 	_sag = sag;
 	markDirty();
 }
@@ -201,6 +207,7 @@ inline void LineBrush::setBezier(bool bezier) {
 	if (_bezier == bezier) {
 		return;
 	}
+	markSettingsChanged();
 	_bezier = bezier;
 	_hasCustomControlPoint = false;
 	markDirty();
@@ -210,6 +217,7 @@ inline void LineBrush::setControlPoint(const glm::ivec3 &controlPoint) {
 	if (_hasCustomControlPoint && _controlPoint == controlPoint) {
 		return;
 	}
+	markSettingsChanged();
 	_controlPoint = controlPoint;
 	_hasCustomControlPoint = true;
 	markDirty();
@@ -235,6 +243,7 @@ inline bool LineBrush::removeSegment(int index) {
 		return false;
 	}
 	_segments.erase(index);
+	_segmentIds.erase(index);
 	if (_selectedSegment >= (int)_segments.size()) {
 		_selectedSegment = (int)_segments.size() - 1;
 	}
@@ -247,6 +256,10 @@ inline LineStipplePattern &LineBrush::stipplePattern() {
 }
 
 inline void LineBrush::setStippleBit(int index, bool value) {
+	if (_stipplePattern[index] == value) {
+		return;
+	}
+	markSettingsChanged();
 	_stipplePattern.set(index, value);
 }
 

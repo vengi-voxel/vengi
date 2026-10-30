@@ -10,8 +10,8 @@
 namespace voxedit {
 
 /**
- * @brief Samples a continuous voxel path and accumulates its undo region independently of a brush.
- * Preview evaluation must not call visit() or accumulate(). A stationary sample repeats the dab,
+ * @brief Samples a continuous voxel path independently of a brush.
+ * Preview evaluation does not advance this input sampler. A stationary sample repeats the dab,
  * preserving time-based painting; this component does not impose an overlap policy.
  */
 class StrokeGesture {
@@ -19,8 +19,6 @@ private:
 	glm::ivec3 _lastPosition{0};
 	bool _hasLastPosition = false;
 	bool _active = false;
-	voxel::Region _dirtyRegion = voxel::Region::InvalidRegion;
-	voxel::Region _pendingUndoRegion = voxel::Region::InvalidRegion;
 
 public:
 	void begin();
@@ -29,8 +27,9 @@ public:
 	bool active() const {
 		return _active;
 	}
-	void accumulate(const voxel::Region &region);
-	voxel::Region consumePendingUndoRegion();
+	bool sampled(const glm::ivec3 &position) const {
+		return _hasLastPosition && _lastPosition == position;
+	}
 	static voxel::Region region(const glm::ivec3 &position, int radius, const glm::ivec3 &gridResolution);
 
 	template<class Visitor>

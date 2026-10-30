@@ -21,7 +21,6 @@ public:
 	void update(BrushPanelContext &ctx, command::CommandExecutionListener &listener);
 
 private:
-	void executeSculptBrush(BrushPanelContext &ctx);
 	void loadSkinFromFile(BrushPanelContext &ctx, const core::String &filename);
 };
 

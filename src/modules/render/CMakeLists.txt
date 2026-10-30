@@ -4,6 +4,7 @@ set(SRCS
 	CameraRenderer.cpp CameraRenderer.h
 	GridRenderer.cpp GridRenderer.h
 	ShapeRenderer.cpp ShapeRenderer.h
+	SurfaceOverlayRenderer.cpp SurfaceOverlayRenderer.h
 )
 set(SHADERS
 	color
@@ -12,6 +13,7 @@ set(SHADERS
 	grid
 	line
 	texture
+	surfaceoverlay
 )
 set(SRCS_SHADERS)
 foreach (SHADER ${SHADERS})
@@ -26,6 +28,7 @@ set(TEST_SRCS
 	tests/RenderShaderTest.cpp
 	tests/GridRendererTest.cpp
 	tests/ShapeRendererTest.cpp
+	tests/SurfaceOverlayRendererTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)

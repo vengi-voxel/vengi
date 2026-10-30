@@ -17,3 +17,8 @@ Override existing voxels with a new color - but also place new voxels.
 ## Paint
 
 Other than **override** this modifier only changes the color of existing voxels.
+
+Brush edits group changes across eligible targets into one undo action. A stroke
+keeps the voxels already applied when interrupted. Editable operation previews use
+Apply/Cancel and publish only after every captured target is validated. Palette,
+normal and selection changes participate in the same history action.

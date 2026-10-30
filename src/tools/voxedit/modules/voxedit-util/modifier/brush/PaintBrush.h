@@ -5,9 +5,9 @@
 #pragma once
 
 #include "AABBBrush.h"
+#include "PaintStrokeState.h"
 #include "app/I18NMarkers.h"
 #include "core/GLM.h"
-#include "core/collection/DynamicMap.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Voxel.h"
@@ -64,22 +64,11 @@ public:
 private:
 	using Super = AABBBrush;
 
-	/**
-	 * Per-voxel stroke state for Blend/Blur: keep the original color and the strongest
-	 * falloff factor seen so far. Weak edge-first contact must not lock a voxel; when the
-	 * brush center later passes over it, upgrade from the original (never restack).
-	 */
-	struct BlendStrokeSample {
-		voxel::Voxel original;
-		float factor = 0.0f;
-	};
-	using BlendStrokeMap = core::DynamicMap<glm::ivec3, BlendStrokeSample, 1031, glm::hash<glm::ivec3>>;
-
 	float _strength = 1.0f;					   ///< Brightness factor for Brighten/Darken modes (1.0 = no change)
 	float _blendOpacity = 1.0f;				   ///< Opacity at brush center for Blend mode (0..1)
 	int _variationChance = 3;			   ///< 1 in N chance to apply variation
+	PaintStrokeState _runtime;
 	PaintMode _paintMode = PaintMode::Replace; ///< Active paint mode
-	BlendStrokeMap _blendStroke;			   ///< Max-weight samples for the current stroke
 
 	/**
 	 * @brief Additional flags specific to PaintBrush
@@ -105,12 +94,13 @@ protected:
 		palette::Palette &_palette;	 ///< Palette for color lookups and additions
 		const PaintMode _paintMode;	 ///< Active paint mode
 		float _strength = 1.0f;		 ///< Brightness factor
+		math::Random &_random;
 		int _variationChance = 3; ///< Variation threshold
 
 	public:
 		VoxelColor(palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float strength,
-				   int variationChance)
-			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _strength(strength),
+				   int variationChance, math::Random &random)
+			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _strength(strength), _random(random),
 			  _variationChance(variationChance) {
 		}
 
@@ -135,10 +125,26 @@ public:
 	PaintBrush() : Super(BrushType::Paint, ModifierType::Paint, ModifierType::Paint) {
 		setStrokeMode();
 	}
+	BrushPreviewStyle previewStyle() const override {
+		return BrushPreviewStyle::Changes;
+	}
+	bool previewNeedsExistingVolume() const override {
+		return true;
+	}
+	int previewPadding() const override {
+		return _paintMode == PaintMode::Blur ? 1 : 0;
+	}
+	bool autoSelectPlacement() const override {
+		return false;
+	}
+	void seedRuntime(uint32_t seed) override {
+		_runtime = PaintStrokeState();
+		_runtime.random.setSeed(seed);
+	}
+	const PaintStrokeState &runtime() const {
+		return _runtime;
+	}
 	virtual ~PaintBrush() = default;
-
-	bool beginBrush(const BrushContext &ctx) override;
-	void endBrush(BrushContext &ctx) override;
 
 	/**
 	 * @brief Override to disable box spanning in flood fill mode
@@ -199,6 +205,9 @@ inline PaintBrush::PaintMode PaintBrush::paintMode() const {
 }
 
 inline void PaintBrush::setPaintMode(PaintMode mode) {
+	if (_paintMode != mode) {
+		markSettingsChanged();
+	}
 	_paintMode = mode;
 	if ((mode == PaintMode::Blend || mode == PaintMode::Blur) && !anyStrokeMode()) {
 		setStrokeMode();
@@ -214,6 +223,7 @@ inline bool PaintBrush::floodFill() const {
 }
 
 inline void PaintBrush::setFloodFill() {
+	markSettingsChanged();
 	setMode(BRUSH_MODE_FLOOD_FILL);
 }
 
@@ -222,6 +232,7 @@ inline bool PaintBrush::gradient() const {
 }
 
 inline void PaintBrush::setGradient() {
+	markSettingsChanged();
 	setMode(BRUSH_MODE_GRADIENT);
 }
 

@@ -71,8 +71,6 @@ protected:
 	 * @param id JSON-RPC request id
 	 * @return true if the operation succeeded
 	 */
-	bool executeBrush(ToolContext &ctx, const core::UUID &nodeUUID, BrushType brushType, ModifierType modifierType,
-					  int colorIndex, const glm::ivec3 &mins, const glm::ivec3 &maxs, const json::Json &id);
 
 public:
 	BrushTool(const core::String &name);
