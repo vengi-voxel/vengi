@@ -80,7 +80,7 @@ void endFrameStats() {
 	s_displayCpuRenderMs = s_frame.cpuRenderMs;
 	s_displayCpuUploadMs = s_frame.cpuUploadMs;
 	accumulateTotals(s_frame);
-	Log::debug(
+	Log::trace(
 		"render-stats {\"frame\":%" PRIu64
 		",\"draw_calls\":%" PRIu64 ",\"pipeline_binds\":%" PRIu64 ",\"descriptor_binds\":%" PRIu64
 		",\"buffer_updates\":%" PRIu64 ",\"buffer_bytes_uploaded\":%" PRIu64
