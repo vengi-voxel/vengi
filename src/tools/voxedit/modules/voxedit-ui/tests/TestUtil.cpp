@@ -126,6 +126,7 @@ bool centerOnViewport(ImGuiTestContext *ctx, const SceneManagerPtr &sceneMgr, in
 	sceneMgr->setMousePos(1, 1);
 	// reset the last trace to ensure that after placing the cursor in fast mode the trace is executed again
 	sceneMgr->resetLastTrace();
+	ctx->MouseSetViewport(window);
 	ctx->MouseMoveToPos(pos);
 	ctx->Yield();
 	return true;
