@@ -14,8 +14,8 @@ and Paint keep their settings when you switch away and back.
 
 Voxel deletion previews mark affected existing voxels with a red hatch. Updates
 show their prospective colors. These overlays respect scene occlusion.
-Deletion shows the material that will be
-removed; newly exposed interior faces appear after applying the edit.
+Deletion shows the material that will be removed; newly exposed interior faces
+appear after applying the edit.
 
 ## Shape brush
 
@@ -77,6 +77,49 @@ The plane brush creates or extrudes entire planar surfaces in a single action. P
 
 This brush is particularly useful for quickly creating walls, floors, or large flat surfaces without having to manually span regions.
 
+## Extrude brush
+
+Select voxels with the Select brush, switch to Extrude, then click a voxel face
+to set the direction. Adjust **Depth** in the brush settings or use the viewport
+arrow. **Fill walls** keeps the sides connected, and the two **Offset** controls
+shift the extrusion along the axes perpendicular to that direction. Negative
+depth retracts the extrusion.
+
+The result stays in an editable preview. Choose **Apply** to commit it or
+**Cancel** to discard it. This differs from Plane, which follows a surface and
+applies when you release the mouse button.
+
+## Sculpt brush
+
+Select the voxels you want to sculpt, then choose a mode in the brush settings:
+
+- **Erode / Grow** remove surface voxels or expand the selected shape.
+- **Flatten** levels a surface along a chosen face direction.
+- **Smooth Additive / Smooth Erode / Smooth Gaussian / Smooth Wall** provide
+  different smoothing methods, with mode-specific strength, iteration, kernel
+  or interpolation controls.
+- **Bridge Gap** connects separated surfaces.
+- **Squash to Plane** reduces a shape toward a plane.
+- **Reskin** applies a voxel skin with surface-following, rotation, tiling,
+  offset and layer controls.
+
+These modes use an editable preview with **Apply** and **Cancel**. Modes that
+need a direction ask you to click a voxel face.
+
+**Extend Plane** instead paints continuously over a surface. Its radius and
+Extend only, Remove only and Remove above options control additions and removal.
+Release completes one undo step for the stroke.
+
+## Normal brush
+
+Paint normals on existing voxels using **Manual** mode to choose a normal from
+the [normal palette](Palette.md#normal-palette), or **Auto** mode to calculate
+normals from neighboring voxels. Use stroke or box modes to choose the affected
+region. Erase clears normals while keeping the voxels themselves.
+
+Enable normal rendering to see the result. Normal data is used by formats such
+as Command & Conquer VXL; it is separate from voxel color and material.
+
 ## Stamp brush
 
 The stamp brush allows you to place pre-loaded voxel volumes repeatedly into your scene. Think of it as a copy-paste tool that keeps the copied content ready for multiple placements.
@@ -101,10 +144,25 @@ The line brush draws straight lines of voxels from the reference position to whe
 
 **Line options:**
 
+- **Thickness**: Sets the width of the voxel line.
+- **Sag**: Adds a downward bend for a rope or cable effect in straight-line mode.
+- **Bezier**: Click to lock a segment's end, then adjust its control point with
+  the viewport handle. Pending segments remain editable until **Apply** or
+  leaving the brush; **Cancel** discards them. Continuous mode chains segments.
 - **Stipple pattern**: A 9-bit pattern that controls which voxels are placed along the line. Each bit represents one step - set bits place voxels, cleared bits skip them. This allows creating dashed or dotted lines.
 - **Continuous Mode**: When enabled, the end point of each line becomes the reference position for the next line, allowing you to chain line segments together without manually updating the reference position.
 
 Lines are drawn using raycasting, ensuring a clean voxel path between the two points.
+
+## Ruler brush
+
+Click a start point, then an end point to measure without changing voxels. The
+brush settings show the endpoints, per-axis delta, straight-line **Length**, and
+**Manhattan** distance (the sum of steps along each axis).
+
+Enable **Use reference position** to measure from the
+[reference position](ReferencePosition.md) to the cursor. A new measurement
+replaces the previous one.
 
 ## Text brush
 
@@ -144,14 +202,21 @@ Script errors are reported to the editor. Changes made before an error remain pa
 
 The select brush doesn't modify voxels directly. Instead, it creates selection regions that limit where other operations can affect voxels (like the [script](../../LUAScript.md) execution) or for copy/pasting.
 
-> Don't forget to unselect (__Select__ -> __Select none__) before being able to operate on the whole volume again.
+Choose **Select > None** to clear the selection before operating on the whole
+volume again.
 
 **Using selections:**
 
-1. Switch to the select modifier (or use the select brush)
-2. Drag to span a selection box
+1. Switch to the Select brush and choose a selection mode.
+2. Use **3D Box** to drag a box, or choose another mode below.
 3. Operations like painting, scripts, or other brushes will only affect voxels inside the selection
-4. Use **Select -> Select none** to clear the selection and work on the entire volume again
+4. Use **Select > None** to clear the selection and work on the entire volume again.
+
+Available modes include **All**, **Surface**, **Same Color**, **Fuzzy Color**,
+**Connected**, **Flat Surface**, **3D Box**, **Circle**, **Lasso**, **Brush select**
+and Lua **Script** selections. Circle can also select a 3D ellipsoid. Fuzzy Color
+has a color threshold; Flat Surface has a surface-deviation setting. Brush select
+uses a round radius while you hold and drag.
 
 Selections are useful for protecting parts of your model while editing other areas, or for applying operations to precise regions.
 

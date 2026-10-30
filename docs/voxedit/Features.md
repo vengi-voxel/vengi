@@ -3,16 +3,17 @@
 A few of the features are:
 
 * Layer and key frame [animation](Animation.md) support with auto-keyframe and IK constraints
-* Viewport screenshots and video recording (AVI, MPEG2, GIF)
+* [Viewport screenshots and video recording](usage/Viewport.md#screenshots-and-video) (AVI, MPEG2, GIF)
 * Customizable UI with internationalization (multi-language) support
 * Multiple viewports to view the model from all sides while editing it
 * Multi monitor support
 * LUA [scripting](../LUAScript.md) api, built-in editor and community script browser
 * Undo/Redo
-* Network mode with real-time collaborative editing and chat
-* Copy/Cut/Paste - paste to cursor or reference position
+* [Network mode](usage/Network.md) with real-time collaborative editing and chat
+* Copy/Cut/Paste - paste to cursor, reference position, a new node or a stamp; global clipboard commands transfer voxels between scenes or editor instances
 * Layer and scene graph support with node references, split objects and color-to-new-node operations
 * Custom color palettes with sorting, several color reduction algorithms and [Lospec](https://lospec.com/) import
+* [Material editing](../Material.md), including transparency, metal, glass and emissive surfaces
 * Custom key bindings
 * Import images as heightmaps, palettes or planes
 * Import meshes and [voxelize](../Voxelization.md) them - see [supported formats](../Formats.md)
@@ -24,28 +25,30 @@ A few of the features are:
 * Cropping volumes
 * Online asset browsing for voxel repositories
 * Presentation mode for e.g. kitbashing sets
-* Several editing brushes including shape, stamp, line (with bezier curves), extrude, sculpt, texture, paint and transform (with shear) brushes
-* Advanced selection modes: box, lasso, circle, fuzzy color, connected, flat surface and LUA-scripted selections
+* [Editing brushes](usage/Brushes.md) for shapes, planes, stamps, lines and Bezier curves, text, textures, painting, extrusion, sculpting and transforms (including shear)
+* Adjustable brush previews with Apply/Cancel, editable bounds and viewport handles
+* Advanced [selection modes](usage/Brushes.md#select-brush): box, lasso, circle/ellipsoid, paint, same/fuzzy color, connected, surface, flat surface and Lua scripts
 * Sculpt modes for eroding, growing, flattening, smoothing, bridging gaps and reskinning surfaces
 * Mirroring system for symmetric editing along any axis
-* Ruler/measurement tool for distance measurement between points
+* [Ruler](usage/Brushes.md#ruler-brush) for per-axis, straight-line and Manhattan distance measurements
 * Slice view for inspecting cross-sections of volumes
 * Editable Back, Right and Top slices of the selected model in the [2D Views panel](usage/2DViews.md)
-* Path tracer rendering
+* GPU [path tracer rendering](usage/Renderer.md) with material, lighting, camera and PNG output controls
 * [Game mode](usage/GameMode.md) with physics-based first-person walkthrough
-* Session recording and playback for editing sessions
-* Configurable shading modes (unlit, lit, shadows) with bloom post-processing
+* [Session recording and playback](usage/SessionRecording.md) (`.vrec`), with pause/resume and adjustable playback delay
+* Configurable viewport shading modes (unlit, lit, shadows) with bloom post-processing
 * Fill and hollow operations for volumes
 * Auto-save with configurable interval
 * Drag-and-drop between panels for models, palette colors and assets
 * Embedded documentation browser and tip of the day
 * Not only voxels but also named points are supported as scene graph nodes - for e.g. defining positions for characters to hold an item.
-* Calculating normals for voxels (non-hollow models) is supported, too. This is useful for some games like Command & Conquer.
-* View modes for animation, Command & Conquer, Ace Of Spades, Teardown or simple voxel editing
+* Manual and automatic [normal painting](usage/Brushes.md#normal-brush), plus editable [normal palettes](usage/Palette.md#normal-palette), for formats such as Command & Conquer VXL
+* [View modes](usage/ViewModes.md) for general editing, minimal layouts, Tiberian Sun, Red Alert 2, Minecraft skins and Ace Of Spades
 * [voxbox.store](https://voxbox.store/) integration to browse, download and upload models (requires a VoxBox account)
 
 ## Usage
 
+* [2D Views](usage/2DViews.md)
 * [Animations](usage/Animations.md)
 * [Assets](usage/Assets.md)
 * [Brushes](usage/Brushes.md)
@@ -63,6 +66,7 @@ A few of the features are:
 * [Scene And Edit Mode](usage/SceneAndEditMode.md)
 * [Scene View](usage/SceneView.md)
 * [Scripts](usage/Scripts.md)
+* [Session Recording](usage/SessionRecording.md)
 * [Tools](usage/Tools.md)
 * [View Modes](usage/ViewModes.md)
 * [Viewport](usage/Viewport.md)

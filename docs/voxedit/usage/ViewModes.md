@@ -6,6 +6,18 @@ Ace of Spades is another view mode that e.g. doesn't offer a Do-you-want-to-resi
 
 Artists that only want to edit voxels without animating them might use the simple layout to get a less complex ui.
 
+The main **View** menu offers these presets:
+
+| View mode | Purpose |
+| --- | --- |
+| Default | General editing with scene, brush, palette and other tool panels. |
+| Simple | A reduced layout with fewer panels and a single editing viewport. |
+| All | Exposes the full set of panels and multiple viewports. |
+| Tiberian Sun / Red Alert 2 | Command & Conquer workflows, including normal palettes and 2D Views. |
+| Minecraft Skin | A reduced layout for skin editing. |
+| Ace Of Spades | Map editing with map-specific defaults and automatic splitting disabled. |
+| Minimal | Brush and palette panels for a compact editing layout. |
+
 ## Panel visibility
 
 Changing the view mode writes a preset into the `ve_show*` cvars (for example `ve_showpalette`, `ve_showscript`, `ve_showanimationsettings`, `ve_showbrushes`) and `ui_showconsole`.

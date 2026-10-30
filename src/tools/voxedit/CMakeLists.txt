@@ -22,6 +22,7 @@ set(DOCS
 	voxedit/usage/Modifiers.md
 	voxedit/usage/SceneView.md
 	voxedit/usage/Network.md
+	voxedit/usage/SessionRecording.md
 	voxedit/usage/Camera.md
 	voxedit/usage/Viewport.md
 	voxedit/usage/2DViews.md

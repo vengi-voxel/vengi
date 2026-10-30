@@ -53,6 +53,7 @@ nav:
       - voxedit/Features.md
       - Usage:
           - voxedit/usage/SceneAndEditMode.md
+          - voxedit/usage/2DViews.md
           - voxedit/usage/ReferencePosition.md
           - voxedit/usage/Brushes.md
           - voxedit/usage/Modifiers.md
@@ -72,6 +73,7 @@ nav:
           - voxedit/usage/Viewport.md
           - voxedit/usage/ViewModes.md
           - voxedit/usage/Network.md
+          - voxedit/usage/SessionRecording.md
       - voxedit/Controls.md
       - voxedit/Configuration.md
       - voxedit/Animation.md
