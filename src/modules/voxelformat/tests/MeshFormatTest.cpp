@@ -358,6 +358,44 @@ TEST_F(MeshFormatTest, testVoxelizeSkipsSubdivisionForVoxelSizedTris) {
 	EXPECT_GT(voxelutil::countVoxels(*node->volume()), 0);
 }
 
+TEST_F(MeshFormatTest, testVoxelizeSubdividesLargeTris) {
+	// Large non-axis-aligned tris take the high-quality subdivide path.
+	class TestMesh : public MeshFormat {
+	public:
+		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
+						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+			return false;
+		}
+		int voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
+			return importMesh("large", sceneGraph, core::move(mesh), 0, false);
+		}
+	};
+
+	util::ScopedVarChange voxelizeMode(cfg::VoxformatVoxelizeMode, "0"); // HighQuality
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+
+	Mesh mesh;
+	voxelformat::MeshTri meshTri;
+	meshTri.setColor(color::RGBA(0, 255, 0), color::RGBA(0, 255, 0), color::RGBA(0, 255, 0));
+	meshTri.setVertices(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(8.0f, 1.0f, 0.5f), glm::vec3(1.0f, 7.0f, 2.0f));
+	const glm::vec3 size = meshTri.maxs() - meshTri.mins();
+	ASSERT_TRUE(glm::any(glm::greaterThan(size, glm::vec3(1.0f))));
+	mesh.addTriangle(meshTri);
+
+	MeshTriCollection checkTris;
+	checkTris.push_back(meshTri);
+	ASSERT_FALSE(MeshFormat::isVoxelMesh(checkTris));
+
+	TestMesh testMesh;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_NE(InvalidNodeId, testMesh.voxelize(sceneGraph, core::move(mesh)));
+	const scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName("large");
+	ASSERT_NE(nullptr, node);
+	ASSERT_NE(nullptr, node->volume());
+	EXPECT_GT(voxelutil::countVoxels(*node->volume()), 1);
+}
+
 TEST_F(MeshFormatTest, testColorAt) {
 	const image::ImagePtr &texture = image::loadImage("palette-nippon.png");
 	ASSERT_TRUE(texture);

@@ -3,11 +3,15 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "core/ConfigVar.h"
+#include "core/Var.h"
 #include "io/FilesystemArchive.h"
 #include "scenegraph/SceneGraph.h"
+#include "util/VarUtil.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "voxelformat/private/mesh/quake/MapFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
@@ -83,9 +87,20 @@ BENCHMARK_DEFINE_F(VolumeFormatBenchmark, voxelmax_5voxel)(benchmark::State &sta
 	}
 }
 
+BENCHMARK_DEFINE_F(VolumeFormatBenchmark, MapVoxelize)(benchmark::State &state) {
+	util::ScopedVarChange scale(cfg::VoxformatScale, "0.001");
+	for (auto _ : state) {
+		voxelformat::MapFormat f;
+		const core::String filename = "test.map";
+		f.load(filename, _archive, _sceneGraph, _ctx);
+		_sceneGraph.clear();
+	}
+}
+
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_QB);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_QBCL);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_GOX);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_VENGI);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, MCR);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, voxelmax_5voxel);
+BENCHMARK_REGISTER_F(VolumeFormatBenchmark, MapVoxelize);

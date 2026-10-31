@@ -200,6 +200,66 @@ void MeshFormat::addToPosMap(PosMap &posMap, const voxel::Region &region, color:
 	}
 }
 
+void MeshFormat::sampleTriToPosMap(PosMap &posMap, const voxel::Region &region, const MeshTri &meshTri,
+								   const MeshMaterialArray &meshMaterialArray,
+								   palette::NormalPaletteLookup &normalLookup) const {
+	const glm::vec2 &uv = meshTri.centerUV();
+	const color::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
+	if (rgba.a <= AlphaThreshold) {
+		return;
+	}
+	const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
+	glm::vec3 c = meshTri.center();
+	convertToVoxelGrid(c);
+	int normalIdx = normalLookup.getClosestMatch(meshTri.normal());
+	if (normalIdx == palette::PaletteNormalNotFound) {
+		normalIdx = NO_NORMAL;
+	} else {
+		normalIdx += NORMAL_PALETTE_OFFSET;
+	}
+	addToPosMap(posMap, region, rgba, area, normalIdx, glm::ivec3(c), meshTri.materialIdx);
+}
+
+void MeshFormat::subdivideTriToPosMap(PosMap &posMap, const voxel::Region &region, const MeshTri &meshTri,
+									  const MeshMaterialArray &meshMaterialArray,
+									  palette::NormalPaletteLookup &normalLookup, int depth) const {
+	// Keep in sync with subdivideTri() / MeshTri::subdivideTriCount() depth cap.
+	static const int MaxSubdivideDepth = 16;
+
+	if (!glm::all(glm::isfinite(meshTri.vertex0())) || !glm::all(glm::isfinite(meshTri.vertex1())) ||
+		!glm::all(glm::isfinite(meshTri.vertex2()))) {
+		Log::warn("Skipping triangle with non-finite vertices during subdivision");
+		return;
+	}
+	if (stopExecution()) {
+		return;
+	}
+	const glm::vec3 &mins = meshTri.mins();
+	const glm::vec3 &maxs = meshTri.maxs();
+	const glm::vec3 size = maxs - mins;
+	if (depth > MaxSubdivideDepth) {
+		Log::warn("Max subdivision depth reached for tri with size %f:%f:%f (depth %i)", size.x, size.y, size.z, depth);
+		sampleTriToPosMap(posMap, region, meshTri, meshMaterialArray, normalLookup);
+		return;
+	}
+	if (glm::any(glm::greaterThan(size, glm::vec3(1.0f)))) {
+		const float maxResolvable = (float)(1u << (MaxSubdivideDepth - depth));
+		if (glm::any(glm::greaterThan(size, glm::vec3(maxResolvable)))) {
+			Log::warn("Triangle too large to subdivide within depth budget (size %f:%f:%f, depth %i)", size.x, size.y,
+					  size.z, depth);
+			sampleTriToPosMap(posMap, region, meshTri, meshMaterialArray, normalLookup);
+			return;
+		}
+		voxelformat::MeshTri out[4];
+		subdivide(meshTri, out);
+		for (int i = 0; i < lengthof(out); ++i) {
+			subdivideTriToPosMap(posMap, region, out[i], meshMaterialArray, normalLookup, depth + 1);
+		}
+		return;
+	}
+	sampleTriToPosMap(posMap, region, meshTri, meshMaterialArray, normalLookup);
+}
+
 static void mergePosMap(PosMap &target, const PosMap &source) {
 	for (const auto &entry : source) {
 		auto iter = target.find(entry->key);
@@ -231,9 +291,6 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 	const int parallel = app::for_parallel_size(0, tris.size());
 	core::DynamicArray<PosMap> localMaps;
 	localMaps.resize(parallel);
-	for (int i = 0; i < parallel; ++i) {
-		localMaps[i].reserve(((int)tris.size() / parallel) + 1);
-	}
 	core::AtomicInt mapIdx(0);
 	core::AtomicInt done(0);
 	const int triCount = (int)tris.size();
@@ -245,26 +302,7 @@ void MeshFormat::transformTris(const voxel::Region &region, const MeshTriCollect
 			if (stopExecution()) {
 				return;
 			}
-			const voxelformat::MeshTri &meshTri = tris[i];
-			const glm::vec2 &uv = meshTri.centerUV();
-			const color::RGBA rgba = colorAt(meshTri, meshMaterialArray, uv);
-			if (rgba.a <= AlphaThreshold) {
-				reportTriProgress(progress, done.increment(), triCount);
-				continue;
-			}
-			const uint32_t area = (uint32_t)(meshTri.area() * 1000.0f);
-			glm::vec3 c = meshTri.center();
-			convertToVoxelGrid(c);
-
-			int normalIdx = normalLookup.getClosestMatch(meshTri.normal());
-			if (normalIdx == palette::PaletteNormalNotFound) {
-				normalIdx = NO_NORMAL;
-			} else {
-				normalIdx += NORMAL_PALETTE_OFFSET;
-			}
-
-			const glm::ivec3 p(c);
-			addToPosMap(localMap, region, rgba, area, normalIdx, p, meshTri.materialIdx);
+			sampleTriToPosMap(localMap, region, tris[i], meshMaterialArray, normalLookup);
 			reportTriProgress(progress, done.increment(), triCount);
 		}
 	};
@@ -289,9 +327,6 @@ void MeshFormat::transformTrisAxisAligned(const voxel::Region &region, const Mes
 	const int parallel = app::for_parallel_size(0, tris.size());
 	core::DynamicArray<PosMap> localMaps;
 	localMaps.resize(parallel);
-	for (int i = 0; i < parallel; ++i) {
-		localMaps[i].reserve(((int)tris.size() / parallel) + 1);
-	}
 	core::AtomicInt mapIdx(0);
 	core::AtomicInt done(0);
 	const int triCount = (int)tris.size();
@@ -838,70 +873,55 @@ int MeshFormat::voxelizeNode(const core::UUID &uuid, const core::String &name, s
 			}
 		}
 
-		MeshTriCollection subdivided;
-		const MeshTriCollection *src = &tris;
 		core::ProgressRange subdivideRange(transformRange, 0.0f, 0.35f);
 		core::ProgressRange sampleRange(transformRange, 0.35f, 1.0f);
+		PosMap posMap;
 		if (needsSubdivision) {
 			subdivideRange.setProgress(0.0f);
-			const size_t parallel = app::for_parallel_size(0, tris.size());
+			const int parallel = app::for_parallel_size(0, tris.size());
 			Log::debug("Subdivide %i triangles (%i parallel)", (int)tris.size(), (int)parallel);
-			core::DynamicArray<MeshTriCollection> meshTriCollections;
-			meshTriCollections.resize(parallel);
-			core::AtomicInt currentIdx(0);
+			core::DynamicArray<PosMap> localMaps;
+			localMaps.resize(parallel);
+			core::AtomicInt mapIdx(0);
 			core::AtomicInt done(0);
 			const int triCount = (int)tris.size();
-			app::for_parallel(0, tris.size(), [&meshTriCollections, &tris, &currentIdx, &done, triCount, &subdivideRange] (int start, int end) {
-				int c = currentIdx.increment();
-				MeshTriCollection &chunk = meshTriCollections[c];
-				size_t estimateReserve = 0;
-				// cap per-triangle estimate to avoid pathological values (~1M)
-				const size_t maxPerTriangle = 1u << 20;
+			palette::NormalPaletteLookup normalLookup(normalPalette);
+			app::for_parallel(0, tris.size(), [this, &localMaps, &tris, &region, &meshMaterialArray, &normalLookup,
+											   &mapIdx, &done, triCount, &subdivideRange](int start, int end) {
+				const int idx = mapIdx.increment();
+				PosMap &localMap = localMaps[idx];
 				for (int i = start; i < end; ++i) {
-					const voxelformat::MeshTri &tri = tris[i];
-					estimateReserve += tri.subdivideTriCount(maxPerTriangle);
-				}
-				// Cap the total estimate to a reasonable upper bound to avoid huge single allocations
-				const size_t maxTotalReserve = (size_t)(end - start) * maxPerTriangle;
-				chunk.reserve(glm::min(estimateReserve, maxTotalReserve));
-				for (int i = start; i < end; ++i) {
-					subdivideTri(tris[i], chunk, 0);
+					if (stopExecution()) {
+						return;
+					}
+					subdivideTriToPosMap(localMap, region, tris[i], meshMaterialArray, normalLookup, 0);
 					reportTriProgress(&subdivideRange, done.increment(), triCount);
 				}
 			});
 			Log::debug("Subdivision done");
 			tris.release();
-			size_t cnt = 0;
-			for (const MeshTriCollection &e : meshTriCollections) {
-				cnt += e.size();
-			}
-
-			subdivided.reserve(cnt);
-			for (MeshTriCollection &e : meshTriCollections) {
-				if (e.empty()) {
-					continue;
-				}
-				subdivided.append(core::move(e));
-				e.release();
-			}
-			meshTriCollections.release();
-			src = &subdivided;
 			subdivideRange.setProgress(1.0f);
+			sampleRange.setProgress(0.0f);
+			for (const PosMap &localMap : localMaps) {
+				mergePosMap(posMap, localMap);
+			}
+			sampleRange.setProgress(1.0f);
 		} else {
 			Log::debug("Skip subdivision - all %i tris already fit in a voxel cell", (int)tris.size());
 			subdivideRange.setProgress(1.0f);
+			if (tris.empty()) {
+				Log::warn("Empty volume - could not subdivide");
+				return InvalidNodeId;
+			}
+			transformTris(region, tris, posMap, meshMaterialArray, normalPalette, &sampleRange);
+			tris.release();
 		}
 
-		if (src->empty()) {
+		if (posMap.empty()) {
 			Log::warn("Empty volume - could not subdivide");
 			return InvalidNodeId;
 		}
 
-		PosMap posMap;
-		posMap.reserve(src->size());
-		transformTris(region, *src, posMap, meshMaterialArray, normalPalette, &sampleRange);
-		subdivided.release();
-		tris.release();
 		finalizeRange.setProgress(0.0f);
 		node.createVolume(region);
 		voxelizeTris(node, posMap, meshMaterialArray, fillHollow);

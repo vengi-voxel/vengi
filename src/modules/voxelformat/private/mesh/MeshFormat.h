@@ -21,6 +21,10 @@
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "core/IProgress.h"
 
+namespace palette {
+class NormalPaletteLookup;
+}
+
 namespace scenegraph {
 class SceneGraphTransform;
 }
@@ -81,6 +85,12 @@ private:
 	int voxelizeNode(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
 					 MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray, int parent = 0,
 					 bool resetOrigin = true, core::IProgress *progress = nullptr) const;
+	void sampleTriToPosMap(PosMap &posMap, const voxel::Region &region, const MeshTri &meshTri,
+						   const MeshMaterialArray &meshMaterialArray,
+						   palette::NormalPaletteLookup &normalLookup) const;
+	void subdivideTriToPosMap(PosMap &posMap, const voxel::Region &region, const MeshTri &meshTri,
+							  const MeshMaterialArray &meshMaterialArray,
+							  palette::NormalPaletteLookup &normalLookup, int depth) const;
 protected:
 	/**
 	 * @brief Color flatten factor - see @c PosSampling::getColor()

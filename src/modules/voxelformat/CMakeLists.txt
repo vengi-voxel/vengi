@@ -493,6 +493,7 @@ set(BENCHMARK_FILES
 	tests/chr_knight.gox
 	tests/gox-shape-3-layers.gox
 	tests/5voxel.vmax.zip
+	tests/test.map
 	voxedit/chr_knight.vengi
 )
 
