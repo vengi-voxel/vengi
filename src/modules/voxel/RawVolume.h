@@ -7,6 +7,7 @@
 #include "Region.h"
 #include "Voxel.h"
 #include "core/collection/Buffer.h"
+#include "math/Axis.h"
 #include "VolumeSampler.h"
 #include <glm/ext/vector_int3.hpp>
 
@@ -58,6 +59,19 @@ public:
 	 * @brief Checks if the volume is empty in the given region
 	 */
 	bool isEmpty(const Region &region) const;
+
+	/**
+	 * @brief Find the nearest non-air voxel behind a plane rectangle.
+	 *
+	 * The plane is perpendicular to @c axis at @c slice (the slice itself is excluded).
+	 * @c minA/@c maxA and @c minB/@c maxB are inclusive coordinates on
+	 * @c math::getPlaneAxisA(axis) and @c math::getPlaneAxisB(axis) (X-Y-Z order:
+	 * X then Y for a Z plane, X then Z for a Y plane, Y then Z for an X plane).
+	 * @c out must hold (maxA-minA+1)*(maxB-minB+1) voxels, row-major
+	 * with A varying fastest. Existing non-air entries are left unchanged so the
+	 * caller can prefill the slice.
+	 */
+	void fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, int minB, int maxB, Voxel *out) const;
 
 	static RawVolume *createRaw(const Voxel *data, const voxel::Region &region) {
 		return new RawVolume(data, region);

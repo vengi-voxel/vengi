@@ -3,7 +3,9 @@
  */
 
 #include "AbstractVoxelTest.h"
+#include "core/ArrayLength.h"
 #include "core/collection/Buffer.h"
+#include "math/Axis.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 
@@ -525,6 +527,24 @@ TEST_F(RawVolumeTest, testRegionForFlagMultipleVoxels) {
 	ASSERT_TRUE(result.isValid());
 	EXPECT_EQ(result.getLowerCorner(), glm::ivec3(2, 3, 4));
 	EXPECT_EQ(result.getUpperCorner(), glm::ivec3(7, 8, 6));
+}
+
+TEST_F(RawVolumeTest, testFillBehindPlanePreservesSliceAndSkipsEmpty) {
+	const Region region(0, 7);
+	RawVolume volume(region);
+	const Voxel solid = createVoxel(VoxelType::Generic, 9);
+	const Voxel nearer = createVoxel(VoxelType::Generic, 3);
+	volume.setVoxel(2, 3, 0, solid);
+	volume.setVoxel(1, 3, 2, nearer);
+	Voxel out[8 * 8]{};
+	const Voxel sliceVoxel = createVoxel(VoxelType::Generic, 7);
+	out[3 * 8 + 2] = sliceVoxel;
+	volume.fillBehindPlane(math::Axis::Z, 4, 0, 7, 0, 7, out);
+	EXPECT_EQ(sliceVoxel, out[3 * 8 + 2]);
+	EXPECT_EQ(nearer, out[3 * 8 + 1]);
+	EXPECT_TRUE(isAir(out[0].getMaterial()));
+	volume.fillBehindPlane(math::Axis::None, 4, 0, 7, 0, 7, out);
+	EXPECT_EQ(nearer, out[3 * 8 + 1]);
 }
 
 }

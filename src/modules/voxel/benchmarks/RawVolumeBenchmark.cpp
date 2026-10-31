@@ -3,7 +3,9 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/Vector.h"
+#include "math/Axis.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeSamplerUtil.h"
 
@@ -97,6 +99,55 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, HasFlagsSubRegion)(benchmark::State &stat
 	}
 }
 
+static void fillBenchmarkVolume(voxel::RawVolume &volume, int content) {
+	if (content == 0) {
+		return;
+	}
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	if (content == 2) {
+		volume.fill(voxel);
+		return;
+	}
+	const voxel::Region &region = volume.region();
+	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+				if (x == region.getLowerX() || x == region.getUpperX() || y == region.getLowerY() ||
+					y == region.getUpperY() || z == region.getLowerZ() || z == region.getUpperZ()) {
+					volume.setVoxel(x, y, z, voxel);
+				}
+			}
+		}
+	}
+}
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, FillBehindPlane)(benchmark::State &state) {
+	const int side = (int)state.range(0);
+	const math::Axis axis = state.range(1) == 0 ? math::Axis::X : state.range(1) == 1 ? math::Axis::Y : math::Axis::Z;
+	voxel::RawVolume volume(voxel::Region(0, side - 1));
+	fillBenchmarkVolume(volume, (int)state.range(2));
+	const int dAxis = math::getIndexForAxis(axis);
+	const int aAxis = math::getIndexForAxis(math::getPlaneAxisA(axis));
+	const int bAxis = math::getIndexForAxis(math::getPlaneAxisB(axis));
+	const int slice = side / 2;
+	const int cellCount = side * side;
+	core::DynamicArray<voxel::Voxel> cells;
+	cells.resize((size_t)cellCount);
+	for (auto _ : state) {
+		for (int b = 0; b < side; ++b) {
+			for (int a = 0; a < side; ++a) {
+				glm::ivec3 pos(0);
+				pos[dAxis] = slice;
+				pos[aAxis] = a;
+				pos[bAxis] = b;
+				cells[b * side + a] = volume.voxel(pos);
+			}
+		}
+		volume.fillBehindPlane(axis, slice, 0, side - 1, 0, side - 1, &cells[0]);
+		benchmark::DoNotOptimize(cells[0]);
+	}
+}
+
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);
@@ -106,3 +157,6 @@ BENCHMARK_REGISTER_F(RawVolumeBenchmark, RegionForFlag);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, HasFlagsSubRegion);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, HasFlagsNoFlags);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, HasFlagsWithFlags);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, FillBehindPlane)
+	->ArgsProduct({{64, 128}, {0, 1, 2}, {0, 1, 2}})
+	->Unit(benchmark::kMicrosecond);

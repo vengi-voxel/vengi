@@ -723,6 +723,94 @@ const Voxel &RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 	return _borderVoxel;
 }
 
+void RawVolume::fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, int minB, int maxB, Voxel *out) const {
+	if (out == nullptr || minA > maxA || minB > maxB ||
+		(axis != math::Axis::X && axis != math::Axis::Y && axis != math::Axis::Z)) {
+		return;
+	}
+	const int dAxis = math::getIndexForAxis(axis);
+	const int aAxis = math::getIndexForAxis(math::getPlaneAxisA(axis));
+	const int bAxis = math::getIndexForAxis(math::getPlaneAxisB(axis));
+	glm::ivec3 lo(0);
+	glm::ivec3 hi(0);
+	lo[dAxis] = hi[dAxis] = slice;
+	lo[aAxis] = minA;
+	hi[aAxis] = maxA;
+	lo[bAxis] = minB;
+	hi[bAxis] = maxB;
+	if (!_region.containsRegion(Region(lo, hi))) {
+		return;
+	}
+
+	const int aCount = maxA - minA + 1;
+	const int bCount = maxB - minB + 1;
+	const int cellCount = aCount * bCount;
+	const int maxBehind = slice - _region.getLowerCorner()[dAxis];
+	if (maxBehind <= 0) {
+		return;
+	}
+
+	int remaining = 0;
+	for (int i = 0; i < cellCount; ++i) {
+		if (isAir(out[i].getMaterial())) {
+			++remaining;
+		}
+	}
+	if (remaining == 0) {
+		return;
+	}
+
+	const int64_t strides[3] = {1, (int64_t)width(), _region.stride()};
+	const int64_t startIndex = _region.index(lo);
+
+	// X columns are contiguous. Walk each air cell backward instead of visiting YZ planes.
+	if (axis == math::Axis::X) {
+		const int64_t aStride = strides[aAxis];
+		const int64_t bStride = strides[bAxis];
+		int i = 0;
+		for (int b = 0; b < bCount && remaining > 0; ++b) {
+			const Voxel *column = _data + startIndex + (int64_t)b * bStride;
+			for (int a = 0; a < aCount; ++a, ++i, column += aStride) {
+				if (!isAir(out[i].getMaterial())) {
+					continue;
+				}
+				const Voxel *current = column;
+				int left = maxBehind;
+				while (left-- > 0) {
+					--current;
+					if (!isAir(current->getMaterial())) {
+						out[i] = *current;
+						--remaining;
+						break;
+					}
+				}
+			}
+		}
+		return;
+	}
+
+	const int64_t aStride = strides[aAxis];
+	const int64_t bStride = strides[bAxis];
+	const int64_t dStride = strides[dAxis];
+	for (int step = 1; step <= maxBehind && remaining > 0; ++step) {
+		int64_t plane = startIndex - (int64_t)step * dStride;
+		int i = 0;
+		for (int b = 0; b < bCount && remaining > 0; ++b) {
+			int64_t row = plane + (int64_t)b * bStride;
+			for (int a = 0; a < aCount; ++a, ++i, row += aStride) {
+				if (!isAir(out[i].getMaterial())) {
+					continue;
+				}
+				const Voxel &voxel = _data[row];
+				if (!isAir(voxel.getMaterial())) {
+					out[i] = voxel;
+					--remaining;
+				}
+			}
+		}
+	}
+}
+
 /**
  * @param[in] voxel The value to use for voxels outside the volume.
  */

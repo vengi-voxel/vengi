@@ -15,6 +15,15 @@ TEST_F(AxisTest, testGetIndexForAxis) {
 	EXPECT_EQ(2, getIndexForAxis(Axis::Z));
 }
 
+TEST_F(AxisTest, testGetPlaneAxis) {
+	EXPECT_EQ(Axis::Y, getPlaneAxisA(Axis::X));
+	EXPECT_EQ(Axis::Z, getPlaneAxisB(Axis::X));
+	EXPECT_EQ(Axis::X, getPlaneAxisA(Axis::Y));
+	EXPECT_EQ(Axis::Z, getPlaneAxisB(Axis::Y));
+	EXPECT_EQ(Axis::X, getPlaneAxisA(Axis::Z));
+	EXPECT_EQ(Axis::Y, getPlaneAxisB(Axis::Z));
+}
+
 TEST_F(AxisTest, testGetCharForAxis) {
 	EXPECT_STREQ("x", getCharForAxis(Axis::X));
 	EXPECT_STREQ("y", getCharForAxis(Axis::Y));
