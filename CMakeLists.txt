@@ -45,6 +45,7 @@ project(
 	DESCRIPTION "vengi - voxel art tools"
 	HOMEPAGE_URL "https://github.com/vengi-voxel/vengi")
 set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "Root dir")
+set(LSAN_SUPPRESSIONS_FILE ${ROOT_DIR}/cmake/sanitizers/linux-lsan.supp)
 set(DATA_DIR ${ROOT_DIR}/data CACHE STRING "" FORCE)
 set(SCRIPTS_CMAKE_DIR ${PROJECT_SOURCE_DIR}/cmake)
 set(GENERATE_DIR ${CMAKE_BINARY_DIR}/generated CACHE STRING "Generated code dir")

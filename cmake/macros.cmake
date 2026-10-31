@@ -419,7 +419,7 @@ function(engine_add_executable)
 	add_custom_target(${_EXE_TARGET}-run
 		COMMAND ${CMAKE_COMMAND} -E env
 			ASAN_OPTIONS=detect_leaks=1
-			LSAN_OPTIONS=suppressions=${ROOT_DIR}/contrib/asan-suppression
+			LSAN_OPTIONS=suppressions=${LSAN_SUPPRESSIONS_FILE}:print_suppressions=0
 			$<TARGET_FILE:${_EXE_TARGET}>
 		USES_TERMINAL
 		DEPENDS ${_EXE_TARGET}

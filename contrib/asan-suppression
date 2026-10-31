@@ -1,6 +1,0 @@
-leak:libfontconfig.so
-leak:FcLangSetCopy
-leak:FcValueSave
-leak:fontconfig
-leak:libdrm.so
-leak:libdbus-1
