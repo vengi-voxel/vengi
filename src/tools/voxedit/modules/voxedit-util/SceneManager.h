@@ -507,6 +507,7 @@ public:
 	video::Camera *activeCamera() const;
 
 	core::String getSuggestedFilename(const core::String &extension = "") const;
+	const io::FileDescription &filename() const;
 	const voxel::Voxel &hitCursorVoxel() const;
 
 	/**

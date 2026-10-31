@@ -8366,6 +8366,10 @@ void SceneManager::setActiveCamera(video::Camera *camera, bool fixedCamera) {
 	resetLastTrace();
 }
 
+const io::FileDescription &SceneManager::filename() const {
+	return _lastFilename;
+}
+
 core::String SceneManager::getSuggestedFilename(const core::String &extension) const {
 	if (extension.first() == '.') {
 		return getSuggestedFilename(extension.substr(1));
