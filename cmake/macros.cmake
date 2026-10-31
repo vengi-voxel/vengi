@@ -14,6 +14,16 @@ function(engine_reuse_sdl3_pch target)
 	elseif (NOT _type STREQUAL "INTERFACE_LIBRARY")
 		target_precompile_headers(${target} REUSE_FROM sdl3-pch)
 	endif()
+	# Cocoa/Foundation sources do not need the SDL PCH. Donors still emit an
+	# OBJC header so CMake can resolve REUSE_FROM for mixed-language targets.
+	get_target_property(_srcs ${target} SOURCES)
+	if (_srcs)
+		foreach(_src ${_srcs})
+			if (_src MATCHES "\\.(m|mm)$")
+				set_source_files_properties(${_src} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+			endif()
+		endforeach()
+	endif()
 endfunction()
 
 function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
