@@ -3,6 +3,64 @@ function(engine_app_id out_var target_name)
 	set(${out_var} "com.github.${CMAKE_PROJECT_NAME}.${target_name}" PARENT_SCOPE)
 endfunction()
 
+function(engine_sdl3_pch_headers out_var)
+	set(${out_var} <SDL3/SDL.h> <SDL3/SDL_stdinc.h> <SDL3/SDL_atomic.h> PARENT_SCOPE)
+endfunction()
+
+function(engine_sdl3_pch_include_directories out_var)
+	set(_dirs)
+	foreach(_t sdl3 SDL3::SDL3-static SDL3::SDL3)
+		if (TARGET ${_t})
+			get_target_property(_inc ${_t} INTERFACE_INCLUDE_DIRECTORIES)
+			if (_inc)
+				list(APPEND _dirs ${_inc})
+			endif()
+		endif()
+	endforeach()
+	set(${out_var} ${_dirs} PARENT_SCOPE)
+endfunction()
+
+# Select the donor with matching PIC/PIE settings.
+function(engine_reuse_sdl3_pch target)
+	if (CMAKE_DISABLE_PRECOMPILE_HEADERS)
+		return()
+	endif()
+	# Visual Studio REUSE_FROM links cmake_pch.obj at a path the donor never
+	# writes (sdl3-pch.dir/<Config>/cmake_pch.obj). Use per-target PCH instead.
+	if (MSVC)
+		# Inject SDL include dirs only for targets that do not already consume
+		# sdl3 (binary_to_compressed_c). Doing this on video also puts SDL
+		# include paths ahead of flextGL and breaks int8_t/GLbyte in flextGL.c.
+		get_target_property(_libs ${target} LINK_LIBRARIES)
+		if (NOT _libs)
+			engine_sdl3_pch_include_directories(_inc)
+			if (NOT _inc)
+				return()
+			endif()
+			target_include_directories(${target} PRIVATE ${_inc})
+		endif()
+		engine_sdl3_pch_headers(_hdrs)
+		target_precompile_headers(${target} PRIVATE ${_hdrs})
+		return()
+	endif()
+	get_target_property(_type ${target} TYPE)
+	if (_type STREQUAL "EXECUTABLE")
+		target_precompile_headers(${target} REUSE_FROM sdl3-pch-executable)
+	elseif (NOT _type STREQUAL "INTERFACE_LIBRARY")
+		target_precompile_headers(${target} REUSE_FROM sdl3-pch)
+	endif()
+	# Cocoa/Foundation sources do not need the SDL PCH. Donors still emit an
+	# OBJC header so CMake can resolve REUSE_FROM for mixed-language targets.
+	get_target_property(_srcs ${target} SOURCES)
+	if (_srcs)
+		foreach(_src ${_srcs})
+			if (_src MATCHES "\\.(m|mm)$")
+				set_source_files_properties(${_src} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+			endif()
+		endforeach()
+	endif()
+endfunction()
+
 function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 	get_filename_component(filename ${FILE} NAME)
 	if (NOT EXISTS ${DATA_DIR}/${FILE})
@@ -179,6 +237,7 @@ function(engine_add_executable)
 	# SDL3's SDL_main.h injects WinMain/main into every TU. Keep that disabled by
 	# default; entry-point sources that need it #undef SDL_MAIN_HANDLED first.
 	target_compile_definitions(${_EXE_TARGET} PRIVATE SDL_MAIN_HANDLED)
+	engine_reuse_sdl3_pch(${_EXE_TARGET})
 
 	set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
 	set_target_properties(${_EXE_TARGET} PROPERTIES
@@ -501,6 +560,9 @@ function(engine_add_module)
 	if (_LIB_PRIVATE_DEPENDENCIES)
 		target_link_libraries(${_LIB_TARGET} PRIVATE ${_LIB_PRIVATE_DEPENDENCIES})
 	endif()
+	if (_LIB_SRCS)
+		engine_reuse_sdl3_pch(${_LIB_TARGET})
+	endif()
 
 	if (USE_CPPCHECK)
 		find_program(CPPCHECK cppcheck)
@@ -673,6 +735,8 @@ function(engine_target_optimize TARGET)
 	else()
 		target_compile_options(${TARGET} PRIVATE -O3)
 		target_compile_definitions(${TARGET} PRIVATE -DNDEBUG)
+		# The shared PCH uses the project's default optimization settings.
+		set_target_properties(${TARGET} PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
 	endif()
 endfunction()
 

@@ -193,6 +193,7 @@ include_directories(src/modules/video/shaders)
 include_directories(src/modules)
 
 add_subdirectory(contrib/libs)
+include(${SCRIPTS_CMAKE_DIR}/pch.cmake)
 add_subdirectory(tools)
 
 if (UNITTESTS OR USE_IMGUITESTENGINE)
