@@ -6,8 +6,6 @@
 #include "TestUtil.h"
 #include "command/CommandHandler.h"
 #include "core/BindingContext.h"
-#include "core/ConfigVar.h"
-#include "ui/IMGUIStyle.h"
 #include "ui/Style.h"
 #include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
@@ -27,7 +25,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
 		const char *canvases[] = {"**/backcanvas", "**/rightcanvas", "**/topcanvas"};
-		for (int view = 0; view < 3; ++view) {
+		for (int view = 0; view < lengthof(canvases); ++view) {
 			ctx->MouseMove(canvases[view]);
 			ctx->Yield();
 			const TargetView &targetView = _targetViews[view];
@@ -62,7 +60,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			const voxel::Region region(0, 7);
 			const char *canvases[] = {"**/backcanvas", "**/rightcanvas", "**/topcanvas"};
 			const int depthAxes[] = {2, 0, 1};
-			for (int view = 0; view < 3; ++view) {
+			for (int view = 0; view < lengthof(depthAxes); ++view) {
 				IM_CHECK(_sceneMgr->newScene(true, "slice selection", region));
 				ctx->Yield();
 				IM_CHECK(focusWindow(ctx, id));
@@ -166,7 +164,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			const voxel::Region region(0, 7);
 			const char *canvases[] = {"**/backcanvas", "**/rightcanvas", "**/topcanvas"};
 			const int depthAxes[] = {2, 0, 1};
-			for (int view = 0; view < 3; ++view) {
+			for (int view = 0; view < lengthof(depthAxes); ++view) {
 				IM_CHECK(_sceneMgr->newScene(true, "shared slice brush", region));
 				ctx->Yield();
 				IM_CHECK(focusWindow(ctx, id));
@@ -225,7 +223,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->Yield();
 			IM_CHECK(focusWindow(ctx, id));
 			const char *canvases[] = {"**/backcanvas", "**/rightcanvas", "**/topcanvas"};
-			for (int view = 0; view < 3; ++view) {
+			for (int view = 0; view < lengthof(canvases); ++view) {
 				ctx->MouseMove(canvases[view]);
 				ctx->Yield();
 				const TargetView &hovered = _targetViews[view];
@@ -234,7 +232,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 					ImVec2(hovered.origin.x + 2.5f * hovered.cell, hovered.origin.y + 3.5f * hovered.cell));
 				ctx->Yield();
 				IM_CHECK(_target == voxelPosition(view, region, _slices[view], 2, 3));
-				for (int projectedView = 0; projectedView < 3; ++projectedView) {
+				for (int projectedView = 0; projectedView < lengthof(_targetViews); ++projectedView) {
 					const TargetView &targetView = _targetViews[projectedView];
 					IM_CHECK(targetView.draw != nullptr);
 					const glm::ivec2 projected = viewPosition(projectedView, region, _target);
@@ -271,7 +269,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 		_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 42));
 		const char *canvases[] = {"**/backcanvas", "**/rightcanvas", "**/topcanvas"};
-		for (int view = 0; view < 3; ++view) {
+		for (int view = 0; view < lengthof(canvases); ++view) {
 			const ImGuiTestItemInfo info = ctx->ItemInfo(canvases[view]);
 			IM_CHECK(info.ID != 0);
 			const ImVec2 min = info.RectFull.Min;
