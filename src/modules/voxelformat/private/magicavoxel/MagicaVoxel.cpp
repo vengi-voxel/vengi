@@ -9,6 +9,7 @@
 #include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -19,6 +20,10 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "core/Endian.h"
+#include "io/MemoryReadStream.h"
+#include "io/Stream.h"
+#include "io/ZipReadStream.h"
+#include "io/ZipWriteStream.h"
 #include <limits>
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -623,6 +628,676 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const p
 	};
 	app::for_parallel(0, scene->num_models, fn);
 	return models;
+}
+
+static const float FroxelClipFps = 24.0f;
+static const uint32_t FroxelMaxNameLen = 1025;
+static const uint32_t FroxelMaxSourceLen = 65537;
+static const uint32_t FroxelMaxCount = 256;
+static const uint32_t FroxelMaxKeys = 10000;
+static const uint32_t FroxelMaxParams = 64;
+
+static bool readFroxelString(io::ReadStream &stream, core::String &out, uint32_t maxLen) {
+	return stream.readPascalStringUInt32LE(out, maxLen);
+}
+
+static bool writeFroxelString(io::WriteStream &stream, const core::String &value) {
+	return stream.writePascalStringUInt32LE(value);
+}
+
+static bool readFroxelVec3(io::ReadStream &stream, float v[3]) {
+	return stream.readFloat(v[0]) == 0 && stream.readFloat(v[1]) == 0 && stream.readFloat(v[2]) == 0;
+}
+
+static bool writeFroxelVec3(io::WriteStream &stream, const float v[3]) {
+	return stream.writeFloat(v[0]) && stream.writeFloat(v[1]) && stream.writeFloat(v[2]);
+}
+
+static bool readFroxelQuat(io::ReadStream &stream, float r[4]) {
+	return stream.readFloat(r[0]) == 0 && stream.readFloat(r[1]) == 0 && stream.readFloat(r[2]) == 0 &&
+		   stream.readFloat(r[3]) == 0;
+}
+
+static bool writeFroxelQuat(io::WriteStream &stream, const float r[4]) {
+	return stream.writeFloat(r[0]) && stream.writeFloat(r[1]) && stream.writeFloat(r[2]) && stream.writeFloat(r[3]);
+}
+
+bool parseFroxelMVRG(const uint8_t *content, uint32_t size, FroxelVoxData &out) {
+	if (content == nullptr || size == 0) {
+		return false;
+	}
+	io::MemoryReadStream stream(content, size);
+	uint32_t version = 0;
+	if (stream.readUInt32(version) != 0 || version != 1) {
+		Log::warn("Unsupported Froxel MVRG version %u", version);
+		return false;
+	}
+	uint32_t boneCount = 0;
+	if (stream.readUInt32(boneCount) != 0 || boneCount > FroxelMaxCount) {
+		return false;
+	}
+	FroxelVoxData parsed;
+	parsed.bones.reserve(boneCount);
+	for (uint32_t i = 0; i < boneCount; ++i) {
+		FroxelBone bone;
+		if (!readFroxelString(stream, bone.name, FroxelMaxNameLen) ||
+			!readFroxelString(stream, bone.parent, FroxelMaxNameLen) || !readFroxelVec3(stream, bone.pivot) ||
+			!readFroxelQuat(stream, bone.rotation)) {
+			return false;
+		}
+		parsed.bones.push_back(core::move(bone));
+	}
+	uint32_t bindCount = 0;
+	if (stream.readUInt32(bindCount) != 0 || bindCount > FroxelMaxCount) {
+		return false;
+	}
+	parsed.binds.reserve(bindCount);
+	for (uint32_t i = 0; i < bindCount; ++i) {
+		FroxelBind bind;
+		if (stream.readInt32(bind.trn) != 0 || stream.readUInt32(bind.index) != 0 ||
+			!readFroxelString(stream, bind.name, FroxelMaxNameLen) ||
+			!readFroxelString(stream, bind.bone, FroxelMaxNameLen) || bind.bone.empty()) {
+			return false;
+		}
+		parsed.binds.push_back(core::move(bind));
+	}
+	if (stream.remaining() != 0) {
+		Log::warn("Froxel MVRG chunk has trailing bytes");
+		return false;
+	}
+	for (FroxelBone &bone : parsed.bones) {
+		out.bones.push_back(core::move(bone));
+	}
+	for (FroxelBind &bind : parsed.binds) {
+		out.binds.push_back(core::move(bind));
+	}
+	return true;
+}
+
+bool parseFroxelMVAN(const uint8_t *content, uint32_t size, FroxelVoxData &out) {
+	if (content == nullptr || size == 0) {
+		return false;
+	}
+	io::MemoryReadStream stream(content, size);
+	uint32_t version = 0;
+	if (stream.readUInt32(version) != 0 || version < 1 || version > 3) {
+		Log::warn("Unsupported Froxel MVAN version %u", version);
+		return false;
+	}
+	uint32_t clipCount = 0;
+	if (stream.readUInt32(clipCount) != 0 || clipCount > FroxelMaxCount) {
+		return false;
+	}
+	core::DynamicArray<FroxelClip> clips;
+	clips.reserve(clipCount);
+	for (uint32_t c = 0; c < clipCount; ++c) {
+		FroxelClip clip;
+		if (!readFroxelString(stream, clip.name, FroxelMaxNameLen)) {
+			return false;
+		}
+		uint32_t trackCount = 0;
+		if (stream.readUInt32(trackCount) != 0 || trackCount > FroxelMaxCount) {
+			return false;
+		}
+		clip.tracks.reserve(trackCount);
+		for (uint32_t t = 0; t < trackCount; ++t) {
+			FroxelClipTrack track;
+			if (!readFroxelString(stream, track.bone, FroxelMaxNameLen)) {
+				return false;
+			}
+			uint32_t keyCount = 0;
+			if (stream.readUInt32(keyCount) != 0 || keyCount > FroxelMaxKeys) {
+				return false;
+			}
+			track.keys.reserve(keyCount);
+			for (uint32_t k = 0; k < keyCount; ++k) {
+				FroxelClipKey key;
+				if (stream.readFloat(key.time) != 0) {
+					return false;
+				}
+				uint8_t flags = 0x03;
+				if (version == 3) {
+					if (stream.readUInt8(flags) != 0) {
+						return false;
+					}
+				}
+				if (!readFroxelQuat(stream, key.rotation)) {
+					return false;
+				}
+				if (version == 2) {
+					if (stream.readUInt8(flags) != 0) {
+						return false;
+					}
+					flags = (uint8_t)(flags | 0x02);
+				}
+				key.hasRotation = (flags & 0x02) != 0;
+				key.hasTranslation = (flags & 0x01) != 0;
+				if (!readFroxelVec3(stream, key.translation) || !readFroxelVec3(stream, key.scale)) {
+					return false;
+				}
+				track.keys.push_back(key);
+			}
+			clip.tracks.push_back(core::move(track));
+		}
+		clips.push_back(core::move(clip));
+	}
+	if (stream.remaining() != 0) {
+		Log::warn("Froxel MVAN chunk has trailing bytes");
+		return false;
+	}
+	for (FroxelClip &clip : clips) {
+		out.clips.push_back(core::move(clip));
+	}
+	return true;
+}
+
+bool parseFroxelMVSC(const uint8_t *content, uint32_t size, FroxelVoxData &out) {
+	if (content == nullptr || size == 0) {
+		return false;
+	}
+	io::MemoryReadStream stream(content, size);
+	uint32_t version = 0;
+	if (stream.readUInt32(version) != 0 || (version != 1 && version != 2)) {
+		Log::warn("Unsupported Froxel MVSC version %u", version);
+		return false;
+	}
+	uint32_t scriptCount = 0;
+	if (stream.readUInt32(scriptCount) != 0 || scriptCount > FroxelMaxCount) {
+		return false;
+	}
+	core::DynamicArray<FroxelScript> scripts;
+	scripts.reserve(scriptCount);
+	for (uint32_t i = 0; i < scriptCount; ++i) {
+		FroxelScript script;
+		if (!readFroxelString(stream, script.name, FroxelMaxNameLen)) {
+			return false;
+		}
+		if (version >= 2) {
+			if (stream.readInt32(script.localMin[0]) != 0 || stream.readInt32(script.localMin[1]) != 0 ||
+				stream.readInt32(script.localMin[2]) != 0) {
+				return false;
+			}
+			script.hasLocalMin = true;
+		}
+		if (!readFroxelString(stream, script.source, FroxelMaxSourceLen)) {
+			return false;
+		}
+		uint8_t autoRegen = 0;
+		if (stream.readUInt8(autoRegen) != 0 || autoRegen > 1) {
+			return false;
+		}
+		script.autoRegen = autoRegen != 0;
+		uint32_t paramCount = 0;
+		if (stream.readUInt32(paramCount) != 0 || paramCount > FroxelMaxParams) {
+			return false;
+		}
+		script.params.reserve(paramCount);
+		for (uint32_t p = 0; p < paramCount; ++p) {
+			FroxelScriptParam param;
+			if (!readFroxelString(stream, param.name, FroxelMaxNameLen) || stream.readUInt8(param.kind) != 0) {
+				return false;
+			}
+			if (param.kind == FroxelParamFloat) {
+				if (stream.readFloat(param.fvalue) != 0 || stream.readFloat(param.fmin) != 0 ||
+					stream.readFloat(param.fmax) != 0) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamInt) {
+				if (stream.readInt32(param.ivalue) != 0 || stream.readInt32(param.imin) != 0 ||
+					stream.readInt32(param.imax) != 0) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamBool) {
+				if (stream.readUInt8(param.bvalue) != 0 || param.bvalue > 1) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamColor) {
+				if (stream.readUInt8(param.rgb[0]) != 0 || stream.readUInt8(param.rgb[1]) != 0 ||
+					stream.readUInt8(param.rgb[2]) != 0) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamFloats) {
+				if (stream.readUInt8(param.width) != 0 || param.width < 1 || param.width > 3 ||
+					stream.readFloat(param.fmin) != 0 || stream.readFloat(param.fmax) != 0 ||
+					stream.readUInt32(param.maxLen) != 0) {
+					return false;
+				}
+				uint32_t valueCount = 0;
+				if (stream.readUInt32(valueCount) != 0 || valueCount > FroxelMaxKeys) {
+					return false;
+				}
+				param.values.reserve(valueCount);
+				for (uint32_t v = 0; v < valueCount; ++v) {
+					float value = 0.0f;
+					if (stream.readFloat(value) != 0) {
+						return false;
+					}
+					param.values.push_back(value);
+				}
+			} else {
+				Log::warn("Unsupported Froxel MVSC parameter kind %u", (unsigned int)param.kind);
+				return false;
+			}
+			script.params.push_back(core::move(param));
+		}
+		scripts.push_back(core::move(script));
+	}
+	if (stream.remaining() != 0) {
+		Log::warn("Froxel MVSC chunk has trailing bytes");
+		return false;
+	}
+	for (FroxelScript &script : scripts) {
+		out.scripts.push_back(core::move(script));
+	}
+	return true;
+}
+
+bool encodeFroxelMVRG(const FroxelVoxData &data, io::WriteStream &out) {
+	if (!out.writeUInt32(1) || !out.writeUInt32((uint32_t)data.bones.size())) {
+		return false;
+	}
+	for (const FroxelBone &bone : data.bones) {
+		if (!writeFroxelString(out, bone.name) || !writeFroxelString(out, bone.parent) ||
+			!writeFroxelVec3(out, bone.pivot) || !writeFroxelQuat(out, bone.rotation)) {
+			return false;
+		}
+	}
+	if (!out.writeUInt32((uint32_t)data.binds.size())) {
+		return false;
+	}
+	for (const FroxelBind &bind : data.binds) {
+		if (!out.writeInt32(bind.trn) || !out.writeUInt32(bind.index) || !writeFroxelString(out, bind.name) ||
+			!writeFroxelString(out, bind.bone)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool encodeFroxelMVAN(const FroxelVoxData &data, io::WriteStream &out) {
+	if (!out.writeUInt32(3) || !out.writeUInt32((uint32_t)data.clips.size())) {
+		return false;
+	}
+	for (const FroxelClip &clip : data.clips) {
+		if (!writeFroxelString(out, clip.name) || !out.writeUInt32((uint32_t)clip.tracks.size())) {
+			return false;
+		}
+		for (const FroxelClipTrack &track : clip.tracks) {
+			if (!writeFroxelString(out, track.bone) || !out.writeUInt32((uint32_t)track.keys.size())) {
+				return false;
+			}
+			for (const FroxelClipKey &key : track.keys) {
+				const uint8_t flags = (uint8_t)((key.hasTranslation ? 0x01 : 0) | (key.hasRotation ? 0x02 : 0));
+				if (!out.writeFloat(key.time) || !out.writeUInt8(flags) || !writeFroxelQuat(out, key.rotation) ||
+					!writeFroxelVec3(out, key.translation) || !writeFroxelVec3(out, key.scale)) {
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
+bool encodeFroxelMVSC(const FroxelVoxData &data, io::WriteStream &out) {
+	if (!out.writeUInt32(2) || !out.writeUInt32((uint32_t)data.scripts.size())) {
+		return false;
+	}
+	for (const FroxelScript &script : data.scripts) {
+		if (!writeFroxelString(out, script.name) || !out.writeInt32(script.localMin[0]) ||
+			!out.writeInt32(script.localMin[1]) || !out.writeInt32(script.localMin[2]) ||
+			!writeFroxelString(out, script.source) || !out.writeUInt8(script.autoRegen ? 1 : 0) ||
+			!out.writeUInt32((uint32_t)script.params.size())) {
+			return false;
+		}
+		for (const FroxelScriptParam &param : script.params) {
+			if (!writeFroxelString(out, param.name) || !out.writeUInt8(param.kind)) {
+				return false;
+			}
+			if (param.kind == FroxelParamFloat) {
+				if (!out.writeFloat(param.fvalue) || !out.writeFloat(param.fmin) || !out.writeFloat(param.fmax)) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamInt) {
+				if (!out.writeInt32(param.ivalue) || !out.writeInt32(param.imin) || !out.writeInt32(param.imax)) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamBool) {
+				if (!out.writeUInt8(param.bvalue)) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamColor) {
+				if (!out.writeUInt8(param.rgb[0]) || !out.writeUInt8(param.rgb[1]) || !out.writeUInt8(param.rgb[2])) {
+					return false;
+				}
+			} else if (param.kind == FroxelParamFloats) {
+				if (!out.writeUInt8(param.width) || !out.writeFloat(param.fmin) || !out.writeFloat(param.fmax) ||
+					!out.writeUInt32(param.maxLen) || !out.writeUInt32((uint32_t)param.values.size())) {
+					return false;
+				}
+				for (float value : param.values) {
+					if (!out.writeFloat(value)) {
+						return false;
+					}
+				}
+			} else {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+void readFroxelCustomChunk(const ogt_vox_custom_chunk *chunk, void *userData) {
+	if (chunk == nullptr || userData == nullptr) {
+		return;
+	}
+	FroxelVoxData *data = (FroxelVoxData *)userData;
+	if (chunk->id == FroxelChunkMVRG) {
+		if (!parseFroxelMVRG(chunk->content, chunk->content_size, *data)) {
+			Log::warn("Failed to parse Froxel MVRG chunk");
+		}
+	} else if (chunk->id == FroxelChunkMVAN) {
+		if (!parseFroxelMVAN(chunk->content, chunk->content_size, *data)) {
+			Log::warn("Failed to parse Froxel MVAN chunk");
+		}
+	} else if (chunk->id == FroxelChunkMVSC) {
+		if (!parseFroxelMVSC(chunk->content, chunk->content_size, *data)) {
+			Log::warn("Failed to parse Froxel MVSC chunk");
+		}
+	}
+}
+
+bool parseTeardownTDCZ(const uint8_t *content, uint32_t size, core::Buffer<uint8_t> &voxels, uint32_t &sizeX,
+					   uint32_t &sizeY, uint32_t &sizeZ) {
+	if (content == nullptr || size < 12) {
+		return false;
+	}
+	io::MemoryReadStream stream(content, size);
+	if (stream.readUInt32(sizeX) != 0 || stream.readUInt32(sizeY) != 0 || stream.readUInt32(sizeZ) != 0) {
+		return false;
+	}
+	if (sizeX == 0 || sizeY == 0 || sizeZ == 0) {
+		return false;
+	}
+	if (sizeY != 0 && sizeX > (UINT32_MAX / sizeY)) {
+		return false;
+	}
+	const uint32_t xy = sizeX * sizeY;
+	if (sizeZ != 0 && xy > (UINT32_MAX / sizeZ)) {
+		return false;
+	}
+	const uint32_t voxelCount = xy * sizeZ;
+	voxels.resize(voxelCount);
+	io::ZipReadStream zip(stream, (int)stream.remaining());
+	if (zip.read(voxels.data(), voxelCount) != (int)voxelCount) {
+		Log::warn("Failed to decompress Teardown TDCZ chunk");
+		voxels.resize(0);
+		return false;
+	}
+	return true;
+}
+
+bool encodeTeardownTDCZ(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ, const uint8_t *voxels, io::WriteStream &out) {
+	if (voxels == nullptr || sizeX == 0 || sizeY == 0 || sizeZ == 0) {
+		return false;
+	}
+	if (sizeY != 0 && sizeX > (UINT32_MAX / sizeY)) {
+		return false;
+	}
+	const uint32_t xy = sizeX * sizeY;
+	if (sizeZ != 0 && xy > (UINT32_MAX / sizeZ)) {
+		return false;
+	}
+	const uint32_t voxelCount = xy * sizeZ;
+	if (!out.writeUInt32(sizeX) || !out.writeUInt32(sizeY) || !out.writeUInt32(sizeZ)) {
+		return false;
+	}
+	io::ZipWriteStream zip(out);
+	if (zip.write(voxels, voxelCount) == -1 || !zip.flush()) {
+		return false;
+	}
+	return true;
+}
+
+void readVoxCustomChunk(const ogt_vox_custom_chunk *chunk, void *userData, ogt_vox_custom_model *outModel) {
+	if (chunk == nullptr || userData == nullptr) {
+		return;
+	}
+	VoxCustomChunkContext *ctx = (VoxCustomChunkContext *)userData;
+	if (chunk->id == TeardownChunkTDCZ) {
+		uint32_t sizeX = 0;
+		uint32_t sizeY = 0;
+		uint32_t sizeZ = 0;
+		if (!parseTeardownTDCZ(chunk->content, chunk->content_size, ctx->modelVoxels, sizeX, sizeY, sizeZ)) {
+			Log::warn("Failed to parse Teardown TDCZ chunk");
+			return;
+		}
+		if (outModel == nullptr) {
+			return;
+		}
+		outModel->size_x = sizeX;
+		outModel->size_y = sizeY;
+		outModel->size_z = sizeZ;
+		outModel->voxel_data = ctx->modelVoxels.data();
+		return;
+	}
+	readFroxelCustomChunk(chunk, &ctx->froxel);
+}
+
+static glm::vec3 froxelVecToVengi(const float v[3]) {
+	return glm::vec3(-v[0], v[2], v[1]);
+}
+
+static glm::vec3 froxelScaleToVengi(const float s[3]) {
+	return glm::vec3(s[0], s[2], s[1]);
+}
+
+static glm::quat froxelQuatToVengi(const float r[4]) {
+	const glm::quat qMv(r[3], r[0], r[1], r[2]);
+	const glm::mat3 A(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::quat qA = glm::normalize(glm::quat_cast(A));
+	return glm::normalize(qA * qMv * glm::conjugate(qA));
+}
+
+static int matchFroxelBind(const ogt_vox_scene *scene, const FroxelBind &bind,
+						   const core::DynamicArray<int> &instanceNodeIds) {
+	if (bind.trn >= 0) {
+		int hits = 0;
+		int found = InvalidNodeId;
+		for (uint32_t i = 0; i < scene->num_instances; ++i) {
+			if (scene->instances[i].node_id != bind.trn) {
+				continue;
+			}
+			++hits;
+			if (i < instanceNodeIds.size()) {
+				found = instanceNodeIds[i];
+			}
+		}
+		if (hits == 1) {
+			return found;
+		}
+	}
+	int hits = 0;
+	int found = InvalidNodeId;
+	for (uint32_t i = 0; i < scene->num_instances; ++i) {
+		const char *name = scene->instances[i].name != nullptr ? scene->instances[i].name : "";
+		if (bind.name != name) {
+			continue;
+		}
+		++hits;
+		if (i < instanceNodeIds.size()) {
+			found = instanceNodeIds[i];
+		}
+	}
+	if (hits == 1) {
+		return found;
+	}
+	if (bind.index < instanceNodeIds.size() && bind.index < scene->num_instances) {
+		const char *name = scene->instances[bind.index].name != nullptr ? scene->instances[bind.index].name : "";
+		if (bind.name == name) {
+			return instanceNodeIds[bind.index];
+		}
+	}
+	return InvalidNodeId;
+}
+
+static core::String froxelParamToString(const FroxelScriptParam &param) {
+	if (param.kind == FroxelParamFloat) {
+		return core::String::format("float:%f:%f:%f", param.fvalue, param.fmin, param.fmax);
+	}
+	if (param.kind == FroxelParamInt) {
+		return core::String::format("int:%i:%i:%i", param.ivalue, param.imin, param.imax);
+	}
+	if (param.kind == FroxelParamBool) {
+		return core::String::format("bool:%u", (unsigned int)param.bvalue);
+	}
+	if (param.kind == FroxelParamColor) {
+		return core::String::format("color:%u,%u,%u", (unsigned int)param.rgb[0], (unsigned int)param.rgb[1],
+									(unsigned int)param.rgb[2]);
+	}
+	if (param.kind == FroxelParamFloats) {
+		core::String out = core::String::format("floats:%u:%f:%f:%u", (unsigned int)param.width, param.fmin, param.fmax,
+												param.maxLen);
+		for (float value : param.values) {
+			out.append(core::String::format(":%f", value));
+		}
+		return out;
+	}
+	return core::String::format("unknown:%u", (unsigned int)param.kind);
+}
+
+void loadFroxelExtensions(const FroxelVoxData &froxel, const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
+						  const core::DynamicArray<int> &instanceNodeIds) {
+	if (froxel.bones.empty() && froxel.clips.empty() && froxel.scripts.empty() && froxel.binds.empty()) {
+		return;
+	}
+
+	core::DynamicArray<int> boneNodeIds;
+	boneNodeIds.resize(froxel.bones.size());
+	boneNodeIds.fill(InvalidNodeId);
+
+	if (!froxel.bones.empty()) {
+		scenegraph::SceneGraphNode rig(scenegraph::SceneGraphNodeType::Group);
+		rig.setName("FroxelRig");
+		const int rigGroupId = sceneGraph.emplace(core::move(rig), sceneGraph.root().id());
+		if (rigGroupId == InvalidNodeId) {
+			Log::warn("Failed to add Froxel rig group");
+			return;
+		}
+		for (size_t i = 0; i < froxel.bones.size(); ++i) {
+			const FroxelBone &bone = froxel.bones[i];
+			scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
+			point.setName(bone.name.empty() ? "bone" : bone.name);
+			scenegraph::SceneGraphTransform transform;
+			transform.setWorldTranslation(froxelVecToVengi(bone.pivot));
+			transform.setLocalOrientation(froxelQuatToVengi(bone.rotation));
+			point.setTransform(0, transform);
+			const int nodeId = sceneGraph.emplace(core::move(point), rigGroupId);
+			if (nodeId == InvalidNodeId) {
+				Log::warn("Failed to add Froxel bone %s", bone.name.c_str());
+				continue;
+			}
+			boneNodeIds[i] = nodeId;
+		}
+		for (size_t i = 0; i < froxel.bones.size(); ++i) {
+			const FroxelBone &bone = froxel.bones[i];
+			if (bone.parent.empty() || boneNodeIds[i] == InvalidNodeId) {
+				continue;
+			}
+			for (size_t p = 0; p < froxel.bones.size(); ++p) {
+				if (froxel.bones[p].name == bone.parent && boneNodeIds[p] != InvalidNodeId) {
+					sceneGraph.changeParent(boneNodeIds[i], boneNodeIds[p]);
+					break;
+				}
+			}
+		}
+		sceneGraph.updateTransforms();
+	}
+
+	for (const FroxelBind &bind : froxel.binds) {
+		const int nodeId = matchFroxelBind(scene, bind, instanceNodeIds);
+		if (nodeId == InvalidNodeId || !sceneGraph.hasNode(nodeId)) {
+			Log::debug("Froxel bind for object %s did not match a node", bind.name.c_str());
+			continue;
+		}
+		if (!bind.bone.empty()) {
+			sceneGraph.node(nodeId).setProperty(scenegraph::PropFroxelBone, bind.bone);
+		}
+	}
+
+	for (const FroxelScript &script : froxel.scripts) {
+		scenegraph::SceneGraphNode *node = sceneGraph.findNodeByName(script.name);
+		if (node == nullptr) {
+			Log::debug("Froxel script object %s was not found", script.name.c_str());
+			continue;
+		}
+		if (!script.source.empty()) {
+			node->setProperty(scenegraph::PropFroxelScript, script.source);
+		}
+		node->setProperty(scenegraph::PropFroxelScriptAuto, script.autoRegen);
+		if (script.hasLocalMin) {
+			node->setProperty(scenegraph::PropFroxelScriptLocalMin,
+							  core::String::format("%i,%i,%i", script.localMin[0], script.localMin[1],
+												   script.localMin[2]));
+		}
+		for (const FroxelScriptParam &param : script.params) {
+			node->setProperty(core::String::format("froxel_param_%s", param.name.c_str()), froxelParamToString(param));
+		}
+	}
+
+	const core::String previousAnim = sceneGraph.activeAnimation();
+	for (size_t c = 0; c < froxel.clips.size(); ++c) {
+		const FroxelClip &clip = froxel.clips[c];
+		const core::String clipName = clip.name.empty() ? core::String::format("clip%u", (uint32_t)c) : clip.name;
+		sceneGraph.addAnimation(clipName);
+		for (const FroxelClipTrack &track : clip.tracks) {
+			int boneNodeId = InvalidNodeId;
+			for (size_t b = 0; b < froxel.bones.size(); ++b) {
+				if (froxel.bones[b].name == track.bone) {
+					boneNodeId = boneNodeIds[b];
+					break;
+				}
+			}
+			if (boneNodeId == InvalidNodeId || !sceneGraph.hasNode(boneNodeId)) {
+				continue;
+			}
+			scenegraph::SceneGraphNode &boneNode = sceneGraph.node(boneNodeId);
+			if (!boneNode.setAnimation(clipName)) {
+				continue;
+			}
+			const scenegraph::SceneGraphTransform bindTransform = boneNode.transform(0);
+			for (const FroxelClipKey &key : track.keys) {
+				const scenegraph::FrameIndex frameIdx =
+					(scenegraph::FrameIndex)(key.time * FroxelClipFps + (key.time >= 0.0f ? 0.5f : -0.5f));
+				scenegraph::KeyFrameIndex kfIdx = boneNode.addKeyFrame(frameIdx);
+				if (kfIdx == InvalidKeyFrame) {
+					kfIdx = boneNode.keyFrameForFrame(frameIdx);
+					if (kfIdx == InvalidKeyFrame) {
+						continue;
+					}
+				}
+				scenegraph::SceneGraphKeyFrame &kf = boneNode.keyFrame(kfIdx);
+				kf.interpolation = scenegraph::InterpolationType::Linear;
+				scenegraph::SceneGraphTransform &transform = kf.transform();
+				if (key.hasTranslation) {
+					transform.setLocalTranslation(froxelVecToVengi(key.translation));
+				} else {
+					transform.setLocalTranslation(bindTransform.localTranslation());
+				}
+				if (key.hasRotation) {
+					transform.setLocalOrientation(froxelQuatToVengi(key.rotation));
+				} else {
+					transform.setLocalOrientation(bindTransform.localOrientation());
+				}
+				transform.setLocalScale(froxelScaleToVengi(key.scale));
+			}
+			sceneGraph.markKeyFramesDirty(boneNodeId);
+		}
+	}
+	if (sceneGraph.hasAnimation(previousAnim)) {
+		sceneGraph.setAnimation(previousAnim);
+	}
+	sceneGraph.updateTransforms();
 }
 
 } // namespace voxelformat

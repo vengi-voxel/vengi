@@ -71,7 +71,8 @@ static void applyInstanceMetadata(scenegraph::SceneGraphNode &node, const ogt_vo
 }
 
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette) {
+							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette,
+							 core::DynamicArray<int> &instanceNodeIds) {
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	if (ogtInstance.model_index >= scene->num_models) {
 		Log::error("Invalid model index %u for instance %u", ogtInstance.model_index, ogt_instanceIdx);
@@ -100,6 +101,9 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 		const int groupId = sceneGraph.emplace(core::move(groupNode), parent);
 		if (groupId == InvalidNodeId) {
 			return false;
+		}
+		if (ogt_instanceIdx < instanceNodeIds.size()) {
+			instanceNodeIds[ogt_instanceIdx] = groupId;
 		}
 
 		for (uint32_t k = 0; k < ogtInstance.model_anim.num_keyframes; ++k) {
@@ -181,7 +185,14 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 		applyInstanceMetadata(node, scene, ogtInstance);
 		node.setVolume(v);
 		node.setPalette(palette);
-		return sceneGraph.emplace(core::move(node), parent) != InvalidNodeId;
+		const int nodeId = sceneGraph.emplace(core::move(node), parent);
+		if (nodeId == InvalidNodeId) {
+			return false;
+		}
+		if (ogt_instanceIdx < instanceNodeIds.size()) {
+			instanceNodeIds[ogt_instanceIdx] = nodeId;
+		}
+		return true;
 	}
 
 	MVModelToNode &modelEntry = models[ogtInstance.model_index];
@@ -214,12 +225,15 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		modelEntry.nodeId = nodeId;
 	}
+	if (ogt_instanceIdx < instanceNodeIds.size()) {
+		instanceNodeIds[ogt_instanceIdx] = nodeId;
+	}
 	return true;
 }
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
 						  int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
-						  const palette::Palette &palette) {
+						  const palette::Palette &palette, core::DynamicArray<int> &instanceNodeIds) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = ogt_group.name ? ogt_group.name : "<group>";
@@ -273,7 +287,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 			continue;
 		}
 		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
-		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, models, addedInstances, palette)) {
+		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, models, addedInstances, palette, instanceNodeIds)) {
 			return false;
 		}
 	}
@@ -286,7 +300,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		if (!addedInstances.insert(n)) {
 			continue;
 		}
-		if (!loadInstance(scene, n, sceneGraph, groupId, models, palette)) {
+		if (!loadInstance(scene, n, sceneGraph, groupId, models, palette, instanceNodeIds)) {
 			return false;
 		}
 	}
@@ -311,7 +325,10 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_groups |
 								   k_read_scene_flags_keep_empty_models_instances |
 								   k_read_scene_flags_keep_duplicate_models;
+	VoxCustomChunkContext customChunks;
+	ogt_vox_set_read_custom_chunk_func(readVoxCustomChunk, &customChunks);
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, (uint32_t)size, ogt_vox_flags);
+	ogt_vox_set_read_custom_chunk_func(nullptr, nullptr);
 	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
@@ -319,9 +336,13 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 
 	printDetails(scene);
+	Log::debug("froxel bones: %u binds: %u clips: %u scripts: %u", (uint32_t)customChunks.froxel.bones.size(),
+			   (uint32_t)customChunks.froxel.binds.size(), (uint32_t)customChunks.froxel.clips.size(),
+			   (uint32_t)customChunks.froxel.scripts.size());
 	loadPaletteFromScene(scene, palette);
 	const bool loaded = TrenchblocksFormat::isTrenchblocksScene(scene)
-		? TrenchblocksFormat::loadScene(scene, sceneGraph) : loadScene(scene, sceneGraph, palette, ctx);
+		? TrenchblocksFormat::loadScene(scene, sceneGraph)
+		: loadScene(scene, sceneGraph, palette, ctx, customChunks.froxel);
 	if (!loaded) {
 		ogt_vox_destroy_scene(scene);
 		return false;
@@ -340,7 +361,7 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 }
 
 bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
-						  const palette::Palette &palette, const LoadContext &ctx) {
+						  const palette::Palette &palette, const LoadContext &ctx, const FroxelVoxData &froxel) {
 	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
 	core::DynamicArray<MVModelToNode> models;
 	// Shared model volumes are only needed when transforms stay on nodes (references).
@@ -352,6 +373,9 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 		models.resize(scene->num_models);
 	}
 	core::Set<uint32_t> addedInstances;
+	core::DynamicArray<int> instanceNodeIds;
+	instanceNodeIds.resize(scene->num_instances);
+	instanceNodeIds.fill(InvalidNodeId);
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
 		ctx.report("group", (int)i, (int)scene->num_groups);
 		const ogt_vox_group &group = scene->groups[i];
@@ -359,7 +383,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			continue;
 		}
 		Log::debug("Add root group %u/%u", i, scene->num_groups);
-		if (!loadGroup(scene, i, sceneGraph, InvalidNodeId, models, addedInstances, palette)) {
+		if (!loadGroup(scene, i, sceneGraph, InvalidNodeId, models, addedInstances, palette, instanceNodeIds)) {
 			return false;
 		}
 	}
@@ -370,7 +394,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 			continue;
 		}
 		Log::debug("Instance %u is not part of a group - attaching under root", n);
-		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette)) {
+		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette, instanceNodeIds)) {
 			return false;
 		}
 	}
@@ -390,6 +414,7 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 
 	loadCameras(scene, sceneGraph);
 	loadSun(scene, sceneGraph);
+	loadFroxelExtensions(froxel, scene, sceneGraph, instanceNodeIds);
 	return true;
 }
 

@@ -34,6 +34,10 @@ static constexpr const char *PropSunAzimuth = "sun_azimuth";
 static constexpr const char *PropSunColor = "sun_color";
 static constexpr const char *PropSunDisk = "sun_disk";
 static constexpr const char *PropSunShadows = "sun_shadows";
+static constexpr const char *PropFroxelBone = "froxel_bone";
+static constexpr const char *PropFroxelScript = "froxel_script";
+static constexpr const char *PropFroxelScriptAuto = "froxel_script_auto";
+static constexpr const char *PropFroxelScriptLocalMin = "froxel_script_local_min";
 
 using SceneGraphNodeProperties = core::DynamicStringMap<core::String>;
 

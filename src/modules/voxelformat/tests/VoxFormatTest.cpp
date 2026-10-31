@@ -8,7 +8,11 @@
 #include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
+#include "io/BufferedReadWriteStream.h"
+#include "io/MemoryArchive.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "util/VarUtil.h"
 #include "voxel/MaterialColor.h"
@@ -16,6 +20,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include "vox_glasses.h"
 #include <glm/gtc/quaternion.hpp>
@@ -414,6 +419,228 @@ TEST_F(VoxFormatTest, testMatToOgtSnapsNonCardinalRotation) {
 	EXPECT_NE(ax, ay);
 	EXPECT_NE(ax, az);
 	EXPECT_NE(ay, az);
+}
+
+static FroxelVoxData makeFroxelFixture() {
+	FroxelVoxData data;
+	FroxelBone hip;
+	hip.name = "hip";
+	hip.pivot[0] = 1.0f;
+	hip.pivot[1] = 2.0f;
+	hip.pivot[2] = 3.0f;
+	data.bones.push_back(hip);
+
+	FroxelBone child;
+	child.name = "arm";
+	child.parent = "hip";
+	child.pivot[0] = 4.0f;
+	child.pivot[1] = 2.0f;
+	child.pivot[2] = 3.0f;
+	data.bones.push_back(child);
+
+	FroxelBind bind;
+	bind.trn = -1;
+	bind.index = 0;
+	bind.name = "body";
+	bind.bone = "hip";
+	data.binds.push_back(bind);
+
+	FroxelClip clip;
+	clip.name = "wave";
+	FroxelClipTrack track;
+	track.bone = "hip";
+	FroxelClipKey key;
+	key.time = 1.0f;
+	key.hasTranslation = true;
+	key.translation[0] = 2.0f;
+	track.keys.push_back(key);
+	clip.tracks.push_back(core::move(track));
+	data.clips.push_back(core::move(clip));
+
+	FroxelScript script;
+	script.name = "body";
+	script.source = "fn main() {}";
+	script.autoRegen = true;
+	script.hasLocalMin = true;
+	script.localMin[0] = 1;
+	script.localMin[1] = 2;
+	script.localMin[2] = 3;
+	FroxelScriptParam param;
+	param.name = "speed";
+	param.kind = FroxelParamFloat;
+	param.fvalue = 0.5f;
+	param.fmin = 0.0f;
+	param.fmax = 1.0f;
+	script.params.push_back(param);
+	data.scripts.push_back(core::move(script));
+	return data;
+}
+
+TEST_F(VoxFormatTest, testFroxelChunkRoundtrip) {
+	const FroxelVoxData src = makeFroxelFixture();
+	io::BufferedReadWriteStream mvrg;
+	io::BufferedReadWriteStream mvan;
+	io::BufferedReadWriteStream mvsc;
+	ASSERT_TRUE(encodeFroxelMVRG(src, mvrg));
+	ASSERT_TRUE(encodeFroxelMVAN(src, mvan));
+	ASSERT_TRUE(encodeFroxelMVSC(src, mvsc));
+
+	FroxelVoxData parsed;
+	ASSERT_TRUE(parseFroxelMVRG(mvrg.getBuffer(), (uint32_t)mvrg.size(), parsed));
+	ASSERT_TRUE(parseFroxelMVAN(mvan.getBuffer(), (uint32_t)mvan.size(), parsed));
+	ASSERT_TRUE(parseFroxelMVSC(mvsc.getBuffer(), (uint32_t)mvsc.size(), parsed));
+
+	ASSERT_EQ(2u, parsed.bones.size());
+	EXPECT_EQ("hip", parsed.bones[0].name);
+	EXPECT_TRUE(parsed.bones[0].parent.empty());
+	EXPECT_FLOAT_EQ(1.0f, parsed.bones[0].pivot[0]);
+	EXPECT_EQ("arm", parsed.bones[1].name);
+	EXPECT_EQ("hip", parsed.bones[1].parent);
+	ASSERT_EQ(1u, parsed.binds.size());
+	EXPECT_EQ("body", parsed.binds[0].name);
+	EXPECT_EQ("hip", parsed.binds[0].bone);
+	ASSERT_EQ(1u, parsed.clips.size());
+	EXPECT_EQ("wave", parsed.clips[0].name);
+	ASSERT_EQ(1u, parsed.clips[0].tracks.size());
+	ASSERT_EQ(1u, parsed.clips[0].tracks[0].keys.size());
+	EXPECT_TRUE(parsed.clips[0].tracks[0].keys[0].hasTranslation);
+	EXPECT_FALSE(parsed.clips[0].tracks[0].keys[0].hasRotation);
+	EXPECT_FLOAT_EQ(1.0f, parsed.clips[0].tracks[0].keys[0].time);
+	ASSERT_EQ(1u, parsed.scripts.size());
+	EXPECT_EQ("fn main() {}", parsed.scripts[0].source);
+	EXPECT_TRUE(parsed.scripts[0].autoRegen);
+	ASSERT_EQ(1u, parsed.scripts[0].params.size());
+	EXPECT_EQ(FroxelParamFloat, parsed.scripts[0].params[0].kind);
+	EXPECT_FLOAT_EQ(0.5f, parsed.scripts[0].params[0].fvalue);
+}
+
+TEST_F(VoxFormatTest, testFroxelCustomChunksLoad) {
+	VoxFormat format;
+	scenegraph::SceneGraph saveGraph;
+	{
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setName("body");
+		node.createVolume(voxel::Region(0, 0, 0, 0, 0, 0));
+		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		ASSERT_NE(InvalidNodeId, saveGraph.emplace(core::move(node)));
+	}
+
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(format.save(saveGraph, "base.vox", archive, testSaveCtx));
+
+	core::ScopedPtr<io::SeekableReadStream> in(archive->readStream("base.vox"));
+	ASSERT_TRUE(in);
+	core::Buffer<uint8_t> bytes;
+	bytes.resize((size_t)in->size());
+	ASSERT_EQ((int)bytes.size(), in->read(bytes.data(), bytes.size()));
+
+	const FroxelVoxData fixture = makeFroxelFixture();
+	struct ExtraChunks {
+		io::BufferedReadWriteStream mvrg;
+		io::BufferedReadWriteStream mvan;
+		io::BufferedReadWriteStream mvsc;
+		ogt_vox_custom_chunk_write chunks[3];
+	} extra;
+	ASSERT_TRUE(encodeFroxelMVRG(fixture, extra.mvrg));
+	ASSERT_TRUE(encodeFroxelMVAN(fixture, extra.mvan));
+	ASSERT_TRUE(encodeFroxelMVSC(fixture, extra.mvsc));
+	extra.chunks[0].id = FroxelChunkMVRG;
+	extra.chunks[0].content_size = (uint32_t)extra.mvrg.size();
+	extra.chunks[0].content = extra.mvrg.getBuffer();
+	extra.chunks[1].id = FroxelChunkMVAN;
+	extra.chunks[1].content_size = (uint32_t)extra.mvan.size();
+	extra.chunks[1].content = extra.mvan.getBuffer();
+	extra.chunks[2].id = FroxelChunkMVSC;
+	extra.chunks[2].content_size = (uint32_t)extra.mvsc.size();
+	extra.chunks[2].content = extra.mvsc.getBuffer();
+
+	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(bytes.data(), (uint32_t)bytes.size(),
+															  k_read_scene_flags_groups | k_read_scene_flags_keyframes);
+	ASSERT_NE(nullptr, scene);
+	ogt_vox_set_write_custom_chunks_func(
+		[](const ogt_vox_custom_chunk_write **outChunks, uint32_t *outCount, void *userData) {
+			ExtraChunks *chunks = (ExtraChunks *)userData;
+			*outChunks = chunks->chunks;
+			*outCount = 3;
+		},
+		&extra);
+	uint32_t outSize = 0;
+	uint8_t *outBuffer = ogt_vox_write_scene(scene, &outSize);
+	ogt_vox_set_write_custom_chunks_func(nullptr, nullptr);
+	ogt_vox_destroy_scene(scene);
+	ASSERT_NE(nullptr, outBuffer);
+	ASSERT_GT(outSize, 0u);
+	ASSERT_TRUE(archive->add("froxel.vox", outBuffer, outSize));
+	ogt_vox_free(outBuffer);
+
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(format.load("froxel.vox", archive, loaded, testLoadCtx));
+	const scenegraph::SceneGraphNode *rig = loaded.findNodeByName("FroxelRig");
+	ASSERT_NE(nullptr, rig);
+	EXPECT_EQ(scenegraph::SceneGraphNodeType::Group, rig->type());
+	const scenegraph::SceneGraphNode *hip = loaded.findNodeByName("hip");
+	ASSERT_NE(nullptr, hip);
+	EXPECT_EQ(scenegraph::SceneGraphNodeType::Point, hip->type());
+	const scenegraph::SceneGraphNode *arm = loaded.findNodeByName("arm");
+	ASSERT_NE(nullptr, arm);
+	EXPECT_EQ(hip->id(), loaded.parentId(*arm));
+	const scenegraph::SceneGraphNode *body = loaded.findNodeByName("body");
+	ASSERT_NE(nullptr, body);
+	EXPECT_EQ("hip", body->property(scenegraph::PropFroxelBone));
+	EXPECT_EQ("fn main() {}", body->property(scenegraph::PropFroxelScript));
+	EXPECT_EQ("true", body->property(scenegraph::PropFroxelScriptAuto));
+	EXPECT_EQ("1,2,3", body->property(scenegraph::PropFroxelScriptLocalMin));
+	EXPECT_TRUE(loaded.hasAnimation("wave"));
+}
+
+TEST_F(VoxFormatTest, testTeardownTDCZRoundtrip) {
+	const uint32_t sizeX = 2;
+	const uint32_t sizeY = 2;
+	const uint32_t sizeZ = 2;
+	const uint8_t voxels[8] = {1, 0, 0, 0, 0, 0, 0, 2};
+	io::BufferedReadWriteStream encoded;
+	ASSERT_TRUE(encodeTeardownTDCZ(sizeX, sizeY, sizeZ, voxels, encoded));
+	core::Buffer<uint8_t> decoded;
+	uint32_t outX = 0;
+	uint32_t outY = 0;
+	uint32_t outZ = 0;
+	ASSERT_TRUE(parseTeardownTDCZ(encoded.getBuffer(), (uint32_t)encoded.size(), decoded, outX, outY, outZ));
+	EXPECT_EQ(sizeX, outX);
+	EXPECT_EQ(sizeY, outY);
+	EXPECT_EQ(sizeZ, outZ);
+	ASSERT_EQ(8u, decoded.size());
+	EXPECT_EQ(1, decoded[0]);
+	EXPECT_EQ(2, decoded[7]);
+}
+
+TEST_F(VoxFormatTest, testTeardownTDCZCustomChunk) {
+	const uint32_t sizeX = 2;
+	const uint32_t sizeY = 1;
+	const uint32_t sizeZ = 1;
+	uint8_t voxels[2] = {1, 0};
+	io::BufferedReadWriteStream tdcz;
+	ASSERT_TRUE(encodeTeardownTDCZ(sizeX, sizeY, sizeZ, voxels, tdcz));
+
+	io::BufferedReadWriteStream vox;
+	ASSERT_TRUE(vox.writeUInt32(OGT_VOX_MAKE_CHUNK_ID('V', 'O', 'X', ' ')));
+	ASSERT_TRUE(vox.writeUInt32(150));
+	ASSERT_TRUE(vox.writeUInt32(OGT_VOX_MAKE_CHUNK_ID('M', 'A', 'I', 'N')));
+	ASSERT_TRUE(vox.writeUInt32(0));
+	ASSERT_TRUE(vox.writeUInt32(12 + (uint32_t)tdcz.size()));
+	ASSERT_TRUE(vox.writeUInt32(TeardownChunkTDCZ));
+	ASSERT_TRUE(vox.writeUInt32((uint32_t)tdcz.size()));
+	ASSERT_TRUE(vox.writeUInt32(0));
+	ASSERT_EQ((int)tdcz.size(), vox.write(tdcz.getBuffer(), tdcz.size()));
+
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("tdcz.vox", vox.getBuffer(), (size_t)vox.size()));
+	VoxFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.load("tdcz.vox", archive, graph, testLoadCtx));
+	ASSERT_EQ(1u, graph.size(scenegraph::SceneGraphNodeType::AllModels));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_EQ(1, voxelutil::countVoxels(*node->volume()));
 }
 
 } // namespace voxelformat

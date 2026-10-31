@@ -35,6 +35,23 @@
     4. destroy the scene:
        ogt_vox_destroy_scene(scene);
 
+    HOW TO HANDLE CUSTOM / UNKNOWN CHUNKS
+
+    MagicaVoxel skips unrecognized chunks. ogt_vox can hand those chunks to you:
+
+       void on_custom_chunk(const ogt_vox_custom_chunk* chunk, void* user_data, ogt_vox_custom_model* out_model);
+       ogt_vox_set_read_custom_chunk_func(on_custom_chunk, user_data);
+       const ogt_vox_scene* scene = ogt_vox_read_scene(buffer, buffer_size);
+       ogt_vox_set_read_custom_chunk_func(NULL, NULL); // clear if later reads should ignore them
+
+    chunk->content is valid only during the callback. Copy anything you keep.
+    Use OGT_VOX_MAKE_CHUNK_ID('F','O','O',' ') to match ids.
+    If the chunk is a voxel model (for example Teardown TDCZ), fill out_model
+    with dense size_x*size_y*size_z indices. ogt copies that into the scene.
+
+    Writing is symmetric: ogt_vox_set_write_custom_chunks_func() appends extra
+    chunks as MAIN children before the MAIN child size is patched.
+
     HOW TO MERGE MULTIPLE VOX SCENES (See merge_vox.cpp)
 
     1. construct multiple scenes from files you want to merge.
@@ -404,6 +421,7 @@
         uint32_t               layer_index;            // index of the layer used by this instance. used to lookup the layer in the scene's layers[] array.
         uint32_t               group_index;            // this will be the index of the group in the scene's groups[] array. If group is zero it will be the scene root group and the instance transform will be a world-space transform, otherwise the transform is relative to the group.
         bool                   hidden;                 // whether this instance is individually hidden or not. Note: the instance can also be hidden when its layer is hidden, or if it belongs to a group that is hidden.
+        int32_t                node_id;                // nTRN node id from the file. -1 if the file has no scene graph.
         ogt_vox_anim_transform transform_anim;         // animation for the transform
         ogt_vox_anim_model     model_anim;             // animation for the model_index
     } ogt_vox_instance;
@@ -449,6 +467,47 @@
         uint32_t                anim_range_start; // the start frame of the animation range for this scene (META chunk since 0.99.7.2)
         uint32_t                anim_range_end;   // the end frame of the animation range for this scene (META chunk since 0.99.7.2)
     } ogt_vox_scene;
+
+    // fourcc helper for custom chunk ids (little-endian, same packing as the file)
+#ifndef OGT_VOX_MAKE_CHUNK_ID
+    #define OGT_VOX_MAKE_CHUNK_ID(c0,c1,c2,c3) ((uint32_t)(c0) | ((uint32_t)(c1)<<8) | ((uint32_t)(c2)<<16) | ((uint32_t)(c3)<<24))
+#endif
+
+    // An unrecognized chunk encountered while reading. content is valid only during the callback.
+    typedef struct ogt_vox_custom_chunk
+    {
+        uint32_t       id;
+        uint32_t       content_size;
+        uint32_t       children_size;
+        const uint8_t* content;
+    } ogt_vox_custom_chunk;
+
+    // Optional model produced by a custom-chunk callback (Teardown TDCZ, custom XYZI, ...).
+    // voxel_data is dense size_x*size_y*size_z, 0 = empty. Valid only during the callback; ogt copies it.
+    typedef struct ogt_vox_custom_model
+    {
+        uint32_t       size_x;
+        uint32_t       size_y;
+        uint32_t       size_z;
+        const uint8_t* voxel_data;
+    } ogt_vox_custom_model;
+
+    typedef void (*ogt_vox_read_custom_chunk_func)(const ogt_vox_custom_chunk* chunk, void* user_data, ogt_vox_custom_model* out_model);
+
+    // Chunks to append as MAIN children on write. Pointers must stay valid until ogt_vox_write_scene returns.
+    typedef struct ogt_vox_custom_chunk_write
+    {
+        uint32_t       id;
+        uint32_t       content_size;
+        const uint8_t* content;
+    } ogt_vox_custom_chunk_write;
+
+    typedef void (*ogt_vox_write_custom_chunks_func)(const ogt_vox_custom_chunk_write** out_chunks, uint32_t* out_count, void* user_data);
+
+    // Optional hooks for chunks that MagicaVoxel does not define (Teardown, Froxel, ...).
+    // Same process-wide pattern as the progress callback. Clear after use if other reads follow.
+    void ogt_vox_set_read_custom_chunk_func(ogt_vox_read_custom_chunk_func func, void* user_data);
+    void ogt_vox_set_write_custom_chunks_func(ogt_vox_write_custom_chunks_func func, void* user_data);
 
     // allocate memory function interface. pass in size, and get a pointer to memory with at least that size available.
     typedef void* (*ogt_vox_alloc_func)(size_t size);
@@ -534,9 +593,6 @@
     #ifndef M_PI
     #define M_PI 3.14159265358979323846
     #endif
-    #include "io/ZipReadStream.h"
-    #include "io/MemoryReadStream.h"
-
     // MAKE_VOX_CHUNK_ID: used to construct a literal to describe a chunk in a .vox file.
     #define MAKE_VOX_CHUNK_ID(c0,c1,c2,c3)     ( (c0<<0) | (c1<<8) | (c2<<16) | (c3<<24) )
 
@@ -544,7 +600,6 @@
     static const uint32_t CHUNK_ID_MAIN = MAKE_VOX_CHUNK_ID('M','A','I','N');
     static const uint32_t CHUNK_ID_SIZE = MAKE_VOX_CHUNK_ID('S','I','Z','E');
     static const uint32_t CHUNK_ID_XYZI = MAKE_VOX_CHUNK_ID('X','Y','Z','I');
-    static const uint32_t CHUNK_ID_TDCZ = MAKE_VOX_CHUNK_ID('T','D','C','Z');
     static const uint32_t CHUNK_ID_RGBA = MAKE_VOX_CHUNK_ID('R','G','B','A');
     static const uint32_t CHUNK_ID_nTRN = MAKE_VOX_CHUNK_ID('n','T','R','N');
     static const uint32_t CHUNK_ID_nGRP = MAKE_VOX_CHUNK_ID('n','G','R','P');
@@ -968,11 +1023,28 @@
     static ogt_vox_progress_callback_func g_progress_callback_func = NULL;
     static void* g_progress_callback_user_data = NULL;
 
+    static ogt_vox_read_custom_chunk_func g_read_custom_chunk_func = NULL;
+    static void* g_read_custom_chunk_user_data = NULL;
+    static ogt_vox_write_custom_chunks_func g_write_custom_chunks_func = NULL;
+    static void* g_write_custom_chunks_user_data = NULL;
+
     // set the progress callback function.
     void  ogt_vox_set_progress_callback_func(ogt_vox_progress_callback_func progress_callback_func, void* user_data)
     {
         g_progress_callback_func = progress_callback_func;
         g_progress_callback_user_data = user_data;
+    }
+
+    void ogt_vox_set_read_custom_chunk_func(ogt_vox_read_custom_chunk_func func, void* user_data)
+    {
+        g_read_custom_chunk_func = func;
+        g_read_custom_chunk_user_data = user_data;
+    }
+
+    void ogt_vox_set_write_custom_chunks_func(ogt_vox_write_custom_chunks_func func, void* user_data)
+    {
+        g_write_custom_chunks_func = func;
+        g_write_custom_chunks_user_data = user_data;
     }
 
     // matrix utilities
@@ -1277,6 +1349,7 @@
                     new_instance.layer_index = last_transform->u.transform.layer_id;
                     new_instance.group_index = group_index;
                     new_instance.hidden      = last_transform->u.transform.hidden;
+                    new_instance.node_id     = (int32_t)(last_transform - &nodes[0]);
                     // if we got a transform name, allocate space in misc_data for it and keep track of the index
                     // within string data. This will be patched to a real pointer at the very end.
                     new_instance.name = 0;
@@ -1611,41 +1684,6 @@
                     else {
                         model_ptrs.push_back(NULL);
                     }
-                    break;
-                }
-                case CHUNK_ID_TDCZ:
-                {
-                    _vox_file_read_uint32(fp, &size_x);
-                    _vox_file_read_uint32(fp, &size_y);
-                    _vox_file_read_uint32(fp, &size_z);
-                    ogt_assert(size_x && size_y && size_z, "TDCZ chunk has zero size");
-
-                    uint32_t voxel_count = size_x * size_y * size_z;
-                    ogt_vox_model * model = (ogt_vox_model*)_vox_calloc(sizeof(ogt_vox_model) + voxel_count);        // 1 byte for each voxel
-                    if (!model)
-                        return NULL;
-                    uint8_t * voxel_data = (uint8_t*)&model[1];
-
-                    // insert the model into the model array
-                    model_ptrs.push_back(model);
-
-                    // now setup the model
-                    model->size_x = size_x;
-                    model->size_y = size_y;
-                    model->size_z = size_z;
-                    model->voxel_data = voxel_data;
-
-                    const uint8_t * compressed_voxel_data = (const uint8_t*)_vox_file_data_pointer(fp);
-                    const uint32_t bytes_to_read = _vox_min(_vox_file_bytes_remaining(fp), chunk_size - 3 * sizeof(uint32_t));
-
-                    io::MemoryReadStream data_stream(compressed_voxel_data, bytes_to_read);
-                    io::ZipReadStream stream(data_stream, (int)data_stream.size());
-                    stream.read(voxel_data, voxel_count * sizeof(uint8_t));
-
-                    _vox_file_seek_forwards(fp, bytes_to_read);
-
-                    // compute the hash of the voxels in this model-- used to accelerate duplicate models checking.
-                    model->voxel_hash = _vox_hash(voxel_data, size_x * size_y * size_z);
                     break;
                 }
                 case CHUNK_ID_RGBA:
@@ -2115,6 +2153,33 @@
                 }
                 default:
                 {
+                    ogt_vox_custom_model custom_model;
+                    memset(&custom_model, 0, sizeof(custom_model));
+                    if (g_read_custom_chunk_func) {
+                        ogt_vox_custom_chunk custom_chunk;
+                        custom_chunk.id = chunk_id;
+                        custom_chunk.content_size = chunk_size;
+                        custom_chunk.children_size = chunk_child_size;
+                        custom_chunk.content = chunk_size ? (const uint8_t*)_vox_file_data_pointer(fp) : NULL;
+                        g_read_custom_chunk_func(&custom_chunk, g_read_custom_chunk_user_data, &custom_model);
+                    }
+                    if (custom_model.voxel_data && custom_model.size_x && custom_model.size_y && custom_model.size_z) {
+                        const uint64_t voxel_count64 = (uint64_t)custom_model.size_x * (uint64_t)custom_model.size_y * (uint64_t)custom_model.size_z;
+                        if (voxel_count64 <= (uint64_t)UINT32_MAX) {
+                            const uint32_t voxel_count = (uint32_t)voxel_count64;
+                            ogt_vox_model * model = (ogt_vox_model*)_vox_calloc(sizeof(ogt_vox_model) + voxel_count);
+                            if (!model)
+                                return NULL;
+                            uint8_t * voxel_data = (uint8_t*)&model[1];
+                            model_ptrs.push_back(model);
+                            model->size_x = custom_model.size_x;
+                            model->size_y = custom_model.size_y;
+                            model->size_z = custom_model.size_z;
+                            model->voxel_data = voxel_data;
+                            memcpy(voxel_data, custom_model.voxel_data, voxel_count);
+                            model->voxel_hash = _vox_hash(voxel_data, voxel_count);
+                        }
+                    }
                     _vox_file_seek_forwards(fp, chunk_size);
                     break;
                 }
@@ -2226,6 +2291,7 @@
             new_instance.layer_index                = 0;
             new_instance.name                       = 0;
             new_instance.hidden                     = false;
+            new_instance.node_id                    = -1;
             clear_anim_transform(&new_instance.transform_anim);
             clear_anim_model(&new_instance.model_anim);
             instances.push_back(new_instance);
@@ -3131,6 +3197,20 @@
             // compute and patch up the chunk size in the chunk header
             uint32_t chunk_size = _vox_file_get_offset(fp) - offset_of_chunk_header - CHUNK_HEADER_LEN;
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
+        }
+
+        if (g_write_custom_chunks_func) {
+            const ogt_vox_custom_chunk_write* extra_chunks = NULL;
+            uint32_t extra_count = 0;
+            g_write_custom_chunks_func(&extra_chunks, &extra_count, g_write_custom_chunks_user_data);
+            for (uint32_t i = 0; i < extra_count; i++) {
+                const ogt_vox_custom_chunk_write* extra = &extra_chunks[i];
+                _vox_file_write_uint32(fp, extra->id);
+                _vox_file_write_uint32(fp, extra->content_size);
+                _vox_file_write_uint32(fp, 0);
+                if (extra->content_size && extra->content)
+                    _vox_file_write(fp, extra->content, extra->content_size);
+            }
         }
 
         // check that the buffer is not larger than the maximum file size, return nothing if would overflow

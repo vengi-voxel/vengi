@@ -12,6 +12,7 @@ struct ogt_vox_scene;
 
 namespace voxelformat {
 
+struct FroxelVoxData;
 struct MVSceneContext;
 struct MVModelToNode;
 
@@ -26,6 +27,10 @@ struct MVModelToNode;
  * Disable the cvar to keep shared ModelReference nodes and node TRS instead.
  *
  * z is pointing upwards in MagicaVoxel; volumes are converted to vengi Y-up on load.
+ *
+ * Unknown MagicaVoxel chunks are delivered through ogt custom-chunk callbacks.
+ * Froxel private chunks (MVRG bones, MVAN clips, MVSC scripts) and Teardown
+ * TDCZ models are parsed in vengi.
  *
  * @li https://github.com/ephtracy/voxel-model.git
  * @li https://github.com/ephtracy/voxel-model/blob/master/MagicaVoxel-file-format-vox-extension.txt
@@ -46,12 +51,13 @@ private:
 					  uint32_t parentGroupIdx, uint32_t layerIdx, uint32_t modelIdx);
 	uint32_t saveModel(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, MVSceneContext &ctx);
 	bool loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-				   const LoadContext &ctx);
+				   const LoadContext &ctx, const FroxelVoxData &froxel);
 	bool loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
-					  int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette);
+					  int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette,
+					  core::DynamicArray<int> &instanceNodeIds);
 	bool loadGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, scenegraph::SceneGraph &sceneGraph,
 				   int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
-				   const palette::Palette &palette);
+				   const palette::Palette &palette, core::DynamicArray<int> &instanceNodeIds);
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
