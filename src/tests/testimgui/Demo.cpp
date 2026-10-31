@@ -4516,6 +4516,7 @@ static void DemoWindowWidgetsTreeNodes()
             ImGui::CheckboxFlags("ImGuiTreeNodeFlags_Framed", &base_flags, ImGuiTreeNodeFlags_Framed); ImGui::SameLine(); HelpMarker("Draw frame with background (e.g. for CollapsingHeader)");
             ImGui::CheckboxFlags("ImGuiTreeNodeFlags_FramePadding", &base_flags, ImGuiTreeNodeFlags_FramePadding);
             ImGui::CheckboxFlags("ImGuiTreeNodeFlags_NavLeftJumpsToParent", &base_flags, ImGuiTreeNodeFlags_NavLeftJumpsToParent);
+            ImGui::CheckboxFlags("ImGuiTreeNodeFlags_Bullet", &base_flags, ImGuiTreeNodeFlags_Bullet);
 
             HelpMarker("Default option for DrawLinesXXX is stored in style.TreeLinesFlags");
             ImGui::CheckboxFlags("ImGuiTreeNodeFlags_DrawLinesNone", &base_flags, ImGuiTreeNodeFlags_DrawLinesNone);
@@ -6513,7 +6514,9 @@ static void DemoWindowTables()
         {
             static char text_bufs[3 * 5][16]; // Mini text storage for 3x5 cells
             static bool init = true;
-            if (!show_widget_frame_bg)
+            if (show_widget_frame_bg)
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+            else
                 ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
             for (int cell = 0; cell < 3 * 5; cell++)
             {
@@ -6525,7 +6528,9 @@ static void DemoWindowTables()
                 ImGui::InputText("##cell", text_bufs[cell], IM_COUNTOF(text_bufs[cell]));
                 ImGui::PopID();
             }
-            if (!show_widget_frame_bg)
+            if (show_widget_frame_bg)
+                ImGui::PopStyleVar();
+            else
                 ImGui::PopStyleColor();
             init = false;
             ImGui::EndTable();
@@ -7039,6 +7044,7 @@ static void DemoWindowTables()
     if (ImGui::TreeNode("Outer size"))
     {
         IMGUI_DEMO_MARKER("Tables/Outer size");
+
         // Showcasing use of ImGuiTableFlags_NoHostExtendX and ImGuiTableFlags_NoHostExtendY
         // Important to that note how the two flags have slightly different behaviors!
         ImGui::Text("Using NoHostExtendX and NoHostExtendY:");
@@ -7134,7 +7140,7 @@ static void DemoWindowTables()
                 // We use a transparent color so we can see the one behind in case our target is RowBg1 and RowBg0 was already targeted by the ImGuiTableFlags_RowBg flag.
                 if (row_bg_type != 0)
                 {
-                    ImU32 row_bg_color = ImGui::GetColorU32(row_bg_type == 1 ? ImVec4(0.7f, 0.3f, 0.3f, 0.65f) : ImVec4(0.2f + row * 0.1f, 0.2f, 0.2f, 0.65f)); // Flat or Gradient?
+                    ImU32 row_bg_color = ImGui::GetColorU32(row_bg_type == 1 ? ImVec4(0.7f, 0.3f, 0.3f, 0.40f) : ImVec4(0.2f + row * 0.1f, 0.2f, 0.2f, 0.40f)); // Flat or Gradient?
                     ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0 + row_bg_target, row_bg_color);
                 }
 
@@ -8916,6 +8922,10 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             SliderFloat("ImageRounding", &style.ImageRounding, 0.0f, 12.0f, "%.0f");
             SliderFloat("ImageBorderSize", &style.ImageBorderSize, 0.0f, max_border_size, "%.0f");
 
+            SeparatorText("Symbols");
+            DragFloat2("SymbolArrowSizeFactor", &style.SymbolArrowSizeFactor.x, 0.01f, 0.0f, 1.0f);
+            DragFloat("SymbolArrowThicknessFactor", &style.SymbolArrowThicknessFactor, 0.01f, 0.0f, 0.5f);
+
             SeparatorText("Docking");
             //SetCursorPosX(GetCursorPosX() + CalcItemWidth() - GetFrameHeight());
             Checkbox("DockingNodeHasCloseButton", &style.DockingNodeHasCloseButton);
@@ -9325,8 +9335,8 @@ struct ExampleAppConsole
     }
 
     // Portable helpers
-    static int   Stricmp(const char* s1, const char* s2)         { int d; while ((d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; } return d; }
-    static int   Strnicmp(const char* s1, const char* s2, int n) { int d = 0; while (n > 0 && (d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; n--; } return d; }
+    static int   Stricmp(const char* s1, const char* s2)         { int d; while ((d = toupper(*s1) - toupper(*s2)) == 0 && *s1) { s1++; s2++; } return d; }
+    static int   Strnicmp(const char* s1, const char* s2, int n) { int d = 0; while (n > 0 && (d = toupper(*s1) - toupper(*s2)) == 0 && *s1) { s1++; s2++; n--; } return d; }
     static char* Strdup(const char* s)                           { IM_ASSERT(s); size_t len = strlen(s) + 1; void* buf = ImGui::MemAlloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)s, len); }
     static void  Strtrimblanks(char* s)                          { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
 

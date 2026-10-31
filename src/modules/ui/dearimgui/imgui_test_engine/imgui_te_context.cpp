@@ -1894,7 +1894,7 @@ void    ImGuiTestContext::ItemMakeVisible(ImGuiTestRef ref, ImGuiTestOpFlags fla
 #else
     const ImVec2 hover_padding = ImVec2(g.WindowsBorderHoverPadding, g.WindowsBorderHoverPadding);
 #endif
-    if (item.NavLayer == ImGuiNavLayer_Main)
+    if (item.ID != 0 && item.NavLayer == ImGuiNavLayer_Main)
     {
         float min_visible_size = 10.0f;
         float min_window_size_x = window->DecoInnerSizeX1 + window->DecoOuterSizeX1 + window->DecoOuterSizeX2 + min_visible_size + hover_padding.x * 2.0f;
@@ -1921,7 +1921,7 @@ void    ImGuiTestContext::ItemMakeVisible(ImGuiTestRef ref, ImGuiTestOpFlags fla
 
     // In theory all we need is one visible point, but it is generally nicer if we scroll toward visibility.
     // Bias toward reducing amount of horizontal scroll.
-    if ((flags & ImGuiTestOpFlags_NoScroll) == 0)
+    if (item.ID != 0 && (flags & ImGuiTestOpFlags_NoScroll) == 0)
     {
         float visibility_ratio_x = (item_r_clipped.GetWidth() + 1.0f) / (item.RectFull.GetWidth() + 1.0f);
         float visibility_ratio_y = (item_r_clipped.GetHeight() + 1.0f) / (item.RectFull.GetHeight() + 1.0f);
