@@ -893,18 +893,20 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	{
 		core::String entries;
 		int bindingCount = 0;
-		// UBOs: present in vertex (and possibly fragment) stage
+		const bool computeOnly = !computeBuffer.empty() && vertexBuffer.empty();
+		const core::String uboStages = computeOnly ? "8" : "1 | 2";
 		for (const auto &ubuf : shaderStruct.uniformBlocks) {
 			if (ubuf.layout.binding >= 0) {
 				entries += "\t\t{\"";
 				entries += ubuf.name;
 				entries += "\", ";
 				entries += core::string::toString(ubuf.layout.binding);
-				entries += ", video::ShaderResourceBinding::UniformBuffer, 1 | 2},\n"; // vertex + fragment
+				entries += ", video::ShaderResourceBinding::UniformBuffer, ";
+				entries += uboStages;
+				entries += "},\n";
 				++bindingCount;
 			}
 		}
-		// Samplers/images: present in fragment stage
 		for (const auto &v : shaderStruct.uniforms) {
 			if (!v.isSampler() && !v.isImage()) {
 				continue;
@@ -915,7 +917,13 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 				entries += v.name;
 				entries += "\", ";
 				entries += core::string::toString(layoutIter->second.binding);
-				entries += ", video::ShaderResourceBinding::CombinedImageSampler, 2},\n"; // fragment
+				if (v.isImage()) {
+					entries += ", video::ShaderResourceBinding::StorageImage, ";
+					entries += computeOnly ? "8" : "2 | 8";
+				} else {
+					entries += ", video::ShaderResourceBinding::CombinedImageSampler, 2";
+				}
+				entries += "},\n";
 				++bindingCount;
 			}
 		}
