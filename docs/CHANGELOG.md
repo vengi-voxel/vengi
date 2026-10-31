@@ -42,6 +42,8 @@ VoxEdit:
    - Improved palette panel
    - Improved normal palette panel
    - Improved lsystem panel
+   - Added a 2D slice editor panel
+   - Rather huge brush refactoring with a lot of fixes
 
 Thumbnailer:
 
