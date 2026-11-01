@@ -30,6 +30,7 @@
 #include "voxelui/ScriptBrowserPanel.h"
 #include "voxedit-ui/VoxBoxBrowserPanel.h"
 #include "voxedit-ui/PalettePanel.h"
+#include "voxedit-ui/PixelArtPanel.h"
 #include "voxedit-ui/QuitDisallowReason.h"
 #include "voxedit-ui/SceneDebugPanel.h"
 #include "voxedit-ui/SceneGraphPanel.h"
@@ -113,6 +114,7 @@ private:
 	SceneDebugPanel _sceneDebugPanel;
 	SceneSettingsPanel _sceneSettingsPanel;
 	HelpPanel _helpPanel;
+	PixelArtPanel _pixelArtPanel;
 
 	bool isSceneMode() const;
 

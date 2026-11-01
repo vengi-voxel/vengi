@@ -42,6 +42,7 @@ constexpr const char *VoxEditShowScene = "ve_showscene";
 constexpr const char *VoxEditShowTools = "ve_showtools";
 constexpr const char *VoxEditShowSceneSettings = "ve_showscenesettings";
 constexpr const char *VoxEditShowHelp = "ve_showhelp";
+constexpr const char *VoxEditShowPixelArt = "ve_showpixelart";
 constexpr const char *VoxEditShowNodeProperties = "ve_shownodeproperties";
 constexpr const char *VoxEditShowNodeInspector = "ve_shownodeinspector";
 constexpr const char *VoxEditShowBrushes = "ve_showbrushes";

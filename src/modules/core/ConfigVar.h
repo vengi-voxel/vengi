@@ -98,7 +98,15 @@ constexpr const char *PalformatMaxSize = "palformat_maxsize";
 constexpr const char *PalformatGimpRGBA = "palformat_gimprgba";
 
 constexpr const char *VoxformatMeshMode = "voxformat_meshmode";
-constexpr const char *VoxConvertDepthFactor2D = "voxconvert_depthfactor2d";
+constexpr const char *ImageDepthFactor2D = "image_depthfactor2d";
+constexpr const char *ImageBackground = "image_background";
+constexpr const char *ImageWidth = "image_width";
+constexpr const char *ImageHeight = "image_height";
+constexpr const char *ImageUpScale = "image_upscale";
+constexpr const char *ImageIsometric = "image_isometric";
+constexpr const char *ImageIsoShading = "image_iso_shading";
+constexpr const char *ImageIsoMaterials = "image_iso_materials";
+constexpr const char *ImageIsoTransparency = "image_iso_transparency";
 constexpr const char *VoxelCreatePalette = "voxformat_createpalette";
 constexpr const char *VoxformatMergequads = "voxformat_mergequads";
 constexpr const char *VoxformatReusevertices = "voxformat_reusevertices";

@@ -35,6 +35,7 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 	_normalPalettePanel.registerUITests(engine, TITLE_NORMALPALETTE);
 	_optionsPanel.registerUITests(engine, TITLE_OPTIONS);
 	_palettePanel.registerUITests(engine, TITLE_PALETTE);
+	_pixelArtPanel.registerUITests(engine, TITLE_PIXELART);
 	_renderPanel.registerUITests(engine, TITLE_RENDER);
 	_voxBoxBrowserPanel.registerUITests(engine, TITLE_VOXBOX_BROWSER);
 	_sceneDebugPanel.registerUITests(engine, TITLE_SCENEDEBUGPANEL);

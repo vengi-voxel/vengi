@@ -4019,6 +4019,8 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditShowNodeInspector);
 	const core::VarDef voxEditShowBrushes(cfg::VoxEditShowBrushes, true, N_("Brushes"), N_("Show the brushes and brush settings panels"));
 	core::Var::registerVar(voxEditShowBrushes);
+	const core::VarDef voxEditShowPixelArt(cfg::VoxEditShowPixelArt, false, N_("Pixel art"), N_("Show the pixel art preview panel"));
+	core::Var::registerVar(voxEditShowPixelArt);
 	const core::VarDef voxEditTipOftheDay(cfg::VoxEditTipOftheDay, true, N_("Tip of the day"), N_("Show the tip of the day on startup"));
 	core::Var::registerVar(voxEditTipOftheDay);
 	const core::VarDef voxEditPopupTipOfTheDay(cfg::VoxEditPopupTipOfTheDay, false, N_("Tip of the day popup"), N_("Trigger opening of opup"), core::CV_NOPERSIST);

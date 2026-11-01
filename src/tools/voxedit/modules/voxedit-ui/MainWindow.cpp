@@ -123,7 +123,8 @@ MainWindow::MainWindow(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr, const
 	  _networkPanel(app, _sceneMgr), _gameModePanel(app, this, _sceneMgr), _statusBar(app, _sceneMgr),
 	  _scriptPanel(app, _sceneMgr, &_scriptBrowserPanel), _animationTimeline(app, _sceneMgr),
 	  _animationPanel(app, _sceneMgr), _cameraPanel(app, _sceneMgr), _slicePanel(app, _sceneMgr),
-	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this), _sceneSettingsPanel(app, _sceneMgr), _helpPanel(this, app) {
+	  _sceneDebugPanel(app, _sceneMgr, sceneRenderer, this), _sceneSettingsPanel(app, _sceneMgr), _helpPanel(this, app),
+	  _pixelArtPanel(app, _sceneMgr) {
 
 	_currentTip = (uint32_t)((uint64_t)app->nowSeconds()) % ((uint64_t)lengthof(tips));
 }
@@ -460,6 +461,7 @@ void MainWindow::configureRightTopWidgetDock(ImGuiID dockId) {
 	ImGui::DockBuilderDockWindow(TITLE_MEMENTO, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_CAMERA, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SLICES, dockId);
+	ImGui::DockBuilderDockWindow(TITLE_PIXELART, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_GAMEMODE, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_SCENE_SETTINGS, dockId);
 	ImGui::DockBuilderDockWindow(TITLE_NETWORK, dockId);
@@ -492,6 +494,7 @@ void MainWindow::rightWidget() {
 	}
 	_cameraPanel.update(TITLE_CAMERA, *camera, listener);
 	_slicePanel.update(TITLE_SLICES);
+	_pixelArtPanel.update(TITLE_PIXELART);
 	_sceneSettingsPanel.update(TITLE_SCENE_SETTINGS, listener);
 	_sceneDebugPanel.update(TITLE_SCENEDEBUGPANEL);
 

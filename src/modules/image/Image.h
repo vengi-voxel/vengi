@@ -379,6 +379,10 @@ ImagePtr loadImageThumbnail(const io::FilePtr &file, int maxSize);
 ImagePtr loadImageThumbnail(const core::String &name, io::SeekableReadStream &stream, int maxSize, int length = -1);
 
 bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream);
+/**
+ * @brief Write PNG or JPEG based on the filename extension
+ */
+bool writePNG(const image::ImagePtr &image, const core::String &filename);
 core::String print(const image::ImagePtr &image, bool limited = true);
 
 } // namespace image

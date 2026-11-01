@@ -10,7 +10,8 @@ set its rotation speed (`omega`) for a rotating model view.
 The viewport's **View** menu controls the grid, gizmos, bounding box, bones,
 outlines, checkerboard and bloom. The **Viewport HUD** option shows the current
 brush or add-node controls in the active viewport. Use the
-[2D Views panel](2DViews.md) for editable cross-sections.
+[2D Views panel](2DViews.md) for editable cross-sections. Use the
+[Pixel art panel](PixelArt.md) for an isometric or orthographic preview of the active model.
 
 ## Screenshots and video
 

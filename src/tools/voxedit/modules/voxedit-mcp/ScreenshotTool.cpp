@@ -129,9 +129,20 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 
 	image::ImagePtr image;
 	if (isometric) {
-		image = voxelutil::renderIsometricImage(volume, palette, face, background, width, height, true);
+		voxelutil::IsoRenderConfig config = voxelutil::IsoRenderConfig::fromCvars();
+		config.frontFace = face;
+		config.background = background;
+		config.imgW = width;
+		config.imgH = height;
+		image = voxelutil::renderIsometricImage(volume, palette, config);
 	} else {
-		image = voxelutil::renderToImage(volume, palette, face, background, width, height, true, depthFactor);
+		voxelutil::ImageRenderConfig config;
+		config.frontFace = face;
+		config.background = background;
+		config.imgW = width;
+		config.imgH = height;
+		config.depthFactor = depthFactor;
+		image = voxelutil::renderToImage(volume, palette, config);
 	}
 
 	if (!image || !image->isLoaded()) {

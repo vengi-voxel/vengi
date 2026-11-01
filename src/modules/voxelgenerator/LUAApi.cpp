@@ -1162,7 +1162,9 @@ static int luaVoxel_volumewrapper_renderToImage(lua_State *s) {
 	if (face == voxel::FaceNames::Max) {
 		face = voxel::FaceNames::Front;
 	}
-	image::ImagePtr img = voxelutil::renderToImage(volume->volume(), volume->node()->palette(), face);
+	voxelutil::ImageRenderConfig config;
+	config.frontFace = face;
+	image::ImagePtr img = voxelutil::renderToImage(volume->volume(), volume->node()->palette(), config);
 	if (!img || !img->isLoaded()) {
 		return clua_error(s, "Failed to render volume to image");
 	}
@@ -1179,7 +1181,9 @@ static int luaVoxel_volumewrapper_renderIsometricImage(lua_State *s) {
 	if (face == voxel::FaceNames::Max) {
 		face = voxel::FaceNames::Front;
 	}
-	image::ImagePtr img = voxelutil::renderIsometricImage(volume->volume(), volume->node()->palette(), face);
+	voxelutil::IsoRenderConfig config = voxelutil::IsoRenderConfig::fromCvars();
+	config.frontFace = face;
+	image::ImagePtr img = voxelutil::renderIsometricImage(volume->volume(), volume->node()->palette(), config);
 	if (!img || !img->isLoaded()) {
 		return clua_error(s, "Failed to render isometric image");
 	}

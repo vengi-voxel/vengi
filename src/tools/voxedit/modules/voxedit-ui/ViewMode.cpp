@@ -14,7 +14,8 @@ namespace voxedit {
 
 static const uint64_t ALL_FLAGS = ((uint64_t)-1) & ~(VIEWMODE_FLAG_PALFORMAT6BIT | VIEWMODE_FLAG_NOSPLIT);
 static const uint64_t DEFAULT_FLAGS =
-	ALL_FLAGS & ~(VIEWMODE_FLAG_NORMALPALETTE | VIEWMODE_FLAG_MEMENTOPANEL | VIEWMODE_FLAG_NODEPROPERTIESPANEL | VIEWMODE_FLAG_SLICES);
+	ALL_FLAGS & ~(VIEWMODE_FLAG_NORMALPALETTE | VIEWMODE_FLAG_MEMENTOPANEL | VIEWMODE_FLAG_NODEPROPERTIESPANEL |
+				  VIEWMODE_FLAG_SLICES | VIEWMODE_FLAG_PIXELARTPANEL);
 static const uint64_t SIMLPE_FLAGS =
 	DEFAULT_FLAGS &
 	~(VIEWMODE_FLAG_ALL_VIEWPORTS | VIEWMODE_FLAG_MEMENTOPANEL | VIEWMODE_FLAG_CAMERAPANEL |
@@ -69,6 +70,7 @@ void applyViewModePanelCvars(ViewMode viewMode) {
 	core::getVar(cfg::VoxEditShowNodeProperties)->setVal((flags & VIEWMODE_FLAG_NODEPROPERTIESPANEL) != 0u);
 	core::getVar(cfg::VoxEditShowNodeInspector)->setVal((flags & VIEWMODE_FLAG_NODEINSPECTORPANEL) != 0u);
 	core::getVar(cfg::VoxEditShowBrushes)->setVal((flags & VIEWMODE_FLAG_BRUSHES) != 0u);
+	core::getVar(cfg::VoxEditShowPixelArt)->setVal((flags & VIEWMODE_FLAG_PIXELARTPANEL) != 0u);
 }
 
 const char *getViewModeString(ViewMode viewMode) {

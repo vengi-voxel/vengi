@@ -211,6 +211,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CheckboxVar(cfg::VoxEditShowRender);
 			ImGui::CheckboxVar(cfg::UIShowConsole);
 			ImGui::CheckboxVar(cfg::VoxEditShowHelp);
+			ImGui::CheckboxVar(cfg::VoxEditShowPixelArt);
 			ImGui::Separator();
 			if (ImGui::IconMenuItem(ICON_LC_LAYOUT_DASHBOARD, _("Reset layout"))) {
 				resetDockLayout = true;

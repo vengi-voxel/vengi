@@ -33,6 +33,7 @@
 #define TITLE_VOXBOX_BROWSER "###voxboxbrowser"
 #define TITLE_SCENE_SETTINGS "###scenesettings"
 #define TITLE_HELP "###help"
+#define TITLE_PIXELART "###pixelartpanel"
 #define TITLE_OPTIONS "###optionspanel"
 
 #define POPUP_TITLE_SCENEGRAPHDRAGANDDROP "##scenegraphdraganddroppopup"

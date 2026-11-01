@@ -43,6 +43,7 @@ VoxEdit:
    - Improved normal palette panel
    - Improved lsystem panel
    - Added a 2D slice editor panel
+   - Added a togglable [pixel art](voxedit/usage/PixelArt.md) preview panel
    - Rather huge brush refactoring with a lot of fixes
 
 Thumbnailer:

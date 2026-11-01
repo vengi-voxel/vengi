@@ -6,6 +6,7 @@
 
 #include "image/Image.h"
 #include "voxel/Face.h"
+#include <stdint.h>
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -38,14 +39,33 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
 [[nodiscard]] voxel::RawVolume* importAsVolume(const image::ImagePtr& image, const image::ImagePtr& depthMap, const palette::Palette &palette, uint8_t maxDepth, bool bothSides = false);
 /**
+ * @brief Options for @c renderToImage()
+ */
+struct ImageRenderConfig {
+	voxel::FaceNames frontFace = voxel::FaceNames::Front;
+	color::RGBA background = {};
+	int imgW = -1;
+	int imgH = -1;
+	bool upScale = true;
+	float depthFactor = 0.0f;
+
+	static ImageRenderConfig fromCvars();
+	inline uint64_t hash() const {
+		const uint32_t flags = (upScale ? 1u : 0u) | ((uint32_t)frontFace << 8);
+		const uint32_t depthMilli = (uint32_t)(depthFactor * 1000.0f);
+		return (uint64_t)flags ^ ((uint64_t)(uint32_t)imgW << 16) ^ ((uint64_t)(uint32_t)imgH << 32) ^
+			   background.rgba ^ ((uint64_t)depthMilli << 40);
+	}
+};
+
+/**
  * @brief Put a pixel perfect render of the volume into an image
  * @note If the given width and height of the resulting image is not equal to the volume dimensions for the given axis, then
  * the image is scaled
+ * @note The default config is @c ImageRenderConfig::fromCvars()
  */
 [[nodiscard]] image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-											voxel::FaceNames frontFace = voxel::FaceNames::Front,
-											color::RGBA background = {}, int imgW = -1, int imgH = -1,
-											bool upScale = true, float depthFactor = 0.0f);
+											const ImageRenderConfig &config = ImageRenderConfig::fromCvars());
 
 /**
  * @brief Render a face of a volume within a specific region into an image
@@ -60,11 +80,37 @@ core::String getDefaultDepthMapFile(const core::String &imageName, const core::S
 												const voxel::Region &region, voxel::FaceNames face);
 
 /**
- * @brief Creates an isometric render image for voxel::RawVolume
+ * @brief Options for @c renderIsometricImage()
+ */
+struct IsoRenderConfig {
+	voxel::FaceNames frontFace = voxel::FaceNames::Front;
+	color::RGBA background = {};
+	int imgW = -1;
+	int imgH = -1;
+	bool upScale = true;
+	bool shading = true;
+	bool materials = true;
+	bool transparency = true;
+
+	static IsoRenderConfig fromCvars();
+	inline uint64_t hash() const {
+		const uint32_t flags = (shading ? 1u : 0u) | (materials ? 2u : 0u) | (transparency ? 4u : 0u) |
+							   (upScale ? 8u : 0u) | ((uint32_t)frontFace << 8);
+		return (uint64_t)flags ^ ((uint64_t)(uint32_t)imgW << 16) ^ ((uint64_t)(uint32_t)imgH << 32) ^ background.rgba;
+	}
+};
+
+/**
+ * @brief Creates a 2:1 dimetric render of a voxel::RawVolume
+ *
+ * Each voxel is an 8x7 cube stamp. Visible faces use Lambert shading in linear
+ * RGB. Palette materials (emit, metal, roughness) are applied when @c materials
+ * is set. Palette alpha is composited when @c transparency is set.
+ * @note The default config is @c IsoRenderConfig::fromCvars()
+ * @see https://pikuma.com/blog/isometric-projection-in-games
+ * @see https://www.slynyrd.com/blog/2022/11/28/pixelblog-41-isometric-pixel-art
  * @sa voxel::RawVolume
  */
 [[nodiscard]] image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-												   voxel::FaceNames frontFace = voxel::FaceNames::Front,
-												   color::RGBA background = {}, int imgW = -1, int imgH = -1,
-												   bool upScale = true);
+												   const IsoRenderConfig &config = IsoRenderConfig::fromCvars());
 } // namespace voxelutil

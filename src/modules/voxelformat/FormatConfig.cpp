@@ -351,6 +351,39 @@ bool FormatConfig::init() {
 										 core::CV_NOPERSIST, core::VarType::Directory);
 	core::registerVar(voxformatLDrawDir);
 
+	const core::VarDef imageDepthFactor2D(
+		cfg::ImageDepthFactor2D, 0.0f, 0.0f, 4.0f, N_("2D depth factor"),
+		N_("Darken farther voxels when rendering a volume to a 2D image"), core::CV_NOPERSIST);
+	core::registerVar(imageDepthFactor2D);
+	const core::VarDef imageBackground(cfg::ImageBackground, "0 0 0 0", N_("Background"),
+									   N_("Background color for volume image renders (RGBA)"), core::CV_NOPERSIST);
+	core::registerVar(imageBackground);
+	const core::VarDef imageWidth(cfg::ImageWidth, -1, -1, 8192, N_("Image width"),
+								  N_("Output width in pixels. -1 keeps the native size"), core::CV_NOPERSIST);
+	core::registerVar(imageWidth);
+	const core::VarDef imageHeight(cfg::ImageHeight, -1, -1, 8192, N_("Image height"),
+								   N_("Output height in pixels. -1 keeps the native size"), core::CV_NOPERSIST);
+	core::registerVar(imageHeight);
+	const core::VarDef imageUpScale(cfg::ImageUpScale, true, N_("Upscale"),
+									N_("Allow enlarging the image when width or height exceed the native size"),
+									core::CV_NOPERSIST);
+	core::registerVar(imageUpScale);
+	const core::VarDef imageIsometric(cfg::ImageIsometric, true, N_("Isometric"),
+									  N_("Use isometric projection when rendering a volume to an image"),
+									  core::CV_NOPERSIST);
+	core::registerVar(imageIsometric);
+	const core::VarDef imageIsoShading(cfg::ImageIsoShading, true, N_("Iso shading"),
+									   N_("Apply face shading to isometric renders"), core::CV_NOPERSIST);
+	core::registerVar(imageIsoShading);
+	const core::VarDef imageIsoMaterials(cfg::ImageIsoMaterials, true, N_("Iso materials"),
+										 N_("Apply palette materials (emit, metal, roughness) to isometric renders"),
+										 core::CV_NOPERSIST);
+	core::registerVar(imageIsoMaterials);
+	const core::VarDef imageIsoTransparency(cfg::ImageIsoTransparency, true, N_("Iso transparency"),
+											N_("Honor palette alpha when compositing isometric pixels"),
+											core::CV_NOPERSIST);
+	core::registerVar(imageIsoTransparency);
+
 	return true;
 }
 

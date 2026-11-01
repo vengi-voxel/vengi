@@ -121,6 +121,15 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | Name                          | Description                                                                              | Example      |
 | ----------------------------- | ---------------------------------------------------------------------------------------- | ------------ |
 | `core_colorreduction`         | This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `NeuQuant`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl. | Octree       |
+| `image_background`            | Background color for volume image renders (RGBA)                                         | `0 0 0 0`    |
+| `image_depthfactor2d`         | Darken farther voxels when rendering a volume to a 2D image                              | 0.0          |
+| `image_height`                | Output height in pixels. `-1` keeps the native size                                      | -1           |
+| `image_isometric`             | Use isometric projection when rendering a volume to an image                             | true/false   |
+| `image_iso_shading`           | Apply face shading to isometric renders                                                  | true/false   |
+| `image_iso_materials`         | Apply palette materials (emit, metal, roughness) to isometric renders                    | true/false   |
+| `image_iso_transparency`      | Honor palette alpha when compositing isometric pixels                                    | true/false   |
+| `image_upscale`               | Allow enlarging the image when width or height exceed the native size                    | true/false   |
+| `image_width`                 | Output width in pixels. `-1` keeps the native size                                       | -1           |
 | `palformat_gimprgba`          | Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)                  | true/false   |
 | `palformat_maxsize`           | The maximum size of an image in x and y direction to quantize to a palette               | 512          |
 | `palformat_rgb6bit`           | Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files               | true/false   |

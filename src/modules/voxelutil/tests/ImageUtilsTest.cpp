@@ -5,8 +5,10 @@
 #include "color/ColorUtil.h"
 #include "voxelutil/ImageUtils.h"
 #include "app/tests/AbstractTest.h"
+#include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
+#include "core/Var.h"
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
@@ -210,7 +212,9 @@ TEST_F(ImageUtilsTest, testRenderToImage) {
 		volume.setVoxel(base + glm::ivec3(i, i % 4, 5), color3);
 	}
 
-	const image::ImagePtr &img = renderToImage(&volume, palette, voxel::FaceNames::Front);
+	ImageRenderConfig config;
+	config.frontFace = voxel::FaceNames::Front;
+	const image::ImagePtr &img = renderToImage(&volume, palette, config);
 	ASSERT_TRUE(img && img->isLoaded());
 	const io::FilePtr &file = _testApp->filesystem()->open("front.png", io::FileMode::SysWrite);
 	io::FileStream stream(file);
@@ -219,8 +223,9 @@ TEST_F(ImageUtilsTest, testRenderToImage) {
 	for (int x = 0; x < img->width(); ++x) {
 		for (int y = 0; y < img->height(); ++y) {
 			voxel::Voxel voxel;
+			const int vx = img->width() - 1 - x;
 			for (int z = 0; z < _region.getDepthInVoxels(); ++z) {
-				voxel = volume.voxel(x, _region.getHeightInCells() - y, z);
+				voxel = volume.voxel(vx, _region.getHeightInCells() - y, z);
 				if (!voxel::isAir(voxel.getMaterial())) {
 					break;
 				}
@@ -238,6 +243,53 @@ TEST_F(ImageUtilsTest, testRenderToImage) {
 		}
 	}
 	EXPECT_GT(pixelCount, 0);
+
+	ImageRenderConfig withDepth = config;
+	withDepth.depthFactor = 2.0f;
+	const image::ImagePtr &depthImg = renderToImage(&volume, palette, withDepth);
+	ASSERT_TRUE(depthImg && depthImg->isLoaded());
+	ASSERT_EQ(img->width(), depthImg->width());
+	ASSERT_EQ(img->height(), depthImg->height());
+	int darkerCount = 0;
+	for (int x = 0; x < img->width(); ++x) {
+		for (int y = 0; y < img->height(); ++y) {
+			const color::RGBA flat = img->colorAt(x, y);
+			const color::RGBA shaded = depthImg->colorAt(x, y);
+			if (flat.rgba == config.background.rgba) {
+				continue;
+			}
+			const int flatLum = (int)flat.r + (int)flat.g + (int)flat.b;
+			const int shadedLum = (int)shaded.r + (int)shaded.g + (int)shaded.b;
+			if (shadedLum < flatLum) {
+				++darkerCount;
+			}
+		}
+	}
+	EXPECT_GT(darkerCount, 0);
+}
+
+TEST_F(ImageUtilsTest, testImageRenderConfigFromCvars) {
+	core::Var::registerVar(core::VarDef(cfg::ImageDepthFactor2D, 0.0f, "2D depth factor", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageBackground, "1 0 0 1", "Background", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageWidth, -1, "Image width", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageHeight, -1, "Image height", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageUpScale, true, "Upscale", "help"));
+	core::getVar(cfg::ImageDepthFactor2D)->setVal(1.5f);
+	core::getVar(cfg::ImageWidth)->setVal(64);
+	core::getVar(cfg::ImageHeight)->setVal(32);
+	core::getVar(cfg::ImageUpScale)->setVal(false);
+	const ImageRenderConfig config = ImageRenderConfig::fromCvars();
+	EXPECT_FLOAT_EQ(config.depthFactor, 1.5f);
+	EXPECT_EQ(config.frontFace, voxel::FaceNames::Front);
+	EXPECT_FALSE(config.upScale);
+	EXPECT_EQ(config.imgW, 64);
+	EXPECT_EQ(config.imgH, 32);
+	EXPECT_EQ(config.background.r, 255);
+	core::getVar(cfg::ImageDepthFactor2D)->setVal(0.0f);
+	core::getVar(cfg::ImageWidth)->setVal(-1);
+	core::getVar(cfg::ImageHeight)->setVal(-1);
+	core::getVar(cfg::ImageUpScale)->setVal(true);
+	core::getVar(cfg::ImageBackground)->setVal("0 0 0 0");
 }
 
 TEST_F(ImageUtilsTest, testRenderIsometric) {
@@ -274,6 +326,91 @@ TEST_F(ImageUtilsTest, testRenderIsometric) {
 	const io::FilePtr &file = _testApp->filesystem()->open("isometric.png", io::FileMode::SysWrite);
 	io::FileStream stream(file);
 	ASSERT_TRUE(image::writePNG(img, stream));
+}
+
+TEST_F(ImageUtilsTest, testRenderIsometricFaceLighting) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 200, 200, 255));
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	IsoRenderConfig config;
+	const image::ImagePtr img = renderIsometricImage(&volume, palette, config);
+	ASSERT_TRUE(img && img->isLoaded());
+	ASSERT_EQ(8, img->width());
+	ASSERT_EQ(7, img->height());
+	const color::RGBA top = img->colorAt(3, 1);
+	const color::RGBA left = img->colorAt(1, 4);
+	const color::RGBA right = img->colorAt(6, 4);
+	const int topLum = (int)top.r + (int)top.g + (int)top.b;
+	const int leftLum = (int)left.r + (int)left.g + (int)left.b;
+	const int rightLum = (int)right.r + (int)right.g + (int)right.b;
+	EXPECT_GT(topLum, leftLum);
+	EXPECT_GT(leftLum, rightLum);
+
+	config.shading = false;
+	const image::ImagePtr flat = renderIsometricImage(&volume, palette, config);
+	ASSERT_TRUE(flat && flat->isLoaded());
+	const int flatTop = (int)flat->colorAt(3, 1).r + (int)flat->colorAt(3, 1).g + (int)flat->colorAt(3, 1).b;
+	const int flatLeft = (int)flat->colorAt(1, 4).r + (int)flat->colorAt(1, 4).g + (int)flat->colorAt(1, 4).b;
+	EXPECT_EQ(flatTop, flatLeft);
+}
+
+TEST_F(ImageUtilsTest, testRenderIsometricMaterialsTransparency) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 200, 200, 128));
+	palette.setEmit(1, 1.0f);
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	IsoRenderConfig plain;
+	plain.materials = false;
+	plain.transparency = false;
+	plain.background = color::RGBA(0, 0, 255, 255);
+	const image::ImagePtr opaque = renderIsometricImage(&volume, palette, plain);
+	ASSERT_TRUE(opaque && opaque->isLoaded());
+	EXPECT_EQ(opaque->colorAt(3, 1).a, 255);
+
+	IsoRenderConfig emitOn = plain;
+	emitOn.materials = true;
+	emitOn.shading = true;
+	IsoRenderConfig emitOff = emitOn;
+	emitOff.materials = false;
+	const image::ImagePtr lit = renderIsometricImage(&volume, palette, emitOn);
+	const image::ImagePtr unlit = renderIsometricImage(&volume, palette, emitOff);
+	ASSERT_TRUE(lit && unlit);
+	const int litRight = (int)lit->colorAt(6, 4).r;
+	const int unlitRight = (int)unlit->colorAt(6, 4).r;
+	EXPECT_GT(litRight, unlitRight);
+
+	IsoRenderConfig alphaOn = plain;
+	alphaOn.transparency = true;
+	alphaOn.background = color::RGBA(0, 0, 255, 0);
+	const image::ImagePtr blended = renderIsometricImage(&volume, palette, alphaOn);
+	ASSERT_TRUE(blended && blended->isLoaded());
+	const color::RGBA px = blended->colorAt(3, 1);
+	EXPECT_LT(px.a, 255);
+	EXPECT_GT((int)px.a, 0);
+}
+
+TEST_F(ImageUtilsTest, testIsoRenderConfigFromCvars) {
+	core::Var::registerVar(core::VarDef(cfg::ImageIsoShading, true, "Iso shading", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageIsoMaterials, true, "Iso materials", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageIsoTransparency, true, "Iso transparency", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageBackground, "0 0 1 1", "Background", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageWidth, -1, "Image width", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageHeight, -1, "Image height", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageUpScale, true, "Upscale", "help"));
+	core::getVar(cfg::ImageIsoShading)->setVal(false);
+	core::getVar(cfg::ImageWidth)->setVal(48);
+	const IsoRenderConfig config = IsoRenderConfig::fromCvars();
+	EXPECT_FALSE(config.shading);
+	EXPECT_TRUE(config.materials);
+	EXPECT_TRUE(config.transparency);
+	EXPECT_EQ(config.imgW, 48);
+	EXPECT_EQ(config.background.b, 255);
+	core::getVar(cfg::ImageIsoShading)->setVal(true);
+	core::getVar(cfg::ImageWidth)->setVal(-1);
+	core::getVar(cfg::ImageBackground)->setVal("0 0 0 0");
 }
 
 TEST_F(ImageUtilsTest, testApplyTextureToFace) {

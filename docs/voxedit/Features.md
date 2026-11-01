@@ -33,6 +33,7 @@ A few of the features are:
 * [Ruler](usage/Brushes.md#ruler-brush) for per-axis, straight-line and Manhattan distance measurements
 * Slice view for inspecting cross-sections of volumes
 * Editable Back, Right and Top slices of the selected model in the [2D Views panel](usage/2DViews.md)
+* [Pixel art](usage/PixelArt.md) preview of the selected model
 * GPU [path tracer rendering](usage/Renderer.md) with material, lighting, camera and PNG output controls
 * [Game mode](usage/GameMode.md) with physics-based first-person walkthrough
 * [Session recording and playback](usage/SessionRecording.md) (`.vrec`), with pause/resume and adjustable playback delay
@@ -61,6 +62,7 @@ A few of the features are:
 * [Network](usage/Network.md)
 * [Node Inspector](usage/NodeInspector.md)
 * [Palette](usage/Palette.md)
+* [Pixel art](usage/PixelArt.md)
 * [Reference Position](usage/ReferencePosition.md)
 * [Renderer](usage/Renderer.md)
 * [Scene And Edit Mode](usage/SceneAndEditMode.md)

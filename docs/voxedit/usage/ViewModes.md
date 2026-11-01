@@ -20,7 +20,7 @@ The main **View** menu offers these presets:
 
 ## Panel visibility
 
-Changing the view mode writes a preset into the `ve_show*` cvars (for example `ve_showpalette`, `ve_showscript`, `ve_showanimationsettings`, `ve_showbrushes`) and `ui_showconsole`.
+Changing the view mode writes a preset into the `ve_show*` cvars (for example `ve_showpalette`, `ve_showscript`, `ve_showanimationsettings`, `ve_showbrushes`, `ve_showpixelart`) and `ui_showconsole`.
 Individual panels can then be shown or hidden from the **View** menu or by closing the docked window with its close button.
 Those choices persist across sessions (see [configuration](../Configuration.md)).
 

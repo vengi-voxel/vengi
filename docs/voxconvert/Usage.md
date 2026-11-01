@@ -18,7 +18,7 @@ vengi-voxconvert --help
 * `--filter <filter>`: will filter out models not mentioned in the expression. E.g. `1-2,4` will handle model 1, 2 and 4. It is the same as `1,2,4`. The first model is `0`. See the models note below.
 * `--filter-property <property:value>`: Model filter by property. For example `name:foo`.
 * `--force`: overwrite existing files.
-* `--image`: print the scene voxels to the text console. Useful if you don't have a graphical user interface available but still need to visually compare voxel models.
+* `--image`: print the scene voxels to the text console. Useful if you don't have a graphical user interface available but still need to visually compare voxel models. Use `-set image_depthfactor2d` to darken farther voxels.
 * `--input <file>`: allows to specify input files. You can specify more than one file.
 * `--isometric`: Create an isometric thumbnail of the input file when `--image` is used.
 * `--json`: Print the scene graph of the input file. Give `full` as argument to also get mesh details.

@@ -6,12 +6,15 @@
 #include "ImageUtils.h"
 #include "app/Async.h"
 #include "core/Assert.h"
+#include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
 #include "image/Image.h"
 #include "math/Axis.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/Face.h"
@@ -22,6 +25,9 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <glm/common.hpp>
+#include <glm/exponential.hpp>
+#include <glm/vec4.hpp>
 
 namespace voxelutil {
 
@@ -315,107 +321,316 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 }
 
 namespace {
-const int VoxelSpriteWidth = 4;
-const int VoxelSpriteHeight = 4;
+// 2:1 dimetric cube stamp (game isometric, not 120-degree true isometric).
+// Tw = IsoSpriteWidth, Th = Tw / 2. Floor steps are 2 px across and 1 px down:
+//   x = x0 + (a - b) * (Tw / 2)
+//   y = y0 - (a + b) * (Th / 2) - h * (Tw / 2)
+// https://pikuma.com/blog/isometric-projection-in-games
+// 2-step pixel lines follow atan(0.5) ~ 26.57 deg (Slynyrd Pixelblog 41).
+// Axis angles: 126.87 deg between floor axes, 116.57 deg to vertical.
+// IsoHalfWidth = Tw / 2, IsoSlopeStep = Th / 2, IsoVerticalStep = Tw / 2 (cube rise).
+constexpr int IsoSpriteWidth = 8;
+constexpr int IsoSpriteHeight = 7;
+constexpr int IsoHalfWidth = IsoSpriteWidth / 2;
+constexpr int IsoSlopeStep = IsoHalfWidth / 2;
+constexpr int IsoVerticalStep = IsoHalfWidth;
+
+enum class IsoShade { Transparent, Top, Left, Right, Max };
+
+// 8x7 wide-corner cube stamp (Slynyrd A1). Sharp D1 corners are not used.
+// Pixel artwork for the top diamond and two side faces. Spaces are transparent.
+// C = color, D = darker, L = lighter
+const char *IsoSprite[IsoSpriteHeight] = {"  CCCC  ", "CCCCCCCC", "DDCCCCLL", "DDDDLLLL",
+										  "DDDDLLLL", "DDDDLLLL", "  DDLL  "};
+
+voxel::FaceBits directionFace(const glm::ivec3 &direction) {
+	if (direction.x != 0) {
+		return direction.x > 0 ? voxel::FaceBits::PositiveX : voxel::FaceBits::NegativeX;
+	}
+	if (direction.y != 0) {
+		return direction.y > 0 ? voxel::FaceBits::PositiveY : voxel::FaceBits::NegativeY;
+	}
+	return direction.z > 0 ? voxel::FaceBits::PositiveZ : voxel::FaceBits::NegativeZ;
+}
+
+// View-space Lambert: visible cube normals are +Y (top), -X (left), -Z (right).
+// Light sits above-left of the camera so the left wall is brighter than the right.
+// shade = ambient + (1 - ambient) * max(0, N.L)
+void isoShadeFactors(float lighting[(int)IsoShade::Max]) {
+	const float lx = -0.6f;
+	const float ly = 1.0f;
+	const float lz = -0.2f;
+	const float invLen = 1.0f / glm::sqrt(lx * lx + ly * ly + lz * lz);
+	auto lambert = [&](float nx, float ny, float nz) {
+		const float ndotl = (nx * lx + ny * ly + nz * lz) * invLen;
+		return 0.40f + 0.60f * (ndotl > 0.0f ? ndotl : 0.0f);
+	};
+	lighting[(int)IsoShade::Transparent] = 0.0f;
+	lighting[(int)IsoShade::Top] = lambert(0.0f, 1.0f, 0.0f);
+	lighting[(int)IsoShade::Left] = lambert(-1.0f, 0.0f, 0.0f);
+	lighting[(int)IsoShade::Right] = lambert(0.0f, 0.0f, -1.0f);
+}
+
+color::RGBA isoBlend(color::RGBA src, color::RGBA dst) {
+	if (src.a >= 255) {
+		return src;
+	}
+	if (src.a == 0) {
+		return dst;
+	}
+	const int a = (int)src.a;
+	const int ia = 255 - a;
+	return color::RGBA((uint8_t)((src.r * a + dst.r * ia) / 255), (uint8_t)((src.g * a + dst.g * ia) / 255),
+					   (uint8_t)((src.b * a + dst.b * ia) / 255),
+					   (uint8_t)core_min(255, src.a + dst.a * ia / 255));
+}
+
+// Face lighting is applied in linear RGB. Materials mix toward vengi palette
+// values: roughness flattens, metal increases contrast, emit mixes to unshaded.
+color::RGBA isoShade(color::RGBA c, float shade, const palette::Material &mat, const IsoRenderConfig &config) {
+	if (!config.shading) {
+		shade = 1.0f;
+	}
+	if (config.materials) {
+		const float roughness = glm::clamp(mat.roughness, 0.0f, 1.0f);
+		const float metal = glm::clamp(mat.metal, 0.0f, 1.0f);
+		const float emit = glm::clamp(mat.emit, 0.0f, 1.0f);
+		shade = glm::mix(shade, 1.0f, roughness * 0.6f);
+		shade = glm::mix(shade, shade * shade, metal);
+		shade = glm::mix(shade, 1.0f, emit);
+	}
+	color::RGBA result = c;
+	if (!config.transparency) {
+		result.a = 255;
+	}
+	for (int i = 0; i < 3; ++i) {
+		const float linear = color::srgbToLinear(c[i] / 255.0f);
+		const float value = glm::clamp(linear * shade, 0.0f, 1.0f);
+		const float srgb = value <= 0.0031308f ? value * 12.92f : 1.055f * glm::pow(value, 1.0f / 2.4f) - 0.055f;
+		((uint8_t *)&result)[i] = (uint8_t)(srgb * 255.0f);
+	}
+	return result;
+}
+
+// View-space grid: a and b run along the floor, h is up. (0, 0, 0) is the
+// near/bottom corner, so screen y decreases as a, b, or h grows.
+struct IsoView {
+	const voxel::RawVolume *volume;
+	voxel::FaceNames face;
+	int width;
+	int depth;
+	voxel::FaceBits worldFaces[6];
+
+	IsoView(const voxel::RawVolume *v, voxel::FaceNames frontFace) : volume(v), face(frontFace) {
+		const voxel::Region &r = volume->region();
+		const bool rotated = voxel::isX(face);
+		width = rotated ? r.getDepthInVoxels() : r.getWidthInVoxels();
+		depth = rotated ? r.getWidthInVoxels() : r.getDepthInVoxels();
+		const glm::ivec3 origin = position(0, 0, 0);
+		worldFaces[0] = directionFace(position(1, 0, 0) - origin);
+		worldFaces[1] = directionFace(position(-1, 0, 0) - origin);
+		worldFaces[2] = directionFace(position(0, 0, 1) - origin);
+		worldFaces[3] = directionFace(position(0, 0, -1) - origin);
+		worldFaces[4] = directionFace(position(0, 1, 0) - origin);
+		worldFaces[5] = directionFace(position(0, -1, 0) - origin);
+	}
+
+	voxel::FaceBits visibleFaces(int a, int b, int h) const {
+		const voxel::FaceBits worldVisible = voxel::visibleFaces(*volume, position(a, b, h));
+		const voxel::FaceBits localFaces[] = {voxel::FaceBits::PositiveX, voxel::FaceBits::NegativeX,
+											  voxel::FaceBits::PositiveY, voxel::FaceBits::NegativeY,
+											  voxel::FaceBits::PositiveZ, voxel::FaceBits::NegativeZ};
+		voxel::FaceBits result = voxel::FaceBits::None;
+		for (int i = 0; i < 6; ++i) {
+			if ((worldVisible & worldFaces[i]) != voxel::FaceBits::None) {
+				result |= localFaces[i];
+			}
+		}
+		return result;
+	}
+
+	glm::ivec3 position(int a, int b, int h) const {
+		const voxel::Region &r = volume->region();
+		const int y = face == voxel::FaceNames::Down ? r.getUpperY() - h : r.getLowerY() + h;
+		// a is screen-right and follows the viewport camera: Front -X, Back +X, Left +Z, Right -Z.
+		switch (face) {
+		case voxel::FaceNames::Right:
+			return {r.getUpperX() - b, y, r.getUpperZ() - a};
+		case voxel::FaceNames::Back:
+			return {r.getLowerX() + a, y, r.getUpperZ() - b};
+		case voxel::FaceNames::Left:
+			return {r.getLowerX() + b, y, r.getLowerZ() + a};
+		default:
+			return {r.getUpperX() - a, y, r.getLowerZ() + b};
+		}
+	}
+
+	bool occupied(int a, int b, int h) const {
+		const glm::ivec3 p = position(a, b, h);
+		return volume->region().containsPoint(p) && !voxel::isAir(volume->voxel(p).getMaterial());
+	}
+};
 } // namespace
 
-static void renderIsometricVoxel(const image::ImagePtr &img, int x, int y, const color::RGBA palCol) {
-	const color::RGBA darkerCol = color::darker(palCol);
-	const color::RGBA lighterCol = color::brighter(palCol);
-	/**
-	 * Each voxel is rendered as a 4x4 sprite with the following pattern:
-	 *
-	 * CCCC
-	 * DDLL
-	 * DDLL
-	 * DDLL
-	 *
-	 * C = color
-	 * D = darker
-	 * L = lighter
-	 *
-	 * This gives a nice 3D effect when rendering the voxels in an isometric view
-	 * The idea for this is coming from isovoxel and mcmap
-	 */
-	for (int i = 0; i < VoxelSpriteWidth; ++i) {
-		img->setColor(palCol, x +i, y);
+static void applySharedImageCvars(color::RGBA &background, int &imgW, int &imgH, bool &upScale) {
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageBackground)) {
+		float c[4];
+		v->vec4Val(c);
+		background = color::getRGBA(glm::vec4(c[0], c[1], c[2], c[3]));
 	}
-	for (int j = 1; j < VoxelSpriteHeight; ++j) {
-		const int py = y + j;
-		for (int i = 0; i < VoxelSpriteWidth; ++i) {
-			const int px = x + i;
-			color::RGBA c;
-			if (i < VoxelSpriteWidth / 2) {
-				c = darkerCol;
-			} else {
-				c = lighterCol;
-			}
-			img->setColor(c, px, py);
-		}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageWidth)) {
+		imgW = v->intVal();
+	}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageHeight)) {
+		imgH = v->intVal();
+	}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageUpScale)) {
+		upScale = v->boolVal();
 	}
 }
 
+ImageRenderConfig ImageRenderConfig::fromCvars() {
+	ImageRenderConfig config;
+	applySharedImageCvars(config.background, config.imgW, config.imgH, config.upScale);
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageDepthFactor2D)) {
+		config.depthFactor = v->floatVal();
+	}
+	return config;
+}
+
+IsoRenderConfig IsoRenderConfig::fromCvars() {
+	IsoRenderConfig config;
+	applySharedImageCvars(config.background, config.imgW, config.imgH, config.upScale);
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoShading)) {
+		config.shading = v->boolVal();
+	}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoMaterials)) {
+		config.materials = v->boolVal();
+	}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoTransparency)) {
+		config.transparency = v->boolVal();
+	}
+	return config;
+}
+
 image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-									 voxel::FaceNames frontFace, color::RGBA background, int imgW, int imgH,
-									 bool upScale) {
+									 const IsoRenderConfig &config) {
+	if (volume == nullptr || !volume->region().isValid() || config.frontFace == voxel::FaceNames::Max) {
+		return {};
+	}
 	const voxel::Region &r = volume->region();
-
-	const int sizeX = r.getWidthInVoxels();
-	const int sizeZ = r.getDepthInVoxels();
-	const int minY = r.getLowerY();
-	const int maxY = r.getUpperY();
-
+	const IsoView view(volume, config.frontFace);
+	const int height = r.getHeightInVoxels();
 	image::ImagePtr image = image::createEmptyImage("isometric");
-	image->resize((sizeX + sizeZ) * 2, sizeX + sizeZ + (maxY - minY + 1) * (VoxelSpriteHeight - 1) - 1);
-	for (int x = 0; x < image->width(); ++x) {
-		for (int y = 0; y < image->height(); ++y) {
-			image->setColor(background, x, y);
+	// Diamond span (width + depth) * (Tw / 2), plus one cube rise per layer.
+	image->resize(IsoHalfWidth * (view.width + view.depth),
+				  IsoSlopeStep * (view.width + view.depth - 2) + IsoVerticalStep * (height - 1) + IsoSpriteHeight);
+	// TODO: PERF: add image->fill(background) here to do a memset only
+	for (int y = 0; y < image->height(); ++y) {
+		for (int x = 0; x < image->width(); ++x) {
+			image->setColor(config.background, x, y);
 		}
 	}
 
-	// TODO: visitor order is not yet working for all faces
-	VisitorOrder visitorOrder;
-	switch (frontFace) {
-	default:
-	case voxel::FaceNames::Up:
-		visitorOrder = VisitorOrder::XZY;
-		break;
-	case voxel::FaceNames::Down:
-		visitorOrder = VisitorOrder::mXZY;
-		break;
+	color::RGBA shades[palette::PaletteMaxColors][(int)IsoShade::Max];
+	float lighting[(int)IsoShade::Max];
+	isoShadeFactors(lighting);
+	for (int i = 0; i < palette::PaletteMaxColors; ++i) {
+		const palette::Material &mat = palette.material(i);
+		for (int j = 0; j < (int)IsoShade::Max; ++j) {
+			shades[i][j] = isoShade(palette.color(i), lighting[j], mat, config);
+		}
 	}
-	// visitor to draw each visible voxel. We must translate volume coords to image coords.
-	auto func = [&](int vx, int vy, int vz, const voxel::Voxel &v) {
-		const int x = vx - r.getLowerX();
-		const int z = vz - r.getLowerZ();
-		const int imgX = 2 * (sizeZ - 1) + (x - z) * 2;
-		const int imgY = image->height() - 2 + x + z - sizeX - sizeZ - (vy - minY) * (VoxelSpriteHeight - 1);
-		const color::RGBA palCol = palette.color(v.getColor());
-		renderIsometricVoxel(image, imgX, imgY, palCol);
-	};
-	voxelutil::visitSurfaceVolume(*volume, func, visitorOrder);
 
-	// check if we need to rescale the image
-	int width = image->width();
-	int height = image->height();
-	if ((imgW > 0 && imgW != width) || (imgH > 0 && imgH != height)) {
+	// Painter's algorithm: far to near in all three view axes. Voxels that
+	// overlap on screen lie along (a+1,b+1,h-1), so this order resolves
+	// occlusion without sorting.
+	for (int a = view.width - 1; a >= 0; --a) {
+		for (int b = view.depth - 1; b >= 0; --b) {
+			for (int h = 0; h < height; ++h) {
+				if (!view.occupied(a, b, h)) {
+					continue;
+				}
+				const voxel::FaceBits visible = view.visibleFaces(a, b, h);
+				const bool top = (visible & voxel::FaceBits::PositiveY) != voxel::FaceBits::None;
+				const bool left = (visible & voxel::FaceBits::NegativeX) != voxel::FaceBits::None;
+				const bool right = (visible & voxel::FaceBits::NegativeZ) != voxel::FaceBits::None;
+				if (!top && !left && !right) {
+					continue;
+				}
+				const voxel::Voxel &v = volume->voxel(view.position(a, b, h));
+				const color::RGBA *colors = shades[v.getColor()];
+				// x = (Tw / 2) * ((depth - 1) + a - b)
+				// y = (Th / 2) * ((width + depth - 2) - a - b) + (Tw / 2) * (height - 1 - h)
+				const int x = IsoHalfWidth * (view.depth - 1 + a - b);
+				const int y = IsoSlopeStep * (view.width + view.depth - 2 - a - b) + IsoVerticalStep * (height - 1 - h);
+				for (int j = 0; j < IsoSpriteHeight; ++j) {
+					for (int i = 0; i < IsoSpriteWidth; ++i) {
+						IsoShade shade = IsoShade::Transparent;
+						switch (IsoSprite[j][i]) {
+						case 'C':
+							if (top) {
+								shade = IsoShade::Top;
+							}
+							break;
+						case 'D':
+							if (left) {
+								shade = IsoShade::Left;
+							}
+							break;
+						case 'L':
+							if (right) {
+								shade = IsoShade::Right;
+							}
+							break;
+						default:
+							break;
+						}
+						if (shade == IsoShade::Transparent) {
+							continue;
+						}
+						const int px = x + i;
+						const int py = y + j;
+						const color::RGBA src = colors[(int)shade];
+						if (config.transparency && src.a < 255) {
+							image->setColor(isoBlend(src, image->colorAt(px, py)), px, py);
+						} else {
+							image->setColor(src, px, py);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	const int width = image->width();
+	const int nativeHeight = image->height();
+	int imgW = config.imgW;
+	int imgH = config.imgH;
+	if (imgW > 0 || imgH > 0) {
 		if (imgW <= 0) {
-			const float factor = (float)imgH / (float)height;
-			imgW = (int)glm::round((float)width * factor);
+			imgW = core_max(1, (int)glm::round((float)width * imgH / nativeHeight));
 		}
 		if (imgH <= 0) {
-			const float factor = (float)imgW / (float)width;
-			imgH = (int)glm::round((float)height * factor);
+			imgH = core_max(1, (int)glm::round((float)nativeHeight * imgW / width));
 		}
-		const bool wouldUpscale = imgW > width || imgH > height;
-		if (upScale || !wouldUpscale) {
-			image->resize(imgW, imgH);
+		if (config.upScale || (imgW <= width && imgH <= nativeHeight)) {
+			// Nearest sampling preserves the discrete shades and transparent silhouette.
+			image::ImagePtr scaled = image::createEmptyImage("isometric");
+			scaled->resize(imgW, imgH);
+			for (int y = 0; y < imgH; ++y) {
+				for (int x = 0; x < imgW; ++x) {
+					scaled->setColor(
+						image->colorAt((int)((int64_t)x * width / imgW), (int)((int64_t)y * nativeHeight / imgH)), x,
+						y);
+				}
+			}
+			image = scaled;
 		}
 	}
 
 	// finally mark this as loaded to indicate that the image data is valid
 	image->markLoaded();
-
 	return image;
 }
 
@@ -449,18 +664,18 @@ image::ImagePtr renderFaceToImage(const voxel::RawVolume *volume, const palette:
 	}
 
 	const glm::ivec3 &mins = region.getLowerCorner();
-	voxelutil::visitFace(*volume, region, face, [face, &palette, &image, &mins, height](int x, int y, int z, const voxel::Voxel &voxel) {
+	voxelutil::visitFace(*volume, region, face, [face, &palette, &image, &mins, width, height](int x, int y, int z, const voxel::Voxel &voxel) {
 		const color::RGBA rgba = palette.color(voxel.getColor());
 		int px = 0;
 		int py = 0;
 		if (voxel::isY(face)) {
-			px = x - mins.x;
-			py = height - 1 - (z - mins.z);
+			px = width - 1 - (x - mins.x);
+			py = voxel::isPositiveFace(face) ? height - 1 - (z - mins.z) : (z - mins.z);
 		} else if (voxel::isX(face)) {
-			px = z - mins.z;
+			px = voxel::isPositiveFace(face) ? width - 1 - (z - mins.z) : (z - mins.z);
 			py = height - 1 - (y - mins.y);
 		} else if (voxel::isZ(face)) {
-			px = x - mins.x;
+			px = voxel::isPositiveFace(face) ? (x - mins.x) : width - 1 - (x - mins.x);
 			py = height - 1 - (y - mins.y);
 		}
 		image->setColor(rgba, px, py);
@@ -472,8 +687,13 @@ image::ImagePtr renderFaceToImage(const voxel::RawVolume *volume, const palette:
 }
 
 image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-							  voxel::FaceNames frontFace, color::RGBA background, int imgW, int imgH, bool upScale,
-							  float depthFactor) {
+							  const ImageRenderConfig &config) {
+	const voxel::FaceNames frontFace = config.frontFace;
+	const color::RGBA background = config.background;
+	int imgW = config.imgW;
+	int imgH = config.imgH;
+	const bool upScale = config.upScale;
+	const float depthFactor = config.depthFactor;
 	image::ImagePtr image = core::make_shared<image::Image>("renderToImage");
 	const voxel::Region &region = volume->region();
 	const glm::ivec3 &dim = region.getDimensionsInVoxels();
@@ -499,21 +719,21 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 	}
 
 	// now render the voxels to the image
-	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, height, depthFactor] (int x, int y, int z, const voxel::Voxel& voxel) {
+	voxelutil::visitFace(*volume, frontFace, [frontFace, &palette, &image, &region, width, height, depthFactor] (int x, int y, int z, const voxel::Voxel& voxel) {
 		color::RGBA rgba = palette.color(voxel.getColor());
 		int px = 0;
 		int py = 0;
 		float depth = 0.0f;
 		if (voxel::isY(frontFace)) {
-			px = x - region.getLowerX();
-			py = height - 1 - (z - region.getLowerZ());
+			px = width - 1 - (x - region.getLowerX());
+			py = voxel::isPositiveFace(frontFace) ? height - 1 - (z - region.getLowerZ()) : (z - region.getLowerZ());
 			if (voxel::isPositiveFace(frontFace)) {
 				depth = (float)((region.getUpperY() - y) * depthFactor) / (float)region.getHeightInVoxels();
 			} else {
 				depth = (float)((y - region.getLowerY()) * depthFactor) / (float)region.getHeightInVoxels();
 			}
 		} else if (voxel::isX(frontFace)) {
-			px = z - region.getLowerZ();
+			px = voxel::isPositiveFace(frontFace) ? width - 1 - (z - region.getLowerZ()) : (z - region.getLowerZ());
 			py = height - 1 - (y - region.getLowerY());
 			if (voxel::isPositiveFace(frontFace)) {
 				depth = (float)((region.getUpperX() - x) * depthFactor) / (float)region.getWidthInVoxels();
@@ -522,7 +742,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 			}
 
 		} else if (voxel::isZ(frontFace)) {
-			px = x - region.getLowerX();
+			px = voxel::isPositiveFace(frontFace) ? (x - region.getLowerX()) : width - 1 - (x - region.getLowerX());
 			py = height - 1 - (y - region.getLowerY());
 			if (voxel::isPositiveFace(frontFace)) {
 				depth = (float)((region.getUpperZ() - z) * depthFactor) / (float)region.getDepthInVoxels();

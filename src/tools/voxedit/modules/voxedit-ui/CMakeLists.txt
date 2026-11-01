@@ -23,6 +23,7 @@ set(SRCS
 	NetworkPanel.cpp NetworkPanel.h
 	NormalPalettePanel.h NormalPalettePanel.cpp
 	PalettePanel.h PalettePanel.cpp
+	PixelArtPanel.h PixelArtPanel.cpp
 	RenderPanel.h RenderPanel.cpp
 	SceneDebugPanel.h SceneDebugPanel.cpp
 	SceneGraphPanel.h SceneGraphPanel.cpp
@@ -77,6 +78,7 @@ if (USE_IMGUITESTENGINE)
 		tests/NormalPalettePanelTest.cpp
 		tests/OptionsPanelTest.cpp
 		tests/PalettePanelTest.cpp
+		tests/PixelArtPanelTest.cpp
 		tests/RenderPanelTest.cpp
 		tests/SceneDebugPanelTest.cpp
 		tests/SceneGraphPanelTest.cpp

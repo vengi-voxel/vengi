@@ -190,11 +190,21 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchiveP
 		}
 		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 		const color::RGBA bgColor(0, 0, 0, 255);
-		const float depthFactor2D = 0.0f;
-		return isometric2d ? voxelutil::renderIsometricImage(v, merged.palette, image2dFace, bgColor, ctx.outputSize.x,
-															 ctx.outputSize.y)
-						   : voxelutil::renderToImage(v, merged.palette, image2dFace, bgColor, ctx.outputSize.x,
-													  ctx.outputSize.y, false, depthFactor2D);
+		if (isometric2d) {
+			voxelutil::IsoRenderConfig config = voxelutil::IsoRenderConfig::fromCvars();
+			config.frontFace = image2dFace;
+			config.background = bgColor;
+			config.imgW = ctx.outputSize.x;
+			config.imgH = ctx.outputSize.y;
+			return voxelutil::renderIsometricImage(v, merged.palette, config);
+		}
+		voxelutil::ImageRenderConfig config = voxelutil::ImageRenderConfig::fromCvars();
+		config.frontFace = image2dFace;
+		config.background = bgColor;
+		config.imgW = ctx.outputSize.x;
+		config.imgH = ctx.outputSize.y;
+		config.upScale = false;
+		return voxelutil::renderToImage(v, merged.palette, config);
 	}
 
 	if (pathTracer) {

@@ -33,6 +33,7 @@ enum class ViewMode : uint8_t { Default, Simple, All, TiberianSun, RedAlert2, Mi
 #define VIEWMODE_FLAG_NODEINSPECTORPANEL  (1 << 21)
 #define VIEWMODE_FLAG_BRUSHES             (1 << 22)
 #define VIEWMODE_FLAG_SLICES              (1 << 23)
+#define VIEWMODE_FLAG_PIXELARTPANEL       (1 << 24)
 
 uint64_t viewModeFlags(ViewMode viewMode);
 

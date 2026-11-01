@@ -169,11 +169,6 @@ app::AppState VoxConvert::onConstruct() {
 	_quads = core::getVar(cfg::VoxformatQuads);
 	_withColor = core::getVar(cfg::VoxformatWithColor);
 	_withTexCoords = core::getVar(cfg::VoxformatWithtexcoords);
-	const core::VarDef voxConvertDepthFactor2D(
-		cfg::VoxConvertDepthFactor2D, 0.0f, N_("2D depth factor"),
-		N_("When creating a volume from an image, this is the factor that is used for the depth value"));
-	core::Var::registerVar(voxConvertDepthFactor2D);
-
 	if (!filesystem()->registerPath("scripts/")) {
 		Log::warn("Failed to register lua generator script path");
 	}
@@ -687,11 +682,23 @@ app::AppState VoxConvert::onInit() {
 		const core::String &faceStr = getArgVal("--image", voxel::faceNameString(voxel::FaceNames::Front));
 		Log::debug("Print image with width %i and height %i for face %s", width, height, faceStr.c_str());
 		const voxel::FaceNames frontFace = voxel::toFaceNames(faceStr, voxel::FaceNames::Front);
-		const float depthFactor2D = core::getVar(cfg::VoxConvertDepthFactor2D)->floatVal();
-		const image::ImagePtr &image =
-			hasArg("--isometric")
-				? voxelutil::renderIsometricImage(v, merged.palette, frontFace, bgColor, width, height)
-				: voxelutil::renderToImage(v, merged.palette, frontFace, bgColor, width, height, false, depthFactor2D);
+		image::ImagePtr image;
+		if (hasArg("--isometric")) {
+			voxelutil::IsoRenderConfig config = voxelutil::IsoRenderConfig::fromCvars();
+			config.frontFace = frontFace;
+			config.background = bgColor;
+			config.imgW = width;
+			config.imgH = height;
+			image = voxelutil::renderIsometricImage(v, merged.palette, config);
+		} else {
+			voxelutil::ImageRenderConfig config = voxelutil::ImageRenderConfig::fromCvars();
+			config.frontFace = frontFace;
+			config.background = bgColor;
+			config.imgW = width;
+			config.imgH = height;
+			config.upScale = false;
+			image = voxelutil::renderToImage(v, merged.palette, config);
+		}
 		if (saveToPng) {
 			io::FilePtr outputFile = filesystem()->open(outfiles[0], io::FileMode::SysWrite);
 			if (!outputFile->validHandle()) {
