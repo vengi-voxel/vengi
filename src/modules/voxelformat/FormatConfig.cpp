@@ -380,9 +380,16 @@ bool FormatConfig::init() {
 										 core::CV_NOPERSIST);
 	core::registerVar(imageIsoMaterials);
 	const core::VarDef imageIsoTransparency(cfg::ImageIsoTransparency, true, N_("Iso transparency"),
-											N_("Honor palette alpha when compositing isometric pixels"),
+											N_("Blend palette alpha in isometric renders, and let those voxels show what is behind them"),
 											core::CV_NOPERSIST);
 	core::registerVar(imageIsoTransparency);
+	const core::VarDef imageIsoOutline(cfg::ImageIsoOutline, false, N_("Silhouette"),
+									   N_("Ink pixels that touch an empty neighbor in isometric renders"),
+									   core::CV_NOPERSIST);
+	core::registerVar(imageIsoOutline);
+	const core::VarDef imageIsoOutlineColor(cfg::ImageIsoOutlineColor, "0 0 0 1", N_("Iso outline color"),
+											N_("Outline color for isometric renders (RGBA)"), core::CV_NOPERSIST);
+	core::registerVar(imageIsoOutlineColor);
 
 	return true;
 }

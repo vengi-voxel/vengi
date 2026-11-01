@@ -4,19 +4,17 @@
 
 #include "ScreenshotTool.h"
 #include "core/Log.h"
-#include "core/ScopedPtr.h"
 #include "image/Image.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphImage.h"
 #include "voxel/Face.h"
-#include "voxel/RawVolume.h"
 #include "voxedit-util/SceneManager.h"
-#include "voxelutil/ImageUtils.h"
 
 namespace voxedit {
 
 ScreenshotTool::ScreenshotTool() : Tool("voxedit_screenshot") {
 	_tool.set("description",
-			  "Render a 2D screenshot of a model node or the full scene without a GL context. "
+			  "Render a 2D screenshot of a node and its children, or the full scene, without a GL context. "
 			  "Uses pixel-perfect face projection (renderToImage) or isometric (renderIsometricImage). "
 			  "Returns an MCP image (PNG). Prefer this over get_voxels for visual inspection.");
 
@@ -96,37 +94,20 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 	const color::RGBA background((uint8_t)args.intVal("bgR", 0), (uint8_t)args.intVal("bgG", 0),
 								 (uint8_t)args.intVal("bgB", 0), (uint8_t)args.intVal("bgA", 255));
 
-	const voxel::RawVolume *volume = nullptr;
-	palette::Palette palette;
-	core::ScopedPtr<voxel::RawVolume> ownedVolume;
-	core::String sourceLabel;
-
+	int nodeId = InvalidNodeId;
+	core::String sourceLabel = "scene";
 	const core::UUID nodeUUID = argsUUID(args);
 	if (nodeUUID.isValid()) {
-		scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
+		const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
 		if (node == nullptr) {
 			return ctx.result(id, "Node not found - fetch the scene state first", true);
 		}
-		if (!node->isAnyModelNode()) {
-			return ctx.result(id, "Node is not a model node", true);
-		}
-		volume = ctx.sceneMgr->volume(node->uuid());
-		if (volume == nullptr) {
-			return ctx.result(id, "Node has no volume", true);
-		}
-		palette = node->palette();
+		nodeId = node->id();
 		sourceLabel = core::String::format("node %s", node->name().c_str());
-	} else {
-		scenegraph::SceneGraph::MergeResult merged = ctx.sceneMgr->sceneGraph().merge();
-		if (!merged.hasVolume()) {
-			return ctx.result(id, "Scene has no visible model volumes to render", true);
-		}
-		ownedVolume = merged.volume();
-		volume = ownedVolume;
-		palette = merged.palette;
-		sourceLabel = "merged scene";
 	}
 
+	const scenegraph::SceneGraph &sceneGraph = ctx.sceneMgr->sceneGraph();
+	const scenegraph::FrameIndex frameIdx = ctx.sceneMgr->currentFrame();
 	image::ImagePtr image;
 	if (isometric) {
 		voxelutil::IsoRenderConfig config = voxelutil::IsoRenderConfig::fromCvars();
@@ -134,7 +115,7 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 		config.background = background;
 		config.imgW = width;
 		config.imgH = height;
-		image = voxelutil::renderIsometricImage(volume, palette, config);
+		image = voxelutil::renderIsometricImage(sceneGraph, config, nodeId, frameIdx);
 	} else {
 		voxelutil::ImageRenderConfig config;
 		config.frontFace = face;
@@ -142,7 +123,7 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 		config.imgW = width;
 		config.imgH = height;
 		config.depthFactor = depthFactor;
-		image = voxelutil::renderToImage(volume, palette, config);
+		image = voxelutil::renderToImage(sceneGraph, config, nodeId, frameIdx);
 	}
 
 	if (!image || !image->isLoaded()) {

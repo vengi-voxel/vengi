@@ -12,6 +12,7 @@
 #include "core/SharedPtr.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "image/Image.h"
 #include "math/Axis.h"
 #include "palette/Material.h"
@@ -343,16 +344,6 @@ enum class IsoShade { Transparent, Top, Left, Right, Max };
 const char *IsoSprite[IsoSpriteHeight] = {"  CCCC  ", "CCCCCCCC", "DDCCCCLL", "DDDDLLLL",
 										  "DDDDLLLL", "DDDDLLLL", "  DDLL  "};
 
-voxel::FaceBits directionFace(const glm::ivec3 &direction) {
-	if (direction.x != 0) {
-		return direction.x > 0 ? voxel::FaceBits::PositiveX : voxel::FaceBits::NegativeX;
-	}
-	if (direction.y != 0) {
-		return direction.y > 0 ? voxel::FaceBits::PositiveY : voxel::FaceBits::NegativeY;
-	}
-	return direction.z > 0 ? voxel::FaceBits::PositiveZ : voxel::FaceBits::NegativeZ;
-}
-
 // View-space Lambert: visible cube normals are +Y (top), -X (left), -Z (right).
 // Light sits above-left of the camera so the left wall is brighter than the right.
 // shade = ambient + (1 - ambient) * max(0, N.L)
@@ -414,37 +405,74 @@ color::RGBA isoShade(color::RGBA c, float shade, const palette::Material &mat, c
 
 // View-space grid: a and b run along the floor, h is up. (0, 0, 0) is the
 // near/bottom corner, so screen y decreases as a, b, or h grows.
+// Empty: air or outside. Clear: palette alpha or a transparent voxel. Solid: opaque.
+// Same rule as the cubic mesher: opaque faces show against empty and clear, clear faces
+// show against empty and solid, and two clear voxels hide the face between them.
+enum class IsoCover : uint8_t { Empty, Clear, Solid };
+
 struct IsoView {
 	const voxel::RawVolume *volume;
+	const palette::Palette *palette;
 	voxel::FaceNames face;
+	bool transparency;
 	int width;
 	int depth;
-	voxel::FaceBits worldFaces[6];
 
-	IsoView(const voxel::RawVolume *v, voxel::FaceNames frontFace) : volume(v), face(frontFace) {
+	IsoView(const voxel::RawVolume *v, voxel::FaceNames frontFace, const palette::Palette &pal, bool useTransparency)
+		: volume(v), palette(&pal), face(frontFace), transparency(useTransparency) {
 		const voxel::Region &r = volume->region();
 		const bool rotated = voxel::isX(face);
 		width = rotated ? r.getDepthInVoxels() : r.getWidthInVoxels();
 		depth = rotated ? r.getWidthInVoxels() : r.getDepthInVoxels();
-		const glm::ivec3 origin = position(0, 0, 0);
-		worldFaces[0] = directionFace(position(1, 0, 0) - origin);
-		worldFaces[1] = directionFace(position(-1, 0, 0) - origin);
-		worldFaces[2] = directionFace(position(0, 0, 1) - origin);
-		worldFaces[3] = directionFace(position(0, 0, -1) - origin);
-		worldFaces[4] = directionFace(position(0, 1, 0) - origin);
-		worldFaces[5] = directionFace(position(0, -1, 0) - origin);
 	}
 
+	IsoCover coverAt(int a, int b, int h) const {
+		const glm::ivec3 p = position(a, b, h);
+		if (!volume->region().containsPoint(p)) {
+			return IsoCover::Empty;
+		}
+		const voxel::Voxel &voxel = volume->voxel(p);
+		if (voxel::isAir(voxel.getMaterial())) {
+			return IsoCover::Empty;
+		}
+		if (transparency &&
+			(voxel::isTransparent(voxel.getMaterial()) || palette->color(voxel.getColor()).a < 255)) {
+			return IsoCover::Clear;
+		}
+		return IsoCover::Solid;
+	}
+
+	static bool showFace(IsoCover current, IsoCover neighbor) {
+		if (current == IsoCover::Empty) {
+			return false;
+		}
+		if (current == IsoCover::Solid) {
+			return neighbor != IsoCover::Solid;
+		}
+		return neighbor != IsoCover::Clear;
+	}
+
+	// Local bits match the stamp: PositiveY top (+h), NegativeX left (-a), NegativeZ right (-b).
 	voxel::FaceBits visibleFaces(int a, int b, int h) const {
-		const voxel::FaceBits worldVisible = voxel::visibleFaces(*volume, position(a, b, h));
-		const voxel::FaceBits localFaces[] = {voxel::FaceBits::PositiveX, voxel::FaceBits::NegativeX,
-											  voxel::FaceBits::PositiveY, voxel::FaceBits::NegativeY,
-											  voxel::FaceBits::PositiveZ, voxel::FaceBits::NegativeZ};
+		const IsoCover current = coverAt(a, b, h);
 		voxel::FaceBits result = voxel::FaceBits::None;
-		for (int i = 0; i < 6; ++i) {
-			if ((worldVisible & worldFaces[i]) != voxel::FaceBits::None) {
-				result |= localFaces[i];
-			}
+		if (showFace(current, coverAt(a + 1, b, h))) {
+			result |= voxel::FaceBits::PositiveX;
+		}
+		if (showFace(current, coverAt(a - 1, b, h))) {
+			result |= voxel::FaceBits::NegativeX;
+		}
+		if (showFace(current, coverAt(a, b, h + 1))) {
+			result |= voxel::FaceBits::PositiveY;
+		}
+		if (showFace(current, coverAt(a, b, h - 1))) {
+			result |= voxel::FaceBits::NegativeY;
+		}
+		if (showFace(current, coverAt(a, b + 1, h))) {
+			result |= voxel::FaceBits::PositiveZ;
+		}
+		if (showFace(current, coverAt(a, b - 1, h))) {
+			result |= voxel::FaceBits::NegativeZ;
 		}
 		return result;
 	}
@@ -470,6 +498,36 @@ struct IsoView {
 		return volume->region().containsPoint(p) && !voxel::isAir(volume->voxel(p).getMaterial());
 	}
 };
+
+void applyIsoOutline(image::Image &image, const core::Buffer<uint8_t> &covered, const IsoRenderConfig &config) {
+	const int width = image.width();
+	const int height = image.height();
+	const int step[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			if (covered[y * width + x] == 0) {
+				continue;
+			}
+			bool ink = false;
+			for (int n = 0; n < 4; ++n) {
+				const int nx = x + step[n][0];
+				const int ny = y + step[n][1];
+				if (nx < 0 || ny < 0 || nx >= width || ny >= height || covered[ny * width + nx] == 0) {
+					ink = true;
+					break;
+				}
+			}
+			if (!ink) {
+				continue;
+			}
+			color::RGBA inkColor = config.outlineColor;
+			if (!config.transparency) {
+				inkColor.a = 255;
+			}
+			image.setColor(inkColor, x, y);
+		}
+	}
+}
 } // namespace
 
 static void applySharedImageCvars(color::RGBA &background, int &imgW, int &imgH, bool &upScale) {
@@ -510,6 +568,14 @@ IsoRenderConfig IsoRenderConfig::fromCvars() {
 	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoTransparency)) {
 		config.transparency = v->boolVal();
 	}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoOutline)) {
+		config.outline = v->boolVal();
+	}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoOutlineColor)) {
+		float c[4];
+		v->vec4Val(c);
+		config.outlineColor = color::getRGBA(glm::vec4(c[0], c[1], c[2], c[3]));
+	}
 	return config;
 }
 
@@ -519,7 +585,7 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 		return {};
 	}
 	const voxel::Region &r = volume->region();
-	const IsoView view(volume, config.frontFace);
+	const IsoView view(volume, config.frontFace, palette, config.transparency);
 	const int height = r.getHeightInVoxels();
 	image::ImagePtr image = image::createEmptyImage("isometric");
 	// Diamond span (width + depth) * (Tw / 2), plus one cube rise per layer.
@@ -541,6 +607,12 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 			shades[i][j] = isoShade(palette.color(i), lighting[j], mat, config);
 		}
 	}
+
+	core::Buffer<uint8_t> covered;
+	if (config.outline) {
+		covered = core::Buffer<uint8_t>((size_t)image->width() * (size_t)image->height(), 0);
+	}
+	const int imageWidth = image->width();
 
 	// Painter's algorithm: far to near in all three view axes. Voxels that
 	// overlap on screen lie along (a+1,b+1,h-1), so this order resolves
@@ -597,10 +669,17 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 						} else {
 							image->setColor(src, px, py);
 						}
+						if (config.outline) {
+							covered[py * imageWidth + px] = 1;
+						}
 					}
 				}
 			}
 		}
+	}
+
+	if (config.outline) {
+		applyIsoOutline(*image.get(), covered, config);
 	}
 
 	const int width = image->width();

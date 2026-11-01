@@ -63,6 +63,8 @@ struct ImageRenderConfig {
  * @note If the given width and height of the resulting image is not equal to the volume dimensions for the given axis, then
  * the image is scaled
  * @note The default config is @c ImageRenderConfig::fromCvars()
+ * @note The scene graph overload is declared in @c scenegraph/SceneGraphImage.h.
+ * @c InvalidNodeId renders the whole scene. Any other id renders that node and its children.
  */
 [[nodiscard]] image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Palette &palette,
 											const ImageRenderConfig &config = ImageRenderConfig::fromCvars());
@@ -91,12 +93,16 @@ struct IsoRenderConfig {
 	bool shading = true;
 	bool materials = true;
 	bool transparency = true;
+	/** Ink pixels that touch an empty 4-neighbor. Applied before nearest upscale. */
+	bool outline = false;
+	color::RGBA outlineColor = color::RGBA(0, 0, 0, 255);
 
 	static IsoRenderConfig fromCvars();
 	inline uint64_t hash() const {
 		const uint32_t flags = (shading ? 1u : 0u) | (materials ? 2u : 0u) | (transparency ? 4u : 0u) |
-							   (upScale ? 8u : 0u) | ((uint32_t)frontFace << 8);
-		return (uint64_t)flags ^ ((uint64_t)(uint32_t)imgW << 16) ^ ((uint64_t)(uint32_t)imgH << 32) ^ background.rgba;
+							   (upScale ? 8u : 0u) | (outline ? 16u : 0u) | ((uint32_t)frontFace << 8);
+		return (uint64_t)flags ^ ((uint64_t)(uint32_t)imgW << 16) ^ ((uint64_t)(uint32_t)imgH << 32) ^ background.rgba ^
+			   ((uint64_t)outlineColor.rgba * 0x100000001ull);
 	}
 };
 
@@ -105,8 +111,12 @@ struct IsoRenderConfig {
  *
  * Each voxel is an 8x7 cube stamp. Visible faces use Lambert shading in linear
  * RGB. Palette materials (emit, metal, roughness) are applied when @c materials
- * is set. Palette alpha is composited when @c transparency is set.
+ * is set. Palette alpha is composited when @c transparency is set, and those voxels
+ * do not hide the faces behind them. When
+ * @c outline is set, pixels that touch an empty neighbor are inked before nearest upscale.
  * @note The default config is @c IsoRenderConfig::fromCvars()
+ * @note The scene graph overloads, which walk a node and its children, are declared
+ * in @c scenegraph/SceneGraphImage.h. @c InvalidNodeId renders the whole scene.
  * @see https://pikuma.com/blog/isometric-projection-in-games
  * @see https://www.slynyrd.com/blog/2022/11/28/pixelblog-41-isometric-pixel-art
  * @sa voxel::RawVolume

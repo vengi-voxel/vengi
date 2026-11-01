@@ -25,6 +25,7 @@
 #include "VoxelpathtracerShaderConstants.h"
 #include "voxelrender/ImageGenerator.h"
 #include "voxelrender/RenderUtil.h"
+#include "scenegraph/SceneGraphImage.h"
 #include "voxelutil/ImageUtils.h"
 #include <glm/gtc/constants.hpp>
 
@@ -183,12 +184,6 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchiveP
 		if (pathTracer) {
 			Log::warn("--pathtracer is ignored when --image is used");
 		}
-		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
-		if (!merged.hasVolume()) {
-			Log::error("No valid volume in the scenegraph to print");
-			return image::ImagePtr();
-		}
-		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 		const color::RGBA bgColor(0, 0, 0, 255);
 		if (isometric2d) {
 			voxelutil::IsoRenderConfig config = voxelutil::IsoRenderConfig::fromCvars();
@@ -196,7 +191,11 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchiveP
 			config.background = bgColor;
 			config.imgW = ctx.outputSize.x;
 			config.imgH = ctx.outputSize.y;
-			return voxelutil::renderIsometricImage(v, merged.palette, config);
+			image::ImagePtr image = voxelutil::renderIsometricImage(sceneGraph, config);
+			if (!image || !image->isLoaded()) {
+				Log::error("No valid volume in the scenegraph to print");
+			}
+			return image;
 		}
 		voxelutil::ImageRenderConfig config = voxelutil::ImageRenderConfig::fromCvars();
 		config.frontFace = image2dFace;
@@ -204,7 +203,11 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchiveP
 		config.imgW = ctx.outputSize.x;
 		config.imgH = ctx.outputSize.y;
 		config.upScale = false;
-		return voxelutil::renderToImage(v, merged.palette, config);
+		image::ImagePtr image = voxelutil::renderToImage(sceneGraph, config);
+		if (!image || !image->isLoaded()) {
+			Log::error("No valid volume in the scenegraph to print");
+		}
+		return image;
 	}
 
 	if (pathTracer) {

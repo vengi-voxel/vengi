@@ -127,7 +127,9 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `image_isometric`             | Use isometric projection when rendering a volume to an image                             | true/false   |
 | `image_iso_shading`           | Apply face shading to isometric renders                                                  | true/false   |
 | `image_iso_materials`         | Apply palette materials (emit, metal, roughness) to isometric renders                    | true/false   |
-| `image_iso_transparency`      | Honor palette alpha when compositing isometric pixels                                    | true/false   |
+| `image_iso_transparency`      | Blend palette alpha in isometric renders; transparent voxels show what is behind them    | true/false   |
+| `image_iso_outline`           | Ink pixels that touch an empty neighbor in isometric renders                             | true/false   |
+| `image_iso_outline_color`     | Outline color for isometric renders (RGBA)                                               | `0 0 0 1`    |
 | `image_upscale`               | Allow enlarging the image when width or height exceed the native size                    | true/false   |
 | `image_width`                 | Output width in pixels. `-1` keeps the native size                                       | -1           |
 | `palformat_gimprgba`          | Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)                  | true/false   |

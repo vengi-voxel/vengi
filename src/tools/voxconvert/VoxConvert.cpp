@@ -44,6 +44,7 @@
 #include "voxelformat/private/mesh/gis/OSMDataLoader.h"
 #include "voxelgenerator/LUAApi.h"
 #include "voxelutil/Hollow.h"
+#include "scenegraph/SceneGraphImage.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeRescaler.h"
@@ -666,12 +667,6 @@ app::AppState VoxConvert::onInit() {
 	}
 
 	if (_outputImage) {
-		scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
-		if (!merged.hasVolume()) {
-			Log::error("No valid volume in the scenegraph to print");
-			return app::AppState::InitFailure;
-		}
-		core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 		const bool saveToPng = !outfiles.empty() && io::isA(outfiles[0], io::format::png());
 		int width = -1;
 		int height = -1;
@@ -689,7 +684,7 @@ app::AppState VoxConvert::onInit() {
 			config.background = bgColor;
 			config.imgW = width;
 			config.imgH = height;
-			image = voxelutil::renderIsometricImage(v, merged.palette, config);
+			image = voxelutil::renderIsometricImage(sceneGraph, config);
 		} else {
 			voxelutil::ImageRenderConfig config = voxelutil::ImageRenderConfig::fromCvars();
 			config.frontFace = frontFace;
@@ -697,7 +692,11 @@ app::AppState VoxConvert::onInit() {
 			config.imgW = width;
 			config.imgH = height;
 			config.upScale = false;
-			image = voxelutil::renderToImage(v, merged.palette, config);
+			image = voxelutil::renderToImage(sceneGraph, config);
+		}
+		if (!image || !image->isLoaded()) {
+			Log::error("No valid volume in the scenegraph to print");
+			return app::AppState::InitFailure;
 		}
 		if (saveToPng) {
 			io::FilePtr outputFile = filesystem()->open(outfiles[0], io::FileMode::SysWrite);

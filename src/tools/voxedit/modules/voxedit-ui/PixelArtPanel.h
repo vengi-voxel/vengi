@@ -16,7 +16,7 @@ class SceneManager;
 typedef core::SharedPtr<SceneManager> SceneManagerPtr;
 
 /**
- * @brief Pixel-art preview of the active model (isometric or orthographic 2D).
+ * @brief Pixel-art preview of the scene (isometric or orthographic 2D).
  */
 class PixelArtPanel : public ui::Panel {
 private:
@@ -30,7 +30,6 @@ private:
 	float _zoomWheel = 0.0f;
 	uint64_t _configHash = 0;
 	uint64_t _hash = 0;
-	int _node = InvalidNodeId;
 	image::ImagePtr _image;
 	video::TexturePtr _texture;
 

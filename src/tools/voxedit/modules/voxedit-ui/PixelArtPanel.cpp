@@ -14,14 +14,13 @@
 #include "io/FormatDescription.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphImage.h"
 #include "ui/ScopedPanel.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Face.h"
-#include "voxel/RawVolume.h"
 #include "voxelutil/ImageUtils.h"
-#include "voxelutil/VolumeCropper.h"
-#include "voxelutil/VoxelUtil.h"
 #include <glm/common.hpp>
 #include <string.h>
 
@@ -34,12 +33,16 @@ PixelArtPanel::~PixelArtPanel() {
 	}
 }
 
-image::ImagePtr PixelArtPanel::pixelArtImage() {
-	const scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
-	if (node == nullptr) {
-		_image = {};
-		return {};
+static void mixMatrix(uint64_t &hash, const glm::mat4 &matrix) {
+	const float *values = &matrix[0][0];
+	for (int i = 0; i < 16; ++i) {
+		uint32_t bits = 0;
+		memcpy(&bits, &values[i], sizeof(bits));
+		hash = (hash * 16777619u) ^ bits;
 	}
+}
+
+image::ImagePtr PixelArtPanel::pixelArtImage() {
 	const bool isometric = core::getVar(cfg::ImageIsometric)->boolVal();
 	if (isometric && _view > 3) {
 		_view = 0;
@@ -55,36 +58,23 @@ image::ImagePtr PixelArtPanel::pixelArtImage() {
 	imageConfig.frontFace = frontFace;
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
-	const scenegraph::FrameTransform transform = sceneGraph.transformForFrame(*node, frameIdx);
 	uint64_t transformHash = (uint64_t)frameIdx;
-	const float *matrix = &transform.worldMatrix()[0][0];
-	for (int i = 0; i < 16; ++i) {
-		uint32_t bits = 0;
-		memcpy(&bits, &matrix[i], sizeof(bits));
-		transformHash = (transformHash * 16777619u) ^ bits;
-	}
-	const uint64_t configHash = isometric ? isoConfig.hash() : (imageConfig.hash() ^ 0x3244000000000000ull);
-	const uint64_t hash = _sceneMgr->calculateHash() ^ node->palette().hash() ^ configHash ^ transformHash;
-	if (!_image || hash != _hash || node->id() != _node || configHash != _configHash) {
-		const voxel::RawVolume *volume = sceneGraph.resolveVolume(*node);
-		core::ScopedPtr<voxel::RawVolume> transformed;
-		if (volume != nullptr && !transform.isIdentity()) {
-			transformed = voxelutil::applyTransformToVolume(*volume, transform.worldMatrix(), node->pivot());
-			if (transformed != nullptr) {
-				volume = transformed;
-			}
+	sceneGraph.visitChildren(sceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
+		if (!node.isAnyModelNode() || !node.visible()) {
+			return;
 		}
-		const core::ScopedPtr<voxel::RawVolume> cropped(voxelutil::cropVolume(volume));
-		const voxel::RawVolume *src = cropped ? (const voxel::RawVolume *)cropped : volume;
-		const palette::Palette &palette = _sceneMgr->sceneGraph().resolvePalette(*node);
+		mixMatrix(transformHash, sceneGraph.transformForFrame(node, frameIdx).worldMatrix());
+	});
+	const uint64_t configHash = isometric ? isoConfig.hash() : (imageConfig.hash() ^ 0x3244000000000000ull);
+	const uint64_t hash = _sceneMgr->calculateHash() ^ configHash ^ transformHash;
+	if (!_image || hash != _hash || configHash != _configHash) {
 		if (isometric) {
-			_image = voxelutil::renderIsometricImage(src, palette, isoConfig);
+			_image = voxelutil::renderIsometricImage(sceneGraph, isoConfig, InvalidNodeId, frameIdx);
 		} else {
-			_image = voxelutil::renderToImage(src, palette, imageConfig);
+			_image = voxelutil::renderToImage(sceneGraph, imageConfig, InvalidNodeId, frameIdx);
 		}
 		_hash = hash;
 		_configHash = configHash;
-		_node = node->id();
 		if (_image) {
 			if (_texture && (_texture->width() != _image->width() || _texture->height() != _image->height())) {
 				_texture->shutdown();
@@ -196,6 +186,8 @@ void PixelArtPanel::update(const char *id) {
 			ImGui::CheckboxVar(cfg::ImageIsoShading);
 			ImGui::CheckboxVar(cfg::ImageIsoMaterials);
 			ImGui::CheckboxVar(cfg::ImageIsoTransparency);
+			ImGui::CheckboxVar(cfg::ImageIsoOutline);
+			ImGui::ColorEdit4Var(cfg::ImageIsoOutlineColor);
 		} else {
 			ImGui::SliderVarFloat(cfg::ImageDepthFactor2D);
 		}

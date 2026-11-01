@@ -1,14 +1,14 @@
 # Pixel art
 
-Open **View -> Pixel art** for a preview of the selected model. **Mode** switches
+Open **View -> Pixel art** for a preview of the whole scene. **Mode** switches
 between isometric (2:1 dimetric cube stamps) and orthographic **2D**. The image
 uses nearest-neighbor sampling. Scroll the mouse wheel over the preview to zoom
 one screen pixel per source pixel at a time, so each texel stays a sharp square.
 Drag the preview to pan.
 
 Use the **View** combo to switch facing. Isometric offers Front, Right, Back and
-Left. 2D also offers Top and Bottom. Other nodes and scene transforms are
-excluded; the image is the cropped active model only.
+Left. 2D also offers Top and Bottom. Every visible model node is included, at
+its transform for the current frame. Hidden nodes are skipped.
 
 Shared options (also `voxconvert -set` cvars):
 
@@ -18,7 +18,9 @@ Shared options (also `voxconvert -set` cvars):
 
 Isometric mode exposes `image_iso_shading` (Lambert face lighting),
 `image_iso_materials` (emit, metal, roughness) and `image_iso_transparency`
-(palette alpha). 2D mode exposes `image_depthfactor2d` to darken farther voxels.
+(palette alpha is blended, and those voxels do not hide the faces behind them). **Silhouette** inks pixels that touch an empty neighbor before the
+image is scaled. The ink color is `image_iso_outline_color`. 2D mode exposes
+`image_depthfactor2d` to darken farther voxels.
 `image_isometric` selects the projection (default on).
 
 **File -> Save** writes the current preview through the image file dialog.

@@ -392,6 +392,44 @@ TEST_F(ImageUtilsTest, testRenderIsometricMaterialsTransparency) {
 	EXPECT_GT((int)px.a, 0);
 }
 
+TEST_F(ImageUtilsTest, testRenderIsometricTransparencyShowsBehindGlass) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(220, 0, 0, 255));
+	palette.setColor(2, color::RGBA(255, 255, 255, 128));
+	voxel::RawVolume volume(voxel::Region(0, 0, 0, 2, 1, 2));
+	// Red is covered on every stamp face. It is visible only when the glass does not occlude it.
+	volume.setVoxel(1, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Transparent, 2));
+	volume.setVoxel(2, 0, 1, voxel::createVoxel(voxel::VoxelType::Transparent, 2));
+	volume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Transparent, 2));
+
+	auto showsRed = [](const image::ImagePtr &img) {
+		for (int y = 0; y < img->height(); ++y) {
+			for (int x = 0; x < img->width(); ++x) {
+				const color::RGBA c = img->colorAt(x, y);
+				if ((int)c.r > (int)c.g + 30) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
+
+	IsoRenderConfig config;
+	config.shading = false;
+	config.materials = false;
+	config.transparency = true;
+	config.background = color::RGBA(0, 0, 0, 0);
+	const image::ImagePtr clear = renderIsometricImage(&volume, palette, config);
+	ASSERT_TRUE(clear && clear->isLoaded());
+	EXPECT_TRUE(showsRed(clear));
+
+	config.transparency = false;
+	const image::ImagePtr opaque = renderIsometricImage(&volume, palette, config);
+	ASSERT_TRUE(opaque && opaque->isLoaded());
+	EXPECT_FALSE(showsRed(opaque));
+}
+
 TEST_F(ImageUtilsTest, testIsoRenderConfigFromCvars) {
 	core::Var::registerVar(core::VarDef(cfg::ImageIsoShading, true, "Iso shading", "help"));
 	core::Var::registerVar(core::VarDef(cfg::ImageIsoMaterials, true, "Iso materials", "help"));
@@ -463,6 +501,40 @@ TEST_F(ImageUtilsTest, testRenderFaceToImage) {
 		}
 	}
 	EXPECT_TRUE(hasNonTransparent);
+}
+
+TEST_F(ImageUtilsTest, testRenderIsometricOutlineSilhouette) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 200, 200, 255));
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	IsoRenderConfig plain;
+	plain.shading = false;
+	plain.materials = false;
+	plain.transparency = false;
+	const image::ImagePtr bare = renderIsometricImage(&volume, palette, plain);
+	ASSERT_TRUE(bare && bare->isLoaded());
+
+	IsoRenderConfig silhouette = plain;
+	silhouette.outline = true;
+	silhouette.outlineColor = color::RGBA(0, 0, 0, 255);
+	const image::ImagePtr inked = renderIsometricImage(&volume, palette, silhouette);
+	ASSERT_TRUE(inked && inked->isLoaded());
+	EXPECT_EQ(inked->colorAt(3, 0).rgba, silhouette.outlineColor.rgba);
+	EXPECT_EQ(inked->colorAt(3, 1).rgba, bare->colorAt(3, 1).rgba);
+}
+
+TEST_F(ImageUtilsTest, testIsoRenderConfigOutlineFromCvars) {
+	core::Var::registerVar(core::VarDef(cfg::ImageIsoOutline, false, "Silhouette", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageIsoOutlineColor, "0 0 0 1", "Iso outline color", "help"));
+	core::getVar(cfg::ImageIsoOutline)->setVal(true);
+	core::getVar(cfg::ImageIsoOutlineColor)->setVal("1 0 0 1");
+	const IsoRenderConfig config = IsoRenderConfig::fromCvars();
+	EXPECT_TRUE(config.outline);
+	EXPECT_EQ(config.outlineColor.r, 255);
+	core::getVar(cfg::ImageIsoOutline)->setVal(false);
+	core::getVar(cfg::ImageIsoOutlineColor)->setVal("0 0 0 1");
 }
 
 } // namespace voxelutil
