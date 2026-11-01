@@ -3975,7 +3975,7 @@ void SceneManager::construct() {
 	core::Var::registerVar(voxEditLastPalette);
 	const core::VarDef voxEditViewports(cfg::VoxEditViewports, 2, 1, cfg::MaxViewports, N_("Viewports"), N_("The amount of viewports (not in simple ui mode)"));
 	core::Var::registerVar(voxEditViewports);
-	const core::VarDef voxEditMaxSuggestedVolumeSize(cfg::VoxEditMaxSuggestedVolumeSize, 128, 32, 4096, N_("Max volume size"), N_("The maximum size of a volume before a few features are disabled (e.g. undo/autosave)"));
+	const core::VarDef voxEditMaxSuggestedVolumeSize(cfg::VoxEditMaxSuggestedVolumeSize, 128, 32, 4096, N_("Max volume size"), N_("The maximum size of a volume before a few features are disabled (e.g. undo, autosave, isometric preview, 2D editing)"));
 	core::Var::registerVar(voxEditMaxSuggestedVolumeSize);
 	const core::VarDef voxEditViewMode(cfg::VoxEditViewMode, "default", N_("View mode"), N_("Configure the editor view mode"));
 	core::Var::registerVar(voxEditViewMode);

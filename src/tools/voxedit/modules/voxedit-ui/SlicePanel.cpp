@@ -555,7 +555,14 @@ void SlicePanel::update(const char *id) {
 			ImGui::TextUnformatted(_("Select a model node to edit its slices."));
 			return;
 		}
-		const voxel::Region &region = node->volume()->region();
+		const voxel::Region &region = node->region();
+		if (_sceneMgr->exceedsMaxSuggestedVolumeSize(region)) {
+			_gizmoView = SliceView::None;
+			_gizmoPreview = nullptr;
+			ImGui::TextWrapped(
+				_("This model is larger than the suggested volume size. 2D editing is disabled."));
+			return;
+		}
 		if (_nodeUUID != node->uuid()) {
 			_nodeUUID = node->uuid();
 			_gizmoView = SliceView::None;

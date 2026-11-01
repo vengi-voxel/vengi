@@ -58,6 +58,13 @@ image::ImagePtr PixelArtPanel::pixelArtImage() {
 	imageConfig.frontFace = frontFace;
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
+	// The stamp loop walks the combined scene bounds, so a sparse but huge scene is refused.
+	if (isometric && _sceneMgr->exceedsMaxSuggestedVolumeSize(sceneGraph.sceneRegion(frameIdx, true))) {
+		_image = {};
+		_hash = 0;
+		_configHash = 0;
+		return {};
+	}
 	uint64_t transformHash = (uint64_t)frameIdx;
 	sceneGraph.visitChildren(sceneGraph.root().id(), true, [&](const scenegraph::SceneGraphNode &node) {
 		if (!node.isAnyModelNode() || !node.visible()) {
@@ -190,6 +197,13 @@ void PixelArtPanel::update(const char *id) {
 			ImGui::ColorEdit4Var(cfg::ImageIsoOutlineColor);
 		} else {
 			ImGui::SliderVarFloat(cfg::ImageDepthFactor2D);
+		}
+
+		if (isometric && _sceneMgr->exceedsMaxSuggestedVolumeSize(
+							 _sceneMgr->sceneGraph().sceneRegion(_sceneMgr->currentFrame(), true))) {
+			ImGui::TextWrapped(
+				_("The scene is larger than the suggested volume size. Isometric preview is disabled."));
+			return;
 		}
 
 		if (!img || !_texture) {

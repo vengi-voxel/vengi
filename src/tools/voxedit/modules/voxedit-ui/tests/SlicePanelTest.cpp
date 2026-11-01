@@ -381,6 +381,19 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK_EQ(node->volume()->voxel(otherPos).getColor(), 8);
 		_sceneMgr->modifier().setSliceMode(false);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "skip editing when model exceeds suggested size")->TestFunc =
+		[=](ImGuiTestContext *ctx) {
+			IM_CHECK(prepareUITest(ctx));
+			util::ScopedVarChange maxSize(cfg::VoxEditMaxSuggestedVolumeSize, "32");
+			util::ScopedVarChange visible(cfg::VoxEditShowSlices, "true");
+			IM_CHECK(_sceneMgr->newScene(true, "slice big", voxel::Region(0, 32)));
+			ctx->Yield();
+			IM_CHECK(focusWindow(ctx, id));
+			ctx->Yield();
+			IM_CHECK(!ctx->ItemExists("**/backcanvas"));
+			IM_CHECK(!_sceneMgr->modifier().isSliceMode());
+		};
 }
 
 } // namespace voxedit

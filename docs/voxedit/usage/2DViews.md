@@ -1,6 +1,6 @@
 # 2D Views
 
-Open **View -> 2D Views** to edit the selected model as voxel cells. The panel shows Back (XY), Right (ZY), and Top (XZ) views together. Other nodes and scene transforms are excluded; coordinates refer to the selected model's volume. Select a model node with its own volume to edit it.
+Open **View -> 2D Views** to edit the selected model as voxel cells. The panel shows Back (XY), Right (ZY), and Top (XZ) views together. Other nodes and scene transforms are excluded; coordinates refer to the selected model's volume. Select a model node with its own volume to edit it. Editing is disabled when that model region exceeds `ve_maxsuggestedvolumesize`.
 
 Each view has an axis slider to choose its working slice and a **Fit** button to reset zoom and pan. Use the mouse wheel over a canvas to zoom and the middle mouse button to pan. The target cross marks the same voxel position across all three views.
 

@@ -8,7 +8,8 @@ Drag the preview to pan.
 
 Use the **View** combo to switch facing. Isometric offers Front, Right, Back and
 Left. 2D also offers Top and Bottom. Every visible model node is included, at
-its transform for the current frame. Hidden nodes are skipped.
+its transform for the current frame. Hidden nodes are skipped. Isometric preview
+is skipped when those visible scene bounds exceed `ve_maxsuggestedvolumesize`.
 
 Shared options (also `voxconvert -set` cvars):
 

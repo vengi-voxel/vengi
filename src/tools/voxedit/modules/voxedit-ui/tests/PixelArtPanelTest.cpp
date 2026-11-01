@@ -7,6 +7,7 @@
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "image/Image.h"
+#include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Region.h"
@@ -49,6 +50,22 @@ void PixelArtPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(_image.get() != front.get());
 		IM_CHECK_EQ(_view, 1);
 	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "skip isometric when scene exceeds suggested size")->TestFunc =
+		[=](ImGuiTestContext *ctx) {
+			IM_CHECK(prepareUITest(ctx));
+			util::ScopedVarChange maxSize(cfg::VoxEditMaxSuggestedVolumeSize, "32");
+			IM_CHECK(ensurePanelVisible(ctx, "View/Pixel art", cfg::VoxEditShowPixelArt));
+			core::getVar(cfg::ImageIsometric)->setVal(true);
+			_hash = 0;
+			_image = {};
+			// 33^3 is above 32^3, the suggested bound.
+			IM_CHECK(_sceneMgr->newScene(true, "pixelart big", voxel::Region(0, 32)));
+			ctx->Yield();
+			IM_CHECK(focusWindow(ctx, id));
+			ctx->Yield();
+			IM_CHECK(!_image);
+		};
 }
 
 } // namespace voxedit
