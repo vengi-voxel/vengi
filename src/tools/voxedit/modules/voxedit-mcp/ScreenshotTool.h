@@ -10,7 +10,7 @@ namespace voxedit {
 
 /**
  * @brief Pixel-perfect or isometric screenshot of a model node or the merged scene via
- * @c voxelutil::renderToImage / @c voxelutil::renderIsometricImage (no GL context required).
+ * @c scenegraph::renderToImage / @c scenegraph::renderIsometricImage (no GL context required).
  */
 class ScreenshotTool : public Tool {
 public:

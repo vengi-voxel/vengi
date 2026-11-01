@@ -8,10 +8,8 @@
 #include "voxelutil/ImageUtils.h"
 
 namespace scenegraph {
-class SceneGraph;
-}
 
-namespace voxelutil {
+class SceneGraph;
 
 /**
  * @brief Render every visible model in @p sceneGraph, or one subtree.
@@ -21,8 +19,8 @@ namespace voxelutil {
  * with the frame transform so neighbors from different nodes occlude each other.
  * @param frameIdx Keyframe used to bake each node's world transform.
  */
-[[nodiscard]] image::ImagePtr renderToImage(const scenegraph::SceneGraph &sceneGraph, const ImageRenderConfig &config,
-											int nodeId = InvalidNodeId, scenegraph::FrameIndex frameIdx = 0);
+[[nodiscard]] image::ImagePtr renderToImage(const SceneGraph &sceneGraph, const voxelutil::ImageRenderConfig &config,
+											int nodeId = InvalidNodeId, FrameIndex frameIdx = 0);
 
 /**
  * @brief Isometric render of every visible model in @p sceneGraph, or one subtree.
@@ -31,8 +29,8 @@ namespace voxelutil {
  * outlines see across child boundaries. @p nodeId and @p frameIdx match
  * @c renderToImage().
  */
-[[nodiscard]] image::ImagePtr renderIsometricImage(const scenegraph::SceneGraph &sceneGraph,
-												   const IsoRenderConfig &config, int nodeId = InvalidNodeId,
-												   scenegraph::FrameIndex frameIdx = 0);
+[[nodiscard]] image::ImagePtr renderIsometricImage(const SceneGraph &sceneGraph,
+												   const voxelutil::IsoRenderConfig &config, int nodeId = InvalidNodeId,
+												   FrameIndex frameIdx = 0);
 
-} // namespace voxelutil
+} // namespace scenegraph

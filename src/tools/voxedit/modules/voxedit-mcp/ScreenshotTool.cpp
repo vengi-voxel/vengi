@@ -115,7 +115,7 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 		config.background = background;
 		config.imgW = width;
 		config.imgH = height;
-		image = voxelutil::renderIsometricImage(sceneGraph, config, nodeId, frameIdx);
+		image = scenegraph::renderIsometricImage(sceneGraph, config, nodeId, frameIdx);
 	} else {
 		voxelutil::ImageRenderConfig config;
 		config.frontFace = face;
@@ -123,7 +123,7 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 		config.imgW = width;
 		config.imgH = height;
 		config.depthFactor = depthFactor;
-		image = voxelutil::renderToImage(sceneGraph, config, nodeId, frameIdx);
+		image = scenegraph::renderToImage(sceneGraph, config, nodeId, frameIdx);
 	}
 
 	if (!image || !image->isLoaded()) {

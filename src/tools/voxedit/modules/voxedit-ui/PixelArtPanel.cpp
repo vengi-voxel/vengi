@@ -76,9 +76,9 @@ image::ImagePtr PixelArtPanel::pixelArtImage() {
 	const uint64_t hash = _sceneMgr->calculateHash() ^ configHash ^ transformHash;
 	if (!_image || hash != _hash || configHash != _configHash) {
 		if (isometric) {
-			_image = voxelutil::renderIsometricImage(sceneGraph, isoConfig, InvalidNodeId, frameIdx);
+			_image = scenegraph::renderIsometricImage(sceneGraph, isoConfig, InvalidNodeId, frameIdx);
 		} else {
-			_image = voxelutil::renderToImage(sceneGraph, imageConfig, InvalidNodeId, frameIdx);
+			_image = scenegraph::renderToImage(sceneGraph, imageConfig, InvalidNodeId, frameIdx);
 		}
 		_hash = hash;
 		_configHash = configHash;

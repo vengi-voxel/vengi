@@ -43,7 +43,7 @@ local MCP client can connect.
 
 ## Screenshots
 
-`voxedit_screenshot` renders a node (or the merged visible scene) to a PNG without a GL context via `voxelutil::renderToImage` / `voxelutil::renderIsometricImage`.
+`voxedit_screenshot` renders a node (or the merged visible scene) to a PNG without a GL context via `scenegraph::renderToImage` / `scenegraph::renderIsometricImage`.
 
 Large `width`/`height` values upscale the face projection and produce large MCP image payloads. Prefer omitting them (native voxel resolution) unless you need a specific size.
 

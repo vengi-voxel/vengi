@@ -14,7 +14,7 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 
-namespace voxelutil {
+namespace scenegraph {
 namespace {
 
 void collectModelNodes(const scenegraph::SceneGraph &sceneGraph, int nodeId, core::Buffer<int> &ids) {
@@ -158,22 +158,22 @@ bool bakeScene(const scenegraph::SceneGraph &sceneGraph, int nodeId, scenegraph:
 
 } // namespace
 
-image::ImagePtr renderToImage(const scenegraph::SceneGraph &sceneGraph, const ImageRenderConfig &config, int nodeId,
-							  scenegraph::FrameIndex frameIdx) {
+image::ImagePtr renderToImage(const SceneGraph &sceneGraph, const voxelutil::ImageRenderConfig &config, int nodeId,
+							  FrameIndex frameIdx) {
 	BakedScene baked;
 	if (!bakeScene(sceneGraph, nodeId, frameIdx, baked)) {
 		return {};
 	}
-	return renderToImage(baked.volume, baked.palette, config);
+	return voxelutil::renderToImage(baked.volume, baked.palette, config);
 }
 
-image::ImagePtr renderIsometricImage(const scenegraph::SceneGraph &sceneGraph, const IsoRenderConfig &config,
-									 int nodeId, scenegraph::FrameIndex frameIdx) {
+image::ImagePtr renderIsometricImage(const SceneGraph &sceneGraph, const voxelutil::IsoRenderConfig &config,
+									 int nodeId, FrameIndex frameIdx) {
 	BakedScene baked;
 	if (!bakeScene(sceneGraph, nodeId, frameIdx, baked)) {
 		return {};
 	}
-	return renderIsometricImage(baked.volume, baked.palette, config);
+	return voxelutil::renderIsometricImage(baked.volume, baked.palette, config);
 }
 
-} // namespace voxelutil
+} // namespace scenegraph

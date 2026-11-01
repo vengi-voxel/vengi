@@ -19,6 +19,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteUtil.h"
 #include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphImage.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
@@ -90,15 +91,9 @@ float Format::floatProperty(const scenegraph::SceneGraphNode *node, const core::
 	return core::string::toFloat(node->property(name));
 }
 
-// default thumbnail creator - not a real rendering just the rgba values without blooming or anything fancy
+// Headless thumbnail: the scene-graph renderer bakes visible models, including transforms and alpha.
 image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::SceneGraph &sceneGraph,
 														   const voxelformat::ThumbnailContext &ctx) {
-	scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge();
-	if (!merged.hasVolume()) {
-		Log::error("No valid volume in the scenegraph to create a thumbnail");
-		return image::ImagePtr();
-	}
-	core::ScopedPtr<voxel::RawVolume> v(merged.volume());
 	voxel::FaceNames frontFace = voxel::FaceNames::Front;
 	if (ctx.useWorldPosition) {
 		const glm::vec3 &center = sceneGraph.region().calcCenterf();
@@ -113,16 +108,18 @@ image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::Sce
 			frontFace = dir.z > 0.0f ? voxel::FaceNames::NegativeZ : voxel::FaceNames::PositiveZ;
 		}
 	}
-	const color::RGBA background = color::getRGBA(ctx.clearColor);
-	const int imgW = ctx.outputSize.x;
-	const int imgH = ctx.outputSize.y;
 	voxelutil::ImageRenderConfig config;
 	config.frontFace = frontFace;
-	config.background = background;
-	config.imgW = imgW;
-	config.imgH = imgH;
+	config.background = color::getRGBA(ctx.clearColor);
+	config.imgW = ctx.outputSize.x;
+	config.imgH = ctx.outputSize.y;
 	config.depthFactor = ctx.depthFactor2D;
-	return voxelutil::renderToImage(v, merged.palette, config);
+	const image::ImagePtr image = scenegraph::renderToImage(sceneGraph, config);
+	if (!image || !image->isLoaded()) {
+		Log::error("No valid volume in the scenegraph to create a thumbnail");
+		return image::ImagePtr();
+	}
+	return image;
 }
 
 image::ImagePtr Format::createThumbnail(const scenegraph::SceneGraph &sceneGraph, ThumbnailCreator thumbnailCreator,

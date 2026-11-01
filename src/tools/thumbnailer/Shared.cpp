@@ -191,7 +191,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchiveP
 			config.background = bgColor;
 			config.imgW = ctx.outputSize.x;
 			config.imgH = ctx.outputSize.y;
-			image::ImagePtr image = voxelutil::renderIsometricImage(sceneGraph, config);
+			image::ImagePtr image = scenegraph::renderIsometricImage(sceneGraph, config);
 			if (!image || !image->isLoaded()) {
 				Log::error("No valid volume in the scenegraph to print");
 			}
@@ -203,7 +203,7 @@ image::ImagePtr volumeThumbnail(const core::String &fileName, const io::ArchiveP
 		config.imgW = ctx.outputSize.x;
 		config.imgH = ctx.outputSize.y;
 		config.upScale = false;
-		image::ImagePtr image = voxelutil::renderToImage(sceneGraph, config);
+		image::ImagePtr image = scenegraph::renderToImage(sceneGraph, config);
 		if (!image || !image->isLoaded()) {
 			Log::error("No valid volume in the scenegraph to print");
 		}

@@ -57,7 +57,7 @@ TEST_F(SceneGraphImageTest, testRenderToImageLimitsToNodeAndChildren) {
 	config.background = color::RGBA(0, 0, 0, 0);
 	config.upScale = false;
 
-	const image::ImagePtr scene = voxelutil::renderToImage(sceneGraph, config);
+	const image::ImagePtr scene = renderToImage(sceneGraph, config);
 	ASSERT_TRUE(scene && scene->isLoaded());
 	EXPECT_EQ(11, scene->width());
 	EXPECT_EQ(1, scene->height());
@@ -65,14 +65,14 @@ TEST_F(SceneGraphImageTest, testRenderToImageLimitsToNodeAndChildren) {
 	EXPECT_EQ(scene->colorAt(8, 0).rgba, color::RGBA(0, 255, 0, 255).rgba);
 	EXPECT_EQ(scene->colorAt(0, 0).rgba, color::RGBA(0, 0, 255, 255).rgba);
 
-	const image::ImagePtr subtree = voxelutil::renderToImage(sceneGraph, config, parentId);
+	const image::ImagePtr subtree = renderToImage(sceneGraph, config, parentId);
 	ASSERT_TRUE(subtree && subtree->isLoaded());
 	EXPECT_EQ(3, subtree->width());
 	EXPECT_EQ(subtree->colorAt(2, 0).rgba, color::RGBA(255, 0, 0, 255).rgba);
 	EXPECT_EQ(subtree->colorAt(0, 0).rgba, color::RGBA(0, 255, 0, 255).rgba);
 	EXPECT_EQ(subtree->colorAt(1, 0).rgba, config.background.rgba);
 
-	EXPECT_FALSE(voxelutil::renderToImage(sceneGraph, config, 99));
+	EXPECT_FALSE(renderToImage(sceneGraph, config, 99));
 }
 
 TEST_F(SceneGraphImageTest, testRenderToImageKeepsPaletteAlpha) {
@@ -107,7 +107,7 @@ TEST_F(SceneGraphImageTest, testRenderToImageKeepsPaletteAlpha) {
 	voxelutil::ImageRenderConfig config;
 	config.background = color::RGBA(0, 0, 0, 0);
 	config.upScale = false;
-	const image::ImagePtr image = voxelutil::renderToImage(sceneGraph, config);
+	const image::ImagePtr image = renderToImage(sceneGraph, config);
 	ASSERT_TRUE(image && image->isLoaded());
 	EXPECT_EQ(image->colorAt(0, 0).rgba, color::RGBA(255, 255, 255, 40).rgba);
 }
@@ -153,9 +153,9 @@ TEST_F(SceneGraphImageTest, testRenderIsometricImageSubtreeIsSmaller) {
 	config.shading = false;
 	config.materials = false;
 	config.transparency = false;
-	const image::ImagePtr scene = voxelutil::renderIsometricImage(sceneGraph, config);
-	const image::ImagePtr subtree = voxelutil::renderIsometricImage(sceneGraph, config, parentId);
-	const image::ImagePtr sibling = voxelutil::renderIsometricImage(sceneGraph, config, siblingId);
+	const image::ImagePtr scene = renderIsometricImage(sceneGraph, config);
+	const image::ImagePtr subtree = renderIsometricImage(sceneGraph, config, parentId);
+	const image::ImagePtr sibling = renderIsometricImage(sceneGraph, config, siblingId);
 	ASSERT_TRUE(scene && subtree && sibling);
 	EXPECT_EQ(8, sibling->width());
 	EXPECT_EQ(7, sibling->height());

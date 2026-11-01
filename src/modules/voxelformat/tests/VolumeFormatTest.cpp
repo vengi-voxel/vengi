@@ -4,7 +4,12 @@
 
 #include "voxelformat/VolumeFormat.h"
 #include "AbstractFormatTest.h"
+#include "image/Image.h"
 #include "io/FilesystemArchive.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxelformat/FormatThumbnail.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 
 namespace voxelformat {
 

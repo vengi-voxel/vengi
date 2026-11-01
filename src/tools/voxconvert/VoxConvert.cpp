@@ -684,7 +684,7 @@ app::AppState VoxConvert::onInit() {
 			config.background = bgColor;
 			config.imgW = width;
 			config.imgH = height;
-			image = voxelutil::renderIsometricImage(sceneGraph, config);
+			image = scenegraph::renderIsometricImage(sceneGraph, config);
 		} else {
 			voxelutil::ImageRenderConfig config = voxelutil::ImageRenderConfig::fromCvars();
 			config.frontFace = frontFace;
@@ -692,7 +692,7 @@ app::AppState VoxConvert::onInit() {
 			config.imgW = width;
 			config.imgH = height;
 			config.upScale = false;
-			image = voxelutil::renderToImage(sceneGraph, config);
+			image = scenegraph::renderToImage(sceneGraph, config);
 		}
 		if (!image || !image->isLoaded()) {
 			Log::error("No valid volume in the scenegraph to print");
