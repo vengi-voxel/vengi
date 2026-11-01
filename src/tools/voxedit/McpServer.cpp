@@ -43,6 +43,7 @@
 #include "voxedit-mcp/SelectBrushTool.h"
 #include "voxedit-mcp/ShapeBrushTool.h"
 #include "voxedit-mcp/TransformBrushTool.h"
+#include "voxedit-mcp/McpProtocol.h"
 #include "voxedit-mcp/Tool.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/network/Client.h"
@@ -62,12 +63,6 @@
 #include <unistd.h>
 #endif
 
-// JSON-RPC error codes
-static constexpr int PARSE_ERROR = -32700;
-static constexpr int INVALID_REQUEST = -32600;
-static constexpr int METHOD_NOT_FOUND = -32601;
-static constexpr int INVALID_PARAMS = -32602;
-static constexpr int INIT_FAILED = -32000;
 
 McpServer *McpServer::s_instance = nullptr;
 
@@ -237,7 +232,7 @@ app::AppState McpServer::onRunning() {
 	flushStdout();
 
 	// Check if disconnected and reconnect with 5-second delay between attempts
-	if (_initialized && !client.isConnected()) {
+	if (_keepConnected && !client.isConnected()) {
 		const uint64_t now = _timeProvider->tickNow();
 		if (now - _lastConnectionAttemptMillis >= 5000) {
 			Log::info("Connection lost, attempting to reconnect...");
@@ -301,13 +296,13 @@ bool McpServer::handleStdin() {
 
 	const char *line = lineStr.c_str();
 	if (!json::Json::accept(line)) {
-		sendError(json::Json(), PARSE_ERROR, "Parse error");
+		sendError(json::Json(), voxedit::MCP_PARSE_ERROR, "Parse error");
 		return true;
 	}
 
 	json::Json request = json::Json::parse(line);
 	if (!request.isValid()) {
-		sendError(json::Json(), PARSE_ERROR, "Parse error");
+		sendError(json::Json(), voxedit::MCP_PARSE_ERROR, "Parse error");
 		return true;
 	}
 
@@ -315,81 +310,111 @@ bool McpServer::handleStdin() {
 	return true;
 }
 
+void McpServer::applyClientInfo(const json::Json &request) {
+	const json::Json clientInfo = voxedit::mcpRequestClientInfo(request);
+	if (!clientInfo.isValid() || !clientInfo.isObject()) {
+		return;
+	}
+	const core::String clientName = clientInfo.strVal("name", "");
+	const core::String clientVersion = clientInfo.strVal("version", "unknown");
+	if (!clientName.empty()) {
+		_mcpClientName = clientName;
+	}
+	Log::info("Client: %s (version %s) - network username '%s'", clientName.empty() ? "unknown" : clientName.c_str(),
+			  clientVersion.c_str(), _mcpClientName.c_str());
+}
+
 void McpServer::handleRequest(const json::Json &request) {
 	json::Json id = request.get("id");
+	_activeModern = false;
 	if (!request.contains("jsonrpc") || request.get("jsonrpc").str() != "2.0") {
-		sendError(id, INVALID_REQUEST, "Invalid JSON-RPC version");
+		sendError(id, voxedit::MCP_INVALID_REQUEST, "Invalid JSON-RPC version");
 		return;
 	}
 
 	if (!request.contains("method") || !request.get("method").isString()) {
-		sendError(id, INVALID_REQUEST, "Missing method");
+		sendError(id, voxedit::MCP_INVALID_REQUEST, "Missing method");
 		return;
 	}
 
 	const core::String method = request.get("method").str();
 	Log::debug("Received MCP request for method %s", method.c_str());
+	const bool isNotification = !request.contains("id");
+
+	if (isNotification) {
+		if (method == "notifications/initialized") {
+			Log::info("MCP client initialized");
+		} else {
+			Log::debug("Ignoring MCP notification %s", method.c_str());
+		}
+		return;
+	}
+
+	if (voxedit::mcpRequestHasModernMeta(request)) {
+		const core::String version = voxedit::mcpRequestProtocolVersion(request);
+		if (!voxedit::mcpIsSupportedProtocolVersion(version)) {
+			sendError(id, voxedit::MCP_UNSUPPORTED_PROTOCOL_VERSION, "Unsupported protocol version",
+					  voxedit::mcpUnsupportedProtocolVersionData(version));
+			return;
+		}
+		if (!voxedit::mcpRequestHasClientCapabilities(request)) {
+			sendError(id, voxedit::MCP_INVALID_PARAMS, "Missing io.modelcontextprotocol/clientCapabilities");
+			return;
+		}
+		_activeModern = voxedit::mcpIsModernProtocolVersion(version);
+		applyClientInfo(request);
+	} else if (method == "server/discover") {
+		sendError(id, voxedit::MCP_INVALID_PARAMS, "Missing params._meta");
+		return;
+	}
 
 	if (method == "initialize") {
 		handleInitialize(request);
-	} else if (method == "notifications/initialized") {
-		Log::info("MCP client initialized");
+	} else if (method == "server/discover") {
+		handleDiscover(request);
 	} else if (method == "tools/list") {
+		_keepConnected = true;
 		if (!connectToVoxEdit()) {
 			Log::error("Failed to connect to VoxEdit server at %s:%d",
 					   core::getVar(cfg::VoxEditNetHostname)->strVal().c_str(),
 					   core::getVar(cfg::VoxEditNetPort)->intVal());
-			sendError(id, INIT_FAILED, "Failed to connect to VoxEdit server");
+			sendError(id, voxedit::MCP_INIT_FAILED, "Failed to connect to VoxEdit server");
 			return;
 		}
 		handleToolsList(request);
 	} else if (method == "tools/call") {
+		_keepConnected = true;
 		handleToolsCall(request);
 	} else if (method == "ping") {
-		json::Json response = json::Json::object();
-		response.set("jsonrpc", "2.0");
-		response.set("id", id);
-		response.set("result", json::Json::object());
-		sendResponse(response);
+		if (_activeModern) {
+			sendError(id, voxedit::MCP_METHOD_NOT_FOUND, "Method not found");
+			return;
+		}
+		sendResult(id, json::Json::object());
 	} else {
-		sendError(id, METHOD_NOT_FOUND, "Method not found");
+		sendError(id, voxedit::MCP_METHOD_NOT_FOUND, "Method not found");
 	}
 }
 
 void McpServer::handleInitialize(const json::Json &request) {
 	Log::info("Received initialize request");
-	if (request.contains("params") && request.get("params").contains("clientInfo")) {
-		const json::Json clientInfo = request.get("params").get("clientInfo");
-		const core::String clientName = clientInfo.strVal("name", "");
-		const core::String clientVersion = clientInfo.strVal("version", "unknown");
-		if (!clientName.empty()) {
-			_mcpClientName = clientName;
-		}
-		Log::info("Client: %s (version %s) - network username '%s'",
-				  clientName.empty() ? "unknown" : clientName.c_str(), clientVersion.c_str(),
-				  _mcpClientName.c_str());
-	}
-	_initialized = true;
+	applyClientInfo(request);
+	const core::String asked = voxedit::mcpRequestProtocolVersion(request);
+	const char *version = voxedit::mcpNegotiateProtocolVersion(asked);
+	_legacyProtocolVersion = version;
+	_keepConnected = true;
+	_activeModern = false;
 
-	json::Json result = json::Json::object();
-	result.set("protocolVersion", "2024-11-05");
+	Log::info("Negotiated MCP protocol version %s", version);
+	sendResult(request.get("id"), voxedit::mcpInitializeResult(version, appname(), PROJECT_VERSION));
+}
 
-	json::Json capabilities = json::Json::object();
-	json::Json tools = json::Json::object();
-	tools.set("listChanged", true);
-	capabilities.set("tools", tools);
-	result.set("capabilities", capabilities);
-
-	json::Json serverInfo = json::Json::object();
-	serverInfo.set("name", appname().c_str());
-	serverInfo.set("version", PROJECT_VERSION);
-	result.set("serverInfo", serverInfo);
-
-	json::Json response = json::Json::object();
-	response.set("jsonrpc", "2.0");
-	response.set("id", request.get("id"));
-	response.set("result", result);
-	sendResponse(response);
+void McpServer::handleDiscover(const json::Json &request) {
+	Log::info("Received server/discover request");
+	const bool previousModern = _activeModern;
+	_activeModern = true;
+	sendResult(request.get("id"), voxedit::mcpDiscoverResult(appname(), PROJECT_VERSION));
+	_activeModern = previousModern;
 }
 
 void McpServer::handleToolsList(const json::Json &request) {
@@ -398,17 +423,15 @@ void McpServer::handleToolsList(const json::Json &request) {
 	_toolRegistry.addRegisteredTools(toolsArr);
 	json::Json result = json::Json::object();
 	result.set("tools", toolsArr);
-
-	json::Json response = json::Json::object();
-	response.set("jsonrpc", "2.0");
-	response.set("id", request.get("id"));
-	response.set("result", result);
-	sendResponse(response);
+	if (_activeModern) {
+		voxedit::mcpApplyCacheableResult(result, 30000, "private");
+	}
+	sendResult(request.get("id"), result);
 }
 
 void McpServer::handleToolsCall(const json::Json &request) {
 	if (!request.contains("params") || !request.get("params").contains("name")) {
-		sendError(request.get("id"), INVALID_PARAMS, "Missing tool name");
+		sendError(request.get("id"), voxedit::MCP_INVALID_PARAMS, "Missing tool name");
 		return;
 	}
 
@@ -426,8 +449,19 @@ void McpServer::handleToolsCall(const json::Json &request) {
 	ctx.result = sendToolResult;
 	ctx.resultImage = sendToolImageResult;
 	if (!_toolRegistry.call(toolName, id, args, ctx)) {
-		sendError(id, INVALID_PARAMS, "Unknown tool");
+		sendError(id, voxedit::MCP_INVALID_PARAMS, "Unknown tool");
 	}
+}
+
+void McpServer::sendResult(const json::Json &id, json::Json result) {
+	if (_activeModern) {
+		voxedit::mcpApplyCompleteResult(result, appname(), PROJECT_VERSION);
+	}
+	json::Json response = json::Json::object();
+	response.set("jsonrpc", "2.0");
+	response.set("id", id);
+	response.set("result", result);
+	sendResponse(response);
 }
 
 bool McpServer::sendToolResult(const json::Json &id, const core::String &text, bool isError) {
@@ -445,11 +479,15 @@ bool McpServer::sendToolResult(const json::Json &id, const core::String &text, b
 		result.set("isError", true);
 	}
 
-	json::Json response = json::Json::object();
-	response.set("jsonrpc", "2.0");
-	response.set("id", id);
-	response.set("result", result);
-	sendResponse(response);
+	if (s_instance != nullptr) {
+		s_instance->sendResult(id, result);
+	} else {
+		json::Json response = json::Json::object();
+		response.set("jsonrpc", "2.0");
+		response.set("id", id);
+		response.set("result", result);
+		sendResponse(response);
+	}
 	return !isError;
 }
 
@@ -476,11 +514,15 @@ bool McpServer::sendToolImageResult(const json::Json &id, const core::String &pn
 		result.set("isError", true);
 	}
 
-	json::Json response = json::Json::object();
-	response.set("jsonrpc", "2.0");
-	response.set("id", id);
-	response.set("result", result);
-	sendResponse(response);
+	if (s_instance != nullptr) {
+		s_instance->sendResult(id, result);
+	} else {
+		json::Json response = json::Json::object();
+		response.set("jsonrpc", "2.0");
+		response.set("id", id);
+		response.set("result", result);
+		sendResponse(response);
+	}
 	return !isError;
 }
 
@@ -556,6 +598,10 @@ void McpServer::sendResponse(const json::Json &response) {
 }
 
 void McpServer::sendError(const json::Json &id, int code, const core::String &message) {
+	sendError(id, code, message, json::Json());
+}
+
+void McpServer::sendError(const json::Json &id, int code, const core::String &message, const json::Json &data) {
 	Log::warn("Sending error %d: %s", code, message.c_str());
 	json::Json response = json::Json::object();
 	response.set("jsonrpc", "2.0");
@@ -563,6 +609,9 @@ void McpServer::sendError(const json::Json &id, int code, const core::String &me
 	json::Json error = json::Json::object();
 	error.set("code", code);
 	error.set("message", message.c_str());
+	if (data.isValid()) {
+		error.set("data", data);
+	}
 	response.set("error", error);
 	sendResponse(response);
 }

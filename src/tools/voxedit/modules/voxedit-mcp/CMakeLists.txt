@@ -32,6 +32,7 @@ set(SRCS
 	ScriptTool.h ScriptTool.cpp
 	ScreenshotTool.h ScreenshotTool.cpp
 	CommandTool.h CommandTool.cpp
+	McpProtocol.h McpProtocol.cpp
 	ToolRegistry.h ToolRegistry.cpp
 )
 

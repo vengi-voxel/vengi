@@ -375,8 +375,15 @@ TEST_F(ToolsTest, registeredToolsHaveValidMcpInputSchemas) {
 	json::Json tools = json::Json::array();
 	registry.addRegisteredTools(tools);
 	ASSERT_GT(tools.size(), 0);
+	core::String previousName;
 	for (const auto &tool : tools) {
 		assertValidMcpToolSchema(tool);
+		const core::String name = tool.get("name").str();
+		if (!previousName.empty()) {
+			EXPECT_TRUE(previousName < name) << "tools/list must be sorted: " << previousName.c_str() << " before "
+											 << name.c_str();
+		}
+		previousName = name;
 	}
 }
 

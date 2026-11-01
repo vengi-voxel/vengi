@@ -50,8 +50,13 @@ private:
 	LuaScriptsListHandler _luaScriptsListHandler;
 	voxedit::ToolRegistry _toolRegistry;
 
-	bool _initialized = false;
-	/** @brief From MCP initialize clientInfo.name; used as VoxEdit network username */
+	/** @brief Stay connected after initialize or the first VoxEdit-backed MCP call */
+	bool _keepConnected = false;
+	/** @brief True when the in-flight request should emit 2026-07-28 result fields */
+	bool _activeModern = false;
+	/** @brief Protocol version selected by a legacy initialize handshake (empty if none) */
+	core::String _legacyProtocolVersion;
+	/** @brief From MCP clientInfo.name; used as VoxEdit network username */
 	core::String _mcpClientName = "mcp-client";
 	/** @brief Queued stdout bytes for non-blocking MCP JSON-RPC writes */
 	core::String _stdoutPending;
@@ -78,11 +83,15 @@ private:
 	bool handleStdin();
 	void handleRequest(const json::Json &request);
 	void handleInitialize(const json::Json &request);
+	void handleDiscover(const json::Json &request);
 	void handleToolsList(const json::Json &request);
 	void handleToolsCall(const json::Json &request);
+	void applyClientInfo(const json::Json &request);
+	void sendResult(const json::Json &id, json::Json result);
 
 	static void sendResponse(const json::Json &response);
 	static void sendError(const json::Json &id, int code, const core::String &message);
+	static void sendError(const json::Json &id, int code, const core::String &message, const json::Json &data);
 	static bool sendToolResult(const json::Json &id, const core::String &text, bool isError = false);
 	static bool sendToolImageResult(const json::Json &id, const core::String &pngBase64, const core::String &mimeType,
 									const core::String &text, bool isError = false);

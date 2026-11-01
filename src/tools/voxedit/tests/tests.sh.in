@@ -239,6 +239,99 @@ fi
 
 echo ""
 
+# Test 6: server/discover (MCP 2026-07-28)
+log_info "Test 6: Sending server/discover request..."
+
+DISCOVER_REQUEST='{"jsonrpc":"2.0","id":6,"method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{},"io.modelcontextprotocol/clientInfo":{"name":"test-client","version":"1.0.0"}}}}'
+DISCOVER_RESPONSE=$(echo -e "$DISCOVER_REQUEST" | timeout 5 "$MCP_SERVER" 2>/dev/null | head -1)
+
+if [ -z "$DISCOVER_RESPONSE" ]; then
+    log_fail "No response received for server/discover"
+else
+    if echo "$DISCOVER_RESPONSE" | jq . > /dev/null 2>&1; then
+        RESULT_TYPE=$(echo "$DISCOVER_RESPONSE" | jq -r '.result.resultType')
+        HAS_VERSIONS=$(echo "$DISCOVER_RESPONSE" | jq '.result | has("supportedVersions")')
+        HAS_CAPABILITIES=$(echo "$DISCOVER_RESPONSE" | jq '.result | has("capabilities")')
+        SERVER_NAME=$(echo "$DISCOVER_RESPONSE" | jq -r '.result._meta["io.modelcontextprotocol/serverInfo"].name')
+        HAS_LATEST=$(echo "$DISCOVER_RESPONSE" | jq -r '.result.supportedVersions | index("2026-07-28") != null')
+        TTL=$(echo "$DISCOVER_RESPONSE" | jq -r '.result.ttlMs')
+        SCOPE=$(echo "$DISCOVER_RESPONSE" | jq -r '.result.cacheScope')
+        if [ "$RESULT_TYPE" = "complete" ] && [ "$HAS_VERSIONS" = "true" ] && [ "$HAS_CAPABILITIES" = "true" ] && [ "$HAS_LATEST" = "true" ] && [ "$SCOPE" = "public" ] && [ -n "$TTL" ] && [ "$TTL" != "null" ]; then
+            log_pass "server/discover response valid (server: $SERVER_NAME)"
+        else
+            log_fail "server/discover response missing required 2026-07-28 fields"
+            echo "  Response: $DISCOVER_RESPONSE"
+        fi
+    else
+        log_fail "server/discover response is not valid JSON"
+        echo "  Response: $DISCOVER_RESPONSE"
+    fi
+fi
+
+echo ""
+
+# Test 7: Unsupported protocol version
+log_info "Test 7: Testing unsupported protocol version..."
+
+UNSUPPORTED_REQUEST='{"jsonrpc":"2.0","id":7,"method":"tools/list","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"1900-01-01","io.modelcontextprotocol/clientCapabilities":{}}}}'
+UNSUPPORTED_RESPONSE=$(echo -e "$UNSUPPORTED_REQUEST" | timeout 5 "$MCP_SERVER" 2>/dev/null | head -1)
+
+if [ -n "$UNSUPPORTED_RESPONSE" ] && echo "$UNSUPPORTED_RESPONSE" | jq . > /dev/null 2>&1; then
+    ERROR_CODE=$(echo "$UNSUPPORTED_RESPONSE" | jq '.error.code')
+    REQUESTED=$(echo "$UNSUPPORTED_RESPONSE" | jq -r '.error.data.requested')
+    HAS_SUPPORTED=$(echo "$UNSUPPORTED_RESPONSE" | jq '.error.data | has("supported")')
+    if [ "$ERROR_CODE" = "-32022" ] && [ "$REQUESTED" = "1900-01-01" ] && [ "$HAS_SUPPORTED" = "true" ]; then
+        log_pass "Unsupported protocol version returns -32022 with supported list"
+    else
+        log_fail "Unsupported protocol version error shape is wrong"
+        echo "  Response: $UNSUPPORTED_RESPONSE"
+    fi
+else
+    log_fail "No valid response for unsupported protocol version"
+fi
+
+echo ""
+
+# Test 8: Modern ping is removed
+log_info "Test 8: Testing that ping is removed in 2026-07-28..."
+
+MODERN_PING='{"jsonrpc":"2.0","id":8,"method":"ping","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}'
+MODERN_PING_RESPONSE=$(echo -e "$MODERN_PING" | timeout 5 "$MCP_SERVER" 2>/dev/null | head -1)
+
+if [ -n "$MODERN_PING_RESPONSE" ] && echo "$MODERN_PING_RESPONSE" | jq . > /dev/null 2>&1; then
+    ERROR_CODE=$(echo "$MODERN_PING_RESPONSE" | jq '.error.code')
+    if [ "$ERROR_CODE" = "-32601" ]; then
+        log_pass "Modern ping correctly returns METHOD_NOT_FOUND"
+    else
+        log_fail "Modern ping should return METHOD_NOT_FOUND"
+        echo "  Response: $MODERN_PING_RESPONSE"
+    fi
+else
+    log_fail "No valid response for modern ping"
+fi
+
+echo ""
+
+# Test 9: Discover without _meta is rejected
+log_info "Test 9: Testing server/discover without _meta..."
+
+BARE_DISCOVER='{"jsonrpc":"2.0","id":9,"method":"server/discover","params":{}}'
+BARE_DISCOVER_RESPONSE=$(echo -e "$BARE_DISCOVER" | timeout 5 "$MCP_SERVER" 2>/dev/null | head -1)
+
+if [ -n "$BARE_DISCOVER_RESPONSE" ] && echo "$BARE_DISCOVER_RESPONSE" | jq . > /dev/null 2>&1; then
+    ERROR_CODE=$(echo "$BARE_DISCOVER_RESPONSE" | jq '.error.code')
+    if [ "$ERROR_CODE" = "-32602" ]; then
+        log_pass "server/discover without _meta returns INVALID_PARAMS"
+    else
+        log_fail "server/discover without _meta should return INVALID_PARAMS"
+        echo "  Response: $BARE_DISCOVER_RESPONSE"
+    fi
+else
+    log_fail "No valid response for server/discover without _meta"
+fi
+
+echo ""
+
 # Summary
 echo "========================================"
 echo -e "Tests passed: ${GREEN}$TESTS_PASSED${NC}"

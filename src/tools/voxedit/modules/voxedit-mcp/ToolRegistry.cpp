@@ -3,6 +3,7 @@
  */
 
 #include "ToolRegistry.h"
+#include "core/collection/DynamicArray.h"
 #include "core/Log.h"
 
 namespace voxedit {
@@ -48,8 +49,14 @@ bool ToolRegistry::call(const core::String &toolName, const json::Json &id, cons
 }
 
 void ToolRegistry::addRegisteredTools(json::Json &tools) {
+	core::DynamicArray<Tool *> sorted;
+	sorted.reserve(_tools.size());
 	for (const auto &pair : _tools) {
-		tools.push(pair->second->inputSchema());
+		sorted.push_back(pair->second);
+	}
+	sorted.sort([](const Tool *lhs, const Tool *rhs) { return lhs->name() > rhs->name(); });
+	for (Tool *tool : sorted) {
+		tools.push(tool->inputSchema());
 	}
 }
 
