@@ -69,6 +69,27 @@ protected:
 	 */
 	glm::vec2 _mouseRelativePos;
 
+	struct TouchPoint {
+		int64_t id = 0;
+		float x = 0.0f;
+		float y = 0.0f;
+		float originX = 0.0f;
+		float originY = 0.0f;
+		bool active = false;
+	};
+	TouchPoint _touchPoints[5]{};
+	bool _touchGesture = false;
+	int32_t _pinchZoomKey = 0;
+	float _pinchBaselinePx = -1.0f;
+
+	int activeTouchCount() const;
+	TouchPoint *findTouchPoint(int64_t finger);
+	TouchPoint *addTouchPoint(int64_t finger, float x, float y);
+	void touchToPixels(float nx, float ny, float &px, float &py) const;
+	float touchTravelPx(const TouchPoint &point) const;
+	bool pinchSpanPx(float &distance) const;
+	void releaseTouchGesture();
+
 	WindowedApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize = 1);
 
 	virtual bool handleSDLEvent(SDL_Event& event);
@@ -106,6 +127,9 @@ protected:
 public:
 	bool isRelativeMouseMode() const;
 	bool isSingleWindowMode() const;
+	bool touchGestureActive() const {
+		return _touchGesture;
+	}
 
 	void *windowHandle();
 	/**

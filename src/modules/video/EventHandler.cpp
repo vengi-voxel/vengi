@@ -151,7 +151,8 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		fingerPress((void*)window, finger, event.tfinger.x, event.tfinger.y, event.tfinger.pressure, event.tfinger.timestamp);
 		break;
 	}
-	case SDL_EVENT_FINGER_UP: {
+	case SDL_EVENT_FINGER_UP:
+	case SDL_EVENT_FINGER_CANCELED: {
 		SDL_Window *window = SDL_GetWindowFromID(event.tfinger.windowID);
 		int64_t finger = event.tfinger.fingerID;
 		fingerRelease((void*)window, finger, event.tfinger.x, event.tfinger.y, event.tfinger.timestamp);

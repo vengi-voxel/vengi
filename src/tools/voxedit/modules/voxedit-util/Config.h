@@ -95,5 +95,6 @@ constexpr const char *VoxEditPenPressureAffectsRadius = "ve_penpressureaffectsra
 constexpr const char *VoxEditPenRadiusMin = "ve_penradiusmin";
 constexpr const char *VoxEditPenRadiusMax = "ve_penradiusmax";
 constexpr const char *VoxEditPenEraserSwitchesMode = "ve_peneraserswitchesmode";
+constexpr const char *VoxEditEmulatePen = "ve_emulatepen";
 
 } // namespace cfg

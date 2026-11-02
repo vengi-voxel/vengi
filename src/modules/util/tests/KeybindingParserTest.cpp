@@ -36,6 +36,8 @@ right_mouse void all
 double_right_mouse void all
 wheelup void all
 wheeldown void all
+one_finger_drag void all
+two_finger_drag void all
 left_gui void all
 + "echo only+" all
 )";
@@ -67,7 +69,7 @@ TEST_F(KeybindingParserTest, testParsing) {
 	const BindMap &m = p.getBindings();
 	ASSERT_FALSE(m.empty());
 	ASSERT_EQ(0, p.invalidBindings()) << p.lastError();
-	const size_t expected = 17;
+	const size_t expected = 19;
 	EXPECT_EQ(expected, m.size());
 
 	int key = 'w';

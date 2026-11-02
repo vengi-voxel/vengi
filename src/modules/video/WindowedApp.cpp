@@ -28,6 +28,7 @@
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 #include <glm/common.hpp>
+#include <glm/geometric.hpp>
 #ifdef USE_VK_RENDERER
 #include <SDL3/SDL_vulkan.h>
 #endif
@@ -69,6 +70,10 @@ WindowedApp::~WindowedApp() {
 
 void WindowedApp::onAfterRunning() {
 	core_trace_scoped(WindowedAppAfterRunning);
+	if (_pinchZoomKey != 0) {
+		handleKeyRelease(_pinchZoomKey, 0);
+		_pinchZoomKey = 0;
+	}
 	uploadRingEndFrame();
 	video::endFrameStats();
 	video::endFrame(_window);
@@ -231,15 +236,201 @@ void WindowedApp::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y,
 	handleKeyRelease(CUSTOM_SDL_KEYCODE(button), SDL_GetModState());
 }
 
+int WindowedApp::activeTouchCount() const {
+	int count = 0;
+	for (const TouchPoint &point : _touchPoints) {
+		if (point.active) {
+			++count;
+		}
+	}
+	return count;
+}
+
+WindowedApp::TouchPoint *WindowedApp::findTouchPoint(int64_t finger) {
+	for (TouchPoint &point : _touchPoints) {
+		if (point.active && point.id == finger) {
+			return &point;
+		}
+	}
+	return nullptr;
+}
+
+WindowedApp::TouchPoint *WindowedApp::addTouchPoint(int64_t finger, float x, float y) {
+	if (TouchPoint *existing = findTouchPoint(finger)) {
+		existing->x = x;
+		existing->y = y;
+		return existing;
+	}
+	for (TouchPoint &point : _touchPoints) {
+		if (point.active) {
+			continue;
+		}
+		point.id = finger;
+		point.x = point.originX = x;
+		point.y = point.originY = y;
+		point.active = true;
+		return &point;
+	}
+	return nullptr;
+}
+
+void WindowedApp::touchToPixels(float nx, float ny, float &px, float &py) const {
+	float width = (float)_windowDimension.x;
+	float height = (float)_windowDimension.y;
+	if ((width <= 1.0f || height <= 1.0f) && _window != nullptr) {
+		int iw = 0;
+		int ih = 0;
+		SDL_GetWindowSize(_window, &iw, &ih);
+		width = (float)iw;
+		height = (float)ih;
+	}
+	px = nx * width;
+	py = ny * height;
+}
+
+float WindowedApp::touchTravelPx(const TouchPoint &point) const {
+	float x0 = 0.0f;
+	float y0 = 0.0f;
+	float x1 = 0.0f;
+	float y1 = 0.0f;
+	touchToPixels(point.originX, point.originY, x0, y0);
+	touchToPixels(point.x, point.y, x1, y1);
+	return glm::length(glm::vec2(x1 - x0, y1 - y0));
+}
+
+bool WindowedApp::pinchSpanPx(float &distance) const {
+	const TouchPoint *first = nullptr;
+	const TouchPoint *second = nullptr;
+	for (const TouchPoint &point : _touchPoints) {
+		if (!point.active) {
+			continue;
+		}
+		if (first == nullptr) {
+			first = &point;
+		} else {
+			second = &point;
+			break;
+		}
+	}
+	if (first == nullptr || second == nullptr) {
+		return false;
+	}
+	float x0 = 0.0f;
+	float y0 = 0.0f;
+	float x1 = 0.0f;
+	float y1 = 0.0f;
+	touchToPixels(first->x, first->y, x0, y0);
+	touchToPixels(second->x, second->y, x1, y1);
+	distance = glm::length(glm::vec2(x1 - x0, y1 - y0));
+	return true;
+}
+
+void WindowedApp::releaseTouchGesture() {
+	if (!_touchGesture) {
+		return;
+	}
+	handleKeyRelease(util::button::CUSTOM_SDLK_TOUCH, 0);
+	handleKeyRelease(util::button::CUSTOM_SDLK_TWO_FINGER, 0);
+	_touchGesture = false;
+	_pinchBaselinePx = -1.0f;
+}
+
 bool WindowedApp::onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) {
-	return false;
+	(void)windowHandle;
+	(void)pressure;
+	(void)timestamp;
+	if (addTouchPoint(finger, x, y) == nullptr) {
+		return false;
+	}
+	if (activeTouchCount() >= 2) {
+		handleKeyRelease(util::button::CUSTOM_SDLK_TOUCH, 0);
+		handleKeyPress(util::button::CUSTOM_SDLK_TWO_FINGER, SDL_GetModState());
+		_touchGesture = true;
+		_pinchBaselinePx = -1.0f;
+	}
+	return true;
 }
 
 bool WindowedApp::onFingerRelease(void *windowHandle, int64_t finger, float x, float y, uint32_t timestamp) {
-	return false;
+	(void)windowHandle;
+	(void)timestamp;
+	if (TouchPoint *point = findTouchPoint(finger)) {
+		point->active = false;
+		point->x = x;
+		point->y = y;
+	}
+	const int remaining = activeTouchCount();
+	if (remaining == 0) {
+		releaseTouchGesture();
+		return true;
+	}
+	if (remaining < 2) {
+		handleKeyRelease(util::button::CUSTOM_SDLK_TWO_FINGER, 0);
+		_pinchBaselinePx = -1.0f;
+		_touchGesture = false;
+		for (TouchPoint &point : _touchPoints) {
+			if (!point.active) {
+				continue;
+			}
+			point.originX = point.x;
+			point.originY = point.y;
+		}
+	}
+	return true;
 }
 
 void WindowedApp::onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure, uint32_t timestamp) {
+	(void)windowHandle;
+	(void)dx;
+	(void)dy;
+	(void)pressure;
+	(void)timestamp;
+	TouchPoint *point = findTouchPoint(finger);
+	if (point == nullptr) {
+		point = addTouchPoint(finger, x, y);
+	}
+	if (point == nullptr) {
+		return;
+	}
+	point->x = x;
+	point->y = y;
+
+	const int count = activeTouchCount();
+	if (count == 1) {
+		// A short tap stays a left click. A drag is the one_finger_drag binding.
+		if (!_touchGesture && touchTravelPx(*point) >= 12.0f) {
+			handleKeyPress(util::button::CUSTOM_SDLK_TOUCH, SDL_GetModState());
+			_touchGesture = true;
+		}
+		return;
+	}
+	if (count < 2) {
+		return;
+	}
+	if (!_touchGesture) {
+		handleKeyRelease(util::button::CUSTOM_SDLK_TOUCH, 0);
+		handleKeyPress(util::button::CUSTOM_SDLK_TWO_FINGER, SDL_GetModState());
+		_touchGesture = true;
+	}
+	float span = 0.0f;
+	if (!pinchSpanPx(span)) {
+		return;
+	}
+	if (_pinchBaselinePx < 0.0f) {
+		_pinchBaselinePx = span;
+		return;
+	}
+	const float delta = span - _pinchBaselinePx;
+	if (glm::abs(delta) < 40.0f) {
+		return;
+	}
+	const int32_t zoomKey = delta > 0.0f ? util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP : util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
+	if (_pinchZoomKey != 0 && _pinchZoomKey != zoomKey) {
+		handleKeyRelease(_pinchZoomKey, 0);
+	}
+	handleKeyPress(zoomKey, SDL_GetModState());
+	_pinchZoomKey = zoomKey;
+	_pinchBaselinePx = span;
 }
 
 void WindowedApp::onPenAxis(void *windowHandle, uint32_t pen, float x, float y, PenAxis axis, float value) {

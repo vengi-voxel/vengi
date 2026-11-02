@@ -35,6 +35,26 @@
 #include "voxelui/FileDialogOptions.h"
 #include "voxelui/ScriptApi.h"
 
+bool VoxEdit::onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) {
+	const bool wasGesture = touchGestureActive();
+	const bool handled = Super::onFingerPress(windowHandle, finger, x, y, pressure, timestamp);
+	// The finger also synthesizes a left click. Once the gesture is a camera drag, drop that edit
+	// so releasing the finger does not place a voxel.
+	if (!wasGesture && touchGestureActive() && _sceneMgr && _sceneMgr->modifier().isEditActive()) {
+		_sceneMgr->modifier().abort();
+	}
+	return handled;
+}
+
+void VoxEdit::onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure,
+							 uint32_t timestamp) {
+	const bool wasGesture = touchGestureActive();
+	Super::onFingerMotion(windowHandle, finger, x, y, dx, dy, pressure, timestamp);
+	if (!wasGesture && touchGestureActive() && _sceneMgr && _sceneMgr->modifier().isEditActive()) {
+		_sceneMgr->modifier().abort();
+	}
+}
+
 bool VoxEdit::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) {
 	if (_mainWindow && _mainWindow->isSlicePanelHovered()) {
 		// The slice canvas handles zoom itself, before the model viewport bindings consume it.
@@ -142,6 +162,10 @@ app::AppState VoxEdit::onConstruct() {
 	_penEraserSwitchesMode = core::Var::registerVar(
 		core::VarDef(cfg::VoxEditPenEraserSwitchesMode, true, N_("Pen eraser switches mode"),
 					 N_("Temporarily switch to erase mode while pen eraser is active")));
+	const bool emulatePenDefault = false;
+	_emulatePen = core::Var::registerVar(
+		core::VarDef(cfg::VoxEditEmulatePen, emulatePenDefault, N_("Emulate pen"),
+					 N_("Treat the primary pointer as a pen and map speed to pressure")));
 
 	for (const io::FormatDescription *desc = palette::palettes(); desc->valid(); ++desc) {
 		_paletteFormats.push_back(*desc);
@@ -481,11 +505,88 @@ void VoxEdit::onPenDown(void *windowHandle, uint32_t pen, float x, float y, bool
 	_penEraserActive = true;
 }
 
+bool VoxEdit::emulatePenActive(int32_t mouseId) const {
+	if (_emulatePen == nullptr || !_emulatePen->boolVal()) {
+		return false;
+	}
+	if (mouseId == (int32_t)SDL_PEN_MOUSEID) {
+		return false;
+	}
+	if (touchGestureActive()) {
+		return false;
+	}
+	const core::BindingContext ctx = core::bindingContext();
+	if (ctx == core::BindingContext::UI || ctx == core::BindingContext::All) {
+		return false;
+	}
+	return true;
+}
+
+float VoxEdit::emulatedPenPressure(int relX, int relY) {
+	const int ax = relX < 0 ? -relX : relX;
+	const int ay = relY < 0 ? -relY : relY;
+	float pressure = 1.0f - (float)(ax + ay) / 48.0f;
+	if (pressure < 0.15f) {
+		pressure = 0.15f;
+	} else if (pressure > 1.0f) {
+		pressure = 1.0f;
+	}
+	return pressure;
+}
+
+void VoxEdit::endEmulatedPen(void *windowHandle, int32_t x, int32_t y) {
+	if (_emulatedPenMoved) {
+		onPenUp(windowHandle, 0u, (float)x, (float)y, false);
+	}
+	_emulatedPenDown = false;
+	_emulatedPenMoved = false;
+	_emulatedPenTravel = 0;
+}
+
+void VoxEdit::onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) {
+	if (button == SDL_BUTTON_LEFT && emulatePenActive(mouseId)) {
+		_emulatedPenDown = true;
+		_emulatedPenMoved = false;
+		_emulatedPenTravel = 0;
+	}
+	Super::onMouseButtonPress(windowHandle, x, y, button, clicks, mouseId);
+}
+
+void VoxEdit::onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) {
+	Super::onMouseButtonRelease(windowHandle, x, y, button, mouseId);
+	if (button == SDL_BUTTON_LEFT && _emulatedPenDown) {
+		endEmulatedPen(windowHandle, x, y);
+	}
+}
+
+void VoxEdit::onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) {
+	Super::onMouseMotion(windowHandle, x, y, relX, relY, mouseId);
+	if (!_emulatedPenDown) {
+		return;
+	}
+	if (!emulatePenActive(mouseId)) {
+		endEmulatedPen(windowHandle, x, y);
+		return;
+	}
+	const int ax = relX < 0 ? -relX : relX;
+	const int ay = relY < 0 ? -relY : relY;
+	_emulatedPenTravel += ax + ay;
+	// A click must not resize the brush. Pressure starts once the pointer actually moves.
+	if (_emulatedPenTravel < 6) {
+		return;
+	}
+	if (!_emulatedPenMoved) {
+		_emulatedPenMoved = true;
+		onPenDown(windowHandle, 0u, (float)x, (float)y, false);
+	}
+	onPenAxis(windowHandle, 0u, (float)x, (float)y, video::PenAxis::Pressure, emulatedPenPressure(relX, relY));
+}
+
 void VoxEdit::onPenUp(void *windowHandle, uint32_t pen, float x, float y, bool eraser) {
 	Super::onPenUp(windowHandle, pen, x, y, eraser);
 	if (_penPressureAffectsRadius && _penPressureAffectsRadius->boolVal()) {
 		voxedit::AABBBrush *brush = _sceneMgr->modifier().currentAABBBrush();
-		if (brush != nullptr && _penBaseRadius > 0) {
+		if (brush != nullptr && _penBaseRadius >= 0) {
 			brush->setRadius(_penBaseRadius);
 		}
 		_penBaseRadius = -1;
@@ -562,6 +663,8 @@ void VoxEdit::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("wheeldown",            "+zoom_out",                    "editing");
 	_keybindingHandler.registerBinding("wheelleft",            "+zoom_in",                     "editing");
 	_keybindingHandler.registerBinding("wheelright",           "+zoom_out",                    "editing");
+	_keybindingHandler.registerBinding("one_finger_drag",      "+camera_rotate",               "editing");
+	_keybindingHandler.registerBinding("two_finger_drag",      "+camera_pan",                  "editing");
 	_keybindingHandler.registerBinding("ctrl+e",               "toggle r_renderoutline",       "all");
 	_keybindingHandler.registerBinding("ctrl+g",               "toggle ve_showgrid",           "all");
 	_keybindingHandler.registerBinding("ctrl+f",               "toggle ve_showaabb",           "all");

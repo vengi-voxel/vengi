@@ -41,6 +41,8 @@ static const int32_t CUSTOM_SDLK_PEN_BUTTON0        = CUSTOM_SDL_KEYCODE(CUSTOM_
 static const int32_t CUSTOM_SDLK_PEN_BUTTON1        = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 8);
 static const int32_t CUSTOM_SDLK_PEN_BUTTON2        = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 9);
 static const int32_t CUSTOM_SDLK_PEN_BUTTON3        = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 10);
+static const int32_t CUSTOM_SDLK_TOUCH              = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 11);
+static const int32_t CUSTOM_SDLK_TWO_FINGER         = CUSTOM_SDL_KEYCODE(CUSTOM_SDL_BUTTON_OFFSET + 12);
 #undef CUSTOM_SDL_BUTTON_OFFSET
 
 static const struct CustomButtonMapping {
@@ -66,6 +68,8 @@ static const struct CustomButtonMapping {
 	{CUSTOM_SDLK_PEN_BUTTON1, "pen_button1", 1u},
 	{CUSTOM_SDLK_PEN_BUTTON2, "pen_button2", 1u},
 	{CUSTOM_SDLK_PEN_BUTTON3, "pen_button3", 1u},
+	{CUSTOM_SDLK_TOUCH, "one_finger_drag", 1u},
+	{CUSTOM_SDLK_TWO_FINGER, "two_finger_drag", 1u},
 };
 
 // note: doesn't contain all combinations

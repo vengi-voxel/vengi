@@ -44,7 +44,11 @@ protected:
 	core::VarPtr _penRadiusMin;
 	core::VarPtr _penRadiusMax;
 	core::VarPtr _penEraserSwitchesMode;
+	core::VarPtr _emulatePen;
 	bool _penEraserActive = false;
+	bool _emulatedPenDown = false;
+	bool _emulatedPenMoved = false;
+	int _emulatedPenTravel = 0;
 	ModifierType _penPrevModifierType = ModifierType::Place;
 	int _penBaseRadius = -1;
 
@@ -62,6 +66,9 @@ protected:
 	void loadKeymap(int keymap) override;
 	void validateKeyBindings() override;
 	void importPalette(const core::String &file);
+	bool emulatePenActive(int32_t mouseId) const;
+	static float emulatedPenPressure(int relX, int relY);
+	void endEmulatedPen(void *windowHandle, int32_t x, int32_t y);
 
 protected:
 	void printUsageHeader() const override;
@@ -73,6 +80,12 @@ public:
 
 	void onRenderUI() override;
 	bool onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId) override;
+	void onMouseButtonPress(void *windowHandle, int32_t x, int32_t y, uint8_t button, uint8_t clicks, int32_t mouseId) override;
+	void onMouseButtonRelease(void *windowHandle, int32_t x, int32_t y, uint8_t button, int32_t mouseId) override;
+	void onMouseMotion(void *windowHandle, int32_t x, int32_t y, int32_t relX, int32_t relY, int32_t mouseId) override;
+	bool onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) override;
+	void onFingerMotion(void *windowHandle, int64_t finger, float x, float y, float dx, float dy, float pressure,
+						uint32_t timestamp) override;
 
 	void onDropFile(void *windowHandle, const core::String &file) override;
 	void onDropText(void *windowHandle, const core::String& text) override;

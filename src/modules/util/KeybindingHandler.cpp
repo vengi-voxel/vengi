@@ -260,6 +260,8 @@ void KeyBindingHandler::saveKeybindings(int version) {
 # * x2_mouse
 # * wheelup
 # * wheeldown
+# * one_finger_drag
+# * two_finger_drag
 #
 )";
 	for (BindMap::const_iterator i = _bindings.begin(); i != _bindings.end(); ++i) {

@@ -59,7 +59,7 @@ bool OptionsPanel::categoryHasMatch(OptionCategory category) const {
 	case OptionCategory::Input:
 		return matchesVarFilter(cfg::VoxEditPenPressureAffectsRadius) ||
 			   matchesVarFilter(cfg::VoxEditPenRadiusMin) || matchesVarFilter(cfg::VoxEditPenRadiusMax) ||
-			   matchesVarFilter(cfg::VoxEditPenEraserSwitchesMode);
+			   matchesVarFilter(cfg::VoxEditPenEraserSwitchesMode) || matchesVarFilter(cfg::VoxEditEmulatePen);
 	case OptionCategory::Metrics:
 		return matchesVarFilter(cfg::MetricFlavor);
 	case OptionCategory::Layout:
@@ -180,6 +180,9 @@ void OptionsPanel::renderInput() {
 	}
 	if (matchesVarFilter(cfg::VoxEditPenEraserSwitchesMode)) {
 		ImGui::IconCheckboxVar(ICON_LC_ERASER, cfg::VoxEditPenEraserSwitchesMode);
+	}
+	if (matchesVarFilter(cfg::VoxEditEmulatePen)) {
+		ImGui::IconCheckboxVar(ICON_LC_PEN, cfg::VoxEditEmulatePen);
 	}
 }
 
