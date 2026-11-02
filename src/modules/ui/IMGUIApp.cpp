@@ -144,7 +144,7 @@ bool IMGUIApp::onTextInput(void *windowHandle, const core::String &text) {
 
 bool IMGUIApp::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 	if (!Super::onKeyPress(windowHandle, key, modifier) ||
-		(core::bindingContext() == core::BindingContext::UI && key == SDLK_ESCAPE)) {
+		(core::bindingContext() == core::BindingContext::UI && (key == SDLK_ESCAPE || key == SDLK_AC_BACK))) {
 		SDL_Event ev{};
 		ev.type = SDL_EVENT_KEY_DOWN;
 		ev.key.windowID = SDL_GetWindowID((SDL_Window *)windowHandle);
