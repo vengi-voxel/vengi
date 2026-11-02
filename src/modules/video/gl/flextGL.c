@@ -548,6 +548,14 @@ void flextLoadOpenGLFunctions(void) {
     glpfVertexAttribP4ui = (PFNGLVERTEXATTRIBP4UI_PROC*)SDL_GL_GetProcAddress("glVertexAttribP4ui");
     glpfVertexAttribP4uiv = (PFNGLVERTEXATTRIBP4UIV_PROC*)SDL_GL_GetProcAddress("glVertexAttribP4uiv");
 
+    /* OpenGL ES exposes glTexStorage*DMultisample instead of glTexImage*DMultisample.
+       The parameter lists match, so the desktop symbols call the ES entry points. */
+    if (!glpfTexImage2DMultisample) {
+        glpfTexImage2DMultisample = (PFNGLTEXIMAGE2DMULTISAMPLE_PROC*)SDL_GL_GetProcAddress("glTexStorage2DMultisample");
+    }
+    if (!glpfTexImage3DMultisample) {
+        glpfTexImage3DMultisample = (PFNGLTEXIMAGE3DMULTISAMPLE_PROC*)SDL_GL_GetProcAddress("glTexStorage3DMultisample");
+    }
 }
 
 int flextInit(void) {

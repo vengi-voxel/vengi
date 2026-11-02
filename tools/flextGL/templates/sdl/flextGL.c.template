@@ -27,6 +27,15 @@ void flextLoadOpenGLFunctions(void) {
     @end
     @end
     @end
+
+    /* OpenGL ES exposes glTexStorage*DMultisample instead of glTexImage*DMultisample.
+       The parameter lists match, so the desktop symbols call the ES entry points. */
+    if (!glpfTexImage2DMultisample) {
+        glpfTexImage2DMultisample = (PFNGLTEXIMAGE2DMULTISAMPLE_PROC*)SDL_GL_GetProcAddress("glTexStorage2DMultisample");
+    }
+    if (!glpfTexImage3DMultisample) {
+        glpfTexImage3DMultisample = (PFNGLTEXIMAGE3DMULTISAMPLE_PROC*)SDL_GL_GetProcAddress("glTexStorage3DMultisample");
+    }
 }
 
 int flextInit(void) {
