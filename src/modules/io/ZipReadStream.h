@@ -24,7 +24,8 @@ private:
 	void *_stream;
 	io::ReadStream &_readStream;
 #ifndef USE_LIBDEFLATE
-	uint8_t _buf[256 * 1024] {};
+	static constexpr size_t BufBytes = 256u * 1024u;
+	uint8_t *_buf = nullptr;
 #endif
 	const int _size;
 	int _remaining;

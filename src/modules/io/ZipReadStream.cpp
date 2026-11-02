@@ -61,6 +61,7 @@ ZipReadStream::ZipReadStream(io::ReadStream &readStream, int size, CompressionTy
 #else
 	_stream = (z_stream *)core_malloc(sizeof(z_stream));
 	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
+	_buf = (uint8_t *)core_malloc(BufBytes);
 	((z_stream *)_stream)->zalloc = Z_NULL;
 	((z_stream *)_stream)->zfree = Z_NULL;
 
@@ -131,6 +132,7 @@ ZipReadStream::ZipReadStream(io::SeekableReadStream &readStream, int size)
 #else
 	_stream = (z_stream *)core_malloc(sizeof(z_stream));
 	core_memset(((z_stream *)_stream), 0, sizeof(z_stream));
+	_buf = (uint8_t *)core_malloc(BufBytes);
 	((z_stream *)_stream)->zalloc = Z_NULL;
 	((z_stream *)_stream)->zfree = Z_NULL;
 
@@ -174,6 +176,7 @@ ZipReadStream::~ZipReadStream() {
 #else
 	inflateEnd(((z_stream *)_stream));
 	core_free(((z_stream *)_stream));
+	core_free(_buf);
 #endif
 }
 
@@ -350,7 +353,7 @@ int ZipReadStream::read(void *buf, size_t size) {
 	while (size > 0) {
 		if (stream->avail_in == 0) {
 			int64_t remainingSize = remaining();
-			int64_t bytesToRead = (int64_t)sizeof(_buf);
+			int64_t bytesToRead = (int64_t)BufBytes;
 			if (remainingSize >= 0) {
 				bytesToRead = core_min(remainingSize, bytesToRead);
 			}

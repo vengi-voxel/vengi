@@ -39,6 +39,7 @@ ZipWriteStream::ZipWriteStream(io::WriteStream &outStream, int level, bool rawDe
 #else
 	_stream = (z_stream *)core_malloc(sizeof(z_stream));
 	core_memset(((z_stream *)_stream), 0, sizeof(*((z_stream *)_stream)));
+	_out = (uint8_t *)core_malloc(OutChunkBytes);
 	((z_stream *)_stream)->zalloc = Z_NULL;
 	((z_stream *)_stream)->zfree = Z_NULL;
 	const int windowBits = rawDeflate ? -Z_DEFAULT_WINDOW_BITS : Z_DEFAULT_WINDOW_BITS;
@@ -55,6 +56,7 @@ ZipWriteStream::~ZipWriteStream() {
 #else
 	const int retVal = deflateEnd(((z_stream *)_stream));
 	core_free(((z_stream *)_stream));
+	core_free(_out);
 	core_assert(retVal == Z_OK);
 	(void)retVal;
 #endif
@@ -76,7 +78,7 @@ int ZipWriteStream::write(const void *buf, size_t size) {
 
 	uint32_t writtenBytes = 0;
 	while (((z_stream *)_stream)->avail_in > 0) {
-		((z_stream *)_stream)->avail_out = sizeof(_out);
+		((z_stream *)_stream)->avail_out = (uInt)OutChunkBytes;
 		((z_stream *)_stream)->next_out = _out;
 
 		const int retVal = deflate(((z_stream *)_stream), Z_NO_FLUSH);
@@ -84,7 +86,7 @@ int ZipWriteStream::write(const void *buf, size_t size) {
 			return -1;
 		}
 
-		const uint32_t written = sizeof(_out) - ((z_stream *)_stream)->avail_out;
+		const uint32_t written = (uint32_t)OutChunkBytes - ((z_stream *)_stream)->avail_out;
 		if (written != 0u) {
 			if (_outStream.write(_out, written) != (int)written) {
 				return -1;
@@ -133,7 +135,7 @@ bool ZipWriteStream::flush() {
 	return true;
 #else
 	((z_stream *)_stream)->avail_in = 0;
-	((z_stream *)_stream)->avail_out = sizeof(_out);
+	((z_stream *)_stream)->avail_out = (uInt)OutChunkBytes;
 	((z_stream *)_stream)->next_out = _out;
 
 	const int retVal = deflate(((z_stream *)_stream), Z_FINISH);
@@ -141,7 +143,7 @@ bool ZipWriteStream::flush() {
 		return false;
 	}
 
-	size_t remaining = sizeof(_out) - ((z_stream *)_stream)->avail_out;
+	size_t remaining = OutChunkBytes - ((z_stream *)_stream)->avail_out;
 	const int written = _outStream.write(_out, remaining);
 	_pos += written;
 	return written == (int)remaining;

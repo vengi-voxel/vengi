@@ -19,7 +19,8 @@ private:
 	void *_stream;
 	io::WriteStream &_outStream;
 #ifndef USE_LIBDEFLATE
-	uint8_t _out[256 * 1024] {};
+	static constexpr size_t OutChunkBytes = 256u * 1024u;
+	uint8_t *_out = nullptr;
 #endif
 	int64_t _pos = 0;
 
