@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vengi\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-10-14 10:57+0200\n"
+"PO-Revision-Date: 2026-11-02 18:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -90,6 +90,12 @@ msgstr "Die Anwendung beenden"
 
 msgid "Trigger an assert"
 msgstr "Einen Fehler provozieren"
+
+msgid "Create, update or list command aliases"
+msgstr ""
+
+msgid "Remove a command alias"
+msgstr "Einen Befehlsalias entfernen"
 
 msgid "Clear the value history of a variable"
 msgstr "Den Verlauf des Variablenwerts löschen"
@@ -1287,6 +1293,12 @@ msgstr "HVA laden"
 msgid "Load the hva for animations"
 msgstr "HVA für Animationen laden"
 
+msgid "Load KFA"
+msgstr "KFA laden"
+
+msgid "Load the kfa sidecar for kv6 hinge animations"
+msgstr "Die KFA-Begleitdatei für KV6-Scharnieranimationen laden"
+
 msgid "Crop on load"
 msgstr "Beim Laden zuschneiden"
 
@@ -1501,8 +1513,8 @@ msgid ""
 "Put Minecraft water voxels into a dedicated transparent volume as a child of "
 "each region"
 msgstr ""
-"Minecraft-Wasservoxel in einem eigenen transparenten Volumen als "
-"Kindknoten jeder Region ablegen"
+"Minecraft-Wasservoxel in einem eigenen transparenten Volumen als Kindknoten "
+"jeder Region ablegen"
 
 msgid "Merge MC regions"
 msgstr "MC-Regionen zusammenführen"
@@ -1513,9 +1525,8 @@ msgid ""
 "maps and thumbnails)"
 msgstr ""
 "Beim Laden von level.dat / mcworld jede Minecraft-Regionsdatei zu einem "
-"Volumen zusammenführen. Deaktivieren, um ein Volumen pro Chunk "
-"beizubehalten (schneller und weniger Speicherbedarf bei großen Karten und "
-"Vorschaubildern)"
+"Volumen zusammenführen. Deaktivieren, um ein Volumen pro Chunk beizubehalten "
+"(schneller und weniger Speicherbedarf bei großen Karten und Vorschaubildern)"
 
 msgid "MC load radius"
 msgstr "MC-Laderadius"
@@ -1537,11 +1548,10 @@ msgid ""
 "'minX minY minZ maxX maxY maxZ'. Only region files intersecting this box are "
 "loaded. Combined with voxformat_mcloadradius when both are set."
 msgstr ""
-"Optionaler achsenparalleler Begrenzungsrahmen (AABB) in Blockkoordinaten "
-"für den Import von Minecraft level.dat / mcworld. Format: 'minX minY minZ "
-"maxX maxY maxZ'. Nur Regionsdateien, die diesen Rahmen schneiden, werden "
-"geladen. Wird mit voxformat_mcloadradius kombiniert, wenn beide gesetzt "
-"sind."
+"Optionaler achsenparalleler Begrenzungsrahmen (AABB) in Blockkoordinaten für "
+"den Import von Minecraft level.dat / mcworld. Format: 'minX minY minZ maxX "
+"maxY maxZ'. Nur Regionsdateien, die diesen Rahmen schneiden, werden geladen. "
+"Wird mit voxformat_mcloadradius kombiniert, wenn beide gesetzt sind."
 
 msgid "Simplify"
 msgstr "Vereinfachen"
@@ -1556,8 +1566,8 @@ msgid ""
 "Target fraction of triangle indices to keep when simplifying meshes on "
 "import or export (0 or 1 = disable)"
 msgstr ""
-"Zielanteil der Dreiecksindizes, die beim Vereinfachen von Meshes beim "
-"Import oder Export erhalten bleiben (0 oder 1 = deaktivieren)"
+"Zielanteil der Dreiecksindizes, die beim Vereinfachen von Meshes beim Import "
+"oder Export erhalten bleiben (0 oder 1 = deaktivieren)"
 
 msgid "Region filter"
 msgstr "Regionenfilter"
@@ -1600,6 +1610,80 @@ msgstr "LDraw-Bibliothekspfad"
 
 msgid "Path to the LDraw parts library directory for resolving part references"
 msgstr "Pfad zur LDraw-Teilebibliothek zum Auflösen von Teilreferenzen"
+
+msgid "2D depth factor"
+msgstr "2D-Tiefenfaktor"
+
+msgid "Darken farther voxels when rendering a volume to a 2D image"
+msgstr ""
+
+msgid "Background"
+msgstr "Hintergrund"
+
+msgid "Background color for volume image renders (RGBA)"
+msgstr ""
+
+msgid "Image width"
+msgstr "Bildbreite"
+
+msgid "Output width in pixels. -1 keeps the native size"
+msgstr ""
+
+msgid "Image height"
+msgstr "Bildhöhe"
+
+msgid "Output height in pixels. -1 keeps the native size"
+msgstr ""
+
+msgid "Upscale"
+msgstr "Hochskalieren"
+
+msgid "Allow enlarging the image when width or height exceed the native size"
+msgstr ""
+
+msgid "Isometric"
+msgstr "Isometrisch"
+
+msgid "Use isometric projection when rendering a volume to an image"
+msgstr ""
+
+msgid "Iso shading"
+msgstr "Iso-Schattierung"
+
+msgid "Apply face shading to isometric renders"
+msgstr ""
+
+msgid "Iso normals"
+msgstr "Iso-Normalen"
+
+msgid "Light isometric voxels from their stored normal palette direction"
+msgstr ""
+
+msgid "Iso materials"
+msgstr "Iso-Materialien"
+
+msgid "Apply palette materials (emit, metal, roughness) to isometric renders"
+msgstr ""
+
+msgid "Iso transparency"
+msgstr "Iso-Transparenz"
+
+msgid ""
+"Blend palette alpha in isometric renders, and let those voxels show what is "
+"behind them"
+msgstr ""
+
+msgid "Silhouette"
+msgstr ""
+
+msgid "Ink pixels that touch an empty neighbor in isometric renders"
+msgstr ""
+
+msgid "Iso outline color"
+msgstr "Iso-Umrissfarbe"
+
+msgid "Outline color for isometric renders (RGBA)"
+msgstr ""
 
 msgid "Binary"
 msgstr "Binär"
@@ -1810,9 +1894,6 @@ msgstr "Tiefenschärfe"
 
 msgid "Enable pathtracer depth of field"
 msgstr "Tiefenschärfe des Pathtracers aktivieren"
-
-msgid "Background"
-msgstr "Hintergrund"
 
 msgid "0 = sky, 1 = solid, 2 = transparent"
 msgstr "0 = Himmel, 1 = einfarbig, 2 = transparent"
@@ -2049,14 +2130,6 @@ msgstr "%s deinstallieren"
 msgid "Download %s"
 msgstr "%s herunterladen"
 
-msgid "2D depth factor"
-msgstr "2D-Tiefenfaktor"
-
-msgid ""
-"When creating a volume from an image, this is the factor that is used for "
-"the depth value"
-msgstr "Faktor für den Tiefenwert beim Erzeugen eines Volumens aus einem Bild"
-
 msgid "Quit"
 msgstr "Beenden"
 
@@ -2254,8 +2327,11 @@ msgstr "Ein neues Keyframe zu allen Knoten hinzufügen"
 msgid "Delete the current keyframe of the active nodes"
 msgstr "Das aktuelle Keyframe der aktiven Knoten löschen"
 
-msgid "Crop frames"
-msgstr "Bilder zuschneiden"
+msgid "Frame all (Home)"
+msgstr ""
+
+msgid "Center playhead"
+msgstr ""
 
 #, c-format
 msgid "Max frames for this animation: %i"
@@ -2416,9 +2492,6 @@ msgstr "Auge"
 msgid "Camera movement"
 msgstr "Kamerabewegung"
 
-msgid "Isometric"
-msgstr "Isometrisch"
-
 msgid "Orthogonal"
 msgstr "Orthogonal"
 
@@ -2526,6 +2599,40 @@ msgstr "Länge"
 msgid "The length of the segments"
 msgstr "Die Länge der Segmente"
 
+msgid "Length scale"
+msgstr "Längenskalierung"
+
+msgid "Multiply segment length after drawing; 1 keeps the length constant"
+msgstr ""
+
+msgid "Minimum length"
+msgstr ""
+
+msgid "Angle variation"
+msgstr "Winkelvariation"
+
+msgid "Random angle variation in degrees; 0 disables variation"
+msgstr ""
+
+msgid "Seed"
+msgstr ""
+
+msgid "Branch color"
+msgstr "Astfarbe"
+
+msgid ""
+"Wood color from the current palette selection. Change it in the palette "
+"panel."
+msgstr ""
+
+msgid "Leaf color"
+msgstr "Blattfarbe"
+
+msgid ""
+"Defaults to the closest green in the node palette. -1 uses the current "
+"voxel. Drag a palette color here."
+msgstr ""
+
 msgid "Width"
 msgstr "Breite"
 
@@ -2559,8 +2666,9 @@ msgstr "Wähle die Vorlage aus"
 msgid "Adopt Dimensions"
 msgstr "Dimensionen anpassen"
 
-msgid "Adopt the L-System parameters to the current volume dimensions"
-msgstr "Passe die L-System-Parameter an die aktuellen Volumendimensionen an"
+msgid "Scale the L-System so the generated shape fits the current volume"
+msgstr ""
+"Skaliert das L-System, damit die erzeugte Form in das aktuelle Volumen passt"
 
 #, c-format
 msgid "Progress: %.1f%%"
@@ -3021,6 +3129,14 @@ msgstr "Regionengrößen zurücksetzen"
 msgid "Interpolation"
 msgstr "Interpolation"
 
+msgid "Long rotation"
+msgstr "Lange Drehung"
+
+msgid ""
+"Take the longer rotation path to the next keyframe. For a full turn, add an "
+"intermediate keyframe."
+msgstr ""
+
 msgid "Interpolation details"
 msgstr "Interpolationsdetails"
 
@@ -3127,6 +3243,25 @@ msgstr "Knoteneigenschaften"
 msgid "UUID"
 msgstr "UUID"
 
+msgid "Swap entries and preserve painted directions"
+msgstr ""
+
+#, c-format
+msgid "Normal %i: %.3f, %.3f, %.3f"
+msgstr ""
+
+msgid "Empty normal slot - select to create a direction"
+msgstr ""
+
+msgid "Copy normal"
+msgstr "Normale kopieren"
+
+msgid "Paste normal"
+msgstr "Normale einfügen"
+
+msgid "Duplicate normal"
+msgstr "Normale duplizieren"
+
 msgid "Tiberian Sun"
 msgstr "Tiberian Sun"
 
@@ -3209,6 +3344,18 @@ msgstr "Umdrehen"
 msgid "Rotate 90 deg"
 msgstr "Um 90 Grad drehen"
 
+msgid "Direction"
+msgstr "Richtung"
+
+msgid "Enter a finite, non-zero normal."
+msgstr ""
+
+msgid "Add normal"
+msgstr "Normale hinzufügen"
+
+msgid "Direction edits affect every voxel using this entry."
+msgstr ""
+
 msgid "Full pre-alloc"
 msgstr "Volle Vorallokation"
 
@@ -3275,11 +3422,29 @@ msgstr "Alle Variablen"
 msgid "Search"
 msgstr "Suche"
 
+msgid "Copy color"
+msgstr "Farbe kopieren"
+
+msgid "Paste color"
+msgstr "Farbe einfügen"
+
 msgid "Remove alpha"
 msgstr "Alpha entfernen"
 
+msgid "Material"
+msgstr "Material"
+
+msgid "Copy material"
+msgstr "Material kopieren"
+
+msgid "Paste material"
+msgstr "Material einfügen"
+
 msgid "Reset material"
 msgstr "Material zurücksetzen"
+
+msgid "Palette entries"
+msgstr "Paletteneinträge"
 
 msgid "Model from selected colors"
 msgstr "Modell aus ausgewählten Farben"
@@ -3413,6 +3578,26 @@ msgstr ""
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr "Palettenindex: %i (Szene-Voxelindex %i)"
+
+msgid "Pixel art"
+msgstr ""
+
+msgid "2D"
+msgstr ""
+
+msgid "Mode###pixelartmode"
+msgstr ""
+
+msgid "View###pixelartview"
+msgstr ""
+
+msgid ""
+"The scene is larger than the suggested volume size. Isometric preview is "
+"disabled."
+msgstr ""
+
+msgid "Select a voxel model to preview."
+msgstr "Wählen Sie ein Voxelmodell für die Vorschau."
 
 msgid "Quality presets"
 msgstr "Qualitätsvorgaben"
@@ -3758,6 +3943,25 @@ msgstr "Skripte/%s überschreiben"
 
 msgid "Select all"
 msgstr "Alles auswählen"
+
+msgid "Fit"
+msgstr "Einpassen"
+
+msgid "2D Views"
+msgstr "2D-Ansichten"
+
+msgid "Select a model node to edit its slices."
+msgstr ""
+
+msgid ""
+"This model is larger than the suggested volume size. 2D editing is disabled."
+msgstr ""
+
+msgid "Show voxels behind the current slice with reduced opacity."
+msgstr ""
+
+msgid "Grid"
+msgstr "Raster"
 
 #, c-format
 msgid "Command: %s"
@@ -4264,8 +4468,8 @@ msgstr "Anmeldung notwendig"
 
 msgid "A VoxBox account is required to browse, download and upload assets."
 msgstr ""
-"Zum Durchsuchen, Herunterladen und Hochladen von Assets ist ein "
-"VoxBox-Konto erforderlich."
+"Zum Durchsuchen, Herunterladen und Hochladen von Assets ist ein VoxBox-Konto "
+"erforderlich."
 
 msgid "API key"
 msgstr "API-Schlüssel"
@@ -4730,8 +4934,8 @@ msgstr "Gedrückt halten und ziehen, um mit der ausgewählten Form zu zeichnen."
 
 msgid "Radius 0 draws a single cube. Increase the radius to use other shapes."
 msgstr ""
-"Radius 0 zeichnet einen einzelnen Würfel. Erhöhen Sie den Radius, um "
-"andere Formen zu verwenden."
+"Radius 0 zeichnet einen einzelnen Würfel. Erhöhen Sie den Radius, um andere "
+"Formen zu verwenden."
 
 msgid "Increase radius"
 msgstr "Radius vergrößern"
@@ -4744,6 +4948,12 @@ msgstr "Ecke"
 
 msgid "Drag to define the shape's size."
 msgstr "Ziehen, um die Größe der Form festzulegen."
+
+msgid "Minimum"
+msgstr "Minimum"
+
+msgid "Maximum"
+msgstr ""
 
 msgid "Mirror"
 msgstr "Spiegelung"
@@ -4836,6 +5046,9 @@ msgstr "Auf Volumen begrenzen"
 msgid "Keep the brush inside the active volume bounds"
 msgstr "Pinsel innerhalb der Volumengrenzen halten"
 
+msgid "Test value"
+msgstr "Testwert"
+
 msgctxt "SceneJob"
 msgid "Scene job"
 msgstr "Szenenauftrag"
@@ -4923,9 +5136,6 @@ msgstr "Lokale Transformationen"
 
 msgid "Use local space for transforms"
 msgstr "Lokalen Raum für Transformationen verwenden"
-
-msgid "Grid"
-msgstr "Raster"
 
 msgid "Show the grid"
 msgstr "Gitter anzeigen"
@@ -5046,6 +5256,14 @@ msgstr ""
 "Cursor-Details im Bearbeitungsmodus anzeigen - Entfernung zur "
 "Referenzposition im Modus 3 messen"
 
+msgid "Face cursor for single voxel"
+msgstr ""
+
+msgid ""
+"Use the red face cursor instead of a full cube preview when the shape brush "
+"radius is 0"
+msgstr ""
+
 msgid "Auto Keyframe"
 msgstr "Automatischer Keyframe"
 
@@ -5107,11 +5325,11 @@ msgid "Max volume size"
 msgstr "Maximale Volumengröße"
 
 msgid ""
-"The maximum size of a volume before a few features are disabled (e.g. undo/"
-"autosave)"
+"The maximum size of a volume before a few features are disabled (e.g. undo, "
+"autosave, isometric preview, 2D editing)"
 msgstr ""
 "Die maximale Größe eines Volumens, bevor einige Funktionen deaktiviert "
-"werden (z. B. Rückgängig/Autosave)"
+"werden (z. B. Rückgängig, Autosave, isometrische Vorschau, 2D-Bearbeitung)"
 
 msgid "Configure the editor view mode"
 msgstr "Konfigurieren Sie den Editor-Ansichtsmodus"
@@ -5130,6 +5348,9 @@ msgstr "Verlauf"
 
 msgid "Show the memento panel"
 msgstr "Verlaufsfenster anzeigen"
+
+msgid "Show editable back, right and top slices of the selected model"
+msgstr ""
 
 msgid "Show the camera panel"
 msgstr "Kamerafenster anzeigen"
@@ -5193,6 +5414,9 @@ msgstr "Volumeninspektor"
 
 msgid "Show the brushes and brush settings panels"
 msgstr "Fenster für Pinsel und Pinseleinstellungen anzeigen"
+
+msgid "Show the pixel art preview panel"
+msgstr "Pixel-Art-Vorschaufenster anzeigen"
 
 msgid "Show the tip of the day on startup"
 msgstr "Zeige den Tipp des Tages beim Start"
@@ -5650,6 +5874,16 @@ msgstr "Setzt den Pivot-Punkt für einen Knoten"
 msgid "Change the name of a node"
 msgstr "Ändert den Namen eines Knotens"
 
+msgid ""
+"Repeat a volume along its transformed axes; positive counts include the "
+"original (maximum 1024 tiles)"
+msgstr ""
+
+msgid ""
+"Repeat selected voxels by their bounds inside the active volume; positive "
+"counts include the original"
+msgstr ""
+
 msgid "Duplicates the current node or the given node id"
 msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
 
@@ -5771,6 +6005,15 @@ msgstr "Hinzugefügte automatisch auswählen"
 msgid "Automatically select newly placed voxels"
 msgstr "Neu gesetzte Voxel automatisch auswählen"
 
+msgid "Invalid operation parameters"
+msgstr "Ungültige Operationsparameter"
+
+msgid "The edit target changed or has no selection"
+msgstr ""
+
+msgid "The edit target changed"
+msgstr ""
+
 msgid "Max preview size"
 msgstr "Maximale Vorschaugröße"
 
@@ -5829,6 +6072,12 @@ msgstr "Spiegelt entlang der Z-Achse an der Referenzposition"
 
 msgid "Turn off mirroring"
 msgstr "Spiegelung ausschalten"
+
+msgid "Brush script execution failed"
+msgstr "Ausführung des Pinselskripts fehlgeschlagen"
+
+msgid "Brush scripts must preserve the target volume bounds"
+msgstr ""
 
 msgid "Toggle continuous line drawing"
 msgstr "Kontinuierliches Linienzeichnen umschalten"
@@ -5906,6 +6155,9 @@ msgstr "Auf Ebene pressen"
 msgctxt "Sculpt brush mode"
 msgid "Reskin"
 msgstr "Reskin"
+
+msgid "Selection script execution failed"
+msgstr "Ausführung des Auswahlskripts fehlgeschlagen"
 
 msgctxt "SelectMode"
 msgid "All"
