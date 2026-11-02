@@ -9,7 +9,6 @@
 
 namespace voxedit {
 
-class SceneManager;
 class LUASelectionMode;
 
 namespace select {
@@ -17,13 +16,9 @@ namespace select {
 class Script : public Strategy {
 private:
 	using Super = Strategy;
-	SceneManager *_sceneManager;
 	LUASelectionMode *_activeLuaMode = nullptr;
 
 public:
-	explicit Script(SceneManager *sceneManager) : _sceneManager(sceneManager) {
-	}
-
 	bool evaluate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region, const AABBBrushState &state) override;
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,

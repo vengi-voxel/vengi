@@ -4,7 +4,6 @@
 
 #include "Script.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxedit-util/modifier/brush/BrushGizmo.h"

@@ -8,7 +8,7 @@ namespace voxedit {
 
 SelectBrush::SelectBrush(SceneManager *sceneManager)
 	: Super(BrushType::Select, ModifierType::Override, ModifierType::Override | ModifierType::Erase),
-	  _sceneManager(sceneManager), _lassoStrategy(sceneManager), _scriptStrategy(sceneManager) {
+	  _sceneManager(sceneManager), _lassoStrategy(sceneManager) {
 	setClampToVolume(true);
 	_strategies[(int)SelectMode::All] = &_selectAll;
 	_strategies[(int)SelectMode::Surface] = &_selectSurface;
@@ -24,8 +24,7 @@ SelectBrush::SelectBrush(SceneManager *sceneManager)
 }
 
 SelectBrush::SelectBrush(const SelectBrush &other)
-	: Super(other), _sceneManager(other._sceneManager), _lassoStrategy(other._sceneManager),
-	  _scriptStrategy(other._sceneManager) {
+	: Super(other), _sceneManager(other._sceneManager), _lassoStrategy(other._sceneManager) {
 	_strategies[(int)SelectMode::All] = &_selectAll;
 	_strategies[(int)SelectMode::Surface] = &_selectSurface;
 	_strategies[(int)SelectMode::SameColor] = &_selectSameColor;
