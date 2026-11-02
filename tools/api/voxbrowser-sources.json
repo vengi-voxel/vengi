@@ -235,6 +235,16 @@
 				"license": "LICENSE",
 				"path": "maps"
 			}
+		},
+		{
+			"name": "Timberwolf's UK Trains",
+			"license": "Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported",
+			"github": {
+				"repo": "mattkimber/timberwolfs_trains",
+				"commit": "master",
+				"path": "voxels",
+				"license": "LICENCE"
+			}
 		}
 	]
 }
