@@ -26,8 +26,9 @@ class SceneGraph;
  * @brief Isometric render of every visible model in @p sceneGraph, or one subtree.
  *
  * Nodes are baked into one volume before stamping, so face visibility and
- * outlines see across child boundaries. @p nodeId and @p frameIdx match
- * @c renderToImage().
+ * outlines see across child boundaries. A node normal palette is applied to
+ * voxels that store a normal, and that normal is rotated with the node.
+ * @p nodeId and @p frameIdx match @c renderToImage().
  */
 [[nodiscard]] image::ImagePtr renderIsometricImage(const SceneGraph &sceneGraph,
 												   const voxelutil::IsoRenderConfig &config, int nodeId = InvalidNodeId,

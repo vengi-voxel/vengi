@@ -18,8 +18,11 @@ Shared options (also `voxconvert -set` cvars):
 * `image_upscale` - allow enlarging when the output size is bigger than native
 
 Isometric mode exposes `image_iso_shading` (Lambert face lighting),
+`image_iso_normals` (use a stored voxel normal and the node normal palette
+instead of the three cube-face shades; the normal rotates with the node),
 `image_iso_materials` (emit, metal, roughness) and `image_iso_transparency`
-(palette alpha is blended, and those voxels do not hide the faces behind them). **Silhouette** inks pixels that touch an empty neighbor before the
+(palette alpha is blended, and those voxels do not hide the faces behind them).
+Voxels without a normal keep the face shades. **Silhouette** inks pixels that touch an empty neighbor before the
 image is scaled. The ink color is `image_iso_outline_color`. 2D mode exposes
 `image_depthfactor2d` to darken farther voxels.
 `image_isometric` selects the projection (default on).

@@ -90,6 +90,30 @@ Override the pathtracer sample count from the selected quality. Only used with \
 .PP
 \fBcore_colorreduction\fP: Controls the algorithm that is used to perform the color reduction
 .PP
+\fBimage_background\fP: Background color for volume image renders (RGBA)
+.PP
+\fBimage_depthfactor2d\fP: Darken farther voxels when rendering a volume to a 2D image
+.PP
+\fBimage_height\fP: Output height in pixels. -1 keeps the native size
+.PP
+\fBimage_iso_materials\fP: Apply palette materials (emit, metal, roughness) to isometric renders
+.PP
+\fBimage_iso_normals\fP: Light isometric voxels from their stored normal palette direction
+.PP
+\fBimage_iso_outline\fP: Ink pixels that touch an empty neighbor in isometric renders
+.PP
+\fBimage_iso_outline_color\fP: Outline color for isometric renders (RGBA)
+.PP
+\fBimage_iso_shading\fP: Apply face shading to isometric renders
+.PP
+\fBimage_iso_transparency\fP: Blend palette alpha in isometric renders, and let those voxels show what is behind them
+.PP
+\fBimage_isometric\fP: Use isometric projection when rendering a volume to an image
+.PP
+\fBimage_upscale\fP: Allow enlarging the image when width or height exceed the native size
+.PP
+\fBimage_width\fP: Output width in pixels. -1 keeps the native size
+.PP
 \fBnormalpalette\fP: The normal palette
 .PP
 \fBpalette\fP: This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)

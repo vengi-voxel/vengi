@@ -126,6 +126,7 @@ Some of these settings are only for voxel format, others are only for the mesh f
 | `image_height`                | Output height in pixels. `-1` keeps the native size                                      | -1           |
 | `image_isometric`             | Use isometric projection when rendering a volume to an image                             | true/false   |
 | `image_iso_shading`           | Apply face shading to isometric renders                                                  | true/false   |
+| `image_iso_normals`           | Light isometric voxels from their stored normal palette direction                        | true/false   |
 | `image_iso_materials`         | Apply palette materials (emit, metal, roughness) to isometric renders                    | true/false   |
 | `image_iso_transparency`      | Blend palette alpha in isometric renders; transparent voxels show what is behind them    | true/false   |
 | `image_iso_outline`           | Ink pixels that touch an empty neighbor in isometric renders                             | true/false   |

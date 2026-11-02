@@ -4,11 +4,14 @@
 
 #include "scenegraph/SceneGraphImage.h"
 #include "app/tests/AbstractTest.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include <glm/gtc/quaternion.hpp>
+#include <glm/vec3.hpp>
 
 namespace scenegraph {
 
@@ -161,6 +164,175 @@ TEST_F(SceneGraphImageTest, testRenderIsometricImageSubtreeIsSmaller) {
 	EXPECT_EQ(7, sibling->height());
 	EXPECT_GT(scene->width(), subtree->width());
 	EXPECT_GT(subtree->width(), sibling->width());
+}
+
+static int opaqueLum(const image::ImagePtr &img, color::RGBA *color = nullptr) {
+	for (int y = 0; y < img->height(); ++y) {
+		for (int x = 0; x < img->width(); ++x) {
+			const color::RGBA c = img->colorAt(x, y);
+			if (c.a == 0) {
+				continue;
+			}
+			if (color != nullptr) {
+				*color = c;
+			}
+			return (int)c.r + (int)c.g + (int)c.b;
+		}
+	}
+	return -1;
+}
+
+static bool opaqueIsUniform(const image::ImagePtr &img) {
+	color::RGBA first;
+	bool found = false;
+	for (int y = 0; y < img->height(); ++y) {
+		for (int x = 0; x < img->width(); ++x) {
+			const color::RGBA c = img->colorAt(x, y);
+			if (c.a == 0) {
+				continue;
+			}
+			if (!found) {
+				first = c;
+				found = true;
+				continue;
+			}
+			if (c.rgba != first.rgba) {
+				return false;
+			}
+		}
+	}
+	return found;
+}
+
+TEST_F(SceneGraphImageTest, testRenderIsometricUsesNodeNormalPalette) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 200, 200, 255));
+	palette::NormalPalette normals;
+	normals.setNormal(0, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel.setNormal(NORMAL_PALETTE_OFFSET);
+	volume.setVoxel(0, 0, 0, voxel);
+
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("lit");
+		node.setUnownedVolume(&volume);
+		node.setPalette(palette);
+		node.setNormalPalette(normals);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+
+	voxelutil::IsoRenderConfig config;
+	config.shading = true;
+	config.materials = false;
+	config.transparency = false;
+	config.background = color::RGBA(0, 0, 0, 0);
+	const image::ImagePtr lit = renderIsometricImage(sceneGraph, config);
+	ASSERT_TRUE(lit && lit->isLoaded());
+	EXPECT_TRUE(opaqueIsUniform(lit));
+	EXPECT_EQ(lit->colorAt(3, 1).rgba, lit->colorAt(1, 4).rgba);
+	EXPECT_EQ(lit->colorAt(1, 4).rgba, lit->colorAt(6, 4).rgba);
+
+	const image::ImagePtr faces = voxelutil::renderIsometricImage(&volume, palette, config);
+	ASSERT_TRUE(faces && faces->isLoaded());
+	const int faceRight = (int)faces->colorAt(6, 4).r + (int)faces->colorAt(6, 4).g + (int)faces->colorAt(6, 4).b;
+	EXPECT_GT(opaqueLum(lit), faceRight);
+}
+
+TEST_F(SceneGraphImageTest, testRenderIsometricMergesNodeNormals) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 200, 200, 255));
+	palette::NormalPalette normals;
+	normals.setNormal(0, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	voxel::RawVolume plain(voxel::Region(0, 0));
+	voxel::RawVolume litVol(voxel::Region(0, 0));
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel.setNormal(NORMAL_PALETTE_OFFSET);
+	litVol.setVoxel(0, 0, 0, voxel);
+
+	SceneGraph sceneGraph;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("plain");
+		node.setUnownedVolume(&plain);
+		node.setPalette(palette);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("lit");
+		node.setUnownedVolume(&litVol);
+		node.setPalette(palette);
+		node.setNormalPalette(normals);
+		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
+	}
+
+	voxelutil::IsoRenderConfig config;
+	config.shading = true;
+	config.materials = false;
+	config.transparency = false;
+	config.background = color::RGBA(0, 0, 0, 0);
+	const image::ImagePtr image = renderIsometricImage(sceneGraph, config);
+	ASSERT_TRUE(image && image->isLoaded());
+	EXPECT_TRUE(opaqueIsUniform(image));
+}
+
+TEST_F(SceneGraphImageTest, testRenderIsometricRotatesVoxelNormal) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 200, 200, 255));
+	palette::NormalPalette normals;
+	normals.setNormal(0, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	voxel::RawVolume volume(voxel::Region(0, 0));
+	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel.setNormal(NORMAL_PALETTE_OFFSET);
+	volume.setVoxel(0, 0, 0, voxel);
+
+	voxelutil::IsoRenderConfig config;
+	config.shading = true;
+	config.materials = false;
+	config.transparency = false;
+	config.background = color::RGBA(0, 0, 0, 0);
+
+	SceneGraph upright;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("upright");
+		node.setUnownedVolume(&volume);
+		node.setPalette(palette);
+		node.setNormalPalette(normals);
+		node.setPivot(glm::vec3(0.5f));
+		ASSERT_NE(InvalidNodeId, upright.emplace(core::move(node)));
+	}
+	upright.updateTransforms();
+	const image::ImagePtr before = renderIsometricImage(upright, config);
+	ASSERT_TRUE(before && before->isLoaded());
+	EXPECT_TRUE(opaqueIsUniform(before));
+
+	SceneGraph turned;
+	{
+		SceneGraphNode node(SceneGraphNodeType::Model);
+		node.setName("turned");
+		node.setUnownedVolume(&volume);
+		node.setPalette(palette);
+		node.setNormalPalette(normals);
+		node.setPivot(glm::vec3(0.5f));
+		node.setRotation(glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)), false);
+		ASSERT_NE(InvalidNodeId, turned.emplace(core::move(node)));
+	}
+	turned.updateTransforms();
+	const image::ImagePtr after = renderIsometricImage(turned, config);
+	ASSERT_TRUE(after && after->isLoaded());
+	EXPECT_TRUE(opaqueIsUniform(after));
+	const int beforeLum = opaqueLum(before);
+	const int afterLum = opaqueLum(after);
+	ASSERT_GT(beforeLum, 0);
+	ASSERT_GT(afterLum, 0);
+	EXPECT_LT(afterLum, beforeLum);
 }
 
 } // namespace scenegraph

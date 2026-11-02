@@ -16,6 +16,7 @@
 #include "image/Image.h"
 #include "math/Axis.h"
 #include "palette/Material.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/Face.h"
@@ -28,6 +29,8 @@
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
 #include <glm/exponential.hpp>
+#include <glm/geometric.hpp>
+#include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
 namespace voxelutil {
@@ -347,19 +350,45 @@ const char *IsoSprite[IsoSpriteHeight] = {"  CCCC  ", "CCCCCCCC", "DDCCCCLL", "D
 // View-space Lambert: visible cube normals are +Y (top), -X (left), -Z (right).
 // Light sits above-left of the camera so the left wall is brighter than the right.
 // shade = ambient + (1 - ambient) * max(0, N.L)
+// +a, +b and +h match IsoView::position(), so a stored world normal can use the same light.
+glm::vec3 isoLightDirection() {
+	const glm::vec3 light(-0.6f, 1.0f, -0.2f);
+	return light / glm::length(light);
+}
+
+float isoLambert(const glm::vec3 &normal, const glm::vec3 &light) {
+	const float ndotl = glm::dot(normal, light);
+	return 0.40f + 0.60f * (ndotl > 0.0f ? ndotl : 0.0f);
+}
+
+void isoViewAxes(voxel::FaceNames face, glm::vec3 &axisA, glm::vec3 &axisB, glm::vec3 &axisH) {
+	axisH = face == voxel::FaceNames::Down ? glm::vec3(0.0f, -1.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+	switch (face) {
+	case voxel::FaceNames::Right:
+		axisA = glm::vec3(0.0f, 0.0f, -1.0f);
+		axisB = glm::vec3(-1.0f, 0.0f, 0.0f);
+		break;
+	case voxel::FaceNames::Back:
+		axisA = glm::vec3(1.0f, 0.0f, 0.0f);
+		axisB = glm::vec3(0.0f, 0.0f, -1.0f);
+		break;
+	case voxel::FaceNames::Left:
+		axisA = glm::vec3(0.0f, 0.0f, 1.0f);
+		axisB = glm::vec3(1.0f, 0.0f, 0.0f);
+		break;
+	default:
+		axisA = glm::vec3(-1.0f, 0.0f, 0.0f);
+		axisB = glm::vec3(0.0f, 0.0f, 1.0f);
+		break;
+	}
+}
+
 void isoShadeFactors(float lighting[(int)IsoShade::Max]) {
-	const float lx = -0.6f;
-	const float ly = 1.0f;
-	const float lz = -0.2f;
-	const float invLen = 1.0f / glm::sqrt(lx * lx + ly * ly + lz * lz);
-	auto lambert = [&](float nx, float ny, float nz) {
-		const float ndotl = (nx * lx + ny * ly + nz * lz) * invLen;
-		return 0.40f + 0.60f * (ndotl > 0.0f ? ndotl : 0.0f);
-	};
+	const glm::vec3 light = isoLightDirection();
 	lighting[(int)IsoShade::Transparent] = 0.0f;
-	lighting[(int)IsoShade::Top] = lambert(0.0f, 1.0f, 0.0f);
-	lighting[(int)IsoShade::Left] = lambert(-1.0f, 0.0f, 0.0f);
-	lighting[(int)IsoShade::Right] = lambert(0.0f, 0.0f, -1.0f);
+	lighting[(int)IsoShade::Top] = isoLambert(glm::vec3(0.0f, 1.0f, 0.0f), light);
+	lighting[(int)IsoShade::Left] = isoLambert(glm::vec3(-1.0f, 0.0f, 0.0f), light);
+	lighting[(int)IsoShade::Right] = isoLambert(glm::vec3(0.0f, 0.0f, -1.0f), light);
 }
 
 color::RGBA isoBlend(color::RGBA src, color::RGBA dst) {
@@ -562,6 +591,9 @@ IsoRenderConfig IsoRenderConfig::fromCvars() {
 	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoShading)) {
 		config.shading = v->boolVal();
 	}
+	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoNormals)) {
+		config.normals = v->boolVal();
+	}
 	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoMaterials)) {
 		config.materials = v->boolVal();
 	}
@@ -580,7 +612,7 @@ IsoRenderConfig IsoRenderConfig::fromCvars() {
 }
 
 image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-									 const IsoRenderConfig &config) {
+									 const IsoRenderConfig &config, const palette::NormalPalette *normalPalette) {
 	if (volume == nullptr || !volume->region().isValid() || config.frontFace == voxel::FaceNames::Max) {
 		return {};
 	}
@@ -608,6 +640,34 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 		}
 	}
 
+	// Voxel normal indices are NORMAL_PALETTE_OFFSET + palette slot. Slot alpha 0 is empty.
+	float normalShade[palette::NormalPaletteMaxNormals];
+	uint8_t normalReady[palette::NormalPaletteMaxNormals];
+	int normalCount = 0;
+	if (config.shading && config.normals && normalPalette != nullptr && normalPalette->size() > 0) {
+		normalCount = (int)normalPalette->size();
+		const glm::vec3 light = isoLightDirection();
+		glm::vec3 axisA(0.0f);
+		glm::vec3 axisB(0.0f);
+		glm::vec3 axisH(0.0f);
+		isoViewAxes(config.frontFace, axisA, axisB, axisH);
+		for (int i = 0; i < normalCount; ++i) {
+			normalReady[i] = 0;
+			const color::RGBA encoded = normalPalette->normal((uint8_t)i);
+			if (encoded.a == 0) {
+				continue;
+			}
+			const glm::vec3 worldN = palette::NormalPalette::toVec3(encoded);
+			const glm::vec3 viewN(glm::dot(worldN, axisA), glm::dot(worldN, axisH), glm::dot(worldN, axisB));
+			const float len2 = glm::dot(viewN, viewN);
+			if (len2 <= 1.0e-8f) {
+				continue;
+			}
+			normalShade[i] = isoLambert(viewN * (1.0f / glm::sqrt(len2)), light);
+			normalReady[i] = 1;
+		}
+	}
+
 	core::Buffer<uint8_t> covered;
 	if (config.outline) {
 		covered = core::Buffer<uint8_t>((size_t)image->width() * (size_t)image->height(), 0);
@@ -631,7 +691,21 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 					continue;
 				}
 				const voxel::Voxel &v = volume->voxel(view.position(a, b, h));
-				const color::RGBA *colors = shades[v.getColor()];
+				const int colorIndex = v.getColor();
+				const color::RGBA *colors = shades[colorIndex];
+				color::RGBA normalColor;
+				bool useVoxelNormal = false;
+				if (normalCount > 0) {
+					const uint8_t normalIndex = v.getNormal();
+					if (normalIndex != NO_NORMAL) {
+						const int palIdx = (int)normalIndex - NORMAL_PALETTE_OFFSET;
+						if (palIdx >= 0 && palIdx < normalCount && normalReady[palIdx] != 0) {
+							normalColor = isoShade(palette.color(colorIndex), normalShade[palIdx],
+												   palette.material(colorIndex), config);
+							useVoxelNormal = true;
+						}
+					}
+				}
 				// x = (Tw / 2) * ((depth - 1) + a - b)
 				// y = (Th / 2) * ((width + depth - 2) - a - b) + (Tw / 2) * (height - 1 - h)
 				const int x = IsoHalfWidth * (view.depth - 1 + a - b);
@@ -663,7 +737,7 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 						}
 						const int px = x + i;
 						const int py = y + j;
-						const color::RGBA src = colors[(int)shade];
+						const color::RGBA src = useVoxelNormal ? normalColor : colors[(int)shade];
 						if (config.transparency && src.a < 255) {
 							image->setColor(isoBlend(src, image->colorAt(px, py)), px, py);
 						} else {

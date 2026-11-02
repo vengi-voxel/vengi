@@ -12,6 +12,7 @@
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "io/FileStream.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -20,6 +21,7 @@
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelutil/ImportFace.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <glm/vec3.hpp>
 
 namespace voxelutil {
 
@@ -432,6 +434,7 @@ TEST_F(ImageUtilsTest, testRenderIsometricTransparencyShowsBehindGlass) {
 
 TEST_F(ImageUtilsTest, testIsoRenderConfigFromCvars) {
 	core::Var::registerVar(core::VarDef(cfg::ImageIsoShading, true, "Iso shading", "help"));
+	core::Var::registerVar(core::VarDef(cfg::ImageIsoNormals, true, "Iso normals", "help"));
 	core::Var::registerVar(core::VarDef(cfg::ImageIsoMaterials, true, "Iso materials", "help"));
 	core::Var::registerVar(core::VarDef(cfg::ImageIsoTransparency, true, "Iso transparency", "help"));
 	core::Var::registerVar(core::VarDef(cfg::ImageBackground, "0 0 1 1", "Background", "help"));
@@ -439,14 +442,17 @@ TEST_F(ImageUtilsTest, testIsoRenderConfigFromCvars) {
 	core::Var::registerVar(core::VarDef(cfg::ImageHeight, -1, "Image height", "help"));
 	core::Var::registerVar(core::VarDef(cfg::ImageUpScale, true, "Upscale", "help"));
 	core::getVar(cfg::ImageIsoShading)->setVal(false);
+	core::getVar(cfg::ImageIsoNormals)->setVal(false);
 	core::getVar(cfg::ImageWidth)->setVal(48);
 	const IsoRenderConfig config = IsoRenderConfig::fromCvars();
 	EXPECT_FALSE(config.shading);
+	EXPECT_FALSE(config.normals);
 	EXPECT_TRUE(config.materials);
 	EXPECT_TRUE(config.transparency);
 	EXPECT_EQ(config.imgW, 48);
 	EXPECT_EQ(config.background.b, 255);
 	core::getVar(cfg::ImageIsoShading)->setVal(true);
+	core::getVar(cfg::ImageIsoNormals)->setVal(true);
 	core::getVar(cfg::ImageWidth)->setVal(-1);
 	core::getVar(cfg::ImageBackground)->setVal("0 0 0 0");
 }
@@ -501,6 +507,75 @@ TEST_F(ImageUtilsTest, testRenderFaceToImage) {
 		}
 	}
 	EXPECT_TRUE(hasNonTransparent);
+}
+
+TEST_F(ImageUtilsTest, testRenderIsometricVoxelNormal) {
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 200, 200, 255));
+	palette::NormalPalette normals;
+	normals.setNormal(0, glm::vec3(0.0f, 1.0f, 0.0f));
+	normals.setNormal(1, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	auto lum = [](color::RGBA c) { return (int)c.r + (int)c.g + (int)c.b; };
+
+	voxel::Voxel upVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	upVoxel.setNormal((uint8_t)(NORMAL_PALETTE_OFFSET + 0));
+	voxel::RawVolume up(voxel::Region(0, 0));
+	up.setVoxel(0, 0, 0, upVoxel);
+
+	IsoRenderConfig config;
+	config.materials = false;
+	config.transparency = false;
+	config.shading = true;
+	config.normals = true;
+	const image::ImagePtr lit = renderIsometricImage(&up, palette, config, &normals);
+	ASSERT_TRUE(lit && lit->isLoaded());
+	const color::RGBA top = lit->colorAt(3, 1);
+	const color::RGBA left = lit->colorAt(1, 4);
+	const color::RGBA right = lit->colorAt(6, 4);
+	EXPECT_EQ(top.rgba, left.rgba);
+	EXPECT_EQ(left.rgba, right.rgba);
+
+	voxel::RawVolume plainVol(voxel::Region(0, 0));
+	plainVol.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	const image::ImagePtr faces = renderIsometricImage(&plainVol, palette, config);
+	ASSERT_TRUE(faces && faces->isLoaded());
+	EXPECT_GT(lum(right), lum(faces->colorAt(6, 4)));
+	EXPECT_NE(faces->colorAt(1, 4).rgba, faces->colorAt(6, 4).rgba);
+
+	const image::ImagePtr ignored = renderIsometricImage(&up, palette, config);
+	ASSERT_TRUE(ignored && ignored->isLoaded());
+	EXPECT_NE(ignored->colorAt(1, 4).rgba, ignored->colorAt(6, 4).rgba);
+
+	voxel::Voxel sideVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	sideVoxel.setNormal((uint8_t)(NORMAL_PALETTE_OFFSET + 1));
+	voxel::RawVolume side(voxel::Region(0, 0));
+	side.setVoxel(0, 0, 0, sideVoxel);
+	const image::ImagePtr front = renderIsometricImage(&side, palette, config, &normals);
+	config.frontFace = voxel::FaceNames::Right;
+	const image::ImagePtr fromRight = renderIsometricImage(&side, palette, config, &normals);
+	ASSERT_TRUE(front && fromRight);
+	EXPECT_EQ(front->colorAt(3, 1).rgba, front->colorAt(6, 4).rgba);
+	EXPECT_EQ(fromRight->colorAt(3, 1).rgba, fromRight->colorAt(6, 4).rgba);
+	EXPECT_GT(lum(front->colorAt(3, 1)), lum(fromRight->colorAt(3, 1)));
+
+	palette::NormalPalette holes;
+	holes.setNormal(1, glm::vec3(0.0f, 1.0f, 0.0f));
+	holes.setNormal(0, color::RGBA(0, 0, 0, 0));
+	voxel::Voxel holeVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	holeVoxel.setNormal(NORMAL_PALETTE_OFFSET);
+	voxel::RawVolume holeVol(voxel::Region(0, 0));
+	holeVol.setVoxel(0, 0, 0, holeVoxel);
+	config.frontFace = voxel::FaceNames::Front;
+	const image::ImagePtr hole = renderIsometricImage(&holeVol, palette, config, &holes);
+	ASSERT_TRUE(hole && hole->isLoaded());
+	EXPECT_GT(lum(hole->colorAt(3, 1)), lum(hole->colorAt(1, 4)));
+	EXPECT_NE(hole->colorAt(1, 4).rgba, hole->colorAt(6, 4).rgba);
+
+	config.normals = false;
+	const image::ImagePtr off = renderIsometricImage(&up, palette, config, &normals);
+	ASSERT_TRUE(off && off->isLoaded());
+	EXPECT_NE(off->colorAt(1, 4).rgba, off->colorAt(6, 4).rgba);
 }
 
 TEST_F(ImageUtilsTest, testRenderIsometricOutlineSilhouette) {

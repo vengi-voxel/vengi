@@ -71,6 +71,9 @@ image::ImagePtr PixelArtPanel::pixelArtImage() {
 			return;
 		}
 		mixMatrix(transformHash, sceneGraph.transformForFrame(node, frameIdx).worldMatrix());
+		if (node.hasNormalPalette()) {
+			transformHash = (transformHash * 16777619u) ^ node.normalPalette().hash();
+		}
 	});
 	const uint64_t configHash = isometric ? isoConfig.hash() : (imageConfig.hash() ^ 0x3244000000000000ull);
 	const uint64_t hash = _sceneMgr->calculateHash() ^ configHash ^ transformHash;
@@ -191,6 +194,7 @@ void PixelArtPanel::update(const char *id) {
 		ImGui::CheckboxVar(cfg::ImageUpScale);
 		if (isometric) {
 			ImGui::CheckboxVar(cfg::ImageIsoShading);
+			ImGui::CheckboxVar(cfg::ImageIsoNormals);
 			ImGui::CheckboxVar(cfg::ImageIsoMaterials);
 			ImGui::CheckboxVar(cfg::ImageIsoTransparency);
 			ImGui::CheckboxVar(cfg::ImageIsoOutline);

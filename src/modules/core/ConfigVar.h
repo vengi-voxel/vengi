@@ -105,6 +105,7 @@ constexpr const char *ImageHeight = "image_height";
 constexpr const char *ImageUpScale = "image_upscale";
 constexpr const char *ImageIsometric = "image_isometric";
 constexpr const char *ImageIsoShading = "image_iso_shading";
+constexpr const char *ImageIsoNormals = "image_iso_normals";
 constexpr const char *ImageIsoMaterials = "image_iso_materials";
 constexpr const char *ImageIsoTransparency = "image_iso_transparency";
 constexpr const char *ImageIsoOutline = "image_iso_outline";

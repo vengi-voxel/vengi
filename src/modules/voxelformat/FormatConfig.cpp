@@ -375,6 +375,10 @@ bool FormatConfig::init() {
 	const core::VarDef imageIsoShading(cfg::ImageIsoShading, true, N_("Iso shading"),
 									   N_("Apply face shading to isometric renders"), core::CV_NOPERSIST);
 	core::registerVar(imageIsoShading);
+	const core::VarDef imageIsoNormals(cfg::ImageIsoNormals, true, N_("Iso normals"),
+									   N_("Light isometric voxels from their stored normal palette direction"),
+									   core::CV_NOPERSIST);
+	core::registerVar(imageIsoNormals);
 	const core::VarDef imageIsoMaterials(cfg::ImageIsoMaterials, true, N_("Iso materials"),
 										 N_("Apply palette materials (emit, metal, roughness) to isometric renders"),
 										 core::CV_NOPERSIST);

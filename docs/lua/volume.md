@@ -35,7 +35,7 @@
 | `pathfinder(startX, startY, startZ, endX, endY, endZ, connectivity, hBias, maxNodes)` | Find a path over existing voxels between two points using A* pathfinding. The path walks over the surface of solid voxels. |
 | `region()` | Get the region of the volume. |
 | `remapToPalette(oldPalette, newPalette, skipColorIndex)` | Remap all voxel colors from an old palette to a new palette. |
-| `renderIsometricImage(face)` | Render an isometric view of the volume to an image. |
+| `renderIsometricImage(face)` | Render an isometric view of the volume to an image. Voxels with a normal index use the node normal palette for shading. |
 | `renderToImage(face)` | Render the volume to a 2D image from the given face direction. |
 | `resize(w, h, d, extendMins)` | Resize the volume by the specified amounts. |
 | `rotateAxis(axis)` | Rotate the volume 90 degrees around the specified axis. |
@@ -539,7 +539,7 @@ Remap all voxel colors from an old palette to a new palette.
 
 ### renderIsometricImage
 
-Render an isometric view of the volume to an image.
+Render an isometric view of the volume to an image. Voxels with a normal index use the node normal palette for shading.
 
 **Parameters:**
 

@@ -18,6 +18,7 @@ class Region;
 namespace palette {
 class PaletteLookup;
 class Palette;
+class NormalPalette;
 } // namespace palette
 
 namespace voxelutil {
@@ -91,6 +92,8 @@ struct IsoRenderConfig {
 	int imgH = -1;
 	bool upScale = true;
 	bool shading = true;
+	/** Use a voxel normal from the normal palette instead of the cube face. */
+	bool normals = true;
 	bool materials = true;
 	bool transparency = true;
 	/** Ink pixels that touch an empty 4-neighbor. Applied before nearest upscale. */
@@ -100,7 +103,8 @@ struct IsoRenderConfig {
 	static IsoRenderConfig fromCvars();
 	inline uint64_t hash() const {
 		const uint32_t flags = (shading ? 1u : 0u) | (materials ? 2u : 0u) | (transparency ? 4u : 0u) |
-							   (upScale ? 8u : 0u) | (outline ? 16u : 0u) | ((uint32_t)frontFace << 8);
+							   (upScale ? 8u : 0u) | (outline ? 16u : 0u) | (normals ? 32u : 0u) |
+							   ((uint32_t)frontFace << 8);
 		return (uint64_t)flags ^ ((uint64_t)(uint32_t)imgW << 16) ^ ((uint64_t)(uint32_t)imgH << 32) ^ background.rgba ^
 			   ((uint64_t)outlineColor.rgba * 0x100000001ull);
 	}
@@ -112,7 +116,9 @@ struct IsoRenderConfig {
  * Each voxel is an 8x7 cube stamp. Visible faces use Lambert shading in linear
  * RGB. Palette materials (emit, metal, roughness) are applied when @c materials
  * is set. Palette alpha is composited when @c transparency is set, and those voxels
- * do not hide the faces behind them. When
+ * do not hide the faces behind them. When @c normals is set and @p normalPalette
+ * is set, a voxel that stores a normal is shaded from that direction in view
+ * space. @c NO_NORMAL keeps the top, left and right face shades. When
  * @c outline is set, pixels that touch an empty neighbor are inked before nearest upscale.
  * @note The default config is @c IsoRenderConfig::fromCvars()
  * @note The scene graph overloads, which walk a node and its children, are declared
@@ -122,5 +128,6 @@ struct IsoRenderConfig {
  * @sa voxel::RawVolume
  */
 [[nodiscard]] image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palette::Palette &palette,
-												   const IsoRenderConfig &config = IsoRenderConfig::fromCvars());
+												   const IsoRenderConfig &config = IsoRenderConfig::fromCvars(),
+												   const palette::NormalPalette *normalPalette = nullptr);
 } // namespace voxelutil

@@ -1183,7 +1183,11 @@ static int luaVoxel_volumewrapper_renderIsometricImage(lua_State *s) {
 	}
 	voxelutil::IsoRenderConfig config = voxelutil::IsoRenderConfig::fromCvars();
 	config.frontFace = face;
-	image::ImagePtr img = voxelutil::renderIsometricImage(volume->volume(), volume->node()->palette(), config);
+	const palette::NormalPalette *normals = nullptr;
+	if (volume->node()->hasNormalPalette() && volume->node()->normalPalette().size() > 0) {
+		normals = &volume->node()->normalPalette();
+	}
+	image::ImagePtr img = voxelutil::renderIsometricImage(volume->volume(), volume->node()->palette(), config, normals);
 	if (!img || !img->isLoaded()) {
 		return clua_error(s, "Failed to render isometric image");
 	}
@@ -4441,7 +4445,7 @@ static int luaVoxel_volumewrapper_renderToImage_jsonhelp(lua_State* s) {
 static int luaVoxel_volumewrapper_renderIsometricImage_jsonhelp(lua_State* s) {
 	const char *json = R"json({
 		"name": "renderIsometricImage",
-		"summary": "Render an isometric view of the volume to an image.",
+		"summary": "Render an isometric view of the volume to an image. Voxels with a normal index use the node normal palette for shading.",
 		"parameters": [
 			{"name": "face", "type": "string", "description": "The front face for the isometric view, e.g. 'front', 'back', 'left', 'right', 'up', 'down'. Optional, default: 'front'.", "optional": true}
 		],
