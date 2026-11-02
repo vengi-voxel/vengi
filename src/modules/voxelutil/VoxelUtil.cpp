@@ -6,6 +6,7 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
 #include "math/Axis.h"
 #include "palette/Palette.h"
@@ -154,46 +155,43 @@ using WalkCheckCallback = core::Function<bool(const voxel::RawVolumeWrapper &, c
 using WalkExecCallback = core::Function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
 
 template<class CHECK, class EXEC, class Volume>
-static int walkPlane_r(IVec3Set &visited, Volume &volume, const voxel::Region &region, CHECK &&check, EXEC &&exec,
-					   const glm::ivec3 &position, const glm::ivec3 &offsetForCheckCallback, voxel::FaceNames face) {
-	const glm::ivec3 checkPosition = position + offsetForCheckCallback;
-	if (visited.has(checkPosition)) {
-		return 0;
-	}
-	visited.insert(checkPosition);
-	if (!region.containsPoint(position)) {
-		return 0;
-	}
-	if (!check(volume, checkPosition, face)) {
-		return 0;
-	}
-	if (!exec(volume, position)) {
-		return 0;
-	}
-	int n = 1;
-	if (region.containsPoint(position.x + 1, position.y, position.z)) {
-		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x + 1, position.y, position.z),
-						 offsetForCheckCallback, face);
-	}
-	if (region.containsPoint(position.x - 1, position.y, position.z)) {
-		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x - 1, position.y, position.z),
-						 offsetForCheckCallback, face);
-	}
-	if (region.containsPoint(position.x, position.y + 1, position.z)) {
-		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y + 1, position.z),
-						 offsetForCheckCallback, face);
-	}
-	if (region.containsPoint(position.x, position.y - 1, position.z)) {
-		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y - 1, position.z),
-						 offsetForCheckCallback, face);
-	}
-	if (region.containsPoint(position.x, position.y, position.z + 1)) {
-		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y, position.z + 1),
-						 offsetForCheckCallback, face);
-	}
-	if (region.containsPoint(position.x, position.y, position.z - 1)) {
-		n += walkPlane_r(visited, volume, region, check, exec, glm::ivec3(position.x, position.y, position.z - 1),
-						 offsetForCheckCallback, face);
+static int walkPlaneIter(IVec3Set &visited, Volume &volume, const voxel::Region &region, CHECK &&check, EXEC &&exec,
+						 const glm::ivec3 &start, const glm::ivec3 &offsetForCheckCallback, voxel::FaceNames face) {
+	// Heap stack. The previous recursive walk overflowed the Android SDL thread on a large plane.
+	core::DynamicArray<glm::ivec3> pending({start});
+	int n = 0;
+	while (!pending.empty()) {
+		const glm::ivec3 position = pending[pending.size() - 1];
+		pending.pop();
+		const glm::ivec3 checkPosition = position + offsetForCheckCallback;
+		if (visited.has(checkPosition)) {
+			continue;
+		}
+		visited.insert(checkPosition);
+		if (!region.containsPoint(position)) {
+			continue;
+		}
+		if (!check(volume, checkPosition, face)) {
+			continue;
+		}
+		if (!exec(volume, position)) {
+			continue;
+		}
+		++n;
+		const glm::ivec3 neighbors[6] = {
+			glm::ivec3(position.x + 1, position.y, position.z),
+			glm::ivec3(position.x - 1, position.y, position.z),
+			glm::ivec3(position.x, position.y + 1, position.z),
+			glm::ivec3(position.x, position.y - 1, position.z),
+			glm::ivec3(position.x, position.y, position.z + 1),
+			glm::ivec3(position.x, position.y, position.z - 1),
+		};
+		pending.reserve(lengthof(neighbors));
+		for (const glm::ivec3 &next : neighbors) {
+			if (region.containsPoint(next)) {
+				pending.push_back(next);
+			}
+		}
 	}
 	return n;
 }
@@ -247,7 +245,7 @@ static int walkPlane(Volume &volume, glm::ivec3 position, voxel::FaceNames face,
 		const glm::ivec3 &dim = walkRegion.getDimensionsInVoxels();
 		const int maxSize = dim.x * dim.y * dim.z;
 		IVec3Set visited(maxSize);
-		const int n0 = walkPlane_r(visited, volume, walkRegion, checkCallback, execCallback, position, offsetForCheckCallback, face);
+		const int n0 = walkPlaneIter(visited, volume, walkRegion, checkCallback, execCallback, position, offsetForCheckCallback, face);
 		if (n0 == 0) {
 			break;
 		}
