@@ -966,6 +966,13 @@ app::AppState IMGUIApp::onRunning() {
 	}
 
 	ImGui::EndFrame();
+#ifdef __ANDROID__
+	// Dear ImGui starts SDL text input for WantTextInput alone, and only stops it when
+	// the IME is also visible (a node rename). Other fields leave the keyboard up.
+	if (!ImGui::GetIO().WantTextInput && _window != nullptr && SDL_TextInputActive(_window)) {
+		SDL_StopTextInput(_window);
+	}
+#endif
 	ImGui::Render();
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

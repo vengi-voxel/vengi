@@ -11,6 +11,12 @@
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_iostream.h>
+#if defined(__ANDROID__)
+#include <SDL3/SDL_system.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#endif
 
 namespace io {
 
@@ -83,15 +89,64 @@ void normalizePath(core::String& str) {
 #endif
 }
 
+#if defined(__ANDROID__)
+// SDL_IOFromFile uses fopen only for an absolute path that already exists. Every other
+// path, including a missing absolute file, falls through to the asset manager and
+// crashes when this process has no Activity. Rewrite those paths onto the working
+// directory and only call SDL after stdio can open them.
+static void resolveAndroidShellPath(core::String &path) {
+	if (path.empty() || SDL_GetAndroidJNIEnv() != nullptr) {
+		return;
+	}
+	if (core::string::startsWith(path, "content://")) {
+		return;
+	}
+	if (core::string::startsWith(path, "assets://")) {
+		path.erase(0, 9);
+		while (!path.empty() && path[0] == '/') {
+			path.erase(0);
+		}
+	}
+	if (path.empty() || core::string::isAbsolutePath(path)) {
+		return;
+	}
+	const core::String cwd = fs_cwd();
+	if (cwd.empty()) {
+		return;
+	}
+	path = core::string::path(cwd, path);
+	normalizePath(path);
+}
+
+static bool androidShellStdioOpenable(const char *path, const char *fmode) {
+	if (path == nullptr || path[0] != '/') {
+		errno = EINVAL;
+		return false;
+	}
+	FILE *fp = fopen(path, fmode);
+	if (fp == nullptr) {
+		return false;
+	}
+	fclose(fp);
+	return true;
+}
+#endif
+
 File::File(const core::String& rawPath, FileMode mode) :
 		IOResource(), _rawPath(rawPath), _mode(mode) {
 	normalizePath(_rawPath);
+#if defined(__ANDROID__)
+	resolveAndroidShellPath(_rawPath);
+#endif
 	_file = createRWops(mode);
 }
 
 File::File(core::String&& rawPath, FileMode mode) :
 		IOResource(), _rawPath(core::move(rawPath)), _mode(mode) {
 	normalizePath(_rawPath);
+#if defined(__ANDROID__)
+	resolveAndroidShellPath(_rawPath);
+#endif
 	_file = createRWops(mode);
 }
 
@@ -159,6 +214,12 @@ SDL_IOStream* File::createRWops(FileMode mode) const {
 	} else if (mode == FileMode::Append) {
 		fmode = "ab";
 	}
+#if defined(__ANDROID__)
+	if (SDL_GetAndroidJNIEnv() == nullptr && !androidShellStdioOpenable(_rawPath.c_str(), fmode)) {
+		error("%s", strerror(errno));
+		return nullptr;
+	}
+#endif
 	SDL_IOStream *rwops = SDL_IOFromFile(_rawPath.c_str(), fmode);
 	if (rwops == nullptr) {
 		error("%s", SDL_GetError());

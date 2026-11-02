@@ -75,6 +75,23 @@ cmake --build .
 
 If you are using the cmake Makefile generator, you get the same targets as for Linux above. You can also just type `make voxedit-run` to compile and run only VoxEdit.
 
+## Android
+
+`contrib/scripts/android.sh` installs the current SDK, NDK r30, and an emulator image, then builds a VoxEdit APK. The GitHub Actions job runs the same script. JDK 17 or newer is required (21 is what CI uses).
+
+```bash
+make android-setup   # SDK, NDK, emulator, AVD (skips packages that already exist)
+make android         # arm64-v8a debug APK (native libs follow BUILDTYPE, default Debug)
+make android-run     # host-ABI APK, boot the emulator, install, launch VoxEdit
+make android-tests   # host-ABI gtest binaries, boot the emulator, run them
+make android-logs    # logcat for SDL / VoxEdit
+make android-stop
+```
+
+`make android BUILDTYPE=Release` matches the CI build. The APK is `android-project/app/build/outputs/apk/debug/app-debug.apk`. A connected device is used when one is already listed by adb; otherwise the script starts the `vengi-<abi>` AVD.
+
+`make android-tests` builds the gtest suites for the host CPU (`x86_64` or `arm64-v8a`), pushes each binary and its data files to `/data/local/tmp/vengi-tests` on the emulator, and runs them there. `GTEST_FILTER` is passed through to gtest. `ANDROID_TEST_TIMEOUT` is the per-suite limit in seconds (default 900). Results are written to `build/android-tests/android-test-results.txt`.
+
 ## Hints
 
 If you encounter any problems, it's also a good start to check out the build pipelines of the project.

@@ -12,8 +12,10 @@
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include "system/WinHttp.h"
-#elif __EMSCRIPTEN__
+#elif defined(__EMSCRIPTEN__)
 #include "system/Emscripten.h"
+#elif defined(__ANDROID__)
+#include "system/Android.h"
 #elif USE_CURL
 #include "system/Curl.h"
 #else

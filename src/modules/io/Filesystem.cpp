@@ -65,7 +65,13 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 		normalizePath(_basePath);
 	}
 
-	char *prefPath = SDL_GetPrefPath(_organisation.c_str(), _appname.c_str());
+	char *prefPath = nullptr;
+#if defined(__ANDROID__)
+	if (SDL_GetAndroidJNIEnv() != nullptr)
+#endif
+	{
+		prefPath = SDL_GetPrefPath(_organisation.c_str(), _appname.c_str());
+	}
 	if (prefPath != nullptr) {
 		_homePath = prefPath;
 		SDL_free(prefPath);

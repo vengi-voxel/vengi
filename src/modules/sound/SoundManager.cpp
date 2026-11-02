@@ -6,8 +6,15 @@
 #include "SoundConfig.h"
 #include "app/I18N.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "core/Var.h"
 #include <SDL3/SDL.h>
+#if defined(__ANDROID__)
+#include <SDL3/SDL_system.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#endif
 
 namespace sound {
 
@@ -125,8 +132,36 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 
 	SoundData *data = new SoundData();
 
-	if (!SDL_LoadWAV(path.c_str(), &data->spec, &data->buffer, &data->length)) {
-		Log::warn("Failed to load WAV file '%s': %s", path.c_str(), SDL_GetError());
+	core::String fullPath = path;
+#if defined(__ANDROID__)
+	if (SDL_GetAndroidJNIEnv() == nullptr) {
+		if (core::string::startsWith(fullPath, "assets://")) {
+			fullPath.erase(0, 9);
+			while (!fullPath.empty() && fullPath[0] == '/') {
+				fullPath.erase(0);
+			}
+		}
+		if (!fullPath.empty() && !core::string::isAbsolutePath(fullPath) && !core::string::startsWith(fullPath, "content://")) {
+			char cwd[4096];
+			if (getcwd(cwd, sizeof(cwd)) == nullptr) {
+				Log::warn("Failed to load WAV file '%s': %s", path.c_str(), strerror(errno));
+				delete data;
+				return nullptr;
+			}
+			fullPath = core::string::path(cwd, fullPath);
+		}
+		if (!core::string::isAbsolutePath(fullPath)) {
+			errno = EINVAL;
+		}
+		if (!core::string::isAbsolutePath(fullPath) || access(fullPath.c_str(), R_OK) != 0) {
+			Log::warn("Failed to load WAV file '%s': %s", path.c_str(), strerror(errno));
+			delete data;
+			return nullptr;
+		}
+	}
+#endif
+	if (!SDL_LoadWAV(fullPath.c_str(), &data->spec, &data->buffer, &data->length)) {
+		Log::warn("Failed to load WAV file '%s': %s", fullPath.c_str(), SDL_GetError());
 		delete data;
 		return nullptr;
 	}

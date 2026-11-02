@@ -33,6 +33,12 @@
 #include <sysdir.h>
 #endif
 
+#ifdef __ANDROID__
+#include "core/sdl/SDLSystem.h"
+#include <SDL3/SDL_system.h>
+#include <jni.h>
+#endif
+
 namespace io {
 namespace priv {
 
@@ -72,7 +78,7 @@ static core::String appleDir(sysdir_search_path_directory_t dir) {
 	return core::String::Empty;
 }
 
-#else // __APPLE__
+#elif !defined(__ANDROID__)
 
 bool isUserVisiblePath(const char *path) {
 	// root is always added
@@ -149,10 +155,182 @@ static core::String load(const core::String &file) {
 
 #endif
 
+#ifdef __ANDROID__
+
+static bool jniFailed(JNIEnv *env) {
+	if (env->ExceptionCheck()) {
+		env->ExceptionClear();
+		return true;
+	}
+	return false;
+}
+
+static core::String jstringToCore(JNIEnv *env, jstring value) {
+	if (value == nullptr) {
+		return core::String::Empty;
+	}
+	const char *utf = env->GetStringUTFChars(value, nullptr);
+	if (utf == nullptr) {
+		return core::String::Empty;
+	}
+	core::String out(utf);
+	env->ReleaseStringUTFChars(value, utf);
+	return out;
+}
+
+static void deleteLocal(JNIEnv *env, jobject obj) {
+	if (obj != nullptr) {
+		env->DeleteLocalRef(obj);
+	}
+}
+
+static core::String androidPublicDir(JNIEnv *env, const char *fieldName) {
+	jclass envClass = env->FindClass("android/os/Environment");
+	if (jniFailed(env) || envClass == nullptr) {
+		deleteLocal(env, envClass);
+		return core::String::Empty;
+	}
+	jfieldID field = env->GetStaticFieldID(envClass, fieldName, "Ljava/lang/String;");
+	if (jniFailed(env) || field == nullptr) {
+		deleteLocal(env, envClass);
+		return core::String::Empty;
+	}
+	jstring type = static_cast<jstring>(env->GetStaticObjectField(envClass, field));
+	if (jniFailed(env) || type == nullptr) {
+		deleteLocal(env, type);
+		deleteLocal(env, envClass);
+		return core::String::Empty;
+	}
+	jmethodID method = env->GetStaticMethodID(envClass, "getExternalStoragePublicDirectory",
+											  "(Ljava/lang/String;)Ljava/io/File;");
+	jobject file = nullptr;
+	if (!jniFailed(env) && method != nullptr) {
+		file = env->CallStaticObjectMethod(envClass, method, type);
+	}
+	deleteLocal(env, type);
+	deleteLocal(env, envClass);
+	if (jniFailed(env) || file == nullptr) {
+		deleteLocal(env, file);
+		return core::String::Empty;
+	}
+	jclass fileClass = env->GetObjectClass(file);
+	jstring path = nullptr;
+	if (!jniFailed(env) && fileClass != nullptr) {
+		jmethodID getPath = env->GetMethodID(fileClass, "getAbsolutePath", "()Ljava/lang/String;");
+		if (!jniFailed(env) && getPath != nullptr) {
+			path = static_cast<jstring>(env->CallObjectMethod(file, getPath));
+		}
+	}
+	core::String result;
+	if (!jniFailed(env)) {
+		result = jstringToCore(env, path);
+	}
+	deleteLocal(env, path);
+	deleteLocal(env, fileClass);
+	deleteLocal(env, file);
+	return result;
+}
+
+static core::String androidStorageRoot(JNIEnv *env) {
+	jclass envClass = env->FindClass("android/os/Environment");
+	if (jniFailed(env) || envClass == nullptr) {
+		deleteLocal(env, envClass);
+		return core::String::Empty;
+	}
+	jmethodID method = env->GetStaticMethodID(envClass, "getExternalStorageDirectory", "()Ljava/io/File;");
+	jobject file = nullptr;
+	if (!jniFailed(env) && method != nullptr) {
+		file = env->CallStaticObjectMethod(envClass, method);
+	}
+	deleteLocal(env, envClass);
+	if (jniFailed(env) || file == nullptr) {
+		deleteLocal(env, file);
+		return core::String::Empty;
+	}
+	jclass fileClass = env->GetObjectClass(file);
+	jstring path = nullptr;
+	if (!jniFailed(env) && fileClass != nullptr) {
+		jmethodID getPath = env->GetMethodID(fileClass, "getAbsolutePath", "()Ljava/lang/String;");
+		if (!jniFailed(env) && getPath != nullptr) {
+			path = static_cast<jstring>(env->CallObjectMethod(file, getPath));
+		}
+	}
+	core::String result;
+	if (!jniFailed(env)) {
+		result = jstringToCore(env, path);
+	}
+	deleteLocal(env, path);
+	deleteLocal(env, fileClass);
+	deleteLocal(env, file);
+	return result;
+}
+
+static void pushStorage(io::FilesystemState &state, const char *name, const char *path) {
+	if (path == nullptr || path[0] == '\0') {
+		return;
+	}
+	for (const ThisPCEntry &entry : state._thisPc) {
+		if (entry.path == path) {
+			return;
+		}
+	}
+	state._thisPc.push_back({name, path});
+}
+
+static bool initAndroidState(io::FilesystemState &state) {
+	const bool haveJni = SDL_GetAndroidJNIEnv() != nullptr;
+	const char *envHome = getHome();
+	// getHome() ignores HOME for uid 0. The test shell is root after adb root and sets HOME itself.
+	if (envHome == nullptr || envHome[0] == '\0') {
+		envHome = SDL_getenv("HOME");
+	}
+	if (haveJni && (envHome == nullptr || envHome[0] == '\0')) {
+		envHome = SDL_GetAndroidInternalStoragePath();
+	}
+	if (haveJni && (envHome == nullptr || envHome[0] == '\0')) {
+		envHome = SDL_GetAndroidExternalStoragePath();
+	}
+	if (envHome == nullptr || envHome[0] == '\0') {
+		Log::debug("Android storage path not found");
+		return false;
+	}
+
+	JNIEnv *env = static_cast<JNIEnv *>(SDL_GetAndroidJNIEnv());
+	if (env != nullptr) {
+		state._directories[FilesystemDirectories::FS_Dir_Download] = androidPublicDir(env, "DIRECTORY_DOWNLOADS");
+		state._directories[FilesystemDirectories::FS_Dir_Documents] = androidPublicDir(env, "DIRECTORY_DOCUMENTS");
+		state._directories[FilesystemDirectories::FS_Dir_Pictures] = androidPublicDir(env, "DIRECTORY_PICTURES");
+		state._directories[FilesystemDirectories::FS_Dir_Public] = androidStorageRoot(env);
+	}
+
+	for (int n = 0; n < FilesystemDirectories::FS_Dir_Max; ++n) {
+		if (state._directories[n].empty()) {
+			continue;
+		}
+		state._directories[n] = core::string::sanitizeDirPath(state._directories[n]);
+		if (core::string::isAbsolutePath(state._directories[n])) {
+			continue;
+		}
+		state._directories[n] = core::string::path(envHome, state._directories[n]);
+	}
+
+	if (haveJni) {
+		pushStorage(state, "Internal storage", SDL_GetAndroidInternalStoragePath());
+		pushStorage(state, "App storage", SDL_GetAndroidExternalStoragePath());
+	}
+	pushStorage(state, "Shared storage", state._directories[FilesystemDirectories::FS_Dir_Public].c_str());
+	pushStorage(state, "Home", envHome);
+	return true;
+}
+
+#endif
+
 } // namespace priv
 
 bool initState(io::FilesystemState &state) {
-#ifndef __EMSCRIPTEN__
+#if defined(__ANDROID__)
+	return priv::initAndroidState(state);
+#elif !defined(__EMSCRIPTEN__)
 	const char *envHome = priv::getHome();
 	if (envHome == nullptr) {
 		Log::debug("HOME env var not found");
@@ -248,8 +426,10 @@ bool initState(io::FilesystemState &state) {
 		endmntent(fp);
 	}
 #endif
-#endif // !__EMSCRIPTEN__
 	return true;
+#else
+	return true;
+#endif
 }
 
 bool fs_mkdir(const char *path) {

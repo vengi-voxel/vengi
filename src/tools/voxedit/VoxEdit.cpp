@@ -164,7 +164,11 @@ app::AppState VoxEdit::onConstruct() {
 	_penEraserSwitchesMode = core::Var::registerVar(
 		core::VarDef(cfg::VoxEditPenEraserSwitchesMode, true, N_("Pen eraser switches mode"),
 					 N_("Temporarily switch to erase mode while pen eraser is active")));
+#ifdef __ANDROID__
+	const bool emulatePenDefault = true;
+#else
 	const bool emulatePenDefault = false;
+#endif
 	_emulatePen = core::Var::registerVar(
 		core::VarDef(cfg::VoxEditEmulatePen, emulatePenDefault, N_("Emulate pen"),
 					 N_("Treat the primary pointer as a pen and map speed to pressure")));

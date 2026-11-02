@@ -1,5 +1,9 @@
 *.pyc
 /build*
+/android-project/local.properties
+/android-project/.gradle/
+/android-project/app/build/
+/android-project/build/
 /.cproject
 /.clangd
 /.settings

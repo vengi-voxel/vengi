@@ -79,7 +79,7 @@ static LONG WINAPI app_crash_handler(LPEXCEPTION_POINTERS) {
 	core_write_stacktrace();
 	return EXCEPTION_EXECUTE_HANDLER;
 }
-#else
+#elif !defined(__ANDROID__)
 static void app_crash_handler(int signal) {
 	core_write_stacktrace();
 	_exit(1);
@@ -163,7 +163,10 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 	core_assert_init(nullptr);
 
 #ifdef OWN_SIGNAL_HANDLER
-#ifdef _WIN32
+#ifdef __ANDROID__
+	// debuggerd owns these signals and writes the tombstone. Replacing the
+	// handler turns a native crash into a silent exit.
+#elif defined(_WIN32)
 	SetUnhandledExceptionFilter(&app_crash_handler);
 #else
 	struct sigaction action = {};
@@ -560,7 +563,13 @@ AppState App::onConstruct() {
 			SDL_SetHint(SDL_HINT_PREFERRED_LOCALES, lang.c_str());
 		}
 		int count = 0;
-		SDL_Locale **locales = SDL_GetPreferredLocales(&count);
+		SDL_Locale **locales = nullptr;
+#if defined(__ANDROID__)
+		if (SDL_GetAndroidJNIEnv() != nullptr)
+#endif
+		{
+			locales = SDL_GetPreferredLocales(&count);
+		}
 		for (int i = 0; i < count; ++i) {
 			const auto *locale = locales[i];
 			const core::String language = locale->language ? locale->language : "";

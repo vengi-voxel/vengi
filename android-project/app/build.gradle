@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.application'
+}
+
+def nativeLibDir = project.findProperty('nativeLibDir')
+def assetsDir = project.findProperty('assetsDir')
+def injectedVersionName = System.getenv('ANDROID_VERSION_NAME') ?: project.findProperty('appVersionName')
+def injectedVersionCode = System.getenv('ANDROID_VERSION_CODE') ?: project.findProperty('appVersionCode')
+
+android {
+    namespace "io.github.vengi_voxel.voxedit"
+    compileSdk 37
+    buildToolsVersion "37.0.0"
+    ndkVersion "30.0.16248370"
+
+    defaultConfig {
+        applicationId "io.github.vengi_voxel.voxedit"
+        minSdk 24
+        targetSdk 37
+        versionCode injectedVersionCode ? injectedVersionCode.toInteger() : 1
+        versionName injectedVersionName ?: "0.7.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            jniDebuggable true
+        }
+    }
+
+    sourceSets {
+        main {
+            if (nativeLibDir) {
+                jniLibs.srcDirs = [nativeLibDir]
+            }
+            if (assetsDir) {
+                assets.srcDirs = [assetsDir]
+            }
+        }
+    }
+
+    lint {
+        abortOnError false
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging true
+        }
+    }
+}
