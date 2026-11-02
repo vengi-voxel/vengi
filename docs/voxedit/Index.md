@@ -1,6 +1,6 @@
 # About
 
-This is a free and opensource, cross platform voxel volume editor with scripting and animation support.
+This is a free and opensource, cross platform voxel scene editor with [scripting](../LUAScript.md), [animation](Animation.md), [pathtracing](../PathTracer.md), [pixelart](usage/PixelArt.md), [network](usage/Network.md) and [game mode](usage/GameMode.md) support.
 
 You can load and save a lot of different [voxel formats](../Formats.md). Its built around [256 color palettes](../Palette.md).
 
