@@ -209,18 +209,16 @@ app::AppState IMGUIApp::onConstruct() {
 	const core::VarDef uITestFilter(cfg::UITestFilter, "tests", N_("Test filter"), N_("Only run tests that match the given filter"), core::CV_NOPERSIST);
 	core::Var::registerVar(uITestFilter);
 
-	if (!_showWindow) {
-		registerArg("--imgui_test_filter")
-			.setDescription(
-				"Only run tests that match the given filter (e.g. \"tests,-scroll,-^nav_\" : all tests (but no "
-				"perfs) that do not contain \"scroll\" in their name and does not start with \"nav_\"). Special "
-				"keywords: \"all\" (all tests, no matter what group they are in), \"tests\" (tests in "
-				"ImGuiTestGroup_Tests group), \"perfs\" (tests in ImGuiTestGroup_Perfs group). Available modifiers: "
-				"'-' prefix excludes tests matched by the term, '^' prefix anchors term matching to the start of the "
-				"string, '$' suffix anchors term matching to the end of the string. This is no full regex engine, only "
-				"supports the behavior of these modifiers.");
-		registerArg("--imgui_list_tests").setDescription("List all available tests and exit").addFlag(ARGUMENT_FLAG_BOOL);
-	}
+	registerArg("--imgui_test_filter")
+		.setDescription(
+			"Only run tests that match the given filter (e.g. \"tests,-scroll,-^nav_\" : all tests (but no "
+			"perfs) that do not contain \"scroll\" in their name and does not start with \"nav_\"). Special "
+			"keywords: \"all\" (all tests, no matter what group they are in), \"tests\" (tests in "
+			"ImGuiTestGroup_Tests group), \"perfs\" (tests in ImGuiTestGroup_Perfs group). Available modifiers: "
+			"'-' prefix excludes tests matched by the term, '^' prefix anchors term matching to the start of the "
+			"string, '$' suffix anchors term matching to the end of the string. This is no full regex engine, only "
+			"supports the behavior of these modifiers.");
+	registerArg("--imgui_list_tests").setDescription("List all available tests and exit").addFlag(ARGUMENT_FLAG_BOOL);
 #else
 	const core::VarDef uIShowMetrics2(cfg::UIShowMetrics, false, N_("Show metrics"), N_("Show metric and debug window"), core::CV_NOPERSIST);
 	_showMetrics = core::Var::registerVar(uIShowMetrics2);
@@ -990,8 +988,9 @@ app::AppState IMGUIApp::onRunning() {
 	video::scissor(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-	// run the tests in command line mode if the window is hidden
-	if (!_showWindow) {
+	// Headless runs always execute the suite. A visible window runs it only when asked, so the
+	// editor stays usable and the test engine window can show the results.
+	if (!_showWindow || hasArg("--imgui_test_filter") || hasArg("--imgui_list_tests")) {
 		// delay the execution of the tests a few frames to allow all tests to be registered by the app
 		if (_startedFromCommandlineFrameDelay > 0) {
 			_startedFromCommandlineFrameDelay--;
@@ -1029,7 +1028,9 @@ app::AppState IMGUIApp::onRunning() {
 					_exitCode = 1;
 				}
 				Log::info("Test results: %i tested, %i success", summary.CountTested, summary.CountSuccess);
-				requestQuit();
+				if (!_showWindow || hasArg("--imgui_list_tests")) {
+					requestQuit();
+				}
 				--_startedFromCommandlineFrameDelay;
 			}
 		}
