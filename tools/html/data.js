@@ -1130,6 +1130,24 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "Ken's Voxel Octree",
+      "extensions": [
+        "kvo",
+        "kvs",
+        "kvn"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x4B564F78"
+        }
+      ],
+      "mimetype": "application/x-ken's-voxel-octree",
+      "animation": false,
+      "load": true,
+      "save": true
+    },
+    {
       "name": "Tiberian Sun",
       "extensions": [
         "vxl"

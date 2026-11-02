@@ -243,6 +243,15 @@
 		<RegistryKey Root="HKCR" Key=".kv6">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".kvo">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".kvs">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".kvn">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".vxl">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -603,6 +612,18 @@
 			</Feature>
 			<Feature Id="Assoc_kv6" Title=".kv6" Description="Open .kv6 files with VoxEdit (AceOfSpades). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
 				<ComponentRef Id="AssocRegistration_kv6" />
+				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
+			</Feature>
+			<Feature Id="Assoc_kvo" Title=".kvo" Description="Open .kvo files with VoxEdit (Ken's Voxel Octree). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
+				<ComponentRef Id="AssocRegistration_kvo" />
+				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
+			</Feature>
+			<Feature Id="Assoc_kvs" Title=".kvs" Description="Open .kvs files with VoxEdit (Ken's Voxel Octree). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
+				<ComponentRef Id="AssocRegistration_kvs" />
+				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
+			</Feature>
+			<Feature Id="Assoc_kvn" Title=".kvn" Description="Open .kvn files with VoxEdit (Ken's Voxel Octree). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
+				<ComponentRef Id="AssocRegistration_kvn" />
 				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
 			</Feature>
 			<Feature Id="Assoc_vxl" Title=".vxl" Description="Open .vxl files with VoxEdit (Tiberian Sun). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
@@ -1481,6 +1502,39 @@
 					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
 				</RegistryKey>
 				<RegistryValue Root="HKCR" Key=".kv6" Type="string" Value="vengi-voxedit.kv6" />
+			</Component>
+			<Component Id="AssocRegistration_kvo" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".kvo" Value="vengi-voxedit.kvo" Type="string" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi-voxedit.exe\SupportedTypes" Name=".kvo" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".kvo\OpenWithProgids" Name="vengi-voxedit.kvo" Value="" Type="string" />
+				<RegistryKey Root="HKCR" Key="vengi-voxedit.kvo">
+					<RegistryValue Type="string" Value="Ken's Voxel Octree" KeyPath="yes" />
+					<RegistryValue Key="DefaultIcon" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot;,0" />
+					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
+				</RegistryKey>
+				<RegistryValue Root="HKCR" Key=".kvo" Type="string" Value="vengi-voxedit.kvo" />
+			</Component>
+			<Component Id="AssocRegistration_kvs" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".kvs" Value="vengi-voxedit.kvs" Type="string" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi-voxedit.exe\SupportedTypes" Name=".kvs" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".kvs\OpenWithProgids" Name="vengi-voxedit.kvs" Value="" Type="string" />
+				<RegistryKey Root="HKCR" Key="vengi-voxedit.kvs">
+					<RegistryValue Type="string" Value="Ken's Voxel Octree" KeyPath="yes" />
+					<RegistryValue Key="DefaultIcon" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot;,0" />
+					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
+				</RegistryKey>
+				<RegistryValue Root="HKCR" Key=".kvs" Type="string" Value="vengi-voxedit.kvs" />
+			</Component>
+			<Component Id="AssocRegistration_kvn" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".kvn" Value="vengi-voxedit.kvn" Type="string" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi-voxedit.exe\SupportedTypes" Name=".kvn" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".kvn\OpenWithProgids" Name="vengi-voxedit.kvn" Value="" Type="string" />
+				<RegistryKey Root="HKCR" Key="vengi-voxedit.kvn">
+					<RegistryValue Type="string" Value="Ken's Voxel Octree" KeyPath="yes" />
+					<RegistryValue Key="DefaultIcon" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot;,0" />
+					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
+				</RegistryKey>
+				<RegistryValue Root="HKCR" Key=".kvn" Type="string" Value="vengi-voxedit.kvn" />
 			</Component>
 			<Component Id="AssocRegistration_vxl" Guid="*">
 				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".vxl" Value="vengi-voxedit.vxl" Type="string" />

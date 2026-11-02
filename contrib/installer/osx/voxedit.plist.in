@@ -1127,6 +1127,26 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Ken's Voxel Octree</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-ken's-voxel-octree</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>kvo</string>
+          <string>kvs</string>
+          <string>kvn</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Tiberian Sun</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>

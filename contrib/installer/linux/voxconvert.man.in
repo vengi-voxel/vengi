@@ -447,6 +447,8 @@ Goxel (*.gox)
 .TP
 Goxel txt (*.txt)
 .TP
+Ken's Voxel Octree (*.kvo, *.kvs, *.kvn)
+.TP
 KenShape (*.kenshape)
 .TP
 LDraw Model (*.ldr, *.mpd)
@@ -576,6 +578,8 @@ Godot Scene (*.escn, *.tscn)
 Goxel (*.gox)
 .TP
 Goxel txt (*.txt)
+.TP
+Ken's Voxel Octree (*.kvo, *.kvs, *.kvn)
 .TP
 Luanti (Minetest) (*.mts)
 .TP

@@ -21,6 +21,7 @@
 | Cubzh World                | b64         | X       |        |            |         |            |
 | Goxel                      | gox         | X       | X      | X          | X       |            |
 | Goxel txt                  | txt         | X       | X      |            |         |            |
+| Ken's Voxel Octree         | kvo         | X       | X      |            | X       |            |
 | KenShape                   | kenshape    | X       |        |            | X       |            |
 | Luanti (Minetest)          | mts         | X       | X      |            | X       |            |
 | Luanti World Edit          | we          | X       |        |            |         |            |

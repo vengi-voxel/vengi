@@ -389,6 +389,15 @@
 			<match type="string" offset="0" value="Kvxl"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-ken's-voxel-octree">
+		<comment>Ken's Voxel Octree</comment>
+		<glob pattern="*.kvo"/>
+		<glob pattern="*.kvs"/>
+		<glob pattern="*.kvn"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="KVOx"/>
+		</magic>
+	</mime-type>
 	<mime-type type="application/x-tiberian-sun">
 		<comment>Tiberian Sun</comment>
 		<glob pattern="*.vxl"/>
