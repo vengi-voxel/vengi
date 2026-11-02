@@ -244,8 +244,8 @@ public:
 	BrushApplyResult invalidParameters();
 	template<class T, class Parameters>
 	BrushApplyResult updateParameters(const core::String &id, const Parameters &parameters) {
-		T &value = tool<T>(id);
-		if (currentBrush() != &value || !value.setParameters(parameters)) {
+		T *value = tool<T>(id);
+		if (value == nullptr || currentBrush() != value || !value->setParameters(parameters)) {
 			return invalidParameters();
 		}
 		return parametersChanged();
@@ -301,11 +301,11 @@ public:
 	BrushType setBrushType(BrushType type);
 	bool setTool(const core::String &id);
 	template<class T>
-	T &tool(const core::String &id) {
+	T *tool(const core::String &id) {
 		return _registry.get<T>(id);
 	}
 	template<class T>
-	const T &tool(const core::String &id) const {
+	const T *tool(const core::String &id) const {
 		return _registry.get<T>(id);
 	}
 	const core::String &toolId() const {
@@ -416,55 +416,55 @@ inline BrushType Modifier::brushType() const {
 }
 
 inline TextBrush &Modifier::textBrush() {
-	return _registry.get<TextBrush>("text");
+	return *_registry.get<TextBrush>("text");
 }
 
 inline LineBrush &Modifier::lineBrush() {
-	return _registry.get<LineBrush>("line");
+	return *_registry.get<LineBrush>("line");
 }
 
 inline ShapeBrush &Modifier::shapeBrush() {
-	return _registry.get<ShapeBrush>("shape");
+	return *_registry.get<ShapeBrush>("shape");
 }
 
 inline StampBrush &Modifier::stampBrush() {
-	return _registry.get<StampBrush>("stamp");
+	return *_registry.get<StampBrush>("stamp");
 }
 
 inline PlaneBrush &Modifier::planeBrush() {
-	return _registry.get<PlaneBrush>("plane");
+	return *_registry.get<PlaneBrush>("plane");
 }
 
 inline PaintBrush &Modifier::paintBrush() {
-	return _registry.get<PaintBrush>("paint");
+	return *_registry.get<PaintBrush>("paint");
 }
 
 inline NormalBrush &Modifier::normalBrush() {
-	return _registry.get<NormalBrush>("normal");
+	return *_registry.get<NormalBrush>("normal");
 }
 
 inline SelectBrush &Modifier::selectBrush() {
-	return _registry.get<SelectBrush>("select");
+	return *_registry.get<SelectBrush>("select");
 }
 
 inline TextureBrush &Modifier::textureBrush() {
-	return _registry.get<TextureBrush>("texture");
+	return *_registry.get<TextureBrush>("texture");
 }
 
 inline ExtrudeBrush &Modifier::extrudeBrush() {
-	return _registry.get<ExtrudeBrush>("extrude");
+	return *_registry.get<ExtrudeBrush>("extrude");
 }
 
 inline TransformBrush &Modifier::transformBrush() {
-	return _registry.get<TransformBrush>("transform");
+	return *_registry.get<TransformBrush>("transform");
 }
 
 inline SculptBrush &Modifier::sculptBrush() {
-	return _registry.get<SculptBrush>("sculpt");
+	return *_registry.get<SculptBrush>("sculpt");
 }
 
 inline RulerBrush &Modifier::rulerBrush() {
-	return _registry.get<RulerBrush>("ruler");
+	return *_registry.get<RulerBrush>("ruler");
 }
 
 inline const glm::ivec3 &Modifier::gridResolution() const {

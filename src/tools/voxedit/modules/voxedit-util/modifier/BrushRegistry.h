@@ -73,15 +73,14 @@ public:
 	}
 
 	template<class T>
-	T &get(const core::String &id) const {
+	T *get(const core::String &id) const {
 		for (const Entry &entry : _entries) {
 			if (entry.id == id) {
 				core_assert(entry.type == typeKey<T>());
-				return *(T *)entry.tool.get();
+				return static_cast<T *>(entry.tool.get());
 			}
 		}
-		core_assert(false);
-		return *(T *)nullptr;
+		return nullptr;
 	}
 };
 

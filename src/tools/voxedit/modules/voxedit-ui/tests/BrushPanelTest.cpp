@@ -47,10 +47,11 @@ class PanelExtensionUI {
 public:
 	void update(BrushPanelContext &context, command::CommandExecutionListener &) {
 		Modifier &modifier = context.sceneMgr->modifier();
-		PanelExtensionBrush &brush = modifier.tool<PanelExtensionBrush>("ui-extension");
-		int parameter = brush.parameter;
+		PanelExtensionBrush *brush = modifier.tool<PanelExtensionBrush>("ui-extension");
+		IM_CHECK(brush != nullptr);
+		int parameter = brush->parameter;
 		if (ImGui::InputInt(_("Test value"), &parameter)) {
-			brush.setParameter(parameter);
+			brush->setParameter(parameter);
 		}
 	}
 };
