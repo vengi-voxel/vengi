@@ -68,6 +68,12 @@ msgstr ""
 msgid "Trigger an assert"
 msgstr ""
 
+msgid "Create, update or list command aliases"
+msgstr ""
+
+msgid "Remove a command alias"
+msgstr ""
+
 msgid "Clear the value history of a variable"
 msgstr ""
 
@@ -1220,6 +1226,12 @@ msgstr ""
 msgid "Load the hva for animations"
 msgstr ""
 
+msgid "Load KFA"
+msgstr ""
+
+msgid "Load the kfa sidecar for kv6 hinge animations"
+msgstr ""
+
 msgid "Crop on load"
 msgstr ""
 
@@ -1492,6 +1504,80 @@ msgstr ""
 msgid "Path to the LDraw parts library directory for resolving part references"
 msgstr ""
 
+msgid "2D depth factor"
+msgstr ""
+
+msgid "Darken farther voxels when rendering a volume to a 2D image"
+msgstr ""
+
+msgid "Background"
+msgstr ""
+
+msgid "Background color for volume image renders (RGBA)"
+msgstr ""
+
+msgid "Image width"
+msgstr ""
+
+msgid "Output width in pixels. -1 keeps the native size"
+msgstr ""
+
+msgid "Image height"
+msgstr ""
+
+msgid "Output height in pixels. -1 keeps the native size"
+msgstr ""
+
+msgid "Upscale"
+msgstr ""
+
+msgid "Allow enlarging the image when width or height exceed the native size"
+msgstr ""
+
+msgid "Isometric"
+msgstr ""
+
+msgid "Use isometric projection when rendering a volume to an image"
+msgstr ""
+
+msgid "Iso shading"
+msgstr ""
+
+msgid "Apply face shading to isometric renders"
+msgstr ""
+
+msgid "Iso normals"
+msgstr ""
+
+msgid "Light isometric voxels from their stored normal palette direction"
+msgstr ""
+
+msgid "Iso materials"
+msgstr ""
+
+msgid "Apply palette materials (emit, metal, roughness) to isometric renders"
+msgstr ""
+
+msgid "Iso transparency"
+msgstr ""
+
+msgid ""
+"Blend palette alpha in isometric renders, and let those voxels show what is "
+"behind them"
+msgstr ""
+
+msgid "Silhouette"
+msgstr ""
+
+msgid "Ink pixels that touch an empty neighbor in isometric renders"
+msgstr ""
+
+msgid "Iso outline color"
+msgstr ""
+
+msgid "Outline color for isometric renders (RGBA)"
+msgstr ""
+
 msgid "Binary"
 msgstr ""
 
@@ -1700,9 +1786,6 @@ msgid "Depth of field"
 msgstr ""
 
 msgid "Enable pathtracer depth of field"
-msgstr ""
-
-msgid "Background"
 msgstr ""
 
 msgid "0 = sky, 1 = solid, 2 = transparent"
@@ -1932,14 +2015,6 @@ msgstr ""
 msgid "Download %s"
 msgstr ""
 
-msgid "2D depth factor"
-msgstr ""
-
-msgid ""
-"When creating a volume from an image, this is the factor that is used for "
-"the depth value"
-msgstr ""
-
 msgid "Quit"
 msgstr ""
 
@@ -2132,7 +2207,10 @@ msgstr ""
 msgid "Delete the current keyframe of the active nodes"
 msgstr ""
 
-msgid "Crop frames"
+msgid "Frame all (Home)"
+msgstr ""
+
+msgid "Center playhead"
 msgstr ""
 
 #, c-format
@@ -2292,9 +2370,6 @@ msgstr ""
 msgid "Camera movement"
 msgstr ""
 
-msgid "Isometric"
-msgstr ""
-
 msgid "Orthogonal"
 msgstr ""
 
@@ -2398,6 +2473,40 @@ msgstr ""
 msgid "The length of the segments"
 msgstr ""
 
+msgid "Length scale"
+msgstr ""
+
+msgid "Multiply segment length after drawing; 1 keeps the length constant"
+msgstr ""
+
+msgid "Minimum length"
+msgstr ""
+
+msgid "Angle variation"
+msgstr ""
+
+msgid "Random angle variation in degrees; 0 disables variation"
+msgstr ""
+
+msgid "Seed"
+msgstr ""
+
+msgid "Branch color"
+msgstr ""
+
+msgid ""
+"Wood color from the current palette selection. Change it in the palette "
+"panel."
+msgstr ""
+
+msgid "Leaf color"
+msgstr ""
+
+msgid ""
+"Defaults to the closest green in the node palette. -1 uses the current "
+"voxel. Drag a palette color here."
+msgstr ""
+
 msgid "Width"
 msgstr ""
 
@@ -2431,7 +2540,7 @@ msgstr ""
 msgid "Adopt Dimensions"
 msgstr ""
 
-msgid "Adopt the L-System parameters to the current volume dimensions"
+msgid "Scale the L-System so the generated shape fits the current volume"
 msgstr ""
 
 #, c-format
@@ -2874,6 +2983,14 @@ msgstr ""
 msgid "Interpolation"
 msgstr ""
 
+msgid "Long rotation"
+msgstr ""
+
+msgid ""
+"Take the longer rotation path to the next keyframe. For a full turn, add an "
+"intermediate keyframe."
+msgstr ""
+
 msgid "Interpolation details"
 msgstr ""
 
@@ -2980,6 +3097,25 @@ msgstr ""
 msgid "UUID"
 msgstr ""
 
+msgid "Swap entries and preserve painted directions"
+msgstr ""
+
+#, c-format
+msgid "Normal %i: %.3f, %.3f, %.3f"
+msgstr ""
+
+msgid "Empty normal slot - select to create a direction"
+msgstr ""
+
+msgid "Copy normal"
+msgstr ""
+
+msgid "Paste normal"
+msgstr ""
+
+msgid "Duplicate normal"
+msgstr ""
+
 msgid "Tiberian Sun"
 msgstr ""
 
@@ -3054,6 +3190,18 @@ msgstr ""
 msgid "Rotate 90 deg"
 msgstr ""
 
+msgid "Direction"
+msgstr ""
+
+msgid "Enter a finite, non-zero normal."
+msgstr ""
+
+msgid "Add normal"
+msgstr ""
+
+msgid "Direction edits affect every voxel using this entry."
+msgstr ""
+
 msgid "Full pre-alloc"
 msgstr ""
 
@@ -3120,10 +3268,28 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
+msgid "Copy color"
+msgstr ""
+
+msgid "Paste color"
+msgstr ""
+
 msgid "Remove alpha"
 msgstr ""
 
+msgid "Material"
+msgstr ""
+
+msgid "Copy material"
+msgstr ""
+
+msgid "Paste material"
+msgstr ""
+
 msgid "Reset material"
+msgstr ""
+
+msgid "Palette entries"
 msgstr ""
 
 msgid "Model from selected colors"
@@ -3249,6 +3415,26 @@ msgstr ""
 
 #, c-format
 msgid "Palette index: %i (scene voxel index %i)"
+msgstr ""
+
+msgid "Pixel art"
+msgstr ""
+
+msgid "2D"
+msgstr ""
+
+msgid "Mode###pixelartmode"
+msgstr ""
+
+msgid "View###pixelartview"
+msgstr ""
+
+msgid ""
+"The scene is larger than the suggested volume size. Isometric preview is "
+"disabled."
+msgstr ""
+
+msgid "Select a voxel model to preview."
 msgstr ""
 
 msgid "Quality presets"
@@ -3591,6 +3777,25 @@ msgid "Overwrite scripts/%s"
 msgstr ""
 
 msgid "Select all"
+msgstr ""
+
+msgid "Fit"
+msgstr ""
+
+msgid "2D Views"
+msgstr ""
+
+msgid "Select a model node to edit its slices."
+msgstr ""
+
+msgid ""
+"This model is larger than the suggested volume size. 2D editing is disabled."
+msgstr ""
+
+msgid "Show voxels behind the current slice with reduced opacity."
+msgstr ""
+
+msgid "Grid"
 msgstr ""
 
 #, c-format
@@ -4479,6 +4684,12 @@ msgstr ""
 msgid "Drag to define the shape's size."
 msgstr ""
 
+msgid "Minimum"
+msgstr ""
+
+msgid "Maximum"
+msgstr ""
+
 msgid "Mirror"
 msgstr ""
 
@@ -4569,6 +4780,9 @@ msgstr ""
 msgid "Keep the brush inside the active volume bounds"
 msgstr ""
 
+msgid "Test value"
+msgstr ""
+
 msgctxt "SceneJob"
 msgid "Scene job"
 msgstr ""
@@ -4653,9 +4867,6 @@ msgid "Local transforms"
 msgstr ""
 
 msgid "Use local space for transforms"
-msgstr ""
-
-msgid "Grid"
 msgstr ""
 
 msgid "Show the grid"
@@ -4767,6 +4978,14 @@ msgid ""
 "in mode 3"
 msgstr ""
 
+msgid "Face cursor for single voxel"
+msgstr ""
+
+msgid ""
+"Use the red face cursor instead of a full cube preview when the shape brush "
+"radius is 0"
+msgstr ""
+
 msgid "Auto Keyframe"
 msgstr ""
 
@@ -4828,8 +5047,8 @@ msgid "Max volume size"
 msgstr ""
 
 msgid ""
-"The maximum size of a volume before a few features are disabled (e.g. undo/"
-"autosave)"
+"The maximum size of a volume before a few features are disabled (e.g. undo, "
+"autosave, isometric preview, 2D editing)"
 msgstr ""
 
 msgid "Configure the editor view mode"
@@ -4848,6 +5067,9 @@ msgid "Memento"
 msgstr ""
 
 msgid "Show the memento panel"
+msgstr ""
+
+msgid "Show editable back, right and top slices of the selected model"
 msgstr ""
 
 msgid "Show the camera panel"
@@ -4911,6 +5133,9 @@ msgid "Volume inspector"
 msgstr ""
 
 msgid "Show the brushes and brush settings panels"
+msgstr ""
+
+msgid "Show the pixel art preview panel"
 msgstr ""
 
 msgid "Show the tip of the day on startup"
@@ -5291,6 +5516,16 @@ msgstr ""
 msgid "Change the name of a node"
 msgstr ""
 
+msgid ""
+"Repeat a volume along its transformed axes; positive counts include the "
+"original (maximum 1024 tiles)"
+msgstr ""
+
+msgid ""
+"Repeat selected voxels by their bounds inside the active volume; positive "
+"counts include the original"
+msgstr ""
+
 msgid "Duplicates the current node or the given node id"
 msgstr ""
 
@@ -5399,6 +5634,15 @@ msgstr ""
 msgid "Automatically select newly placed voxels"
 msgstr ""
 
+msgid "Invalid operation parameters"
+msgstr ""
+
+msgid "The edit target changed or has no selection"
+msgstr ""
+
+msgid "The edit target changed"
+msgstr ""
+
 msgid "Max preview size"
 msgstr ""
 
@@ -5455,6 +5699,12 @@ msgid "Mirror along the z axis at the reference position"
 msgstr ""
 
 msgid "Turn off mirroring"
+msgstr ""
+
+msgid "Brush script execution failed"
+msgstr ""
+
+msgid "Brush scripts must preserve the target volume bounds"
 msgstr ""
 
 msgid "Toggle continuous line drawing"
@@ -5532,6 +5782,9 @@ msgstr ""
 
 msgctxt "Sculpt brush mode"
 msgid "Reskin"
+msgstr ""
+
+msgid "Selection script execution failed"
 msgstr ""
 
 msgctxt "SelectMode"
