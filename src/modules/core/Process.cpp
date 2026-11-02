@@ -13,11 +13,86 @@
 #else
 #include <unistd.h>
 #endif
+#if defined(__ANDROID__)
+#include <errno.h>
+#include <sys/wait.h>
+#endif
 
 namespace core {
 
+#if defined(__ANDROID__)
+// posix_spawn is not declared by the NDK at the API level this build targets,
+// and SDL therefore ships the dummy process backend. fork/exec is available to
+// the shell and rooted test process.
+static int execFork(const core::String &command, const core::DynamicArray<core::String> &arguments,
+					 const char *workingDirectory, io::WriteStream *stream) {
+	int pipes[2] = {-1, -1};
+	if (stream != nullptr && pipe(pipes) != 0) {
+		Log::error("Failed to create process pipe for '%s': %s", command.c_str(), strerror(errno));
+		return -1;
+	}
+
+	const pid_t pid = fork();
+	if (pid < 0) {
+		Log::error("Failed to fork process '%s': %s", command.c_str(), strerror(errno));
+		if (pipes[0] != -1) {
+			close(pipes[0]);
+			close(pipes[1]);
+		}
+		return -1;
+	}
+	if (pid == 0) {
+		if (workingDirectory != nullptr && workingDirectory[0] != '\0' && chdir(workingDirectory) != 0) {
+			_exit(127);
+		}
+		if (pipes[1] != -1) {
+			dup2(pipes[1], STDOUT_FILENO);
+			dup2(pipes[1], STDERR_FILENO);
+			close(pipes[0]);
+			close(pipes[1]);
+		}
+		core::DynamicArray<char *> argv;
+		argv.reserve(arguments.size() + 2);
+		argv.push_back((char *)command.c_str());
+		for (const core::String &arg : arguments) {
+			argv.push_back((char *)arg.c_str());
+		}
+		argv.push_back(nullptr);
+		execvp(argv[0], argv.data());
+		_exit(127);
+	}
+
+	if (pipes[1] != -1) {
+		close(pipes[1]);
+		char buf[4096];
+		for (;;) {
+			const ssize_t n = read(pipes[0], buf, sizeof(buf));
+			if (n <= 0) {
+				break;
+			}
+			stream->write(buf, (int)n);
+		}
+		close(pipes[0]);
+	}
+
+	int status = 0;
+	if (waitpid(pid, &status, 0) < 0) {
+		Log::error("Failed to wait for process '%s': %s", command.c_str(), strerror(errno));
+		return -1;
+	}
+	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+		Log::debug("child process returned with code %d", WIFEXITED(status) ? WEXITSTATUS(status) : -1);
+		return -1;
+	}
+	return 0;
+}
+#endif
+
 int Process::exec(const core::String &command, const core::DynamicArray<core::String> &arguments,
 				  const char *workingDirectory, io::WriteStream *stream) {
+#if defined(__ANDROID__)
+	return execFork(command, arguments, workingDirectory, stream);
+#else
 	core::DynamicArray<const char *> argv;
 	argv.reserve(arguments.size() + 2);
 	argv.push_back(command.c_str());
@@ -121,5 +196,6 @@ int Process::exec(const core::String &command, const core::DynamicArray<core::St
 		return -1;
 	}
 	return 0;
+#endif
 }
 } // namespace core

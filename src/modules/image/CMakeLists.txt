@@ -19,7 +19,7 @@ foreach (src ${EXTERNAL_SRCS})
 endforeach()
 
 # TODO: not included as local libs yet
-if (NOT USE_LIBS_FORCE_LOCAL)
+if (NOT USE_LIBS_FORCE_LOCAL AND NOT ANDROID)
 	find_package(JPEG)
 	if (JPEG_FOUND)
 		target_compile_definitions(${LIB} PRIVATE -DUSE_LIBJPEG)

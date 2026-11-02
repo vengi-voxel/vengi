@@ -32,6 +32,40 @@ ifeq ($(OS),)
 	OS := $(shell uname -s)
 endif
 
+ANDROID_SCRIPT := $(CURDIR)/contrib/scripts/android.sh
+
+.PHONY: android android-setup android-apk android-emulator android-run android-tests android-install android-start android-stop android-logs android-clean
+
+android android-apk:
+	$(Q)BUILDTYPE=$(BUILDTYPE) $(ANDROID_SCRIPT) build
+
+android-setup:
+	$(Q)$(ANDROID_SCRIPT) setup
+
+android-emulator:
+	$(Q)$(ANDROID_SCRIPT) emulator
+
+android-install:
+	$(Q)$(ANDROID_SCRIPT) install
+
+android-start:
+	$(Q)$(ANDROID_SCRIPT) start
+
+android-logs:
+	$(Q)$(ANDROID_SCRIPT) logs
+
+android-run:
+	$(Q)BUILDTYPE=$(BUILDTYPE) $(ANDROID_SCRIPT) run
+
+android-tests:
+	$(Q)BUILDTYPE=$(BUILDTYPE) $(ANDROID_SCRIPT) tests
+
+android-stop:
+	$(Q)$(ANDROID_SCRIPT) stop
+
+android-clean:
+	$(Q)rm -rf build/android build/android-host build/android-tests android-project/app/build android-project/build android-project/.gradle
+
 ifeq ($(OS),Darwin)
 define APP_PATH
 	$(BUILDDIR)/$1/vengi-$1.app

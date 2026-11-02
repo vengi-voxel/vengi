@@ -383,6 +383,54 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+    android:
+        timeout-minutes: 120
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v5
+
+        - name: Install host packages
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends ninja-build ccache unzip ca-certificates
+
+        - uses: actions/setup-java@v4
+          with:
+            distribution: temurin
+            java-version: '21'
+
+        - name: Configure ccache
+          run: |
+            echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+            mkdir -p $HOME/.ccache
+
+        - name: ccache
+          uses: actions/cache@v4
+          with:
+            path: ~/.ccache
+            key: android-${{ secrets.CACHE_VERSION }}-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: android-${{ secrets.CACHE_VERSION }}-
+
+        - name: Cache Android SDK
+          uses: actions/cache@v4
+          with:
+            path: build/android_sdk
+            key: android-sdk-30.0.16248370-37-37.0.0
+
+        - name: Build VoxEdit APK
+          env:
+            ANDROID_ABI: arm64-v8a
+            ANDROID_PLATFORM: android-24
+          run: make android BUILDTYPE=Release
+
+        - name: Upload VoxEdit APK
+          uses: actions/upload-artifact@v4
+          with:
+            name: android-voxedit
+            if-no-files-found: error
+            path: android-project/app/build/outputs/apk/debug/*.apk
+
     windows:
         timeout-minutes: 45
         runs-on: windows-2025

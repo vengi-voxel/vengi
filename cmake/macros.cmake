@@ -224,6 +224,8 @@ function(engine_add_executable)
 			endif()
 		elseif(APPLE)
 			add_executable(${_EXE_TARGET} MACOSX_BUNDLE ${_EXE_SRCS})
+		elseif(ANDROID)
+			add_library(${_EXE_TARGET} SHARED ${_EXE_SRCS})
 		else()
 			add_executable(${_EXE_TARGET} ${_EXE_SRCS})
 		endif()
@@ -239,7 +241,12 @@ function(engine_add_executable)
 	target_compile_definitions(${_EXE_TARGET} PRIVATE SDL_MAIN_HANDLED)
 	engine_reuse_sdl3_pch(${_EXE_TARGET})
 
-	set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
+	if (ANDROID AND _EXE_WINDOWED)
+		set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "main")
+		target_link_options(${_EXE_TARGET} PRIVATE "LINKER:--undefined=SDL_main")
+	else()
+		set_target_properties(${_EXE_TARGET} PROPERTIES OUTPUT_NAME "${CMAKE_PROJECT_NAME}-${_EXE_TARGET}")
+	endif()
 	set_target_properties(${_EXE_TARGET} PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PROJECT_NAME}"
 		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${PROJECT_NAME}"
@@ -340,7 +347,7 @@ function(engine_add_executable)
 			set_target_properties(${_EXE_TARGET} PROPERTIES LINK_FLAGS "--shell-file ${CMAKE_CURRENT_BINARY_DIR}/${_EXE_TARGET}.shell.html")
 			configure_file(${ROOT_DIR}/contrib/installer/emscripten/coi-serviceworker.js ${CMAKE_BINARY_DIR}/${_EXE_TARGET}/coi-serviceworker.js COPYONLY)
 		endif()
-	elseif(UNIX)
+	elseif(UNIX AND NOT ANDROID)
 		if (_EXE_WINDOWED)
 			set(DESKTOP_FILENAME "${APP_ID}.desktop")
 			if (EXISTS ${ROOT_DIR}/contrib/installer/linux/${_EXE_TARGET}.desktop.in)
@@ -458,7 +465,7 @@ function(engine_add_executable)
 		endif()
 	endif()
 	# Wayland needs a desktop file in XDG paths; system install is not required for that
-	if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN AND _EXE_WINDOWED AND DEFINED DESKTOP_FILENAME)
+	if (UNIX AND NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN AND _EXE_WINDOWED AND DEFINED DESKTOP_FILENAME)
 		add_custom_target(${_EXE_TARGET}-install-desktop
 			COMMAND ${CMAKE_COMMAND}
 				-DBINARY=$<TARGET_FILE:${_EXE_TARGET}>

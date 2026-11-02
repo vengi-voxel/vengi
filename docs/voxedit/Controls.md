@@ -78,6 +78,12 @@ If the same modifier is bound both alone and in a combo (e.g. `shift` and `shift
 | `double_left_mouse`   | Double click left mouse button   |
 | `double_middle_mouse` | Double click middle mouse button |
 | `double_right_mouse`  | Double click right mouse button  |
+| `one_finger_drag`     | Drag with one finger             |
+| `two_finger_drag`     | Drag with two fingers            |
+
+One-finger drag rotates the viewport camera, two-finger drag pans, and a pinch zooms. A short tap still uses the left mouse binding, so placing a voxel stays a tap.
+
+On Android the primary pointer is also treated as a pen (`ve_emulatepen`). Pressure is derived from how fast the pointer moves: a slow stroke uses a larger brush radius, a fast stroke a smaller one. A hardware stylus still sends its own pressure and eraser.
 
 ### Keyboard
 

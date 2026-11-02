@@ -557,6 +557,9 @@ app::AppState WindowedApp::onInit() {
 #ifdef SDL_HINT_VIDEO_ALLOW_SCREENSAVER
 	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 #endif
+#ifdef __ANDROID__
+	SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
+#endif
 	// done in application.manifest.in
 	// #ifdef SDL_HINT_WINDOWS_DPI_AWARENESS
 	// 	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
@@ -618,7 +621,15 @@ app::AppState WindowedApp::onInit() {
 	}
 
 	if (_fullScreenApplication) {
+#ifdef __ANDROID__
+		// Fullscreen asks SDL to hide the status and navigation bars. The activity
+		// stays the full display, so the UI does not need a safe-area inset.
+		if (!SDL_SetWindowFullscreen(_window, true)) {
+			Log::warn("Failed to enter fullscreen: %s", SDL_GetError());
+		}
+#else
 		SDL_MaximizeWindow(_window);
+#endif
 	}
 
 	setWindowIcon();
