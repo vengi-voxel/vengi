@@ -389,7 +389,7 @@
 			<match type="string" offset="0" value="Kvxl"/>
 		</magic>
 	</mime-type>
-	<mime-type type="application/x-ken's-voxel-octree">
+	<mime-type type="application/x-kens-voxel-octree">
 		<comment>Ken's Voxel Octree</comment>
 		<glob pattern="*.kvo"/>
 		<glob pattern="*.kvs"/>

@@ -1132,7 +1132,7 @@
         <string>icon.icns</string>
         <key>CFBundleTypeMIMETypes</key>
         <array>
-          <string>application/x-ken's-voxel-octree</string>
+          <string>application/x-kens-voxel-octree</string>
         </array>
         <key>CFBundleTypeExtensions</key>
         <array>

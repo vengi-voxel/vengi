@@ -127,14 +127,29 @@ core::String FormatDescription::mimeType() const {
 	if (!mimetype.empty()) {
 		return mimetype;
 	}
-	core::String lname = name.toLower();
-	core::string::replaceAllChars(lname, ' ', '-');
-	core::string::replaceAllChars(lname, ':', '-');
-	core::string::replaceAllChars(lname, '.', '-');
-	core::string::replaceAllChars(lname, '/', '-');
-	lname = core::string::eraseAllChars(lname, '(');
-	lname = core::string::eraseAllChars(lname, ')');
-	return core::String::format("application/x-%s", lname.c_str());
+	// RFC 6838 restricted-name: letters, digits and hyphens. Separators in the
+	// format name become a single hyphen. Apostrophes and other punctuation are
+	// dropped so names like "Ken's Voxel Octree" stay a valid subtype.
+	const core::String lname = name.toLower();
+	core::String subtype;
+	subtype.reserve(lname.size());
+	bool pendingHyphen = false;
+	for (size_t i = 0; i < lname.size(); ++i) {
+		const unsigned char c = (unsigned char)lname[i];
+		if (core::string::isAlphaNum(c)) {
+			if (pendingHyphen && !subtype.empty()) {
+				subtype += '-';
+			}
+			pendingHyphen = false;
+			subtype += (char)c;
+		} else if (c == ' ' || c == ':' || c == '.' || c == '/' || c == '-' || c == '_') {
+			pendingHyphen = true;
+		}
+	}
+	if (subtype.empty()) {
+		return "application/octet-stream";
+	}
+	return core::String::format("application/x-%s", subtype.c_str());
 }
 
 core::String FormatDescription::mainExtension(bool includeDot) const {

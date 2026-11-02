@@ -100,6 +100,29 @@ TEST_F(FormatDescriptionTest, testConvertToAllFilePattern) {
 	ASSERT_EQ("*.png,*.jpeg,*.jpg,*.pnm", all);
 }
 
+TEST_F(FormatDescriptionTest, testMimeType) {
+	const FormatDescription kens{"Ken's Voxel Octree", "", {"kvo"}, {}, 0u};
+	EXPECT_EQ("application/x-kens-voxel-octree", kens.mimeType());
+
+	const FormatDescription paint{"Paint.NET Palette", "", {"txt"}, {}, 0u};
+	EXPECT_EQ("application/x-paint-net-palette", paint.mimeType());
+
+	const FormatDescription parens{"Luanti (Minetest)", "", {"mts"}, {}, 0u};
+	EXPECT_EQ("application/x-luanti-minetest", parens.mimeType());
+
+	const FormatDescription colon{"UFO:Alien Invasion", "", {"bsp"}, {}, 0u};
+	EXPECT_EQ("application/x-ufo-alien-invasion", colon.mimeType());
+
+	const FormatDescription dotted{"Rooms.xyz Thing", "", {"thing"}, {}, 0u};
+	EXPECT_EQ("application/x-rooms-xyz-thing", dotted.mimeType());
+
+	const FormatDescription explicitType{"Wavefront Object", "text/plain", {"obj"}, {}, 0u};
+	EXPECT_EQ("text/plain", explicitType.mimeType());
+
+	const FormatDescription vendor{"Photoshop", "image/vnd.adobe.photoshop", {"psd"}, {}, 0u};
+	EXPECT_EQ("image/vnd.adobe.photoshop", vendor.mimeType());
+}
+
 TEST_F(FormatDescriptionTest, testConvertToFilePattern) {
 	const FormatDescription desc1 = {"Name", "", {"ext1"}, {}, 0u};
 	const FormatDescription desc2 = {"Name", "", {"ext1", "ext2"}, {}, 0u};

@@ -1142,7 +1142,7 @@ const jsonData = {
           "value": "0x4B564F78"
         }
       ],
-      "mimetype": "application/x-ken's-voxel-octree",
+      "mimetype": "application/x-kens-voxel-octree",
       "animation": false,
       "load": true,
       "save": true
