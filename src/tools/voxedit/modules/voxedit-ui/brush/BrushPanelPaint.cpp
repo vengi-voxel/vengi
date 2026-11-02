@@ -24,7 +24,7 @@ void BrushPanelPaint::update(BrushPanelContext &ctx, command::CommandExecutionLi
 			const bool active = (PaintBrush::PaintMode)i == paintMode;
 			toolbar.button(
 				PaintBrush::PaintModeIcons[i], _(PaintBrush::PaintModeStr[i]),
-				[&ctx, &brush, i]() { brush.setPaintMode((PaintBrush::PaintMode)i); }, !active);
+				[&brush, i]() { brush.setPaintMode((PaintBrush::PaintMode)i); }, !active);
 		}
 	}
 
