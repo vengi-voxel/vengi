@@ -95,7 +95,7 @@ bool ScreenshotTool::execute(const json::Json &id, const json::Json &args, ToolC
 								 (uint8_t)args.intVal("bgB", 0), (uint8_t)args.intVal("bgA", 255));
 
 	int nodeId = InvalidNodeId;
-	core::String sourceLabel = "scene";
+	core::String sourceLabel = "merged scene";
 	const core::UUID nodeUUID = argsUUID(args);
 	if (nodeUUID.isValid()) {
 		const scenegraph::SceneGraphNode *node = ctx.sceneMgr->sceneGraph().findNodeByUUID(nodeUUID);
