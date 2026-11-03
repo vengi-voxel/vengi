@@ -382,7 +382,7 @@ bool writePNG(const image::ImagePtr &image, io::SeekableWriteStream &stream);
 /**
  * @brief Write PNG or JPEG based on the filename extension
  */
-bool writePNG(const image::ImagePtr &image, const core::String &filename);
+bool writeImage(const image::ImagePtr &image, const core::String &filename);
 core::String print(const image::ImagePtr &image, bool limited = true);
 
 } // namespace image

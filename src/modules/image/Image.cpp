@@ -168,7 +168,7 @@ ImageType getImageType(const core::String &filename) {
 	return ImageType::Unknown;
 }
 
-bool writePNG(const image::ImagePtr &image, const core::String &filename) {
+bool writeImage(const image::ImagePtr &image, const core::String &filename) {
 	if (!image) {
 		return false;
 	}

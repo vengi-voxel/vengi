@@ -126,7 +126,7 @@ void PixelArtPanel::saveImage() {
 				!desc->matchesExtension(core::string::extractExtension(outfile))) {
 				outfile = core::string::replaceExtension(outfile, desc->mainExtension());
 			}
-			if (!image::writePNG(image, outfile)) {
+			if (!image::writeImage(image, outfile)) {
 				Log::error("Failed to save pixel art image %s", outfile.c_str());
 				return;
 			}
