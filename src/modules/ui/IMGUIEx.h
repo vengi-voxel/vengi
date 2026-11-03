@@ -82,7 +82,7 @@ IMGUI_API bool SliderVarFloat(const core::VarPtr &var,
 IMGUI_API bool SliderVarFloat(const char *varName,
 							  const char *format = "%.3f", ImGuiSliderFlags flags = 0);
 IMGUI_API bool ColorEdit3Var(const char *varName);
-IMGUI_API bool ColorEdit4Var(const char *varName);
+IMGUI_API bool ColorEdit4Var(const char *varName, ImGuiColorEditFlags flags = 0);
 IMGUI_API bool InputVec3Var(const char *varName);
 IMGUI_API bool InputIVec3Var(const char *varName, int minVal = 1, int maxVal = 64);
 IMGUI_API bool InputIVec3Var(const core::VarPtr &var, int minVal = 1, int maxVal = 64);
