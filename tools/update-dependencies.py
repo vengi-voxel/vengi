@@ -522,13 +522,8 @@ def update_tinyxml2():
 def main():
     parser = argparse.ArgumentParser(description="Update dependencies")
     parser.add_argument('--filter', help='Wildcard filter for updates (e.g., "sd*")', default="*")
+    parser.add_argument('--list', action='store_true', help='List available dependency names and exit')
     args = parser.parse_args()
-
-
-    # Get the parent directory of the script's directory
-    script_directory = os.path.dirname(os.path.abspath(__file__))
-    parent_directory = os.path.dirname(script_directory)
-    os.chdir(parent_directory)
 
     updates = [
         update_emscripten_browser_file,
@@ -563,6 +558,17 @@ def main():
         update_imgui_markdown,
         update_gif_h
     ]
+
+    if args.list:
+        for update_function in updates:
+            # Strip the "update_" prefix to show the name used with --filter
+            print(update_function.__name__[len("update_"):])
+        return
+
+    # Get the parent directory of the script's directory
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    parent_directory = os.path.dirname(script_directory)
+    os.chdir(parent_directory)
 
     # Filter updates based on the provided filter
     filter_pattern = args.filter
