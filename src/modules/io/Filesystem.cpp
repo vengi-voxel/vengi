@@ -71,7 +71,10 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 		SDL_free(prefPath);
 	}
 	if (_homePath.empty()) {
-		_homePath = "./";
+		_homePath = fs_cwd();
+		if (_homePath.empty()) {
+			_homePath = "./";
+		}
 	}
 	const core::VarDef appHomePath(cfg::AppHomePath, _homePath, N_("Home Path"),
 								   N_("The home directory path for the application"),
