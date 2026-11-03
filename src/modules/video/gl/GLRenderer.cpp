@@ -275,12 +275,14 @@ static const GLenum TextureCompareModes[] {
 };
 static_assert(core::enumVal(TextureCompareMode::Max) == lengthof(TextureCompareModes), "Array sizes don't match Max");
 
+#ifndef USE_OPENGLES
 static const GLenum PolygonModes[] {
 	GL_POINT,
 	GL_LINE,
 	GL_FILL
 };
 static_assert(core::enumVal(PolygonMode::Max) == lengthof(PolygonModes), "Array sizes don't match Max");
+#endif
 
 static const GLenum Faces[] {
 	GL_FRONT,
