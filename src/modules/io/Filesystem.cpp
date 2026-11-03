@@ -83,6 +83,7 @@ bool Filesystem::init(const core::String &organisation, const core::String &appn
 
 	_homePath = homePathVar->strVal();
 	normalizePath(_homePath);
+	_homePath = core::string::sanitizeDirPath(_homePath);
 	if (!sysCreateDir(_homePath, true)) {
 		Log::error("Could not create home dir at: %s", _homePath.c_str());
 		return false;
