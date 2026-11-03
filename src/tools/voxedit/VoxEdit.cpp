@@ -34,6 +34,8 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/FileDialogOptions.h"
 #include "voxelui/ScriptApi.h"
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_pen.h>
 
 bool VoxEdit::onFingerPress(void *windowHandle, int64_t finger, float x, float y, float pressure, uint32_t timestamp) {
 	const bool wasGesture = touchGestureActive();
