@@ -8,23 +8,30 @@
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
-#include "core/Var.h"
-#include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "io/FormatDescription.h"
-#include "ui/IMGUIEx.h"
-#include "ui/IconsLucide.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphImage.h"
+#include "ui/IMGUIEx.h"
+#include "ui/IconsLucide.h"
 #include "ui/ScopedPanel.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Face.h"
 #include "voxelutil/ImageUtils.h"
 #include <glm/common.hpp>
-#include <string.h>
 
 namespace voxedit {
+
+static void mixMatrix(uint64_t &hash, const glm::mat4 &matrix) {
+	const float *values = &matrix[0][0];
+	for (int i = 0; i < 16; ++i) {
+		uint32_t bits = 0;
+		core_memcpy(&bits, &values[i], sizeof(bits));
+		hash = (hash * 16777619u) ^ bits;
+	}
+}
 
 PixelArtPanel::~PixelArtPanel() {
 	if (_texture) {
@@ -33,29 +40,36 @@ PixelArtPanel::~PixelArtPanel() {
 	}
 }
 
-static void mixMatrix(uint64_t &hash, const glm::mat4 &matrix) {
-	const float *values = &matrix[0][0];
-	for (int i = 0; i < 16; ++i) {
-		uint32_t bits = 0;
-		memcpy(&bits, &values[i], sizeof(bits));
-		hash = (hash * 16777619u) ^ bits;
-	}
+bool PixelArtPanel::init() {
+	_isometric = core::getVar(cfg::ImageIsometric);
+	_imageWidth = core::getVar(cfg::ImageWidth);
+	_imageHeight = core::getVar(cfg::ImageHeight);
+
+	return true;
 }
 
 image::ImagePtr PixelArtPanel::pixelArtImage() {
-	const bool isometric = core::getVar(cfg::ImageIsometric)->boolVal();
+	const bool isometric = _isometric->boolVal();
 	if (isometric && _view > 3) {
 		_view = 0;
 	}
-	const voxel::FaceNames isoFaces[] = {voxel::FaceNames::Front, voxel::FaceNames::Right, voxel::FaceNames::Back,
-										 voxel::FaceNames::Left};
-	const voxel::FaceNames flatFaces[] = {voxel::FaceNames::Front, voxel::FaceNames::Right, voxel::FaceNames::Back,
-										  voxel::FaceNames::Left, voxel::FaceNames::Up, voxel::FaceNames::Down};
+	constexpr voxel::FaceNames isoFaces[] = {voxel::FaceNames::Front, voxel::FaceNames::Right, voxel::FaceNames::Back,
+											 voxel::FaceNames::Left};
+	constexpr voxel::FaceNames flatFaces[] = {voxel::FaceNames::Front, voxel::FaceNames::Right, voxel::FaceNames::Back,
+											  voxel::FaceNames::Left,  voxel::FaceNames::Up,	voxel::FaceNames::Down};
 	const voxel::FaceNames frontFace = isometric ? isoFaces[_view] : flatFaces[_view];
-	voxelutil::IsoRenderConfig isoConfig = voxelutil::IsoRenderConfig::fromCvars();
-	isoConfig.frontFace = frontFace;
-	voxelutil::ImageRenderConfig imageConfig = voxelutil::ImageRenderConfig::fromCvars();
-	imageConfig.frontFace = frontFace;
+	uint64_t configHash;
+	voxelutil::IsoRenderConfig isoConfig;
+	voxelutil::ImageRenderConfig imageConfig;
+	if (isometric) {
+		isoConfig = voxelutil::IsoRenderConfig::fromCvars();
+		isoConfig.frontFace = frontFace;
+		configHash = isoConfig.hash();
+	} else {
+		imageConfig = voxelutil::ImageRenderConfig::fromCvars();
+		imageConfig.frontFace = frontFace;
+		configHash = imageConfig.hash() ^ 0x3244000000000000ull;
+	}
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 	// The stamp loop walks the combined scene bounds, so a sparse but huge scene is refused.
@@ -75,7 +89,6 @@ image::ImagePtr PixelArtPanel::pixelArtImage() {
 			transformHash = (transformHash * 16777619u) ^ node.normalPalette().hash();
 		}
 	});
-	const uint64_t configHash = isometric ? isoConfig.hash() : (imageConfig.hash() ^ 0x3244000000000000ull);
 	const uint64_t hash = _sceneMgr->calculateHash() ^ configHash ^ transformHash;
 	if (!_image || hash != _hash || configHash != _configHash) {
 		if (isometric) {
@@ -145,6 +158,7 @@ void PixelArtPanel::update(const char *id) {
 	if (ui::ScopedPanel::Scope scope =
 			panel.begin(title.c_str(), ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_MenuBar)) {
 		const image::ImagePtr img = pixelArtImage();
+		const bool isometric = _isometric->boolVal();
 		if (ImGui::BeginMenuBar()) {
 			if (ImGui::BeginIconMenu(ICON_LC_FILE, _("File"))) {
 				if (ImGui::IconMenuItem(ICON_LC_SAVE, _("Save"), nullptr, false, img && img->isLoaded())) {
@@ -152,20 +166,36 @@ void PixelArtPanel::update(const char *id) {
 				}
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Options"))) {
+				ImGui::ColorEdit4Var(cfg::ImageBackground, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
+				ImGui::CheckboxVar(cfg::ImageUpScale);
+				if (isometric) {
+					ImGui::CheckboxVar(cfg::ImageIsoShading);
+					ImGui::CheckboxVar(cfg::ImageIsoNormals);
+					ImGui::CheckboxVar(cfg::ImageIsoMaterials);
+					ImGui::CheckboxVar(cfg::ImageIsoTransparency);
+					ImGui::CheckboxVar(cfg::ImageIsoOutline);
+					ImGui::ColorEdit4Var(cfg::ImageIsoOutlineColor,
+										 ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
+				} else {
+					ImGui::SetNextItemWidth(ImGui::GetFontSize() * 10.0f);
+					ImGui::SliderVarFloat(cfg::ImageDepthFactor2D);
+				}
+				ImGui::EndMenu();
+			}
 			ImGui::EndMenuBar();
 		}
 
-		const bool isometric = core::getVar(cfg::ImageIsometric)->boolVal();
 		const char *modeLabel = isometric ? _("Isometric") : _("2D");
 		if (ImGui::BeginCombo(_("Mode###pixelartmode"), modeLabel)) {
 			if (ImGui::Selectable(_("Isometric"), isometric)) {
-				core::getVar(cfg::ImageIsometric)->setVal(true);
+				_isometric->setVal(true);
 			}
 			if (isometric) {
 				ImGui::SetItemDefaultFocus();
 			}
 			if (ImGui::Selectable(_("2D"), !isometric)) {
-				core::getVar(cfg::ImageIsometric)->setVal(false);
+				_isometric->setVal(false);
 			}
 			if (!isometric) {
 				ImGui::SetItemDefaultFocus();
@@ -188,24 +218,12 @@ void PixelArtPanel::update(const char *id) {
 			}
 			ImGui::EndCombo();
 		}
-		ImGui::ColorEdit4Var(cfg::ImageBackground);
-		ImGui::InputVarInt(cfg::ImageWidth);
-		ImGui::InputVarInt(cfg::ImageHeight);
-		ImGui::CheckboxVar(cfg::ImageUpScale);
-		if (isometric) {
-			ImGui::CheckboxVar(cfg::ImageIsoShading);
-			ImGui::CheckboxVar(cfg::ImageIsoNormals);
-			ImGui::CheckboxVar(cfg::ImageIsoMaterials);
-			ImGui::CheckboxVar(cfg::ImageIsoTransparency);
-			ImGui::CheckboxVar(cfg::ImageIsoOutline);
-			ImGui::ColorEdit4Var(cfg::ImageIsoOutlineColor);
-		} else {
-			ImGui::SliderVarFloat(cfg::ImageDepthFactor2D);
-		}
+		ImGui::InputVarInt(_imageWidth);
+		ImGui::InputVarInt(_imageHeight);
 
 		if (isometric && _sceneMgr->exceedsMaxSuggestedVolumeSize(
 							 _sceneMgr->sceneGraph().sceneRegion(_sceneMgr->currentFrame(), true))) {
-			ImGui::TextWrapped(
+			ImGui::TextWrappedUnformatted(
 				_("The scene is larger than the suggested volume size. Isometric preview is disabled."));
 			return;
 		}

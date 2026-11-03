@@ -222,6 +222,7 @@ bool MainWindow::init() {
 	_animationPanel.init();
 	_menuBar.init();
 	_networkPanel.init();
+	_pixelArtPanel.init();
 	_gameModePanel.init();
 	_normalPalettePanel.init();
 	_brushPanel.init();

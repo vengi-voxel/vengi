@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include "app/App.h"
 #include "core/SharedPtr.h"
 #include "image/Image.h"
 #include "ui/Panel.h"
 #include "video/Texture.h"
-#include "scenegraph/SceneGraphNode.h"
 
 namespace voxedit {
 
@@ -32,6 +32,9 @@ private:
 	uint64_t _hash = 0;
 	image::ImagePtr _image;
 	video::TexturePtr _texture;
+	core::VarPtr _isometric;
+	core::VarPtr _imageWidth;
+	core::VarPtr _imageHeight;
 
 	image::ImagePtr pixelArtImage();
 	core::String suggestedSaveName() const;
@@ -42,6 +45,7 @@ public:
 	}
 	~PixelArtPanel();
 
+	bool init();
 	void update(const char *id);
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 	void registerUITests(ImGuiTestEngine *engine, const char *id) override;
