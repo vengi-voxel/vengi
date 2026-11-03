@@ -323,7 +323,11 @@ def update_sdl3():
             (f"src", "contrib/libs/sdl3/src"),
             (f"include", "contrib/libs/sdl3/include"),
             (f"cmake", "contrib/libs/sdl3/cmake"),
-            (f"wayland-protocols", "contrib/libs/sdl3/wayland-protocols")
+            (f"wayland-protocols", "contrib/libs/sdl3/wayland-protocols"),
+            # Stock SDL classes only. Custom sources live in io.github.vengi_voxel
+            # and must stay outside this directory, because the copy replaces it.
+            (f"android-project/app/src/main/java/org/libsdl/app",
+             "android-project/app/src/main/java/org/libsdl/app"),
         ],
         branch="main"
     )
