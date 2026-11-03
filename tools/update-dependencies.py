@@ -383,31 +383,6 @@ def update_meshoptimizer():
         [(f"src/*", "contrib/libs/meshoptimizer")]
     )
 
-def update_yocto():
-    update_target(
-        "yocto-gl",
-        "https://github.com/xelatihy/yocto-gl.git",
-        [
-            (f"libs/yocto/yocto_bvh.cpp", "contrib/libs/yocto/yocto_bvh.cpp"),
-            (f"libs/yocto/yocto_bvh.h", "contrib/libs/yocto/yocto_bvh.h"),
-            (f"libs/yocto/yocto_color.h", "contrib/libs/yocto/yocto_color.h"),
-            (f"libs/yocto/yocto_geometry.h", "contrib/libs/yocto/yocto_geometry.h"),
-            (f"libs/yocto/yocto_image.cpp", "contrib/libs/yocto/yocto_image.cpp"),
-            (f"libs/yocto/yocto_image.h", "contrib/libs/yocto/yocto_image.h"),
-            (f"libs/yocto/yocto_math.h", "contrib/libs/yocto/yocto_math.h"),
-            (f"libs/yocto/yocto_noise.h", "contrib/libs/yocto/yocto_noise.h"),
-            (f"libs/yocto/yocto_parallel.h", "contrib/libs/yocto/yocto_parallel.h"),
-            (f"libs/yocto/yocto_sampling.h", "contrib/libs/yocto/yocto_sampling.h"),
-            (f"libs/yocto/yocto_scene.cpp", "contrib/libs/yocto/yocto_scene.cpp"),
-            (f"libs/yocto/yocto_scene.h", "contrib/libs/yocto/yocto_scene.h"),
-            (f"libs/yocto/yocto_shading.h", "contrib/libs/yocto/yocto_shading.h"),
-            (f"libs/yocto/yocto_shape.cpp", "contrib/libs/yocto/yocto_shape.cpp"),
-            (f"libs/yocto/yocto_shape.h", "contrib/libs/yocto/yocto_shape.h"),
-            (f"libs/yocto/yocto_trace.cpp", "contrib/libs/yocto/yocto_trace.cpp"),
-            (f"libs/yocto/yocto_trace.h", "contrib/libs/yocto/yocto_trace.h")
-        ]
-    )
-
 def update_ufbx_write():
     update_target(
         "ufbx_write",
@@ -546,7 +521,6 @@ def main():
         update_flextgl,
         update_libvxl,
         update_meshoptimizer,
-        update_yocto,
         update_ufbx,
         update_ufbx_write,
         update_natsort,
