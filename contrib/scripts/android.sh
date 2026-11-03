@@ -430,7 +430,8 @@ ensure_host_codegen() {
 			-DTHUMBNAILER=OFF \
 			-DUSE_LIBS_FORCE_LOCAL=ON \
 			-DUSE_GLSLANG_VALIDATOR=OFF \
-			-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+			-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+			-DSDL_UNIX_CONSOLE_BUILD=ON
 	fi
 	echo "Generating shader and font sources"
 	cmake --build "$HOST_DIR" --target engine_codegen
