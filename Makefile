@@ -14,6 +14,7 @@ ALLTARGET      ?= ALL_BUILD
 else
 ALLTARGET      ?= all
 endif
+.DEFAULT_GOAL := $(ALLTARGET)
 CMAKE          ?= cmake
 EMSDK_DIR      ?= $(BUILDDIR)/emsdk
 EMSDK_UPSTREAM ?= $(EMSDK_DIR)/upstream/emscripten/
