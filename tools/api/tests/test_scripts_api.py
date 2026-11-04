@@ -151,6 +151,55 @@ class TestScriptsDownloadEndpoint:
         assert resp.status_code == 404
 
 
+class TestCors:
+    @pytest.mark.parametrize('origin', [
+        'http://localhost:8000',
+        'http://localhost:8001',
+        'https://vengi-voxel.github.io',
+    ])
+    @pytest.mark.parametrize('path,status', [
+        ('/browser-data', 200),
+        ('/scripts', 200),
+        ('/scripts/download/noise.lua', 200),
+        ('/scripts/download/missing.lua', 404),
+    ])
+    def test_public_reads_allow_browser_origins(self, client, origin, path, status):
+        resp = client.get(path, headers={'Origin': origin})
+        assert resp.status_code == status
+        assert resp.headers.get('Access-Control-Allow-Origin') == '*'
+        assert 'Access-Control-Allow-Credentials' not in resp.headers
+
+    @pytest.mark.parametrize('path', ['/browser-data', '/scripts', '/scripts/download/noise.lua'])
+    def test_public_read_preflight(self, client, path):
+        resp = client.options(path, headers={
+            'Origin': 'http://localhost:8000',
+            'Access-Control-Request-Method': 'GET',
+        })
+        assert resp.status_code == 200
+        assert resp.headers.get('Access-Control-Allow-Origin') == '*'
+        methods = resp.headers.get('Access-Control-Allow-Methods', '').split(', ')
+        assert 'GET' in methods
+        assert 'POST' not in methods
+
+    def test_cached_catalog_allows_browser_origin(self, client):
+        first = client.get('/browser-data')
+        resp = client.get('/browser-data', headers={
+            'Origin': 'http://localhost:8000',
+            'If-None-Match': first.headers['ETag'],
+        })
+        assert resp.status_code == 304
+        assert resp.headers.get('Access-Control-Allow-Origin') == '*'
+
+    @pytest.mark.parametrize('path', ['/metric', '/crashlog'])
+    def test_write_endpoints_do_not_allow_cross_origin_posts(self, client, path):
+        resp = client.options(path, headers={
+            'Origin': 'http://localhost:8000',
+            'Access-Control-Request-Method': 'POST',
+            'Access-Control-Request-Headers': 'Content-Type',
+        })
+        assert 'Access-Control-Allow-Origin' not in resp.headers
+
+
 class TestScanScripts:
     def test_empty_directory(self):
         with tempfile.TemporaryDirectory() as base:

@@ -117,6 +117,15 @@ def create_app(config=None):
     app = Flask(__name__)
     q = queue.Queue()
 
+    @app.after_request
+    def public_read_cors(response):
+        # The web editor can run on another host or a local development port.
+        if request.endpoint in ('browserData', 'scripts', 'scripts_download'):
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            if request.method == 'OPTIONS':
+                response.headers['Access-Control-Allow-Methods'] = 'GET, HEAD, OPTIONS'
+        return response
+
     if config is None:
         config = configparser.ConfigParser()
         config.read('config.ini')
