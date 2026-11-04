@@ -3166,6 +3166,13 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	// https://www.glprogramming.com/red/appendixb.html
 	rs.states.set(core::enumVal(video::State::DepthMask), true);
 	rs.pendingStates.set(core::enumVal(video::State::DepthMask), true);
+#ifdef __EMSCRIPTEN__
+	// WebGL rejects GL_POINT_SIZE (0x0B11) and GL_LINE_WIDTH_RANGE (0x0B22). Width is fixed at 1.
+	rs.pointSize = 1.0f;
+	rs.pendingPointSize = 1.0f;
+	rs.smoothedLineWidth = glm::vec2(1.0f);
+	rs.aliasedLineWidth = glm::vec2(1.0f);
+#else
 	glGetFloatv(GL_POINT_SIZE, &rs.pointSize);
 	if (rs.smoothedLineWidth.x < 0.0f) {
 #ifdef USE_OPENGLES
@@ -3189,6 +3196,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 #endif
 		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
 	}
+#endif
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
 	}
