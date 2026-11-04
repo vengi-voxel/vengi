@@ -10,7 +10,7 @@ Join our [discord server](https://vengi-voxel.de/discord) and get help or suppor
 
 Download your copy [here from github](https://github.com/vengi-voxel/vengi/releases/latest) and find documentation about how to use it [here](https://vengi-voxel.github.io/vengi/).
 
-There is an online version of [voxedit](https://vengi-voxel.github.io/vengi-voxedit-html5/) available to test the editor without having to install it. But this is not the most recent version.
+Online builds of [voxedit](https://vengi-voxel.github.io/vengi/html5/voxedit/), [voxconvert](https://vengi-voxel.github.io/vengi/html5/voxconvert/), and [palconvert](https://vengi-voxel.github.io/vengi/html5/palconvert/) are published with the documentation on each push to master.
 
 [![image showing minecraft greenfield](https://raw.githubusercontent.com/wiki/vengi-voxel/vengi/images/greenfield-water.png)](https://www.greenfieldmc.net)
 

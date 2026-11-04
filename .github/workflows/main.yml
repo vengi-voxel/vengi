@@ -596,3 +596,55 @@ jobs:
           run: |
             cd build
             ctest -V .
+
+    pages:
+        needs: emscripten
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        runs-on: ubuntu-latest
+        permissions:
+          contents: write
+        steps:
+        - uses: actions/checkout@v5
+
+        - name: Configure Git Credentials
+          run: |
+            git config user.name mgerhardy
+            git config user.email mgerhardy@users.noreply.github.com
+
+        - uses: actions/setup-python@v5
+          with:
+            python-version: 3.x
+
+        - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+
+        - uses: actions/cache@v4
+          with:
+            key: mkdocs-material-${{ env.cache_id }}
+            path: .cache
+            restore-keys: |
+              mkdocs-material-
+
+        - name: Download emscripten builds
+          uses: actions/download-artifact@v4
+          with:
+            pattern: emscripten-*
+            path: emscripten-artifacts
+
+        - name: Build and deploy docs
+          run: |
+            pip install mkdocs-material
+            mkdocs build
+            for app in voxedit voxconvert palconvert; do
+              src="emscripten-artifacts/emscripten-${app}"
+              if [ -d "$src/$app" ]; then
+                src="$src/$app"
+              fi
+              dest="build/docs/html5/${app}"
+              mkdir -p "$dest"
+              cp -a "$src"/. "$dest"/
+              html=$(find "$dest" -maxdepth 1 -name 'vengi-*.html' -print -quit)
+              if [ -n "$html" ]; then
+                cp "$html" "$dest/index.html"
+              fi
+            done
+            mkdocs gh-deploy --dirty --force
