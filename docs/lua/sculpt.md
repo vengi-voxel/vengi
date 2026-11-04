@@ -27,7 +27,7 @@ Connect boundary voxels by drawing 3D lines between all pairs, filling air along
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to bridge. |
+| `volume` | [`volume`](volume.md) | The volume to bridge. |
 | `color` | `integer` | Palette color index for new voxels (optional, default 1). |
 
 **Returns:**
@@ -44,7 +44,7 @@ Erode surface voxels based on their solid face-neighbor count. Voxels with fewer
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to erode. |
+| `volume` | [`volume`](volume.md) | The volume to erode. |
 | `strength` | `number` | Erosion strength in [0, 1] (optional, default 0.5). |
 | `iterations` | `integer` | Number of erosion passes (optional, default 1). |
 
@@ -62,7 +62,7 @@ Flatten by peeling layers from the outermost surface along a face normal directi
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to flatten. |
+| `volume` | [`volume`](volume.md) | The volume to flatten. |
 | `face` | `string` | Face direction: 'up', 'down', 'left', 'right', 'front', 'back'. |
 | `iterations` | `integer` | Number of layers to peel (optional, default 1). |
 
@@ -80,7 +80,7 @@ Grow into air positions adjacent to the surface. Air with more solid neighbors f
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to grow. |
+| `volume` | [`volume`](volume.md) | The volume to grow. |
 | `strength` | `number` | Growth strength in [0, 1] (optional, default 0.5). |
 | `iterations` | `integer` | Number of growth passes (optional, default 1). |
 | `color` | `integer` | Palette color index for new voxels (optional, default 1). |
@@ -99,8 +99,8 @@ Apply a skin volume (texture pattern) onto the selected surface. The skin tiles 
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The target volume to reskin. |
-| `skin` | `volume` | The skin volume providing the pattern. |
+| `volume` | [`volume`](volume.md) | The target volume to reskin. |
+| `skin` | [`volume`](volume.md) | The skin volume providing the pattern. |
 | `face` | `string` | Face direction defining surface normal: 'up', 'down', 'left', 'right', 'front', 'back'. |
 | `mode` | `string` | Reskin mode: 'replace' (skin overwrites, air removes), 'blend' (skin overwrites, air preserves), 'negate' (skin removes, air preserves) (optional, default 'blend'). |
 | `follow` | `string` | Surface follow mode: 'none' (flat plane), 'median' (median height plane), 'voxel' (per-column), 'corneraverage' (bilinear from corners) (optional, default 'voxel'). |
@@ -121,7 +121,7 @@ Fill height gaps by scanning layers along a face normal. Air voxels on solid gro
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to smooth. |
+| `volume` | [`volume`](volume.md) | The volume to smooth. |
 | `face` | `string` | Face direction defining 'up': 'up', 'down', 'left', 'right', 'front', 'back'. |
 | `heightThreshold` | `integer` | Minimum height difference in voxels for filling (optional, default 1). 1 = aggressive, higher = conservative. |
 | `iterations` | `integer` | Number of smoothing passes (optional, default 1). Each pass adds at most one voxel per column. |
@@ -141,7 +141,7 @@ Remove edge voxels from the top of columns along a face normal. Scans top-to-bot
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to erode. |
+| `volume` | [`volume`](volume.md) | The volume to erode. |
 | `face` | `string` | Face direction defining 'up': 'up', 'down', 'left', 'right', 'front', 'back'. |
 | `iterations` | `integer` | Number of erosion passes (optional, default 1). Each pass removes at most one voxel per column. |
 | `preserveTopHeight` | `boolean` | If true, use island-based slope trimming to create pyramid shapes instead of uniform erosion (optional, default false). |
@@ -161,7 +161,7 @@ Blur the height map using a 2D Gaussian kernel along a face normal. Columns tall
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to smooth. |
+| `volume` | [`volume`](volume.md) | The volume to smooth. |
 | `face` | `string` | Face direction defining 'up': 'up', 'down', 'left', 'right', 'front', 'back'. |
 | `kernelSize` | `integer` | Radius of the Gaussian kernel (optional, default 1). 1=3x3, 2=5x5, 3=7x7, 4=9x9. |
 | `sigma` | `number` | Standard deviation of the Gaussian bell curve (optional, default 1.0). Lower = sharper, higher = broader smoothing. |
@@ -182,7 +182,7 @@ Smooth a wall surface by interpolating interior column heights from edge columns
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to smooth. |
+| `volume` | [`volume`](volume.md) | The volume to smooth. |
 | `face` | `string` | Face direction defining the surface normal: 'up', 'down', 'left', 'right', 'front', 'back'. |
 | `iterations` | `integer` | Number of smoothing passes (optional, default 1). |
 | `color` | `integer` | Palette color index for new voxels (optional, default 1). |
@@ -204,7 +204,7 @@ Project all solid voxels onto a single plane. For each column along the face nor
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to squash. |
+| `volume` | [`volume`](volume.md) | The volume to squash. |
 | `face` | `string` | Face direction defining the column axis: 'up', 'down', 'left', 'right', 'front', 'back'. |
 | `planeCoord` | `integer` | The coordinate along the face axis where voxels are projected to. |
 

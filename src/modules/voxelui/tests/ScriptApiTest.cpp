@@ -11,6 +11,32 @@ namespace voxelui {
 
 class ScriptApiTest : public app::AbstractTest {};
 
+TEST_F(ScriptApiTest, testParseList) {
+	const ScriptInfoList list = ScriptApi::parseList(R"([
+		{"filename":"test.lua","name":"Example","type":"generator","version":"1.0"},
+		{"name":"Missing file"}])");
+	ASSERT_EQ(1u, list.size());
+	EXPECT_EQ("test.lua", list[0].filename);
+	EXPECT_EQ("Example", list[0].name);
+	EXPECT_EQ("generator", list[0].type);
+	EXPECT_TRUE(ScriptApi::parseList("invalid json").empty());
+	EXPECT_TRUE(ScriptApi::parseList("{}").empty());
+}
+
+TEST_F(ScriptApiTest, testAsyncQueryFailure) {
+	ScriptApi api;
+	bool completed = false;
+	api.query("http://127.0.0.1:1", [&](ScriptInfoList list) {
+		EXPECT_TRUE(list.empty());
+		completed = true;
+	});
+	for (int i = 0; i < 500 && !completed; ++i) {
+		http::update();
+		wait(2);
+	}
+	EXPECT_TRUE(completed);
+}
+
 TEST_F(ScriptApiTest, testDetectGeneratorScript) {
 	const core::String source = "function arguments()\n"
 								"  return {}\n"

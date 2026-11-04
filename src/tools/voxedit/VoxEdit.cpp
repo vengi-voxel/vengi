@@ -425,22 +425,26 @@ app::AppState VoxEdit::onConstruct() {
 		.setHandler([this](const command::CommandArgs &args) {
 			const core::String &source = args.str("source");
 			if (source.empty()) {
-				openDialog([this](const core::String &file, const io::FormatDescription *desc) {
-					voxelui::ScriptApi api;
-					if (api.install(filesystem(), file)) {
-						voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
-						scriptMgr.reloadBrushScripts();
-						scriptMgr.reloadSelectionModeScripts();
-					}
-				}, {}, io::format::lua());
+				openDialog(
+					[this](const core::String &file, const io::FormatDescription *desc) {
+						_scriptApi.install(filesystem(), file, [this](bool installed) {
+							if (installed) {
+								voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
+								scriptMgr.reloadBrushScripts();
+								scriptMgr.reloadSelectionModeScripts();
+							}
+						});
+					},
+					{}, io::format::lua());
 				return;
 			}
-			voxelui::ScriptApi api;
-			if (api.install(filesystem(), source)) {
-				voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
-				scriptMgr.reloadBrushScripts();
-				scriptMgr.reloadSelectionModeScripts();
-			}
+			_scriptApi.install(filesystem(), source, [this](bool installed) {
+				if (installed) {
+					voxedit::ScriptManager &scriptMgr = _sceneMgr->modifier().scriptManager();
+					scriptMgr.reloadBrushScripts();
+					scriptMgr.reloadSelectionModeScripts();
+				}
+			});
 		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Install a lua script from a file path, file:// URI or http(s):// URL"));
 
 	command::Command::registerCommand("script_uninstall")

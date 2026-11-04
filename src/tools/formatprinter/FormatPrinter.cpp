@@ -942,6 +942,8 @@ static core::String getDocPageName(const core::String &name) {
 		return "algorithm";
 	} else if (name == "g_http") {
 		return "http";
+	} else if (name == "httpRequest") {
+		return "httprequest";
 	} else if (name == "g_io") {
 		return "io";
 	} else if (name == "g_cmd") {
@@ -953,9 +955,11 @@ static core::String getDocPageName(const core::String &name) {
 	} else if (name == "g_sys") {
 		return "sys";
 	} else if (name == "g_vec2" || name == "g_vec3" || name == "g_vec4" ||
-			   name == "g_ivec2" || name == "g_ivec3" || name == "g_ivec4") {
+			   name == "g_ivec2" || name == "g_ivec3" || name == "g_ivec4" ||
+			   name == "vec" || name == "vec2" || name == "vec3" || name == "vec4" ||
+			   name == "ivec" || name == "ivec2" || name == "ivec3" || name == "ivec4") {
 		return "vector";
-	} else if (name == "g_quat") {
+	} else if (name == "g_quat" || name == "quat") {
 		return "quat";
 	} else if (name == "scenegraphnode") {
 		return "scenegraphnode";
@@ -996,6 +1000,8 @@ static core::String getDocTitle(const core::String &pageName) {
 		return "Algorithm";
 	} else if (pageName == "http") {
 		return "HTTP";
+	} else if (pageName == "httprequest") {
+		return "httpRequest";
 	} else if (pageName == "io") {
 		return "IO";
 	} else if (pageName == "cmd") {
@@ -1075,6 +1081,14 @@ static core::String getGlobalName(const core::String &pageName) {
 		return "g_sparsevolume";
 	}
 	return "";
+}
+
+static core::String getDocType(const core::String &type, const core::DynamicStringMap<json::Json> &pages) {
+	const core::String pageName = getDocPageName(type);
+	if (pages.find(pageName) != pages.end()) {
+		return core::String::format("[`%s`](%s.md)", type.c_str(), pageName.c_str());
+	}
+	return core::String::format("`%s`", type.c_str());
 }
 
 void FormatPrinter::printLuaApiMarkdown() {
@@ -1272,7 +1286,8 @@ void FormatPrinter::printLuaApiMarkdown() {
 					const core::String &pname = param.strVal("name", "");
 					const core::String &ptype = param.strVal("type", "");
 					const core::String &pdesc = param.strVal("description", "");
-					Log::printf("| `%s` | `%s` | %s |\n", pname.c_str(), ptype.c_str(), pdesc.c_str());
+					Log::printf("| `%s` | %s | %s |\n", pname.c_str(), getDocType(ptype, pageContent).c_str(),
+								pdesc.c_str());
 				}
 				Log::printf("\n");
 			}
@@ -1284,7 +1299,7 @@ void FormatPrinter::printLuaApiMarkdown() {
 				for (const auto &ret : method.get("returns")) {
 					const core::String &rtype = ret.strVal("type", "");
 					const core::String &rdesc = ret.strVal("description", "");
-					Log::printf("| `%s` | %s |\n", rtype.c_str(), rdesc.c_str());
+					Log::printf("| %s | %s |\n", getDocType(rtype, pageContent).c_str(), rdesc.c_str());
 				}
 				Log::printf("\n");
 			}

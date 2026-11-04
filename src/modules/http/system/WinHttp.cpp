@@ -144,7 +144,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 		}
 	} else {
 		while (!requestState) {
-			requestState = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)ctx._body.c_str(),
+			requestState = WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, (LPVOID)ctx._body.data(),
 											  ctx._body.size(), ctx._body.size(), 0);
 			if (!requestState && GetLastError() == ERROR_WINHTTP_RESEND_REQUEST) {
 				if (maxRedirects <= 0) {

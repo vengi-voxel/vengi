@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicStringMap.h"
+#include "core/concurrent/Atomic.h"
 
 namespace http {
 
@@ -19,8 +21,10 @@ struct RequestContext {
 	RequestType _type;
 	core::String _url;
 	core::String _userAgent;
-	core::String _body;
+	core::Buffer<uint8_t> _body;
 	Headers _headers;
+	/** Optional cooperative cancellation, owned by the asynchronous HTTP service. */
+	const core::AtomicBool *_cancelled = nullptr;
 };
 
 } // namespace http

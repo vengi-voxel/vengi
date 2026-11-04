@@ -2,8 +2,9 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
 #include "commonlua/LUAFunctions.h"
+#include "app/tests/AbstractTest.h"
+#include "http/Client.h"
 #include <glm/vector_relational.hpp>
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
@@ -43,6 +44,87 @@ TEST_F(LUAFunctionsTest, testVectorCtor) {
 		end
 	)";
 	test(script, glm::ivec3(0, 1, 0));
+}
+
+TEST_F(LUAFunctionsTest, testAsyncHttpFailureAndAbandonedRequest) {
+	if (!http::Request::supported()) {
+		GTEST_SKIP();
+	}
+	LUA lua;
+	clua_streamregister(lua);
+	clua_httpregister(lua);
+	ASSERT_TRUE(lua.load(R"(
+		request = g_http.getAsync("http://127.0.0.1:1/")
+		assert(not request:ready())
+		assert(request:response() == nil)
+		local abandoned = g_http.postAsync("http://127.0.0.1:1/", "body")
+		abandoned = nil
+		collectgarbage("collect")
+		function ready() return request:ready() end
+		function response()
+			local stream, headers, status, success = request:response()
+			assert(stream and type(headers) == "table")
+			assert(status == 0 and not success)
+		end
+	)")) << lua.error();
+	bool ready = false;
+	for (int i = 0; i < 500 && !ready; ++i) {
+		http::update();
+		ASSERT_TRUE(lua.execute("ready", 1));
+		ready = lua_toboolean(lua, -1);
+		lua.pop();
+		wait(2);
+	}
+	ASSERT_TRUE(ready);
+	ASSERT_TRUE(lua.execute("response")) << lua.error();
+}
+
+TEST_F(LUAFunctionsTest, testClosingLuaCancelsHttp) {
+	{
+		LUA lua;
+		clua_httpregister(lua);
+		ASSERT_TRUE(lua.load(R"(request = g_http.getAsync("http://127.0.0.1:1/"))"));
+	}
+	// Closing the state collects the request. No callback may access its userdata.
+	for (int i = 0; i < 10; ++i) {
+		http::update();
+		wait(2);
+	}
+}
+
+TEST_F(LUAFunctionsTest, testAsyncHttpBinaryResponse) {
+	const char *url = SDL_getenv("VENGI_HTTP_TEST_URL");
+	if (!url || !http::Request::supported()) {
+		GTEST_SKIP();
+	}
+	LUA lua;
+	clua_httpregister(lua);
+	clua_streamregister(lua);
+	lua_pushstring(lua, url);
+	lua_setglobal(lua, "url");
+	ASSERT_TRUE(lua.load(R"(
+		request = g_http.postAsync(url, "a\0b" .. string.char(255), {["X-Test"] = "lua-http"})
+		function ready() return request:ready() end
+		function response()
+			local stream, headers, status, success = request:response()
+			assert(success and status == 404)
+			assert(headers["X-Test"] == "lua-http")
+			assert(stream:readUInt8() == 97)
+			assert(stream:readUInt8() == 0)
+			assert(stream:readUInt8() == 98)
+			assert(stream:readUInt8() == 255)
+		end
+	)")) << lua.error();
+	bool ready = false;
+	for (int i = 0; i < 500 && !ready; ++i) {
+		http::update();
+		ASSERT_TRUE(lua.execute("ready", 1));
+		ready = lua_toboolean(lua, -1);
+		lua.pop();
+		wait(2);
+	}
+	ASSERT_TRUE(ready);
+	ASSERT_TRUE(lua.execute("response")) << lua.error();
 }
 
 // disabled because it requires network access

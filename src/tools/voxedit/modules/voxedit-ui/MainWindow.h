@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "http/Client.h"
+
 #include "core/collection/Buffer.h"
 #include "io/FormatDescription.h"
 #include "palette/PaletteCache.h"
@@ -75,6 +77,7 @@ private:
 	bool _forceQuit = false;
 	bool _lastSceneMode = false;
 	bool _isNewVersionAvailable = false;
+	http::Client _httpClient;
 	bool _requestResetDockLayout = false;
 	uint32_t _currentTip = 0;
 

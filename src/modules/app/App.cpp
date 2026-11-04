@@ -4,6 +4,7 @@
 
 #include "App.h"
 #include "app/AppCommand.h"
+#include "app/I18N.h"
 #include "command/Alias.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
@@ -16,20 +17,20 @@
 #include "core/Tokenizer.h"
 #include "core/Var.h"
 #include "core/concurrent/ThreadPool.h"
-#include "app/I18N.h"
+#include "core/sdl/SDLSystem.h"
 #include "engine-config.h"
+#include "http/Client.h"
 #include "http/Request.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/Filesystem.h"
 #include "io/StdoutWriteStream.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "metric/MetricFacade.h"
 #include "util/VarUtil.h"
-#include "core/sdl/SDLSystem.h"
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_messagebox.h>
-#include <stdio.h>
 #include <signal.h>
+#include <stdio.h>
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 #endif
@@ -204,6 +205,7 @@ App::App(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeP
 }
 
 App::~App() {
+	http::shutdown();
 	Log::shutdown();
 	_threadPool = core::ThreadPoolPtr();
 }
@@ -354,6 +356,7 @@ void App::onFrame() {
 	}
 
 	_timeProvider->updateTickTime();
+	http::update();
 	if (AppState::Blocked == _curState) {
 		wait(1);
 		_deltaFrameSeconds = 0.001;
@@ -366,6 +369,9 @@ void App::onFrame() {
 		case AppState::Construct: {
 			core_trace_scoped(AppOnConstruct);
 			_nextState = onConstruct();
+			if (_nextState == AppState::Init) {
+				http::init();
+			}
 
 			if (createPid()) {
 				Log::error("Previous session crashed for %s", _appname.c_str());
@@ -417,13 +423,14 @@ void App::onFrame() {
 						request.addHeader("Content-Type", "text/plain");
 						request.addHeader("X-OperatingSystem", _osName);
 						request.addHeader("X-OperatingSystemVersion", _osVersion);
-						io::NOPWriteStream stream;
-						int statusCode = 0;
-						if (!request.execute(stream, &statusCode)) {
-							Log::error("Failed to upload crash log with status: %i", statusCode);
-						} else {
-							io::Filesystem::sysRemoveFile(crashlogFilename);
-						}
+						static http::Client crashLogClient;
+						crashLogClient.execute(request, [crashlogFilename](const http::Response &response) {
+							if (response.success && response.statusCode >= 200 && response.statusCode < 300) {
+								io::Filesystem::sysRemoveFile(crashlogFilename);
+							} else {
+								Log::error("Failed to upload crash log with status: %i", response.statusCode);
+							}
+						});
 					}
 					if (buttonId == 3 && !crashLog.empty()) {
 						Log::info("Copy crash log to clipboard");
@@ -945,6 +952,7 @@ AppState App::onInit() {
 
 	Log::debug("Initialize the threadpool");
 	_threadPool->init();
+	http::init();
 
 	_pipe.init();
 
@@ -1823,6 +1831,7 @@ AppState App::onCleanup() {
 	saveConfiguration();
 
 	_threadPool->shutdown();
+	http::shutdown();
 
 	command::Command::shutdown();
 	core::Var::shutdown();

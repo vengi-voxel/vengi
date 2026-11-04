@@ -203,7 +203,7 @@ Create a new node in the scene graph for model nodes the parameters differ.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `name` | `string` | The node name. |
-| `region` | `region` | The region for model nodes. |
+| `region` | [`region`](region.md) | The region for model nodes. |
 | `visible` | `boolean` | Whether the node is visible (optional, default true). |
 | `type` | `string` | Node type: 'Model', 'Group', 'Camera', 'Point'. Not given for model nodes which have the 2nd parameter as region. |
 

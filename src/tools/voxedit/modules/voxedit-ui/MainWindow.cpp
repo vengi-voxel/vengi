@@ -196,7 +196,7 @@ bool MainWindow::init() {
 	_popupAbout = core::getVar(cfg::VoxEditPopupAbout);
 	_popupRenameNode = core::getVar(cfg::VoxEditPopupRenameNode);
 
-	_isNewVersionAvailable = util::isNewVersionAvailable();
+	util::checkLatestVersion(_httpClient, [this](bool available) { _isNewVersionAvailable = available; });
 	if (!initViewports()) {
 		return false;
 	}

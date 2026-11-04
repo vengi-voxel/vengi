@@ -4,9 +4,10 @@
 
 #include "VersionCheck.h"
 #include "core/Log.h"
-#include "http/Request.h"
-#include "io/BufferedReadWriteStream.h"
 #include "engine-config.h"
+#include "http/Client.h"
+#include "http/Http.h"
+#include "http/Request.h"
 #include "json/JSON.h"
 
 namespace util {
@@ -58,36 +59,29 @@ core::String releaseUrl() {
 	return GitHubURL + "/releases/latest";
 }
 
-bool isNewVersionAvailable(int timeout) {
-	if (!http::Request::supported()) {
-		Log::error("Could not check for new version: HTTP requests are not supported");
-		return false;
-	}
-	io::BufferedReadWriteStream stream(512);
-
+void checkLatestVersion(http::Client &client, core::Function<void(bool)> callback, int timeout) {
 	http::Request request(releaseUrl(), http::RequestType::GET);
 	if (timeout > 0) {
 		request.setTimeoutSecond(timeout);
 		request.setConnectTimeoutSecond(timeout);
 	}
-	if (!request.execute(stream)) {
-		Log::error("Could not check for new version: HTTP request failed");
-		return false;
+	if (client.execute(request, [callback](const http::Response &response) {
+			callback(response.success && http::isValidStatusCode(response.statusCode) &&
+					 isNewVersionAvailable(response.text()));
+		}) == 0) {
+		callback(false);
 	}
-	stream.seek(0);
-	core::String response;
-	if (!stream.readString(stream.size(), response)) {
-		Log::error("Failed to read string");
-		return false;
-	}
+}
+
+bool isNewVersionAvailable(const core::String &response) {
 	json::Json release = json::Json::parse(response);
 	if (!release.contains("tag_name")) {
 		Log::warn("github response doesn't contain a tag_name node");
 		return false;
 	}
-	core::String latestVersion = release.get("tag_name").str().c_str();
+	core::String latestVersion = release.get("tag_name").str();
 	// our tags usually have a v in front of it
-	if (latestVersion[0] == 'v') {
+	if (!latestVersion.empty() && latestVersion[0] == 'v') {
 		latestVersion = latestVersion.substr(1);
 	}
 	return isNewerVersion(latestVersion, PROJECT_VERSION);

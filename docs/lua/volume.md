@@ -152,7 +152,7 @@ Fill a plane at the given position using colors from an image.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `image` | `image` | The image to use for filling colors. |
+| `image` | [`image`](image.md) | The image to use for filling colors. |
 | `searchVoxelColor` | `integer` | The color index of the voxel to search for. |
 | `x` | `integer` | The x coordinate to start at. |
 | `y` | `integer` | The y coordinate to start at. |
@@ -240,7 +240,7 @@ Import an image as a 3D volume using depth information.
 | ---- | ---- | ----------- |
 | `texture` | `string` | Path to the texture image. |
 | `depthmap` | `string` | Path to the depth map image (optional). |
-| `palette` | `palette` | Palette to use (optional). |
+| `palette` | [`palette`](palette.md) | Palette to use (optional). |
 | `thickness` | `integer` | Thickness of the volume (optional, default 8). |
 | `bothSides` | `boolean` | Create voxels on both sides (optional, default false). |
 
@@ -401,7 +401,7 @@ Merge another volume into this one.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `source` | `volume` | The source volume to merge from. |
+| `source` | [`volume`](volume.md) | The source volume to merge from. |
 
 **Returns:**
 
@@ -523,7 +523,7 @@ Get the region of the volume.
 
 | Type | Description |
 | ---- | ----------- |
-| `region` | The region of the volume. |
+| [`region`](region.md) | The region of the volume. |
 
 ### remapToPalette
 
@@ -533,8 +533,8 @@ Remap all voxel colors from an old palette to a new palette.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `oldPalette` | `palette` | The old palette used by the current voxels. |
-| `newPalette` | `palette` | The new palette to remap the colors to. |
+| `oldPalette` | [`palette`](palette.md) | The old palette used by the current voxels. |
+| `newPalette` | [`palette`](palette.md) | The new palette to remap the colors to. |
 | `skipColorIndex` | `integer` | An optional color index to skip during remapping (default: -1). |
 
 ### renderIsometricImage
@@ -551,7 +551,7 @@ Render an isometric view of the volume to an image. Voxels with a normal index u
 
 | Type | Description |
 | ---- | ----------- |
-| `image` | The rendered isometric image. |
+| [`image`](image.md) | The rendered isometric image. |
 
 ### renderToImage
 
@@ -567,7 +567,7 @@ Render the volume to a 2D image from the given face direction.
 
 | Type | Description |
 | ---- | ----------- |
-| `image` | The rendered image. |
+| [`image`](image.md) | The rendered image. |
 
 ### resize
 

@@ -22,8 +22,8 @@ Calculate the distance between two vectors.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `a` | `vec` | The first vector. |
-| `b` | `vec` | The second vector. |
+| `a` | [`vec`](vector.md) | The first vector. |
+| `b` | [`vec`](vector.md) | The second vector. |
 
 **Returns:**
 
@@ -39,8 +39,8 @@ Calculate the dot product of two vectors.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `a` | `vec` | The first vector. |
-| `b` | `vec` | The second vector. |
+| `a` | [`vec`](vector.md) | The first vector. |
+| `b` | [`vec`](vector.md) | The second vector. |
 
 **Returns:**
 
@@ -56,7 +56,7 @@ Calculate the length (magnitude) of a vector.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `v` | `vec` | The vector. |
+| `v` | [`vec`](vector.md) | The vector. |
 
 **Returns:**
 
@@ -81,7 +81,7 @@ Create a new vector with the specified components.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec` | A new vector with the specified components. |
+| [`vec`](vector.md) | A new vector with the specified components. |
 
 ### normalize
 
@@ -91,11 +91,11 @@ Normalize a vector to unit length.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `v` | `vec` | The vector to normalize. |
+| `v` | [`vec`](vector.md) | The vector to normalize. |
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `vec` | The normalized vector with length 1. |
+| [`vec`](vector.md) | The normalized vector with length 1. |
 

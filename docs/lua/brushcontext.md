@@ -62,7 +62,7 @@ Get the current cursor position.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The cursor position as a table with x, y, z fields. |
+| [`ivec3`](vector.md) | The cursor position as a table with x, y, z fields. |
 
 ### fixedOrthoSideView
 
@@ -144,7 +144,7 @@ Get the cursor position before any clamping or brush execution was applied.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The previous cursor position as a table with x, y, z fields. |
+| [`ivec3`](vector.md) | The previous cursor position as a table with x, y, z fields. |
 
 ### referencePos
 
@@ -154,7 +154,7 @@ Get the reference position set by the user before applying the brush.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The reference position as a table with x, y, z fields. |
+| [`ivec3`](vector.md) | The reference position as a table with x, y, z fields. |
 
 ### targetVolumeRegion
 

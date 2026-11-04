@@ -8009,6 +8009,7 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 		{luaVoxel_metanormalpalette_gc(), "normalpalette_gc"},
 		{luaVoxel_metavoxelfont(), "font"},
 		{clua_metastream(), "stream"},
+		{"httpRequest", "httpRequest"},
 		{clua_meta<image::Image>::name(), "image"},
 	};
 

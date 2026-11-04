@@ -28,10 +28,10 @@ Draw a quadratic bezier curve in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `start` | `ivec3` | The start position. |
-| `end` | `ivec3` | The end position. |
-| `control` | `ivec3` | The control point. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `start` | [`ivec3`](vector.md) | The start position. |
+| `end` | [`ivec3`](vector.md) | The end position. |
+| `control` | [`ivec3`](vector.md) | The control point. |
 | `color` | `integer` | The color index (optional, default 1). |
 | `thickness` | `integer` | The line thickness (optional, default 1). |
 
@@ -43,10 +43,10 @@ Draw a stippled quadratic bezier segment in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `start` | `ivec3` | The start position. |
-| `end` | `ivec3` | The end position. |
-| `control` | `ivec3` | The control point. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `start` | [`ivec3`](vector.md) | The start position. |
+| `end` | [`ivec3`](vector.md) | The end position. |
+| `control` | [`ivec3`](vector.md) | The control point. |
 | `color` | `integer` | The color index (optional, default 1). |
 | `pattern` | `string` | A repeating stipple pattern string where '1' draws and '0' skips (optional, default '1'). |
 
@@ -58,8 +58,8 @@ Create a hollow cylinder (tube) shape in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `centerBottom` | `vec3` | The center bottom position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `centerBottom` | [`vec3`](vector.md) | The center bottom position. |
 | `axis` | `string` | The axis: 'x', 'y', or 'z' (default 'y'). |
 | `width` | `integer` | The width of the ellipse cross-section. |
 | `height` | `integer` | The height of the cylinder. |
@@ -75,8 +75,8 @@ Create a cone shape in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `centerBottom` | `ivec3` | The center bottom position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `centerBottom` | [`ivec3`](vector.md) | The center bottom position. |
 | `axis` | `string` | The axis: 'x', 'y', or 'z' (default 'y'). |
 | `negative` | `boolean` | Flip the cone direction (optional, default false). |
 | `width` | `integer` | The width of the cone base. |
@@ -92,8 +92,8 @@ Create a cube shape in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `position` | `ivec3` | The corner position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `position` | [`ivec3`](vector.md) | The corner position. |
 | `width` | `integer` | The width of the cube. |
 | `height` | `integer` | The height of the cube. |
 | `depth` | `integer` | The depth of the cube. |
@@ -107,8 +107,8 @@ Create a cylinder shape in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `centerBottom` | `vec3` | The center bottom position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `centerBottom` | [`vec3`](vector.md) | The center bottom position. |
 | `axis` | `string` | The axis: 'x', 'y', or 'z' (default 'y'). |
 | `radius` | `integer` | The radius of the cylinder. |
 | `height` | `integer` | The height of the cylinder. |
@@ -122,8 +122,8 @@ Create a dome (half ellipsoid) shape in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `centerBottom` | `ivec3` | The center bottom position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `centerBottom` | [`ivec3`](vector.md) | The center bottom position. |
 | `axis` | `string` | The axis: 'x', 'y', or 'z' (default 'y'). |
 | `negative` | `boolean` | Flip the dome direction (optional, default false). |
 | `width` | `integer` | The width of the dome. |
@@ -139,8 +139,8 @@ Create an ellipse (filled oval) shape in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `centerBottom` | `ivec3` | The center bottom position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `centerBottom` | [`ivec3`](vector.md) | The center bottom position. |
 | `axis` | `string` | The axis: 'x', 'y', or 'z' (default 'y'). |
 | `width` | `integer` | The width of the ellipse. |
 | `height` | `integer` | The height of the ellipse. |
@@ -155,9 +155,9 @@ Draw a line between two points in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `start` | `ivec3` | The start position. |
-| `end` | `ivec3` | The end position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `start` | [`ivec3`](vector.md) | The start position. |
+| `end` | [`ivec3`](vector.md) | The end position. |
 | `color` | `integer` | The color index (optional, default 1). |
 | `thickness` | `integer` | The line thickness (optional, default 1). |
 
@@ -169,9 +169,9 @@ Draw a stippled line between two points in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `start` | `ivec3` | The start position. |
-| `end` | `ivec3` | The end position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `start` | [`ivec3`](vector.md) | The start position. |
+| `end` | [`ivec3`](vector.md) | The end position. |
 | `color` | `integer` | The color index (optional, default 1). |
 | `pattern` | `string` | A repeating stipple pattern string where '1' draws and '0' skips (optional, default '1'). |
 | `skipFirst` | `boolean` | Skip the first visited voxel (optional, default false). |
@@ -184,8 +184,8 @@ Create a torus shape in the volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to draw in. |
-| `center` | `ivec3` | The center position. |
+| `volume` | [`volume`](volume.md) | The volume to draw in. |
+| `center` | [`ivec3`](vector.md) | The center position. |
 | `axis` | `string` | The axis perpendicular to the torus ring plane: 'x', 'y', or 'z' (default 'y'). |
 | `width` | `integer` | The width of the bounding box. |
 | `height` | `integer` | The height of the bounding box. |

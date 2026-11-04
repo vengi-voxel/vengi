@@ -6,6 +6,7 @@
 
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "http/Client.h"
 #include "io/Filesystem.h"
 
 namespace voxelui {
@@ -22,18 +23,23 @@ struct ScriptInfo {
 typedef core::DynamicArray<ScriptInfo> ScriptInfoList;
 
 class ScriptApi {
+private:
+	mutable http::Client _client;
+
 public:
 	/**
 	 * @brief Fetch the list of available scripts from the API
 	 */
-	ScriptInfoList query(const core::String &baseUrl) const;
+	void query(const core::String &baseUrl, core::Function<void(ScriptInfoList)> callback) const;
+	static ScriptInfoList parseList(const core::String &body);
 
 	/**
 	 * @brief Download a script from the API and install it into the home directory.
 	 * Generator scripts go to "scripts/", brush scripts go to "brushes/".
-	 * @return @c true if the download and install succeeded
+	 * @param callback Receives whether the download and install succeeded.
 	 */
-	bool download(const io::FilesystemPtr &filesystem, const core::String &baseUrl, const ScriptInfo &info) const;
+	void download(const io::FilesystemPtr &filesystem, const core::String &baseUrl, const ScriptInfo &info,
+				  core::Function<void(bool)> callback) const;
 
 	/**
 	 * @brief Uninstall a previously installed script by removing its file from the home directory.
@@ -61,6 +67,8 @@ public:
 	 * @return @c true if the install succeeded
 	 */
 	bool install(const io::FilesystemPtr &filesystem, const core::String &source) const;
+	void install(const io::FilesystemPtr &filesystem, const core::String &source,
+				 core::Function<void(bool)> callback) const;
 
 	/**
 	 * @brief Uninstall a script by its filename. Searches across all script directories (scripts/, brushes/,

@@ -48,6 +48,11 @@ static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *use
 	return ((io::WriteStream *)userp)->write(contents, size * nmemb);
 }
 
+static int transferProgress(void *userdata, curl_off_t, curl_off_t, curl_off_t, curl_off_t) {
+	const core::AtomicBool *cancelled = (const core::AtomicBool *)userdata;
+	return *cancelled ? 1 : 0;
+}
+
 bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 				  RequestContext &ctx) {
 	CURL *curl = curl_easy_init();
@@ -64,7 +69,7 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 	}
 	if (!ctx._body.empty()) {
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, ctx._body.c_str());
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (const char *)ctx._body.data());
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)ctx._body.size());
 	}
 	curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, ctx._type == RequestType::GET ? "GET" : (ctx._type == RequestType::PATCH ? "PATCH" : "POST"));
@@ -79,9 +84,14 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headerdata);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
-	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, ctx._connectTimeoutSecond);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, ctx._timeoutSecond);
-	// curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, (long)ctx._connectTimeoutSecond);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, (long)ctx._timeoutSecond);
+	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
+	if (ctx._cancelled) {
+		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+		curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, transferProgress);
+		curl_easy_setopt(curl, CURLOPT_XFERINFODATA, ctx._cancelled);
+	}
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, ctx._followRedirects ? 1L : 0L);
 	curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 3);
 	if (!ctx._userAgent.empty()) {

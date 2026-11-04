@@ -87,6 +87,11 @@ function main(_, _, _)
 end
 ```
 
+For a frame-driven script, use `g_http.getAsync()` or `g_http.postAsync()` to
+keep the application responsive. Keep the returned request alive, yield until
+`request:ready()`, then read `request:response()`. See [HTTP requests](HTTP.md#lua)
+for an example and lifecycle requirements.
+
 ### Find the best palette match
 
 ```lua

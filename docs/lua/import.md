@@ -22,13 +22,13 @@ Load an image from a stream.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `filename` | `string` | The filename for format detection. |
-| `stream` | `stream` | The stream to read from. |
+| `stream` | [`stream`](stream.md) | The stream to read from. |
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `image` | The loaded image. |
+| [`image`](image.md) | The loaded image. |
 
 ### imageAsPlane
 
@@ -38,8 +38,8 @@ Import an image as a voxel plane.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `image` | `image` | The image to convert. |
-| `palette` | `palette` | The palette to use. |
+| `image` | [`image`](image.md) | The image to convert. |
+| `palette` | [`palette`](palette.md) | The palette to use. |
 | `thickness` | `integer` | The plane thickness (optional, default 1). |
 
 **Returns:**
@@ -57,13 +57,13 @@ Load a palette from a stream.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `filename` | `string` | The filename for format detection. |
-| `stream` | `stream` | The stream to read from. |
+| `stream` | [`stream`](stream.md) | The stream to read from. |
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `palette` | The loaded palette. |
+| [`palette`](palette.md) | The loaded palette. |
 
 ### scene
 
@@ -74,5 +74,5 @@ Import a scene from a file or stream.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `filename` | `string` | The filename to load. |
-| `stream` | `stream` | Optional stream to read from. |
+| `stream` | [`stream`](stream.md) | Optional stream to read from. |
 

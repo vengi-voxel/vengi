@@ -33,7 +33,7 @@ Get the center point of the region.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec3` | The center point of the region. |
+| [`vec3`](vector.md) | The center point of the region. |
 
 ### contains
 
@@ -43,7 +43,7 @@ Check if this region fully contains another region.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `other` | `region` | The other region to check. |
+| `other` | [`region`](region.md) | The other region to check. |
 
 **Returns:**
 
@@ -79,7 +79,7 @@ Check if this region intersects with another region.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `other` | `region` | The other region to check. |
+| `other` | [`region`](region.md) | The other region to check. |
 
 **Returns:**
 
@@ -95,7 +95,7 @@ Check if a position is on the border of the region.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `ivec3` | The position to check. |
+| `pos` | [`ivec3`](vector.md) | The position to check. |
 
 **Returns:**
 
@@ -111,7 +111,7 @@ Get the upper corner of the region.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The upper corner coordinates. |
+| [`ivec3`](vector.md) | The upper corner coordinates. |
 
 ### mins
 
@@ -121,7 +121,7 @@ Get the lower corner of the region.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The lower corner coordinates. |
+| [`ivec3`](vector.md) | The lower corner coordinates. |
 
 ### new
 
@@ -142,7 +142,7 @@ Create a new region with the specified bounds.
 
 | Type | Description |
 | ---- | ----------- |
-| `region` | The newly created region. |
+| [`region`](region.md) | The newly created region. |
 
 ### setMaxs
 
@@ -152,7 +152,7 @@ Set the upper corner of the region.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `maxs` | `ivec3` | The new upper corner coordinates. |
+| `maxs` | [`ivec3`](vector.md) | The new upper corner coordinates. |
 
 ### setMins
 
@@ -162,7 +162,7 @@ Set the lower corner of the region.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `mins` | `ivec3` | The new lower corner coordinates. |
+| `mins` | [`ivec3`](vector.md) | The new lower corner coordinates. |
 
 ### size
 
@@ -172,7 +172,7 @@ Get the dimensions of the region.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The dimensions in voxels. |
+| [`ivec3`](vector.md) | The dimensions in voxels. |
 
 ### width
 

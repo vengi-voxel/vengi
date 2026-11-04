@@ -7,7 +7,9 @@ Global: `g_http`
 | Function | Description |
 | -------- | ----------- |
 | `get(url, headers)` | Perform an HTTP GET request. |
+| `getAsync(url, headers)` | Start an HTTP GET without blocking. The app dispatches completion each frame. |
 | `post(url, body, headers)` | Perform an HTTP POST request. |
+| `postAsync(url, body, headers)` | Start an HTTP POST without blocking. The app dispatches completion each frame. |
 
 ## Detailed Documentation
 
@@ -26,8 +28,25 @@ Perform an HTTP GET request.
 
 | Type | Description |
 | ---- | ----------- |
-| `stream` | Response body as stream. |
+| [`stream`](stream.md) | Response body as stream. |
 | `table` | Response headers. |
+
+### getAsync
+
+Start an HTTP GET without blocking. The app dispatches completion each frame.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `url` | `string` | The URL to request. |
+| `headers` | `table` | Optional request headers. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| [`httpRequest`](httprequest.md) | Use ready() and response(). Collection cancels the request. |
 
 ### post
 
@@ -45,6 +64,24 @@ Perform an HTTP POST request.
 
 | Type | Description |
 | ---- | ----------- |
-| `stream` | Response body as stream. |
+| [`stream`](stream.md) | Response body as stream. |
 | `table` | Response headers. |
+
+### postAsync
+
+Start an HTTP POST without blocking. The app dispatches completion each frame.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `url` | `string` | The URL to request. |
+| `body` | `string` | Request body bytes. |
+| `headers` | `table` | Optional request headers. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| [`httpRequest`](httprequest.md) | Use ready() and response(). Collection cancels the request. |
 

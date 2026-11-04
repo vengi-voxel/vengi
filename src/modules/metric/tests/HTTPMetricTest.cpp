@@ -17,6 +17,17 @@ private:
 	using Super = app::AbstractTest;
 };
 
+TEST_F(HTTPMetricTest, testHTTPMetricSenderQueuesAndShutsDown) {
+	if (!http::Request::supported()) {
+		GTEST_SKIP();
+	}
+	metric::HTTPMetricSender sender("http://127.0.0.1:1/", "test/1.0");
+	ASSERT_TRUE(sender.init());
+	EXPECT_TRUE(sender.send("{\"value\":1}"));
+	sender.shutdown();
+	http::update();
+}
+
 // disabled because it requires network access
 TEST_F(HTTPMetricTest, DISABLED_testHTTPMetricSender) {
 	if (!http::Request::supported()) {

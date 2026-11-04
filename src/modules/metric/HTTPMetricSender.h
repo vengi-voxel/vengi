@@ -6,13 +6,14 @@
 
 #include "IMetricSender.h"
 #include "core/String.h"
-#include "http/Request.h"
+#include "http/Client.h"
 
 namespace metric {
 
 class HTTPMetricSender : public IMetricSender {
 private:
-	mutable http::Request _request;
+	http::Request _request;
+	mutable http::Client _client;
 
 public:
 	HTTPMetricSender(const core::String &url, const core::String &userAgent);

@@ -421,7 +421,7 @@ Write the contents of another stream to this stream.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `source` | `stream` | The source stream to read from. |
+| `source` | [`stream`](stream.md) | The source stream to read from. |
 
 ### writeString
 

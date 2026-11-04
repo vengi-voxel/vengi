@@ -26,9 +26,10 @@ void ScriptBrowserPanel::open() {
 
 void ScriptBrowserPanel::fetchScripts() {
 	_requestPending = true;
-	voxelui::ScriptApi api;
-	_scripts = api.query(SCRIPT_API_URL);
-	_requestPending = false;
+	_api.query(SCRIPT_API_URL, [this](ScriptInfoList scripts) {
+		_scripts = core::move(scripts);
+		_requestPending = false;
+	});
 }
 
 bool ScriptBrowserPanel::needsReload() {
@@ -187,11 +188,8 @@ void ScriptBrowserPanel::update(const char *id, command::CommandExecutionListene
 							ImGui::TooltipText(_("Uninstall %s"), info.name.c_str());
 						} else {
 							if (ImGui::IconButton(ICON_LC_DOWNLOAD, info.filename.c_str())) {
-								voxelui::ScriptApi api;
-								if (api.download(_app->filesystem(), SCRIPT_API_URL, info)) {
-									Log::info("Downloaded script %s", info.name.c_str());
-									_needsReload = true;
-								}
+								_api.download(_app->filesystem(), SCRIPT_API_URL, info,
+											  [this](bool downloaded) { _needsReload |= downloaded; });
 							}
 							ImGui::TooltipText(_("Download %s"), info.name.c_str());
 						}

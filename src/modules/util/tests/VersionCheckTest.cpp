@@ -7,8 +7,12 @@
 
 class VersionCheckTest : public app::AbstractTest {};
 
-TEST_F(VersionCheckTest, DISABLED_testIsNewVersionAvailable) {
-	ASSERT_FALSE(util::isNewVersionAvailable());
+TEST_F(VersionCheckTest, testReleaseResponse) {
+	EXPECT_TRUE(util::isNewVersionAvailable(R"({"tag_name":"v9999.0.0"})"));
+	EXPECT_FALSE(util::isNewVersionAvailable(R"({"tag_name":"v0.0.0"})"));
+	EXPECT_FALSE(util::isNewVersionAvailable(R"({"tag_name":""})"));
+	EXPECT_FALSE(util::isNewVersionAvailable(R"({"message":"rate limited"})"));
+	EXPECT_FALSE(util::isNewVersionAvailable("invalid json"));
 }
 
 TEST_F(VersionCheckTest, testIsNewerVersion) {

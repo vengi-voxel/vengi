@@ -44,7 +44,7 @@ Create a new VoxelFont from a TrueType font file.
 
 | Type | Description |
 | ---- | ----------- |
-| `font` | The created VoxelFont object. |
+| [`font`](font.md) | The created VoxelFont object. |
 
 ### render
 
@@ -54,7 +54,7 @@ Render text into a volume at the specified position.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to render into. |
+| `volume` | [`volume`](volume.md) | The volume to render into. |
 | `text` | `string` | The text to render. |
 | `x` | `integer` | The x start position. |
 | `y` | `integer` | The y start position. |

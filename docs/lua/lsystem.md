@@ -30,7 +30,7 @@ Generate voxels using an L-system (Lindenmayer system). The L-system is executed
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to place the L-system result into. |
+| `volume` | [`volume`](volume.md) | The volume to place the L-system result into. |
 | `axiom` | `string` | The initial axiom string (e.g. 'X' or 'F'). |
 | `rules` | `string` | The production rules in format '{ A rule } { B rule }' (e.g. '{ X F[+X][-X] } { F FF }'). |
 | `colorIndex` | `integer` | The initial palette color index (optional, default 0). |

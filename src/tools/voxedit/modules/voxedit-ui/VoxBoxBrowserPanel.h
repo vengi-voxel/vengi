@@ -37,6 +37,8 @@ private:
 	core::String _uploadCoverFile;
 	SceneManagerPtr _sceneMgr;
 	bool _requestPending = false;
+	bool _loginPending = false;
+	bool _uploadPending = false;
 	bool _open = false;
 	bool _requestFocus = false;
 	bool _showUpload = false;

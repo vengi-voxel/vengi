@@ -30,7 +30,7 @@ Generate 2D fractal Brownian motion noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec2` | The 2D position. |
+| `pos` | [`vec2`](vector.md) | The 2D position. |
 | `octaves` | `integer` | Number of octaves (optional, default 4). |
 | `lacunarity` | `number` | Lacunarity (optional, default 2.0). |
 | `gain` | `number` | Gain (optional, default 0.5). |
@@ -49,7 +49,7 @@ Generate 3D fractal Brownian motion noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec3` | The 3D position. |
+| `pos` | [`vec3`](vector.md) | The 3D position. |
 | `octaves` | `integer` | Number of octaves (optional, default 4). |
 | `lacunarity` | `number` | Lacunarity (optional, default 2.0). |
 | `gain` | `number` | Gain (optional, default 0.5). |
@@ -68,7 +68,7 @@ Generate 4D fractal Brownian motion noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec4` | The 4D position. |
+| `pos` | [`vec4`](vector.md) | The 4D position. |
 | `octaves` | `integer` | Number of octaves (optional, default 4). |
 | `lacunarity` | `number` | Lacunarity (optional, default 2.0). |
 | `gain` | `number` | Gain (optional, default 0.5). |
@@ -141,7 +141,7 @@ Generate 2D ridged multi-fractal noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec2` | The 2D position. |
+| `pos` | [`vec2`](vector.md) | The 2D position. |
 | `ridgeOffset` | `number` | Ridge offset (optional, default 1.0). |
 | `octaves` | `integer` | Number of octaves (optional, default 4). |
 | `lacunarity` | `number` | Lacunarity (optional, default 2.0). |
@@ -161,7 +161,7 @@ Generate 3D ridged multi-fractal noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec3` | The 3D position. |
+| `pos` | [`vec3`](vector.md) | The 3D position. |
 | `ridgeOffset` | `number` | Ridge offset (optional, default 1.0). |
 | `octaves` | `integer` | Number of octaves (optional, default 4). |
 | `lacunarity` | `number` | Lacunarity (optional, default 2.0). |
@@ -181,7 +181,7 @@ Generate 4D ridged multi-fractal noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec4` | The 4D position. |
+| `pos` | [`vec4`](vector.md) | The 4D position. |
 | `ridgeOffset` | `number` | Ridge offset (optional, default 1.0). |
 | `octaves` | `integer` | Number of octaves (optional, default 4). |
 | `lacunarity` | `number` | Lacunarity (optional, default 2.0). |
@@ -201,7 +201,7 @@ Generate Swiss turbulence noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec2` | The 2D position. |
+| `pos` | [`vec2`](vector.md) | The 2D position. |
 | `offset` | `number` | Offset (optional, default 1.0). |
 | `octaves` | `integer` | Number of octaves (optional, default 4). |
 | `lacunarity` | `number` | Lacunarity (optional, default 2.0). |
@@ -222,7 +222,7 @@ Generate Voronoi noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec3` | The 3D position. |
+| `pos` | [`vec3`](vector.md) | The 3D position. |
 | `frequency` | `number` | Frequency (optional, default 1.0). |
 | `seed` | `integer` | Random seed (optional, default 0). |
 | `enableDistance` | `boolean` | Enable distance output (optional, default true). |
@@ -241,7 +241,7 @@ Generate 2D Worley (cellular) noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec2` | The 2D position. |
+| `pos` | [`vec2`](vector.md) | The 2D position. |
 
 **Returns:**
 
@@ -257,7 +257,7 @@ Generate 3D Worley (cellular) noise.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pos` | `vec3` | The 3D position. |
+| `pos` | [`vec3`](vector.md) | The 3D position. |
 
 **Returns:**
 

@@ -60,6 +60,6 @@ Add shadow coloring to a volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The volume to add shadows to. |
+| `volume` | [`volume`](volume.md) | The volume to add shadows to. |
 | `lightStep` | `integer` | Light step value (optional, default 8). |
 

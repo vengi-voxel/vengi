@@ -30,7 +30,7 @@ Copy all solid voxels from a volume into the sparse volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The source volume to copy from. |
+| `volume` | [`volume`](volume.md) | The source volume to copy from. |
 
 ### copyToVolume
 
@@ -40,7 +40,7 @@ Copy all voxels from the sparse volume into a volume.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `volume` | `volume` | The target volume to copy into. |
+| `volume` | [`volume`](volume.md) | The target volume to copy into. |
 
 ### empty
 
@@ -71,7 +71,7 @@ Create a new sparse volume. Optionally specify a limiting region.
 
 | Type | Description |
 | ---- | ----------- |
-| `sparsevolume` | A new sparse volume instance. |
+| [`sparsevolume`](sparsevolume.md) | A new sparse volume instance. |
 
 ### region
 
@@ -81,7 +81,7 @@ Get the region of the sparse volume. If no limiting region was set, calculates b
 
 | Type | Description |
 | ---- | ----------- |
-| `region` | The region of the volume. |
+| [`region`](region.md) | The region of the volume. |
 
 ### setVoxel
 

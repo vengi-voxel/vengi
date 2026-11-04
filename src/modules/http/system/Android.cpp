@@ -330,7 +330,7 @@ static bool httpRequestJni(io::WriteStream &stream, int *statusCode, Headers *ou
 			return false;
 		}
 		env->SetByteArrayRegion(static_cast<jbyteArray>(bytes.obj), 0, (jsize)ctx._body.size(),
-								reinterpret_cast<const jbyte *>(ctx._body.c_str()));
+								reinterpret_cast<const jbyte *>(ctx._body.data()));
 		env->CallVoidMethod(output.obj, writeId, bytes.obj);
 		if (jniFailed(env)) {
 			logJniException(env, "write request body");

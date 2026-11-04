@@ -11,6 +11,7 @@ namespace http {
 
 class Request {
 private:
+	friend class Client;
 	RequestContext _ctx;
 
 public:
@@ -20,13 +21,14 @@ public:
 	void setTimeoutSecond(int timeoutSecond);
 	void setFollowRedirects(bool follow);
 	bool setBody(const core::String &body);
+	bool setBody(const void *data, size_t size);
 	void addHeader(const core::String &key, const core::String &value);
 	bool execute(io::WriteStream &stream, int *statusCode = nullptr, Headers *outheaders = nullptr);
 	void noCache();
 
 	const Headers &headers() const;
 	const core::String &url() const;
-	const core::String &body() const;
+	const core::Buffer<uint8_t> &body() const;
 	RequestType type() const;
 
 	static bool supported();
@@ -44,7 +46,7 @@ inline const core::String &Request::url() const {
 	return _ctx._url;
 }
 
-inline const core::String &Request::body() const {
+inline const core::Buffer<uint8_t> &Request::body() const {
 	return _ctx._body;
 }
 

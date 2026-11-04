@@ -17,6 +17,7 @@ class ScriptBrowserPanel : public ui::Panel {
 private:
 	using Super = ui::Panel;
 	voxelui::ScriptInfoList _scripts;
+	ScriptApi _api;
 	core::String _searchFilter;
 	bool _requestPending = false;
 	bool _open = false;

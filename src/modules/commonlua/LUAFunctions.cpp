@@ -11,13 +11,14 @@
 #include "core/String.h"
 #include "core/Var.h"
 #include "core/collection/StringSet.h"
+#include "http/Client.h"
 #include "http/Http.h"
 #include "http/Request.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/Stream.h"
 #include "io/File.h"
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
+#include "io/Stream.h"
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif
@@ -1348,8 +1349,8 @@ static int clua_http_post(lua_State *s) {
 			}
 			headersStr += core::String::format("'%s: %s'", it->first.c_str(), it->second.c_str());
 		}
-		clua_error_prepare(s, "Failed to execute post request for url: %s and body '%s' (headers: %s)", request.url().c_str(),
-						  request.body().c_str(), headersStr.c_str());
+		clua_error_prepare(s, "Failed to execute post request for url: %s and body of %u bytes (headers: %s)",
+						   request.url().c_str(), (unsigned)request.body().size(), headersStr.c_str());
 		request.~Request();
 		return lua_error(s);
 	}
@@ -1372,12 +1373,149 @@ static int clua_http_post_jsonhelp(lua_State *s) {
 	return 1;
 }
 
+namespace {
+
+const char *HttpRequestMeta = "httpRequest";
+
+struct LuaHttpRequest {
+	http::Client client;
+	http::Response response;
+	bool ready = false;
+};
+
+LuaHttpRequest *httpRequest(lua_State *s) {
+	LuaHttpRequest **request = clua_getudata<LuaHttpRequest **>(s, 1, HttpRequestMeta);
+	luaL_argcheck(s, *request != nullptr, 1, "request was released");
+	return *request;
+}
+
+int httpRequestGc(lua_State *s) {
+	LuaHttpRequest **request = clua_getudata<LuaHttpRequest **>(s, 1, HttpRequestMeta);
+	delete *request;
+	*request = nullptr;
+	return 0;
+}
+
+int httpRequestReady(lua_State *s) {
+	lua_pushboolean(s, httpRequest(s)->ready);
+	return 1;
+}
+
+int httpRequestReadyHelp(lua_State *s) {
+	lua_pushstring(s, R"({"name":"ready", "summary":"Whether the asynchronous request has completed.",
+		"parameters":[], "returns":[{"type":"bool", "description":"True when response() is available."}]})");
+	return 1;
+}
+
+int httpRequestResponse(lua_State *s) {
+	LuaHttpRequest *request = httpRequest(s);
+	if (!request->ready) {
+		return 0;
+	}
+	const http::Response &response = request->response;
+	auto *stream = new io::BufferedReadWriteStream();
+	stream->write(response.body.data(), response.body.size());
+	stream->seek(0);
+	clua_pushstream(s, stream);
+	lua_newtable(s);
+	for (const auto &header : response.headers) {
+		lua_pushlstring(s, header->second.c_str(), header->second.size());
+		lua_setfield(s, -2, header->first.c_str());
+	}
+	lua_pushinteger(s, response.statusCode);
+	lua_pushboolean(s, response.success);
+	return 4;
+}
+
+int httpRequestResponseHelp(lua_State *s) {
+	lua_pushstring(s, R"({"name":"response", "summary":"Get the completed response, or no values while pending.",
+		"parameters":[], "returns":[
+		{"type":"stream", "description":"Response body, including HTTP error bodies."},
+		{"type":"table", "description":"Response headers."},
+		{"type":"int", "description":"HTTP status, or zero on transport failure."},
+		{"type":"bool", "description":"Transport success; check HTTP status separately."}]})");
+	return 1;
+}
+
+int startHttpRequest(lua_State *s, http::RequestType type) {
+	const char *url = luaL_checkstring(s, 1);
+	size_t length = 0;
+	const char *body = type == http::RequestType::POST ? luaL_checklstring(s, 2, &length) : nullptr;
+	const int headerIndex = type == http::RequestType::POST ? 3 : 2;
+	if (lua_istable(s, headerIndex)) {
+		lua_pushnil(s);
+		while (lua_next(s, headerIndex)) {
+			luaL_checktype(s, -2, LUA_TSTRING);
+			luaL_checktype(s, -1, LUA_TSTRING);
+			lua_pop(s, 1);
+		}
+	}
+	// Lua owns the client. Collecting this userdata cancels its callback, even if
+	// the caller abandons a coroutine or closes its Lua state before completion.
+	LuaHttpRequest **slot = (LuaHttpRequest **)lua_newuserdatauv(s, sizeof(LuaHttpRequest *), 0);
+	*slot = nullptr;
+	clua_assignmetatable(s, HttpRequestMeta);
+	LuaHttpRequest *pending = new LuaHttpRequest();
+	*slot = pending;
+	{
+		http::Request request(url, type);
+		if (body) {
+			request.setBody(body, length);
+		}
+		clua_http_headers(s, type == http::RequestType::POST ? 3 : 2, request);
+		pending->response.url = url;
+		if (!pending->client.execute(request, [pending](const http::Response &response) {
+				pending->response = response;
+				pending->ready = true;
+			})) {
+			pending->ready = true;
+		}
+	}
+	return 1;
+}
+
+int httpGetAsync(lua_State *s) {
+	return startHttpRequest(s, http::RequestType::GET);
+}
+
+int httpPostAsync(lua_State *s) {
+	return startHttpRequest(s, http::RequestType::POST);
+}
+
+int httpGetAsyncHelp(lua_State *s) {
+	lua_pushstring(
+		s,
+		R"({"name":"getAsync", "summary":"Start an HTTP GET without blocking. The app dispatches completion each frame.",
+		"parameters":[{"name":"url", "type":"string", "description":"The URL to request."},
+		{"name":"headers", "type":"table", "description":"Optional request headers."}],
+		"returns":[{"type":"httpRequest", "description":"Use ready() and response(). Collection cancels the request."}]})");
+	return 1;
+}
+
+int httpPostAsyncHelp(lua_State *s) {
+	lua_pushstring(
+		s,
+		R"({"name":"postAsync", "summary":"Start an HTTP POST without blocking. The app dispatches completion each frame.",
+		"parameters":[{"name":"url", "type":"string", "description":"The URL to request."},
+		{"name":"body", "type":"string", "description":"Request body bytes."},
+		{"name":"headers", "type":"table", "description":"Optional request headers."}],
+		"returns":[{"type":"httpRequest", "description":"Use ready() and response(). Collection cancels the request."}]})");
+	return 1;
+}
+
+} // namespace
+
 void clua_httpregister(lua_State *s) {
-	static const clua_Reg httpFuncs[] = {
-		{"get", clua_http_get, clua_http_get_jsonhelp},
-		{"post", clua_http_post, clua_http_post_jsonhelp},
-		{nullptr, nullptr, nullptr}
-	};
+	static const clua_Reg requestFuncs[] = {{"ready", httpRequestReady, httpRequestReadyHelp},
+											{"response", httpRequestResponse, httpRequestResponseHelp},
+											{"__gc", httpRequestGc, nullptr},
+											{nullptr, nullptr, nullptr}};
+	clua_registerfuncs(s, requestFuncs, HttpRequestMeta);
+	static const clua_Reg httpFuncs[] = {{"get", clua_http_get, clua_http_get_jsonhelp},
+										 {"post", clua_http_post, clua_http_post_jsonhelp},
+										 {"getAsync", httpGetAsync, httpGetAsyncHelp},
+										 {"postAsync", httpPostAsync, httpPostAsyncHelp},
+										 {nullptr, nullptr, nullptr}};
 	clua_registerfuncsglobal(s, httpFuncs, clua_metahttp(), "g_http");
 }
 

@@ -4,17 +4,18 @@
 
 #pragma once
 
+#include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "io/FormatDescription.h"
 #include "ui/IMGUIApp.h"
 #include "video/TexturePool.h"
 #include "voxedit-util/ISceneRenderer.h"
-#include "voxedit-util/ScenePaletteCache.h"
 #include "voxedit-util/SceneManager.h"
+#include "voxedit-util/ScenePaletteCache.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxelcollection/CollectionManager.h"
 #include "voxelui/ScenePreview.h"
-#include "core/Var.h"
+#include "voxelui/ScriptApi.h"
 
 namespace voxedit {
 class MainWindow;
@@ -40,6 +41,7 @@ protected:
 	video::TexturePoolPtr _texturePool;
 	voxedit::ScenePaletteCache _paletteCache;
 	voxelui::ScenePreview _fileDialogPreview;
+	voxelui::ScriptApi _scriptApi;
 	core::VarPtr _penPressureAffectsRadius;
 	core::VarPtr _penRadiusMin;
 	core::VarPtr _penRadiusMax;

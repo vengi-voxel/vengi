@@ -35,7 +35,7 @@ Get the position of the initial click that started the selection.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The first click position. |
+| [`ivec3`](vector.md) | The first click position. |
 
 ### cursorFace
 
@@ -55,7 +55,7 @@ Get the current cursor position.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The cursor position. |
+| [`ivec3`](vector.md) | The cursor position. |
 
 ### hitCursorColor
 
@@ -85,7 +85,7 @@ Get the reference position set by the user.
 
 | Type | Description |
 | ---- | ----------- |
-| `ivec3` | The reference position. |
+| [`ivec3`](vector.md) | The reference position. |
 
 ### targetVolumeRegion
 

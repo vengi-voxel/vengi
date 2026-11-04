@@ -94,7 +94,7 @@ Get a color from the palette as vec4.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec4` | The color as RGBA vec4 (0-1 range). |
+| [`vec4`](vector.md) | The color as RGBA vec4 (0-1 range). |
 
 ### colorName
 
@@ -371,7 +371,7 @@ Create a new empty palette.
 
 | Type | Description |
 | ---- | ----------- |
-| `palette` | The newly created palette. |
+| [`palette`](palette.md) | The newly created palette. |
 
 ### reduce
 

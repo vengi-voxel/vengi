@@ -61,7 +61,7 @@ Get the local orientation quaternion.
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The local orientation. |
+| [`quat`](quat.md) | The local orientation. |
 
 ### localScale
 
@@ -71,7 +71,7 @@ Get the local scale.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec3` | The local scale. |
+| [`vec3`](vector.md) | The local scale. |
 
 ### localTranslation
 
@@ -81,7 +81,7 @@ Get the local translation.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec3` | The local translation. |
+| [`vec3`](vector.md) | The local translation. |
 
 ### setInterpolation
 
@@ -101,7 +101,7 @@ Set the local orientation.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `orientation` | `quat` | The new local orientation (quaternion or x,y,z,w components). |
+| `orientation` | [`quat`](quat.md) | The new local orientation (quaternion or x,y,z,w components). |
 
 ### setLocalScale
 
@@ -111,7 +111,7 @@ Set the local scale.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `scale` | `vec3` | The new local scale. |
+| `scale` | [`vec3`](vector.md) | The new local scale. |
 
 ### setLocalTranslation
 
@@ -121,7 +121,7 @@ Set the local translation.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `translation` | `vec3` | The new local translation. |
+| `translation` | [`vec3`](vector.md) | The new local translation. |
 
 ### setWorldOrientation
 
@@ -131,7 +131,7 @@ Set the world orientation.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `orientation` | `quat` | The new world orientation (quaternion or x,y,z,w components). |
+| `orientation` | [`quat`](quat.md) | The new world orientation (quaternion or x,y,z,w components). |
 
 ### setWorldScale
 
@@ -141,7 +141,7 @@ Set the world scale.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `scale` | `vec3` | The new world scale. |
+| `scale` | [`vec3`](vector.md) | The new world scale. |
 
 ### setWorldTranslation
 
@@ -151,7 +151,7 @@ Set the world translation.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `translation` | `vec3` | The new world translation. |
+| `translation` | [`vec3`](vector.md) | The new world translation. |
 
 ### worldOrientation
 
@@ -161,7 +161,7 @@ Get the world orientation quaternion.
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The world orientation. |
+| [`quat`](quat.md) | The world orientation. |
 
 ### worldScale
 
@@ -171,7 +171,7 @@ Get the world scale.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec3` | The world scale. |
+| [`vec3`](vector.md) | The world scale. |
 
 ### worldTranslation
 
@@ -181,5 +181,5 @@ Get the world translation.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec3` | The world translation. |
+| [`vec3`](vector.md) | The world translation. |
 

@@ -61,7 +61,7 @@ Add a new keyframe at the specified frame.
 
 | Type | Description |
 | ---- | ----------- |
-| `keyframe` | The newly created keyframe. |
+| [`keyframe`](keyframe.md) | The newly created keyframe. |
 
 ### children
 
@@ -227,7 +227,7 @@ Get a keyframe by index.
 
 | Type | Description |
 | ---- | ----------- |
-| `keyframe` | The keyframe. |
+| [`keyframe`](keyframe.md) | The keyframe. |
 
 ### keyFrameForFrame
 
@@ -243,7 +243,7 @@ Get the keyframe for a specific frame number.
 
 | Type | Description |
 | ---- | ----------- |
-| `keyframe` | The keyframe. |
+| [`keyframe`](keyframe.md) | The keyframe. |
 
 ### lock
 
@@ -267,7 +267,7 @@ Get the normal palette of the node.
 
 | Type | Description |
 | ---- | ----------- |
-| `normalpalette` | The node's normal palette. |
+| [`normalpalette`](normalpalette.md) | The node's normal palette. |
 
 ### numKeyFrames
 
@@ -287,7 +287,7 @@ Get the palette of the node.
 
 | Type | Description |
 | ---- | ----------- |
-| `palette` | The node's palette. |
+| [`palette`](palette.md) | The node's palette. |
 
 ### parent
 
@@ -307,7 +307,7 @@ Get the normalized pivot point of the node.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec3` | The pivot point (normalized 0-1 range). |
+| [`vec3`](vector.md) | The pivot point (normalized 0-1 range). |
 
 ### property
 
@@ -333,7 +333,7 @@ Get the region of the model node.
 
 | Type | Description |
 | ---- | ----------- |
-| `region` | The node's region. |
+| [`region`](region.md) | The node's region. |
 
 ### removeKeyFrame
 
@@ -389,7 +389,7 @@ Set the normal palette of the node.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `normalpalette` | `normalpalette` | The new normal palette. |
+| `normalpalette` | [`normalpalette`](normalpalette.md) | The new normal palette. |
 
 ### setPalette
 
@@ -399,7 +399,7 @@ Set the palette of the node.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `palette` | `palette` | The new palette. |
+| `palette` | [`palette`](palette.md) | The new palette. |
 | `remap` | `boolean` | Remap existing colors (optional, default false). |
 
 ### setPivot
@@ -410,7 +410,7 @@ Set the pivot point of the node.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `pivot` | `vec3` | The new pivot point. |
+| `pivot` | [`vec3`](vector.md) | The new pivot point. |
 | `translate` | `boolean` | Whether to compensate the translation when changing the pivot. Default is true. |
 
 ### setProperty
@@ -456,5 +456,5 @@ Get the volume of a model node.
 
 | Type | Description |
 | ---- | ----------- |
-| `volume` | The volume. |
+| [`volume`](volume.md) | The volume. |
 

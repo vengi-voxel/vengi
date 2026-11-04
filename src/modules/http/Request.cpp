@@ -3,12 +3,13 @@
  */
 
 #include "Request.h"
-#include "app/App.h"
 #include "app/I18N.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "engine-config.h"
+#include "io/BufferedReadWriteStream.h"
+#include "system/Async.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include "system/WinHttp.h"
@@ -39,11 +40,19 @@ Request::Request(const core::String &url, RequestType type) {
 }
 
 bool Request::setBody(const core::String &body) {
+	return setBody(body.c_str(), body.size());
+}
+
+bool Request::setBody(const void *data, size_t size) {
 	core_assert(_ctx._type == RequestType::POST || _ctx._type == RequestType::PATCH);
 	if (_ctx._type != RequestType::POST && _ctx._type != RequestType::PATCH) {
 		return false;
 	}
-	_ctx._body = body;
+	core::Buffer<uint8_t> body;
+	if (size > 0) {
+		body.append((const uint8_t *)data, size);
+	}
+	_ctx._body = core::move(body);
 	return true;
 }
 
@@ -56,8 +65,20 @@ void Request::noCache() {
 }
 
 bool Request::execute(io::WriteStream &stream, int *statusCode, Headers *outheaders) {
+	if (statusCode) {
+		*statusCode = 0;
+	}
 	Log::debug("Starting http request for %s", _ctx._url.c_str());
 	return http_request(stream, statusCode, outheaders, _ctx);
+}
+
+void detail::executeRequest(AsyncRequest &request) {
+	io::BufferedReadWriteStream stream;
+	request.response.success =
+		http_request(stream, &request.response.statusCode, &request.response.headers, request.context);
+	if (stream.size() > 0) {
+		request.response.body.append((const uint8_t *)stream.getBuffer(), (size_t)stream.size());
+	}
 }
 
 } // namespace http

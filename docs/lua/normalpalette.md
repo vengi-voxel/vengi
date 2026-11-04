@@ -75,7 +75,7 @@ Create a new empty normal palette.
 
 | Type | Description |
 | ---- | ----------- |
-| `normalpalette` | The newly created normal palette. |
+| [`normalpalette`](normalpalette.md) | The newly created normal palette. |
 
 ### normal
 
@@ -91,7 +91,7 @@ Get a normal from the palette as vec3.
 
 | Type | Description |
 | ---- | ----------- |
-| `vec3` | The normal direction vector. |
+| [`vec3`](vector.md) | The normal direction vector. |
 
 ### save
 

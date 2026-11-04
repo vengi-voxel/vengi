@@ -28,13 +28,13 @@ Get the conjugate (inverse rotation) of a quaternion.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `q` | `quat` | The quaternion. |
+| `q` | [`quat`](quat.md) | The quaternion. |
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The conjugated quaternion. |
+| [`quat`](quat.md) | The conjugated quaternion. |
 
 ### fromAxisAngle
 
@@ -44,14 +44,14 @@ Create a quaternion from an axis and an angle.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `axis` | `vec3` | The rotation axis (will be normalized). |
+| `axis` | [`vec3`](vector.md) | The rotation axis (will be normalized). |
 | `angle` | `number` | Rotation angle in radians. |
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### new
 
@@ -61,7 +61,7 @@ Create a new identity quaternion.
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | A new identity quaternion. |
+| [`quat`](quat.md) | A new identity quaternion. |
 
 ### rotateX
 
@@ -77,7 +77,7 @@ Create a quaternion rotation around the X axis (pitch - nod forward/backward).
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### rotateXY
 
@@ -94,7 +94,7 @@ Create a quaternion rotation around X and Y axes (pitch and yaw).
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### rotateXYZ
 
@@ -112,7 +112,7 @@ Create a quaternion rotation around X, Y, and Z axes (pitch, yaw, roll).
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### rotateXZ
 
@@ -129,7 +129,7 @@ Create a quaternion rotation around X and Z axes (roll and pitch).
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### rotateY
 
@@ -145,7 +145,7 @@ Create a quaternion rotation around the Y axis (yaw - turn left/right).
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### rotateYZ
 
@@ -162,7 +162,7 @@ Create a quaternion rotation around Y and Z axes (yaw and roll).
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### rotateZ
 
@@ -178,7 +178,7 @@ Create a quaternion rotation around the Z axis (roll - tilt head left/right).
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The rotation quaternion. |
+| [`quat`](quat.md) | The rotation quaternion. |
 
 ### slerp
 
@@ -188,13 +188,13 @@ Spherical linear interpolation between two quaternions.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| `a` | `quat` | The start quaternion. |
-| `b` | `quat` | The end quaternion. |
+| `a` | [`quat`](quat.md) | The start quaternion. |
+| `b` | [`quat`](quat.md) | The end quaternion. |
 | `t` | `number` | Interpolation factor (0.0 to 1.0). |
 
 **Returns:**
 
 | Type | Description |
 | ---- | ----------- |
-| `quat` | The interpolated quaternion. |
+| [`quat`](quat.md) | The interpolated quaternion. |
 

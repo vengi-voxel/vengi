@@ -26,7 +26,7 @@ Open a file from the user's home path for reading or writing.
 
 | Type | Description |
 | ---- | ----------- |
-| `stream` | A stream object for reading/writing. |
+| [`stream`](stream.md) | A stream object for reading/writing. |
 
 ### sysopen
 
@@ -43,5 +43,5 @@ Open a file from an absolute path or relative to the current working directory.
 
 | Type | Description |
 | ---- | ----------- |
-| `stream` | A stream object for reading/writing. |
+| [`stream`](stream.md) | A stream object for reading/writing. |
 

@@ -13,6 +13,18 @@ namespace http {
 
 class RequestTest : public app::AbstractTest {};
 
+TEST_F(RequestTest, testBinaryBodyCopies) {
+	const uint8_t bytes[] = {'a', 0, 'b', 255};
+	Request request("http://localhost/", RequestType::POST);
+	ASSERT_TRUE(request.setBody(bytes, sizeof(bytes)));
+	const Request copy = request;
+	ASSERT_EQ(sizeof(bytes), copy.body().size());
+	EXPECT_EQ(0, memcmp(bytes, copy.body().data(), sizeof(bytes)));
+	ASSERT_TRUE(request.setBody(request.body().data(), request.body().size()));
+	EXPECT_EQ(sizeof(bytes), request.body().size());
+	EXPECT_EQ(0, memcmp(bytes, request.body().data(), sizeof(bytes)));
+}
+
 // disabled because it requires network access
 TEST_F(RequestTest, DISABLED_testGetRequest) {
 	if (!Request::supported()) {

@@ -15,18 +15,11 @@ HTTPMetricSender::HTTPMetricSender(const core::String &url, const core::String &
 }
 
 bool HTTPMetricSender::send(const char *buffer) const {
-	if (!_request.setBody(buffer)) {
-		Log::debug("Failed to set body");
+	http::Request request = _request;
+	if (!request.setBody(buffer)) {
 		return false;
 	}
-	io::NOPWriteStream stream;
-	int statusCode = -1;
-	if (!_request.execute(stream, &statusCode)) {
-		Log::debug("Failed to send metric %s - got status %i", buffer, statusCode);
-		return false;
-	}
-	Log::debug("Sent metric %s - got status: %i", buffer, statusCode);
-	return http::isValidStatusCode(statusCode);
+	return _client.execute(request) != 0;
 }
 
 bool HTTPMetricSender::init() {
@@ -35,6 +28,7 @@ bool HTTPMetricSender::init() {
 }
 
 void HTTPMetricSender::shutdown() {
+	_client.cancelAll();
 }
 
 } // namespace metric
