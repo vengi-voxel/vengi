@@ -752,8 +752,9 @@
         var Module = { preRun: [], postRun: [], noInitialRun: true, print: appendOutput, printErr: appendOutput };
         window.onerror = function (event) { appendOutput('Error: ' + event.message); };
     </script>
+    <script src="./coi-serviceworker.js"></script>
     {{{ SCRIPT }}}
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" crossorigin="anonymous"></script>
     <script>
 @CONVERT_FILE_FILTER_JS@
     </script>
