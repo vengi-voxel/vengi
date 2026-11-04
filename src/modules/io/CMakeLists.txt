@@ -108,6 +108,12 @@ set(USE_ZLIB ${ZLIB_FOUND} CACHE BOOL "Use zlib for zip compression" FORCE)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 target_compile_definitions(${LIB} PRIVATE MINIZ_NO_STDIO)
 
+if (EMSCRIPTEN)
+	set(FILESYSTEM_JS "${ROOT_DIR}/contrib/installer/emscripten/filesystem.js")
+	target_link_options(${LIB} INTERFACE "SHELL:--pre-js \"${FILESYSTEM_JS}\"")
+	set_property(TARGET ${LIB} APPEND PROPERTY INTERFACE_LINK_DEPENDS "${FILESYSTEM_JS}")
+endif()
+
 set(TEST_FILES
 	testio/iotest.txt
 	testio/iotest.zip
