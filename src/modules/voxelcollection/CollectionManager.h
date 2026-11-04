@@ -28,6 +28,8 @@ private:
 	ImageQueuePtr _imageQueue;
 	using VoxelSourceQueuePtr = core::SharedPtr<core::ConcurrentQueue<VoxelSource>>;
 	VoxelSourceQueuePtr _voxelSourceQueue;
+	using ResolvedSourceQueuePtr = core::SharedPtr<core::ConcurrentQueue<core::String>>;
+	ResolvedSourceQueuePtr _resolvedSourceQueue;
 	video::TexturePoolPtr _texturePool;
 	io::FilesystemPtr _filesystem;
 

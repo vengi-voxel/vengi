@@ -24,7 +24,8 @@ protected:
 		// _texturePool->init();
 		_mgr = core::make_shared<CollectionManager>(_testApp->filesystem(), _texturePool);
 		ASSERT_TRUE(_mgr->init());
-		ASSERT_TRUE(_mgr->setLocalDir(_testApp->filesystem()->homePath()));
+		_mgr->setLocalDir(_testApp->filesystem()->homePath());
+		ASSERT_EQ(_testApp->filesystem()->homePath(), _mgr->localDir());
 	}
 
 	virtual void TearDown() override {
@@ -33,12 +34,38 @@ protected:
 		_mgr = {};
 		app::AbstractTest::TearDown();
 	}
+
+	void checkEmptySourceCompletes(const char *json) {
+		const char *cacheFile = "github-test-empty-collection-master.json";
+		ASSERT_TRUE(_testApp->filesystem()->homeWrite(cacheFile, json));
+		VoxelSource source;
+		source.name = "Empty collection";
+		source.provider = "github";
+		source.github.repo = "test/empty-collection";
+		source.github.commit = "master";
+		_mgr->resolve(source, false);
+		ASSERT_TRUE(_mgr->resolved(source));
+		_mgr->update(0.0);
+		const auto iter = _mgr->voxelFilesMap().find(source.name);
+		ASSERT_NE(iter, _mgr->voxelFilesMap().end());
+		EXPECT_TRUE(iter->value.files.empty());
+		EXPECT_TRUE(iter->value.sorted);
+		EXPECT_TRUE(io::Filesystem::sysRemoveFile(_testApp->filesystem()->homeWritePath(cacheFile)));
+	}
 };
 
 TEST_F(CollectionManagerTest, DISABLED_testLocal) {
 	ASSERT_TRUE(_mgr->local());
 	_mgr->update(0.0, 1);
 	ASSERT_GT(_mgr->allEntries(), 0);
+}
+
+TEST_F(CollectionManagerTest, testEmptySourceCompletes) {
+	checkEmptySourceCompletes("{\"tree\": []}");
+}
+
+TEST_F(CollectionManagerTest, testInvalidSourceResponseCompletes) {
+	checkEmptySourceCompletes("{}");
 }
 
 TEST_F(CollectionManagerTest, DISABLED_testOnline) {

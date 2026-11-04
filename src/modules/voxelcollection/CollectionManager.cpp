@@ -30,6 +30,7 @@ CollectionManager::CollectionManager(const io::FilesystemPtr &filesystem, const 
 	_newVoxelFiles = core::make_shared<QueuePtr::value_type>();
 	_imageQueue = core::make_shared<ImageQueuePtr::value_type>();
 	_voxelSourceQueue = core::make_shared<VoxelSourceQueuePtr::value_type>();
+	_resolvedSourceQueue = core::make_shared<ResolvedSourceQueuePtr::value_type>();
 }
 
 CollectionManager::~CollectionManager() {
@@ -206,10 +207,11 @@ void CollectionManager::resolve(const VoxelSource &source, bool async) {
 	if (!_onlineResolvedSources.insert(source.name)) {
 		return;
 	}
-	auto func = [archive = _archive, voxelFiles = _newVoxelFiles, source]() {
+	auto func = [archive = _archive, voxelFiles = _newVoxelFiles, resolvedSources = _resolvedSourceQueue, source]() {
 		Downloader downloader;
 		const VoxelFiles &files = downloader.resolve(archive, source);
 		voxelFiles->push(files.begin(), files.end());
+		resolvedSources->push(source.name);
 	};
 	if (async) {
 		app::schedule(func);
@@ -227,6 +229,13 @@ bool CollectionManager::resolved(const VoxelSource &source) const {
 
 void CollectionManager::update(double nowSeconds, int n) {
 	_voxelSourceQueue->popAll(_sources);
+	core::String resolvedSource;
+	while (_resolvedSourceQueue->pop(resolvedSource)) {
+		if (!_voxelFilesMap.hasKey(resolvedSource)) {
+			VoxelCollection collection{{}, nowSeconds, true};
+			_voxelFilesMap.put(resolvedSource, collection);
+		}
+	}
 
 	image::ImagePtr image;
 	if (_imageQueue->pop(image)) {
