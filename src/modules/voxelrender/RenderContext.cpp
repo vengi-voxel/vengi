@@ -64,13 +64,22 @@ static bool initOitFrameBuffer(video::FrameBuffer &oitFrameBuffer, const glm::iv
 	return true;
 }
 
+static bool multisamplingRequested(int requestedSamples) {
+#ifdef __EMSCRIPTEN__
+	// Scene MSAA is implemented with GL_TEXTURE_2D_MULTISAMPLE. WebGL has no such target.
+	return false;
+#else
+	return requestedSamples > 1;
+#endif
+}
+
 bool RenderContext::init(const glm::ivec2 &size) {
 	video::FrameBufferConfig cfg;
 	cfg.dimension(size);
 
 	// Configure multisampling based on configuration variables
 	const core::VarPtr &multisampleSamplesVar = core::getVar(cfg::ClientMultiSampleSamples);
-	enableMultisampling = multisampleSamplesVar->intVal() > 1;
+	enableMultisampling = multisamplingRequested(multisampleSamplesVar->intVal());
 	multisampleSamples = multisampleSamplesVar->intVal();
 
 	if (enableMultisampling && multisampleSamples > 1) {
@@ -244,7 +253,7 @@ bool RenderContext::resize(const glm::ivec2 &size) {
 
 bool RenderContext::updateMultisampling() {
 	const core::VarPtr &multisampleSamplesVar = core::getVar(cfg::ClientMultiSampleSamples);
-	bool newEnableMultisampling = multisampleSamplesVar->intVal() > 1;
+	bool newEnableMultisampling = multisamplingRequested(multisampleSamplesVar->intVal());
 	int newMultisampleSamples = multisampleSamplesVar->intVal();
 
 	if (enableMultisampling != newEnableMultisampling || multisampleSamples != newMultisampleSamples) {
