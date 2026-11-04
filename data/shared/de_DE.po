@@ -2225,6 +2225,12 @@ msgid "Temporarily switch to erase mode while pen eraser is active"
 msgstr ""
 "Temporär in den Löschmodus wechseln, solange der Stift-Radierer aktiv ist"
 
+msgid "Emulate pen"
+msgstr ""
+
+msgid "Treat the primary pointer as a pen and map speed to pressure"
+msgstr ""
+
 msgid "Save the current viewport as screenshot"
 msgstr "Den aktuellen Ansichtsbereich als Screenshot speichern"
 
