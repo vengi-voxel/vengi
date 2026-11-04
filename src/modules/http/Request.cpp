@@ -61,7 +61,9 @@ void Request::addHeader(const core::String &key, const core::String &value) {
 }
 
 void Request::noCache() {
+#ifndef __EMSCRIPTEN__
 	addHeader("Cache-Control", "no-cache");
+#endif
 }
 
 bool Request::execute(io::WriteStream &stream, int *statusCode, Headers *outheaders) {

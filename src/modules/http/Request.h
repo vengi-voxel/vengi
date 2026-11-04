@@ -24,6 +24,10 @@ public:
 	bool setBody(const void *data, size_t size);
 	void addHeader(const core::String &key, const core::String &value);
 	bool execute(io::WriteStream &stream, int *statusCode = nullptr, Headers *outheaders = nullptr);
+	/**
+	 * @brief Ask native transports to revalidate cached responses. Browsers manage
+	 * their own cache; a Cache-Control request header can prevent CORS access.
+	 */
 	void noCache();
 
 	const Headers &headers() const;
