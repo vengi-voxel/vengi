@@ -12,8 +12,19 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         super().end_headers()
 
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET")
+        self.end_headers()
+
     def do_GET(self):
-        if self.path == "/slow":
+        if self.path == "/cors-no-cache":
+            self.send_response(400 if "Cache-Control" in self.headers else 200)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(b"no-cache")
+        elif self.path == "/slow":
             time.sleep(0.2)
             self.send_response(200)
             self.end_headers()
