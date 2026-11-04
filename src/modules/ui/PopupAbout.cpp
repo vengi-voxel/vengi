@@ -68,11 +68,16 @@ void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvail
 				if (ImGui::BeginTabItem(_("Credits"))) {
 					ImGui::URLItem("backward-cpp", "https://github.com/bombela/backward-cpp", urlIconWidth);
 					ImGui::URLItem("brotli", "https://github.com/google/brotli", urlIconWidth);
+					ImGui::URLItem("cgltf", "https://github.com/jkuhlmann/cgltf", urlIconWidth);
+					ImGui::URLItem("cjson", "https://github.com/DaveGamble/cJSON", urlIconWidth);
 #ifdef USE_CURL
 					ImGui::Text("libCURL");
 #endif
 					ImGui::URLItem("cute_aseprite", "https://github.com/RandyGaul/cute_headers", urlIconWidth);
 					ImGui::URLItem("dearimgui", "https://github.com/ocornut/imgui", urlIconWidth);
+#ifdef __EMSCRIPTEN__
+					ImGui::URLItem("emscripten-browser-file", "https://github.com/Armchair-Software/emscripten-browser-file", urlIconWidth);
+#endif
 					ImGui::URLItem("glm", "https://github.com/g-truc/glm", urlIconWidth);
 					ImGui::URLItem("gif-h", "https://github.com/charlietangora/gif-h.git", urlIconWidth);
 					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders",
@@ -88,14 +93,19 @@ void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvail
 					ImGui::URLItem("lua", "https://www.lua.org/", urlIconWidth);
 					ImGui::URLItem("lucide", "https://lucide.dev/", urlIconWidth);
 					ImGui::URLItem("meshoptimizer", "https://github.com/zeux/meshoptimizer", urlIconWidth);
+					ImGui::URLItem("minlzma", "https://github.com/ionescu007/minlzma", urlIconWidth);
+					ImGui::URLItem("natsort", "https://github.com/sourcefrog/natsort", urlIconWidth);
 					ImGui::URLItem("ogt_vox", "https://github.com/jpaver/opengametools", urlIconWidth);
 					ImGui::URLItem("polyvox", "http://www.volumesoffun.com/", urlIconWidth);
 					ImGui::URLItem("SDL3", "https://github.com/libsdl-org/SDL", urlIconWidth);
+					ImGui::URLItem("SimplexNoise", "https://github.com/simongeilfus/SimplexNoise", urlIconWidth);
 					ImGui::URLItem("stb/SOIL2", "https://github.com/SpartanJ/SOIL2", urlIconWidth);
 					ImGui::URLItem("tinygettext", "https://github.com/tinygettext/tinygettext/", urlIconWidth);
 					ImGui::URLItem("tinygltf", "https://github.com/syoyo/tinygltf", urlIconWidth);
 					ImGui::URLItem("tinyobjloader", "https://github.com/tinyobjloader/tinyobjloader", urlIconWidth);
+					ImGui::URLItem("tinyxml2", "https://github.com/leethomason/tinyxml2", urlIconWidth);
 					ImGui::URLItem("ufbx", "https://github.com/bqqbarbhg/ufbx", urlIconWidth);
+					ImGui::URLItem("ufbx_write", "https://github.com/bqqbarbhg/ufbx_write", urlIconWidth);
 #if defined(USE_DEFLATE)
 					ImGui::Text("libdeflate");
 #elif defined(USE_ZLIB)
