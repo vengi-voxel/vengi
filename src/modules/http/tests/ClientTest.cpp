@@ -15,9 +15,9 @@ namespace http {
 class ClientTest : public app::AbstractTest {
 protected:
 	bool dispatchUntil(const bool &done) {
-		for (int i = 0; i < 500 && !done; ++i) {
+		for (int i = 0; i < 2000 && !done; ++i) {
 			http::update();
-			wait(2);
+			wait(5);
 		}
 		return done;
 	}

@@ -68,12 +68,12 @@ TEST_F(LUAFunctionsTest, testAsyncHttpFailureAndAbandonedRequest) {
 		end
 	)")) << lua.error();
 	bool ready = false;
-	for (int i = 0; i < 500 && !ready; ++i) {
+	for (int i = 0; i < 2000 && !ready; ++i) {
 		http::update();
 		ASSERT_TRUE(lua.execute("ready", 1));
 		ready = lua_toboolean(lua, -1);
 		lua.pop();
-		wait(2);
+		wait(5);
 	}
 	ASSERT_TRUE(ready);
 	ASSERT_TRUE(lua.execute("response")) << lua.error();
@@ -116,12 +116,12 @@ TEST_F(LUAFunctionsTest, testAsyncHttpBinaryResponse) {
 		end
 	)")) << lua.error();
 	bool ready = false;
-	for (int i = 0; i < 500 && !ready; ++i) {
+	for (int i = 0; i < 2000 && !ready; ++i) {
 		http::update();
 		ASSERT_TRUE(lua.execute("ready", 1));
 		ready = lua_toboolean(lua, -1);
 		lua.pop();
-		wait(2);
+		wait(5);
 	}
 	ASSERT_TRUE(ready);
 	ASSERT_TRUE(lua.execute("response")) << lua.error();

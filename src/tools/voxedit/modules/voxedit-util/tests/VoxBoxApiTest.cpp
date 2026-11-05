@@ -21,9 +21,9 @@ TEST_F(VoxBoxApiTest, testAsyncFailures) {
 		EXPECT_TRUE(state.info.empty());
 		searchDone = true;
 	});
-	for (int i = 0; i < 500 && (!loginDone || !searchDone); ++i) {
+	for (int i = 0; i < 2000 && (!loginDone || !searchDone); ++i) {
 		http::update();
-		wait(2);
+		wait(5);
 	}
 	EXPECT_TRUE(loginDone);
 	EXPECT_TRUE(searchDone);

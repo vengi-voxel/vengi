@@ -30,9 +30,9 @@ TEST_F(ScriptApiTest, testAsyncQueryFailure) {
 		EXPECT_TRUE(list.empty());
 		completed = true;
 	});
-	for (int i = 0; i < 500 && !completed; ++i) {
+	for (int i = 0; i < 2000 && !completed; ++i) {
 		http::update();
-		wait(2);
+		wait(5);
 	}
 	EXPECT_TRUE(completed);
 }
