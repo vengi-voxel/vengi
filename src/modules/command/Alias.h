@@ -37,9 +37,10 @@ public:
 
 	/**
 	 * @brief Create or update an alias and register it as a command
+	 * @param help Optional help text; if empty, defaults to @c "Alias: <commands>"
 	 * @return @c false if the name is invalid or already used by a non-alias command or cvar
 	 */
-	static bool set(const core::String &name, const core::String &commands);
+	static bool set(const core::String &name, const core::String &commands, const core::String &help = "");
 	/**
 	 * @brief Remove an alias and unregister the command
 	 */

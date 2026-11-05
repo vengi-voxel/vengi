@@ -240,4 +240,14 @@ TEST_F(AliasTest, testBindableAsCommand) {
 	EXPECT_EQ(1, executed);
 }
 
+TEST_F(AliasTest, testCustomHelp) {
+	Command::registerCommand("testcmd")
+		.setHandler([](const CommandArgs &) {
+		});
+	ASSERT_TRUE(Alias::set("helped", "testcmd", "Custom alias help"));
+	const Command *cmd = Command::getCommand("helped");
+	ASSERT_NE(nullptr, cmd);
+	EXPECT_EQ("Custom alias help", cmd->help());
+}
+
 } // namespace command

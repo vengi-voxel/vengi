@@ -613,6 +613,29 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 	EXPECT_EQ(1, testVolume()->voxel(0, 0, 0).getColor());
 }
 
+TEST_F(SceneManagerTest, testSelectionToNewNode) {
+	const glm::ivec3 pos = testMins();
+	ASSERT_TRUE(testSetVoxel(pos, 1));
+	testSelect(pos, testMaxs());
+	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
+	const core::UUID sourceUUID = _sceneMgr->sceneGraph().uuid(sourceNodeId);
+	ASSERT_TRUE(_sceneMgr->hasSelection(sourceUUID));
+	const size_t nodeCountBefore = _sceneMgr->sceneGraph().size();
+
+	ASSERT_EQ(1, command::executeCommands("selectiontonewnode"));
+
+	EXPECT_EQ(nodeCountBefore + 1, _sceneMgr->sceneGraph().size());
+	EXPECT_FALSE(_sceneMgr->hasSelection(sourceUUID));
+	const int newNodeId = _sceneMgr->sceneGraph().activeNode();
+	EXPECT_NE(sourceNodeId, newNodeId);
+	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
+	ASSERT_NE(nullptr, newNode);
+	EXPECT_EQ(1, voxelutil::countVoxels(*newNode->volume()));
+	EXPECT_EQ(1, newNode->volume()->voxel(pos).getColor());
+	// Source voxels stay in place; only the selection is cleared
+	EXPECT_EQ(1, _sceneMgr->volume(sourceUUID)->voxel(pos).getColor());
+}
+
 TEST_F(SceneManagerTest, testExceedsMaxSuggestedVolumeSize) {
 	util::ScopedVarChange scoped(cfg::VoxEditMaxSuggestedVolumeSize, "32");
 	const voxel::Region region{0, 33};

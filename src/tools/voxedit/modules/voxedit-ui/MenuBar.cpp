@@ -151,6 +151,8 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 									   _sceneMgr->clipboardData(), &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as new node"), "pastenewnode",
 									   _sceneMgr->clipboardData(), &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_BOX, _("New model from selection"), "selectiontonewnode",
+									   hasSelection, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_CLIPBOARD_PASTE, _("Paste as stamp"), "stampbrushpaste",
 									   _sceneMgr->clipboardData(), &listener);
 			ImGui::Separator();

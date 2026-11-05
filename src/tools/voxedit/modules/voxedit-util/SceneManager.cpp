@@ -9,6 +9,7 @@
 #include "voxelrender/CameraMovement.h"
 
 #include "app/Async.h"
+#include "command/Alias.h"
 #include "command/CommandHandler.h"
 #include "core/ConfigVar.h"
 #include "app/I18N.h"
@@ -4377,10 +4378,12 @@ void SceneManager::construct() {
 			}
 		}).setHelp(_("Select all, nothing or invert")).setArgumentCompleter(command::valueCompleter({"all", "none", "invert"}));
 
-	command::Command::registerCommand("presentation")
-		.setHandler([] (const command::CommandArgs& args) {
-			command::Command::execute("hideall; animate 2000 true true");
-		}).setHelp(_("Cycle through all scene objects"));
+	// Built-in aliases (user .aliases can override these after construct)
+	command::Alias::set("presentation", "hideall; animate 2000 true true",
+						_("Cycle through all scene objects"));
+	// Unselect before pastenewnode - that command activates the new node
+	command::Alias::set("selectiontonewnode", "copy; select none; pastenewnode",
+						_("Create a new model node from the current selection"));
 
 	command::Command::registerCommand("align")
 		.setHandler([this] (const command::CommandArgs& args) {

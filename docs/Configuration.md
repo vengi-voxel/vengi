@@ -54,7 +54,7 @@ You can also get a list when doing `./vengi-app --help` on the command line.
 You can bind several commands to a single name. Aliases are persisted next to the cvars (`{appname}.aliases` in the same directory as `{appname}.vars`) and they are registered as commands, so they can be bound to keys.
 
 ```
-alias mynode "copy; pastenewnode; select none"
+alias mynode "copy; select none; pastenewnode"
 ```
 
 * `alias` lists all aliases

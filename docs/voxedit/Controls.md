@@ -20,7 +20,9 @@ You can also change the bindings in the console by using the `bind` command.
 
 To get a list of bindable commands, type the `cmdlist` command to the console and hit enter.
 
-You can also bind an [alias](../Configuration.md#aliases) that runs several commands at once (`alias mynode "copy; pastenewnode; select none"`).
+VoxEdit ships with a built-in `selectiontonewnode` alias (`copy; select none; pastenewnode`, bound to `ctrl+shift+n` in model mode) that creates a new model node from the current selection and clears the selection afterwards.
+
+You can also bind your own [alias](../Configuration.md#aliases) that runs several commands at once (`alias mynode "copy; select none; pastenewnode"`).
 
 ## Key bindings
 

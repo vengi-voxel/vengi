@@ -108,7 +108,7 @@ void Alias::shutdown() {
 	g_aliasExecutionDepth = 0;
 }
 
-bool Alias::set(const core::String &name, const core::String &commands) {
+bool Alias::set(const core::String &name, const core::String &commands, const core::String &help) {
 	if (!isValidName(name)) {
 		Log::error("Invalid alias name: %s", name.c_str());
 		return false;
@@ -131,11 +131,13 @@ bool Alias::set(const core::String &name, const core::String &commands) {
 		_aliases.put(name, commands);
 	}
 
+	const core::String &commandHelp =
+		help.empty() ? core::String::format("Alias: %s", commands.c_str()) : help;
 	Command::registerCommand(name)
 		.setHandler([name](const CommandArgs &) {
 			execute(name);
 		})
-		.setHelp(core::String::format("Alias: %s", commands.c_str()));
+		.setHelp(commandHelp);
 	return true;
 }
 
