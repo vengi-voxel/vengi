@@ -559,7 +559,7 @@ void SlicePanel::update(const char *id) {
 		if (_sceneMgr->exceedsMaxSuggestedVolumeSize(region)) {
 			_gizmoView = SliceView::None;
 			_gizmoPreview = nullptr;
-			ImGui::TextWrapped(
+			ImGui::TextWrapped("%s",
 				_("This model is larger than the suggested volume size. 2D editing is disabled."));
 			return;
 		}

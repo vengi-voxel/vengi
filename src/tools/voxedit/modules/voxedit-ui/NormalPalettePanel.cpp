@@ -398,7 +398,7 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			if (!populated && ImGui::DisabledButton(_("Add normal"), !_targetValid || _sceneMgr->isLocked())) {
 				applyNormal(node);
 			}
-			ImGui::TextWrapped(_("Direction edits affect every voxel using this entry."));
+			ImGui::TextWrapped("%s", _("Direction edits affect every voxel using this entry."));
 		}
 	}
 	if (!ImGui::IsAnyItemActive()) {

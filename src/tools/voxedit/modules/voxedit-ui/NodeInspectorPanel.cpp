@@ -341,7 +341,7 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 	if (ImGui::Checkbox(_("Long rotation"), &longRotation)) {
 		_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), keyFrameIdx, longRotation);
 	}
-	ImGui::TooltipText(_("Take the longer rotation path to the next keyframe. For a full turn, add an intermediate keyframe."));
+	ImGui::TooltipTextUnformatted(_("Take the longer rotation path to the next keyframe. For a full turn, add an intermediate keyframe."));
 	if (ImGui::IconCollapsingHeader(ICON_LC_CHART_LINE, _("Interpolation details"))) {
 		double p0 = 0.0;
 		double p1 = 0.0;
