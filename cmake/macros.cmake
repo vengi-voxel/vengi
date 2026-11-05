@@ -93,6 +93,14 @@ function(engine_install TARGET FILE DESTINATION INSTALL_DATA)
 	endif()
 endfunction()
 
+# Install the MSVC PDB next to the binary so shipped Windows builds can resolve crash stacktraces
+function(engine_install_pdb TARGET DESTINATION COMPONENT)
+	if (NOT MSVC)
+		return()
+	endif()
+	install(FILES $<TARGET_PDB_FILE:${TARGET}> DESTINATION ${DESTINATION} COMPONENT ${COMPONENT} OPTIONAL)
+endfunction()
+
 function(engine_generated_library TARGET)
 	add_library(${TARGET} OBJECT)
 	set_target_properties(${TARGET} PROPERTIES LINKER_LANGUAGE CXX)
@@ -177,6 +185,7 @@ function(engine_add_sharedlibrary)
 		set(INSTALL_LIB_DIR ".")
 	endif()
 	install(TARGETS ${_LIB_TARGET} DESTINATION ${INSTALL_LIB_DIR} COMPONENT ${_LIB_TARGET})
+	engine_install_pdb(${_LIB_TARGET} ${INSTALL_LIB_DIR} ${_LIB_TARGET})
 endfunction()
 
 #
@@ -496,6 +505,7 @@ function(engine_add_executable)
 	endif()
 	if (INSTALL_DATA)
 		install(TARGETS ${_EXE_TARGET} DESTINATION ${INSTALL_BIN_DIR} COMPONENT ${_EXE_TARGET})
+		engine_install_pdb(${_EXE_TARGET} ${INSTALL_BIN_DIR} ${_EXE_TARGET})
 	endif()
 	add_custom_target(${_EXE_TARGET}-run
 		COMMAND ${CMAKE_COMMAND} -E env

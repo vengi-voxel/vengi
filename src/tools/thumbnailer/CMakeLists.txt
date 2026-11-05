@@ -104,8 +104,7 @@ if (APPLE)
 
 	# Embed into the build-tree voxedit bundle for local runs without install/cpack.
 	if (TARGET voxedit)
-		add_dependencies(voxedit voxelthumb ${PROJECT_NAME})
-		add_custom_command(TARGET voxedit POST_BUILD
+		add_custom_target(embed-voxedit-qlthumbnailer ALL
 			COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_BUNDLE_DIR:voxedit>/Contents/PlugIns"
 			COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_BUNDLE_DIR:voxedit>/Contents/MacOS"
 			COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_BUNDLE_DIR:voxedit>/Contents/PlugIns/${_VOXTHUMB_APPEX}"
@@ -115,6 +114,7 @@ if (APPLE)
 			COMMAND ${CMAKE_COMMAND} -E copy
 				"$<TARGET_FILE:${PROJECT_NAME}>"
 				"$<TARGET_BUNDLE_DIR:voxedit>/Contents/MacOS/"
+			DEPENDS voxedit voxelthumb ${PROJECT_NAME}
 			COMMENT "Embed Quick Look thumbnail extension and helper into voxedit (build tree)"
 			VERBATIM
 		)
