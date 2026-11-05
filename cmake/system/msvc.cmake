@@ -15,8 +15,14 @@ endif()
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 # /INCREMENTAL:NO: disable incremental linking
-# /DEBUG: generate debug info (event in release builds)
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /DEBUG")
+# /DEBUG:FULL: standalone PDB that works without .obj files (required for shipped crash
+# stacktraces via dbghelp/backward-cpp). /DEBUG alone may emit FASTLINK PDBs.
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /DEBUG:FULL")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /DEBUG:FULL")
+set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /DEBUG:FULL")
+set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO} /INCREMENTAL:NO /DEBUG:FULL")
+set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO} /INCREMENTAL:NO /DEBUG:FULL")
+set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO "${CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO} /INCREMENTAL:NO /DEBUG:FULL")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy")
 
 # /wd4100: unreferenced formal parameter
@@ -28,7 +34,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL /Gy")
 # /wd4456: declaration of 'q' hides previous local declaration
 set(MSVC_DISABLED_WARNINGS "/wd4100 /wd4201 /wd4244 /wd4245 /wd4267 /wd4324 /wd4456")
 
-# /Zi: generate PDB file
+# /Zi: generate PDB file (also for Release so crashlogs can resolve symbols)
 # /Od: disable optimizations
 # /Oy-: disable Omit Frame Pointers
 # /Ox: maximum optimizations
@@ -37,11 +43,11 @@ set(MSVC_DISABLED_WARNINGS "/wd4100 /wd4201 /wd4244 /wd4245 /wd4267 /wd4324 /wd4
 # /errorReport:queue: queue error reports
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /errorReport:queue /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS ${MSVC_DISABLED_WARNINGS}")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Zi /Od /Oy- /D_DEBUG /DDEBUG=1")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /O2 /DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /Zi /O2 /DNDEBUG")
 # /EHsc: enable C++ exceptions
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /DWIN32 /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS /D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS ${MSVC_DISABLED_WARNINGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /Od /Oy- /D_DEBUG /DDEBUG=1")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi /O2 /DNDEBUG")
 
 # Visual Studio 2018 15.8 implemented conformant support for std::aligned_storage, but the conformant
 # support is only enabled when the following flag is passed, to avoid
