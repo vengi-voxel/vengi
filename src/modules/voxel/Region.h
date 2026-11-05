@@ -49,6 +49,9 @@ public:
 	bool operator==(const Region& rhs) const;
 	bool operator!=(const Region& rhs) const;
 
+	/** Fingerprint of the inclusive bounds for cache keys and similar. */
+	uint64_t hash() const;
+
 	/** Moves the Region by the amount specified. */
 	Region& operator+=(const glm::ivec3& amount);
 
@@ -391,6 +394,17 @@ inline bool Region::operator==(const Region& rhs) const {
  */
 inline bool Region::operator!=(const Region& rhs) const {
 	return !(*this == rhs);
+}
+
+inline uint64_t Region::hash() const {
+	uint64_t key = 0;
+	key = key * 1315423911u + (uint64_t)(uint32_t)_mins.x;
+	key = key * 1315423911u + (uint64_t)(uint32_t)_mins.y;
+	key = key * 1315423911u + (uint64_t)(uint32_t)_mins.z;
+	key = key * 1315423911u + (uint64_t)(uint32_t)_maxs.x;
+	key = key * 1315423911u + (uint64_t)(uint32_t)_maxs.y;
+	key = key * 1315423911u + (uint64_t)(uint32_t)_maxs.z;
+	return key;
 }
 
 inline bool Region::isOnBorderX(const int x) const {

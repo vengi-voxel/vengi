@@ -40,6 +40,14 @@ TEST_F(RegionTest, testContains) {
 	ASSERT_TRUE(region.containsRegion(region));
 }
 
+TEST_F(RegionTest, testHash) {
+	const voxel::Region a(0, 0, 0, 15, 15, 15);
+	const voxel::Region b(0, 0, 0, 15, 15, 15);
+	const voxel::Region c(1, 0, 0, 15, 15, 15);
+	EXPECT_EQ(a.hash(), b.hash());
+	EXPECT_NE(a.hash(), c.hash());
+}
+
 TEST_F(RegionTest, testRotateAxisY45) {
 	const glm::mat4 &mat = glm::eulerAngleY(glm::radians(45.0f));
 	const voxel::Region region(0, 3);
