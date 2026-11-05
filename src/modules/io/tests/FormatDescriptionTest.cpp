@@ -123,6 +123,26 @@ TEST_F(FormatDescriptionTest, testMimeType) {
 	EXPECT_EQ("image/vnd.adobe.photoshop", vendor.mimeType());
 }
 
+TEST_F(FormatDescriptionTest, testUti) {
+	const core::String prefix = "com.github.vengi";
+
+	const FormatDescription vengi{"Vengi", "", {"vengi"}, {}, 0u};
+	EXPECT_EQ("com.github.vengi.vengi", vengi.uti(prefix));
+
+	const FormatDescription kens{"Ken's Voxel Octree", "", {"kvo"}, {}, 0u};
+	EXPECT_EQ("com.github.vengi.kens-voxel-octree", kens.uti(prefix));
+
+	const FormatDescription aseprite{"aseprite", "image/aseprite", {"aseprite", "ase"}, {}, 0u};
+	EXPECT_EQ("com.github.vengi.aseprite", aseprite.uti(prefix));
+
+	// Shared system mimes must not become public.* claims - derive from the format name.
+	const FormatDescription obj{"Wavefront Object", "text/plain", {"obj"}, {}, 0u};
+	EXPECT_EQ("com.github.vengi.wavefront-object", obj.uti(prefix));
+
+	const FormatDescription png{"Portable Network Graphics", "image/png", {"png"}, {}, 0u};
+	EXPECT_EQ("com.github.vengi.portable-network-graphics", png.uti(prefix));
+}
+
 TEST_F(FormatDescriptionTest, testConvertToFilePattern) {
 	const FormatDescription desc1 = {"Name", "", {"ext1"}, {}, 0u};
 	const FormatDescription desc2 = {"Name", "", {"ext1", "ext2"}, {}, 0u};

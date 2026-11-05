@@ -41,6 +41,10 @@
         <array>
           <string>vengi</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.vengi</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -60,6 +64,10 @@
           <string>aseprite</string>
           <string>ase</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.aseprite</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -77,6 +85,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>qb</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.qubicle-binary</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -97,6 +109,10 @@
           <string>ben.json</string>
           <string>ben</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.benvoxel</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -114,6 +130,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vox</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.magicavoxel</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -133,6 +153,10 @@
         <array>
           <string>vox</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.trenchblocks</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -150,6 +174,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>voxa</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.anivoxel</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -169,6 +197,10 @@
         <array>
           <string>qbt</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.qubicle-binary-tree</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -186,6 +218,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>qbcl</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.qubicle-project</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -205,6 +241,10 @@
         <array>
           <string>vxt</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.sandbox-voxedit-tilemap</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -222,6 +262,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vxc</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.sandbox-voxedit-collection</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -241,6 +285,10 @@
         <array>
           <string>vxm</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.sandbox-voxedit-model</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -258,6 +306,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vxb</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.sandbox-voxedit-block</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -277,6 +329,10 @@
         <array>
           <string>bbmodel</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.blockbench</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -294,6 +350,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>crocotile</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.crocotile-3d</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -313,6 +373,10 @@
         <array>
           <string>vxr</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.sandbox-voxedit-hierarchy</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -330,6 +394,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>binvox</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.binvox</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -350,6 +418,10 @@
           <string>escn</string>
           <string>tscn</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.godot-scene</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -367,6 +439,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>gox</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.goxel</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -386,6 +462,10 @@
         <array>
           <string>txt</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.goxel-txt</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -404,6 +484,10 @@
         <array>
           <string>cub</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.cubeworld</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -421,6 +505,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>mts</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.luanti-minetest</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -441,6 +529,10 @@
           <string>mca</string>
           <string>mcr</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.minecraft-region</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -459,6 +551,10 @@
         <array>
           <string>dat</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.minecraft-level-dat</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -476,6 +572,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>mcworld</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.minecraft-mcworld</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -499,6 +599,10 @@
           <string>litematic</string>
           <string>bp</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.minecraft-schematic</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -516,6 +620,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>map</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quake-map</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -535,6 +643,10 @@
         <array>
           <string>bsp</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.ufo-alien-invasion</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -552,6 +664,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>bsp</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quake-1</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -571,6 +687,10 @@
         <array>
           <string>mdl</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quake-1-model</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -588,6 +708,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>md2</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quake-2-model</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -607,6 +731,10 @@
         <array>
           <string>md3</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quake-3-model</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -624,6 +752,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>fbx</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.fbx</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -643,6 +775,10 @@
         <array>
           <string>kenshape</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.kenshape</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -660,6 +796,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>3ds</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.autodesk-3d-studio</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -679,6 +819,10 @@
         <array>
           <string>csv</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.sproxel-csv</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -696,6 +840,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>xraw</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.magicavoxel-xraw</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -717,6 +865,10 @@
           <string>smd2</string>
           <string>smd3</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.starmade-blueprint</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -734,6 +886,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>smtpl</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.starmade-template</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -753,6 +909,10 @@
         <array>
           <string>scn</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.animatoon</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -770,6 +930,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vbx</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.voxelbuilder</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -789,6 +953,10 @@
         <array>
           <string>bin</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.teardown-bin</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -806,6 +974,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>blueprint</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.trove-blueprint</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -825,6 +997,10 @@
         <array>
           <string>we</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.luanti-world-edit</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -842,6 +1018,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>obj</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.wavefront-object</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -863,6 +1043,10 @@
           <string>glb</string>
           <string>vrm</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.gl-transmission-format</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -880,6 +1064,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>stl</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.standard-triangle-language</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -900,6 +1088,10 @@
           <string>ldr</string>
           <string>mpd</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.ldraw-model</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -919,6 +1111,10 @@
           <string>lxf</string>
           <string>lxfml</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.lego-digital-designer</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -937,6 +1133,10 @@
         <array>
           <string>io</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.bricklink-studio</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -954,6 +1154,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>ply</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.polygon-file-format</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -974,6 +1178,10 @@
           <string>gml</string>
           <string>xml</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.geography-markup-language</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -992,6 +1200,10 @@
         <array>
           <string>osm.json</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.openstreetmap-json</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1009,6 +1221,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>kvx</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.build-engine</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1029,6 +1245,10 @@
           <string>pcubes</string>
           <string>particubes</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.particubes</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1047,6 +1267,10 @@
         <array>
           <string>3zh</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.cubzh</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1064,6 +1288,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>b64</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.cubzh-world</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1084,6 +1312,10 @@
           <string>v3a</string>
           <string>v3b</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.voxel3d</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1102,6 +1334,10 @@
         <array>
           <string>thing</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.rooms-xyz-thing</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1119,6 +1355,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>kv6</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.aceofspades</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1140,6 +1380,10 @@
           <string>kvs</string>
           <string>kvn</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.kens-voxel-octree</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1157,6 +1401,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vxl</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.tiberian-sun</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1176,6 +1424,10 @@
         <array>
           <string>vxl</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.aceofspades</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1193,6 +1445,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>aos</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.aceofspades-workshop</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1212,6 +1468,10 @@
         <array>
           <string>qef</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.qubicle-exchange</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1229,6 +1489,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>csm</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.chronovox</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1248,6 +1512,10 @@
         <array>
           <string>nvm</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.nicks-voxel-model</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1265,6 +1533,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vox</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.slab6-vox</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1286,6 +1558,10 @@
           <string>vmax</string>
           <string>vmaxb</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.voxelmax</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1303,6 +1579,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>vcdx</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.voxelcdx</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1322,6 +1602,10 @@
         <array>
           <string>zip</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.spritestack</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1340,6 +1624,10 @@
         <array>
           <string>dat</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.veloren-terrain</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
@@ -1357,6 +1645,10 @@
         <key>CFBundleTypeExtensions</key>
         <array>
           <string>png</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.portable-network-graphics</string>
         </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
@@ -1377,10 +1669,1593 @@
           <string>mcskin</string>
           <string>png</string>
         </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.minecraft-skin</string>
+        </array>
         <key>CFBundleTypeRole</key>
         <string>Editor</string>
         <key>NSDocumentClass</key>
         <string>AppDocument</string>
+      </dict>
+    </array>
+    <key>UTExportedTypeDeclarations</key>
+    <array>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.vengi</string>
+        <key>UTTypeDescription</key>
+        <string>Vengi</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vengi</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-vengi</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.aseprite</string>
+        <key>UTTypeDescription</key>
+        <string>aseprite</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>aseprite</string>
+            <string>ase</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>image/aseprite</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.qubicle-binary</string>
+        <key>UTTypeDescription</key>
+        <string>Qubicle Binary</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>qb</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-qubicle-binary</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.benvoxel</string>
+        <key>UTTypeDescription</key>
+        <string>BenVoxel</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>ben.json</string>
+            <string>ben</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-benvoxel</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.magicavoxel</string>
+        <key>UTTypeDescription</key>
+        <string>MagicaVoxel</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vox</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-magicavoxel</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.trenchblocks</string>
+        <key>UTTypeDescription</key>
+        <string>Trenchblocks</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vox</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-trenchblocks</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.anivoxel</string>
+        <key>UTTypeDescription</key>
+        <string>anivoxel</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>voxa</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-anivoxel</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.qubicle-binary-tree</string>
+        <key>UTTypeDescription</key>
+        <string>Qubicle Binary Tree</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>qbt</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-qubicle-binary-tree</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.qubicle-project</string>
+        <key>UTTypeDescription</key>
+        <string>Qubicle Project</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>qbcl</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-qubicle-project</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.sandbox-voxedit-tilemap</string>
+        <key>UTTypeDescription</key>
+        <string>Sandbox VoxEdit Tilemap</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vxt</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-sandbox-voxedit-tilemap</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.sandbox-voxedit-collection</string>
+        <key>UTTypeDescription</key>
+        <string>Sandbox VoxEdit Collection</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vxc</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-sandbox-voxedit-collection</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.sandbox-voxedit-model</string>
+        <key>UTTypeDescription</key>
+        <string>Sandbox VoxEdit Model</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vxm</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-sandbox-voxedit-model</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.sandbox-voxedit-block</string>
+        <key>UTTypeDescription</key>
+        <string>Sandbox VoxEdit Block</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vxb</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-sandbox-voxedit-block</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.blockbench</string>
+        <key>UTTypeDescription</key>
+        <string>Blockbench</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>bbmodel</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-blockbench</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.crocotile-3d</string>
+        <key>UTTypeDescription</key>
+        <string>Crocotile 3D</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>crocotile</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-crocotile-3d</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.sandbox-voxedit-hierarchy</string>
+        <key>UTTypeDescription</key>
+        <string>Sandbox VoxEdit Hierarchy</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vxr</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-sandbox-voxedit-hierarchy</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.binvox</string>
+        <key>UTTypeDescription</key>
+        <string>BinVox</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>binvox</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-binvox</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.godot-scene</string>
+        <key>UTTypeDescription</key>
+        <string>Godot Scene</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>escn</string>
+            <string>tscn</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-godot-scene</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.goxel</string>
+        <key>UTTypeDescription</key>
+        <string>Goxel</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>gox</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-goxel</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.goxel-txt</string>
+        <key>UTTypeDescription</key>
+        <string>Goxel txt</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>txt</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>text/plain</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.cubeworld</string>
+        <key>UTTypeDescription</key>
+        <string>CubeWorld</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>cub</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-cubeworld</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.luanti-minetest</string>
+        <key>UTTypeDescription</key>
+        <string>Luanti (Minetest)</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>mts</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-luanti-minetest</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.minecraft-region</string>
+        <key>UTTypeDescription</key>
+        <string>Minecraft region</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>mca</string>
+            <string>mcr</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-minecraft-region</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.minecraft-level-dat</string>
+        <key>UTTypeDescription</key>
+        <string>Minecraft level dat</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>dat</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-minecraft-level-dat</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.minecraft-mcworld</string>
+        <key>UTTypeDescription</key>
+        <string>Minecraft mcworld</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>mcworld</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-minecraft-mcworld</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.minecraft-schematic</string>
+        <key>UTTypeDescription</key>
+        <string>Minecraft schematic</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>schematic</string>
+            <string>schem</string>
+            <string>nbt</string>
+            <string>litematic</string>
+            <string>bp</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-minecraft-schematic</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quake-map</string>
+        <key>UTTypeDescription</key>
+        <string>Quake Map</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>map</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quake-map</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.ufo-alien-invasion</string>
+        <key>UTTypeDescription</key>
+        <string>UFO:Alien Invasion</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>bsp</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-ufo-alien-invasion</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quake-1</string>
+        <key>UTTypeDescription</key>
+        <string>Quake 1</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>bsp</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quake-1</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quake-1-model</string>
+        <key>UTTypeDescription</key>
+        <string>Quake 1 Model</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>mdl</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quake-1-model</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quake-2-model</string>
+        <key>UTTypeDescription</key>
+        <string>Quake 2 Model</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>md2</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quake-2-model</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quake-3-model</string>
+        <key>UTTypeDescription</key>
+        <string>Quake 3 Model</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>md3</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quake-3-model</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.fbx</string>
+        <key>UTTypeDescription</key>
+        <string>FBX</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>fbx</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-fbx</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.kenshape</string>
+        <key>UTTypeDescription</key>
+        <string>KenShape</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>kenshape</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-kenshape</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.autodesk-3d-studio</string>
+        <key>UTTypeDescription</key>
+        <string>Autodesk 3D Studio</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>3ds</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-autodesk-3d-studio</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.sproxel-csv</string>
+        <key>UTTypeDescription</key>
+        <string>Sproxel csv</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>csv</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>text/csv</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.magicavoxel-xraw</string>
+        <key>UTTypeDescription</key>
+        <string>Magicavoxel XRAW</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>xraw</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-magicavoxel-xraw</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.starmade-blueprint</string>
+        <key>UTTypeDescription</key>
+        <string>StarMade Blueprint</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>sment</string>
+            <string>smd2</string>
+            <string>smd3</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-starmade-blueprint</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.starmade-template</string>
+        <key>UTTypeDescription</key>
+        <string>StarMade Template</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>smtpl</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-starmade-template</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.animatoon</string>
+        <key>UTTypeDescription</key>
+        <string>AnimaToon</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>scn</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-animatoon</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.voxelbuilder</string>
+        <key>UTTypeDescription</key>
+        <string>VoxelBuilder</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vbx</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-voxelbuilder</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.teardown-bin</string>
+        <key>UTTypeDescription</key>
+        <string>Teardown bin</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>bin</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-teardown-bin</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.trove-blueprint</string>
+        <key>UTTypeDescription</key>
+        <string>Trove Blueprint</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>blueprint</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-trove-blueprint</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.luanti-world-edit</string>
+        <key>UTTypeDescription</key>
+        <string>Luanti World Edit</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>we</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-luanti-world-edit</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.wavefront-object</string>
+        <key>UTTypeDescription</key>
+        <string>Wavefront Object</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>obj</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>text/plain</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.gl-transmission-format</string>
+        <key>UTTypeDescription</key>
+        <string>GL Transmission Format</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>gltf</string>
+            <string>glb</string>
+            <string>vrm</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-gl-transmission-format</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.standard-triangle-language</string>
+        <key>UTTypeDescription</key>
+        <string>Standard Triangle Language</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>stl</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-standard-triangle-language</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.ldraw-model</string>
+        <key>UTTypeDescription</key>
+        <string>LDraw Model</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>ldr</string>
+            <string>mpd</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>text/plain</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.lego-digital-designer</string>
+        <key>UTTypeDescription</key>
+        <string>LEGO Digital Designer</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>lxf</string>
+            <string>lxfml</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/xml</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.bricklink-studio</string>
+        <key>UTTypeDescription</key>
+        <string>BrickLink Studio</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>io</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-bricklink-studio</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.polygon-file-format</string>
+        <key>UTTypeDescription</key>
+        <string>Polygon File Format</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>ply</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-polygon-file-format</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.geography-markup-language</string>
+        <key>UTTypeDescription</key>
+        <string>Geography Markup Language</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>gml</string>
+            <string>xml</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-geography-markup-language</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.openstreetmap-json</string>
+        <key>UTTypeDescription</key>
+        <string>OpenStreetMap JSON</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>osm.json</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-openstreetmap-json</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.build-engine</string>
+        <key>UTTypeDescription</key>
+        <string>Build engine</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>kvx</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-build-engine</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.particubes</string>
+        <key>UTTypeDescription</key>
+        <string>Particubes</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>pcubes</string>
+            <string>particubes</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-particubes</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.cubzh</string>
+        <key>UTTypeDescription</key>
+        <string>Cubzh</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>3zh</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-cubzh</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.cubzh-world</string>
+        <key>UTTypeDescription</key>
+        <string>Cubzh World</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>b64</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-cubzh-world</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.voxel3d</string>
+        <key>UTTypeDescription</key>
+        <string>Voxel3D</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>v3a</string>
+            <string>v3b</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-voxel3d</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.rooms-xyz-thing</string>
+        <key>UTTypeDescription</key>
+        <string>Rooms.xyz Thing</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>thing</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-rooms-xyz-thing</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.aceofspades</string>
+        <key>UTTypeDescription</key>
+        <string>AceOfSpades</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>kv6</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-aceofspades</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.kens-voxel-octree</string>
+        <key>UTTypeDescription</key>
+        <string>Ken's Voxel Octree</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>kvo</string>
+            <string>kvs</string>
+            <string>kvn</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-kens-voxel-octree</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.tiberian-sun</string>
+        <key>UTTypeDescription</key>
+        <string>Tiberian Sun</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vxl</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-tiberian-sun</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.aceofspades</string>
+        <key>UTTypeDescription</key>
+        <string>AceOfSpades</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vxl</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-aceofspades</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.aceofspades-workshop</string>
+        <key>UTTypeDescription</key>
+        <string>AceOfSpades Workshop</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>aos</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-aceofspades-workshop</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.qubicle-exchange</string>
+        <key>UTTypeDescription</key>
+        <string>Qubicle Exchange</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>qef</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>text/plain</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.chronovox</string>
+        <key>UTTypeDescription</key>
+        <string>Chronovox</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>csm</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-chronovox</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.nicks-voxel-model</string>
+        <key>UTTypeDescription</key>
+        <string>Nicks Voxel Model</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>nvm</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-nicks-voxel-model</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.slab6-vox</string>
+        <key>UTTypeDescription</key>
+        <string>SLAB6 vox</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vox</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-slab6-vox</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.voxelmax</string>
+        <key>UTTypeDescription</key>
+        <string>VoxelMax</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vmax.zip</string>
+            <string>vmax</string>
+            <string>vmaxb</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-voxelmax</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.voxelcdx</string>
+        <key>UTTypeDescription</key>
+        <string>VoxelCdx</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>vcdx</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-voxelcdx</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.spritestack</string>
+        <key>UTTypeDescription</key>
+        <string>SpriteStack</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>zip</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-spritestack</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.veloren-terrain</string>
+        <key>UTTypeDescription</key>
+        <string>Veloren terrain</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>dat</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-veloren-terrain</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.portable-network-graphics</string>
+        <key>UTTypeDescription</key>
+        <string>Portable Network Graphics</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>png</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>image/png</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.minecraft-skin</string>
+        <key>UTTypeDescription</key>
+        <string>Minecraft skin</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>mcskin</string>
+            <string>png</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-minecraft-skin</string>
+          </array>
+        </dict>
       </dict>
     </array>
   </dict>

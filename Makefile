@@ -283,6 +283,9 @@ contrib/installer/linux/x-voxel.xml: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --mimeinfo > $@
 	$(Q)contrib/installer/linux/mimetypes.py
 
+contrib/installer/osx/thumbnailer.plist.in: formatprinter
+	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --qlthumbnail > $@
+
 contrib/installer/osx/%.plist.in: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --plist > $@
 
@@ -290,7 +293,7 @@ contrib/installer/linux/%.man.in: formatprinter
 	$(Q)$(call EXEC_PATH,formatprinter) --language en_GB --manpage $* > $@
 
 manpages: contrib/installer/linux/voxconvert.man.in contrib/installer/linux/palconvert.man.in contrib/installer/linux/thumbnailer.man.in contrib/installer/linux/application.man.in
-plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit.plist.in
+plists: contrib/installer/osx/application.plist.in contrib/installer/osx/voxedit.plist.in contrib/installer/osx/thumbnailer.plist.in
 formats: manpages plists tools/html/data.js contrib/installer/linux/x-voxel.xml docs/Formats.md contrib/installer/windows/wixpatch.xml
 metainfo:
 	$(Q)contrib/installer/linux/metainfo.py contrib/installer/linux/io.github.vengi_voxel.vengi.voxedit.metainfo.xml docs/CHANGELOG.md

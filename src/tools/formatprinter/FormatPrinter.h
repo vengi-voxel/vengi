@@ -25,13 +25,17 @@ private:
 	void printManPageFormats(const core::String& app, bool save);
 	void printManPage(const core::String &app);
 	void printApplicationPlist();
+	void printThumbnailerPlist();
 	void printInstallerWix();
 	void printMagic();
 	void printLuaApiMarkdown();
+	void printUtiDeclaration(const io::FormatDescription &desc);
+	void printSupportedContentTypes();
 
 	core::StringSet _varsAtStartup;
 	core::StringSet _uniqueMimetypes;
 	core::String uniqueMimetype(const io::FormatDescription &desc);
+	core::String uniqueUti(const io::FormatDescription &desc);
 
 public:
 	FormatPrinter(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);

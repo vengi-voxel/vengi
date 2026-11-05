@@ -123,14 +123,13 @@ const FormatDescription *lua() {
 
 const FormatDescription FormatDescription::END = {"", "", {}, {}, 0u};
 
-core::String FormatDescription::mimeType() const {
-	if (!mimetype.empty()) {
-		return mimetype;
-	}
-	// RFC 6838 restricted-name: letters, digits and hyphens. Separators in the
-	// format name become a single hyphen. Apostrophes and other punctuation are
-	// dropped so names like "Ken's Voxel Octree" stay a valid subtype.
-	const core::String lname = name.toLower();
+namespace {
+
+// RFC 6838 restricted-name: letters, digits and hyphens. Separators in the
+// format name become a single hyphen. Apostrophes and other punctuation are
+// dropped so names like "Ken's Voxel Octree" stay a valid subtype.
+core::String formatNameSubtype(const core::String &formatName) {
+	const core::String lname = formatName.toLower();
 	core::String subtype;
 	subtype.reserve(lname.size());
 	bool pendingHyphen = false;
@@ -146,10 +145,45 @@ core::String FormatDescription::mimeType() const {
 			pendingHyphen = true;
 		}
 	}
+	return subtype;
+}
+
+bool isSharedSystemMime(const core::String &mime) {
+	return mime == "image/png" || mime == "image/jpeg" || mime == "image/gif" || mime == "image/webp" ||
+		   mime == "text/plain" || mime == "text/csv" || mime == "application/xml" || mime == "application/json" ||
+		   mime == "application/zip" || mime == "application/octet-stream";
+}
+
+} // namespace
+
+core::String FormatDescription::mimeType() const {
+	if (!mimetype.empty()) {
+		return mimetype;
+	}
+	const core::String subtype = formatNameSubtype(name);
 	if (subtype.empty()) {
 		return "application/octet-stream";
 	}
 	return core::String::format("application/x-%s", subtype.c_str());
+}
+
+core::String FormatDescription::uti(const core::String &prefix) const {
+	core::String subtype;
+	const core::String mime = mimeType();
+	if (core::string::startsWith(mime, "application/x-")) {
+		subtype = mime.substr(14);
+	} else if (!isSharedSystemMime(mime) && core::string::startsWith(mime, "image/")) {
+		subtype = mime.substr(6);
+	} else if (!isSharedSystemMime(mime) && core::string::startsWith(mime, "application/")) {
+		subtype = mime.substr(12);
+	}
+	if (subtype.empty()) {
+		subtype = formatNameSubtype(name);
+	}
+	if (subtype.empty()) {
+		subtype = "unknown";
+	}
+	return core::String::format("%s.%s", prefix.c_str(), subtype.c_str());
 }
 
 core::String FormatDescription::mainExtension(bool includeDot) const {
