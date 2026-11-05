@@ -179,8 +179,10 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("All"), "select all", true, &listener);
 			ImGui::Separator();
 			ImGui::CommandIconMenuItem(ICON_LC_PAINTBRUSH, _("Paint selection"), "colorselected", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select voxels by color"), "selectcolors", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Deselect by color"), "deselectcolor", true, &listener);
-			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select by color"), "selectonlycolor", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Keep only color in selection"), "selectonlycolor", true, &listener);
+			ImGui::CommandIconMenuItem(ICON_LC_TRASH, _("Delete voxels by color"), "deletecolors", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Edges"), "selectonlyedges", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Wall Edges"), "selectonlywalledges", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select Only Corners"), "selectonlycorners", true, &listener);

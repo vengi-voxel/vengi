@@ -54,6 +54,24 @@ void BrushPanelPaint::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		ImGui::TooltipTextUnformatted(_("Each voxel has a 1 in N chance to be varied"));
 	}
 
+	if (paintMode == PaintBrush::PaintMode::Random) {
+		if (brush.hasColorPool()) {
+			ImGui::Text(_("Random pool: %i selected colors"), (int)brush.colorPool().size());
+			ImGui::TooltipTextUnformatted(_("Multi-select colors in the palette panel to limit Random painting to that pool"));
+		} else {
+			ImGui::TextUnformatted(_("Random pool: full palette"));
+			ImGui::TooltipTextUnformatted(_("Multi-select two or more colors in the palette panel to limit Random painting"));
+		}
+	}
+
+	if (brush.hasColorPool()) {
+		bool mask = brush.maskToColorPool();
+		if (ImGui::Checkbox(_("Only selected colors"), &mask)) {
+			brush.setMaskToColorPool(mask);
+		}
+		ImGui::TooltipTextUnformatted(_("Skip voxels whose current color is outside the palette multi-selection"));
+	}
+
 	brushpanel::aabbBrushOptions(listener, brush);
 
 	const bool softMode = paintMode == PaintBrush::PaintMode::Blend || paintMode == PaintBrush::PaintMode::Blur;

@@ -48,6 +48,19 @@ static bool dragAndDropSortColors() {
 	return ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
 }
 
+core::Buffer<uint8_t> PalettePanel::selectedIndicesBuffer() const {
+	core::Buffer<uint8_t> indices;
+	indices.reserve(_selectedIndices.size());
+	for (const auto &e : _selectedIndices) {
+		indices.push_back(e->key);
+	}
+	return indices;
+}
+
+void PalettePanel::syncPaletteColorSelection() {
+	_sceneMgr->setPaletteColorSelection(selectedIndicesBuffer());
+}
+
 void PalettePanel::pasteColor(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, bool selection) {
 	if (!_hasCopiedColor || _sceneMgr->isLocked()) {
 		return;
@@ -235,42 +248,71 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					_sceneMgr->nodeRemoveColor(node.uuid(), paletteColorIdx);
 					_selectedIndices.remove(paletteColorIdx);
 					_selectedIndicesLast = -1;
+					syncPaletteColorSelection();
 				}
 			} else {
-				if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Reduce to selected"))) {
+				const core::Buffer<uint8_t> selected = selectedIndicesBuffer();
+				ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select voxels of selected colors"), "selectcolors", true, &listener);
+				ImGui::CommandIconMenuItem(ICON_LC_SCAN_SEARCH, _("Keep only selected colors in selection"), "selectonlycolor", true, &listener);
+				ImGui::CommandIconMenuItem(ICON_LC_ERASER, _("Deselect voxels of selected colors"), "deselectcolor", true, &listener);
+				ImGui::CommandIconMenuItem(ICON_LC_TRASH, _("Delete voxels of selected colors"), "deletecolors", true, &listener);
+				ImGui::Separator();
+				if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Reduce to clicked color"))) {
 					core::Buffer<uint8_t> srcIndiced;
-					srcIndiced.reserve(_selectedIndices.size());
-					for (const auto &e : _selectedIndices) {
-						if (e->key == paletteColorIdx) {
+					srcIndiced.reserve(selected.size());
+					for (uint8_t idx : selected) {
+						if (idx == paletteColorIdx) {
 							continue;
 						}
-						srcIndiced.push_back(e->key);
+						srcIndiced.push_back(idx);
 					}
 					_sceneMgr->nodeReduceColors(node.uuid(), srcIndiced, paletteColorIdx);
+					_selectedIndices.clear();
+					_selectedIndices.insert(paletteColorIdx);
+					_selectedIndicesLast = -1;
+					syncPaletteColorSelection();
 				}
+				ImGui::TooltipTextUnformatted(_("Merge every other selected color into the clicked slot and remaps those voxels"));
 				if (ImGui::IconMenuItem(ICON_LC_SHUFFLE, _("Randomize selected colors"))) {
 					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "randomizecolors");
 					math::Random random;
-					for (const auto &e : _selectedIndices) {
-						const uint8_t idx = e->key;
+					for (uint8_t idx : selected) {
 						const glm::vec4 randomColor(random.randomf(), random.randomf(), random.randomf(), 1.0f);
 						_sceneMgr->nodeSetColor(node.uuid(), idx, color::getRGBA(randomColor));
 					}
 				}
+				if (ImGui::IconMenuItem(ICON_LC_BLEND, _("Gradient across selected colors"))) {
+					_sceneMgr->nodeGradientColors(node.uuid(), selected);
+				}
+				ImGui::TooltipTextUnformatted(_("Interpolate colors between the first and last selected slots in palette order"));
+				if (ImGui::BeginIconMenu(ICON_LC_SUN, _("Adjust selected colors"))) {
+					if (ImGui::IconMenuItem(ICON_LC_SUN, _("Brighter"))) {
+						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.2f, 0.0f, 0, 0);
+					}
+					if (ImGui::IconMenuItem(ICON_LC_MOON, _("Darker"))) {
+						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.2f, 0, 0);
+					}
+					if (ImGui::IconMenuItem(ICON_LC_FLAME, _("Warmer"))) {
+						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.0f, 10, 0);
+					}
+					if (ImGui::IconMenuItem(ICON_LC_SNOWFLAKE, _("Colder"))) {
+						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.0f, 0, 10);
+					}
+					ImGui::EndMenu();
+				}
 				if (ImGui::BeginIconMenu(ICON_LC_MINIMIZE_2, _("Quantize selected colors"))) {
-					const int maxTarget = (int)_selectedIndices.size() - 1;
+					const int maxTarget = (int)selected.size() - 1;
 					if (_quantizeTargetCount > maxTarget) {
 						_quantizeTargetCount = maxTarget;
 					}
 					ImGui::SliderInt(_("Target colors"), &_quantizeTargetCount, 1, maxTarget);
 					if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply"))) {
-						core::Buffer<uint8_t> indices;
-						indices.reserve(_selectedIndices.size());
-						for (const auto &e : _selectedIndices) {
-							indices.push_back(e->key);
-						}
-						_sceneMgr->nodeQuantizeColors(node.uuid(), indices, _quantizeTargetCount);
+						_sceneMgr->nodeQuantizeColors(node.uuid(), selected, _quantizeTargetCount);
+						_selectedIndices.clear();
+						_selectedIndicesLast = -1;
+						syncPaletteColorSelection();
 					}
+					ImGui::TooltipTextUnformatted(_("Merge similar selected colors, remap voxels, then clear the selection"));
 					ImGui::EndMenu();
 				}
 			}
@@ -353,6 +395,7 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 						_selectedIndices.insert(paletteColorIdx);
 					}
 					_selectedIndicesLast = palettePanelIdx;
+					syncPaletteColorSelection();
 				} else if (ImGui::IsKeyDown(ImGuiMod_Shift) && _selectedIndicesLast != -1) {
 					const int start = core_min(_selectedIndicesLast, palettePanelIdx);
 					const int end = core_max(_selectedIndicesLast, palettePanelIdx);
@@ -361,11 +404,13 @@ void PalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float content
 							_selectedIndices.insert(palette.view().uiIndex(i));
 						}
 					}
+					syncPaletteColorSelection();
 				} else {
 					_selectedIndicesLast = palettePanelIdx;
 					_selectedIndices.clear();
 					_selectedIndices.insert(paletteColorIdx);
 					_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(palette, paletteColorIdx));
+					syncPaletteColorSelection();
 				}
 			}
 

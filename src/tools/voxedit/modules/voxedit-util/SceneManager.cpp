@@ -399,6 +399,15 @@ void SceneManager::nodeGroupColorSelected(uint8_t colorIndex) {
 }
 
 void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMatching) {
+	core::Buffer<uint8_t> indices;
+	indices.push_back(colorIndex);
+	nodeGroupFilterSelection(indices, deselectMatching);
+}
+
+void SceneManager::nodeGroupFilterSelection(const core::Buffer<uint8_t> &colorIndices, bool deselectMatching) {
+	if (colorIndices.empty()) {
+		return;
+	}
 	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
 		if (!node.isModelNode()) {
 			return;
@@ -412,7 +421,13 @@ void SceneManager::nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMat
 			return;
 		}
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const bool matches = voxel.getColor() == colorIndex;
+			bool matches = false;
+			for (uint8_t colorIndex : colorIndices) {
+				if (voxel.getColor() == colorIndex) {
+					matches = true;
+					break;
+				}
+			}
 			if (matches == deselectMatching) {
 				voxel::Voxel updated = voxel;
 				updated.setFlags(voxel.getFlags() & ~voxel::FlagOutline);
@@ -427,8 +442,74 @@ void SceneManager::nodeGroupDeselectColor(uint8_t colorIndex) {
 	nodeGroupFilterSelection(colorIndex, true);
 }
 
+void SceneManager::nodeGroupDeselectColors(const core::Buffer<uint8_t> &colorIndices) {
+	nodeGroupFilterSelection(colorIndices, true);
+}
+
 void SceneManager::nodeGroupSelectOnlyColor(uint8_t colorIndex) {
 	nodeGroupFilterSelection(colorIndex, false);
+}
+
+void SceneManager::nodeGroupSelectOnlyColors(const core::Buffer<uint8_t> &colorIndices) {
+	nodeGroupFilterSelection(colorIndices, false);
+}
+
+void SceneManager::nodeGroupSelectColors(const core::Buffer<uint8_t> &colorIndices) {
+	if (colorIndices.empty()) {
+		return;
+	}
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
+			return;
+		}
+		voxel::RawVolume *v = node.volume();
+		if (v == nullptr) {
+			return;
+		}
+		const voxel::Region &region = v->region();
+		node.clearSelection();
+		voxelutil::visitVolume(*v, region, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			for (uint8_t colorIndex : colorIndices) {
+				if (voxel.getColor() == colorIndex) {
+					voxel::Voxel updated = voxel;
+					updated.setFlags(voxel.getFlags() | voxel::FlagOutline);
+					v->setVoxel(x, y, z, updated);
+					break;
+				}
+			}
+		}, voxelutil::VisitSolid());
+		modified(node.uuid(), region, SceneModifiedFlags::NoUndo);
+	});
+}
+
+void SceneManager::nodeGroupDeleteColors(const core::Buffer<uint8_t> &colorIndices) {
+	if (colorIndices.empty()) {
+		return;
+	}
+	// Group multi-node deletes into one undo step (same intent as other destructive edits).
+	memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "deletecolors");
+	nodeForeachGroup([&](scenegraph::SceneGraphNode &node) {
+		if (!node.isModelNode()) {
+			return;
+		}
+		voxel::RawVolume *v = node.volume();
+		if (v == nullptr) {
+			return;
+		}
+		voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
+		auto func = [&wrapper, &colorIndices](int x, int y, int z, const voxel::Voxel &voxel) {
+			for (uint8_t colorIndex : colorIndices) {
+				if (voxel.getColor() == colorIndex) {
+					wrapper.setVoxel(x, y, z, voxel::Voxel());
+					break;
+				}
+			}
+		};
+		voxelutil::visitVolumeParallel(wrapper, func);
+		if (wrapper.dirtyRegion().isValid()) {
+			modified(node.uuid(), wrapper.dirtyRegion());
+		}
+	});
 }
 
 void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
@@ -1685,6 +1766,27 @@ palette::Palette &SceneManager::activePalette() const {
 		return _sceneGraph.firstPalette();
 	}
 	return _sceneGraph.node(nodeId).palette();
+}
+
+void SceneManager::setPaletteColorSelection(const core::Buffer<uint8_t> &indices) {
+	_paletteColorSelection = indices;
+	if (_modifier == nullptr) {
+		return;
+	}
+	PaintBrush &paintBrush = _modifier->paintBrush();
+	if (indices.size() > 1) {
+		paintBrush.setColorPool(indices);
+	} else {
+		paintBrush.clearColorPool();
+	}
+}
+
+const core::Buffer<uint8_t> &SceneManager::paletteColorSelection() const {
+	return _paletteColorSelection;
+}
+
+bool SceneManager::hasPaletteColorMultiSelection() const {
+	return _paletteColorSelection.size() > 1;
 }
 
 bool SceneManager::setActivePalette(const palette::Palette &palette, bool searchBestColors) {
@@ -4552,13 +4654,43 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("deselectcolor")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupDeselectColor(_modifier->cursorVoxel().getColor());
-		}).setHelp(_("Deselect all voxels matching the active palette color"));
+			if (hasPaletteColorMultiSelection()) {
+				nodeGroupDeselectColors(_paletteColorSelection);
+			} else {
+				nodeGroupDeselectColor(_modifier->cursorVoxel().getColor());
+			}
+		}).setHelp(_("Deselect all voxels matching the active palette color, or any multi-selected palette colors"));
 
 	command::Command::registerCommand("selectonlycolor")
 		.setHandler([&] (const command::CommandArgs& args) {
-			nodeGroupSelectOnlyColor(_modifier->cursorVoxel().getColor());
-		}).setHelp(_("Deselect all voxels not matching the active palette color"));
+			if (hasPaletteColorMultiSelection()) {
+				nodeGroupSelectOnlyColors(_paletteColorSelection);
+			} else {
+				nodeGroupSelectOnlyColor(_modifier->cursorVoxel().getColor());
+			}
+		}).setHelp(_("Deselect all voxels not matching the active palette color, or keep voxels matching any multi-selected palette colors"));
+
+	command::Command::registerCommand("selectcolors")
+		.setHandler([&] (const command::CommandArgs& args) {
+			if (hasPaletteColorMultiSelection()) {
+				nodeGroupSelectColors(_paletteColorSelection);
+			} else {
+				core::Buffer<uint8_t> indices;
+				indices.push_back(_modifier->cursorVoxel().getColor());
+				nodeGroupSelectColors(indices);
+			}
+		}).setHelp(_("Select all voxels matching the active palette color, or any multi-selected palette colors"));
+
+	command::Command::registerCommand("deletecolors")
+		.setHandler([&] (const command::CommandArgs& args) {
+			if (hasPaletteColorMultiSelection()) {
+				nodeGroupDeleteColors(_paletteColorSelection);
+			} else {
+				core::Buffer<uint8_t> indices;
+				indices.push_back(_modifier->cursorVoxel().getColor());
+				nodeGroupDeleteColors(indices);
+			}
+		}).setHelp(_("Delete all voxels matching the active palette color, or any multi-selected palette colors"));
 
 	command::Command::registerCommand("selectonlyedges")
 		.setHandler([&] (const command::CommandArgs& args) {
@@ -7864,6 +7996,101 @@ bool SceneManager::nodeQuantizeColors(int nodeId, const core::Buffer<uint8_t> &s
 		return nodeQuantizeColors(*node, selectedIndices, targetColorCount);
 	}
 	return false;
+}
+
+bool SceneManager::nodeAdjustColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &indices, float brighterFactor,
+									float darkerFactor, int warmer, int colder) {
+	beforeSceneMutation();
+	if (isLocked() || indices.empty()) {
+		return false;
+	}
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
+	if (node == nullptr) {
+		return false;
+	}
+	palette::Palette &palette = node->palette();
+	bool changed = false;
+	for (uint8_t idx : indices) {
+		if (idx >= palette.colorCount()) {
+			continue;
+		}
+		color::RGBA rgba = palette.color(idx);
+		if (rgba.a == 0) {
+			continue;
+		}
+		if (brighterFactor > 0.0f) {
+			rgba = color::brighter(rgba, brighterFactor);
+		}
+		if (darkerFactor > 0.0f) {
+			rgba = color::darker(rgba, darkerFactor);
+		}
+		if (warmer > 0) {
+			rgba.r = (uint8_t)core_min(255, (int)rgba.r + warmer);
+			rgba.b = (uint8_t)core_max(0, (int)rgba.b - warmer);
+		}
+		if (colder > 0) {
+			rgba.r = (uint8_t)core_max(0, (int)rgba.r - colder);
+			rgba.b = (uint8_t)core_min(255, (int)rgba.b + colder);
+		}
+		if (rgba == palette.color(idx)) {
+			continue;
+		}
+		palette.setColor(idx, rgba);
+		changed = true;
+	}
+	if (!changed) {
+		return false;
+	}
+	// Snapshot after the edit: undo resolves the previous palette from earlier states,
+	// redo reapplies this stored post-change palette.
+	memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "adjustcolors");
+	palette.markSave();
+	palette.markDirty();
+	_mementoHandler->markPaletteChange(_sceneGraph, *node);
+	return true;
+}
+
+bool SceneManager::nodeGradientColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &indices) {
+	beforeSceneMutation();
+	if (isLocked() || indices.size() < 2) {
+		return false;
+	}
+	scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
+	if (node == nullptr) {
+		return false;
+	}
+	palette::Palette &palette = node->palette();
+	core::Buffer<uint8_t> ordered;
+	ordered.reserve(indices.size());
+	// Keep the visual/UI order so the gradient follows how artists see the slots.
+	for (int ui = 0; ui < palette.colorCount(); ++ui) {
+		const uint8_t palIdx = palette.view().uiIndex((uint8_t)ui);
+		for (uint8_t selected : indices) {
+			if (selected == palIdx) {
+				ordered.push_back(palIdx);
+				break;
+			}
+		}
+	}
+	if (ordered.size() < 2) {
+		return false;
+	}
+	const color::RGBA first = palette.color(ordered[0]);
+	const color::RGBA last = palette.color(ordered[ordered.size() - 1]);
+	if (first.a == 0 || last.a == 0) {
+		return false;
+	}
+	const int steps = (int)ordered.size() - 1;
+	for (int i = 0; i < (int)ordered.size(); ++i) {
+		const float t = steps == 0 ? 0.0f : (float)i / (float)steps;
+		palette.setColor(ordered[i], color::RGBA::mix(first, last, t));
+	}
+	// Snapshot after the edit so redo restores the gradient result.
+	memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "gradientcolors");
+	palette.markSave();
+	palette.markDirty();
+	_mementoHandler->markPaletteChange(_sceneGraph, *node);
+	return true;
 }
 
 bool SceneManager::nodeRemoveColor(int nodeId, uint8_t palIdx) {

@@ -38,12 +38,18 @@ Right-click on a color to open the context menu. Color, name, and material edito
 * **Color Picker**: Adjust the color using the color picker.
 * **Material Properties**: Choose material type (Diffuse / Metal / Glass / Emit / Blend / Media). Changing type applies that type's property defaults. Then adjust metal, roughness, IOR, emit, and the other sliders.
 * **Remove Alpha**: Remove transparency from the color.
-* **Model from Color**: Create a new model containing only voxels of this color.
+* **Model from Color / Model from selected colors**: Create a new model containing only voxels of the clicked color, or of every multi-selected color.
 * **Duplicate Color**: Duplicate the selected color into a free slot.
 * **Remove Color**: Remove the selected color from the palette.
-* **Reduce to Selected**: Reduce the palette to only the selected colors.
+* **Select / keep / deselect / delete voxels of selected colors**: Operate on voxels that use any of the multi-selected palette slots. These also extend the Select menu commands when a multi-selection is active.
+* **Reduce to clicked color**: Merge every other selected color into the clicked slot and remap those voxels.
 * **Randomize Selected Colors**: Assign random colors to the selected slots.
+* **Gradient across selected colors**: Interpolate colors between the first and last selected slots in palette order.
+* **Adjust selected colors**: Brighten, darken, warm, or cool only the selected slots.
+* **Quantize selected colors**: Merge similar selected colors down to a target count, remap voxels, then clear the selection.
 * **Name**: Rename the color.
+
+When two or more colors are multi-selected, the paint brush **Random** mode draws only from that pool. Enable **Only selected colors** in the paint brush options to skip voxels outside the pool for any paint mode.
 
 ## Normal Palette
 

@@ -3057,6 +3057,96 @@ TEST_F(SceneManagerTest, testSelectOnlyColor) {
 	EXPECT_FALSE((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0);
 }
 
+TEST_F(SceneManagerTest, testSelectAndDeleteColors) {
+	const voxel::Region region{0, 3};
+	ASSERT_TRUE(_sceneMgr->newScene(true, "selectdeletecolors_test", region));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
+	ASSERT_NE(nullptr, v);
+
+	v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	v->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+	v->setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 3));
+
+	core::Buffer<uint8_t> colors;
+	colors.push_back(1);
+	colors.push_back(3);
+	sceneMgr()->testSelectColors(colors);
+
+	EXPECT_TRUE((v->voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_FALSE((v->voxel(1, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+	EXPECT_TRUE((v->voxel(2, 0, 0).getFlags() & voxel::FlagOutline) != 0);
+
+	sceneMgr()->testDeleteColors(colors);
+	EXPECT_TRUE(voxel::isAir(v->voxel(0, 0, 0).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(1, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(v->voxel(2, 0, 0).getMaterial()));
+}
+
+TEST_F(SceneManagerTest, testPaletteColorSelectionDrivesPaintPool) {
+	core::Buffer<uint8_t> single;
+	single.push_back(1);
+	_sceneMgr->setPaletteColorSelection(single);
+	EXPECT_FALSE(_sceneMgr->hasPaletteColorMultiSelection());
+	EXPECT_FALSE(_sceneMgr->modifier().paintBrush().hasColorPool());
+
+	core::Buffer<uint8_t> multi;
+	multi.push_back(1);
+	multi.push_back(4);
+	multi.push_back(7);
+	_sceneMgr->setPaletteColorSelection(multi);
+	EXPECT_TRUE(_sceneMgr->hasPaletteColorMultiSelection());
+	ASSERT_TRUE(_sceneMgr->modifier().paintBrush().hasColorPool());
+	EXPECT_EQ(3u, _sceneMgr->modifier().paintBrush().colorPool().size());
+	EXPECT_EQ(1, _sceneMgr->modifier().paintBrush().colorPool()[0]);
+	EXPECT_EQ(4, _sceneMgr->modifier().paintBrush().colorPool()[1]);
+	EXPECT_EQ(7, _sceneMgr->modifier().paintBrush().colorPool()[2]);
+
+	_sceneMgr->setPaletteColorSelection(core::Buffer<uint8_t>());
+	EXPECT_FALSE(_sceneMgr->modifier().paintBrush().hasColorPool());
+}
+
+TEST_F(SceneManagerTest, testNodeGradientAndAdjustColors) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "gradient_adjust_test", voxel::Region{0, 3}));
+	const int nodeId = _sceneMgr->sceneGraph().activeNode();
+	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(nodeId);
+	palette::Palette &palette = node.palette();
+	palette.setColor(0, color::RGBA(0, 0, 0, 255));
+	palette.setColor(1, color::RGBA(255, 0, 0, 255));
+	palette.setColor(2, color::RGBA(0, 0, 0, 255));
+	palette.setColor(3, color::RGBA(0, 0, 255, 255));
+	_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
+
+	core::Buffer<uint8_t> indices;
+	indices.push_back(0);
+	indices.push_back(1);
+	indices.push_back(2);
+	indices.push_back(3);
+	EXPECT_TRUE(_sceneMgr->nodeGradientColors(node.uuid(), indices));
+	EXPECT_EQ(color::RGBA(0, 0, 0, 255), palette.color(0));
+	EXPECT_EQ(color::RGBA(0, 0, 255, 255), palette.color(3));
+	const color::RGBA midAfterGradient = palette.color(1);
+	EXPECT_NE(color::RGBA(255, 0, 0, 255), midAfterGradient);
+
+	EXPECT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(color::RGBA(255, 0, 0, 255), palette.color(1));
+	EXPECT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(midAfterGradient, palette.color(1));
+
+	core::Buffer<uint8_t> warm;
+	warm.push_back(3);
+	const color::RGBA before = palette.color(3);
+	EXPECT_TRUE(_sceneMgr->nodeAdjustColors(node.uuid(), warm, 0.0f, 0.0f, 10, 0));
+	const color::RGBA afterWarm = palette.color(3);
+	EXPECT_GE(afterWarm.r, before.r);
+	EXPECT_LE(afterWarm.b, before.b);
+
+	EXPECT_TRUE(_sceneMgr->undo());
+	EXPECT_EQ(before, palette.color(3));
+	EXPECT_TRUE(_sceneMgr->redo());
+	EXPECT_EQ(afterWarm, palette.color(3));
+}
+
 TEST_F(SceneManagerTest, testNodeToggleLocked) {
 	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNodeUUID());
 	EXPECT_FALSE(node.locked());

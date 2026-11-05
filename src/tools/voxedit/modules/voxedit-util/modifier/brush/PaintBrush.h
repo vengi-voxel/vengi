@@ -8,6 +8,7 @@
 #include "PaintStrokeState.h"
 #include "app/I18NMarkers.h"
 #include "core/GLM.h"
+#include "core/collection/Buffer.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Voxel.h"
@@ -31,7 +32,8 @@ namespace voxedit {
  * - **Replace**: Change all voxels to the cursor color
  * - **Brighten**: Make colors lighter by a factor
  * - **Darken**: Make colors darker by a factor
- * - **Random**: Replace with random colors from the palette
+ * - **Random**: Replace with random colors from the palette, or from a restricted
+ *   color pool when multiple palette colors are selected
  * - **Variation**: Randomly brighten or darken for natural variation
  * - **Blend**: Soft mix of paint color into existing colors with spherical falloff
  * - **Blur**: Gaussian blur of existing neighborhood colors (no paint color)
@@ -40,6 +42,8 @@ namespace voxedit {
  *
  * - **Plane Mode**: Fill all connected voxels of the same color on a face
  * - **Gradient Mode**: Create smooth color transitions across the region
+ * - **Color mask**: Optionally skip voxels whose current color is outside the
+ *   selected palette color pool
  *
  * The brush automatically finds or creates new palette colors when brightening/darkening.
  *
@@ -69,6 +73,12 @@ private:
 	int _variationChance = 3;			   ///< 1 in N chance to apply variation
 	PaintStrokeState _runtime;
 	PaintMode _paintMode = PaintMode::Replace; ///< Active paint mode
+	/**
+	 * Optional palette indices used by Random mode and by the color mask.
+	 * Empty means Random uses the full palette and the mask is inactive.
+	 */
+	core::Buffer<uint8_t> _colorPool;
+	bool _maskToColorPool = false; ///< Skip voxels whose color is outside `_colorPool`
 
 	/**
 	 * @brief Additional flags specific to PaintBrush
@@ -96,12 +106,17 @@ protected:
 		float _strength = 1.0f;		 ///< Brightness factor
 		math::Random &_random;
 		int _variationChance = 3; ///< Variation threshold
+		const core::Buffer<uint8_t> &_colorPool;
+		bool _maskToColorPool = false;
+
+		bool isInColorPool(uint8_t colorIndex) const;
 
 	public:
 		VoxelColor(palette::Palette &palette, const voxel::Voxel &voxel, PaintMode paintMode, float strength,
-				   int variationChance, math::Random &random)
+				   int variationChance, math::Random &random, const core::Buffer<uint8_t> &colorPool,
+				   bool maskToColorPool)
 			: _voxel(voxel), _palette(palette), _paintMode(paintMode), _strength(strength), _random(random),
-			  _variationChance(variationChance) {
+			  _variationChance(variationChance), _colorPool(colorPool), _maskToColorPool(maskToColorPool) {
 		}
 
 		/**
@@ -186,6 +201,23 @@ public:
 	 */
 	void setBlendOpacity(float opacity);
 	float blendOpacity() const;
+
+	/**
+	 * @brief Restrict Random picks (and optionally paint targets) to these palette indices
+	 *
+	 * When empty, Random uses the full palette. Typically filled from the palette panel
+	 * multi-selection when more than one color is selected.
+	 */
+	void setColorPool(const core::Buffer<uint8_t> &indices);
+	void clearColorPool();
+	const core::Buffer<uint8_t> &colorPool() const;
+	bool hasColorPool() const;
+
+	/**
+	 * @brief When enabled with a non-empty color pool, skip voxels outside that pool
+	 */
+	void setMaskToColorPool(bool mask);
+	bool maskToColorPool() const;
 };
 
 inline int PaintBrush::variationChance() const {
@@ -198,6 +230,18 @@ inline float PaintBrush::strength() const {
 
 inline float PaintBrush::blendOpacity() const {
 	return _blendOpacity;
+}
+
+inline const core::Buffer<uint8_t> &PaintBrush::colorPool() const {
+	return _colorPool;
+}
+
+inline bool PaintBrush::hasColorPool() const {
+	return !_colorPool.empty();
+}
+
+inline bool PaintBrush::maskToColorPool() const {
+	return _maskToColorPool;
 }
 
 inline PaintBrush::PaintMode PaintBrush::paintMode() const {

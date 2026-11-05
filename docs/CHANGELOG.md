@@ -40,6 +40,7 @@ VoxEdit:
    - Replaced the CPU Yocto pathtracer with a GPU voxel pathtracer
    - Improved animation timeline
    - Improved palette panel
+   - Palette multi-selection drives paint Random pools, voxel select/delete-by-color, gradients and targeted palette adjusts (#578)
    - Improved normal palette panel
    - Improved lsystem panel
    - Added a 2D slice editor panel

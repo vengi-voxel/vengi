@@ -17,7 +17,19 @@
 
 namespace voxedit {
 
+bool PaintBrush::VoxelColor::isInColorPool(uint8_t colorIndex) const {
+	for (uint8_t idx : _colorPool) {
+		if (idx == colorIndex) {
+			return true;
+		}
+	}
+	return false;
+}
+
 voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
+	if (_maskToColorPool && !_colorPool.empty() && !isInColorPool(old.getColor())) {
+		return old;
+	}
 	if (_paintMode == PaintMode::Replace) {
 		voxel::Voxel result = _voxel;
 		result.setNormal(old.getNormal());
@@ -26,11 +38,16 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 		return result;
 	}
 	if (_paintMode == PaintMode::Random) {
-		int n = _palette.colorCount();
+		if (!_colorPool.empty()) {
+			const int n = (int)_colorPool.size();
+			const int poolIdx = _random.random(0, n - 1);
+			return voxel::createVoxel(_palette, _colorPool[poolIdx], old.getNormal(), old.getFlags(), old.getBoneIdx());
+		}
+		const int n = _palette.colorCount();
 		if (n == 0) {
 			return old;
 		}
-		int idx = _random.random(0, n - 1);
+		const int idx = _random.random(0, n - 1);
 		return voxel::createVoxel(_palette, idx, old.getNormal(), old.getFlags(), old.getBoneIdx());
 	}
 
@@ -174,6 +191,18 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		core::DynamicArray<glm::ivec3> positions;
 		core::DynamicArray<voxel::Voxel> results;
 		auto collect = [&](int x, int y, int z, const voxel::Voxel &voxel) {
+			if (_maskToColorPool && !_colorPool.empty()) {
+				bool inPool = false;
+				for (uint8_t idx : _colorPool) {
+					if (idx == voxel.getColor()) {
+						inPool = true;
+						break;
+					}
+				}
+				if (!inPool) {
+					return;
+				}
+			}
 			const glm::ivec3 pos(x, y, z);
 			const float factor = blendFactor(pos, center, falloffRadius, _blendOpacity);
 			if (factor <= 0.0f) {
@@ -215,7 +244,8 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 	math::Random &random = runtime.random;
 	const bool serial =
 		_paintMode != PaintMode::Replace;
-	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _strength, _variationChance, random);
+	VoxelColor voxelColor(wrapper.node().palette(), ctx.cursorVoxel, _paintMode, _strength, _variationChance, random,
+						  _colorPool, _maskToColorPool);
 	if (floodFill()) {
 		voxelutil::paintPlane(wrapper, region.getLowerCorner(), ctx.cursorFace, ctx.hitCursorVoxel,
 							  voxelColor.evaluate(ctx.hitCursorVoxel));
@@ -275,6 +305,42 @@ void PaintBrush::setVariationChance(int variationChance) {
 		markSettingsChanged();
 	}
 	_variationChance = glm::clamp(variationChance, 2, 20);
+	markDirty();
+}
+
+void PaintBrush::setColorPool(const core::Buffer<uint8_t> &indices) {
+	if (_colorPool.size() == indices.size()) {
+		bool same = true;
+		for (size_t i = 0; i < indices.size(); ++i) {
+			if (_colorPool[i] != indices[i]) {
+				same = false;
+				break;
+			}
+		}
+		if (same) {
+			return;
+		}
+	}
+	_colorPool = indices;
+	markSettingsChanged();
+	markDirty();
+}
+
+void PaintBrush::clearColorPool() {
+	if (_colorPool.empty()) {
+		return;
+	}
+	_colorPool.clear();
+	markSettingsChanged();
+	markDirty();
+}
+
+void PaintBrush::setMaskToColorPool(bool mask) {
+	if (_maskToColorPool == mask) {
+		return;
+	}
+	_maskToColorPool = mask;
+	markSettingsChanged();
 	markDirty();
 }
 

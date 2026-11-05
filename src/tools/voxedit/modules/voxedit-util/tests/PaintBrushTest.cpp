@@ -444,6 +444,81 @@ TEST_F(PaintBrushTest, testPaletteChangingModesMatchSerialEvaluation) {
 	}
 }
 
+TEST_F(PaintBrushTest, testRandomUsesColorPool) {
+	class RegionPaintBrush : public PaintBrush {
+	public:
+		using PaintBrush::generate;
+	};
+	const voxel::Region region(0, 0, 0, 7, 0, 0);
+	scenegraph::SceneGraph scene;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(region));
+	node.volume()->fill(voxel::Voxel(voxel::VoxelType::Generic, 0));
+	palette::Palette &palette = node.palette();
+	palette.setColor(0, color::RGBA(0, 0, 0));
+	palette.setColor(1, color::RGBA(255, 0, 0));
+	palette.setColor(2, color::RGBA(0, 255, 0));
+	palette.setColor(3, color::RGBA(0, 0, 255));
+	palette.setSize(4);
+
+	RegionPaintBrush brush;
+	brush.setPaintMode(PaintBrush::PaintMode::Random);
+	brush.seedRuntime(1);
+	core::Buffer<uint8_t> pool;
+	pool.push_back(1);
+	pool.push_back(2);
+	brush.setColorPool(pool);
+
+	BrushContext input;
+	ModifierVolumeWrapper output(node, ModifierType::Paint);
+	brush.generate(scene, output, input, region);
+
+	for (int x = 0; x <= 7; ++x) {
+		const uint8_t color = node.volume()->voxel(x, 0, 0).getColor();
+		EXPECT_TRUE(color == 1 || color == 2) << "Random paint escaped the color pool at x=" << x;
+	}
+	brush.shutdown();
+}
+
+TEST_F(PaintBrushTest, testMaskToColorPoolSkipsOtherColors) {
+	class RegionPaintBrush : public PaintBrush {
+	public:
+		using PaintBrush::generate;
+	};
+	const voxel::Region region(0, 0, 0, 3, 0, 0);
+	scenegraph::SceneGraph scene;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setVolume(new voxel::RawVolume(region));
+	node.volume()->setVoxel(0, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 0));
+	node.volume()->setVoxel(1, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 1));
+	node.volume()->setVoxel(2, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 2));
+	node.volume()->setVoxel(3, 0, 0, voxel::Voxel(voxel::VoxelType::Generic, 1));
+	palette::Palette &palette = node.palette();
+	palette.setColor(0, color::RGBA(0, 0, 0));
+	palette.setColor(1, color::RGBA(255, 0, 0));
+	palette.setColor(2, color::RGBA(0, 255, 0));
+	palette.setColor(3, color::RGBA(0, 0, 255));
+	palette.setSize(4);
+
+	RegionPaintBrush brush;
+	brush.setPaintMode(PaintBrush::PaintMode::Replace);
+	core::Buffer<uint8_t> pool;
+	pool.push_back(1);
+	brush.setColorPool(pool);
+	brush.setMaskToColorPool(true);
+
+	BrushContext input;
+	input.cursorVoxel = voxel::Voxel(voxel::VoxelType::Generic, 3);
+	ModifierVolumeWrapper output(node, ModifierType::Paint);
+	brush.generate(scene, output, input, region);
+
+	EXPECT_EQ(0, node.volume()->voxel(0, 0, 0).getColor());
+	EXPECT_EQ(3, node.volume()->voxel(1, 0, 0).getColor());
+	EXPECT_EQ(2, node.volume()->voxel(2, 0, 0).getColor());
+	EXPECT_EQ(3, node.volume()->voxel(3, 0, 0).getColor());
+	brush.shutdown();
+}
+
 TEST_F(PaintBrushTest, testAllModesPreserveVoxelMetadata) {
 	class RegionPaintBrush : public PaintBrush {
 	public:

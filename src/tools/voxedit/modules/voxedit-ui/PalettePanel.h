@@ -8,6 +8,7 @@
 #include "command/CommandHandler.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/Set.h"
 #include "palette/Material.h"
 #include "palette/PaletteCache.h"
@@ -65,6 +66,8 @@ private:
 
 	void pasteColor(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, bool selection);
 	void pasteMaterial(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node);
+	void syncPaletteColorSelection();
+	core::Buffer<uint8_t> selectedIndicesBuffer() const;
 	void handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node,
 						   command::CommandExecutionListener &listener, palette::Palette &palette);
 	void handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, palette::Palette &palette);

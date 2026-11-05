@@ -13,6 +13,7 @@
 #include "core/SharedPtr.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "core/concurrent/Future.h"
 #include "io/Filesystem.h"
 #include "io/FormatDescription.h"
@@ -165,6 +166,12 @@ protected:
 	bool _needAutoSave = false;
 
 	bool _traceViaMouse = true;
+
+	/**
+	 * Palette panel multi-selection mirrored here so brushes and commands can use it.
+	 * Empty or a single index means "no multi-selection pool".
+	 */
+	core::Buffer<uint8_t> _paletteColorSelection;
 
 	LSystemRuntime *_lsystem = nullptr;
 	bool _lsystemRunning = false;
@@ -344,9 +351,14 @@ protected:
 	void nodeGroupDeleteSelected();
 	void nodeGroupColorSelected(uint8_t colorIndex);
 	void nodeGroupFilterSelection(uint8_t colorIndex, bool deselectMatching);
+	void nodeGroupFilterSelection(const core::Buffer<uint8_t> &colorIndices, bool deselectMatching);
 	void nodeGroupSelectByAirAxes(int minAxes);
 	void nodeGroupDeselectColor(uint8_t colorIndex);
+	void nodeGroupDeselectColors(const core::Buffer<uint8_t> &colorIndices);
 	void nodeGroupSelectOnlyColor(uint8_t colorIndex);
+	void nodeGroupSelectOnlyColors(const core::Buffer<uint8_t> &colorIndices);
+	void nodeGroupSelectColors(const core::Buffer<uint8_t> &colorIndices);
+	void nodeGroupDeleteColors(const core::Buffer<uint8_t> &colorIndices);
 	void nodeGroupSelectOnlyEdges();
 	void nodeGroupSelectOnlyCorners();
 	void nodeGroupSelectOnlyWallEdges();
@@ -527,6 +539,16 @@ public:
 	voxel::RawVolume *volume(const core::UUID &nodeUUID);
 	const voxel::RawVolume *volume(const core::UUID &nodeUUID) const;
 	palette::Palette &activePalette() const;
+
+	/**
+	 * @brief Sync the palette panel multi-selection for brushes and commands
+	 *
+	 * When two or more colors are selected, the paint brush Random mode draws from
+	 * this pool. Selection-aware commands also prefer these indices over the cursor color.
+	 */
+	void setPaletteColorSelection(const core::Buffer<uint8_t> &indices);
+	const core::Buffer<uint8_t> &paletteColorSelection() const;
+	bool hasPaletteColorMultiSelection() const;
 
 	bool setActivePalette(const palette::Palette &palette, bool searchBestColors = false);
 
@@ -900,6 +922,18 @@ public:
 	 */
 	bool nodeReduceColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &srcPalIdx, uint8_t targetPalIdx);
 	bool nodeQuantizeColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &selectedIndices, int targetColorCount);
+	/**
+	 * @brief Brighten, darken, warm or cool only the given palette slots
+	 */
+	bool nodeAdjustColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &indices, float brighterFactor,
+						  float darkerFactor, int warmer, int colder);
+	/**
+	 * @brief Spread a gradient across the given palette slots in UI order
+	 *
+	 * The first and last selected slots (by palette view order) keep their colors; slots
+	 * in between are filled with interpolated colors. Voxel indices are unchanged.
+	 */
+	bool nodeGradientColors(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &indices);
 	/**
 	 * @param[in] palIdx The visual palette index (this is **not** the real color index, but the index of the visual
 	 * representation of the palette)

@@ -90,8 +90,24 @@ public:
 		nodeGroupDeselectColor(colorIndex);
 	}
 
+	void testDeselectColors(const core::Buffer<uint8_t> &colorIndices) {
+		nodeGroupDeselectColors(colorIndices);
+	}
+
 	void testSelectOnlyColor(uint8_t colorIndex) {
 		nodeGroupSelectOnlyColor(colorIndex);
+	}
+
+	void testSelectOnlyColors(const core::Buffer<uint8_t> &colorIndices) {
+		nodeGroupSelectOnlyColors(colorIndices);
+	}
+
+	void testSelectColors(const core::Buffer<uint8_t> &colorIndices) {
+		nodeGroupSelectColors(colorIndices);
+	}
+
+	void testDeleteColors(const core::Buffer<uint8_t> &colorIndices) {
+		nodeGroupDeleteColors(colorIndices);
 	}
 
 	void testSelectOnlyEdges() {
