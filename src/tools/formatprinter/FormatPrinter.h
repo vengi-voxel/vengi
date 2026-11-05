@@ -26,6 +26,7 @@ private:
 	void printManPage(const core::String &app);
 	void printApplicationPlist();
 	void printThumbnailerPlist();
+	void printEntitlements();
 	void printInstallerWix();
 	void printMagic();
 	void printLuaApiMarkdown();

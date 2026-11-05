@@ -41,6 +41,9 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--qlthumbnail")
 		.setDescription("Generate the macOS Quick Look thumbnail extension Info.plist template")
 		.addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--entitlements")
+		.setDescription("Generate the macOS application entitlements.plist for codesign / CPack Bundle")
+		.addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--wix").setDescription("Generate the wix file for msi installers").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--magic").setDescription("Generate the magic file").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--lua-api").setDescription("Generate the lua api markdown documentation files").addFlag(ARGUMENT_FLAG_BOOL);
@@ -127,6 +130,8 @@ app::AppState FormatPrinter::onRunning() {
 		printApplicationPlist();
 	} else if (hasArg("--qlthumbnail")) {
 		printThumbnailerPlist();
+	} else if (hasArg("--entitlements")) {
+		printEntitlements();
 	} else if (hasArg("--wix")) {
 		printInstallerWix();
 	} else if (hasArg("--lua-api")) {
@@ -860,6 +865,26 @@ void FormatPrinter::printThumbnailerPlist() {
 	Log::printf("      <string>ThumbnailProvider</string>\n");
 	Log::printf("    </dict>\n");
 	Log::printf("  </dict>\n");
+	Log::printf("</plist>\n");
+}
+
+void FormatPrinter::printEntitlements() {
+	// Host application entitlements for codesign / CPACK_BUNDLE_APPLE_ENTITLEMENTS.
+	// See https://github.com/vengi-voxel/vengi/issues/356
+	Log::printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	Log::printf("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" "
+			   "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n");
+	Log::printf("<plist version=\"1.0\">\n");
+	Log::printf("<dict>\n");
+	Log::printf("\t<key>com.apple.security.network.client</key>\n");
+	Log::printf("\t<true/>\n");
+	Log::printf("\t<key>com.apple.security.network.server</key>\n");
+	Log::printf("\t<true/>\n");
+	Log::printf("\t<key>com.apple.security.files.user-selected.read-write</key>\n");
+	Log::printf("\t<true/>\n");
+	Log::printf("\t<key>com.apple.security.files.downloads.read-write</key>\n");
+	Log::printf("\t<true/>\n");
+	Log::printf("</dict>\n");
 	Log::printf("</plist>\n");
 }
 
