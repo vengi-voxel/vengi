@@ -105,6 +105,13 @@ struct FormatDescription {
 	 * @brief Either return the defined mimetype or create one from the name
 	 */
 	core::String mimeType() const;
+	/**
+	 * @brief Build a reverse-DNS Uniform Type Identifier for Apple platforms
+	 * @param[in] prefix Reverse-DNS prefix without a trailing dot (e.g. @c com.github.vengi)
+	 * @note Always returns a custom UTI under @p prefix. Shared system mimes such as
+	 * @c text/plain or @c image/png are not reused so Quick Look / document claims stay scoped.
+	 */
+	core::String uti(const core::String &prefix) const;
 
 	/**
 	 * @brief Return the comma separated wildcard for the extensions of this format description

@@ -37,7 +37,10 @@ app::AppState FormatPrinter::onConstruct() {
 	registerArg("--voxel").setDescription("Print the supported voxel formats").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--mimeinfo").setDescription("Generate the mimeinfo file for voxel formats").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--markdown").setDescription("Generate the markdown tables for voxel, image and palette formats").addFlag(ARGUMENT_FLAG_BOOL);
-	registerArg("--plist").setDescription("Generate the plist file for voxel formats").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--plist").setDescription("Generate the macOS application Info.plist template for voxel formats").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--qlthumbnail")
+		.setDescription("Generate the macOS Quick Look thumbnail extension Info.plist template")
+		.addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--wix").setDescription("Generate the wix file for msi installers").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--magic").setDescription("Generate the magic file").addFlag(ARGUMENT_FLAG_BOOL);
 	registerArg("--lua-api").setDescription("Generate the lua api markdown documentation files").addFlag(ARGUMENT_FLAG_BOOL);
@@ -122,6 +125,8 @@ app::AppState FormatPrinter::onRunning() {
 		printManPage(app);
 	} else if (hasArg("--plist")) {
 		printApplicationPlist();
+	} else if (hasArg("--qlthumbnail")) {
+		printThumbnailerPlist();
 	} else if (hasArg("--wix")) {
 		printInstallerWix();
 	} else if (hasArg("--lua-api")) {
@@ -140,9 +145,12 @@ app::AppState FormatPrinter::onRunning() {
 }
 
 core::String FormatPrinter::uniqueMimetype(const io::FormatDescription &desc) {
-	core::String name = desc.name.toLower();
-	core::String mt = desc.mimeType();
-	return mt;
+	return desc.mimeType();
+}
+
+core::String FormatPrinter::uniqueUti(const io::FormatDescription &desc) {
+	// Matches engine_app_id / SDL app metadata reverse-DNS root (com.github.vengi.*).
+	return desc.uti("com.github.vengi");
 }
 
 void FormatPrinter::addManPageOption(const core::String &option, const core::String &description) {
@@ -696,6 +704,45 @@ void FormatPrinter::printInstallerWix() {
 	Log::printf("</CPackWiXPatch>\n");
 }
 
+void FormatPrinter::printUtiDeclaration(const io::FormatDescription &desc) {
+	const core::String &m = uniqueMimetype(desc);
+	const core::String uti = uniqueUti(desc);
+	Log::printf("      <dict>\n");
+	Log::printf("        <key>UTTypeIdentifier</key>\n");
+	Log::printf("        <string>%s</string>\n", uti.c_str());
+	Log::printf("        <key>UTTypeDescription</key>\n");
+	Log::printf("        <string>%s</string>\n", desc.name.c_str());
+	Log::printf("        <key>UTTypeConformsTo</key>\n");
+	Log::printf("        <array>\n");
+	Log::printf("          <string>public.data</string>\n");
+	Log::printf("        </array>\n");
+	Log::printf("        <key>UTTypeTagSpecification</key>\n");
+	Log::printf("        <dict>\n");
+	Log::printf("          <key>public.filename-extension</key>\n");
+	Log::printf("          <array>\n");
+	for (const core::String &e : desc.exts) {
+		Log::printf("            <string>%s</string>\n", e.c_str());
+	}
+	Log::printf("          </array>\n");
+	Log::printf("          <key>public.mime-type</key>\n");
+	Log::printf("          <array>\n");
+	Log::printf("            <string>%s</string>\n", m.c_str());
+	Log::printf("          </array>\n");
+	Log::printf("        </dict>\n");
+	Log::printf("      </dict>\n");
+}
+
+void FormatPrinter::printSupportedContentTypes() {
+	core::StringSet seen;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		const core::String uti = uniqueUti(*desc);
+		if (!seen.insert(uti)) {
+			continue;
+		}
+		Log::printf("          <string>%s</string>\n", uti.c_str());
+	}
+}
+
 void FormatPrinter::printApplicationPlist() {
 	Log::printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	Log::printf("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" "
@@ -730,6 +777,7 @@ void FormatPrinter::printApplicationPlist() {
 	Log::printf("    <array>\n");
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		const core::String &m = uniqueMimetype(*desc);
+		const core::String uti = uniqueUti(*desc);
 		Log::printf("      <dict>\n");
 		Log::printf("        <key>CFBundleTypeName</key>\n");
 		Log::printf("        <string>%s</string>\n", desc->name.c_str());
@@ -745,6 +793,10 @@ void FormatPrinter::printApplicationPlist() {
 			Log::printf("          <string>%s</string>\n", e.c_str());
 		}
 		Log::printf("        </array>\n");
+		Log::printf("        <key>LSItemContentTypes</key>\n");
+		Log::printf("        <array>\n");
+		Log::printf("          <string>%s</string>\n", uti.c_str());
+		Log::printf("        </array>\n");
 		Log::printf("        <key>CFBundleTypeRole</key>\n");
 		Log::printf("        <string>Editor</string>\n");
 		Log::printf("        <key>NSDocumentClass</key>\n");
@@ -752,6 +804,61 @@ void FormatPrinter::printApplicationPlist() {
 		Log::printf("      </dict>\n");
 	}
 	Log::printf("    </array>\n");
+	Log::printf("    <key>UTExportedTypeDeclarations</key>\n");
+	Log::printf("    <array>\n");
+	core::StringSet seenUtis;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		const core::String uti = uniqueUti(*desc);
+		if (!seenUtis.insert(uti)) {
+			continue;
+		}
+		printUtiDeclaration(*desc);
+	}
+	Log::printf("    </array>\n");
+	Log::printf("  </dict>\n");
+	Log::printf("</plist>\n");
+}
+
+void FormatPrinter::printThumbnailerPlist() {
+	Log::printf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	Log::printf("<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" "
+			   "\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n");
+	Log::printf("<plist version=\"1.0\">\n");
+	Log::printf("  <dict>\n");
+	Log::printf("    <key>CFBundleDevelopmentRegion</key>\n");
+	Log::printf("    <string>en-US</string>\n");
+	Log::printf("    <key>CFBundleDisplayName</key>\n");
+	Log::printf("    <string>Vengi Thumbnailer</string>\n");
+	Log::printf("    <key>CFBundleExecutable</key>\n");
+	Log::printf("    <string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>\n");
+	Log::printf("    <key>CFBundleIdentifier</key>\n");
+	Log::printf("    <string>${MACOSX_BUNDLE_GUI_IDENTIFIER}</string>\n");
+	Log::printf("    <key>CFBundleInfoDictionaryVersion</key>\n");
+	Log::printf("    <string>6.0</string>\n");
+	Log::printf("    <key>CFBundleName</key>\n");
+	Log::printf("    <string>${MACOSX_BUNDLE_BUNDLE_NAME}</string>\n");
+	Log::printf("    <key>CFBundlePackageType</key>\n");
+	Log::printf("    <string>XPC!</string>\n");
+	Log::printf("    <key>CFBundleShortVersionString</key>\n");
+	Log::printf("    <string>${MACOSX_BUNDLE_SHORT_VERSION_STRING}</string>\n");
+	Log::printf("    <key>CFBundleVersion</key>\n");
+	Log::printf("    <string>${MACOSX_BUNDLE_BUNDLE_VERSION}</string>\n");
+	Log::printf("    <key>NSExtension</key>\n");
+	Log::printf("    <dict>\n");
+	Log::printf("      <key>NSExtensionAttributes</key>\n");
+	Log::printf("      <dict>\n");
+	Log::printf("        <key>QLSupportedContentTypes</key>\n");
+	Log::printf("        <array>\n");
+	printSupportedContentTypes();
+	Log::printf("        </array>\n");
+	Log::printf("        <key>QLThumbnailMinimumDimension</key>\n");
+	Log::printf("        <integer>0</integer>\n");
+	Log::printf("      </dict>\n");
+	Log::printf("      <key>NSExtensionPointIdentifier</key>\n");
+	Log::printf("      <string>com.apple.quicklook.thumbnail</string>\n");
+	Log::printf("      <key>NSExtensionPrincipalClass</key>\n");
+	Log::printf("      <string>ThumbnailProvider</string>\n");
+	Log::printf("    </dict>\n");
 	Log::printf("  </dict>\n");
 	Log::printf("</plist>\n");
 }
