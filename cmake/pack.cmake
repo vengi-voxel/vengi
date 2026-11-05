@@ -19,6 +19,7 @@ set(CPACK_NSIS_MENU_LINKS "https://vengi-voxel.github.io/vengi" "vengi help")
 
 if (APPLE)
 	set(CPACK_GENERATOR "DragNDrop")
+	set(CPACK_BUNDLE_APPLE_ENTITLEMENTS "${ROOT_DIR}/contrib/installer/osx/entitlements.plist")
 elseif (UNIX)
 	set(CPACK_GENERATOR "TGZ;TBZ2")
 	find_host_program(RPMBUILD rpmbuild)

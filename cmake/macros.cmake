@@ -327,7 +327,10 @@ function(engine_add_executable)
 				set_target_properties(${_EXE_TARGET} PROPERTIES MACOSX_BUNDLE_PRODUCT_NAME "${PROJECT_NAME}")
 				set_target_properties(${_EXE_TARGET} PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_NAME}")
 				# codesign --verify --deep --verbose <bundle-path>
-				add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD COMMAND "codesign" ARGS "--force" "--deep" "--sign" "-" "$<TARGET_BUNDLE_DIR:${_EXE_TARGET}>")
+				add_custom_command(TARGET ${_EXE_TARGET} POST_BUILD
+					COMMAND "codesign" ARGS "--force" "--deep" "--sign" "-"
+						"--entitlements" "${ROOT_DIR}/contrib/installer/osx/entitlements.plist"
+						"$<TARGET_BUNDLE_DIR:${_EXE_TARGET}>")
 			endif()
 		endif()
 	elseif(WIN32)
