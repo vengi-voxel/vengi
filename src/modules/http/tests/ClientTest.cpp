@@ -4,6 +4,7 @@
 
 #include "http/Client.h"
 #include "app/tests/AbstractTest.h"
+#include "core/StringUtil.h"
 #include "core/concurrent/Thread.h"
 #include "engine-config.h"
 #include "io/File.h"
@@ -179,7 +180,7 @@ TEST_F(ClientTest, testBinaryResponse) {
 	Client client;
 	bool called = false;
 	{
-		Request request("file://" + path, RequestType::GET);
+		Request request("file://" + core::string::urlPathEncode(path), RequestType::GET);
 		ASSERT_NE(0u, client.execute(request, [&](const Response &response) {
 			EXPECT_TRUE(response.success);
 			ASSERT_EQ(sizeof(data), response.body.size());

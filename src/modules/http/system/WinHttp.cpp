@@ -159,9 +159,25 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 			}
 		}
 	}
-	WinHttpReceiveResponse(hRequest, nullptr);
+	if (!requestState) {
+		WinHttpCloseHandle(hRequest);
+		WinHttpCloseHandle(hConnection);
+		WinHttpCloseHandle(hSession);
+		return false;
+	}
+	if (!WinHttpReceiveResponse(hRequest, nullptr)) {
+		printLastError("Failed to receive response");
+		WinHttpCloseHandle(hRequest);
+		WinHttpCloseHandle(hConnection);
+		WinHttpCloseHandle(hSession);
+		return false;
+	}
 	if (!WinHttpQueryDataAvailable(hRequest, nullptr)) {
 		printLastError("Failed to query available data");
+		WinHttpCloseHandle(hRequest);
+		WinHttpCloseHandle(hConnection);
+		WinHttpCloseHandle(hSession);
+		return false;
 	}
 
 	DWORD dwStatusCode = 0;
@@ -169,6 +185,10 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 	if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
 							 WINHTTP_HEADER_NAME_BY_INDEX, &dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX)) {
 		printLastError("Failed to query status code");
+		WinHttpCloseHandle(hRequest);
+		WinHttpCloseHandle(hConnection);
+		WinHttpCloseHandle(hSession);
+		return false;
 	}
 	const char *requestTypeStr = ctx._type == RequestType::GET ? "GET" : (ctx._type == RequestType::PATCH ? "PATCH" : "POST");
 	Log::debug("Http request for url: %s (%s) with status code: %d", ctx._url.c_str(), requestTypeStr, (int)dwStatusCode);
@@ -221,8 +241,8 @@ bool http_request(io::WriteStream &stream, int *statusCode, Headers *outheaders,
 		stream.write(buffer, bytesRead);
 	}
 	WinHttpCloseHandle(hRequest);
-	WinHttpCloseHandle(hSession);
 	WinHttpCloseHandle(hConnection);
+	WinHttpCloseHandle(hSession);
 	return true;
 }
 
