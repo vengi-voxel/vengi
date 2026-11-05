@@ -252,11 +252,6 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 				}
 			} else {
 				const core::Buffer<uint8_t> selected = selectedIndicesBuffer();
-				ImGui::CommandIconMenuItem(ICON_LC_SCAN, _("Select voxels of selected colors"), "selectcolors", true, &listener);
-				ImGui::CommandIconMenuItem(ICON_LC_SCAN_SEARCH, _("Keep only selected colors in selection"), "selectonlycolor", true, &listener);
-				ImGui::CommandIconMenuItem(ICON_LC_ERASER, _("Deselect voxels of selected colors"), "deselectcolor", true, &listener);
-				ImGui::CommandIconMenuItem(ICON_LC_TRASH, _("Delete voxels of selected colors"), "deletecolors", true, &listener);
-				ImGui::Separator();
 				if (ImGui::IconMenuItem(ICON_LC_COPY_MINUS, _("Reduce to clicked color"))) {
 					core::Buffer<uint8_t> srcIndiced;
 					srcIndiced.reserve(selected.size());
@@ -273,48 +268,6 @@ void PalettePanel::handleContextMenu(uint8_t paletteColorIdx, scenegraph::SceneG
 					syncPaletteColorSelection();
 				}
 				ImGui::TooltipTextUnformatted(_("Merge every other selected color into the clicked slot and remaps those voxels"));
-				if (ImGui::IconMenuItem(ICON_LC_SHUFFLE, _("Randomize selected colors"))) {
-					memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "randomizecolors");
-					math::Random random;
-					for (uint8_t idx : selected) {
-						const glm::vec4 randomColor(random.randomf(), random.randomf(), random.randomf(), 1.0f);
-						_sceneMgr->nodeSetColor(node.uuid(), idx, color::getRGBA(randomColor));
-					}
-				}
-				if (ImGui::IconMenuItem(ICON_LC_BLEND, _("Gradient across selected colors"))) {
-					_sceneMgr->nodeGradientColors(node.uuid(), selected);
-				}
-				ImGui::TooltipTextUnformatted(_("Interpolate colors between the first and last selected slots in palette order"));
-				if (ImGui::BeginIconMenu(ICON_LC_SUN, _("Adjust selected colors"))) {
-					if (ImGui::IconMenuItem(ICON_LC_SUN, _("Brighter"))) {
-						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.2f, 0.0f, 0, 0);
-					}
-					if (ImGui::IconMenuItem(ICON_LC_MOON, _("Darker"))) {
-						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.2f, 0, 0);
-					}
-					if (ImGui::IconMenuItem(ICON_LC_FLAME, _("Warmer"))) {
-						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.0f, 10, 0);
-					}
-					if (ImGui::IconMenuItem(ICON_LC_SNOWFLAKE, _("Colder"))) {
-						_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.0f, 0, 10);
-					}
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginIconMenu(ICON_LC_MINIMIZE_2, _("Quantize selected colors"))) {
-					const int maxTarget = (int)selected.size() - 1;
-					if (_quantizeTargetCount > maxTarget) {
-						_quantizeTargetCount = maxTarget;
-					}
-					ImGui::SliderInt(_("Target colors"), &_quantizeTargetCount, 1, maxTarget);
-					if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply"))) {
-						_sceneMgr->nodeQuantizeColors(node.uuid(), selected, _quantizeTargetCount);
-						_selectedIndices.clear();
-						_selectedIndicesLast = -1;
-						syncPaletteColorSelection();
-					}
-					ImGui::TooltipTextUnformatted(_("Merge similar selected colors, remap voxels, then clear the selection"));
-					ImGui::EndMenu();
-				}
 			}
 		}
 
@@ -532,6 +485,63 @@ void PalettePanel::onNewPaletteImport(const core::String& paletteName, bool setA
 	}
 }
 
+void PalettePanel::paletteSelectionMenu(scenegraph::SceneGraphNode &node) {
+	const bool multiSelection = _selectedIndices.size() > 1;
+	if (!ImGui::BeginIconMenu(ICON_LC_SQUARE_DASHED_MOUSE_POINTER, _("Selection"))) {
+		return;
+	}
+	if (!multiSelection) {
+		ImGui::TextUnformatted(_("Select two or more colors (Ctrl/Shift+click)"));
+		ImGui::EndMenu();
+		return;
+	}
+
+	const core::Buffer<uint8_t> selected = selectedIndicesBuffer();
+	if (ImGui::IconMenuItem(ICON_LC_SHUFFLE, _("Randomize colors"))) {
+		memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "randomizecolors");
+		math::Random random;
+		for (uint8_t idx : selected) {
+			const glm::vec4 randomColor(random.randomf(), random.randomf(), random.randomf(), 1.0f);
+			_sceneMgr->nodeSetColor(node.uuid(), idx, color::getRGBA(randomColor));
+		}
+	}
+	if (ImGui::IconMenuItem(ICON_LC_BLEND, _("Gradient"))) {
+		_sceneMgr->nodeGradientColors(node.uuid(), selected);
+	}
+	ImGui::TooltipTextUnformatted(_("Interpolate colors between the first and last selected slots in palette order"));
+	if (ImGui::BeginIconMenu(ICON_LC_SUN, _("Adjust"))) {
+		if (ImGui::IconMenuItem(ICON_LC_SUN, _("Brighter"))) {
+			_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.2f, 0.0f, 0, 0);
+		}
+		if (ImGui::IconMenuItem(ICON_LC_MOON, _("Darker"))) {
+			_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.2f, 0, 0);
+		}
+		if (ImGui::IconMenuItem(ICON_LC_FLAME, _("Warmer"))) {
+			_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.0f, 10, 0);
+		}
+		if (ImGui::IconMenuItem(ICON_LC_SNOWFLAKE, _("Colder"))) {
+			_sceneMgr->nodeAdjustColors(node.uuid(), selected, 0.0f, 0.0f, 0, 10);
+		}
+		ImGui::EndMenu();
+	}
+	if (ImGui::BeginIconMenu(ICON_LC_MINIMIZE_2, _("Quantize"))) {
+		const int maxTarget = (int)selected.size() - 1;
+		if (_quantizeTargetCount > maxTarget) {
+			_quantizeTargetCount = maxTarget;
+		}
+		ImGui::SliderInt(_("Target colors"), &_quantizeTargetCount, 1, maxTarget);
+		if (ImGui::IconMenuItem(ICON_LC_CHECK, _("Apply"))) {
+			_sceneMgr->nodeQuantizeColors(node.uuid(), selected, _quantizeTargetCount);
+			_selectedIndices.clear();
+			_selectedIndicesLast = -1;
+			syncPaletteColorSelection();
+		}
+		ImGui::TooltipTextUnformatted(_("Merge similar selected colors, remap voxels, then clear the selection"));
+		ImGui::EndMenu();
+	}
+	ImGui::EndMenu();
+}
+
 void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	palette::Palette &palette = node.palette();
 	if (ImGui::BeginMenuBar()) {
@@ -570,6 +580,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 			ImGui::CommandIconMenuItem(ICON_LC_ARROW_DOWN_0_1, _("CIELab"), "palette_sort cielab", true, &listener);
 			ImGui::EndMenu();
 		}
+		paletteSelectionMenu(node);
 		if (ImGui::BeginMenu(_("Tools"))) {
 			ImGui::CommandIconMenuItem(ICON_LC_TRASH, _("Remove unused color"), "palette_removeunused", true, &listener);
 			ImGui::CommandIconMenuItem(ICON_LC_TRASH_2, _("Remove and re-create palette"), "palette_removeunused true", true, &listener);

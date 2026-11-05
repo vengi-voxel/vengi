@@ -41,13 +41,19 @@ Right-click on a color to open the context menu. Color, name, and material edito
 * **Model from Color / Model from selected colors**: Create a new model containing only voxels of the clicked color, or of every multi-selected color.
 * **Duplicate Color**: Duplicate the selected color into a free slot.
 * **Remove Color**: Remove the selected color from the palette.
-* **Select / keep / deselect / delete voxels of selected colors**: Operate on voxels that use any of the multi-selected palette slots. These also extend the Select menu commands when a multi-selection is active.
-* **Reduce to clicked color**: Merge every other selected color into the clicked slot and remap those voxels.
-* **Randomize Selected Colors**: Assign random colors to the selected slots.
-* **Gradient across selected colors**: Interpolate colors between the first and last selected slots in palette order.
-* **Adjust selected colors**: Brighten, darken, warm, or cool only the selected slots.
-* **Quantize selected colors**: Merge similar selected colors down to a target count, remap voxels, then clear the selection.
+* **Reduce to clicked color**: When multiple colors are selected, merge every other selected color into the clicked slot and remap those voxels.
 * **Name**: Rename the color.
+
+Voxel select / keep / deselect / delete by palette color live in the main **Select** menu and use the active palette multi-selection when present.
+
+## Selection Menu
+
+The palette panel menu bar **Selection** menu operates on multi-selected colors (Ctrl/Shift+click):
+
+* **Randomize colors**: Assign random colors to the selected slots.
+* **Gradient**: Interpolate colors between the first and last selected slots in palette order.
+* **Adjust**: Brighten, darken, warm, or cool only the selected slots.
+* **Quantize**: Merge similar selected colors down to a target count, remap voxels, then clear the selection.
 
 When two or more colors are multi-selected, the paint brush **Random** mode draws only from that pool. Enable **Only selected colors** in the paint brush options to skip voxels outside the pool for any paint mode.
 

@@ -508,11 +508,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->KeyUp(ImGuiMod_Shift);
 		ctx->Yield();
 
-		// right-click to open context menu and randomize
-		ctx->MouseMoveToPos(pos0);
-		ctx->MouseClick(ImGuiMouseButton_Right);
-		ctx->Yield();
-		ctx->ItemClick("//$FOCUSED/Randomize selected colors");
+		ctx->MenuClick("Selection/Randomize colors");
 		ctx->Yield();
 	};
 

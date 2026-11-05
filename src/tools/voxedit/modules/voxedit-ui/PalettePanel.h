@@ -62,6 +62,7 @@ private:
 
 	void closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
 	void paletteMenuBar(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void paletteSelectionMenu(scenegraph::SceneGraphNode &node);
 	void createPopups(scenegraph::SceneGraphNode &node);
 
 	void pasteColor(uint8_t paletteColorIdx, scenegraph::SceneGraphNode &node, bool selection);
