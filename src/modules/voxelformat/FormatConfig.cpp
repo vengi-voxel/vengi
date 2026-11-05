@@ -18,6 +18,7 @@
 #include "voxelformat/private/commandconquer/VXLFormat.h"
 #include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
+#include "voxelformat/private/image/PxoFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/GodotSceneFormat.h"
@@ -460,8 +461,8 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxformatImageVolumeMaxDepth, FormatCVarFlag_Load | FormatCVarFlag_Image, {&PNGFormat::format()}, {}},
 	{cfg::VoxformatImageVolumeBothSides, FormatCVarFlag_Load | FormatCVarFlag_Image, {&PNGFormat::format()}, {}},
 	{cfg::VoxformatImageHeightmapMinHeight, FormatCVarFlag_Load | FormatCVarFlag_Image, {&PNGFormat::format()}, {}},
-	{cfg::VoxformatImageSliceOffset, FormatCVarFlag_Load | FormatCVarFlag_Image, {&AsepriteFormat::format()}, {}},
-	{cfg::VoxformatImageSliceOffsetAxis, FormatCVarFlag_Load | FormatCVarFlag_Image, {&AsepriteFormat::format()}, {}},
+	{cfg::VoxformatImageSliceOffset, FormatCVarFlag_Load | FormatCVarFlag_Image, {&AsepriteFormat::format(), &PxoFormat::format()}, {}},
+	{cfg::VoxformatImageSliceOffsetAxis, FormatCVarFlag_Load | FormatCVarFlag_Image, {&AsepriteFormat::format(), &PxoFormat::format()}, {}},
 	{cfg::VoxformatSkinApplyTransform, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
 	{cfg::VoxformatSkinAddGroups, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
 	{cfg::VoxformatSkinMergeFaces, FormatCVarFlag_Load, {&SkinFormat::format()}, {}},
@@ -509,7 +510,7 @@ static bool hasFormats(const FormatVarMeta &meta) {
 }
 
 static bool isImageFormat(const io::FormatDescription &desc) {
-	return desc == PNGFormat::format() || desc == AsepriteFormat::format();
+	return desc == PNGFormat::format() || desc == AsepriteFormat::format() || desc == PxoFormat::format();
 }
 
 bool FormatConfig::meshSaveSupportsQuads(const io::FormatDescription &desc) {

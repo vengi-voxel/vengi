@@ -27,6 +27,9 @@
 		<RegistryKey Root="HKCR" Key=".ase">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".pxo">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".qb">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -324,6 +327,10 @@
 			</Feature>
 			<Feature Id="Assoc_ase" Title=".ase" Description="Open .ase files with VoxEdit (aseprite). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
 				<ComponentRef Id="AssocRegistration_ase" />
+				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
+			</Feature>
+			<Feature Id="Assoc_pxo" Title=".pxo" Description="Open .pxo files with VoxEdit (Pixelorama). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
+				<ComponentRef Id="AssocRegistration_pxo" />
 				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
 			</Feature>
 			<Feature Id="Assoc_qb" Title=".qb" Description="Open .qb files with VoxEdit (Qubicle Binary). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
@@ -710,6 +717,17 @@
 					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
 				</RegistryKey>
 				<RegistryValue Root="HKCR" Key=".ase" Type="string" Value="vengi-voxedit.ase" />
+			</Component>
+			<Component Id="AssocRegistration_pxo" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".pxo" Value="vengi-voxedit.pxo" Type="string" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi-voxedit.exe\SupportedTypes" Name=".pxo" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".pxo\OpenWithProgids" Name="vengi-voxedit.pxo" Value="" Type="string" />
+				<RegistryKey Root="HKCR" Key="vengi-voxedit.pxo">
+					<RegistryValue Type="string" Value="Pixelorama" KeyPath="yes" />
+					<RegistryValue Key="DefaultIcon" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot;,0" />
+					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
+				</RegistryKey>
+				<RegistryValue Root="HKCR" Key=".pxo" Type="string" Value="vengi-voxedit.pxo" />
 			</Component>
 			<Component Id="AssocRegistration_qb" Guid="*">
 				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".qb" Value="vengi-voxedit.qb" Type="string" />

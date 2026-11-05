@@ -34,6 +34,7 @@
 | Minecraft skin             | mcskin      | X       | X      |            | X       |            |
 | Nicks Voxel Model          | nvm         | X       |        |            |         |            |
 | Particubes                 | pcubes      | X       | X      | X          | X       |            |
+| Pixelorama                 | pxo         | X       | X      | X          | X       |            |
 | Portable Network Graphics  | png         | X       | X      |            |         |            |
 | Qubicle Binary             | qb          | X       | X      |            | X       |            |
 | Qubicle Binary Tree        | qbt         | X       | X      |            | X       |            |

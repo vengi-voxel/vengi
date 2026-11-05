@@ -75,6 +75,28 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Pixelorama</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-pixelorama</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>pxo</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.pixelorama</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Qubicle Binary</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
@@ -1721,6 +1743,27 @@
           <key>public.mime-type</key>
           <array>
             <string>image/aseprite</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.pixelorama</string>
+        <key>UTTypeDescription</key>
+        <string>Pixelorama</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>pxo</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-pixelorama</string>
           </array>
         </dict>
       </dict>

@@ -12,6 +12,10 @@
 		<glob pattern="*.aseprite"/>
 		<glob pattern="*.ase"/>
 	</mime-type>
+	<mime-type type="application/x-pixelorama">
+		<comment>Pixelorama</comment>
+		<glob pattern="*.pxo"/>
+	</mime-type>
 	<mime-type type="application/x-qubicle-binary">
 		<comment>Qubicle Binary</comment>
 		<glob pattern="*.qb"/>

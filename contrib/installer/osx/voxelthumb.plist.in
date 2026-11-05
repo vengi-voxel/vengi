@@ -28,6 +28,7 @@
         <array>
           <string>com.github.vengi.vengi</string>
           <string>com.github.vengi.aseprite</string>
+          <string>com.github.vengi.pixelorama</string>
           <string>com.github.vengi.qubicle-binary</string>
           <string>com.github.vengi.benvoxel</string>
           <string>com.github.vengi.magicavoxel</string>

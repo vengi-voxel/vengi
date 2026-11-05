@@ -1,4 +1,4 @@
-const jsonData = {
+const data = {
   "palettes": [
     {
       "name": "Adobe Color Bock",
@@ -259,6 +259,17 @@ const jsonData = {
       "animation": false,
       "load": true,
       "save": false
+    },
+    {
+      "name": "Pixelorama",
+      "extensions": [
+        "pxo"
+      ],
+      "magics": [],
+      "mimetype": "application/x-pixelorama",
+      "animation": false,
+      "load": true,
+      "save": true
     },
     {
       "name": "Qubicle Binary",
@@ -1347,3 +1358,4 @@ const jsonData = {
     }
   ]
 }
+;

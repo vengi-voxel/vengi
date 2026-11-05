@@ -185,6 +185,40 @@ TEST_F(GodotSceneFormatTest, testPrimitiveMeshes) {
 	EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(v.getColor()));
 }
 
+TEST_F(GodotSceneFormatTest, testEmbeddedImageTexture) {
+	// Pixelorama 3D layers embed ImageTexture -> Image with PackedByteArray RGBA8.
+	const auto archive = io::openMemoryArchive();
+	ASSERT_TRUE(add(
+		archive, "textured.tscn",
+		"[gd_scene format=3]\n"
+		"[sub_resource type=\"Image\" id=\"Image_1\"]\n"
+		"data = {\n"
+		"\"data\": PackedByteArray(255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255),\n"
+		"\"format\": \"RGBA8\",\n"
+		"\"height\": 2,\n"
+		"\"mipmaps\": false,\n"
+		"\"width\": 2\n"
+		"}\n"
+		"[sub_resource type=\"ImageTexture\" id=\"ImageTexture_1\"]\n"
+		"image = SubResource(\"Image_1\")\n"
+		"[sub_resource type=\"StandardMaterial3D\" id=\"mat\"]\n"
+		"albedo_texture = SubResource(\"ImageTexture_1\")\n"
+		"[sub_resource type=\"BoxMesh\" id=\"mesh\"]\n"
+		"size = Vector3(2, 2, 2)\n"
+		"material = SubResource(\"mat\")\n"
+		"[node name=\"Model\" type=\"MeshInstance3D\"]\n"
+		"mesh = SubResource(\"mesh\")\n"));
+	GodotSceneFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.loadGroups("textured.tscn", archive, graph, testLoadCtx));
+	const auto *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	EXPECT_GT(voxelutil::countVoxels(*node->volume()), 0);
+	voxel::Voxel v;
+	voxelutil::visitVolume(*node->volume(), [&v](int, int, int, const voxel::Voxel &voxel) { v = voxel; });
+	EXPECT_EQ(color::RGBA(255, 0, 0, 255), node->palette().color(v.getColor()));
+}
+
 TEST_F(GodotSceneFormatTest, testMaterials) {
 	scenegraph::SceneGraph graph;
 	testMaterial(graph, "godot-materials.escn");

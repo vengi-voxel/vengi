@@ -350,17 +350,69 @@ public:
 		}
 		return resource.document->sections[0].attributes.get("type").text;
 	}
-	image::ImagePtr texture(const GodotDocument &doc, const GodotValue &ref) {
-		if (ref.text != "ExtResource" || ref.values.size() != 1) {
+	image::ImagePtr loadEmbeddedImage(const GodotResource &resource) const {
+		if (!resource || type(resource) != "Image") {
 			return {};
 		}
-		for (const GodotSection &s : doc.sections) {
-			if (s.tag != "ext_resource" || s.attributes.get("id").text != ref.values[0].text) {
-				continue;
+		const GodotValue &dataDict = resource.section->properties.get("data");
+		if (dataDict.text != "Dictionary") {
+			return {};
+		}
+		const GodotValue &pixelData = dataDict.get("data");
+		if (pixelData.text != "PackedByteArray" || pixelData.bytes.empty()) {
+			return {};
+		}
+		const int width = (int)dataDict.get("width").number();
+		const int height = (int)dataDict.get("height").number();
+		if (width <= 0 || height <= 0) {
+			return {};
+		}
+		const core::String format = dataDict.get("format").text;
+		// Godot 4 serializes Image.FORMAT_RGBA8 as "RGBA8" (or legacy numeric 5).
+		if (!format.empty() && format != "RGBA8" && format != "5") {
+			Log::warn("Unsupported embedded Godot Image format '%s'", format.c_str());
+			return {};
+		}
+		const int expected = width * height * 4;
+		if ((int)pixelData.bytes.size() < expected) {
+			Log::error("Embedded Godot Image is truncated (%i < %i)", (int)pixelData.bytes.size(), expected);
+			return {};
+		}
+		image::ImagePtr image = image::createEmptyImage(resource.section->attributes.get("id").text);
+		if (!image->loadRGBA(pixelData.bytes.data(), width, height)) {
+			return {};
+		}
+		return image;
+	}
+
+	image::ImagePtr texture(const GodotDocument &doc, const GodotValue &ref) {
+		if (ref.values.size() != 1) {
+			return {};
+		}
+		if (ref.text == "ExtResource") {
+			for (const GodotSection &s : doc.sections) {
+				if (s.tag != "ext_resource" || s.attributes.get("id").text != ref.values[0].text) {
+					continue;
+				}
+				const core::String filename = path(doc, s.attributes.get("path").text);
+				core::ScopedPtr<io::SeekableReadStream> stream(_archive->readStream(filename));
+				return stream ? image::loadImage(filename, *stream) : image::ImagePtr();
 			}
-			const core::String filename = path(doc, s.attributes.get("path").text);
-			core::ScopedPtr<io::SeekableReadStream> stream(_archive->readStream(filename));
-			return stream ? image::loadImage(filename, *stream) : image::ImagePtr();
+			return {};
+		}
+		if (ref.text == "SubResource") {
+			// Pixelorama (and some Godot exports) embed ImageTexture -> Image with PackedByteArray.
+			const GodotResource resource = resolve(doc, ref);
+			if (!resource) {
+				return {};
+			}
+			const core::String resourceType = type(resource);
+			if (resourceType == "Image") {
+				return loadEmbeddedImage(resource);
+			}
+			if (resourceType == "ImageTexture") {
+				return texture(*resource.document, resource.section->properties.get("image"));
+			}
 		}
 		return {};
 	}
@@ -672,16 +724,39 @@ static bool loadGodotPrimitive(GodotResources &resources, const GodotResource &r
 		mesh.materials.push_back(material);
 	const MeshMaterialIndex matIdx = material ? 0 : -1;
 	if (type == "BoxMesh") {
+		// Emit unique verts per face so albedo textures sample correctly (Pixelorama 3D layers).
 		const glm::vec3 size = godotVec3(p.get("size"), glm::vec3(1.0f));
-		for (int i = 0; i < 8; ++i) {
-			MeshVertex v;
-			v.pos = glm::vec3(i & 1 ? 0.5f : -0.5f, i & 2 ? 0.5f : -0.5f, i & 4 ? 0.5f : -0.5f) * size;
-			v.materialIdx = matIdx;
-			mesh.vertices.push_back(v);
+		const float hx = 0.5f * size.x;
+		const float hy = 0.5f * size.y;
+		const float hz = 0.5f * size.z;
+		// Face order matches Godot BoxMesh: +Z, +X, -Z, -X, +Y, -Y. Clockwise winding.
+		const glm::vec3 corners[6][4] = {
+			{{-hx, -hy, hz}, {hx, -hy, hz}, {-hx, hy, hz}, {hx, hy, hz}},
+			{{hx, -hy, hz}, {hx, -hy, -hz}, {hx, hy, hz}, {hx, hy, -hz}},
+			{{hx, -hy, -hz}, {-hx, -hy, -hz}, {hx, hy, -hz}, {-hx, hy, -hz}},
+			{{-hx, -hy, -hz}, {-hx, -hy, hz}, {-hx, hy, -hz}, {-hx, hy, hz}},
+			{{-hx, hy, hz}, {hx, hy, hz}, {-hx, hy, -hz}, {hx, hy, -hz}},
+			{{-hx, -hy, -hz}, {hx, -hy, -hz}, {-hx, -hy, hz}, {hx, -hy, hz}},
+		};
+		const glm::vec2 uvs[4] = {{0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f}, {1.0f, 0.0f}};
+		const voxel::IndexType first = (voxel::IndexType)mesh.vertices.size();
+		for (int face = 0; face < 6; ++face) {
+			for (int i = 0; i < 4; ++i) {
+				MeshVertex v;
+				v.pos = corners[face][i];
+				v.uv = uvs[i];
+				v.materialIdx = matIdx;
+				mesh.vertices.push_back(v);
+			}
+			const voxel::IndexType b = first + (voxel::IndexType)(face * 4);
+			// Godot front faces use clockwise winding.
+			mesh.indices.push_back(b + 0);
+			mesh.indices.push_back(b + 2);
+			mesh.indices.push_back(b + 1);
+			mesh.indices.push_back(b + 1);
+			mesh.indices.push_back(b + 2);
+			mesh.indices.push_back(b + 3);
 		}
-		static const voxel::IndexType indices[] = {0, 2, 1, 1, 2, 3, 4, 5, 6, 5, 7, 6, 0, 1, 4, 1, 5, 4,
-												   2, 6, 3, 3, 6, 7, 0, 4, 2, 2, 4, 6, 1, 3, 5, 3, 7, 5};
-		mesh.indices.append(indices, lengthof(indices));
 		return true;
 	}
 	if (type == "PlaneMesh" || type == "QuadMesh") {

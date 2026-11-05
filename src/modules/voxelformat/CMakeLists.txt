@@ -103,6 +103,7 @@ set(SRCS
 	private/goxel/GoxTxtFormat.h             private/goxel/GoxTxtFormat.cpp
 	private/image/AsepriteFormat.h           private/image/AsepriteFormat.cpp
 	private/image/PNGFormat.h                private/image/PNGFormat.cpp
+	private/image/PxoFormat.h                private/image/PxoFormat.cpp
 	private/kenshape/KenShapeFormat.h        private/kenshape/KenShapeFormat.cpp
 	private/magicavoxel/XRawFormat.h         private/magicavoxel/XRawFormat.cpp
 	private/magicavoxel/TrenchblocksFormat.h   private/magicavoxel/TrenchblocksFormat.cpp
@@ -195,6 +196,7 @@ set(TEST_SRCS
 	tests/AoSFormatTest.cpp
 	tests/AoSVXLFormatTest.cpp
 	tests/AsepriteFormatTest.cpp
+	tests/PxoFormatTest.cpp
 	tests/Autodesk3DSFormatTest.cpp
 	tests/BenVoxelFormatTest.cpp
 	tests/BinVoxFormatTest.cpp
@@ -387,6 +389,9 @@ set(TEST_FILES
 	"tests/kvx_save.qb"
 	"tests/libresprite.ase"
 	"tests/libresprite.aseprite"
+	"tests/pixelorama.pxo"
+	"tests/animated_layer_effect.pxo"
+	"tests/3d_layer_drawing.pxo"
 	"tests/loy_s_goodies_female_template.bbmodel"
 	"tests/loy_s_goodies_female_template_5_0_3.bbmodel"
 	"tests/loy_s_goodies_female_template_5_0_3.glb"

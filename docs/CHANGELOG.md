@@ -16,6 +16,7 @@ General:
    - Renamed cvar `voxformat_optimize` to `voxformat_mesh_optimize`
    - Added Dark Pastel, Rose Quartz, Gruvbox Hard, and Dracula UI color themes (`ui_style`)
    - Added support for Trove `.blueprint` (kiwib) files
+   - Added support for Pixelorama `.pxo` files
    - Added support for VoxelCdx files `.vcdx`
    - Added support for Sandbox `vxm` version 13 and `vxa` version 10
    - Added support for Trenchblock `vox` files

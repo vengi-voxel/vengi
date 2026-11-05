@@ -344,6 +344,8 @@ OpenStreetMap JSON (*.osm.json)
 .TP
 Particubes (*.pcubes, *.particubes)
 .TP
+Pixelorama (*.pxo)
+.TP
 Polygon File Format (*.ply)
 .TP
 Portable Network Graphics (*.png)

@@ -37,6 +37,7 @@
 #include "voxelformat/private/goxel/GoxTxtFormat.h"
 #include "voxelformat/private/image/AsepriteFormat.h"
 #include "voxelformat/private/image/PNGFormat.h"
+#include "voxelformat/private/image/PxoFormat.h"
 #include "voxelformat/private/kenshape/KenShapeFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/magicavoxel/TrenchblocksFormat.h"
@@ -99,6 +100,7 @@ namespace voxelformat {
 const io::FormatDescription *voxelFormats() {
 	static const io::FormatDescription desc[] = {VENGIFormat::format(),
 												 AsepriteFormat::format(),
+												 PxoFormat::format(),
 												 QBFormat::format(),
 												 BenVoxelFormat::format(),
 												 VoxFormat::format(),
@@ -332,6 +334,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<CubzhB64Format>();
 		} else if (io::isA(AsepriteFormat::format(), desc, ext, magic)) {
 			return core::make_shared<AsepriteFormat>();
+		} else if (io::isA(PxoFormat::format(), desc, ext, magic)) {
+			return core::make_shared<PxoFormat>();
 		} else if (io::isA(ThingFormat::format(), desc, ext, magic)) {
 			return core::make_shared<ThingFormat>();
 		} else if (io::isA(io::format::png(), desc, ext, magic)) {
