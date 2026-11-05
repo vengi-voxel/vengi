@@ -19,10 +19,12 @@ struct TreeEntry {
 	int size = -1;
 };
 
+core::String treeCacheFile(const core::String &repository, const core::String &branch);
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
-						 const core::String &path, int size);
+						 const core::String &path, int size, bool force = false);
 core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const core::String &repository,
-											const core::String &branch, const core::String &path = "");
+											const core::String &branch, const core::String &path = "",
+											bool force = false);
 
 } // namespace github
 } // namespace voxelcollection

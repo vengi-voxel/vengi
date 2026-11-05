@@ -14,25 +14,30 @@
 
 namespace http {
 
-HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
-	initGet(archive, file, url);
+HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+								 bool force) {
+	initGet(archive, file, url, force);
 }
 
 HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
-								 const core::String &postBody, const core::String &contentType) {
-	initPost(archive, file, url, postBody, contentType);
+								 const core::String &postBody, const core::String &contentType, bool force) {
+	initPost(archive, file, url, postBody, contentType, force);
 }
 
-void HttpCacheStream::initGet(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
+void HttpCacheStream::initGet(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+							  bool force) {
 	if (core::string::startsWith(url, "file://")) {
 		_readStream = archive->readStream(url.substr(7));
 		return;
 	}
-	if (archive->exists(file)) {
+	if (!force && archive->exists(file)) {
 		Log::debug("Use cached file at %s for %s", file.c_str(), url.c_str());
 		_readStream = archive->readStream(file);
 		core_assert(_readStream != nullptr);
 		return;
+	}
+	if (force) {
+		Log::debug("Force re-download of %s from %s", file.c_str(), url.c_str());
 	}
 	Log::debug("try to download %s from %s", file.c_str(), url.c_str());
 	io::BufferedReadWriteStream bufStream(1024 * 1024);
@@ -60,14 +65,20 @@ void HttpCacheStream::initGet(const io::ArchivePtr &archive, const core::String 
 	} else {
 		Log::warn("Failed to download %s (%s)", url.c_str(), file.c_str());
 	}
+	// keep serving a previously cached file if a forced re-download failed
+	if (_readStream == nullptr && archive->exists(file)) {
+		Log::debug("Fall back to cached file at %s for %s", file.c_str(), url.c_str());
+		_readStream = archive->readStream(file);
+	}
 }
 
 HttpCacheStream::~HttpCacheStream() {
 	delete _readStream;
 }
 
-core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
-	HttpCacheStream stream(archive, file, url);
+core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+									 bool force) {
+	HttpCacheStream stream(archive, file, url, force);
 	if (!stream.valid()) {
 		return core::String::Empty;
 	}
@@ -78,8 +89,8 @@ core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::
 
 core::String HttpCacheStream::stringPost(const io::ArchivePtr &archive, const core::String &file,
 										 const core::String &url, const core::String &postBody,
-										 const core::String &contentType) {
-	HttpCacheStream stream(archive, file, url, postBody, contentType);
+										 const core::String &contentType, bool force) {
+	HttpCacheStream stream(archive, file, url, postBody, contentType, force);
 	if (!stream.valid()) {
 		return core::String::Empty;
 	}
@@ -89,12 +100,15 @@ core::String HttpCacheStream::stringPost(const io::ArchivePtr &archive, const co
 }
 
 void HttpCacheStream::initPost(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
-							   const core::String &postBody, const core::String &contentType) {
-	if (archive->exists(file)) {
+							   const core::String &postBody, const core::String &contentType, bool force) {
+	if (!force && archive->exists(file)) {
 		Log::debug("Use cached file at %s for POST %s", file.c_str(), url.c_str());
 		_readStream = archive->readStream(file);
 		core_assert(_readStream != nullptr);
 		return;
+	}
+	if (force) {
+		Log::debug("Force re-download of POST %s (cache: %s)", url.c_str(), file.c_str());
 	}
 	Log::debug("try to POST to %s (cache: %s)", url.c_str(), file.c_str());
 	io::BufferedReadWriteStream bufStream(1024 * 1024);
@@ -128,6 +142,10 @@ void HttpCacheStream::initPost(const io::ArchivePtr &archive, const core::String
 		}
 	} else {
 		Log::warn("Failed to POST %s (%s)", url.c_str(), file.c_str());
+	}
+	if (_readStream == nullptr && archive->exists(file)) {
+		Log::debug("Fall back to cached file at %s for POST %s", file.c_str(), url.c_str());
+		_readStream = archive->readStream(file);
 	}
 }
 

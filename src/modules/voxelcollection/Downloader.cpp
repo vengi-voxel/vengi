@@ -48,8 +48,22 @@ core::String VoxelFile::targetDir() const {
 	return core::string::sanitizeDirPath(path);
 }
 
-VoxelSources Downloader::sources() {
-	http::Request request("https://vengi-voxel.de/api/browser-data", http::RequestType::GET);
+VoxelSources Downloader::sources(const io::ArchivePtr &archive, bool force) {
+	const char *cacheFile = "browser-data.json";
+	const char *url = "https://vengi-voxel.de/api/browser-data";
+
+	if (!force && archive && archive->exists(cacheFile)) {
+		core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(cacheFile));
+		if (stream) {
+			core::String json;
+			if (stream->readString((int)stream->size(), json) && !json.empty()) {
+				Log::debug("Use cached browser data at %s", cacheFile);
+				return sources(json);
+			}
+		}
+	}
+
+	http::Request request(url, http::RequestType::GET);
 	const core::String userAgent = app::App::getInstance()->fullAppname() + "/" PROJECT_VERSION;
 	request.setUserAgent(userAgent);
 	const core::VarDef httpConnectTimeoutAssets(cfg::HttpConnectTimeoutAssets, 10,
@@ -64,10 +78,25 @@ VoxelSources Downloader::sources() {
 		io::BufferedReadWriteStream outStream;
 		if (!request.execute(outStream)) {
 			Log::error("Failed to download browser data");
+			if (archive && archive->exists(cacheFile)) {
+				core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(cacheFile));
+				if (stream && stream->readString((int)stream->size(), json) && !json.empty()) {
+					Log::warn("Using cached browser data after download failure");
+					return sources(json);
+				}
+			}
 			return {};
 		}
 		outStream.seek(0);
 		outStream.readString((int)outStream.size(), json);
+		if (archive && !json.empty()) {
+			outStream.seek(0);
+			if (!archive->write(cacheFile, outStream)) {
+				Log::warn("Failed to write browser data cache to %s", cacheFile);
+			} else {
+				Log::debug("Wrote browser data cache to %s", cacheFile);
+			}
+		}
 	}
 	return sources(json);
 }
@@ -271,15 +300,35 @@ core::DynamicArray<VoxelFile> Downloader::processEntries(const core::DynamicArra
 	return files;
 }
 
-VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource &source) const {
+bool Downloader::hasCached(const io::ArchivePtr &archive, const VoxelSource &source) const {
+	if (!archive || source.isLocal()) {
+		return false;
+	}
+	if (source.provider == "github") {
+		return archive->exists(github::treeCacheFile(source.github.repo, source.github.commit));
+	}
+	if (source.provider == "gitlab") {
+		return archive->exists(gitlab::treeCacheFile(source.gitlab.repo, source.gitlab.commit, 1));
+	}
+	if (source.provider == "single") {
+		VoxelFile file;
+		file.source = source.name;
+		file.name = core::string::extractFilenameWithExtension(source.single.url);
+		file.fullPath = file.name;
+		return archive->exists(file.targetFile());
+	}
+	return false;
+}
+
+VoxelFiles Downloader::resolve(const io::ArchivePtr &archive, const VoxelSource &source, bool force) const {
 	Log::info("... check source %s", source.name.c_str());
 	if (source.provider == "github") {
 		const core::DynamicArray<github::TreeEntry> &entries =
-			github::reposGitTrees(archive, source.github.repo, source.github.commit, source.github.path);
+			github::reposGitTrees(archive, source.github.repo, source.github.commit, source.github.path, force);
 		return processEntries(entries, source, archive);
 	} else if (source.provider == "gitlab") {
 		const core::DynamicArray<gitlab::TreeEntry> &entries =
-			gitlab::reposGitTrees(archive, source.gitlab.repo, source.gitlab.commit, source.gitlab.path);
+			gitlab::reposGitTrees(archive, source.gitlab.repo, source.gitlab.commit, source.gitlab.path, force);
 		return processEntries(entries, source, archive);
 	} else if (source.provider == "single") {
 		VoxelFiles files;

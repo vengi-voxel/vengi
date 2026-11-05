@@ -15,12 +15,19 @@
 namespace voxelcollection {
 namespace gitlab {
 
-static json::Json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
-	const core::String json = http::HttpCacheStream::string(archive, file, url);
+static json::Json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+							 bool force) {
+	const core::String json = http::HttpCacheStream::string(archive, file, url, force);
 	if (json.empty()) {
 		return {};
 	}
 	return json::Json::parse(json);
+}
+
+core::String treeCacheFile(const core::String &repository, const core::String &branch, int page) {
+	core::String file = core::String::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
+	core::string::replaceAllChars(file, '/', '-');
+	return file;
 }
 
 core::String downloadUrl(const core::String &repository, const core::String &branch, const core::String &path) {
@@ -28,7 +35,7 @@ core::String downloadUrl(const core::String &repository, const core::String &bra
 }
 
 core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const core::String &repository,
-											const core::String &branch, const core::String &path) {
+											const core::String &branch, const core::String &path, bool force) {
 	core_trace_scoped(ReposGitTrees);
 	const core::String encoded = core::string::urlEncode(repository);
 	const core::String urlPages = core::String::format(
@@ -55,9 +62,8 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 		const core::String url = core::String::format(
 			"https://gitlab.com/api/v4/projects/%s/repository/tree?ref=%s&recursive=1&per_page=100&page=%i&path=%s",
 			encoded.c_str(), branch.c_str(), page, path.c_str());
-		core::String file = core::String::format("gitlab-%s-%s-page%i.json", repository.c_str(), branch.c_str(), page);
-		core::string::replaceAllChars(file, '/', '-');
-		const auto &json = cachedJson(archive, file, url);
+		const core::String file = treeCacheFile(repository, branch, page);
+		const auto &json = cachedJson(archive, file, url, force);
 		if (!json.isArray()) {
 			const core::String str = json.dump().c_str();
 			Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());

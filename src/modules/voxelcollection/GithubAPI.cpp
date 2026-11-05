@@ -12,16 +12,23 @@
 namespace voxelcollection {
 namespace github {
 
-static json::Json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url) {
-	const core::String json = http::HttpCacheStream::string(archive, file, url);
+static json::Json cachedJson(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+							 bool force) {
+	const core::String json = http::HttpCacheStream::string(archive, file, url, force);
 	if (json.empty()) {
 		return {};
 	}
 	return json::Json::parse(json);
 }
 
+core::String treeCacheFile(const core::String &repository, const core::String &branch) {
+	core::String file = "github-" + repository + "-" + branch + ".json";
+	core::string::replaceAllChars(file, '/', '-');
+	return file;
+}
+
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
-						 const core::String &path, int size) {
+						 const core::String &path, int size, bool force) {
 	// the git lfs stuff is usually not larger than 150 bytes because it's just a reference
 	if (size < 150) { // TODO: this check is not really good, but it works for now
 		core_assert_msg(!path.empty(), "Path must not be empty (repository: %s, branch: %s)", repository.c_str(), branch.c_str());
@@ -30,7 +37,7 @@ core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repo
 		const core::String &url = "https://api.github.com/repos/" + repository + "/contents/" + pathEnc + "?ref=" + branchEnc;
 		core::String file = "github-" + repository + "-" + branch + "-" + path + ".json";
 		core::string::replaceAllChars(file, '/', '-');
-		const auto &json = cachedJson(archive, file, url);
+		const auto &json = cachedJson(archive, file, url, force);
 		if (json.contains("download_url")) {
 			const auto &dlurl = json.strVal("download_url", "");
 			return dlurl.c_str();
@@ -42,13 +49,12 @@ core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repo
 }
 
 core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const core::String &repository,
-											const core::String &branch, const core::String &path) {
+											const core::String &branch, const core::String &path, bool force) {
 	core_trace_scoped(ReposGitTrees);
 	const core::String url = "https://api.github.com/repos/" + repository + "/git/trees/" + branch + "?recursive=1";
-	core::String file = "github-" + repository + "-" + branch + ".json";
-	core::string::replaceAllChars(file, '/', '-');
+	const core::String file = treeCacheFile(repository, branch);
 	core::DynamicArray<TreeEntry> entries;
-	const auto &json = cachedJson(archive, file, url);
+	const auto &json = cachedJson(archive, file, url, force);
 	if (!json.contains("tree")) {
 		const core::String str = json.dump().c_str();
 		Log::error("Unexpected json data for url: '%s': %s", url.c_str(), str.c_str());
@@ -70,7 +76,7 @@ core::DynamicArray<TreeEntry> reposGitTrees(const io::ArchivePtr &archive, const
 			continue;
 		}
 		treeEntry.size = entry.intVal("size", -1);
-		treeEntry.url = downloadUrl(archive, repository, branch, treeEntry.path, treeEntry.size);
+		treeEntry.url = downloadUrl(archive, repository, branch, treeEntry.path, treeEntry.size, force);
 		entries.push_back(treeEntry);
 	}
 

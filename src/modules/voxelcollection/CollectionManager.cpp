@@ -121,10 +121,10 @@ bool CollectionManager::local() {
 	return true;
 }
 
-bool CollectionManager::online() {
-	app::schedule([queue = _voxelSourceQueue]() {
+bool CollectionManager::online(bool force) {
+	app::schedule([queue = _voxelSourceQueue, archive = _archive, force]() {
 		Downloader downloader;
-		queue->pushAll(downloader.sources());
+		queue->pushAll(downloader.sources(archive, force));
 	});
 	return true;
 }
@@ -199,17 +199,29 @@ bool CollectionManager::createThumbnail(const VoxelFile &voxelFile) {
 	return true;
 }
 
-void CollectionManager::resolve(const VoxelSource &source, bool async) {
+void CollectionManager::resolve(const VoxelSource &source, bool async, bool force) {
 	if (source.isLocal()) {
 		local();
 		return;
 	}
+	if (force) {
+		auto iter = _voxelFilesMap.find(source.name);
+		if (iter != _voxelFilesMap.end()) {
+			_count -= (int)iter->value.files.size();
+			if (_count < 0) {
+				_count = 0;
+			}
+			_voxelFilesMap.remove(source.name);
+		}
+		_onlineResolvedSources.remove(source.name);
+	}
 	if (!_onlineResolvedSources.insert(source.name)) {
 		return;
 	}
-	auto func = [archive = _archive, voxelFiles = _newVoxelFiles, resolvedSources = _resolvedSourceQueue, source]() {
+	auto func = [archive = _archive, voxelFiles = _newVoxelFiles, resolvedSources = _resolvedSourceQueue, source,
+				 force]() {
 		Downloader downloader;
-		const VoxelFiles &files = downloader.resolve(archive, source);
+		const VoxelFiles &files = downloader.resolve(archive, source, force);
 		voxelFiles->push(files.begin(), files.end());
 		resolvedSources->push(source.name);
 	};
@@ -227,8 +239,62 @@ bool CollectionManager::resolved(const VoxelSource &source) const {
 	return _onlineResolvedSources.has(source.name);
 }
 
+bool CollectionManager::cached(const VoxelSource &source) const {
+	Downloader downloader;
+	return downloader.hasCached(_archive, source);
+}
+
+void CollectionManager::reloadOnline() {
+	VoxelSources localSources;
+	for (const VoxelSource &source : _sources) {
+		if (source.isLocal()) {
+			localSources.push_back(source);
+			continue;
+		}
+		auto iter = _voxelFilesMap.find(source.name);
+		if (iter != _voxelFilesMap.end()) {
+			_count -= (int)iter->value.files.size();
+			_voxelFilesMap.remove(source.name);
+		}
+		_onlineResolvedSources.remove(source.name);
+	}
+	if (_count < 0) {
+		_count = 0;
+	}
+	_voxelSourceQueue->clear();
+	_sources = core::move(localSources);
+	online(true);
+}
+
+void CollectionManager::reload(const VoxelSource &source) {
+	if (source.isLocal()) {
+		local();
+		return;
+	}
+	resolve(source, true, true);
+}
+
 void CollectionManager::update(double nowSeconds, int n) {
-	_voxelSourceQueue->popAll(_sources);
+	VoxelSources newSources;
+	if (_voxelSourceQueue->popAll(newSources)) {
+		for (const VoxelSource &source : newSources) {
+			bool exists = false;
+			for (const VoxelSource &existing : _sources) {
+				if (existing.name == source.name) {
+					exists = true;
+					break;
+				}
+			}
+			if (!exists) {
+				_sources.push_back(source);
+				// previously downloaded listings should show up without another manual load
+				if (cached(source)) {
+					Log::debug("Auto-resolve cached collection source %s", source.name.c_str());
+					resolve(source);
+				}
+			}
+		}
+	}
 	core::String resolvedSource;
 	while (_resolvedSourceQueue->pop(resolvedSource)) {
 		if (!_voxelFilesMap.hasKey(resolvedSource)) {

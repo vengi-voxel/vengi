@@ -30,31 +30,36 @@ private:
 
 	/**
 	 * @brief Check cache and download if necessary (GET request)
+	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 */
-	void initGet(const io::ArchivePtr &archive, const core::String &file, const core::String &url);
+	void initGet(const io::ArchivePtr &archive, const core::String &file, const core::String &url, bool force);
 
 	/**
 	 * @brief Check cache and download if necessary (POST request)
+	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 */
 	void initPost(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
-				  const core::String &postBody, const core::String &contentType);
+				  const core::String &postBody, const core::String &contentType, bool force);
 
 public:
 	/**
 	 * @brief Constructor for GET requests
 	 * @param[in] file The path to the file stored in the archive
+	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 * @sa io::Filesystem::homePath()
 	 */
-	HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url);
+	HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url, bool force = false);
 
 	/**
 	 * @brief Constructor for POST requests
 	 * @param[in] file The path to the file stored in the archive
 	 * @param[in] postBody The POST request body
 	 * @param[in] contentType The Content-Type header value (e.g., "application/x-www-form-urlencoded")
+	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 */
 	HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
-					const core::String &postBody, const core::String &contentType = "application/x-www-form-urlencoded");
+					const core::String &postBody, const core::String &contentType = "application/x-www-form-urlencoded",
+					bool force = false);
 
 	virtual ~HttpCacheStream();
 
@@ -68,15 +73,19 @@ public:
 
 	/**
 	 * @brief Convenience method for GET requests
+	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 */
-	static core::String string(const io::ArchivePtr &archive, const core::String &file, const core::String &url);
+	static core::String string(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
+							   bool force = false);
 
 	/**
 	 * @brief Convenience method for POST requests
+	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 */
 	static core::String stringPost(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
 								   const core::String &postBody,
-								   const core::String &contentType = "application/x-www-form-urlencoded");
+								   const core::String &contentType = "application/x-www-form-urlencoded",
+								   bool force = false);
 };
 
 inline bool HttpCacheStream::isNewInCache() const {

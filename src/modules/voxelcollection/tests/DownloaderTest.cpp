@@ -60,10 +60,49 @@ TEST_F(DownloaderTest, testParseSources) {
 	ASSERT_EQ("master", sources[1].github.commit);
 }
 
+TEST_F(DownloaderTest, testSourcesCache) {
+	const io::MemoryArchivePtr &archive = io::openMemoryArchive();
+	const core::String json = R"({"sources":[{"name":"Cached","license":"custom","github":{"repo":"a/b","commit":"main"}}]})";
+	ASSERT_TRUE(archive->add("browser-data.json", (const uint8_t *)json.c_str(), json.size()));
+
+	Downloader downloader;
+	const VoxelSources &sources = downloader.sources(archive, false);
+	ASSERT_EQ(1u, sources.size());
+	ASSERT_EQ("Cached", sources[0].name);
+	ASSERT_EQ("github", sources[0].provider);
+	ASSERT_EQ("a/b", sources[0].github.repo);
+}
+
+TEST_F(DownloaderTest, testHasCached) {
+	const io::MemoryArchivePtr &archive = io::openMemoryArchive();
+	Downloader downloader;
+
+	VoxelSource githubSource;
+	githubSource.name = "Github";
+	githubSource.provider = "github";
+	githubSource.github.repo = "org/repo";
+	githubSource.github.commit = "main";
+	ASSERT_FALSE(downloader.hasCached(archive, githubSource));
+	ASSERT_TRUE(archive->add(github::treeCacheFile(githubSource.github.repo, githubSource.github.commit).c_str(),
+							 (const uint8_t *)"{}", 2));
+	ASSERT_TRUE(downloader.hasCached(archive, githubSource));
+
+	VoxelSource gitlabSource;
+	gitlabSource.name = "Gitlab";
+	gitlabSource.provider = "gitlab";
+	gitlabSource.gitlab.repo = "org/repo";
+	gitlabSource.gitlab.commit = "main";
+	ASSERT_FALSE(downloader.hasCached(archive, gitlabSource));
+	ASSERT_TRUE(archive->add(gitlab::treeCacheFile(gitlabSource.gitlab.repo, gitlabSource.gitlab.commit, 1).c_str(),
+							 (const uint8_t *)"[]", 2));
+	ASSERT_TRUE(downloader.hasCached(archive, gitlabSource));
+}
+
 // disabled because it requires network access
 TEST_F(DownloaderTest, DISABLED_testDownloadJsonAndParse) {
 	Downloader downloader;
-	const core::DynamicArray<VoxelSource> &sources = downloader.sources();
+	const io::ArchivePtr &archive = io::openMemoryArchive();
+	const VoxelSources &sources = downloader.sources(archive);
 	ASSERT_FALSE(sources.empty());
 }
 

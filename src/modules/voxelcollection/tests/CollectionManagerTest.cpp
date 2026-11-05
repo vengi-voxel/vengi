@@ -68,6 +68,49 @@ TEST_F(CollectionManagerTest, testInvalidSourceResponseCompletes) {
 	checkEmptySourceCompletes("{}");
 }
 
+TEST_F(CollectionManagerTest, testReloadSource) {
+	const char *cacheFile = "github-test-empty-collection-master.json";
+	ASSERT_TRUE(_testApp->filesystem()->homeWrite(cacheFile, "{\"tree\": []}"));
+	VoxelSource source;
+	source.name = "Empty collection";
+	source.provider = "github";
+	source.github.repo = "test/empty-collection";
+	source.github.commit = "master";
+	_mgr->resolve(source, false);
+	ASSERT_TRUE(_mgr->resolved(source));
+	_mgr->update(0.0);
+	ASSERT_NE(_mgr->voxelFilesMap().find(source.name), _mgr->voxelFilesMap().end());
+
+	// sync force-reload clears and re-resolves from the (still present) cache
+	_mgr->resolve(source, false, true);
+	ASSERT_TRUE(_mgr->resolved(source));
+	_mgr->update(0.0);
+	const auto iter = _mgr->voxelFilesMap().find(source.name);
+	ASSERT_NE(iter, _mgr->voxelFilesMap().end());
+	EXPECT_TRUE(iter->value.files.empty());
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile(_testApp->filesystem()->homeWritePath(cacheFile)));
+}
+
+TEST_F(CollectionManagerTest, testCachedAutoResolve) {
+	const char *cacheFile = "github-test-empty-collection-master.json";
+	ASSERT_TRUE(_testApp->filesystem()->homeWrite(cacheFile, "{\"tree\": []}"));
+	VoxelSource source;
+	source.name = "Empty collection";
+	source.provider = "github";
+	source.github.repo = "test/empty-collection";
+	source.github.commit = "master";
+	ASSERT_TRUE(_mgr->cached(source));
+
+	// inject via the online source queue path used by update()
+	_mgr->online(false);
+	// directly resolve path covered above; here verify cached() + resolve from cache
+	_mgr->resolve(source, false);
+	ASSERT_TRUE(_mgr->resolved(source));
+	_mgr->update(0.0);
+	ASSERT_NE(_mgr->voxelFilesMap().find(source.name), _mgr->voxelFilesMap().end());
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile(_testApp->filesystem()->homeWritePath(cacheFile)));
+}
+
 TEST_F(CollectionManagerTest, DISABLED_testOnline) {
 	const size_t before = _mgr->sources().size();
 	ASSERT_TRUE(_mgr->online());

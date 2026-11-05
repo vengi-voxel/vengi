@@ -104,9 +104,21 @@ protected:
 	bool handleFile(const io::ArchivePtr &archive, VoxelFiles &files, VoxelFile &file, bool enableMeshes) const;
 
 public:
-	VoxelSources sources();
+	/**
+	 * @brief Download or load the cached browser-data source list
+	 * @param[in] force If @c true, ignore the local cache and re-download
+	 */
+	VoxelSources sources(const io::ArchivePtr &archive, bool force = false);
 	VoxelSources sources(const core::String &json);
-	VoxelFiles resolve(const io::ArchivePtr &archive, const VoxelSource &source) const;
+	/**
+	 * @brief Resolve a voxel source into voxel files
+	 * @param[in] force If @c true, ignore cached provider json and re-download
+	 */
+	VoxelFiles resolve(const io::ArchivePtr &archive, const VoxelSource &source, bool force = false) const;
+	/**
+	 * @brief Whether a previously downloaded provider listing exists in the archive
+	 */
+	bool hasCached(const io::ArchivePtr &archive, const VoxelSource &source) const;
 
 	bool download(const io::ArchivePtr &archive, const VoxelFile &file) const;
 

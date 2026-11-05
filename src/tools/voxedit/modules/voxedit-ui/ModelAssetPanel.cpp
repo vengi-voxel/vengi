@@ -311,6 +311,11 @@ void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &
 			}, {});
 		}
 		ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
+		ImGui::SameLine();
+		if (ImGui::IconButton(ICON_LC_REFRESH_CW, _("Reload collections"))) {
+			_collectionMgr->reloadOnline();
+		}
+		ImGui::TooltipTextUnformatted(_("Re-download the collection source list and clear loaded online collections"));
 
 		const int columns = _thumbnails ? 3 : 2;
 		if (ImGui::BeginTable("##voxelfiles", columns,
@@ -338,7 +343,17 @@ void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &
 					}
 					const int n = (int)collection.files.size();
 					const core::String &label = core::String::format("%s (%i)##%s", source.name.c_str(), n, source.name.c_str());
-					if (ImGui::TreeNodeEx(label.c_str(), treeFlags)) {
+					const bool open = ImGui::TreeNodeEx(label.c_str(), treeFlags);
+					if (source.isLocal()) {
+						ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
+					} else if (ImGui::BeginPopupContextItem("##sourcereload")) {
+						if (ImGui::MenuItem(_("Reload"))) {
+							_collectionMgr->reload(source);
+						}
+						ImGui::TooltipTextUnformatted(_("Re-download the cached collection listing"));
+						ImGui::EndPopup();
+					}
+					if (open) {
 						if (!collection.sorted) {
 							ImGui::Spinner("##collectionspinner", ImGui::Size(1.0f));
 							ImGui::SameLine();
@@ -349,14 +364,20 @@ void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &
 						}
 						ImGui::TreePop();
 					}
-					if (source.isLocal()) {
-						ImGui::TooltipTextUnformatted(_collectionMgr->localDir().c_str());
-					}
 				} else {
-					if (!_collectionMgr->resolved(source)) {
+					const bool isCached = !source.isLocal() && _collectionMgr->cached(source);
+					if (!_collectionMgr->resolved(source) && !isCached) {
 						treeFlags |= ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Bullet;
 					}
-					if (ImGui::TreeNodeEx(source.name.c_str(), treeFlags)) {
+					const bool open = ImGui::TreeNodeEx(source.name.c_str(), treeFlags);
+					if (!source.isLocal() && ImGui::BeginPopupContextItem("##sourcereloadpending")) {
+						if (ImGui::MenuItem(_("Reload"))) {
+							_collectionMgr->reload(source);
+						}
+						ImGui::TooltipTextUnformatted(_("Re-download the cached collection listing"));
+						ImGui::EndPopup();
+					}
+					if (open) {
 						if (_collectionMgr->resolved(source)) {
 							ImGui::Spinner("##sourcespinner", ImGui::Size(1.0f));
 							ImGui::SameLine();
@@ -365,6 +386,8 @@ void ModelAssetPanel::update(const char *id, command::CommandExecutionListener &
 							_collectionMgr->resolve(source);
 						}
 						ImGui::TreePop();
+					} else if (isCached) {
+						ImGui::TooltipTextUnformatted(_("Loading from cache..."));
 					} else {
 						ImGui::TooltipTextUnformatted(_("Double click to load"));
 					}

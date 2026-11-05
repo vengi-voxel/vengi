@@ -56,9 +56,29 @@ public:
 	bool setLocalDir(const core::String &dir);
 
 	bool local();
-	bool online();
-	void resolve(const VoxelSource &source, bool async = true);
+	/**
+	 * @brief Load the online voxel collection sources
+	 * @param[in] force If @c true, ignore the cached browser-data json and re-download
+	 */
+	bool online(bool force = false);
+	/**
+	 * @brief Resolve a voxel source into voxel files
+	 * @param[in] force If @c true, ignore cached provider json and re-download
+	 */
+	void resolve(const VoxelSource &source, bool async = true, bool force = false);
 	bool resolved(const VoxelSource &source) const;
+	/**
+	 * @brief Whether a previously downloaded provider listing exists locally
+	 */
+	bool cached(const VoxelSource &source) const;
+	/**
+	 * @brief Clear online collections and re-download the source list
+	 */
+	void reloadOnline();
+	/**
+	 * @brief Re-download the cached provider json for a single source and re-resolve it
+	 */
+	void reload(const VoxelSource &source);
 
 	/**
 	 * @brief Load existing thumbnails - either from png files or from the voxel format file itself (if supported)
