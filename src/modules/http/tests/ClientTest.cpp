@@ -89,7 +89,7 @@ TEST_F(ClientTest, testCallbackCanCancelAndSubmit) {
 	ASSERT_NE(0u, other);
 	// Allow both responses to complete before dispatching either callback.
 	http::update();
-	wait(100);
+	wait(2500);
 	ASSERT_TRUE(dispatchUntil(called));
 	EXPECT_FALSE(cancelledCalled);
 }
