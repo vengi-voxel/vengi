@@ -44,6 +44,7 @@ allocator and object overhead. It is not a process resident-memory measurement.
 
 The read benchmarks compare default storage (`.../side/content/0`) with explicitly
 materialized storage (`.../side/content/1`). Content 0 is empty, 1 is a shell,
-and 2 is uniformly filled. The `allocated_bytes` counter reports payload and
+2 is uniformly filled, and 3 writes nonuniform voxel data throughout the volume
+to exercise fully allocated storage. The `allocated_bytes` counter reports payload and
 directory allocation for each case. Run matching configurations on the same
 machine when comparing results.

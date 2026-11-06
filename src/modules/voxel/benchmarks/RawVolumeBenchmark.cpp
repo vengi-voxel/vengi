@@ -112,7 +112,9 @@ static void fillBenchmarkVolume(voxel::RawVolume &volume, int content) {
 	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				if (x == region.getLowerX() || x == region.getUpperX() || y == region.getLowerY() ||
+				if (content == 3) {
+					volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, (uint8_t)(x + 3 * y + 7 * z)));
+				} else if (x == region.getLowerX() || x == region.getUpperX() || y == region.getLowerY() ||
 					y == region.getUpperY() || z == region.getLowerZ() || z == region.getUpperZ()) {
 					volume.setVoxel(x, y, z, voxel);
 				}
@@ -203,8 +205,8 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxelsSampler)(benchmark::State &stat
 	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
 }
 
-BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxels)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2}, {0, 1}});
-BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxelsSampler)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2}, {0, 1}});
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxels)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxelsSampler)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);

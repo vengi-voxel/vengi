@@ -5,7 +5,6 @@
 #pragma once
 
 #include "voxel/Voxel.h"
-#include "voxel/Region.h"
 #include <glm/vec3.hpp>
 #include <stddef.h>
 #include <atomic>
@@ -38,7 +37,7 @@ public:
 	Voxel *writableVoxel(const glm::ivec3 &localPos);
 	/** Read a contiguous X span; nullptr denotes count copies of defaultVoxel(). */
 	const Voxel *row(const glm::ivec3 &localPos, int &count) const;
-	Voxel *sampleData(const glm::ivec3 &localPos, Region &dataRegion, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
+	Voxel *sampleData(const glm::ivec3 &localPos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
 	const Voxel &defaultVoxel() const { return _default; }
 	void fill(const Voxel &value);
 	void copyTo(Voxel *destination) const;

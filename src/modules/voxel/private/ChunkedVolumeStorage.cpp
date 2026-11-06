@@ -144,9 +144,9 @@ const Voxel *ChunkedVolumeStorage::row(const glm::ivec3 &localPos, int &count) c
 	return data ? data + voxelIndex(localPos) : nullptr;
 }
 
-Voxel *ChunkedVolumeStorage::sampleData(const glm::ivec3 &localPos, Region &dataRegion, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const {
-	const glm::ivec3 lower = localPos & ~(ChunkSide - 1);
-	dataRegion = Region(lower, glm::min(lower + (ChunkSide - 1), _dimensions - 1));
+Voxel *ChunkedVolumeStorage::sampleData(const glm::ivec3 &localPos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const {
+	dataLower = localPos & ~(ChunkSide - 1);
+	dataUpper = glm::min(dataLower + (ChunkSide - 1), _dimensions - 1);
 	yStride = _chunkDimensions.x;
 	zStride = (int64_t)_chunkDimensions.x * _chunkDimensions.y;
 	chunkEntry = &_chunks[chunkIndex(localPos)];

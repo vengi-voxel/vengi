@@ -192,7 +192,7 @@ public:
 	/** Internal sampler access; does not materialize chunk storage. */
 	Voxel *linearVoxels() const { return _data; }
 	Voxel *writableVoxel(const glm::ivec3 &pos);
-	Voxel *sampleData(const glm::ivec3 &pos, Region &dataRegion, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
+	Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
 	/** Allocated payload and chunk-directory bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;
 	bool valid() const;

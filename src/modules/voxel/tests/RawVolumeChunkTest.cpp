@@ -3,6 +3,7 @@
  */
 
 #include "AbstractVoxelTest.h"
+#include "core/ArrayLength.h"
 #include "core/StandardLib.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
@@ -257,6 +258,71 @@ TEST_F(RawVolumeChunkTest, FillBehindPlaneMatchesDenseStorage) {
 		}
 		EXPECT_EQ(nullptr, volume.linearVoxels());
 	}
+}
+
+TEST_F(RawVolumeChunkTest, SamplerMovesAcrossBlocksAndInvalidPositions) {
+	for (bool materialize : {false, true}) {
+		RawVolume volume(largeRegion);
+		if (materialize) {
+			ASSERT_NE(nullptr, volume.voxels());
+		}
+		const int steps[] = {0, 1, 30, 1, 1, 32, 64, 128, 1};
+		for (int axis = 0; axis < 3; ++axis) {
+			glm::ivec3 expected = largeRegion.getLowerCorner();
+			RawVolume::Sampler sampler(volume);
+			ASSERT_TRUE(sampler.setPosition(expected));
+			for (int step : steps) {
+				expected[axis] += step;
+				if (largeRegion.containsPoint(expected)) {
+					volume.setVoxel(expected, Voxel(VoxelType::Generic, (uint8_t)(expected[axis] + 100)));
+				}
+				sampler.movePositive((math::Axis)(1 << axis), step);
+				EXPECT_EQ(expected, sampler.position());
+				EXPECT_EQ(largeRegion.containsPoint(expected), sampler.currentPositionValid());
+				EXPECT_EQ(volume.voxel(expected), sampler.voxel());
+			}
+			for (int i = lengthof(steps) - 1; i >= 0; --i) {
+				expected[axis] -= steps[i];
+				sampler.moveNegative((math::Axis)(1 << axis), steps[i]);
+				EXPECT_EQ(expected, sampler.position());
+				EXPECT_EQ(largeRegion.containsPoint(expected), sampler.currentPositionValid());
+				EXPECT_EQ(volume.voxel(expected), sampler.voxel());
+			}
+		}
+		RawVolume::Sampler sampler(volume);
+		sampler.setPosition(largeRegion.getUpperCorner());
+		sampler.movePositiveX();
+		sampler.movePositiveY();
+		sampler.moveNegativeX();
+		EXPECT_FALSE(sampler.currentPositionValid());
+		sampler.moveNegativeY();
+		EXPECT_TRUE(sampler.currentPositionValid());
+		EXPECT_EQ(largeRegion.getUpperCorner(), sampler.position());
+		EXPECT_EQ(materialize, volume.linearVoxels() != nullptr);
+	}
+}
+
+TEST_F(RawVolumeChunkTest, SamplerRespectsClippedWrapperBounds) {
+	RawVolume volume(largeRegion);
+	volume.fill(Voxel(VoxelType::Generic, 9));
+	const Region view(largeRegion.getLowerCorner() + 5, largeRegion.getLowerCorner() + 70);
+	RawVolumeWrapper wrapper(&volume, view);
+	for (int axis = 0; axis < 3; ++axis) {
+		glm::ivec3 marked = view.getLowerCorner();
+		marked[axis] = largeRegion.getLowerCorner()[axis] + 32;
+		volume.setVoxel(marked, Voxel(VoxelType::Generic, (uint8_t)(17 + axis)));
+		RawVolumeWrapper::Sampler sampler(wrapper);
+		glm::ivec3 pos = view.getLowerCorner();
+		ASSERT_TRUE(sampler.setPosition(pos));
+		for (int step : {0, 1, 26, 1, 5, 32, 1}) {
+			pos[axis] += step;
+			sampler.movePositive((math::Axis)(1 << axis), step);
+			EXPECT_EQ(pos, sampler.position());
+			EXPECT_EQ(view.containsPoint(pos), sampler.currentPositionValid());
+			EXPECT_EQ(volume.voxel(pos), sampler.voxel());
+		}
+	}
+	EXPECT_EQ(nullptr, volume.linearVoxels());
 }
 
 } // namespace voxel
