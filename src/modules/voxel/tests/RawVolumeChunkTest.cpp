@@ -5,6 +5,8 @@
 #include "AbstractVoxelTest.h"
 #include "core/ArrayLength.h"
 #include "core/StandardLib.h"
+#include "core/concurrent/Atomic.h"
+#include "core/concurrent/Thread.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -322,6 +324,47 @@ TEST_F(RawVolumeChunkTest, SamplerRespectsClippedWrapperBounds) {
 			EXPECT_EQ(volume.voxel(pos), sampler.voxel());
 		}
 	}
+	EXPECT_EQ(nullptr, volume.linearVoxels());
+}
+
+TEST_F(RawVolumeChunkTest, ConcurrentSamplersShareImmutableVolume) {
+	RawVolume volume(largeRegion);
+	const glm::ivec3 lower = largeRegion.getLowerCorner();
+	for (int z = 0; z < 3; ++z) {
+		for (int y = 0; y < 65; ++y) {
+			for (int x = 0; x < 65; ++x) {
+				volume.setVoxel(lower + glm::ivec3(x, y, z),
+					Voxel(VoxelType::Generic, (uint8_t)(1 + (x + 3 * y + 7 * z) % 251)));
+			}
+		}
+	}
+	const size_t bytes = volume.allocatedBytes();
+	core::AtomicInt mismatches;
+	core::Thread readers[4];
+	for (auto &reader : readers) {
+		reader = core::Thread([&]() {
+			RawVolume::Sampler sampler(volume);
+			for (int z = 0; z < 4; ++z) {
+				for (int y = 0; y < 66; ++y) {
+					sampler.setPosition(lower + glm::ivec3(0, y, z));
+					for (int x = 0; x < 257; ++x) {
+						const uint8_t expected = x < 65 && y < 65 && z < 3
+							? (uint8_t)(1 + (x + 3 * y + 7 * z) % 251) : 0;
+						if (sampler.voxel().getColor() != expected) {
+							++mismatches;
+						}
+						sampler.movePositiveX();
+					}
+				}
+			}
+		}, "rawvolume-reader");
+		ASSERT_TRUE(reader.joinable());
+	}
+	for (auto &reader : readers) {
+		reader.join();
+	}
+	EXPECT_EQ(0, (int)mismatches);
+	EXPECT_EQ(bytes, volume.allocatedBytes());
 	EXPECT_EQ(nullptr, volume.linearVoxels());
 }
 

@@ -207,6 +207,53 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxelsSampler)(benchmark::State &stat
 
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxels)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxelsSampler)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
+
+// Every benchmark thread reads the same immutable volume. Each owns its sampler.
+// A plain benchmark avoids creating application fixtures concurrently.
+template<int Content, bool Dense>
+static void sharedVolumeRead(benchmark::State &state) {
+	struct SharedVolume {
+		voxel::RawVolume volume{voxel::Region(-128, 127)};
+		bool ready = false;
+		SharedVolume() {
+			if constexpr (Dense) {
+				if (volume.voxels() == nullptr) {
+					return;
+				}
+			}
+			fillBenchmarkVolume(volume, Content);
+			ready = volume.valid();
+		}
+	};
+	static const SharedVolume shared;
+	const voxel::RawVolume &volume = shared.volume;
+	if (!shared.ready) {
+		state.SkipWithError("Could not allocate shared volume");
+		return;
+	}
+	voxel::RawVolume::Sampler sampler(volume);
+	const voxel::Region &region = volume.region();
+	for (auto _ : state) {
+		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				sampler.setPosition(region.getLowerX(), y, z);
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					benchmark::DoNotOptimize(sampler.voxel().getColor());
+					sampler.movePositiveX();
+				}
+			}
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * region.voxels());
+}
+
+BENCHMARK_TEMPLATE(sharedVolumeRead, 0, false)->ThreadRange(1, 4)->UseRealTime();
+BENCHMARK_TEMPLATE(sharedVolumeRead, 0, true)->ThreadRange(1, 4)->UseRealTime();
+BENCHMARK_TEMPLATE(sharedVolumeRead, 1, false)->ThreadRange(1, 4)->UseRealTime();
+BENCHMARK_TEMPLATE(sharedVolumeRead, 1, true)->ThreadRange(1, 4)->UseRealTime();
+BENCHMARK_TEMPLATE(sharedVolumeRead, 3, false)->ThreadRange(1, 4)->UseRealTime();
+BENCHMARK_TEMPLATE(sharedVolumeRead, 3, true)->ThreadRange(1, 4)->UseRealTime();
+
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);

@@ -48,3 +48,11 @@ materialized storage (`.../side/content/1`). Content 0 is empty, 1 is a shell,
 to exercise fully allocated storage. The `allocated_bytes` counter reports payload and
 directory allocation for each case. Run matching configurations on the same
 machine when comparing results.
+
+`sharedVolumeRead<content, dense>` runs 1, 2 and 4 independent samplers over the
+same immutable 256^3 volume, including empty, shell and fully allocated contents.
+It reports aggregate voxel throughput using real elapsed time. These benchmarks
+use plain Google Benchmark functions rather than concurrent application fixtures.
+Record the CPU quota and background load; a quota can hide scaling or increase
+variance. Their results do not establish race freedom: concurrent access tests and
+race detectors are separate checks.
