@@ -390,8 +390,6 @@ set(TEST_FILES
 	"tests/libresprite.ase"
 	"tests/libresprite.aseprite"
 	"tests/pixelorama.pxo"
-	"tests/animated_layer_effect.pxo"
-	"tests/3d_layer_drawing.pxo"
 	"tests/loy_s_goodies_female_template.bbmodel"
 	"tests/loy_s_goodies_female_template_5_0_3.bbmodel"
 	"tests/loy_s_goodies_female_template_5_0_3.glb"
