@@ -1,0 +1,74 @@
+# Features
+
+A few of the features are:
+
+* Layer and key frame [animation](Animation.md) support with auto-keyframe and IK constraints
+* [Viewport screenshots and video recording](usage/Viewport.md#screenshots-and-video) (AVI, MPEG2, GIF)
+* Customizable UI with internationalization (multi-language) support
+* Multiple viewports to view the model from all sides while editing it
+* Multi monitor support
+* LUA [scripting](../LUAScript.md) api, built-in editor and community script browser
+* Undo/Redo
+* [Network mode](usage/Network.md) with real-time collaborative editing and chat
+* Copy/Cut/Paste - paste to cursor, reference position, a new node or a stamp; global clipboard commands transfer voxels between scenes or editor instances
+* Layer and scene graph support with node references, split objects and color-to-new-node operations
+* Custom color palettes with sorting, several color reduction algorithms and [Lospec](https://lospec.com/) import
+* [Material editing](../Material.md), including transparency, metal, glass and emissive surfaces
+* Custom key bindings
+* Import images as heightmaps, palettes or planes
+* Import meshes and [voxelize](../Voxelization.md) them - see [supported formats](../Formats.md)
+* Import whole folders of single models into one scene
+* Exporting single models or whole scenes into meshes and a lot of other formats
+* Voxelize true type font text
+* Procedurally generated content like trees and a L-System integration
+* Generate level of details (LOD) volumes
+* Cropping volumes
+* Online asset browsing for voxel repositories
+* Presentation mode for e.g. kitbashing sets
+* [Editing brushes](usage/Brushes.md) for shapes, planes, stamps, lines and Bezier curves, text, textures, painting, extrusion, sculpting and transforms (including shear)
+* Adjustable brush previews with Apply/Cancel, editable bounds and viewport handles
+* Advanced [selection modes](usage/Brushes.md#select-brush): box, lasso, circle/ellipsoid, paint, same/fuzzy color, connected, surface, flat surface and Lua scripts
+* Sculpt modes for eroding, growing, flattening, smoothing, bridging gaps and reskinning surfaces
+* Mirroring system for symmetric editing along any axis
+* [Ruler](usage/Brushes.md#ruler-brush) for per-axis, straight-line and Manhattan distance measurements
+* Slice view for inspecting cross-sections of volumes
+* Editable Back, Right and Top slices of the selected model in the [2D Views panel](usage/2DViews.md)
+* [Pixel art](usage/PixelArt.md) preview of the selected model
+* GPU [path tracer rendering](usage/Renderer.md) with material, lighting, camera and PNG output controls
+* [Game mode](usage/GameMode.md) with physics-based first-person walkthrough
+* [Session recording and playback](usage/SessionRecording.md) (`.vrec`), with pause/resume and adjustable playback delay
+* Configurable viewport shading modes (unlit, lit, shadows) with bloom post-processing
+* Fill and hollow operations for volumes
+* Auto-save with configurable interval
+* Drag-and-drop between panels for models, palette colors and assets
+* Embedded documentation browser and tip of the day
+* Not only voxels but also named points are supported as scene graph nodes - for e.g. defining positions for characters to hold an item.
+* Manual and automatic [normal painting](usage/Brushes.md#normal-brush), plus editable [normal palettes](usage/Palette.md#normal-palette), for formats such as Command & Conquer VXL
+* [View modes](usage/ViewModes.md) for general editing, minimal layouts, Tiberian Sun, Red Alert 2, Minecraft skins and Ace Of Spades
+* [voxbox.store](https://voxbox.store/) integration to browse, download and upload models (requires a VoxBox account)
+
+## Usage
+
+* [2D Views](usage/2DViews.md)
+* [Animations](usage/Animations.md)
+* [Assets](usage/Assets.md)
+* [Brushes](usage/Brushes.md)
+* [Camera](usage/Camera.md)
+* [Console](usage/Console.md)
+* [Game Mode](usage/GameMode.md)
+* [LSystem](usage/LSystem.md)
+* [Memento](usage/Memento.md)
+* [Modifiers](usage/Modifiers.md)
+* [Network](usage/Network.md)
+* [Node Inspector](usage/NodeInspector.md)
+* [Palette](usage/Palette.md)
+* [Pixel art](usage/PixelArt.md)
+* [Reference Position](usage/ReferencePosition.md)
+* [Renderer](usage/Renderer.md)
+* [Scene And Edit Mode](usage/SceneAndEditMode.md)
+* [Scene View](usage/SceneView.md)
+* [Scripts](usage/Scripts.md)
+* [Session Recording](usage/SessionRecording.md)
+* [Tools](usage/Tools.md)
+* [View Modes](usage/ViewModes.md)
+* [Viewport](usage/Viewport.md)

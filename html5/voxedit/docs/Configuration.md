@@ -1,0 +1,248 @@
+# Configuration
+
+## Variables
+
+The engine can get configured by so called cvars (configuration variables). These variables can be modified from within
+the game via key bindings, built-in console, the ui or scripts.
+
+To get a list of supported cvars (they might differ from application to application), type the command `cvarlist` to the
+built-in console - or execute the application with `--help` (Example: `vengi-voxedit.exe --help`).
+
+The variables can get their initial value from various sources. The highest order is the command line. If you specify it on
+the command line, every other method will not be used. If the engine finds the cvar name in your environment variables, this
+one will take precedence over the one that is found in the configuration file. Next is the configuration file - this one will
+take precedence over the default settings that are specified in the code.
+
+The environment variable can be either lower case or upper case. For example it will work if you have `CL_GAMMA` or `cl_gamma`
+exported. The lower case variant has the higher priority.
+
+### Commandline
+
+```bash
+./vengi-voxvonvert -set voxformat_scale 2.0 [...]
+```
+
+### Environment
+
+```bash
+export VOXFORMAT_SCALE=2.0
+./vengi-voxconvert [...]
+```
+
+## Configuration file
+
+* Linux: `~/.local/share/vengi/voxconvert/voxconvert.vars`
+* Windows: `C:/Users/bob/AppData/Roaming/vengi/voxconvert/voxconvert.vars`
+* Mac: `/Users/bob/Library/Application Support/vengi/voxconvert/voxconvert.vars`
+
+These folders not only contain the configuration file, but also the logs and other files that are created by the application. `log.txt` and `crash.txt` are the most important files that you can attach to a bug report.
+
+## Search paths
+
+You can get a list of search paths by calling the particular application with the `--help` parameter on the command line. This will print a list of search paths. You can even add your own paths by setting the cvar `core_path`.
+
+> For packagers it might be interesting to set the `PKGDATADIR` cmake variable.
+
+## Commands
+
+To get a list of supported commands (they might differ from application to application), type the command `cmdlist` to the built-in console.
+
+You can also get a list when doing `./vengi-app --help` on the command line.
+
+## Aliases
+
+You can bind several commands to a single name. Aliases are persisted next to the cvars (`{appname}.aliases` in the same directory as `{appname}.vars`) and they are registered as commands, so they can be bound to keys.
+
+```
+alias mynode "copy; select none; pastenewnode"
+```
+
+* `alias` lists all aliases
+* `alias <name>` prints a single alias
+* `alias <name> "command1 ; command2"` creates or updates an alias
+* `unalias <name>` removes an alias
+
+The quoted command string is required when the alias body contains spaces or semicolons, because `;` otherwise splits the console input into separate commands.
+
+After creating an alias you can bind it like any other command:
+
+```
+bind f1 mynode model
+```
+
+## Key bindings
+
+You can also modify or add key bindings to commands. Type `bindlist` to the console to get a list of the current active bindings
+(and also here: they might differ from application to application). The command `bind` can be used to configure keybindings on-the-fly. These bindings are saved to a file on shutdown.
+
+VoxEdit has an ui panel to show the configured keybindings - see [controls](voxedit/Controls.md) for more details.
+
+## Logging
+
+You can either log via syslog (on unix) or to stdout (this might of course differ from platform to platform).
+
+The log level is configured by the `core_loglevel` variable. The lower the value, the more you see. `1` is the highest log level
+(trace), where 5 is the lowest log level (error).
+
+* `trace`: 1
+* `debug`: 2
+* `info`: 3
+* `warn`: 4
+* `error`: 5
+
+## External tools
+
+External tools can e.g. control the editor by first starting it with `app_pipe` being set to `true`. This will open a pipe named `vengi-<app>-input`.
+
+You can e.g. send the command `xs noise` to the pipe of the running editor instance to execute the `noise.lua` [script](LUAScript.md).
+
+> `echo "xs noise" > ~/.local/share/vengi/voxedit/.vengi-<app>-input` (Linux/Mac)
+> `echo "xs noise" > \\.\pipe\vengi-<app>-input` (Windows)
+
+## General
+
+To get a rough usage overview, you can start any application with `--help`. It will print out the commands and configuration variables
+with a description and hints how to modify/use them.
+
+## Video settings
+
+| Name                          | Description                                                                              |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+| `cl_vsync`                    | enable or disable v-sync                                                                 |
+| `cl_gamma`                    | tweak the gamma value that is applied last on rendering                                  |
+| `cl_display`                  | the display index if you are using multiple monitors `[0-numDisplays)`                   |
+
+## Voxel settings
+
+A few cvars exists to tweak the export or import of several formats.
+
+Some of these settings are only for voxel format, others are only for the mesh formats like ply, gltf, stl, fbx and obj.
+
+| Name                          | Description                                                                              | Example      |
+| ----------------------------- | ---------------------------------------------------------------------------------------- | ------------ |
+| `core_colorreduction`         | This can be used to tweak the color reduction by switching to a different algorithm. Possible values are `Octree`, `Wu`, `NeuQuant`, `KMeans` and `MedianCut`. This is useful for mesh based formats or RGBA based formats like e.g. AceOfSpades vxl. | Octree       |
+| `image_background`            | Background color for volume image renders (RGBA)                                         | `0 0 0 0`    |
+| `image_depthfactor2d`         | Darken farther voxels when rendering a volume to a 2D image                              | 0.0          |
+| `image_height`                | Output height in pixels. `-1` keeps the native size                                      | -1           |
+| `image_isometric`             | Use isometric projection when rendering a volume to an image                             | true/false   |
+| `image_iso_shading`           | Apply face shading to isometric renders                                                  | true/false   |
+| `image_iso_normals`           | Light isometric voxels from their stored normal palette direction                        | true/false   |
+| `image_iso_materials`         | Apply palette materials (emit, metal, roughness) to isometric renders                    | true/false   |
+| `image_iso_transparency`      | Blend palette alpha in isometric renders; transparent voxels show what is behind them    | true/false   |
+| `image_iso_outline`           | Ink pixels that touch an empty neighbor in isometric renders                             | true/false   |
+| `image_iso_outline_color`     | Outline color for isometric renders (RGBA)                                               | `0 0 0 1`    |
+| `image_upscale`               | Allow enlarging the image when width or height exceed the native size                    | true/false   |
+| `image_width`                 | Output width in pixels. `-1` keeps the native size                                       | -1           |
+| `palformat_gimprgba`          | Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)                  | true/false   |
+| `palformat_maxsize`           | The maximum size of an image in x and y direction to quantize to a palette               | 512          |
+| `palformat_rgb6bit`           | Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files               | true/false   |
+| `voxformat_meshmode`          | Export mesh mode: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture   | 0/1/2/3      |
+| `voxel_texture_dedupe`        | Reuse identical color patches in the greedy texture atlas                                | true/false   |
+| `voxformat_ambientocclusion`  | Don't export extra quads for ambient occlusion voxels                                    | true/false   |
+| `voxformat_binvoxversion`     | Save in version 1, 2 or the unofficial version 3                                         | 1/2/3        |
+| `voxformat_colorasfloat`      | Export the vertex colors as float or - if set to false - as byte values (GLTF/Unreal)    | true/false   |
+| `voxformat_createpalette`     | Setting this to false will use use the palette configured by `palette` cvar and use those colors as a target. This is mostly useful for meshes with either texture or vertex colors or when importing rgba colors. This is not used for palette based formats - but also for RGBA based formats. | true/false   |
+| `voxformat_emptypaletteindex` | By default this is `-1` which means that no color is skipped. Pick 0-255 to remove that palette index from the final saved file. **NOTE**: this only works for formats that don't force the empty voxel to be `0` or `255` (or any other index) already |
+| `voxformat_fillhollow`        | Fill the inner parts of completely close objects, when voxelizing a mesh format. To fill the inner parts for non mesh formats, you can use the fillhollow.lua script. | true/false   |
+| `voxformat_gltf_khr_materials_pbrspecularglossiness` | Apply KHR_materials_pbrSpecularGlossiness extension on saving gltf files (off by default; prefer specular) | true/false   |
+| `voxformat_gltf_khr_materials_specular`              | Apply KHR_materials_specular extension on saving gltf files (on by default)        | true/false   |
+| `voxformat_gmlregion`         | World coordinate region filter for GML/CityGML import (`minX minY minZ maxX maxY maxZ`)  |              |
+| `voxformat_gmlfilenamefilter` | Only import some of the filenames of a gml file. Wildcards are supported.                | `*5[123]*`   |
+| `voxformat_imageheightmapminheight`                  | The minimum height of the heightmap when importing an image as heightmap           | 0            |
+| `voxformat_imageimporttype`                          | 0 = plane, 1 = heightmap, 2 = volume                                               | 0            |
+| `voxformat_imagesavetype`                            | 0 = plane, 1 = heightmap, 3 = thumbnail                                            | 0            |
+| `voxformat_imagesliceoffsetaxis`                     | The axis to offset the slices when importing images as volumes or heightmaps       | x/y/z        |
+| `voxformat_imagesliceoffset`                         | The offset of the slices when importing images as volumes or heightmaps            | 0            |
+| `voxformat_imagevolumemaxdepth`                      | The maximum depth of the volume when importing an image as volume                  | 1            |
+| `voxformat_imagevolumebothsides`                     | Import the image as volume for both sides                                          | true/false   |
+| `voxformat_ldrawdir`          | Path to the LDraw parts library directory for resolving part references                  |              |
+| `voxformat_mergequads`        | Merge similar quads to optimize the mesh                                                 | true/false   |
+| `voxformat_merge`             | Merge all models into one object                                                         | true/false   |
+| `voxformat_mesh_simplify`     | Simplify the mesh before voxelizing it                                                   | true/false   |
+| `voxformat_mesh_simplify_ratio` | Target fraction of triangle indices to keep on mesh import/export simplify (0 or 1 = disable) | 0.0-1.0      |
+| `voxformat_mesh_optimize`          | Apply mesh optimizations when saving mesh based formats                                  | true/false   |
+| `voxformat_osmmeterspervoxel` | The number of real-world meters each voxel represents in OSM imports                     | 1            |
+| `voxformat_osmurl`            | The openstreetmap overpass url                                                           |              |
+| `voxformat_pointcloud`        | Export visible voxels as point samples when saving to mesh formats that support point clouds | true/false   |
+| `voxformat_pointcloudsize`    | Specify the side length for the voxels when loading a point cloud                        | 1            |
+| `voxformat_qbtpalettemode`    | Use palette mode in qubicle qbt export                                                   | true/false   |
+| `voxformat_qbtmergecompounds` | Merge compounds in qbt export                                                            | true/false   |
+| `voxformat_qbsavelefthanded`  | Save qubicle format as left handed                                                       | true/false   |
+| `voxformat_qbsavecompressed`  | Save qubicle with RLE compression                                                        | true/false   |
+| `voxformat_quads`             | Export to quads                                                                          | true/false   |
+| `voxformat_reusevertices`     | Reuse vertices or always create new ones                                                 | true/false   |
+| `voxformat_rgbflattenfactor`  | To flatten the RGB colors when importing volumes (0-255) from RGBA or mesh based formats | 1            |
+| `voxformat_rgbweightedaverage`| If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution | true/false   |
+| `voxformat_savevisibleonly`   | Save only visible nodes                                                                  | true/false |
+| `voxformat_scale`             | Scale the vertices for voxelization on all axis by the given factor                      | 1.0          |
+| `voxformat_scale_x`           | Scale the vertices for voxelization on X axis by the given factor                        | 1.0          |
+| `voxformat_scale_y`           | Scale the vertices for voxelization on Y axis by the given factor                        | 1.0          |
+| `voxformat_scale_z`           | Scale the vertices for voxelization on Z axis by the given factor                        | 1.0          |
+| `voxformat_schematictype`     | The type of schematic format to use when saving schematics                               | mcedit2, worldedit, schematica |
+| `voxformat_skinaddgroups`     | Add groups for body parts of Minecraft skins                                             | true/false   |
+| `voxformat_skinapplytransform`| Apply transforms to Minecraft skins                                                      | true/false   |
+| `voxformat_skinmergefaces`    | Merge faces of Minecraft skins into a single volume                                      | true/false   |
+| `voxformat_mcseparatewater`   | Put Minecraft water into a dedicated transparent volume as a child of each region        | true/false   |
+| `voxformat_mcmergeregions`    | Merge each Minecraft region file into one volume on `level.dat` / `mcworld` load. Disable to keep per-chunk volumes | true/false   |
+| `voxformat_mcloadradius`      | Minecraft region files to load around spawn for `level.dat` / `mcworld`. `-1` = all, `0` = spawn region only, `N` = Chebyshev distance in region units (512 blocks) | -1 |
+| `voxformat_mcloadregion`      | Optional block AABB filter for Minecraft `level.dat` / `mcworld` import (`minX minY minZ maxX maxY maxZ`). Only region files intersecting this box are loaded | |
+
+| `voxformat_targetcolors`      | Target number of colors after voxelization (0 = no limit)                                | 0            |
+| `voxformat_texturepath`       | Additional search path for textures when importing mesh formats                          |              |
+| `voxformat_transform_mesh`    | Apply the keyframe transform to the mesh                                                 | true/false   |
+| `voxformat_mvapplytransform`  | Bake MagicaVoxel nTRN transforms into voxels on load (default on; disable for shared model references) | true/false   |
+| `voxformat_voxanimasnodes`    | Import/export MagicaVoxel model_anim frames as dedicated volume nodes under a group      | true/false   |
+| `voxformat_voxcreategroups`   | Emit MagicaVoxel nGRP groups on save (load always preserves groups)                      | true/false   |
+| `voxformat_voxcreatelayers`   | Emit MagicaVoxel LAYR layers on save (instances share models via references on load)     | true/false   |
+| `voxformat_voxelizemode`      | `0` = high quality, `1` = faster and less memory                                         | 0/1          |
+| `voxformat_voxelize_chunked`  | Enable chunked voxelization for large meshes                                             | true/false   |
+| `voxformat_voxelize_chunksize`| Chunk size for chunked voxelization (clamped to 16-512)                                  | 128          |
+| `voxformat_voxelsize`         | The number of voxels on the largest axis (0 = disabled, use scale cvars instead). Single mesh exports only. | 0            |
+| `voxformat_vxllodhva`         | Load the HVA file for VXL animations                                                     | true/false   |
+| `voxformat_kv6loadkfa`        | Load the KFA sidecar for KV6 hinge animations                                            | true/false   |
+| `voxformat_vxlnormaltype`     | Normal type for VXL format - 2 (TS) or 4 (RedAlert2)                                     | 2/4          |
+| `voxformat_withcolor`         | Export vertex colors                                                                     | true/false   |
+| `voxformat_withmaterials`     | Export [material](Material.md) properties for formats that supports this                 | true/false   |
+| `voxformat_withnormals`       | Export vertex normals to OBJ, glTF/GLB, FBX and PLY    | true/false   |
+| `voxformat_withvoxelnormals`  | Use stored voxel normals with Cubic/Binary extraction when exporting normals; may increase vertex count | true/false |
+| `voxformat_withtexcoords`     | Export texture coordinates                                                               | true/false   |
+
+## Pathtracer
+
+These cvars configure the GPU pathtracer used by voxedit and `vengi-thumbnailer --pathtracer`.
+They can be set from the Options dialog, via `-set`, or as environment variables. Thumbnailer
+`--quality` / `--samples` / `--sunelevation` / `--sunazimuth` override the matching cvars when given.
+
+| Name | Description | Values |
+|------|-------------|--------|
+| `pathtracer_samples` | Per-pixel samples | 1-16384 |
+| `pathtracer_bounces` | Maximum light bounces | 1-64 |
+| `pathtracer_samplesthispass` | Samples computed per frame | 1-64 |
+| `pathtracer_resolution` | Square output size in pixels | 1-8192 |
+| `pathtracer_renderscale` | Trace at a fraction of the output resolution | 0.25-1.0 |
+| `pathtracer_voxeledge` | Fillet exposed voxel corners (`0` = hard cube) | 0.0-1.0 |
+| `pathtracer_exposure` | Exposure compensation in stops | -5.0-5.0 |
+| `pathtracer_tonemapping` | Tone mapping operator (see `r_tonemapping`) | 0-6 |
+| `pathtracer_contrast` | Contrast | 0.5-1.5 |
+| `pathtracer_saturation` | Saturation | 0.0-2.0 |
+| `pathtracer_vignette` | Vignette strength | 0.0-1.0 |
+| `pathtracer_bloom` | Bloom strength | 0.0-2.0 |
+| `pathtracer_dof` | Enable depth of field | true/false |
+| `pathtracer_aperture` | Lens aperture for depth of field | 0.0-0.5 |
+| `pathtracer_focusdistance` | Focus distance for depth of field | 1.0-256.0 |
+| `pathtracer_sunelevation` | Sun elevation in degrees | -90-90 |
+| `pathtracer_sunazimuth` | Sun azimuth in degrees | 0-360 |
+| `pathtracer_sunintensity` | Sun intensity | 0.0-10.0 |
+| `pathtracer_sunsoftness` | Sun disk size in degrees | 0.05-20.0 |
+| `pathtracer_suncolor` | Sun color (RGB) | `r g b` |
+| `pathtracer_skytop` | Sky top color (RGB) | `r g b` |
+| `pathtracer_skyhorizon` | Sky horizon color (RGB) | `r g b` |
+| `pathtracer_skyintensity` | Sky intensity | 0.0-4.0 |
+| `pathtracer_floor` | Enable ground plane | true/false |
+| `pathtracer_floorcolor` | Ground plane color (RGB) | `r g b` |
+| `pathtracer_floory` | Ground plane height | |
+| `pathtracer_background` | `0` = sky, `1` = solid, `2` = transparent | 0/1/2 |
+| `pathtracer_backgroundcolor` | Solid background color (RGB) | `r g b` |
+| `pathtracer_fogdensity` | Fog density | 0.0-0.05 |
+| `pathtracer_fogcolor` | Fog color (RGB) | `r g b` |
+| `pathtracer_atmosphere` | World haze that brightens toward the sun | 0.0-0.05 |
