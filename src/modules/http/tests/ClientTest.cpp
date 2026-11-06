@@ -37,13 +37,16 @@ TEST_F(ClientTest, testDeferredFailureOnUpdatingThread) {
 	Client client;
 	bool called = false;
 	const core::ThreadId thread = core::getCurrentThreadId();
-	ASSERT_NE(0u, client.execute(failingRequest(), [&](const Response &response) {
+	// Keep ASSERT_* outside the callback: nesting gtest macros in a lambda that is
+	// itself an ASSERT_* argument triggers -Wshadow on gtest_ar.
+	const RequestId id = client.execute(failingRequest(), [&](const Response &response) {
 		EXPECT_EQ(thread, core::getCurrentThreadId());
 		EXPECT_FALSE(response.success);
 		EXPECT_EQ(0, response.statusCode);
 		EXPECT_EQ("http://127.0.0.1:1/", response.url);
 		called = true;
-	}));
+	});
+	ASSERT_NE(0u, id);
 	EXPECT_FALSE(called);
 	ASSERT_TRUE(dispatchUntil(called));
 }
@@ -138,7 +141,7 @@ TEST_F(ClientTest, testHttpResponse) {
 		Request request(url, RequestType::POST);
 		request.setBody(body, sizeof(body));
 		request.addHeader("X-Test", "async-http");
-		ASSERT_NE(0u, client.execute(request, [&](const Response &response) {
+		const RequestId id = client.execute(request, [&](const Response &response) {
 			EXPECT_TRUE(response.success);
 			EXPECT_EQ(404, response.statusCode);
 			core::String header;
@@ -150,7 +153,8 @@ TEST_F(ClientTest, testHttpResponse) {
 			EXPECT_EQ(sizeof(body), copy.body.size());
 			EXPECT_EQ(0, memcmp(body, copy.body.data(), sizeof(body)));
 			called = true;
-		}));
+		});
+		ASSERT_NE(0u, id);
 		request.setBody("changed after submission");
 	}
 	ASSERT_TRUE(dispatchUntil(called));
@@ -181,12 +185,13 @@ TEST_F(ClientTest, testBinaryResponse) {
 	bool called = false;
 	{
 		Request request("file://" + core::string::urlPathEncode(path), RequestType::GET);
-		ASSERT_NE(0u, client.execute(request, [&](const Response &response) {
+		const RequestId id = client.execute(request, [&](const Response &response) {
 			EXPECT_TRUE(response.success);
 			ASSERT_EQ(sizeof(data), response.body.size());
 			EXPECT_EQ(0, memcmp(data, response.body.data(), sizeof(data)));
 			called = true;
-		}));
+		});
+		ASSERT_NE(0u, id);
 	}
 	ASSERT_TRUE(dispatchUntil(called));
 	io::Filesystem::sysRemoveFile(path);
