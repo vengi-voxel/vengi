@@ -9,7 +9,10 @@ An untouched chunk contains copies of a default voxel without allocating its
 payload. `fill()` also sets this default, so a uniformly filled volume need not
 allocate every chunk. Writes preserve the same voxel assignment behavior as the
 contiguous implementation, including normal preservation. Copy construction copies
-only allocated chunks. Coordinates are relative to the volume's lower corner,
+only allocated chunks that differ from the default. A copy of a cleared volume
+therefore drops default-only payload without changing the source's chunk addresses.
+Comparisons use every voxel byte, preserving air metadata as well as visible cells.
+Coordinates are relative to the volume's lower corner,
 which allows negative origins and translation without moving stored data.
 
 Reading a voxel does not allocate a chunk, acquire a volume mutex, or update a

@@ -236,6 +236,32 @@ static void cyclicVolumeMove(benchmark::State &state) {
 
 BENCHMARK(cyclicVolumeMove)->ArgsProduct({{0, 1}, {0, 1, 2, 3}});
 
+static void copyVolumeStorage(benchmark::State &state) {
+	voxel::RawVolume source(voxel::Region(-128, 127));
+	if (!source.valid() || (state.range(0) && source.voxels() == nullptr)) {
+		state.SkipWithError("Could not allocate source volume");
+		return;
+	}
+	fillBenchmarkVolume(source, 3);
+	if (state.range(1)) {
+		source.clear();
+	}
+	size_t copyBytes = 0;
+	for (auto _ : state) {
+		voxel::RawVolume copy(source);
+		if (!copy.valid()) {
+			state.SkipWithError("Could not copy volume");
+			break;
+		}
+		copyBytes = copy.allocatedBytes();
+		benchmark::DoNotOptimize(copy.voxel(-128, -128, -128).getColor());
+	}
+	state.counters["source_allocated_bytes"] = (double)source.allocatedBytes();
+	state.counters["copy_allocated_bytes"] = (double)copyBytes;
+}
+
+BENCHMARK(copyVolumeStorage)->ArgsProduct({{0, 1}, {0, 1}});
+
 // Every benchmark thread reads the same immutable volume. Each owns its sampler.
 // A plain benchmark avoids creating application fixtures concurrently.
 template<int Content, bool Dense>

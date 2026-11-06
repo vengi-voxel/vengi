@@ -160,4 +160,33 @@ TEST(ChunkedVolumeStorageTest, MoveMatchesCyclicCoordinateMapping) {
 	}
 }
 
+TEST(ChunkedVolumeStorageTest, CopiesOmitDefaultChunksWithoutChangingSource) {
+	ChunkedVolumeStorage source({65, 2, 1});
+	const size_t directoryBytes = source.allocatedBytes();
+	const Voxel background(VoxelType::Air, 12, 9, FlagOutline, 3);
+	source.fill(background);
+	source.setVoxel({0, 0, 0}, Voxel(VoxelType::Generic, 17, 11));
+	source.setVoxel({32, 0, 0}, Voxel(VoxelType::Generic, 18, 12));
+	source.setVoxel({64, 1, 0}, Voxel(VoxelType::Generic, 19, 13));
+	source.fill(background);
+	const size_t retainedBytes = source.allocatedBytes();
+	ASSERT_GT(retainedBytes, directoryBytes);
+	const Voxel *stable = &source.voxel({0, 0, 0});
+	ChunkedVolumeStorage uniformCopy(source);
+	ASSERT_TRUE(uniformCopy.valid());
+	EXPECT_EQ(directoryBytes, uniformCopy.allocatedBytes());
+	EXPECT_EQ(retainedBytes, source.allocatedBytes());
+	EXPECT_EQ(stable, &source.voxel({0, 0, 0}));
+	EXPECT_EQ(background, uniformCopy.voxel({64, 1, 0}));
+	const Voxel metadata(VoxelType::Air, 12, 10, FlagOutline, 3);
+	source.setVoxel({32, 0, 0}, metadata);
+	ChunkedVolumeStorage sparseCopy(source);
+	ASSERT_TRUE(sparseCopy.valid());
+	EXPECT_EQ(directoryBytes + 32 * 2 * sizeof(Voxel), sparseCopy.allocatedBytes());
+	EXPECT_EQ(metadata, sparseCopy.voxel({32, 0, 0}));
+	EXPECT_EQ(background, sparseCopy.voxel({0, 0, 0}));
+	sparseCopy.fill(Voxel());
+	EXPECT_EQ(metadata, source.voxel({32, 0, 0}));
+}
+
 } // namespace voxel

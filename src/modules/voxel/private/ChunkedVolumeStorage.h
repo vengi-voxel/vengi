@@ -58,6 +58,7 @@ private:
 	size_t chunkIndex(const glm::ivec3 &pos) const;
 	size_t voxelIndex(const glm::ivec3 &pos) const;
 	Voxel *chunk(size_t index) const;
+	bool chunkIsDefault(const Voxel *data) const;
 	Voxel *createChunk(size_t index);
 };
 

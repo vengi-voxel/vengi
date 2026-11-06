@@ -397,4 +397,43 @@ TEST_F(RawVolumeChunkTest, CyclicMoveStaysChunkedAndMatchesDense) {
 	}
 }
 
+TEST_F(RawVolumeChunkTest, ClearedCopyDoesNotRetainSourcePayload) {
+	RawVolume source(largeRegion);
+	const size_t directoryBytes = source.allocatedBytes();
+	source.setVoxel(largeRegion.getLowerCorner(), Voxel(VoxelType::Generic, 17));
+	source.setVoxel(largeRegion.getUpperCorner(), Voxel(VoxelType::Generic, 19));
+	RawVolume::Sampler retained(source);
+	ASSERT_TRUE(retained.setPosition(largeRegion.getLowerCorner()));
+	source.clear();
+	const size_t retainedBytes = source.allocatedBytes();
+	ASSERT_GT(retainedBytes, directoryBytes);
+	RawVolume copy(source);
+	EXPECT_EQ(directoryBytes, copy.allocatedBytes());
+	EXPECT_EQ(retainedBytes, source.allocatedBytes());
+	EXPECT_EQ(Voxel(), retained.voxel());
+	EXPECT_TRUE(copy.isEmpty(largeRegion));
+	EXPECT_EQ(nullptr, copy.linearVoxels());
+	copy.setVoxel(largeRegion.getLowerCorner(), Voxel(VoxelType::Generic, 23));
+	EXPECT_EQ(Voxel(), source.voxel(largeRegion.getLowerCorner()));
+}
+
+TEST_F(RawVolumeChunkTest, CopyOfFullyAllocatedClearedVolumeUsesOnlyDirectory) {
+	RawVolume source(Region(-128, 127));
+	const size_t directoryBytes = source.allocatedBytes();
+	for (int z = -128; z < 128; z += 32) {
+		for (int y = -128; y < 128; y += 32) {
+			for (int x = -128; x < 128; x += 32) {
+				source.setVoxel(x, y, z, Voxel(VoxelType::Generic, 17));
+			}
+		}
+	}
+	ASSERT_EQ(directoryBytes + RawVolume::size(source.region()), source.allocatedBytes());
+	source.clear();
+	RawVolume copy(source);
+	EXPECT_EQ(directoryBytes, copy.allocatedBytes());
+	EXPECT_EQ(directoryBytes + RawVolume::size(source.region()), source.allocatedBytes());
+	EXPECT_TRUE(copy.isEmpty(copy.region()));
+	EXPECT_EQ(nullptr, copy.linearVoxels());
+}
+
 } // namespace voxel

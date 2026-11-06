@@ -51,6 +51,9 @@ ChunkedVolumeStorage::ChunkedVolumeStorage(const ChunkedVolumeStorage &other)
 	}
 	for (size_t i = 0; i < _directorySize; ++i) {
 		if (const Voxel *source = other.chunk(i)) {
+			if (other.chunkIsDefault(source)) {
+				continue;
+			}
 			Voxel *destination = createChunk(i);
 			if (destination == nullptr) {
 				// A failed copy must not masquerade as a valid, partially empty volume.
@@ -91,6 +94,24 @@ size_t ChunkedVolumeStorage::voxelIndex(const glm::ivec3 &pos) const {
 
 Voxel *ChunkedVolumeStorage::chunk(size_t index) const {
 	return _chunks[index].load(std::memory_order_acquire);
+}
+
+bool ChunkedVolumeStorage::chunkIsDefault(const Voxel *data) const {
+	uint32_t pattern;
+	static_assert(sizeof(Voxel) == sizeof(pattern), "Expected a four-byte voxel");
+	core_memcpy(&pattern, &_default, sizeof(pattern));
+	for (size_t i = 0; i < _chunkVoxels; ++i) {
+		// Equality must include the representation: flags, normals and air metadata
+		// are meaningful even if the cell has no visible geometry.
+		uint32_t value;
+		// A fixed-size libc copy allows an unaligned load without aliasing Voxel
+		// as uint32_t or making an out-of-line SDL call for every cell.
+		memcpy(&value, data + i, sizeof(value));
+		if (value != pattern) {
+			return false;
+		}
+	}
+	return true;
 }
 
 Voxel *ChunkedVolumeStorage::createChunk(size_t index) {
