@@ -61,6 +61,7 @@ if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
 		benchmarks/VoxelUtilBenchmark.cpp
 		benchmarks/VoxelVisitorBenchmark.cpp
+		benchmarks/RaycastBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})

@@ -4,8 +4,56 @@
 
 #include "Raycast.h"
 #include "core/Common.h"
+#include <glm/common.hpp>
+#include <glm/gtc/epsilon.hpp>
 
 namespace voxelutil {
+
+bool clipRaySegmentToAABB(const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &mins, const glm::vec3 &maxs,
+						  float &tEnter, float &tExit, glm::ivec3 *entryNormal) {
+	const glm::vec3 dir = end - start;
+	tEnter = 0.0f;
+	tExit = 1.0f;
+	if (entryNormal != nullptr) {
+		*entryNormal = glm::ivec3(0);
+	}
+
+	for (int axis = 0; axis < 3; ++axis) {
+		const float d = dir[axis];
+		const float o = start[axis];
+		if (glm::abs(d) <= glm::epsilon<float>()) {
+			// Ray parallel to this slab - must start inside the slab.
+			if (o < mins[axis] || o > maxs[axis]) {
+				return false;
+			}
+			continue;
+		}
+
+		const float invD = 1.0f / d;
+		float t1 = (mins[axis] - o) * invD;
+		float t2 = (maxs[axis] - o) * invD;
+		int nearSign = -1;
+		if (t1 > t2) {
+			core::exchange(t1, t2);
+			nearSign = 1;
+		}
+
+		if (t1 > tEnter) {
+			tEnter = t1;
+			if (entryNormal != nullptr) {
+				*entryNormal = glm::ivec3(0);
+				// Entering through the near face: -axis when traveling positive.
+				(*entryNormal)[axis] = nearSign;
+			}
+		}
+		tExit = core_min(tExit, t2);
+		if (tEnter > tExit) {
+			return false;
+		}
+	}
+
+	return tExit >= 0.0f && tEnter <= 1.0f;
+}
 
 bool RaycastResult::isSolidStart() const {
 	return fract <= 0.0f;

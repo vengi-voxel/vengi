@@ -7,6 +7,7 @@
 #include "core/GLMConst.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/RawVolume.h"
+#include "voxelutil/Picking.h"
 #include <gtest/gtest.h>
 
 namespace voxelutil {
@@ -546,6 +547,159 @@ TEST_F(RaycastTest, testRaycastCornerHitFraction) {
 	EXPECT_TRUE(result.isInterrupted());
 	EXPECT_NEAR(result.fract, 0.375f, 0.0001f);
 	EXPECT_NEAR(result.length, glm::length(dir) * 0.375f, 0.0001f);
+}
+
+TEST_F(RaycastTest, testClipRaySegmentToAABBHit) {
+	float tEnter = 0.0f;
+	float tExit = 0.0f;
+	glm::ivec3 entryNormal{0};
+	const bool hit =
+		clipRaySegmentToAABB(glm::vec3(-10.0f, 5.0f, 5.0f), glm::vec3(20.0f, 5.0f, 5.0f), glm::vec3(0.0f),
+							 glm::vec3(10.0f), tEnter, tExit, &entryNormal);
+	ASSERT_TRUE(hit);
+	EXPECT_NEAR(tEnter, 10.0f / 30.0f, 0.0001f);
+	EXPECT_NEAR(tExit, 20.0f / 30.0f, 0.0001f);
+	EXPECT_EQ(glm::ivec3(-1, 0, 0), entryNormal);
+}
+
+TEST_F(RaycastTest, testClipRaySegmentToAABBMiss) {
+	float tEnter = 0.0f;
+	float tExit = 0.0f;
+	const bool hit = clipRaySegmentToAABB(glm::vec3(-10.0f, 50.0f, 5.0f), glm::vec3(20.0f, 50.0f, 5.0f),
+										  glm::vec3(0.0f), glm::vec3(10.0f), tEnter, tExit);
+	EXPECT_FALSE(hit);
+}
+
+TEST_F(RaycastTest, testRaycastDistantCameraSkipsOutsideCells) {
+	voxel::RawVolume volume({0, 31});
+	volume.setVoxel(glm::ivec3(16, 16, 16), voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	// Simulate a far camera: long approach through empty space before the volume.
+	const glm::vec3 start(-500.0f, 16.5f, 16.5f);
+	const glm::vec3 end(500.0f, 16.5f, 16.5f);
+
+	CountingRaycastFunctor counter;
+	RaycastResult completed = raycastWithEndpoints(&volume, start, end, counter);
+	// Must not walk the hundreds of outside cells before/after the volume.
+	EXPECT_LT(counter.visitedVoxels, 80) << "Clipped ray should only visit volume cells plus a small exit margin";
+	EXPECT_TRUE(completed.isInterrupted() || completed.isCompleted());
+
+	SimpleRaycastFunctor hit;
+	RaycastResult result = raycastWithEndpoints(&volume, start, end, hit);
+	EXPECT_TRUE(result.isInterrupted());
+	EXPECT_TRUE(hit.hitSolid);
+	EXPECT_EQ(glm::ivec3(16, 16, 16), hit.hitPosition);
+	EXPECT_FALSE(result.isSolidStart()) << "Camera starts outside - must not report solid start";
+	EXPECT_GT(result.fract, 0.0f);
+	EXPECT_EQ(glm::ivec3(-1, 0, 0), result.normal);
+}
+
+TEST_F(RaycastTest, testRaycastDistantCameraMissCompletesQuickly) {
+	voxel::RawVolume volume({0, 31});
+
+	const glm::vec3 start(-1000.0f, 16.5f, 16.5f);
+	const glm::vec3 end(1000.0f, 16.5f, 16.5f);
+
+	CountingRaycastFunctor functor;
+	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
+	EXPECT_TRUE(result.isCompleted());
+	EXPECT_LT(functor.visitedVoxels, 80) << "Miss through volume should not walk to the far plane";
+	EXPECT_GT(functor.visitedVoxels, 0);
+}
+
+TEST_F(RaycastTest, testRaycastMissesVolumeEntirely) {
+	voxel::RawVolume volume({0, 31});
+
+	const glm::vec3 start(-100.0f, 100.0f, 16.5f);
+	const glm::vec3 end(100.0f, 100.0f, 16.5f);
+
+	CountingRaycastFunctor functor;
+	RaycastResult result = raycastWithEndpoints(&volume, start, end, functor);
+	EXPECT_TRUE(result.isCompleted());
+	EXPECT_EQ(0, functor.visitedVoxels) << "Ray that misses the AABB should not visit any cells";
+}
+
+TEST_F(RaycastTest, testRaycastPickingEntryPreviousAndExit) {
+	voxel::RawVolume volume({0, 15});
+	volume.setVoxel(glm::ivec3(10, 8, 8), voxel::createVoxel(voxel::VoxelType::Generic, 1));
+
+	auto makePicking = [](PickResult &result) {
+		return [&result](voxel::RawVolume::Sampler &sampler) {
+			if (!result.firstValidPosition && sampler.currentPositionValid()) {
+				result.firstPosition = sampler.position();
+				result.firstValidPosition = true;
+			}
+			if (!voxel::isAir(sampler.voxel().getMaterial())) {
+				result.didHit = true;
+				result.hitVoxel = sampler.position();
+				return false;
+			}
+			if (sampler.currentPositionValid()) {
+				result.validPreviousPosition = true;
+				result.previousPosition = sampler.position();
+			} else if (result.firstValidPosition && !result.firstInvalidPosition) {
+				result.firstInvalidPosition = true;
+				result.hitVoxel = sampler.position();
+				return false;
+			}
+			return true;
+		};
+	};
+
+	// Hit path from a distant camera - entry/previous/hit must stay valid.
+	{
+		PickResult result;
+		raycastWithEndpoints(&volume, glm::vec3(-200.0f, 8.5f, 8.5f), glm::vec3(200.0f, 8.5f, 8.5f), makePicking(result));
+		EXPECT_TRUE(result.firstValidPosition);
+		EXPECT_EQ(glm::ivec3(0, 8, 8), result.firstPosition);
+		EXPECT_TRUE(result.didHit);
+		EXPECT_EQ(glm::ivec3(10, 8, 8), result.hitVoxel);
+		EXPECT_TRUE(result.validPreviousPosition);
+		EXPECT_EQ(glm::ivec3(9, 8, 8), result.previousPosition);
+	}
+
+	// Empty volume - must still observe the exit cell for firstInvalidPosition.
+	{
+		voxel::RawVolume empty({0, 15});
+		PickResult result;
+		raycastWithEndpoints(&empty, glm::vec3(-200.0f, 8.5f, 8.5f), glm::vec3(200.0f, 8.5f, 8.5f), makePicking(result));
+		EXPECT_TRUE(result.firstValidPosition);
+		EXPECT_EQ(glm::ivec3(0, 8, 8), result.firstPosition);
+		EXPECT_FALSE(result.didHit);
+		EXPECT_TRUE(result.validPreviousPosition);
+		EXPECT_TRUE(result.firstInvalidPosition);
+		EXPECT_FALSE(empty.region().containsPoint(result.hitVoxel));
+	}
+}
+
+TEST_F(RaycastTest, testRaycastAxisAlignedTraversesFullSegment) {
+	voxel::RawVolume volume({0, 63});
+	CountingRaycastFunctor functor;
+	RaycastResult result =
+		raycastWithEndpoints(&volume, glm::vec3(0.5f, 10.5f, 10.5f), glm::vec3(63.5f, 10.5f, 10.5f), functor);
+	EXPECT_TRUE(result.isCompleted());
+	// Must visit the full X span - the previous zero-axis delta bug stopped around 8 cells.
+	EXPECT_GE(functor.visitedVoxels, 60);
+	EXPECT_EQ(glm::ivec3(0, 10, 10), functor.visitedPositions.front());
+	EXPECT_EQ(glm::ivec3(63, 10, 10), functor.visitedPositions.back());
+}
+
+TEST_F(RaycastTest, testRaycastEnterDirectlyIntoSolidFace) {
+	voxel::RawVolume volume({0, 7});
+	for (int y = 0; y <= 7; ++y) {
+		for (int z = 0; z <= 7; ++z) {
+			volume.setVoxel(0, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		}
+	}
+
+	SimpleRaycastFunctor functor;
+	RaycastResult result =
+		raycastWithEndpoints(&volume, glm::vec3(-50.0f, 3.5f, 3.5f), glm::vec3(50.0f, 3.5f, 3.5f), functor);
+	EXPECT_TRUE(result.isInterrupted());
+	EXPECT_TRUE(functor.hitSolid);
+	EXPECT_EQ(glm::ivec3(0, 3, 3), functor.hitPosition);
+	EXPECT_FALSE(result.isSolidStart());
+	EXPECT_EQ(glm::ivec3(-1, 0, 0), result.normal);
 }
 
 } // namespace voxelutil
