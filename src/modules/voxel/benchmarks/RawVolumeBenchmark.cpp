@@ -148,6 +148,63 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, FillBehindPlane)(benchmark::State &state)
 	}
 }
 
+// Compare facade lookups with sampler traversal before changing the storage.
+// Include nonzero origins and empty, shell and dense volumes.
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxels)(benchmark::State &state) {
+	const int side = (int)state.range(0);
+	const int lower = -side / 2;
+	voxel::RawVolume volume(voxel::Region(lower, lower + side - 1));
+	if (state.range(2)) {
+		if (volume.voxels() == nullptr) {
+			state.SkipWithError("Could not allocate dense comparison volume");
+			return;
+		}
+	}
+	fillBenchmarkVolume(volume, (int)state.range(1));
+	const voxel::Region &region = volume.region();
+	for (auto _ : state) {
+		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					benchmark::DoNotOptimize(volume.voxel(x, y, z).getColor());
+				}
+			}
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * region.voxels());
+	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
+}
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxelsSampler)(benchmark::State &state) {
+	const int side = (int)state.range(0);
+	const int lower = -side / 2;
+	voxel::RawVolume volume(voxel::Region(lower, lower + side - 1));
+	if (state.range(2)) {
+		if (volume.voxels() == nullptr) {
+			state.SkipWithError("Could not allocate dense comparison volume");
+			return;
+		}
+	}
+	fillBenchmarkVolume(volume, (int)state.range(1));
+	const voxel::Region &region = volume.region();
+	voxel::RawVolume::Sampler sampler(volume);
+	for (auto _ : state) {
+		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				sampler.setPosition(region.getLowerX(), y, z);
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					benchmark::DoNotOptimize(sampler.voxel().getColor());
+					sampler.movePositiveX();
+				}
+			}
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * region.voxels());
+	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
+}
+
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxels)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2}, {0, 1}});
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxelsSampler)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2}, {0, 1}});
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, IsEmpty);

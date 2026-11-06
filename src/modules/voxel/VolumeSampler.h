@@ -10,6 +10,7 @@
 #include "voxel/Voxel.h"
 #include "voxel/VoxelSampling.h"
 #include <stdint.h>
+#include <atomic>
 
 namespace voxel {
 
@@ -91,8 +92,15 @@ public:
 	}
 
 	CORE_FORCE_INLINE const Voxel &voxel() const {
-		if (core_likely(this->currentPositionValid())) {
+		if (core_likely(_currentVoxel != nullptr && this->currentPositionValid())) {
 			return *_currentVoxel;
+		}
+		if (this->currentPositionValid() && _chunkEntry) {
+			if (Voxel *data = _chunkEntry->load(std::memory_order_acquire)) {
+				_currentVoxel = data + _dataOffset;
+				return *_currentVoxel;
+			}
+			return *_defaultVoxel;
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z);
 	}
@@ -106,224 +114,224 @@ public:
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx1ny1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
 			CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - 1 - region.getWidthInVoxels() - region.stride());
+			return *(_currentVoxel - 1 - _dataYStride - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx1ny0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y)) {
-			return *(_currentVoxel - 1 - region.getWidthInVoxels());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y)) {
+			return *(_currentVoxel - 1 - _dataYStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx1ny1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
 			CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - 1 - region.getWidthInVoxels() + region.stride());
+			return *(_currentVoxel - 1 - _dataYStride + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx0py1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - 1 - region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel - 1 - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx0py0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x)) {
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x)) {
 			return *(_currentVoxel - 1);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx0py1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - 1 + region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel - 1 + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx1py1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
 			CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - 1 + region.getWidthInVoxels() - region.stride());
+			return *(_currentVoxel - 1 + _dataYStride - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx1py0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y)) {
-			return *(_currentVoxel - 1 + region.getWidthInVoxels());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y)) {
+			return *(_currentVoxel - 1 + _dataYStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1nx1py1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
 			CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - 1 + region.getWidthInVoxels() + region.stride());
+			return *(_currentVoxel - 1 + _dataYStride + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x - 1, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px1ny1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - region.getWidthInVoxels() - region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel - _dataYStride - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px1ny0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y)) {
-			return *(_currentVoxel - region.getWidthInVoxels());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y)) {
+			return *(_currentVoxel - _dataYStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px1ny1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - region.getWidthInVoxels() + region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel - _dataYStride + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px0py1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel - region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_NEG_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px0py0pz() const {
-		if (this->currentPositionValid()) {
+		if (_currentVoxel != nullptr && this->currentPositionValid()) {
 			return *_currentVoxel;
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px0py1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px1py1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + region.getWidthInVoxels() - region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel + _dataYStride - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px1py0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y)) {
-			return *(_currentVoxel + region.getWidthInVoxels());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y)) {
+			return *(_currentVoxel + _dataYStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel0px1py1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + region.getWidthInVoxels() + region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_Y(this->_posInVolume.y) && CAN_GO_POS_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel + _dataYStride + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px1ny1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
 			CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + 1 - region.getWidthInVoxels() - region.stride());
+			return *(_currentVoxel + 1 - _dataYStride - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px1ny0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y)) {
-			return *(_currentVoxel + 1 - region.getWidthInVoxels());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y)) {
+			return *(_currentVoxel + 1 - _dataYStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px1ny1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Y(this->_posInVolume.y) &&
 			CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + 1 - region.getWidthInVoxels() + region.stride());
+			return *(_currentVoxel + 1 - _dataYStride + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y - 1, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px0py1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + 1 - region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_NEG_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel + 1 - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px0py0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x)) {
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x)) {
 			return *(_currentVoxel + 1);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px0py1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + 1 + region.stride());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Z(this->_posInVolume.z)) {
+			return *(_currentVoxel + 1 + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y, this->_posInVolume.z + 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px1py1nz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
 			CAN_GO_NEG_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + 1 + region.getWidthInVoxels() - region.stride());
+			return *(_currentVoxel + 1 + _dataYStride - _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z - 1);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px1py0pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y)) {
-			return *(_currentVoxel + 1 + region.getWidthInVoxels());
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y)) {
+			return *(_currentVoxel + 1 + _dataYStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z);
 	}
 
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &peekVoxel1px1py1pz() const {
-		const Region &region = this->region();
-		if (this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
+		const Region &region = _dataRegion;
+		if (_currentVoxel != nullptr && this->currentPositionValid() && CAN_GO_POS_X(this->_posInVolume.x) && CAN_GO_POS_Y(this->_posInVolume.y) &&
 			CAN_GO_POS_Z(this->_posInVolume.z)) {
-			return *(_currentVoxel + 1 + region.getWidthInVoxels() + region.stride());
+			return *(_currentVoxel + 1 + _dataYStride + _dataZStride);
 		}
 		return this->_volume->voxel(this->_posInVolume.x + 1, this->_posInVolume.y + 1, this->_posInVolume.z + 1);
 	}
@@ -347,11 +355,10 @@ public:
 
 		// Then we update the voxel pointer
 		if (currentPositionValid()) {
-			const glm::aligned_ivec4 localPos = _posInVolume - region.getLowerCorner4();
-			const int64_t uVoxelIndex =
-				(int64_t)localPos.x + (int64_t)localPos.y * _volume->width() + (int64_t)localPos.z * region.stride();
-
-			_currentVoxel = _volume->voxels() + uVoxelIndex;
+			_currentVoxel = _volume->sampleData(position(), _dataRegion, _dataYStride, _dataZStride, _chunkEntry, _defaultVoxel);
+			const glm::ivec3 local = position() - _dataRegion.getLowerCorner();
+			_dataOffset = (int64_t)local.x + (int64_t)local.y * _dataYStride + (int64_t)local.z * _dataZStride;
+			_dataRegion.cropTo(_region);
 			return true;
 		}
 		_currentVoxel = nullptr;
@@ -386,10 +393,13 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (core_unlikely(!bIsOldPositionValid)) {
+		if (core_unlikely(!bIsOldPositionValid || (_chunkEntry && currentPositionValid() && !_dataRegion.containsPointInX(_posInVolume.x)))) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel += (intptr_t)offset;
+			_dataOffset += (intptr_t)offset;
+			if (_currentVoxel) {
+				_currentVoxel += (intptr_t)offset;
+			}
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -407,10 +417,13 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (core_unlikely(!bIsOldPositionValid)) {
+		if (core_unlikely(!bIsOldPositionValid || (_chunkEntry && currentPositionValid() && !_dataRegion.containsPointInY(_posInVolume.y)))) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel += (int64_t)_volume->width() * offset;
+			_dataOffset += _dataYStride * offset;
+			if (_currentVoxel) {
+				_currentVoxel += _dataYStride * offset;
+			}
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -428,10 +441,13 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (core_unlikely(!bIsOldPositionValid)) {
+		if (core_unlikely(!bIsOldPositionValid || (_chunkEntry && currentPositionValid() && !_dataRegion.containsPointInZ(_posInVolume.z)))) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel += region().stride() * offset;
+			_dataOffset += _dataZStride * offset;
+			if (_currentVoxel) {
+				_currentVoxel += _dataZStride * offset;
+			}
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -465,10 +481,13 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (core_unlikely(!bIsOldPositionValid)) {
+		if (core_unlikely(!bIsOldPositionValid || (_chunkEntry && currentPositionValid() && !_dataRegion.containsPointInX(_posInVolume.x)))) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel -= (intptr_t)offset;
+			_dataOffset -= (intptr_t)offset;
+			if (_currentVoxel) {
+				_currentVoxel -= (intptr_t)offset;
+			}
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -486,10 +505,13 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (core_unlikely(!bIsOldPositionValid)) {
+		if (core_unlikely(!bIsOldPositionValid || (_chunkEntry && currentPositionValid() && !_dataRegion.containsPointInY(_posInVolume.y)))) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel -= (int64_t)_volume->width() * offset;
+			_dataOffset -= _dataYStride * offset;
+			if (_currentVoxel) {
+				_currentVoxel -= _dataYStride * offset;
+			}
 		} else {
 			_currentVoxel = nullptr;
 		}
@@ -507,16 +529,23 @@ public:
 		}
 
 		// Then we update the voxel pointer
-		if (core_unlikely(!bIsOldPositionValid)) {
+		if (core_unlikely(!bIsOldPositionValid || (_chunkEntry && currentPositionValid() && !_dataRegion.containsPointInZ(_posInVolume.z)))) {
 			setPosition(_posInVolume);
 		} else if (core_likely(currentPositionValid())) {
-			_currentVoxel -= region().stride() * offset;
+			_dataOffset -= _dataZStride * offset;
+			if (_currentVoxel) {
+				_currentVoxel -= _dataZStride * offset;
+			}
 		} else {
 			_currentVoxel = nullptr;
 		}
 	}
 
 protected:
+	Voxel *writableVoxel() {
+		return _currentVoxel ? _currentVoxel : _volume->writableVoxel(position());
+	}
+
 	Volume *_volume;
 
 	voxel::Region _region;
@@ -525,7 +554,13 @@ protected:
 	glm::aligned_ivec4 _posInVolume{0, 0, 0, 0};
 
 	/** Other current position information */
-	Voxel *_currentVoxel = nullptr;
+	mutable Voxel *_currentVoxel = nullptr;
+	std::atomic<Voxel *> *_chunkEntry = nullptr;
+	const Voxel *_defaultVoxel = nullptr;
+	int64_t _dataOffset = 0;
+	Region _dataRegion = Region::InvalidRegion;
+	int64_t _dataYStride = 0;
+	int64_t _dataZStride = 0;
 
 	/** Whether the current position is inside the volume */
 	uint8_t _currentPositionInvalid = 0u;

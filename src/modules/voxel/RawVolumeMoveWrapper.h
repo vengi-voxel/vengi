@@ -32,13 +32,29 @@ public:
 				_volume->setVoxel(into, voxel);
 				return true;
 			}
-			*_currentVoxel = voxel;
+			Voxel *target = this->writableVoxel();
+			if (!target) {
+				return false;
+			}
+			*target = voxel;
 			return true;
 		}
 	};
 
 	RawVolumeMoveWrapper(voxel::RawVolume* volume) :
 			_volume(volume), _region(volume->region()) {
+	}
+
+	inline Voxel *sampleData(const glm::ivec3 &pos, Region &dataRegion, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const {
+		return _volume->sampleData(pos, dataRegion, yStride, zStride, chunkEntry, defaultVoxel);
+	}
+
+	inline Voxel *linearVoxels() const {
+		return _volume->linearVoxels();
+	}
+
+	inline Voxel *writableVoxel(const glm::ivec3 &pos) {
+		return _volume->writableVoxel(pos);
 	}
 
 	inline Voxel *voxels() const {

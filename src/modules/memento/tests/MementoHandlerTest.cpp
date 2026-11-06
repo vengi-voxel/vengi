@@ -19,6 +19,22 @@
 
 namespace memento {
 
+TEST(MementoChunkTest, SerializesWithoutMaterializingSource) {
+	voxel::RawVolume source(voxel::Region(-40, 216));
+	const glm::ivec3 pos(-8, 12, 24);
+	const voxel::Voxel value(voxel::VoxelType::Generic, 17, 8, voxel::FlagOutline, 3);
+	source.setVoxel(pos, value);
+	const size_t allocated = source.allocatedBytes();
+	MementoData data = MementoData::fromVolume(&source, voxel::Region::InvalidRegion);
+	EXPECT_EQ(nullptr, source.linearVoxels());
+	EXPECT_EQ(allocated, source.allocatedBytes());
+	voxel::RawVolume restored(source.region());
+	ASSERT_TRUE(MementoData::toVolume(&restored, data, source.region()));
+	EXPECT_EQ(value, restored.voxel(pos));
+	EXPECT_EQ(voxel::Voxel(), restored.voxel(pos + 1));
+	EXPECT_EQ(nullptr, restored.linearVoxels());
+}
+
 class MementoHandlerTest : public app::AbstractTest {
 private:
 	using Super = app::AbstractTest;

@@ -11,6 +11,22 @@ namespace voxelutil {
 class VolumeCropperTest: public app::AbstractTest {
 };
 
+TEST_F(VolumeCropperTest, testChunkedBoundsDoNotMaterialize) {
+	voxel::RawVolume volume(voxel::Region(-40, 216));
+	const glm::ivec3 lower(-9, -8, -7);
+	const glm::ivec3 upper(64, 63, 62);
+	volume.setVoxel(lower, voxel::Voxel(voxel::VoxelType::Generic, 1));
+	volume.setVoxel(upper, voxel::Voxel(voxel::VoxelType::Generic, 2));
+	glm::ivec3 mins, maxs;
+	ASSERT_TRUE(computeSolidBounds(&volume, mins, maxs));
+	EXPECT_EQ(lower, mins);
+	EXPECT_EQ(upper, maxs);
+	EXPECT_EQ(nullptr, volume.linearVoxels());
+	volume.clear();
+	EXPECT_FALSE(computeSolidBounds(&volume, mins, maxs));
+	EXPECT_EQ(nullptr, volume.linearVoxels());
+}
+
 TEST_F(VolumeCropperTest, testCropSmall) {
 	voxel::RawVolume smallVolume(voxel::Region(0, 2));
 	smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));

@@ -13,8 +13,10 @@
 
 namespace voxel {
 
+class ChunkedVolumeStorage;
+
 /**
- * Simple volume implementation which stores data in a single large 3D array.
+ * Bounded volume facade. Large regions use lazily allocated chunks.
  */
 class RawVolume {
 private:
@@ -30,7 +32,15 @@ public:
 			if (_currentPositionInvalid) {
 				return false;
 			}
-			*_currentVoxel = voxel;
+			if (_currentVoxel) {
+				*_currentVoxel = voxel;
+			} else {
+				Voxel *target = _volume->writableVoxel(position());
+				if (!target) {
+					return false;
+				}
+				*target = voxel;
+			}
 			return true;
 		}
 	};
@@ -168,17 +178,24 @@ public:
 	void clear();
 	void fill(const voxel::Voxel &voxel);
 
-	// TODO: we should not rely on this data to be a linear array.
-	//       We might add chunks to the RawVolume to reduce the memory
-	//       usage for big volumes that are empty - and in that case
-	//       the data is no longer linear.
+	/**
+	 * Obtain contiguous storage, materializing chunks if needed. This operation
+	 * requires exclusive access and invalidates existing voxel references and
+	 * samplers when materialization occurs. The volume then remains dense.
+	 * Prefer voxel() or Sampler for storage-independent access.
+	 */
 	inline const uint8_t *data() const {
-		return (const uint8_t *)_data;
+		return (const uint8_t *)voxels();
 	}
 
-	inline Voxel *voxels() const {
-		return _data;
-	}
+	Voxel *voxels() const;
+	/** Internal sampler access; does not materialize chunk storage. */
+	Voxel *linearVoxels() const { return _data; }
+	Voxel *writableVoxel(const glm::ivec3 &pos);
+	Voxel *sampleData(const glm::ivec3 &pos, Region &dataRegion, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
+	/** Allocated payload and chunk-directory bytes, excluding allocator overhead. */
+	size_t allocatedBytes() const;
+	bool valid() const;
 
 	/** True if the volume has allocated storage. */
 	bool valid() const;
@@ -204,7 +221,8 @@ public:
 	Region regionForFlag(uint8_t flag) const;
 
 private:
-	void initialise(const Region &region);
+	void initialise(const Region &region, bool forceDense = false);
+	void modifyChunkFlags(const Region &region, uint8_t flags, int operation);
 
 	/** The size of the volume */
 	Region _region;
@@ -213,7 +231,8 @@ private:
 	Voxel _borderVoxel;
 
 	/** The voxel data */
-	Voxel *_data;
+	mutable Voxel *_data = nullptr;
+	mutable ChunkedVolumeStorage *_storage = nullptr;
 };
 
 inline const Region &RawVolume::region() const {

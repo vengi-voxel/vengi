@@ -23,7 +23,7 @@ namespace voxelutil {
 	const int depth = region.getDepthInVoxels();
 	const int64_t yStride = width;
 	const int64_t zStride = (int64_t)width * height;
-	const voxel::Voxel *data = volume->voxels();
+	const voxel::Voxel *data = volume->linearVoxels();
 	const size_t lineSize = sizeof(voxel::Voxel) * width;
 
 	int minZ = depth;
@@ -34,9 +34,26 @@ namespace voxelutil {
 	int maxX = -1;
 
 	core::IProgress *progress = core::currentProgressPtr();
+	voxel::RawVolume::Sampler sampler(volume);
 	for (int z = 0; z < depth; ++z) {
 		const int64_t zBase = z * zStride;
 		for (int y = 0; y < height; ++y) {
+			if (!data) {
+				sampler.setPosition(region.getLowerX(), region.getLowerY() + y, region.getLowerZ() + z);
+				for (int x = 0; x < width; ++x) {
+					const voxel::Voxel &value = sampler.voxel();
+					if (core::memchr_not(&value, 0, sizeof(value)) != nullptr) {
+						minX = core_min(minX, x);
+						maxX = core_max(maxX, x);
+						minY = core_min(minY, y);
+						maxY = core_max(maxY, y);
+						minZ = core_min(minZ, z);
+						maxZ = core_max(maxZ, z);
+					}
+					sampler.movePositiveX();
+				}
+				continue;
+			}
 			const int64_t baseIndex = zBase + y * yStride;
 			const voxel::Voxel *lineStart = &data[baseIndex];
 

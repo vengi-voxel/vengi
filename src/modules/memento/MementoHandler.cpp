@@ -215,6 +215,34 @@ MementoData &MementoData::operator=(const MementoData &o) noexcept {
 	return *this;
 }
 
+static bool writeVolume(io::WriteStream &stream, const voxel::RawVolume &volume) {
+	if (const voxel::Voxel *linear = volume.linearVoxels()) {
+		return stream.write(linear, voxel::RawVolume::size(volume.region())) != -1;
+	}
+	// Serialize in X-major order without materializing the source volume.
+	voxel::Voxel row[256];
+	voxel::RawVolume::Sampler sampler(volume);
+	const voxel::Region &region = volume.region();
+	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+			sampler.setPosition(region.getLowerX(), y, z);
+			for (int x = 0; x < volume.width();) {
+				const int count = core_min(256, volume.width() - x);
+				for (int i = 0; i < count; ++i) {
+					const voxel::Voxel &value = sampler.voxel();
+					core_memcpy(row + i, &value, sizeof(value));
+					sampler.movePositiveX();
+				}
+				if (stream.write(row, count * sizeof(voxel::Voxel)) == -1) {
+					return false;
+				}
+				x += count;
+			}
+		}
+	}
+	return true;
+}
+
 MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel::Region &region) {
 	if (volume == nullptr) {
 		return MementoData();
@@ -227,7 +255,7 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		const int64_t actualVoxels = v.region().voxels();
 		io::BufferedReadWriteStream outStream(actualVoxels * (int64_t)sizeof(voxel::Voxel));
 		io::ZipWriteStream stream(outStream);
-		if (stream.write(v.data(), actualVoxels * sizeof(voxel::Voxel)) == -1) {
+		if (!writeVolume(stream, v)) {
 			Log::error("Failed to compress memento volume data");
 			return MementoData();
 		}
@@ -247,7 +275,7 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	const int64_t allVoxels = volume->region().voxels();
 	io::BufferedReadWriteStream outStream(allVoxels * (int64_t)sizeof(voxel::Voxel));
 	io::ZipWriteStream stream(outStream);
-	if (stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel)) == -1) {
+	if (!writeVolume(stream, *volume)) {
 		Log::error("Failed to compress memento volume data");
 		return MementoData();
 	}

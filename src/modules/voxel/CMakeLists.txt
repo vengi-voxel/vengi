@@ -1,5 +1,6 @@
 set(LIB voxel)
 set(SRCS
+	private/ChunkedVolumeStorage.h private/ChunkedVolumeStorage.cpp
 	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
@@ -40,6 +41,8 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer 
 engine_target_optimize(${LIB})
 
 set(TEST_SRCS
+	tests/ChunkedVolumeStorageTest.cpp
+	tests/RawVolumeChunkTest.cpp
 	tests/AbstractVoxelTest.h
 	tests/AmbientOcclusionTest.cpp
 	tests/BitVolumeTest.cpp

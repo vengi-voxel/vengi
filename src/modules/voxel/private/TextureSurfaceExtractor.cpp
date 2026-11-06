@@ -203,7 +203,7 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 	}
 
 	// Direct volume access with precomputed strides
-	const Voxel *volData = volume->voxels();
+	const Voxel *volData = volume->linearVoxels();
 	const Region &volRegion = volume->region();
 	const int64_t volW = volume->width();
 	const int64_t volStride = volRegion.stride();
@@ -222,6 +222,16 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 	const int volUpperArr[3] = {volRegion.getUpperX(), volRegion.getUpperY(), volRegion.getUpperZ()};
 	const int sVolLower = volLowerArr[axes.z];
 	const int sVolUpper = volUpperArr[axes.z];
+	const auto sample = [&](int64_t index, int s, int u, int v) -> const Voxel & {
+		if (volData) {
+			return volData[index];
+		}
+		glm::ivec3 pos(rx, ry, rz);
+		pos[axes.z] += s;
+		pos[axes.x] += u;
+		pos[axes.y] += v;
+		return volume->voxel(pos);
+	};
 
 	// Clamp iteration to volume bounds (extraction region may extend beyond volume)
 	const int sIterMax = core_min(sDim, volUpperArr[axes.z] - sAbsBase + 1);
@@ -251,13 +261,13 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 			int64_t volIdx = sliceBase + u * uVolStride;
 			const int maskColBase = u * vDim;
 			for (int v = 0; v < vIterMax; ++v) {
-				const Voxel &vox = volData[volIdx];
+				const Voxel &vox = sample(volIdx, s, u, v);
 				if (isBlocked(vox.getMaterial())) {
 					const color::RGBA color = ctx.palette.color(vox.getColor());
 
 					// Positive face (neighbor at s+1)
 					if (posNeighborInVolume) {
-						if (!isBlocked(volData[volIdx + sVolStride].getMaterial())) {
+						if (!isBlocked(sample(volIdx + sVolStride, s + 1, u, v).getMaterial())) {
 							maskPos[maskColBase + v] = color;
 							++maskCountPos;
 						}
@@ -268,7 +278,7 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 
 					// Negative face (neighbor at s-1)
 					if (negNeighborInVolume) {
-						if (!isBlocked(volData[volIdx - sVolStride].getMaterial())) {
+						if (!isBlocked(sample(volIdx - sVolStride, s - 1, u, v).getMaterial())) {
 							maskNeg[maskColBase + v] = color;
 							++maskCountNeg;
 						}

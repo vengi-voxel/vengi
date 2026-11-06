@@ -34,7 +34,11 @@ public:
 			if (_currentPositionInvalid) {
 				return false;
 			}
-			*_currentVoxel = voxel;
+			Voxel *target = this->writableVoxel();
+			if (!target) {
+				return false;
+			}
+			*target = voxel;
 			if (_positions.size() >= _positions.capacity()) {
 				_volume->addToDirtyRegion(_positions);
 				_positions.clear();
@@ -62,6 +66,18 @@ public:
 	}
 
 	virtual ~RawVolumeWrapper() {}
+
+	inline Voxel *sampleData(const glm::ivec3 &pos, Region &dataRegion, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const {
+		return _volume->sampleData(pos, dataRegion, yStride, zStride, chunkEntry, defaultVoxel);
+	}
+
+	inline Voxel *linearVoxels() const {
+		return _volume->linearVoxels();
+	}
+
+	inline Voxel *writableVoxel(const glm::ivec3 &pos) {
+		return _volume->writableVoxel(pos);
+	}
 
 	inline Voxel *voxels() const {
 		return _volume->voxels();
