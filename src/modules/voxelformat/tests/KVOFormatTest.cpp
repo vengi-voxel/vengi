@@ -22,7 +22,7 @@ TEST_F(KVOFormatTest, testCaco) {
 	ASSERT_NE(nullptr, node);
 	EXPECT_EQ(voxel::Region(0, 0, 0, 127, 127, 127), node->region());
 	EXPECT_EQ(132804, voxelutil::countVoxels(*node->volume()));
-	EXPECT_GT(node->palette().size(), 1);
+	EXPECT_GT(node->palette().size(), 1u);
 	EXPECT_EQ(color::RGBA(252, 196, 152, 255), node->palette().color(node->volume()->voxel(52, 96, 53).getColor()));
 	EXPECT_EQ(color::RGBA(76, 56, 40, 255), node->palette().color(node->volume()->voxel(63, 90, 80).getColor()));
 	EXPECT_EQ(color::RGBA(88, 96, 68, 255), node->palette().color(node->volume()->voxel(73, 47, 96).getColor()));

@@ -217,7 +217,7 @@ TEST_F(SceneManagerTest, testEditNormalPaletteEntryUndoRedo) {
 	EXPECT_EQ(painted, testVolume()->voxel(0, 0, 0));
 	ASSERT_TRUE(_sceneMgr->undo());
 	EXPECT_EQ(before.normal(0), node.normalPalette().normal(0));
-	const int states = _sceneMgr->mementoHandler().stateSize();
+	const size_t states = _sceneMgr->mementoHandler().stateSize();
 	EXPECT_TRUE(_sceneMgr->nodeSetNormal(node.uuid(), 0, before.normal(0)));
 	EXPECT_EQ(states, _sceneMgr->mementoHandler().stateSize());
 	EXPECT_FALSE(_sceneMgr->nodeSetNormal(node.uuid(), palette::NormalPaletteMaxNormals, direction));
