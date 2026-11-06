@@ -8,6 +8,7 @@
 #include "core/concurrent/Thread.h"
 #include <SDL3/SDL_timer.h>
 #include <gtest/gtest.h>
+#include <limits.h>
 
 namespace voxel {
 
@@ -120,6 +121,43 @@ TEST(ChunkedVolumeStorageTest, ConcurrentFirstWritesAndReadOnlyAccess) {
 	}
 	EXPECT_EQ(0, (int)mismatches);
 	EXPECT_EQ(bytes, storage.allocatedBytes());
+}
+
+TEST(ChunkedVolumeStorageTest, MoveMatchesCyclicCoordinateMapping) {
+	for (const glm::ivec3 dimensions : {glm::ivec3(65, 34, 33), glm::ivec3(65, 2, 1), glm::ivec3(1, 65, 2)}) {
+		for (const glm::ivec3 shift : {glm::ivec3(0), glm::ivec3(1, -1, 32), glm::ivec3(-32, 65, -34),
+			glm::ivec3(INT_MIN, INT_MAX, -1)}) {
+			ChunkedVolumeStorage storage(dimensions);
+			const Voxel background(VoxelType::Generic, 7, 9, FlagOutline, 3);
+			storage.fill(background);
+			const glm::ivec3 marked = dimensions - 1;
+			storage.setVoxel(marked, Voxel(VoxelType::Transparent, 19, 11, 0, 5));
+			storage.setVoxel(glm::ivec3(0), Voxel(VoxelType::Air, 0, 0, 2, 0));
+			const Voxel *stable = &storage.voxel(marked);
+			const size_t size = (size_t)dimensions.x * dimensions.y * dimensions.z;
+			Voxel *original = (Voxel *)core_malloc(size * sizeof(Voxel));
+			ASSERT_NE(nullptr, original);
+			storage.copyTo(original);
+			ASSERT_TRUE(storage.move(shift));
+			EXPECT_EQ(stable, &storage.voxel(marked));
+			for (int z = 0; z < dimensions.z; ++z) {
+				for (int y = 0; y < dimensions.y; ++y) {
+					for (int x = 0; x < dimensions.x; ++x) {
+						glm::ivec3 source(x, y, z);
+						for (int axis = 0; axis < 3; ++axis) {
+							source[axis] = (int)(((int64_t)source[axis] + shift[axis]) % dimensions[axis]);
+							if (source[axis] < 0) {
+								source[axis] += dimensions[axis];
+							}
+						}
+						const size_t index = source.x + (size_t)dimensions.x * (source.y + (size_t)dimensions.y * source.z);
+						EXPECT_EQ(original[index], storage.voxel({x, y, z}));
+					}
+				}
+			}
+			core_free(original);
+		}
+	}
 }
 
 } // namespace voxel

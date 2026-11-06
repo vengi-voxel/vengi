@@ -18,7 +18,7 @@ namespace voxel {
  * lock or update shared caches. Chunk publication is atomic; chunks are never
  * evicted, so references into allocated chunks stay valid until destruction.
  * Concurrent writes to distinct voxels are supported, including in the same
- * newly allocated chunk. Writes to the same voxel, fill, copy and destruction
+ * newly allocated chunk. Writes to the same voxel, fill, move, copy and destruction
  * require external synchronization. References to missing cells refer to the
  * default value, not to a subsequently allocated cell.
  */
@@ -40,6 +40,8 @@ public:
 	Voxel *sampleData(const glm::ivec3 &localPos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
 	const Voxel &defaultVoxel() const { return _default; }
 	void fill(const Voxel &value);
+	/** Cyclic left shift; preserves chunk addresses and requires exclusive access. */
+	bool move(const glm::ivec3 &shift);
 	void copyTo(Voxel *destination) const;
 	/** Allocated directory and voxel payload bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;

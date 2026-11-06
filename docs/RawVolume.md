@@ -37,7 +37,13 @@ instance to contiguous storage. This requires exclusive access, allocates the fu
 uncompressed volume, and invalidates existing voxel references and samplers.
 Check for allocation failure before using the returned pointer. `copyVoxels()`
 instead returns an independent contiguous copy without changing source storage.
-`move()` currently also materializes storage before rotating voxels.
+`move()` keeps chunked storage: it stages the shifted non-default cells in temporary
+chunks and allocates any required destinations before changing contents. Existing
+chunk addresses stay valid. The operation requires exclusive access; it uses
+temporary chunk payload and retains old allocated chunks after moving cells away.
+For nonuniform, fully allocated volumes the temporary payload can approach the
+entire volume size; this path trades extra temporary memory for avoiding forced
+dense materialization. Empty and uniform volumes need only a temporary directory.
 
 `allocatedBytes()` reports allocated voxel payload plus directory bytes, excluding
 allocator and object overhead. It is not a process resident-memory measurement.

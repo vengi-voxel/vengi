@@ -187,6 +187,69 @@ void ChunkedVolumeStorage::copyTo(Voxel *destination) const {
 	}
 }
 
+bool ChunkedVolumeStorage::move(const glm::ivec3 &shift) {
+	glm::ivec3 normalized;
+	for (int axis = 0; axis < 3; ++axis) {
+		normalized[axis] = shift[axis] % _dimensions[axis];
+		if (normalized[axis] < 0) {
+			normalized[axis] += _dimensions[axis];
+		}
+	}
+	if (normalized == glm::ivec3(0)) {
+		return true;
+	}
+	ChunkedVolumeStorage moved(_dimensions);
+	if (!moved.valid()) {
+		return false;
+	}
+	core_memcpy((void *)&moved._default, &_default, sizeof(Voxel));
+	// Only allocated cells can differ from the default. Ignore edge padding.
+	for (size_t index = 0; index < _directorySize; ++index) {
+		const Voxel *source = chunk(index);
+		if (!source) {
+			continue;
+		}
+		const size_t xy = (size_t)_chunkCounts.x * _chunkCounts.y;
+		const glm::ivec3 origin((int)(index % _chunkCounts.x) * ChunkSide,
+			(int)((index / _chunkCounts.x) % _chunkCounts.y) * ChunkSide, (int)(index / xy) * ChunkSide);
+		const glm::ivec3 count = glm::min(_chunkDimensions, _dimensions - origin);
+		for (int z = 0; z < count.z; ++z) {
+			for (int y = 0; y < count.y; ++y) {
+				for (int x = 0; x < count.x; ++x) {
+					const Voxel &value = source[x + (size_t)_chunkDimensions.x * (y + (size_t)_chunkDimensions.y * z)];
+					if (core_memcmp(&value, &_default, sizeof(Voxel)) == 0) {
+						continue;
+					}
+					glm::ivec3 destination = origin + glm::ivec3(x, y, z) - normalized;
+					for (int axis = 0; axis < 3; ++axis) {
+						if (destination[axis] < 0) {
+							destination[axis] += _dimensions[axis];
+						}
+					}
+					Voxel *target = moved.writableVoxel(destination);
+					if (!target) {
+						return false;
+					}
+					core_memcpy((void *)target, &value, sizeof(Voxel));
+				}
+			}
+		}
+	}
+	// Complete allocation before changing any cell; retain existing chunk addresses.
+	for (size_t i = 0; i < _directorySize; ++i) {
+		if (moved.chunk(i) && !createChunk(i)) {
+			return false;
+		}
+	}
+	fill(_default);
+	for (size_t i = 0; i < _directorySize; ++i) {
+		if (const Voxel *source = moved.chunk(i)) {
+			core_memcpy((void *)chunk(i), source, _chunkVoxels * sizeof(Voxel));
+		}
+	}
+	return true;
+}
+
 size_t ChunkedVolumeStorage::allocatedBytes() const {
 	if (!valid()) {
 		return 0;

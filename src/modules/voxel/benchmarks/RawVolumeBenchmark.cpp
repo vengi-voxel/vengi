@@ -208,6 +208,34 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxelsSampler)(benchmark::State &stat
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxels)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxelsSampler)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
 
+static void cyclicVolumeMove(benchmark::State &state) {
+	voxel::RawVolume volume(voxel::Region(-128, 127));
+	if (state.range(0) && volume.voxels() == nullptr) {
+		state.SkipWithError("Could not allocate dense comparison volume");
+		return;
+	}
+	const voxel::Voxel value(voxel::VoxelType::Generic, 17);
+	if (state.range(1) == 1) {
+		volume.setVoxel(-128, -128, -128, value);
+		volume.setVoxel(-97, -97, -97, value);
+		volume.setVoxel(127, 127, 127, value);
+	} else if (state.range(1) == 2) {
+		volume.fill(value);
+	} else if (state.range(1) == 3) {
+		fillBenchmarkVolume(volume, 3);
+	}
+	for (auto _ : state) {
+		if (!volume.move({1, 0, 0}) || !volume.move({-1, 0, 0})) {
+			state.SkipWithError("Could not shift volume");
+			break;
+		}
+		benchmark::DoNotOptimize(volume.linearVoxels());
+	}
+	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
+}
+
+BENCHMARK(cyclicVolumeMove)->ArgsProduct({{0, 1}, {0, 1, 2, 3}});
+
 // Every benchmark thread reads the same immutable volume. Each owns its sampler.
 // A plain benchmark avoids creating application fixtures concurrently.
 template<int Content, bool Dense>

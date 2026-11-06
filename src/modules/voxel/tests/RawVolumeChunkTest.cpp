@@ -368,4 +368,33 @@ TEST_F(RawVolumeChunkTest, ConcurrentSamplersShareImmutableVolume) {
 	EXPECT_EQ(nullptr, volume.linearVoxels());
 }
 
+TEST_F(RawVolumeChunkTest, CyclicMoveStaysChunkedAndMatchesDense) {
+	RawVolume volume(largeRegion);
+	const size_t emptyBytes = volume.allocatedBytes();
+	ASSERT_TRUE(volume.move({1, 32, -1}));
+	EXPECT_EQ(emptyBytes, volume.allocatedBytes());
+	RawVolume dense(largeRegion);
+	ASSERT_NE(nullptr, dense.voxels());
+	for (const glm::ivec3 shift : {glm::ivec3(1, 0, 0), glm::ivec3(32, -31, 257), glm::ivec3(-258, 258, -258)}) {
+		volume.clear();
+		dense.clear();
+		const glm::ivec3 points[] = {largeRegion.getLowerCorner(), largeRegion.getLowerCorner() + 31,
+			largeRegion.getLowerCorner() + 32, largeRegion.getUpperCorner()};
+		uint8_t color = 1;
+		for (const auto &point : points) {
+			const Voxel value(VoxelType::Generic, color++);
+			volume.setVoxel(point, value);
+			dense.setVoxel(point, value);
+		}
+		ASSERT_TRUE(volume.move(shift));
+		ASSERT_TRUE(dense.move(shift));
+		Voxel *copy = volume.copyVoxels();
+		ASSERT_NE(nullptr, copy);
+		EXPECT_EQ(0, core_memcmp(copy, dense.linearVoxels(), RawVolume::size(largeRegion)));
+		core_free(copy);
+		EXPECT_EQ(nullptr, volume.linearVoxels());
+		EXPECT_LT(volume.allocatedBytes(), RawVolume::size(largeRegion) / 10);
+	}
+}
+
 } // namespace voxel

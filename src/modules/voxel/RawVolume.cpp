@@ -784,7 +784,10 @@ RawVolume::~RawVolume() {
 }
 
 bool RawVolume::move(const glm::ivec3 &shift) {
-	if (voxels() == nullptr) {
+	if (_storage) {
+		return _storage->move(shift);
+	}
+	if (_data == nullptr) {
 		return false;
 	}
 	const int w = width();
