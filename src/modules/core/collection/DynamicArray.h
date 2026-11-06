@@ -68,10 +68,15 @@ private:
 	}
 
 	void destroyFrom(size_t newSize) {
-		// Counted loop so GCC can see a finite iteration count (avoids
-		// -Waggressive-loop-optimizations on the old while (_size--) shrink).
-		for (size_t i = _size; i > newSize; --i) {
-			_buffer[i - 1u].~TYPE();
+		// Ascending counted loop: GCC's -Waggressive-loop-optimizations still
+		// fires on `for (i = _size; i > newSize; --i)` when this is inlined into
+		// call sites (false-positive huge trip counts).
+		if (newSize >= _size) {
+			return;
+		}
+		const size_t count = _size - newSize;
+		for (size_t n = 0u; n < count; ++n) {
+			_buffer[_size - 1u - n].~TYPE();
 		}
 		_size = newSize;
 	}
