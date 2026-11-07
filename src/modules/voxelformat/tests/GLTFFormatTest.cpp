@@ -6,10 +6,13 @@
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"
+#include "core/StandardLib.h"
 #include "core/String.h"
 #include "image/Image.h"
+#include "core/collection/Buffer.h"
 #include "io/Stream.h"
 #include "io/MemoryArchive.h"
+#include "palette/Material.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -276,6 +279,96 @@ TEST_F(GLTFFormatTest, testSaveLoadVoxel) {
 	GLTFFormat f;
 	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
 	testSaveLoadVoxel("bv-smallvolumesavetest.gltf", &f, 0, 10, flags);
+}
+
+TEST_F(GLTFFormatTest, testEmissiveFactorWithoutTextureSetsEmit) {
+	util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, "24");
+	util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, "1");
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+	// Uniform emissiveFactor with no emissiveTexture maps to MaterialEmit.
+	const char json[] = R"({
+		"asset":{"version":"2.0"},
+		"buffers":[{"uri":"emit.bin","byteLength":36}],
+		"bufferViews":[{"buffer":0,"byteOffset":0,"byteLength":36}],
+		"accessors":[{"bufferView":0,"componentType":5126,"count":3,"type":"VEC3","min":[0,0,0],"max":[2,2,0]}],
+		"materials":[{"name":"lit","emissiveFactor":[0.5,0.5,0.5],
+			"pbrMetallicRoughness":{"baseColorFactor":[1,0,0,1],"metallicFactor":0,"roughnessFactor":1}}],
+		"meshes":[{"primitives":[{"attributes":{"POSITION":0},"material":0}]}],
+		"nodes":[{"name":"tri","mesh":0}],
+		"scenes":[{"nodes":[0]}],"scene":0
+	})";
+	const float buffer[] = {0, 0, 0, 2, 0, 0, 0, 2, 0};
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("emit.gltf", (const uint8_t *)json, sizeof(json) - 1));
+	ASSERT_TRUE(archive->add("emit.bin", (const uint8_t *)buffer, sizeof(buffer)));
+	GLTFFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.loadGroups("emit.gltf", archive, graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	ASSERT_NE(nullptr, node->volume());
+	ASSERT_GT(voxelutil::countVoxels(*node->volume()), 0);
+	bool foundEmit = false;
+	for (int i = 0; i < node->palette().colorCount(); ++i) {
+		if (node->palette().material(i).has(palette::MaterialEmit)) {
+			foundEmit = true;
+			EXPECT_NEAR(0.5f, node->palette().material(i).emit, 0.01f);
+		}
+	}
+	EXPECT_TRUE(foundEmit);
+}
+
+TEST_F(GLTFFormatTest, testEmissiveTextureDoesNotSetUniformEmit) {
+	util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, "24");
+	util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, "1");
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, "true");
+	util::ScopedVarChange fillHollow(cfg::VoxformatFillHollow, "false");
+	// emissiveFactor [1,1,1] is a multiplier for emissiveTexture.
+	// A black emissive map must not mark every palette color as emit.
+	// Minimal 1x1 black PNG.
+	static const uint8_t blackPng[] = {
+		0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+		0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+		0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x60, 0x60, 0x60, 0x00,
+		0x00, 0x00, 0x04, 0x00, 0x01, 0xF6, 0x17, 0x38, 0x55, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E,
+		0x44, 0xAE, 0x42, 0x60, 0x82};
+	const char json[] = R"({
+		"asset":{"version":"2.0"},
+		"buffers":[{"uri":"emittex.bin","byteLength":105}],
+		"bufferViews":[
+			{"buffer":0,"byteOffset":0,"byteLength":36},
+			{"buffer":0,"byteOffset":36,"byteLength":69}],
+		"accessors":[{"bufferView":0,"componentType":5126,"count":3,"type":"VEC3","min":[0,0,0],"max":[2,2,0]}],
+		"images":[{"mimeType":"image/png","bufferView":1}],
+		"textures":[{"source":0}],
+		"materials":[{"name":"emittex","emissiveFactor":[1,1,1],"emissiveTexture":{"index":0},
+			"pbrMetallicRoughness":{"baseColorFactor":[0,1,0,1],"metallicFactor":1,"roughnessFactor":1,
+				"metallicRoughnessTexture":{"index":0}}}],
+		"meshes":[{"primitives":[{"attributes":{"POSITION":0},"material":0}]}],
+		"nodes":[{"name":"tri","mesh":0}],
+		"scenes":[{"nodes":[0]}],"scene":0
+	})";
+	core::Buffer<uint8_t> bin;
+	bin.resize(36 + sizeof(blackPng));
+	const float positions[] = {0, 0, 0, 2, 0, 0, 0, 2, 0};
+	core_memcpy(bin.data(), positions, sizeof(positions));
+	core_memcpy(bin.data() + 36, blackPng, sizeof(blackPng));
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("emittex.gltf", (const uint8_t *)json, sizeof(json) - 1));
+	ASSERT_TRUE(archive->add("emittex.bin", bin.data(), bin.size()));
+	GLTFFormat format;
+	scenegraph::SceneGraph graph;
+	ASSERT_TRUE(format.loadGroups("emittex.gltf", archive, graph, testLoadCtx));
+	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
+	ASSERT_NE(nullptr, node);
+	ASSERT_NE(nullptr, node->volume());
+	ASSERT_GT(voxelutil::countVoxels(*node->volume()), 0);
+	ASSERT_GT(node->palette().colorCount(), 0);
+	for (int i = 0; i < node->palette().colorCount(); ++i) {
+		EXPECT_FALSE(node->palette().material(i).has(palette::MaterialEmit)) << "color " << i;
+		EXPECT_FALSE(node->palette().material(i).has(palette::MaterialMetal)) << "color " << i;
+	}
 }
 
 TEST_F(GLTFFormatTest, testNodeProperties) {

@@ -512,8 +512,15 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 
 	if (mat->has_pbr_metallic_roughness) {
 		const cgltf_pbr_metallic_roughness &pbr = mat->pbr_metallic_roughness;
-		palMat.setValue(palette::MaterialProperty::MaterialMetal, pbr.metallic_factor);
-		palMat.setValue(palette::MaterialProperty::MaterialRoughness, pbr.roughness_factor);
+		// metallicFactor/roughnessFactor multiply metallicRoughnessTexture samples (B/G).
+		// Without per-texel sampling, only apply the factors when no MR texture is bound -
+		// otherwise assets with factor 1.0 + a dark metal channel mark every color as metal.
+		const bool hasMRTexture =
+			pbr.metallic_roughness_texture.texture && pbr.metallic_roughness_texture.texture->image;
+		if (!hasMRTexture) {
+			palMat.setValue(palette::MaterialProperty::MaterialMetal, pbr.metallic_factor);
+			palMat.setValue(palette::MaterialProperty::MaterialRoughness, pbr.roughness_factor);
+		}
 		meshMat->baseColor =
 			color::RGBA((uint8_t)(pbr.base_color_factor[0] * 255.0f), (uint8_t)(pbr.base_color_factor[1] * 255.0f),
 						(uint8_t)(pbr.base_color_factor[2] * 255.0f), (uint8_t)(pbr.base_color_factor[3] * 255.0f));
@@ -562,6 +569,10 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 				}
 			}
 		}
+		// Without a usable base color texture, use the factor as a solid color
+		if (!meshMat->texture || !meshMat->texture->isLoaded()) {
+			meshMat->baseColorFactor = 1.0f;
+		}
 	}
 
 	if (mat->has_ior) {
@@ -586,21 +597,25 @@ MeshMaterialPtr GLTFFormat::loadMaterial(const cgltf_data *data, const cgltf_mat
 						1.0f / mat->volume.attenuation_distance);
 	}
 
-	// emissiveFactor is the emit channel; emissive_strength scales HDR (>1) values.
-	float emit = 0.0f;
-	if (mat->emissive_factor[0] > 0.0f || mat->emissive_factor[1] > 0.0f || mat->emissive_factor[2] > 0.0f) {
-		emit = (mat->emissive_factor[0] + mat->emissive_factor[1] + mat->emissive_factor[2]) / 3.0f;
+	// emissiveFactor multiplies emissiveTexture samples. Only treat it as a uniform
+	// MaterialEmit when there is no emissive texture - otherwise assets with
+	// emissiveFactor [1,1,1] and a near-black emissive map would mark every color as emit
+	const bool hasEmissiveTexture = mat->emissive_texture.texture && mat->emissive_texture.texture->image;
+	if (!hasEmissiveTexture) {
+		float emit = 0.0f;
+		if (mat->emissive_factor[0] > 0.0f || mat->emissive_factor[1] > 0.0f || mat->emissive_factor[2] > 0.0f) {
+			emit = (mat->emissive_factor[0] + mat->emissive_factor[1] + mat->emissive_factor[2]) / 3.0f;
+		}
+		if (mat->has_emissive_strength) {
+			emit *= mat->emissive_strength.emissive_strength;
+		}
+		if (emit > 0.0f) {
+			palMat.setValue(palette::MaterialProperty::MaterialEmit, core_min(emit, 1.0f));
+		}
+		meshMat->emitColor =
+			color::RGBA((uint8_t)(mat->emissive_factor[0] * 255.0f), (uint8_t)(mat->emissive_factor[1] * 255.0f),
+						(uint8_t)(mat->emissive_factor[2] * 255.0f), 255);
 	}
-	if (mat->has_emissive_strength) {
-		emit *= mat->emissive_strength.emissive_strength;
-	}
-	if (emit > 0.0f) {
-		palMat.setValue(palette::MaterialProperty::MaterialEmit, core_min(emit, 1.0f));
-	}
-
-	meshMat->emitColor =
-		color::RGBA((uint8_t)(mat->emissive_factor[0] * 255.0f), (uint8_t)(mat->emissive_factor[1] * 255.0f),
-					(uint8_t)(mat->emissive_factor[2] * 255.0f), 255);
 
 	if (mat->alpha_mode == cgltf_alpha_mode_blend) {
 		meshMat->transparency = 1.0f - mat->pbr_metallic_roughness.base_color_factor[3];
