@@ -75,6 +75,10 @@ Dictionary &DictionaryManager::getDictionary(const Language &language) {
 	}
 	// Dictionary for languages lang isn't loaded, so we load it
 	Dictionary *dict = new Dictionary(_charset);
+	// Source strings are English; missing translations are expected there.
+	if (language.getLanguage() == "en") {
+		dict->setLogMissingTranslations(false);
+	}
 	Log::debug("Create dictionary for language: %s", language.str().c_str());
 	_dictionaries.put(language, dict);
 

@@ -27,6 +27,7 @@
 #include "core/NonCopyable.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/DynamicSet.h"
 #include "core/collection/DynamicStringMap.h"
 
 namespace app {
@@ -53,8 +54,12 @@ private:
 	const char *translate(const Entries &dict, const char *msgid) const;
 	const char *translatePlural(const Entries &dict, const char *msgid, const char *msgidplural, int num) const;
 
+	void logMissingTranslation(const char *msgid) const;
+
 	bool _hasFallback = false;
 	Dictionary *_fallback = nullptr;
+	bool _logMissingTranslations = true;
+	mutable core::DynamicSet<uint32_t> _missingTranslationHashes;
 
 public:
 	/** Constructs a dictionary converting to the specified \a charset (default UTF-8) */
@@ -132,6 +137,18 @@ public:
 	void addFallback(Dictionary *fallback) {
 		_hasFallback = true;
 		_fallback = fallback;
+	}
+
+	/**
+	 * Enable or disable missing-translation logging. Disabled for English
+	 * source language where missing msgstr is expected.
+	 */
+	void setLogMissingTranslations(bool enable) {
+		_logMissingTranslations = enable;
+	}
+
+	bool logMissingTranslations() const {
+		return _logMissingTranslations;
 	}
 
 	/**

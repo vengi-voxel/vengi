@@ -23,6 +23,7 @@
 
 #include "Dictionary.h"
 #include "core/Common.h"
+#include "core/Hash.h"
 #include "core/Log.h"
 
 namespace app {
@@ -31,6 +32,17 @@ Dictionary::Dictionary(const core::String &charset_) : _charset(charset_) {
 }
 
 Dictionary::~Dictionary() {
+}
+
+void Dictionary::logMissingTranslation(const char *msgid) const {
+	if (!_logMissingTranslations || msgid == nullptr) {
+		return;
+	}
+	const uint32_t hash = (uint32_t)core::hash(msgid);
+	if (!_missingTranslationHashes.insert(hash)) {
+		return;
+	}
+	Log::trace("Couldn't translate: %s", msgid);
 }
 
 core::String Dictionary::getCharset() const {
@@ -72,11 +84,7 @@ const char *Dictionary::translatePlural(const Entries &dict, const char *msgid, 
 
 		return msgidPlural;
 	}
-	Log::trace("Couldn't translate: %s", msgid);
-	Log::trace("Candidates:");
-	for (const auto &e : dict) {
-		Log::trace("'%s'", e->first.c_str());
-	}
+	logMissingTranslation(msgid);
 
 	if (count == 1) {
 		// default to english rules
@@ -99,7 +107,7 @@ const char *Dictionary::translate(const Entries &dict, const char *msgid) const 
 	if (i != dict.end() && !i->second.empty()) {
 		return i->second[0].c_str();
 	}
-	Log::trace("Couldn't translate: %s", msgid);
+	logMissingTranslation(msgid);
 
 	if (_hasFallback) {
 		return _fallback->translate(msgid);
@@ -112,7 +120,7 @@ const char *Dictionary::translateCtxt(const char *msgctxt, const char *msgid) co
 	if (i != _ctxtEntries.end()) {
 		return translate(i->second, msgid);
 	}
-	Log::trace("Couldn't translate: %s", msgid);
+	logMissingTranslation(msgid);
 	return msgid;
 }
 
@@ -122,7 +130,7 @@ const char *Dictionary::translateCtxtPlural(const char *msgctxt, const char *msg
 	if (i != _ctxtEntries.end()) {
 		return translatePlural(i->second, msgid, msgidplural, num);
 	}
-	Log::trace("Couldn't translate: %s", msgid);
+	logMissingTranslation(msgid);
 	if (num != 1) {
 		// default to english
 		return msgidplural;
