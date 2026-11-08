@@ -18,6 +18,11 @@ UUID &UUID::operator=(const String &uuid) {
 	if (uuid.size() != 36) {
 		return *this;
 	}
+	for (size_t i = 0; i < uuid.size(); ++i) {
+		const bool separator = i == 8 || i == 13 || i == 18 || i == 23;
+		if ((uuid[i] == '-') != separator)
+			return *this;
+	}
 	auto hexToByte = [](char c) -> int {
 		if (c >= '0' && c <= '9')
 			return c - '0';
@@ -40,9 +45,9 @@ UUID &UUID::operator=(const String &uuid) {
 		int lo = hexToByte(uuid[i]);
 		if (hi < 0 || lo < 0)
 			return *this;
-		bytes[bi++] = (uint8_t)((hi << 4) | lo);
-		if (bi > 16)
+		if (bi >= 16)
 			return *this;
+		bytes[bi++] = (uint8_t)((hi << 4) | lo);
 	}
 	if (bi != 16)
 		return *this;

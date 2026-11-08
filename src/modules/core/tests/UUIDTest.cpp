@@ -35,6 +35,14 @@ TEST(UUIDTest, testInvalidParse) {
 	EXPECT_EQ(0u, u.str().size());
 }
 
+TEST(UUIDTest, testMalformedSeparatorsNeverDecodeMoreThanSixteenBytes) {
+	for (const char *value : {"111111111111111111111111111111111111", "1234567-12345-1234-1234-123456789ABC",
+							  "12345678_1234-1234-1234-123456789ABC", "12345678-1234-1234-1234-123456789ABG"}) {
+		EXPECT_FALSE(UUID(value).isValid());
+	}
+	EXPECT_TRUE(UUID("12345678-1234-1234-1234-123456789ABC").isValid());
+}
+
 TEST(UUIDTest, testTrivialCopyable) {
 	EXPECT_EQ(16u, sizeof(UUID));
 	EXPECT_TRUE(std::is_trivially_copyable<UUID>::value);
