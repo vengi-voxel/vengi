@@ -45,6 +45,7 @@ private:
 	 * The PCM buffers are kept so sounds can be recreated on re-enable.
 	 */
 	void closeDevice();
+	SoundHandle registerSound(SoundData *data);
 
 public:
 	SoundManager() = default;
@@ -62,6 +63,8 @@ public:
 	 * @sa freeSound()
 	 */
 	SoundHandle loadSound(const core::String &path);
+	/** Load a WAV from memory; decoded samples outlive the source buffer. */
+	SoundHandle loadSound(const void *bytes, size_t size);
 
 	/**
 	 * @brief Free a previously loaded sound

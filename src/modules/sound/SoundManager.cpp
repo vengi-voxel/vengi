@@ -166,6 +166,27 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 		return nullptr;
 	}
 
+	const auto handle = registerSound(data);
+	if (handle)
+		Log::debug("Loaded sound: %s (%u bytes)", path.c_str(), data->length);
+	return handle;
+}
+
+SoundHandle SoundManager::loadSound(const void *bytes, size_t size) {
+	if (!bytes || !size || size > 8 * 1024 * 1024 || !_enabled->boolVal() || !ensureDevice())
+		return nullptr;
+	SDL_IOStream *stream = SDL_IOFromConstMem(bytes, size);
+	if (!stream)
+		return nullptr;
+	SoundData *data = new SoundData();
+	if (!SDL_LoadWAV_IO(stream, true, &data->spec, &data->buffer, &data->length)) {
+		delete data;
+		return nullptr;
+	}
+	return registerSound(data);
+}
+
+SoundHandle SoundManager::registerSound(SoundData *data) {
 	data->stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &data->spec, nullptr, nullptr);
 	if (data->stream == nullptr) {
 		Log::warn("Failed to open audio device stream: %s", SDL_GetError());
@@ -175,7 +196,6 @@ SoundHandle SoundManager::loadSound(const core::String &path) {
 	}
 
 	_sounds.push_back(data);
-	Log::debug("Loaded sound: %s (%u bytes)", path.c_str(), data->length);
 	return (SoundHandle)data;
 }
 
