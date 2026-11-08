@@ -625,6 +625,31 @@ TEST_F(LUAApiTest, testScriptResize) {
 	EXPECT_EQ(region.getUpperCorner(), _region.getUpperCorner() + 1);
 }
 
+TEST_F(LUAApiTest, MultipleVolumeViewsFollowReplacementsAndCannotRestoreFreedStorageOnGC) {
+	scenegraph::SceneGraph sceneGraph;
+	run(sceneGraph,R"(
+function main(node,region,color)
+    local first=node:volume()
+    local second=node:volume()
+    second:resize(2,1,1)
+    first:setVoxel(9,0,0,7)
+    assert(second:voxel(9,0,0)==7)
+    first:resize(1,0,0)
+    second:setVoxel(10,0,0,8)
+    assert(first:voxel(10,0,0)==8)
+    first=nil
+    collectgarbage('collect')
+    assert(second:voxel(10,0,0)==8)
+    second=nil
+    collectgarbage('collect')
+    assert(node:volume():voxel(10,0,0)==8)
+end
+)",{},true);
+	const auto *model=sceneGraph.firstModelNode();ASSERT_NE(nullptr,model);
+	EXPECT_EQ(11,model->region().getWidthInVoxels());
+	EXPECT_EQ(8,model->volume()->voxel(10,0,0).getColor());
+}
+
 TEST_F(LUAApiTest, testScriptSimilarColor) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "similarcolor.lua");

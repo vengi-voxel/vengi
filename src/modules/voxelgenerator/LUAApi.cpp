@@ -105,13 +105,31 @@ public:
 		return _node;
 	}
 
+	void setVolume(voxel::RawVolume *replacement) {
+		const voxel::Region previous = _node->volume()->region();
+		if (_node->volume() != replacement) {
+			// Publish ownership immediately. Other Lua views refresh on their next
+			// access; their finalizers must never publish an obsolete pointer.
+			_node->setVolume(replacement);
+		}
+		Super::setVolume(replacement);
+		_region = replacement->region();
+		_dirtyRegion = previous;
+		_dirtyRegion.accumulate(_region);
+		if (_sceneGraph) {
+			_sceneGraph->markDirty();
+		}
+	}
+
 	void update() {
 		if (_node->volume() == volume()) {
 			return;
 		}
-		_node->setVolume(volume());
-		if (_sceneGraph) {
-			_sceneGraph->markDirty();
+		const voxel::Region previousDirty = _dirtyRegion;
+		Super::setVolume(_node->volume());
+		_region = _node->volume()->region();
+		if (previousDirty.isValid()) {
+			_dirtyRegion = previousDirty;
 		}
 	}
 };
@@ -374,7 +392,9 @@ static LuaKeyFrame* luaVoxel_tokeyframe(lua_State* s, int n) {
 }
 
 static LuaRawVolumeWrapper* luaVoxel_tovolumewrapper(lua_State* s, int n) {
-	return *(LuaRawVolumeWrapper**)clua_getudata<LuaRawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
+	LuaRawVolumeWrapper *wrapper = *(LuaRawVolumeWrapper**)clua_getudata<LuaRawVolumeWrapper*>(s, n, luaVoxel_metavolumewrapper());
+	wrapper->update();
+	return wrapper;
 }
 
 static int luaVoxel_pushvolumewrapper(lua_State* s, LuaSceneGraphNode* node) {
