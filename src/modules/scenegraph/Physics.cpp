@@ -14,6 +14,15 @@
 
 namespace scenegraph {
 
+bool Physics::consumeWork() const {
+	if (_work == _workLimit) {
+		_exhausted = true;
+		return false;
+	}
+	++_work;
+	return true;
+}
+
 void Physics::binarySearch(const CollisionNodes &nodes, KinematicBody &body, int axisIdx, float low, float high,
 						   int iterations) const {
 	core_trace_scoped(BinarySearch);
@@ -78,6 +87,9 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 	const float epsilon = glm::epsilon<float>();
 	const glm::vec3 &extents = body.extents;
 	for (const CollisionNode &node : nodes) {
+		if (!consumeWork()) {
+			return true;
+		}
 		if (!node.volume) {
 			continue;
 		}
@@ -100,6 +112,9 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 			for (int y = mins.y; y <= maxs.y; y++) {
 				voxel::RawVolume::Sampler sampler3 = sampler2;
 				for (int x = mins.x; x <= maxs.x; x++) {
+					if (!consumeWork()) {
+						return true;
+					}
 					if (voxel::isBlocked(sampler3.voxel().getMaterial())) {
 						return true;
 					}

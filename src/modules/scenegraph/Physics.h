@@ -47,6 +47,11 @@ struct KinematicBody {
  * https://www.youtube.com/watch?v=3lBYVSplAuo
  */
 class Physics {
+	size_t _workLimit;
+	mutable size_t _work = 0;
+	mutable bool _exhausted = false;
+	bool consumeWork() const;
+
 protected:
 	/**
 	 * @brief Performs a binary search to find the precise collision point along an axis.
@@ -99,6 +104,15 @@ protected:
 	bool tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &desiredHorizontalPos) const;
 
 public:
+	/** A finite limit bounds collision-node visits and voxel samples across updates. */
+	explicit Physics(size_t workLimit = (size_t)-1) : _workLimit(workLimit) {
+	}
+	size_t work() const {
+		return _work;
+	}
+	bool exhausted() const {
+		return _exhausted;
+	}
 	/**
 	 * @brief Applies friction to the kinematic body's velocity.
 	 *
