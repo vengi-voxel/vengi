@@ -311,6 +311,18 @@ void RenderContext::applyBloom() {
 	video::viewport(viewport[0], viewport[1], viewport[2], viewport[3]);
 }
 
+void RenderContext::beginFrame() {
+	frameBuffer.bind(true);
+	const glm::vec4 clearColor = video::currentClearColor();
+	const video::FrameBufferAttachment glow[] = {video::FrameBufferAttachment::Color1};
+	video::drawBuffers(1, glow);
+	video::clearColor(glm::vec4(0));
+	video::clear(video::ClearFlag::Color);
+	video::clearColor(clearColor);
+	const video::FrameBufferAttachment colors[] = {video::FrameBufferAttachment::Color0, video::FrameBufferAttachment::Color1};
+	video::drawBuffers(2, colors);
+}
+
 void RenderContext::beginOverlays() {
 	if (enableMultisampling) {
 		frameBuffer.unbind();

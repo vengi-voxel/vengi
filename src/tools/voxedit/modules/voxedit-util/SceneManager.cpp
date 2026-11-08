@@ -3939,7 +3939,7 @@ void SceneManager::releasePreview(const scenegraph::SceneGraph &view) {
 }
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender::RenderContext &modifierRenderContext, const video::Camera& camera, uint8_t renderMask) {
-	renderContext.frameBuffer.bind(true);
+	renderContext.beginFrame();
 	renderContext.frame = _currentFrameIdx;
 	renderContext.sceneGraph = renderContext.isEditMode() ? &_modifier->renderSceneGraph() : &_sceneGraph;
 

@@ -196,7 +196,9 @@ void BloomRenderer::render(const video::TexturePtr& srcTexture, const video::Tex
 	video::ScopedState depthMask(video::State::DepthMask, false);
 	video::ScopedState scissor(video::State::Scissor, false);
 	video::ScopedState cullFace(video::State::CullFace, false);
-	video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::OneMinusSourceAlpha);
+	// Every fullscreen pass writes a complete result. Blending transparent glow
+	// with the framebuffer clear color repeatedly adds that color to the scene.
+	video::ScopedBlendMode blendMode(video::BlendMode::One, video::BlendMode::Zero, video::BlendEquation::Add);
 
 	// backup the current state
 	video::Id oldFB = video::currentFramebuffer();

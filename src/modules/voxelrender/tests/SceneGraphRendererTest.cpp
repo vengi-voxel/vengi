@@ -68,6 +68,55 @@ private:
 	using Super = video::AbstractGLTest;
 };
 
+TEST_F(SceneGraphRendererTest, BlackEmissionDoesNotTintTheSceneWhenBloomIsEnabled) {
+	for (int samples : {0, 4}) {
+		core::getVar(cfg::ClientMultiSampleSamples)->setVal(samples);
+		RenderContext context;
+		ASSERT_TRUE(context.init(glm::ivec2(64)));
+		video::clearColor(glm::vec4(0.125f, 0.25f, 0.375f, 1));
+		context.beginFrame();
+		context.resolveMultisampling();
+		context.sceneHasGlow = true;
+		context.applyBloom();
+		context.beginOverlays();
+		context.endFrame();
+		const auto &display = context.enableMultisampling ? context.resolveFrameBuffer : context.frameBuffer;
+		const auto image = display.image("bloom");
+		ASSERT_TRUE(image);
+		for (int y : {0, 32, 63}) {
+			for (int x : {0, 32, 63}) {
+				const auto color = image->colorAt(x, y);
+				EXPECT_NEAR(32, color.r, 1) << "samples " << samples;
+				EXPECT_NEAR(64, color.g, 1) << "samples " << samples;
+				EXPECT_NEAR(96, color.b, 1) << "samples " << samples;
+			}
+		}
+		context.shutdown();
+	}
+}
+
+TEST_F(SceneGraphRendererTest, SceneBackgroundDoesNotPolluteBloomAttachment) {
+	for (int samples : {0, 4}) {
+		core::getVar(cfg::ClientMultiSampleSamples)->setVal(samples);
+		RenderContext context;
+		ASSERT_TRUE(context.init(glm::ivec2(32)));
+		video::clearColor(glm::vec4(0.125f, 0.25f, 0.375f, 1));
+		context.beginFrame();
+		context.resolveMultisampling();
+		context.beginOverlays();
+		context.endFrame();
+		const auto &display = context.enableMultisampling ? context.resolveFrameBuffer : context.frameBuffer;
+		const auto glow = display.image("glow", video::FrameBufferAttachment::Color1);
+		const auto scene = display.image("scene");
+		ASSERT_TRUE(glow && scene);
+		EXPECT_EQ(color::RGBA(0, 0, 0, 0), glow->colorAt(0, 0));
+		EXPECT_NEAR(32, scene->colorAt(0, 0).r, 1);
+		EXPECT_NEAR(64, scene->colorAt(0, 0).g, 1);
+		EXPECT_NEAR(96, scene->colorAt(0, 0).b, 1);
+		context.shutdown();
+	}
+}
+
 TEST_F(SceneGraphRendererTest, testUuidVolumeIdxStableAndReused) {
 	const core::UUID uuidA = core::UUID::generate();
 	const core::UUID uuidB = core::UUID::generate();

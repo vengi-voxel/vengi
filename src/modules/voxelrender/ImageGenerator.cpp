@@ -80,7 +80,7 @@ static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, Ren
 	}
 	camera.update(ctx.deltaFrameSeconds);
 
-	renderContext.frameBuffer.bind(true);
+	renderContext.beginFrame();
 	volumeRenderer.render(meshState, renderContext, camera, true, true);
 	renderContext.resolveMultisampling();
 	renderContext.applyBloom();

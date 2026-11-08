@@ -53,6 +53,8 @@ struct RenderContext : public core::NonCopyable {
 	void shutdown();
 	bool resize(const glm::ivec2 &size);
 	bool updateMultisampling();
+	/** Bind and clear the scene target, keeping the emission attachment black. */
+	void beginFrame();
 	/**
 	 * Resolve MSAA Color0, Color1, and depth into resolveFrameBuffer. No-op without MSAA.
 	 * Color1 (emit/glow) is blitted separately so Color0 is not copied onto it.

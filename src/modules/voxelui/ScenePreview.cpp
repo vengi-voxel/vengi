@@ -223,7 +223,7 @@ void ScenePreview::renderFrame(double deltaSeconds) {
 	video::enable(video::State::Blend);
 	video::blendFunc(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha);
 
-	_renderContext.frameBuffer.bind(true);
+	_renderContext.beginFrame();
 	_renderer.render(_meshState, _renderContext, _camera, true, true);
 	_renderContext.resolveMultisampling();
 	_renderContext.applyBloom();
