@@ -1298,4 +1298,25 @@ TEST_F(MementoHandlerTest, testBeginEndGroupBothLocked) {
 	EXPECT_EQ(sizeBefore, (int)_mementoHandler.stateSize()) << "No state should be added when locked";
 }
 
+TEST_F(MementoHandlerTest, UndoPropertiesRestoresTheLastSnapshotOfThePreviousGroup) {
+	auto &node = _sceneGraph.node(1);
+	ASSERT_TRUE(_mementoHandler.markNodePropertyChange(_sceneGraph, node));
+	{
+		ScopedMementoGroup group(_mementoHandler, "Emitter settings");
+		node.setProperty("role", "emitter");
+		ASSERT_TRUE(_mementoHandler.markNodePropertyChange(_sceneGraph, node));
+		node.setProperty("particle.count", "12");
+		ASSERT_TRUE(_mementoHandler.markNodePropertyChange(_sceneGraph, node));
+	}
+	node.setProperty("particle.count", "23");
+	ASSERT_TRUE(_mementoHandler.markNodePropertyChange(_sceneGraph, node));
+	const auto undone = _mementoHandler.undo();
+	ASSERT_FALSE(undone.states.empty());
+	const auto properties = undone.states.front().properties;
+	ASSERT_TRUE(properties.hasKey("particle.count"));
+	core::String value;
+	ASSERT_TRUE(properties.get("particle.count", value));
+	EXPECT_EQ("12", value);
+}
+
 } // namespace memento

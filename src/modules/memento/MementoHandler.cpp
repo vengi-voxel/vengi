@@ -572,7 +572,10 @@ void MementoHandler::undoNormalPaletteChange(MementoState &s) {
 void MementoHandler::undoNodeProperties(MementoState &s) {
 	for (int i = _groupStatePosition; i >= 0; --i) {
 		const MementoStateGroup &group = _groups[i];
-		for (const MementoState &prevS : group.states) {
+		// A group may contain several snapshots of the same node. Its final
+		// snapshot contains all property edits made by that transaction.
+		for (size_t stateIdx = group.states.size(); stateIdx > 0; --stateIdx) {
+			const MementoState &prevS = group.states[stateIdx - 1];
 			if (prevS.nodeUUID == s.nodeUUID) {
 				s.properties = prevS.properties;
 				return;
