@@ -7,8 +7,8 @@
 #include "core/StandardLib.h"
 #if USE_LIBDEFLATE
 #include "core/collection/Buffer.h"
-#include <libdeflate.h>
 #include "io/external/miniz.h"
+#include <libdeflate.h>
 #elif USE_ZLIB
 #define ZLIB_CONST
 #ifndef Z_DEFAULT_WINDOW_BITS
@@ -186,6 +186,30 @@ bool ZipReadStream::eos() const {
 
 int ZipReadStream::uncompressedSize() const {
 	return _uncompressedSize;
+}
+
+bool ZipReadStream::inflateBuffer(const void *compressed, size_t compressedBytes, void *output, size_t outputBytes) {
+	if (!compressed || !output || !compressedBytes || !outputBytes)
+		return false;
+#if USE_LIBDEFLATE
+	libdeflate_decompressor *decoder = libdeflate_alloc_decompressor();
+	if (!decoder)
+		return false;
+	size_t actualIn = 0, actualOut = 0;
+	const auto result =
+		libdeflate_zlib_decompress_ex(decoder, compressed, compressedBytes, output, outputBytes, &actualIn, &actualOut);
+	libdeflate_free_decompressor(decoder);
+	return result == LIBDEFLATE_SUCCESS && actualIn == compressedBytes && actualOut == outputBytes;
+#elif USE_ZLIB
+	uLongf actual = (uLongf)outputBytes;
+	return uncompress((Bytef *)output, &actual, (const Bytef *)compressed, (uLong)compressedBytes) == Z_OK &&
+		   actual == outputBytes;
+#else
+	mz_ulong actual = (mz_ulong)outputBytes;
+	return mz_uncompress((unsigned char *)output, &actual, (const unsigned char *)compressed,
+						 (mz_ulong)compressedBytes) == MZ_OK &&
+		   actual == outputBytes;
+#endif
 }
 
 int64_t ZipReadStream::remaining() const {

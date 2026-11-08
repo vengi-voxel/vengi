@@ -42,6 +42,8 @@ public:
 	virtual ~ZipReadStream();
 
 	static bool isZipStream(io::SeekableReadStream &stream);
+	/** Inflate one complete zlib payload into an exact, caller-owned bounded buffer. */
+	static bool inflateBuffer(const void *compressed, size_t compressedBytes, void *output, size_t outputBytes);
 	/**
 	 * @return The uncompressed size of the zip stream or -1 if not known.
 	 */

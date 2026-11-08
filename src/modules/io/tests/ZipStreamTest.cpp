@@ -12,6 +12,23 @@ namespace io {
 
 class ZipStreamTest : public app::AbstractTest {};
 
+TEST_F(ZipStreamTest, testSizeMismatches) {
+	const core::String payload(65536, 'q');
+	BufferedReadWriteStream compressed;
+	{
+		ZipWriteStream zip(compressed);
+		ASSERT_GE(zip.write(payload.c_str(), payload.size()), 0);
+		ASSERT_TRUE(zip.flush());
+	}
+	core::Buffer<uint8_t> output;
+	output.resize(payload.size() + 1);
+	ASSERT_TRUE(ZipReadStream::inflateBuffer(compressed.getBuffer(), compressed.size(), output.data(), payload.size()));
+	EXPECT_EQ(0, memcmp(payload.c_str(), output.data(), payload.size()));
+	EXPECT_FALSE(ZipReadStream::inflateBuffer(compressed.getBuffer(), compressed.size(), output.data(), 1024));
+	EXPECT_FALSE(ZipReadStream::inflateBuffer(compressed.getBuffer(), compressed.size(), output.data(), payload.size() + 1));
+	EXPECT_FALSE(ZipReadStream::inflateBuffer(compressed.getBuffer(), compressed.size() - 2, output.data(), payload.size()));
+}
+
 TEST_F(ZipStreamTest, testZipStreamWrite) {
 	BufferedReadWriteStream stream(1024);
 	{
