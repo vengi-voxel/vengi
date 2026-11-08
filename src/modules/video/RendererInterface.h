@@ -539,6 +539,10 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
  */
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset = nullptr);
 
+/** Indexed instancing with a CPU-known count. Requires Feature::InstancedArrays. */
+void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t instances,
+						   void *offset = nullptr);
+
 /**
  * @brief Multi-draw indexed geometry from a DRAW_INDIRECT_BUFFER.
  *

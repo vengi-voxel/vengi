@@ -366,6 +366,9 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
 }
 
+void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t instances, void *offset) {
+}
+
 void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
 }
 

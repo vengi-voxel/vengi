@@ -2617,6 +2617,19 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	checkError();
 }
 
+void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t instances, void *offset) {
+	if (numIndices == 0 || instances == 0) return;
+	core_assert(hasFeature(Feature::InstancedArrays) && glDrawElementsInstanced != nullptr);
+	video_trace_scoped(DrawElementsInstanced);
+	statsDrawCall();
+	syncState();
+	core_assert_msg(rendererState().vertexArrayHandle != InvalidId, "No vertex buffer is bound for this draw call");
+	video::validate(rendererState().programHandle);
+	glDrawElementsInstanced(_priv::Primitives[core::enumVal(mode)], (GLsizei)numIndices,
+						   _priv::DataTypes[core::enumVal(type)], offset, (GLsizei)instances);
+	checkError();
+}
+
 void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
 	if (drawCount <= 0) {
 		return;
