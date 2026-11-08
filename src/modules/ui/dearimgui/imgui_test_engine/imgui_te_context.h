@@ -192,6 +192,7 @@ struct IMGUI_API ImGuiTestGenericVars
     ImGuiPopupFlags         PopupFlags;
     ImGuiInputTextFlags     InputTextFlags;
     ImGuiTestGenericItemStatus  Status;
+    ImGuiCond               Cond;
     bool                    ShowWindow1, ShowWindow2;
     bool                    UseClipper;
     bool                    UseViewports;
