@@ -21,6 +21,7 @@
 #include "voxel/Voxel.h"
 #include "voxelrender/RenderContext.h"
 #include "voxelrender/RenderUtil.h"
+#include "image/Image.h"
 
 namespace voxelrender {
 
@@ -67,6 +68,125 @@ protected:
 private:
 	using Super = video::AbstractGLTest;
 };
+
+TEST_F(SceneGraphRendererTest, InstancedReferenceShadowsMatchUniqueMeshesIncludingMirrors) {
+	core::getVar(cfg::ClientShadowMap)->setVal(true);
+	core::getVar(cfg::ClientDebugShadow)->setVal(false);
+	core::getVar(cfg::ClientDebugShadowMapCascade)->setVal(false);
+	_renderer.setSunAngle({45, 40, 0});
+	palette::Palette palette;
+	palette.minecraft();
+	image::ImagePtr images[2];
+	uint64_t calls[2]{};
+	for (int variant = 0; variant < 2; ++variant) {
+		scenegraph::SceneGraph scene;
+		scenegraph::SceneGraphNode floor(scenegraph::SceneGraphNodeType::Model);
+		floor.createVolume(voxel::Region(0, 0, 0, 23, 0, 23));
+		floor.setPalette(palette);
+		for (int z = 0; z < 24; ++z)
+			for (int x = 0; x < 24; ++x)
+				floor.volume()->setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		scene.emplace(core::move(floor));
+		int source = -1;
+		for (int i = 0; i < 8; ++i) {
+			int id;
+			if (variant == 0 && i > 0)
+				id = scenegraph::createNodeReference(scene, scene.node(source));
+			else {
+				scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+				model.createVolume(voxel::Region(0, 0, 0, 1, 5, 2));
+				model.setPalette(palette);
+				for (int y = 0; y < 6; ++y)
+					for (int z = 0; z < 3; ++z)
+						for (int x = 0; x < 2; ++x)
+							if (y < 2 || z == 0)
+								model.volume()->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+				id = scene.emplace(core::move(model));
+				if (i == 0)
+					source = id;
+			}
+			auto &transform = scene.node(id).transform();
+			transform.setLocalTranslation({4 + (i % 4) * 5, 1, 6 + (i / 4) * 9});
+			if (i % 2)
+				transform.setLocalScale({-1, 1, 1});
+		}
+		scene.updateTransforms();
+		RenderContext context;
+		ASSERT_TRUE(context.init({128, 128}));
+		context.sceneGraph = &scene;
+		context.renderMode = RenderMode::Scene;
+		context.onlyModels = true;
+		video::Camera camera;
+		camera.setSize({128, 128});
+		camera.setNearPlane(.1f);
+		camera.setFarPlane(100);
+		camera.setWorldPosition({36, 30, 40});
+		camera.lookAt({12, 0, 12});
+		camera.update(0);
+		video::clearColor({0, 0, 0, 1});
+		context.beginFrame();
+		const uint64_t before = video::renderStats().drawCalls;
+		_renderer.render(_meshState, context, camera, true, true);
+		calls[variant] = video::renderStats().drawCalls - before;
+		context.endFrame();
+		images[variant] = context.frameBuffer.image("reference shadows");
+		ASSERT_TRUE(images[variant]);
+		_renderer.clear(_meshState);
+		context.shutdown();
+	}
+	EXPECT_LT(calls[0], calls[1]);
+	int visible = 0;
+	for (int y = 0; y < 128; ++y)
+		for (int x = 0; x < 128; ++x) {
+			const auto a = images[0]->colorAt(x, y);
+			const auto b = images[1]->colorAt(x, y);
+			visible += a.r > 10 || a.g > 10 || a.b > 10;
+			EXPECT_NEAR(a.r, b.r, 1);
+			EXPECT_NEAR(a.g, b.g, 1);
+			EXPECT_NEAR(a.b, b.b, 1);
+		}
+	EXPECT_GT(visible, 1000);
+}
+
+TEST_F(SceneGraphRendererTest, BinaryTerrainAcrossMultipleChunksCoversItsWorldPosition) {
+	core::getVar(cfg::VoxelMeshMode)->setVal((int)voxel::SurfaceExtractionType::Binary);
+	core::getVar(cfg::ClientShadowMap)->setVal(false);
+	_renderer.setAmbientColor(glm::vec3(1));
+	_renderer.setDiffuseColor(glm::vec3(0));
+	scenegraph::SceneGraph scene;
+	scenegraph::SceneGraphNode floor(scenegraph::SceneGraphNodeType::Model);
+	floor.createVolume(voxel::Region(0, 0, 0, 127, 0, 127));
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(77, 126, 68));
+	floor.setPalette(palette);
+	for (int z = 0; z < 128; ++z)
+		for (int x = 0; x < 128; ++x)
+			floor.volume()->setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	const int id = scene.emplace(core::move(floor));
+	scene.updateTransforms();
+	RenderContext context;
+	ASSERT_TRUE(context.init({128, 128}));
+	context.sceneGraph = &scene;
+	context.renderMode = RenderMode::Scene;
+	context.onlyModels = true;
+	video::Camera camera;
+	camera.setSize({128, 128});
+	camera.setNearPlane(.1f);
+	camera.setFarPlane(1000);
+	camera.setWorldPosition({64, 160, 180});
+	camera.lookAt({64, 0, 64});
+	camera.update(0);
+	for (int i = 0; i < 6; ++i) {
+		context.beginFrame();
+		_renderer.render(_meshState, context, camera, false, true);
+		context.endFrame();
+	}
+	EXPECT_GT(_renderer.indexCount(scene.node(id).uuid(), voxel::MeshType_Opaque), 0u);
+	auto image = context.frameBuffer.image("large terrain");
+	ASSERT_TRUE(image);
+	EXPECT_GT(image->colorAt(64, 64).g, 60);
+	context.shutdown();
+}
 
 TEST_F(SceneGraphRendererTest, BlackEmissionDoesNotTintTheSceneWhenBloomIsEnabled) {
 	for (int samples : {0, 4}) {

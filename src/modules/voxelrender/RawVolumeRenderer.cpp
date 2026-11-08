@@ -249,11 +249,14 @@ bool RawVolumeRenderer::init(bool normals) {
 		Log::error("Failed to initialize the oit composite shader");
 		return false;
 	}
+	if (_useMultiDraw && !_shadowMapShader.isInitialized()) {
+		_shadowMapShader.addDefine("USEDRAWPARAMETERS", "1");
+	}
 	if (!_shadowMapShader.setup()) {
 		Log::error("Failed to init shadowmap shader");
 		return false;
 	}
-	alignas(16) shader::ShadowmapData::BlockData var;
+	alignas(16) shader::ShadowmapData::BlockData var{};
 	_shadowMapUniformBlock.create(var);
 
 	if (!initStateBuffers(normals)) {
@@ -678,7 +681,7 @@ bool RawVolumeRenderer::uploadVertUniforms(bool paletteChanged) {
 }
 
 void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int idx, const video::Camera &camera) {
-	if (meshState->hidden(idx)) {
+	if (meshState->hidden(idx) || meshState->opacity(idx) <= 0.0f) {
 		_state[idx]._culled = true;
 		return;
 	}
@@ -709,7 +712,7 @@ void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int 
 }
 
 bool RawVolumeRenderer::isVisible(const voxel::MeshStatePtr &meshState, int idx, bool hideEmpty) const {
-	if (meshState->hidden(idx)) {
+	if (meshState->hidden(idx) || meshState->opacity(idx) <= 0.0f) {
 		return false;
 	}
 	if (_state[idx]._culled) {
@@ -992,24 +995,46 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 void RawVolumeRenderer::renderShadowVolumes(const voxel::MeshStatePtr &meshState, const core::Buffer<int> &sorted,
 											const glm::mat4 &lightViewProjection) {
 	core_trace_scoped(RenderShadowVolumes);
-	// Shadows stay on the UBO model path. MDI+SSBO+gl_DrawID here regresses hard when
-	// almost every volume is a unique mesh (voxedit): no batches, but every cascade draw
-	// pays SSBO uploads and the draw-parameters shader path.
-	alignas(16) shader::ShadowmapData::BlockData var;
+	// Unique meshes keep the UBO path; repeated references share one direct
+	// instanced draw and one transform upload per mesh/cull-face run.
+	alignas(16) shader::ShadowmapData::BlockData var{};
 	var.lightviewprojection = lightViewProjection;
 	core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
-	for (int idx : sorted) {
+	for (size_t i = 0; i < sorted.size();) {
+		const int idx = sorted[i];
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
-		if (indices == 0u) {
-			continue;
+		const video::Face face = meshState->cullFace(idx);
+		size_t end = i + 1;
+		if (_useMultiDraw && video::hasFeature(video::Feature::InstancedArrays)) {
+			while (end < sorted.size() && meshState->resolveIdx(sorted[end]) == bufferIndex &&
+				   meshState->cullFace(sorted[end]) == face)
+				++end;
 		}
-		video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
-		var.model = meshState->model(idx);
-		_shadowMapUniformBlock.update(var);
-		video::ScopedFaceCull scopedFaceCull(meshState->cullFace(idx));
-		static_assert(sizeof(voxel::IndexType) == sizeof(uint32_t), "Index type doesn't match");
-		video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+		if (indices > 0u) {
+			const bool instanced = end - i > 1;
+			var.model = meshState->model(idx);
+			var.usedrawinstances = instanced ? 1 : 0;
+			if (instanced) {
+				_drawInstanceScratch.clear();
+				for (size_t k = i; k < end; ++k) {
+					DrawInstanceData instance{};
+					instance.model = meshState->model(sorted[k]);
+					_drawInstanceScratch.push_back(instance);
+				}
+				bindDrawInstances(_drawInstanceScratch.data(), (int)_drawInstanceScratch.size());
+			}
+			_shadowMapUniformBlock.update(var);
+			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
+			video::ScopedFaceCull scopedFaceCull(face);
+			if (instanced) {
+				video::drawElementsInstanced(video::Primitive::Triangles, indices, video::mapType<voxel::IndexType>(),
+											 end - i);
+			} else {
+				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
+			}
+		}
+		i = end;
 	}
 }
 
@@ -1246,7 +1271,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		glm::vec3 sceneMaxs(-1.0e8f);
 		bool hasScene = false;
 		for (int idx : activeForRender) {
-			if (meshState->hidden(idx)) {
+			if (meshState->hidden(idx) || meshState->opacity(idx) <= 0.0f) {
 				continue;
 			}
 			const int bufferIndex = meshState->resolveIdx(idx);
@@ -1304,7 +1329,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 				sorted.clear();
 				sorted.reserve(activeForRender.size());
 				for (int idx : activeForRender) {
-					if (meshState->hidden(idx)) {
+					if (meshState->hidden(idx) || meshState->opacity(idx) <= 0.0f) {
 						continue;
 					}
 					const int bufferIndex = meshState->resolveIdx(idx);
