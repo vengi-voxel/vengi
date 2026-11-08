@@ -47,6 +47,36 @@ TEST_F(TextureSurfaceExtractorTest, testChunkedExtractionDoesNotMaterialize) {
 	EXPECT_EQ(nullptr, volume.linearVoxels());
 }
 
+TEST_F(TextureSurfaceExtractorTest, testAccessorIncludesNeighbourOutsideExtractionRegion) {
+	RawVolume volume(Region(-40, 216));
+	const Voxel value(VoxelType::Generic, 2);
+	volume.setVoxel(-5, -5, -5, value);
+	volume.setVoxel(-4, -5, -5, value);
+	const size_t bytes = volume.allocatedBytes();
+	palette::Palette palette;
+	palette.nippon();
+	ChunkMesh mesh;
+	const Region extracted(-10, -5);
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+	extractSurface(ctx);
+	EXPECT_EQ(30u, mesh.mesh[0].getNoOfIndices());
+	EXPECT_EQ(bytes, volume.allocatedBytes());
+	EXPECT_FALSE(volume.isContiguous());
+}
+
+TEST_F(TextureSurfaceExtractorTest, testAccessorPadsOutsideSourceWithAir) {
+	RawVolume volume(Region(-40, 216));
+	volume.setVoxel(-40, -40, -40, Voxel(VoxelType::Generic, 2));
+	palette::Palette palette;
+	palette.nippon();
+	ChunkMesh mesh;
+	const Region extracted(-42, -35);
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+	extractSurface(ctx);
+	EXPECT_EQ(36u, mesh.mesh[0].getNoOfIndices());
+	EXPECT_FALSE(volume.isContiguous());
+}
+
 TEST_F(TextureSurfaceExtractorTest, testTextureExtraction) {
 	voxel::Region region(0, 0, 0, 31, 31, 31);
 	voxel::RawVolume volume(region);

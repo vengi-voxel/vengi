@@ -18,6 +18,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Region.h"
 #include "voxel/VolumeCompression.h"
 #include "voxel/Voxel.h"
@@ -215,73 +216,34 @@ MementoData &MementoData::operator=(const MementoData &o) noexcept {
 	return *this;
 }
 
-static bool writeVolume(io::WriteStream &stream, const voxel::RawVolume &volume) {
-	if (const voxel::Voxel *linear = volume.linearVoxels()) {
-		return stream.write(linear, voxel::RawVolume::size(volume.region())) != -1;
-	}
-	// Serialize in X-major order without materializing the source volume.
-	voxel::Voxel row[256];
-	voxel::RawVolume::Sampler sampler(volume);
-	const voxel::Region &region = volume.region();
-	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-			sampler.setPosition(region.getLowerX(), y, z);
-			for (int x = 0; x < volume.width();) {
-				const int count = core_min(256, volume.width() - x);
-				for (int i = 0; i < count; ++i) {
-					const voxel::Voxel &value = sampler.voxel();
-					core_memcpy(row + i, &value, sizeof(value));
-					sampler.movePositiveX();
-				}
-				if (stream.write(row, count * sizeof(voxel::Voxel)) == -1) {
-					return false;
-				}
-				x += count;
-			}
-		}
-	}
-	return true;
-}
-
 MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel::Region &region) {
 	if (volume == nullptr) {
 		return MementoData();
 	}
-	// Preserve the requested region. If it's invalid, fall back to the full volume region.
-	if (region.isValid()) {
-		// Use the RawVolume copy-with-region constructor which will handle regions
-		// that extend outside the source by filling with air or cropping as needed.
-		voxel::RawVolume v(*volume, region);
-		const int64_t actualVoxels = v.region().voxels();
-		io::BufferedReadWriteStream outStream(actualVoxels * (int64_t)sizeof(voxel::Voxel));
-		io::ZipWriteStream stream(outStream);
-		if (!writeVolume(stream, v)) {
-			Log::error("Failed to compress memento volume data");
-			return MementoData();
-		}
-		stream.flush();
-		const size_t size = (size_t)outStream.size();
-		const voxel::Region actualRegion = v.region();
-		MementoData data(outStream.release(), size, actualRegion, volume->region());
-		// If the actual region was cropped from the requested region, store
-		// the originally requested region as modified region. This is needed
-		// for resize operations where the volume region changed and the undo
-		// must restore data across the full extent of the change.
-		if (actualRegion != region) {
-			data._modifiedRegion = region;
-		}
-		return data;
+	voxel::Region actualRegion = region.isValid() ? region : volume->region();
+	// Preserve existing undo region semantics: crop partial overlaps, but retain
+	// a wholly outside region as air. The accessor itself never crops its region.
+	if (voxel::intersects(actualRegion, volume->region())) {
+		actualRegion.cropTo(volume->region());
 	}
-	const int64_t allVoxels = volume->region().voxels();
-	io::BufferedReadWriteStream outStream(allVoxels * (int64_t)sizeof(voxel::Voxel));
+	const voxel::VolumeDataAccessor accessor(*volume, actualRegion);
+	if (!accessor.valid()) {
+		Log::error("Failed to access memento volume data");
+		return MementoData();
+	}
+	io::BufferedReadWriteStream outStream(voxel::RawVolume::size(actualRegion));
 	io::ZipWriteStream stream(outStream);
-	if (!writeVolume(stream, *volume)) {
+	if (stream.write(accessor.data(), voxel::RawVolume::size(actualRegion)) == -1) {
 		Log::error("Failed to compress memento volume data");
 		return MementoData();
 	}
 	stream.flush();
 	const size_t size = (size_t)outStream.size();
-	return {outStream.release(), size, volume->region(), volume->region()};
+	MementoData data(outStream.release(), size, actualRegion, volume->region());
+	if (region.isValid() && actualRegion != region) {
+		data._modifiedRegion = region;
+	}
+	return data;
 }
 
 bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData, const voxel::Region &region) {

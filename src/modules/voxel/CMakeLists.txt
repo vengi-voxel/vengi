@@ -29,6 +29,7 @@ set(SRCS
 	ConcurrentSparseVolume.h ConcurrentSparseVolume.cpp
 	SparseVolume.h SparseVolume.cpp
 	VolumeData.h
+	VolumeDataAccessor.h VolumeDataAccessor.cpp
 	VolumeSampler.h
 	VolumeSamplerUtil.h
 	VolumeCompression.h VolumeCompression.cpp
@@ -41,6 +42,7 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer 
 engine_target_optimize(${LIB})
 
 set(TEST_SRCS
+	tests/VolumeDataAccessorTest.cpp
 	tests/ChunkedVolumeStorageTest.cpp
 	tests/RawVolumeChunkTest.cpp
 	tests/AbstractVoxelTest.h
@@ -71,6 +73,7 @@ gtest_suite_end(tests-${LIB})
 
 if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
+		benchmarks/VolumeDataAccessorBenchmark.cpp
 		benchmarks/MeshStateBenchmark.cpp
 		benchmarks/RawVolumeBenchmark.cpp
 		benchmarks/RawVolumeMoveWrapperBenchmark.cpp

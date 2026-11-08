@@ -19,7 +19,9 @@
 
 namespace memento {
 
-TEST(MementoChunkTest, SerializesWithoutMaterializingSource) {
+class MementoChunkTest : public app::AbstractTest {};
+
+TEST_F(MementoChunkTest, SerializesWithoutMaterializingSource) {
 	voxel::RawVolume source(voxel::Region(-40, 216));
 	const glm::ivec3 pos(-8, 12, 24);
 	const voxel::Voxel value(voxel::VoxelType::Generic, 17, 8, voxel::FlagOutline, 3);
@@ -33,6 +35,24 @@ TEST(MementoChunkTest, SerializesWithoutMaterializingSource) {
 	EXPECT_EQ(value, restored.voxel(pos));
 	EXPECT_EQ(voxel::Voxel(), restored.voxel(pos + 1));
 	EXPECT_EQ(nullptr, restored.linearVoxels());
+}
+
+TEST_F(MementoChunkTest, AccessorPreservesCroppedAndOutsideUndoRegions) {
+	voxel::RawVolume source(voxel::Region(-40, 216));
+	const voxel::Voxel value(voxel::VoxelType::Generic, 17, 8, voxel::FlagOutline, 3);
+	source.setVoxel(-40, -40, -40, value);
+	MementoData partial = MementoData::fromVolume(&source, voxel::Region(-42, -38));
+	EXPECT_EQ(voxel::Region(-40, -38), partial.dataRegion());
+	voxel::RawVolume cropped(partial.dataRegion());
+	ASSERT_TRUE(MementoData::toVolume(&cropped, partial, partial.dataRegion()));
+	EXPECT_EQ(value, cropped.voxel(-40, -40, -40));
+	MementoData outside = MementoData::fromVolume(&source, voxel::Region(220, 222));
+	EXPECT_EQ(voxel::Region(220, 222), outside.dataRegion());
+	voxel::RawVolume air(outside.dataRegion());
+	air.fill(value);
+	ASSERT_TRUE(MementoData::toVolume(&air, outside, outside.dataRegion()));
+	EXPECT_TRUE(air.isEmpty(air.region()));
+	EXPECT_FALSE(source.isContiguous());
 }
 
 class MementoHandlerTest : public app::AbstractTest {

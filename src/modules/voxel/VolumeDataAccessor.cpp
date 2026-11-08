@@ -1,0 +1,97 @@
+/**
+ * @file
+ */
+
+#include "VolumeDataAccessor.h"
+#include "private/ChunkedVolumeStorage.h"
+#include "core/StandardLib.h"
+
+namespace voxel {
+
+void VolumeDataAccessor::init(const RawVolume &volume, const Region &region) {
+	if (!region.isValid() || !volume.valid()) {
+		return;
+	}
+	_region = region;
+	if (volume.isContiguous() && region == volume.region()) {
+		_voxels = volume._data;
+		return;
+	}
+	size_t bytes = sizeof(Voxel);
+	for (int axis = 0; axis < 3; ++axis) {
+		const int dimension = region.getDimensionsInVoxels()[axis];
+		if (dimension <= 0 || bytes > SIZE_MAX / (size_t)dimension) {
+			_region = Region::InvalidRegion;
+			return;
+		}
+		bytes *= (size_t)dimension;
+	}
+	_voxels = (Voxel *)core_malloc(bytes);
+	if (!_voxels) {
+		_region = Region::InvalidRegion;
+		return;
+	}
+	_owned = true;
+	core_memset((void *)_voxels, 0, bytes);
+	Region overlap = region;
+	if (!overlap.cropTo(volume.region())) {
+		return;
+	}
+	const glm::ivec3 &mins = overlap.getLowerCorner();
+	const glm::ivec3 &maxs = overlap.getUpperCorner();
+	for (int z = mins.z; z <= maxs.z; ++z) {
+		for (int y = mins.y; y <= maxs.y; ++y) {
+			Voxel *destination = _voxels + region.index(mins.x, y, z);
+			if (volume.isContiguous()) {
+				core_memcpy((void *)destination, volume._data + volume.region().index(mins.x, y, z),
+					(size_t)(maxs.x - mins.x + 1) * sizeof(Voxel));
+				continue;
+			}
+			// Copy X spans within each chunk, rather than dispatching per voxel.
+			for (int x = mins.x; x <= maxs.x;) {
+				int count;
+				const Voxel *source = volume._storage->row(glm::ivec3(x, y, z) - volume.region().getLowerCorner(), count);
+				count = core_min(count, maxs.x - x + 1);
+				if (source) {
+					core_memcpy((void *)destination, source, count * sizeof(Voxel));
+				} else {
+					uint32_t pattern;
+					static_assert(sizeof(pattern) == sizeof(Voxel), "Expected a four-byte voxel");
+					core_memcpy(&pattern, &volume._storage->defaultVoxel(), sizeof(pattern));
+					core_memset4(destination, pattern, count);
+				}
+				destination += count;
+				x += count;
+			}
+		}
+	}
+}
+
+VolumeDataAccessor::VolumeDataAccessor(const RawVolume &volume) { init(volume, volume.region()); }
+VolumeDataAccessor::VolumeDataAccessor(const RawVolume &volume, const Region &region) { init(volume, region); }
+VolumeDataAccessor::VolumeDataAccessor(VolumeDataAccessor &&other) noexcept {
+	*this = core::move(other);
+}
+
+VolumeDataAccessor &VolumeDataAccessor::operator=(VolumeDataAccessor &&other) noexcept {
+	if (this != &other) {
+		if (_owned) {
+			core_free(_voxels);
+		}
+		_region = other._region;
+		_voxels = other._voxels;
+		_owned = other._owned;
+		other._region = Region::InvalidRegion;
+		other._voxels = nullptr;
+		other._owned = false;
+	}
+	return *this;
+}
+
+VolumeDataAccessor::~VolumeDataAccessor() {
+	if (_owned) {
+		core_free(_voxels);
+	}
+}
+
+} // namespace voxel

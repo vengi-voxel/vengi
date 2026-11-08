@@ -13,6 +13,7 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Region.h"
 #include "voxel/VoxelVertex.h"
 #include "voxel/external/stb_rect_pack.h"
@@ -162,7 +163,7 @@ static void greedyExtract(color::RGBA *mask, int uDim, int vDim, int sOffset, co
 }
 
 // Process a pair of opposite faces (positive + negative) sharing the same axis in a single pass
-static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQuad> &quads,
+static void collectFacePair(SurfaceExtractionContext &ctx, const VolumeDataAccessor &accessor, core::Buffer<PendingQuad> &quads,
 							core::Buffer<color::RGBA> &allColors, core::Buffer<stbrp_rect> &packRects,
 							core::Buffer<int> &packColorOffsets, DedupeMap *dedupeMap, FaceNames posFace,
 							FaceNames negFace, color::RGBA *maskPos, color::RGBA *maskNeg) {
@@ -203,18 +204,17 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 	}
 
 	// Direct volume access with precomputed strides
-	const Voxel *volData = volume->linearVoxels();
+	const Voxel *volData = accessor.voxels();
 	const Region &volRegion = volume->region();
-	const int64_t volW = volume->width();
-	const int64_t volStride = volRegion.stride();
+	const int64_t volW = accessor.width();
+	const int64_t volStride = accessor.stride();
 
 	const int64_t dimStrides[3] = {1, volW, volStride};
 	const int64_t uVolStride = dimStrides[axes.x];
 	const int64_t vVolStride = dimStrides[axes.y];
 	const int64_t sVolStride = dimStrides[axes.z];
 
-	const int64_t volBase =
-		(rx - volRegion.getLowerX()) + (int64_t)(ry - volRegion.getLowerY()) * volW + (int64_t)(rz - volRegion.getLowerZ()) * volStride;
+	const int64_t volBase = accessor.region().index(rx, ry, rz);
 
 	const int rOrigin[3] = {rx, ry, rz};
 	const int sAbsBase = rOrigin[axes.z];
@@ -222,16 +222,6 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 	const int volUpperArr[3] = {volRegion.getUpperX(), volRegion.getUpperY(), volRegion.getUpperZ()};
 	const int sVolLower = volLowerArr[axes.z];
 	const int sVolUpper = volUpperArr[axes.z];
-	const auto sample = [&](int64_t index, int s, int u, int v) -> const Voxel & {
-		if (volData) {
-			return volData[index];
-		}
-		glm::ivec3 pos(rx, ry, rz);
-		pos[axes.z] += s;
-		pos[axes.x] += u;
-		pos[axes.y] += v;
-		return volume->voxel(pos);
-	};
 
 	// Clamp iteration to volume bounds (extraction region may extend beyond volume)
 	const int sIterMax = core_min(sDim, volUpperArr[axes.z] - sAbsBase + 1);
@@ -261,13 +251,13 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 			int64_t volIdx = sliceBase + u * uVolStride;
 			const int maskColBase = u * vDim;
 			for (int v = 0; v < vIterMax; ++v) {
-				const Voxel &vox = sample(volIdx, s, u, v);
+				const Voxel &vox = volData[volIdx];
 				if (isBlocked(vox.getMaterial())) {
 					const color::RGBA color = ctx.palette.color(vox.getColor());
 
 					// Positive face (neighbor at s+1)
 					if (posNeighborInVolume) {
-						if (!isBlocked(sample(volIdx + sVolStride, s + 1, u, v).getMaterial())) {
+						if (!isBlocked(volData[volIdx + sVolStride].getMaterial())) {
 							maskPos[maskColBase + v] = color;
 							++maskCountPos;
 						}
@@ -278,7 +268,7 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 
 					// Negative face (neighbor at s-1)
 					if (negNeighborInVolume) {
-						if (!isBlocked(sample(volIdx - sVolStride, s - 1, u, v).getMaterial())) {
+						if (!isBlocked(volData[volIdx - sVolStride].getMaterial())) {
 							maskNeg[maskColBase + v] = color;
 							++maskCountNeg;
 						}
@@ -319,6 +309,17 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 		texSize *= 2;
 	}
 
+	Region accessRegion = ctx.volume->region();
+	if (!ctx.volume->isContiguous() || !accessRegion.containsRegion(region)) {
+		accessRegion = region;
+		accessRegion.grow(1);
+	}
+	const VolumeDataAccessor accessor(*ctx.volume, accessRegion);
+	if (!accessor.valid()) {
+		Log::error("Failed to access texture extraction volume");
+		return;
+	}
+
 	// Shared mask buffers for face pair processing (zeroed by constructor)
 	const int maxMask = core_max(rh * rd, core_max(rw * rd, rw * rh));
 	core::Buffer<color::RGBA> maskPos(maxMask);
@@ -341,11 +342,11 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 	}
 
 	// Process face pairs - each pair reads the volume once for both faces
-	collectFacePair(ctx, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Right,
+	collectFacePair(ctx, accessor, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Right,
 					FaceNames::Left, maskPos.data(), maskNeg.data());
-	collectFacePair(ctx, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Up, FaceNames::Down,
+	collectFacePair(ctx, accessor, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Up, FaceNames::Down,
 					maskPos.data(), maskNeg.data());
-	collectFacePair(ctx, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Back,
+	collectFacePair(ctx, accessor, quads, allColors, packRects, packColorOffsets, dedupeMap, FaceNames::Back,
 					FaceNames::Front, maskPos.data(), maskNeg.data());
 
 	if (quads.empty()) {

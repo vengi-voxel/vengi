@@ -30,9 +30,18 @@ For allocated chunks they cache the current pointer, strides and contiguous boun
 neighbor reads crossing those bounds use the facade. Missing chunks remain live
 lookups, so a sampler observes a subsequently allocated cell without being recreated.
 
-Texture extraction, bounds computation, slice reads and memento serialization use
-storage-independent reads. Binary greedy extraction uses a bounded, dense padded
-copy of the extraction chunk rather than materializing the source volume.
+`VolumeDataAccessor` provides contiguous data without changing source storage.
+Accessing a full contiguous volume borrows its existing buffer. Subregions and
+chunked volumes produce an owned snapshot, padded with zero-valued air outside
+the source. Snapshots copy complete voxel bytes in X spans and do not write back.
+The accessor is move-only. A borrowed buffer requires the source to outlive the
+accessor and the same synchronization as direct volume access.
+
+Memento serialization uses this accessor. Texture extraction snapshots only the
+extraction region and a one-voxel halo for chunked sources; a full contiguous
+source is borrowed. Bounds computation and slice reads use storage-independent
+reads. Binary greedy extraction uses a bounded, dense padded copy of the
+extraction chunk rather than materializing the source volume.
 
 The compatibility methods `voxels()` and `data()` require a contiguous array.
 On a chunked volume they materialize all voxels and permanently switch that

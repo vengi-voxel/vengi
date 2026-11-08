@@ -21,6 +21,7 @@ class ChunkedVolumeStorage;
 class RawVolume {
 private:
 	friend class RawVolumeView;
+	friend class VolumeDataAccessor;
 public:
 	class Sampler : public VolumeSampler<RawVolume> {
 	private:
@@ -191,6 +192,7 @@ public:
 	Voxel *voxels() const;
 	/** Internal sampler access; does not materialize chunk storage. */
 	Voxel *linearVoxels() const { return _data; }
+	bool isContiguous() const { return _storage == nullptr && _data != nullptr; }
 	Voxel *writableVoxel(const glm::ivec3 &pos);
 	Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
 	/** Allocated payload and chunk-directory bytes, excluding allocator overhead. */
