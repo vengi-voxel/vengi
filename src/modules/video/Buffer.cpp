@@ -223,7 +223,13 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	//core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly: %i", (int)_size[idx]);
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
-	if (size > 0 && data != nullptr && uploadRingEnabled()) {
+	if (size > 0 && data == nullptr) {
+		video::bufferData(id, type, _modes[idx], nullptr, size);
+		return true;
+	}
+	// Streamed orphaned storage is written directly. A staging GPU copy makes
+	// vertex consumption depend on that copy and can stall subsequent draws.
+	if (size > 0 && data != nullptr && !orphaning && uploadRingEnabled()) {
 		const UploadRingAllocation alloc = uploadRingAlloc(type, size);
 		if (alloc.valid) {
 			if (oldSize < size || _modes[idx] == BufferMode::Static) {
@@ -287,7 +293,7 @@ int32_t Buffer::create(const void* data, size_t size, BufferType target) {
 		return -1;
 	}
 	_size[idx] = size;
-	if (data != nullptr) {
+	if (size > 0) {
 		update(idx, data, size);
 	}
 	++_handleIdx;

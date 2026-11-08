@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
+#include "core/sdl/SDLSystem.h"
 
 namespace video {
 
@@ -16,22 +17,17 @@ static constexpr size_t RING_SIZE_VERTEX = 8u * 1024u * 1024u;
 static constexpr size_t RING_SIZE_INDEX = 4u * 1024u * 1024u;
 static constexpr size_t RING_SIZE_UNIFORM = 1u * 1024u * 1024u;
 
-enum class RingKind : uint8_t {
-	Vertex = 0,
-	Index = 1,
-	Uniform = 2,
-	Max
-};
+enum class RingKind : uint8_t { Vertex = 0, Index = 1, Uniform = 2, Max };
 
 struct RingSlot {
 	Id handle = InvalidId;
 	void *mapped = nullptr;
 	size_t capacity = 0u;
 	size_t offset = 0u;
-	bool persistentMap = false;
 };
 
 RingSlot s_slots[FRAMES_IN_FLIGHT][core::enumVal(RingKind::Max)];
+Fence s_fences[FRAMES_IN_FLIGHT]{};
 int s_currentSlot = 0;
 bool s_initialized = false;
 
@@ -99,7 +95,6 @@ void resetRingSlot(RingSlot &slot) {
 	slot.mapped = nullptr;
 	slot.capacity = 0u;
 	slot.offset = 0u;
-	slot.persistentMap = false;
 }
 
 void destroyRingSlot(RingSlot &slot, BufferType type) {
@@ -107,23 +102,11 @@ void destroyRingSlot(RingSlot &slot, BufferType type) {
 		if (slot.mapped != nullptr) {
 			unmapBuffer(slot.handle, type);
 			slot.mapped = nullptr;
-			slot.persistentMap = false;
 		}
 		Id ids[1] = {slot.handle};
 		deleteBuffers(1, ids);
 	}
 	resetRingSlot(slot);
-}
-
-bool mapRingSlot(RingSlot &slot, BufferType type) {
-	if (slot.handle == InvalidId || slot.capacity == 0u) {
-		return false;
-	}
-	if (slot.persistentMap) {
-		return slot.mapped != nullptr;
-	}
-	slot.mapped = mapBufferRange(slot.handle, type, 0, slot.capacity, AccessMode::Write, MapBufferFlag::InvalidateBuffer);
-	return slot.mapped != nullptr;
 }
 
 bool createRingBuffer(RingSlot &slot, BufferType type, size_t capacity) {
@@ -135,31 +118,21 @@ bool createRingBuffer(RingSlot &slot, BufferType type, size_t capacity) {
 		return false;
 	}
 	slot.capacity = capacity;
-	slot.persistentMap = false;
 	slot.mapped = nullptr;
 
 	const BufferStorageFlag persistentStorage = BufferStorageFlag::Dynamic | BufferStorageFlag::MapWrite |
 												BufferStorageFlag::MapPersistent | BufferStorageFlag::MapCoherent;
 	if (bufferStorage(slot.handle, type, capacity, persistentStorage)) {
 		slot.mapped = mapBufferRange(slot.handle, type, 0, capacity, AccessMode::Write,
-								   MapBufferFlag::Persistent | MapBufferFlag::Coherent);
+									 MapBufferFlag::Persistent | MapBufferFlag::Coherent);
 		if (slot.mapped != nullptr) {
-			slot.persistentMap = true;
 			return true;
 		}
 	}
 	destroyRingSlot(slot, type);
-
-	slot.handle = genBuffer();
-	if (slot.handle == InvalidId) {
-		return false;
-	}
-	slot.capacity = capacity;
-	if (!bufferStorage(slot.handle, type, capacity, BufferStorageFlag::Dynamic)) {
-		destroyRingSlot(slot, type);
-		return false;
-	}
-	return true;
+	// Non-persistent mapped buffers cannot be copy sources until unmapped.
+	// Use ordinary direct uploads when persistent coherent mapping is unavailable.
+	return false;
 }
 
 } // namespace
@@ -177,6 +150,7 @@ bool uploadRingInit() {
 		return false;
 	}
 	for (int slot = 0; slot < FRAMES_IN_FLIGHT; ++slot) {
+		deleteFence(s_fences[slot]);
 		for (int kind = 0; kind < core::enumVal(RingKind::Max); ++kind) {
 			const RingKind ringKind = (RingKind)kind;
 			const BufferType bufferType = ringBufferType(ringKind);
@@ -197,6 +171,7 @@ bool uploadRingInit() {
 
 void uploadRingShutdown() {
 	for (int slot = 0; slot < FRAMES_IN_FLIGHT; ++slot) {
+		deleteFence(s_fences[slot]);
 		for (int kind = 0; kind < core::enumVal(RingKind::Max); ++kind) {
 			destroyRingSlot(s_slots[slot][kind], ringBufferType((RingKind)kind));
 		}
@@ -205,29 +180,42 @@ void uploadRingShutdown() {
 	s_currentSlot = 0;
 }
 
+static void sealSlot(int index) {
+	deleteFence(s_fences[index]);
+	s_fences[index] = createFence();
+	if (!s_fences[index])
+		waitDeviceIdle();
+}
+
 void uploadRingBeginFrame() {
-	if (!s_initialized) {
+	if (!s_initialized)
 		return;
-	}
-	s_currentSlot = (s_currentSlot + 1) % FRAMES_IN_FLIGHT;
-	for (int kind = 0; kind < core::enumVal(RingKind::Max); ++kind) {
-		RingSlot &slot = s_slots[s_currentSlot][kind];
-		slot.offset = 0u;
-		if (!slot.persistentMap) {
-			mapRingSlot(slot, ringBufferType((RingKind)kind));
+	// Initialization may already have staged uploads before the first frame.
+	if (!s_fences[s_currentSlot]) {
+		for (const auto &slot : s_slots[s_currentSlot]) {
+			if (slot.offset > 0) {
+				sealSlot(s_currentSlot);
+				break;
+			}
 		}
 	}
+	s_currentSlot = (s_currentSlot + 1) % FRAMES_IN_FLIGHT;
+	// Coherent mapping provides visibility, not ownership. Never overwrite bytes
+	// still consumed by the GPU; yield while waiting rather than busy-spinning.
+	while (!fenceSignaled(s_fences[s_currentSlot]))
+		SDL_Delay(1);
+	deleteFence(s_fences[s_currentSlot]);
+	for (auto &slot : s_slots[s_currentSlot])
+		slot.offset = 0u;
 }
 
 void uploadRingEndFrame() {
-	if (!s_initialized) {
+	if (!s_initialized)
 		return;
-	}
-	for (int kind = 0; kind < core::enumVal(RingKind::Max); ++kind) {
-		RingSlot &slot = s_slots[s_currentSlot][kind];
-		if (!slot.persistentMap && slot.mapped != nullptr) {
-			unmapBuffer(slot.handle, ringBufferType((RingKind)kind));
-			slot.mapped = nullptr;
+	for (const auto &slot : s_slots[s_currentSlot]) {
+		if (slot.offset > 0) {
+			sealSlot(s_currentSlot);
+			break;
 		}
 	}
 }

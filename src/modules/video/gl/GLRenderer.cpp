@@ -2994,6 +2994,25 @@ void waitDeviceIdle() {
 	glFinish();
 }
 
+Fence createFence() {
+	if (!glFenceSync || !glClientWaitSync || !glDeleteSync) return nullptr;
+	return (Fence)glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+}
+bool fenceSignaled(Fence fence) {
+	if (!fence) return true;
+	const GLenum result = glClientWaitSync((GLsync)fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+	if (result == GL_WAIT_FAILED) {
+		Log::error("GPU completion fence query failed");
+		waitDeviceIdle();
+		return true;
+	}
+	return result != GL_TIMEOUT_EXPIRED;
+}
+void deleteFence(Fence &fence) {
+	if (fence) glDeleteSync((GLsync)fence);
+	fence = nullptr;
+}
+
 void setup() {
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);

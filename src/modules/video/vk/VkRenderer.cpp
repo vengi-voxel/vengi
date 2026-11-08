@@ -182,6 +182,10 @@ void endFrame(SDL_Window *window) {
 void waitDeviceIdle() {
 }
 
+Fence createFence() { return nullptr; }
+bool fenceSignaled(Fence fence) { return true; }
+void deleteFence(Fence &fence) { fence = nullptr; }
+
 bool checkError(bool triggerAssert) {
 	// Vulkan errors are checked immediately when calling functions
 	// This is mostly for API compatibility with OpenGL

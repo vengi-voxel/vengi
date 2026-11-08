@@ -158,6 +158,12 @@ void endFrame(SDL_Window *window);
  * paths can safely free resources referenced by the last frames.
  */
 void waitDeviceIdle();
+/** Opaque completion fence; nullptr means the backend cannot provide one. */
+using Fence = void *;
+Fence createFence();
+/** Non-blocking query. A failed query falls back to a device wait. */
+bool fenceSignaled(Fence fence);
+void deleteFence(Fence &fence);
 /**
  * @brief Checks the error state since the last call to this function.
  *
