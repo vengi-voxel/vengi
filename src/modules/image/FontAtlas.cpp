@@ -26,7 +26,7 @@ FontAtlas::~FontAtlas() {
 
 bool FontAtlas::init(const char *filename, float height, uint32_t lastCodepoint) {
 	shutdown();
-	if (glm::isinf(height) || height < 4.0f || height > 64.0f || lastCodepoint < 127 || lastCodepoint > 4095) {
+	if (glm::isinf(height) || glm::isnan(height) || height < 4.0f || height > 64.0f || lastCodepoint < 127 || lastCodepoint > 4095) {
 		return false;
 	}
 	const auto file = io::filesystem()->open(filename);
@@ -105,7 +105,7 @@ bool FontAtlas::rasterize(uint32_t codepoint, float size, uint8_t *&bitmap, int 
 	h = 0;
 	x0 = 0;
 	y0 = 0;
-	if (_font == nullptr || glm::isinf(size) || size <= 0.0f) {
+	if (_font == nullptr || glm::isinf(size) || glm::isnan(size) || size <= 0.0f) {
 		return false;
 	}
 	const float scale = stbtt_ScaleForPixelHeight(_font, size);
@@ -120,7 +120,7 @@ void FontAtlas::freeBitmap(uint8_t *bitmap) const {
 void FontAtlas::measure(const char *string, float size, int &w, int &h) const {
 	w = 0;
 	h = 0;
-	if (_font == nullptr || string == nullptr || glm::isinf(size) || size <= 0.0f) {
+	if (_font == nullptr || string == nullptr || glm::isinf(size) || glm::isnan(size) || size <= 0.0f) {
 		return;
 	}
 	const float scale = stbtt_ScaleForPixelHeight(_font, size);
