@@ -84,6 +84,7 @@ protected:
 
 	bool _persistUISettings = true;
 	bool _showConsole = true;
+	bool _showTestEngine = true;
 
 	/**
 	 * If anything in the ui has changed that makes the saved ini file invalid, you can

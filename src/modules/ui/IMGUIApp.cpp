@@ -903,7 +903,7 @@ app::AppState IMGUIApp::onRunning() {
 		}
 
 #ifdef IMGUI_ENABLE_TEST_ENGINE
-		if (_showWindow) {
+		if (_showWindow && _showTestEngine) {
 			ImGuiTestEngine_ShowTestEngineWindows(_imguiTestEngine, nullptr);
 		}
 #endif
