@@ -408,6 +408,8 @@ void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int
  *
  * Used to restrict MRT writes (e.g. composite only into Color0). @p n may be 0
  * to disable all color writes. Attachments that are not color attachments are ignored.
+ * Color attachments retain their shader output indices; selecting only Color1
+ * disables output 0 instead of remapping output 0 to Color1.
  */
 void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments);
 

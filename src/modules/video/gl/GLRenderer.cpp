@@ -1829,7 +1829,11 @@ uint64_t timerQueryResult(Id query) {
 static void blitFramebufferColorAttachment(Id handle, Id target, GLenum glAttachment, int width, int height) {
 	statsBlit();
 	syncState();
-	const GLenum buffers[] = {glAttachment};
+	// WebGL requires COLOR_ATTACHMENTi at draw-buffer index i, including
+	// when only one nonzero attachment is selected for a blit.
+	GLenum buffers[16] = {};
+	const GLsizei count = (GLsizei)(glAttachment - GL_COLOR_ATTACHMENT0 + 1);
+	buffers[count - 1] = glAttachment;
 	if (useFeature(Feature::DirectStateAccess) && handle != InvalidId && target != InvalidId &&
 		glBlitNamedFramebuffer != nullptr) {
 		if (glNamedFramebufferReadBuffer != nullptr) {
@@ -1842,7 +1846,7 @@ static void blitFramebufferColorAttachment(Id handle, Id target, GLenum glAttach
 			video::bindFramebuffer(prev, FrameBufferMode::Default);
 		}
 		core_assert(glNamedFramebufferDrawBuffers != nullptr);
-		glNamedFramebufferDrawBuffers(target, 1, buffers);
+		glNamedFramebufferDrawBuffers(target, count, buffers);
 		glBlitNamedFramebuffer(handle, target, 0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT,
 							   GL_NEAREST);
 		checkError();
@@ -1854,7 +1858,7 @@ static void blitFramebufferColorAttachment(Id handle, Id target, GLenum glAttach
 	const Id prev = currentFramebuffer();
 	video::bindFramebuffer(target, FrameBufferMode::Draw);
 	core_assert(glDrawBuffers != nullptr);
-	glDrawBuffers(1, buffers);
+	glDrawBuffers(count, buffers);
 	video::bindFramebuffer(handle, FrameBufferMode::Read);
 	core_assert(glReadBuffer != nullptr);
 	glReadBuffer(glAttachment);
@@ -1902,12 +1906,14 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 
 void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
 	syncState();
-	GLenum buffers[core::enumVal(FrameBufferAttachment::Max)];
+	GLenum buffers[core::enumVal(FrameBufferAttachment::Max)] = {};
 	uint8_t count = 0;
 	for (uint8_t i = 0; i < n; ++i) {
 		const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachments[i])];
 		if (glAttachment >= GL_COLOR_ATTACHMENT0 && glAttachment <= GL_COLOR_ATTACHMENT15) {
-			buffers[count++] = glAttachment;
+			const uint8_t index = (uint8_t)(glAttachment - GL_COLOR_ATTACHMENT0);
+			buffers[index] = glAttachment;
+			count = core_max(count, (uint8_t)(index + 1));
 		}
 	}
 	if (useFeature(Feature::DirectStateAccess) && currentFramebuffer() != InvalidId) {
