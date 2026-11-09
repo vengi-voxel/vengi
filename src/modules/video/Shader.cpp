@@ -365,8 +365,11 @@ core::String Shader::getSource(ShaderType shaderType, const core::String& buffer
 	src.append(_name);
 	src.append("\n");
 	if (!essl && shaderType == ShaderType::Compute) {
+		// glslang -V defines VULKAN; these ARB extensions are OpenGL-only.
+		src.append("#ifndef VULKAN\n");
 		src.append("#extension GL_ARB_compute_shader : enable\n");
 		src.append("#extension GL_ARB_shader_storage_buffer_object : enable\n");
+		src.append("#endif\n");
 		//src.append("#extension GL_ARB_compute_variable_group_size : enable\n");
 	}
 	if (!essl && _defines.hasKey("USEDRAWPARAMETERS") &&

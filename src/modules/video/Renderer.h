@@ -469,4 +469,26 @@ void deleteVertexArray(Id &id);
  */
 void startFrame(SDL_Window *window, RendererContext &context);
 
+#ifdef USE_VK_RENDERER
+void *getVulkanInstance();
+void *getVulkanPhysicalDevice();
+void *getVulkanDevice();
+uint32_t getVulkanDeviceQueueFamily();
+void *getVulkanDeviceQueue();
+void *getVulkanRenderPass();
+uint32_t getVulkanMinImageCount();
+uint32_t getVulkanImageCount();
+void *getVulkanDescriptorPool();
+void *getVulkanCommandBuffer();
+/**
+ * Resolve a Vulkan entry point via flextVk's vkGetInstanceProcAddr.
+ * Used by ImGui_ImplVulkan_LoadFunctions() (no libvulkan link).
+ */
+void *getVulkanInstanceProcAddr(const char *name);
+bool getVulkanTextureHandles(Id handle, void **outView, void **outSampler);
+void *getVulkanImGuiDescriptorSet(Id handle);
+void setVulkanImGuiDescriptorSet(Id handle, void *set);
+void nextSubpass();
+#endif
+
 } // namespace video
