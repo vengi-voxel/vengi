@@ -47,20 +47,23 @@ void VolumeDataAccessor::init(const RawVolume &volume, const Region &region) {
 		return;
 	}
 	const glm::ivec3 &mins = overlap.getLowerCorner();
-	const glm::ivec3 &maxs = overlap.getUpperCorner();
-	for (int z = mins.z; z <= maxs.z; ++z) {
-		for (int y = mins.y; y <= maxs.y; ++y) {
+	const glm::ivec3 &dimensions = overlap.getDimensionsInVoxels();
+	for (int dz = 0; dz < dimensions.z; ++dz) {
+		const int z = mins.z + dz;
+		for (int dy = 0; dy < dimensions.y; ++dy) {
+			const int y = mins.y + dy;
 			Voxel *destination = _voxels + copyRegion.index(mins.x, y, z);
 			if (volume.isContiguous()) {
 				core_memcpy((void *)destination, volume._data + volume.region().index(mins.x, y, z),
-					(size_t)(maxs.x - mins.x + 1) * sizeof(Voxel));
+					(size_t)dimensions.x * sizeof(Voxel));
 				continue;
 			}
 			// Copy X spans within each chunk, rather than dispatching per voxel.
-			for (int x = mins.x; x <= maxs.x;) {
+			for (int dx = 0; dx < dimensions.x;) {
+				const int x = mins.x + dx;
 				int count;
 				const Voxel *source = volume._storage->row(glm::ivec3(x, y, z) - volume.region().getLowerCorner(), count);
-				count = core_min(count, maxs.x - x + 1);
+				count = core_min(count, dimensions.x - dx);
 				if (source) {
 					core_memcpy((void *)destination, source, count * sizeof(Voxel));
 				} else {
@@ -70,7 +73,7 @@ void VolumeDataAccessor::init(const RawVolume &volume, const Region &region) {
 					core_memset4(destination, pattern, count);
 				}
 				destination += count;
-				x += count;
+				dx += count;
 			}
 		}
 	}

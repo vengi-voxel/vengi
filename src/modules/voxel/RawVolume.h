@@ -224,7 +224,7 @@ public:
 	}
 
 	Voxel *voxels() const;
-	/** Internal sampler access; does not materialize chunk storage. */
+	/** Existing contiguous buffer, or nullptr for chunk storage; does not materialize. */
 	Voxel *linearVoxels() const { return _data; }
 	bool isContiguous() const { return _storage == nullptr && _data != nullptr; }
 	Voxel *writableVoxel(const glm::ivec3 &pos);

@@ -10,6 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
+#include <limits.h>
 
 namespace voxel {
 
@@ -17,6 +18,30 @@ class RawVolumeChunkTest : public AbstractVoxelTest {
 protected:
 	const Region largeRegion{-40, -20, -60, 216, 236, 196};
 };
+
+TEST_F(RawVolumeChunkTest, QueriesAtMinimumCoordinate) {
+	RawVolume volume(Region(INT_MIN, INT_MIN + 256));
+	const Region cell(INT_MIN, INT_MIN);
+	EXPECT_TRUE(volume.isEmpty(cell));
+	EXPECT_FALSE(volume.hasFlags(cell, FlagOutline));
+	volume.setFlags(cell, FlagOutline);
+	EXPECT_TRUE(volume.hasFlags(cell, FlagOutline));
+	volume.removeFlags(cell, FlagOutline);
+	EXPECT_FALSE(volume.hasFlags(cell, FlagOutline));
+	volume.toggleFlags(cell, FlagOutline);
+	EXPECT_TRUE(volume.hasFlags(cell, FlagOutline));
+}
+
+TEST_F(RawVolumeChunkTest, CopyAtMaximumCoordinate) {
+	RawVolume source(Region(INT_MAX - 256, INT_MAX));
+	const Voxel value(VoxelType::Generic, 17, 11);
+	source.setVoxel(INT_MAX, INT_MAX, INT_MAX, value);
+	RawVolume copy(source, Region(INT_MAX - 1, INT_MAX));
+	ASSERT_TRUE(copy.valid());
+	EXPECT_EQ(value, copy.voxel(INT_MAX, INT_MAX, INT_MAX));
+	EXPECT_EQ(Voxel(), copy.voxel(INT_MAX - 1, INT_MAX - 1, INT_MAX - 1));
+	EXPECT_FALSE(source.isContiguous());
+}
 
 TEST_F(RawVolumeChunkTest, LazyReadWriteCopyAndTranslate) {
 	RawVolume volume(largeRegion);

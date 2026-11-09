@@ -71,10 +71,6 @@ public:
 		return _volume->sampleData(pos, dataLower, dataUpper, yStride, zStride, chunkEntry, defaultVoxel);
 	}
 
-	inline Voxel *linearVoxels() const {
-		return _volume->linearVoxels();
-	}
-
 	inline Voxel *writableVoxel(const glm::ivec3 &pos) {
 		return _volume->writableVoxel(pos);
 	}

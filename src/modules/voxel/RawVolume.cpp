@@ -229,7 +229,7 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 		r.cropTo(_region);
 	}
 	if (_storage) {
-		r.shift(-_region.getLowerX(), -_region.getLowerY(), -_region.getLowerZ());
+		r = Region(r.getLowerCorner() - _region.getLowerCorner(), r.getUpperCorner() - _region.getLowerCorner());
 		return visitChunkRows(*_storage, r, [&](const glm::ivec3 &, const Voxel *row, int count) {
 			if (!row) {
 				return (_storage->defaultVoxel().getFlags() & flags) != 0;
@@ -635,7 +635,7 @@ bool RawVolume::isEmpty(const Region &region) const {
 		r.cropTo(_region);
 	}
 	if (_storage) {
-		r.shift(-_region.getLowerX(), -_region.getLowerY(), -_region.getLowerZ());
+		r = Region(r.getLowerCorner() - _region.getLowerCorner(), r.getUpperCorner() - _region.getLowerCorner());
 		return !visitChunkRows(*_storage, r, [&](const glm::ivec3 &, const Voxel *row, int count) {
 			return core::memchr_not(row ? row : &_storage->defaultVoxel(), 0,
 				row ? count * sizeof(Voxel) : sizeof(Voxel)) != nullptr;
@@ -694,13 +694,15 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 		return false;
 	}
 	if (_storage || src._storage) {
-		for (int z = srcRegion.getLowerZ(); z <= srcRegion.getUpperZ(); ++z) {
-			for (int y = srcRegion.getLowerY(); y <= srcRegion.getUpperY(); ++y) {
-				for (int x = srcRegion.getLowerX(); x <= srcRegion.getUpperX(); ++x) {
+		const glm::ivec3 &dimensions = srcRegion.getDimensionsInVoxels();
+		for (int z = 0; z < dimensions.z; ++z) {
+			for (int y = 0; y < dimensions.y; ++y) {
+				for (int x = 0; x < dimensions.x; ++x) {
+					const glm::ivec3 pos = srcRegion.getLowerCorner() + glm::ivec3(x, y, z);
 					// Copy the complete voxel representation, including unspecified normals.
-					const Voxel &value = src.voxel(x, y, z);
-					if (!(this->voxel(x, y, z) == value)) {
-						Voxel *target = writableVoxel({x, y, z});
+					const Voxel &value = src.voxel(pos);
+					if (!(this->voxel(pos) == value)) {
+						Voxel *target = writableVoxel(pos);
 						if (!target) {
 							return false;
 						}
@@ -1045,7 +1047,6 @@ void RawVolume::initialise(const Region &regValidRegion, bool forceDense) {
 
 	// Create the data
 	const size_t size = RawVolume::size(_region);
-	// Initial conservative threshold; benchmark large volumes before tuning it.
 	if (!forceDense && size >= 64u * 1024u * 1024u) {
 		_storage = new ChunkedVolumeStorage({width(), height(), depth()});
 		if (_storage->valid()) {
@@ -1105,7 +1106,7 @@ void RawVolume::modifyChunkFlags(const Region &region, uint8_t flags, int operat
 	if (!r.cropTo(_region)) {
 		return;
 	}
-	r.shift(-_region.getLowerX(), -_region.getLowerY(), -_region.getLowerZ());
+	r = Region(r.getLowerCorner() - _region.getLowerCorner(), r.getUpperCorner() - _region.getLowerCorner());
 	visitChunkRows(*_storage, r, [&](const glm::ivec3 &pos, const Voxel *row, int count) {
 		const uint8_t defaultFlags = _storage->defaultVoxel().getFlags();
 		if (!row && ((operation == 0 && !(defaultFlags & flags)) ||

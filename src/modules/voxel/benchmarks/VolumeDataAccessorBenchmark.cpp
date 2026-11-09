@@ -33,7 +33,7 @@ static void accessorSnapshot(benchmark::State &state) {
 			}
 			benchmark::DoNotOptimize(accessor.voxels());
 		} else {
-			// Per-voxel snapshot corresponding to the initial design sketch.
+			// Reference path: copy each voxel through the volume interface.
 			voxel::Voxel *copy = (voxel::Voxel *)core_malloc(bytes);
 			if (!copy) {
 				state.SkipWithError("Could not allocate reference snapshot");

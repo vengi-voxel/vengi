@@ -144,6 +144,19 @@ TEST_F(VolumeDataAccessorTest, ReinitializationReleasesOwnedBuffersAndResetsStat
 	EXPECT_FALSE(accessor.ownsBuffer());
 }
 
+TEST_F(VolumeDataAccessorTest, SnapshotAtMaximumCoordinate) {
+	RawVolume volume(Region(INT_MAX - 3, INT_MAX));
+	const Voxel value(VoxelType::Generic, 17, 11);
+	volume.fill(value);
+	const Region requested(INT_MAX - 2, INT_MAX);
+	VolumeDataAccessor snapshot(volume, requested);
+	ASSERT_TRUE(snapshot.valid());
+	EXPECT_TRUE(snapshot.ownsBuffer());
+	for (int i = 0; i < 27; ++i) {
+		EXPECT_EQ(value, snapshot.voxels()[i]);
+	}
+}
+
 TEST_F(VolumeDataAccessorTest, InvalidAndOverflowRegionsFailCleanly) {
 	RawVolume volume(Region(0, 1));
 	VolumeDataAccessor invalid(volume, Region::InvalidRegion);
