@@ -42,7 +42,7 @@ static glm::quat isometricQuat(float yaw) {
 	return glm::normalize(glm::angleAxis(Camera::IsometricPitch, glm::right()) * glm::angleAxis(-yaw, glm::up()));
 }
 
-}
+} // namespace
 
 Camera::Camera(CameraType type, CameraMode mode) :
 	_type(type), _mode(mode), _quat(glm::quat_identity<float, glm::defaultp>()) {
@@ -524,6 +524,39 @@ math::Ray Camera::mouseRay(const glm::ivec2 &pixelPos) const {
 	const glm::vec3 farPoint = glm::unProject(glm::vec3(winX, winY, 1.0f), _viewMatrix, _projectionMatrix, viewport);
 
 	return math::Ray(origin, glm::normalize(farPoint - origin));
+}
+
+bool Camera::worldSegmentToScreen(const glm::vec3 &from, const glm::vec3 &to, glm::ivec2 &screenFrom,
+								  glm::ivec2 &screenTo) const {
+	glm::vec4 a = viewProjectionMatrix() * glm::vec4(from, 1);
+	glm::vec4 b = viewProjectionMatrix() * glm::vec4(to, 1);
+	if (glm::any(glm::isinf(a)) || glm::any(glm::isinf(b)))
+		return false;
+	const glm::vec4 planes[] = {
+		{1, 0, 0, 1}, {-1, 0, 0, 1}, {0, 1, 0, 1}, {0, -1, 0, 1}, {0, 0, 1, clipDepthZeroToOne() ? 0 : 1},
+		{0, 0, -1, 1}};
+	for (const auto &plane : planes) {
+		const float da = glm::dot(plane, a), db = glm::dot(plane, b);
+		if (da < 0 && db < 0)
+			return false;
+		if ((da < 0) != (db < 0)) {
+			const glm::vec4 intersection = glm::mix(a, b, da / (da - db));
+			if (da < 0)
+				a = intersection;
+			else
+				b = intersection;
+		}
+	}
+	if (a.w <= 0.000001f || b.w <= 0.000001f)
+		return false;
+	const auto project = [&](const glm::vec4 &point) {
+		const glm::vec2 ndc = glm::vec2(point) / point.w;
+		return glm::clamp(glm::ivec2((ndc.x * 0.5f + 0.5f) * _windowSize.x, (0.5f - ndc.y * 0.5f) * _windowSize.y),
+						  glm::ivec2(0), _windowSize);
+	};
+	screenFrom = project(a);
+	screenTo = project(b);
+	return true;
 }
 
 glm::ivec2 Camera::worldToScreen(const glm::vec3& worldPos) const {

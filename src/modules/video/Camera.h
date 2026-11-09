@@ -61,7 +61,6 @@ protected:
 
 	constexpr static uint32_t DIRTY_ALL = ~0u;
 	constexpr static float ORTHO_BOXSIZE = 1.0f;
-	constexpr static float PIXELS_PER_UNIT = 25.0f;
 
 	inline bool isDirty(uint32_t flag) const {
 		return (_dirty & flag) != 0u;
@@ -129,6 +128,7 @@ protected:
 
 public:
 	static constexpr float IsometricPitch = 0.6154797f;
+	static constexpr float PIXELS_PER_UNIT = 25.0f;
 
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
@@ -179,6 +179,7 @@ public:
 	void setOrientation(const glm::quat &quat);
 
 	float orthoZoom() const;
+	void setOrthoZoom(float zoom);
 	bool isOrthoAligned() const;
 
 	void lerp(const Camera &target);
@@ -281,6 +282,9 @@ public:
 	math::Ray mouseRay(const glm::ivec2 &pixelPos) const;
 
 	glm::ivec2 worldToScreen(const glm::vec3 &worldPos) const;
+	/** Clip a world segment to the view volume before perspective division. */
+	bool worldSegmentToScreen(const glm::vec3 &from, const glm::vec3 &to, glm::ivec2 &screenFrom,
+							  glm::ivec2 &screenTo) const;
 	glm::ivec2 worldToScreen(const glm::mat4 &matrix, const glm::vec3 &worldPos) const;
 
 	void update(double deltaFrameSeconds);
@@ -477,6 +481,15 @@ inline Camera uiCamera(const glm::ivec2 &windowSize) {
 
 inline float Camera::orthoZoom() const {
 	return _orthoZoom;
+}
+
+inline void Camera::setOrthoZoom(float zoom) {
+	const float value = glm::max(zoom, 0.0001f);
+	if (glm::epsilonEqual(_orthoZoom, value, 0.0001f)) {
+		return;
+	}
+	_orthoZoom = value;
+	_dirty |= DIRTY_PERSPECTIVE;
 }
 
 } // namespace video

@@ -14,10 +14,6 @@
 
 namespace video {
 
-namespace {
-
-}
-
 class CameraTest : public app::AbstractTest {
 public:
 	virtual ~CameraTest() {
@@ -77,6 +73,27 @@ TEST_F(CameraTest, testLookAt) {
 
 	EXPECT_LT(outvecs[2].y, outvecs[1].y) << "right top - right bottom y is invalid - maybe a sign error";
 	EXPECT_LT(outvecs[5].y, outvecs[0].y) << "left top - left bottom y is invalid - maybe a sign error";
+}
+
+TEST_F(CameraTest, OverlaySegmentsClipBeforePerspectiveDivision) {
+	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0), glm::vec3(0, 0, -1), glm::up());
+	camera.setNearPlane(1);
+	camera.update(0);
+	glm::ivec2 a, b;
+	EXPECT_FALSE(camera.worldSegmentToScreen(glm::vec3(0, 0, 2), glm::vec3(1, 0, 1), a, b));
+	EXPECT_FALSE(camera.worldSegmentToScreen(glm::vec3(100, 0, -5), glm::vec3(120, 0, -5), a, b));
+	ASSERT_TRUE(camera.worldSegmentToScreen(glm::vec3(-1, 0, -5), glm::vec3(1, 0, 0.5f), a, b));
+	for (const auto &p : {a, b}) {
+		EXPECT_GE(p.x, 0);
+		EXPECT_LE(p.x, 800);
+		EXPECT_GE(p.y, 0);
+		EXPECT_LE(p.y, 600);
+	}
+	ASSERT_TRUE(camera.worldSegmentToScreen(glm::vec3(-100, 0, -5), glm::vec3(100, 0, -5), a, b));
+	EXPECT_EQ(0, a.x);
+	EXPECT_EQ(800, b.x);
+	EXPECT_EQ(300, a.y);
+	EXPECT_EQ(300, b.y);
 }
 
 TEST_F(CameraTest, testMotion) {
@@ -209,6 +226,11 @@ TEST_F(CameraTest, testOrthoZoom) {
 	camera.zoom(-1.0f);
 	const float zoomedIn = camera.orthoZoom();
 	EXPECT_FLOAT_EQ(zoomedIn, initialZoom);
+
+	camera.setOrthoZoom(3.5f);
+	EXPECT_FLOAT_EQ(camera.orthoZoom(), 3.5f);
+	camera.setOrthoZoom(0.0f);
+	EXPECT_GT(camera.orthoZoom(), 0.0f);
 	EXPECT_GE(zoomedIn, _minZoom->floatVal());
 }
 
