@@ -4,6 +4,7 @@
 
 #include "GLTFFormat.h"
 #include "color/ColorUtil.h"
+#include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/IProgress.h"
@@ -13,9 +14,9 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
-#include "core/collection/Buffer.h"
 #include "core/collection/Map.h"
 #include "engine-config.h"
 #include "image/Image.h"
@@ -26,7 +27,6 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
-#include "json/JSON.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
@@ -38,10 +38,11 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
-#include <float.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/color_space.hpp>
+#include "json/JSON.h"
 #include <cmath>
+#include <float.h>
+#include <glm/gtc/color_space.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define CGLTF_MALLOC(size) core_malloc(size)
 #define CGLTF_FREE(ptr) core_free(ptr)
@@ -632,7 +633,8 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 						  int &meshIdx) const {
 	int nodeId = parent;
 
-	if (node->mesh) {
+	// Skins are partitioned after all joints have native hierarchy nodes.
+	if (node->mesh && !node->skin) {
 		const cgltf_mesh *gltfMesh = node->mesh;
 
 		// Check for point cloud primitives first
@@ -848,12 +850,243 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 	return nodeId;
 }
 
+bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filename, const io::ArchivePtr &archive,
+							 scenegraph::SceneGraph &sceneGraph, const core::Map<const cgltf_node *, int> &nodeMap,
+							 core::IProgress *progress) const {
+	for (cgltf_size ni = 0; ni < data->nodes_count; ++ni) {
+		const cgltf_node &source = data->nodes[ni];
+		int sourceId;
+		if (!source.skin || !source.mesh || !nodeMap.get(&source, sourceId)) {
+			continue;
+		}
+		const cgltf_skin &skin = *source.skin;
+		if (!skin.joints_count || skin.joints_count > 1024 ||
+			(skin.inverse_bind_matrices && (skin.inverse_bind_matrices->count != skin.joints_count ||
+											skin.inverse_bind_matrices->type != cgltf_type_mat4))) {
+			Log::error("Invalid glTF skin joint count or inverse bind matrices");
+			return false;
+		}
+		core::Buffer<glm::mat4> inverseBind(skin.joints_count);
+		for (cgltf_size ji = 0; ji < skin.joints_count; ++ji) {
+			float components[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+			if (skin.inverse_bind_matrices &&
+				!cgltf_accessor_read_float(skin.inverse_bind_matrices, ji, components, lengthof(components))) {
+				return false;
+			}
+			for (int i = 0; i < lengthof(components); ++i) {
+				if (glm::isinf(components[i])) {
+					return false;
+				}
+			}
+			inverseBind[ji] = glm::make_mat4(components);
+			const glm::mat4 &matrix = inverseBind[ji];
+			if (glm::abs(glm::determinant(glm::mat3(matrix))) < 1e-12f ||
+				glm::abs(matrix[0][3]) + glm::abs(matrix[1][3]) + glm::abs(matrix[2][3]) > .00001f ||
+				glm::abs(matrix[3][3] - 1) > .00001f) {
+				return false;
+			}
+		}
+		for (cgltf_size pi = 0; pi < source.mesh->primitives_count; ++pi) {
+			const cgltf_primitive &primitive = source.mesh->primitives[pi];
+			const cgltf_accessor *positions = cgltf_find_accessor(&primitive, cgltf_attribute_type_position, 0);
+			if (primitive.type != cgltf_primitive_type_triangles || !positions || positions->type != cgltf_type_vec3 ||
+				positions->count == 0 || positions->count > UINT32_MAX) {
+				return false;
+			}
+			const cgltf_size count = primitive.indices ? primitive.indices->count : positions->count;
+			if (count % 3 || (primitive.indices && primitive.indices->type != cgltf_type_scalar)) {
+				return false;
+			}
+			core::DynamicArray<core::DynamicArray<uint32_t>> triangles;
+			triangles.resize(skin.joints_count);
+			core::Buffer<float> scores(skin.joints_count), vertexScores(skin.joints_count);
+			for (cgltf_size ti = 0; ti < count; ti += 3) {
+				core_memset(scores.data(), 0, scores.size() * sizeof(float));
+				uint32_t indices[3];
+				for (int corner = 0; corner < lengthof(indices); ++corner) {
+					cgltf_uint index = (cgltf_uint)(ti + corner);
+					if (primitive.indices && !cgltf_accessor_read_uint(primitive.indices, ti + corner, &index, 1)) {
+						return false;
+					}
+					if (index >= positions->count) {
+						return false;
+					}
+					indices[corner] = index;
+					core_memset(vertexScores.data(), 0, vertexScores.size() * sizeof(float));
+					float total = 0;
+					for (cgltf_size ai = 0; ai < primitive.attributes_count; ++ai) {
+						const cgltf_attribute &attribute = primitive.attributes[ai];
+						if (attribute.type != cgltf_attribute_type_joints) {
+							continue;
+						}
+						const cgltf_accessor *weights =
+							cgltf_find_accessor(&primitive, cgltf_attribute_type_weights, attribute.index);
+						if (!weights || weights->count != positions->count || weights->type != cgltf_type_vec4 ||
+							!attribute.data || attribute.data->count != positions->count ||
+							attribute.data->type != cgltf_type_vec4) {
+							return false;
+						}
+						cgltf_uint joints[4];
+						float values[4];
+						if (!cgltf_accessor_read_uint(attribute.data, index, joints, lengthof(joints)) ||
+							!cgltf_accessor_read_float(weights, index, values, lengthof(values))) {
+							return false;
+						}
+						for (int influence = 0; influence < lengthof(joints); ++influence) {
+							if (glm::isinf(values[influence]) || values[influence] < 0 ||
+								joints[influence] >= skin.joints_count) {
+								return false;
+							}
+							vertexScores[joints[influence]] += values[influence];
+							total += values[influence];
+						}
+					}
+					if (glm::isinf(total) || total <= 0) {
+						return false;
+					}
+					for (cgltf_size ji = 0; ji < skin.joints_count; ++ji) {
+						scores[ji] += vertexScores[ji] / total;
+					}
+				}
+				cgltf_size joint = 0;
+				for (cgltf_size ji = 1; ji < skin.joints_count; ++ji) {
+					if (scores[ji] > scores[joint]) {
+						joint = ji;
+					}
+				}
+				for (uint32_t index : indices) {
+					triangles[joint].push_back(index);
+				}
+			}
+			for (cgltf_size ji = 0; ji < skin.joints_count; ++ji) {
+				if (triangles[ji].empty()) {
+					continue;
+				}
+				int parent;
+				if (!nodeMap.get(skin.joints[ji], parent)) {
+					Log::error("Skin joint is outside the imported scene hierarchy");
+					return false;
+				}
+				// Bake bind-pose joint units into the volume, then compensate on its
+				// model node. A cm skeleton with root scale .01 must not allocate a
+				// 100-times larger volume or display 100-times coarser voxels.
+				glm::mat4 jointWorld;
+				cgltf_node_transform_world(skin.joints[ji], glm::value_ptr(jointWorld));
+				glm::vec3 units;
+				for (int axis = 0; axis < 3; ++axis) {
+					units[axis] = glm::length(glm::vec3(jointWorld[axis]));
+					if (glm::isinf(units[axis]) || units[axis] < 1e-12f || glm::isinf(1.0f / units[axis])) {
+						return false;
+					}
+				}
+				glm::mat4 voxelBind = inverseBind[ji];
+				for (int column = 0; column < 4; ++column) {
+					for (int row = 0; row < 3; ++row) {
+						voxelBind[column][row] *= units[row];
+					}
+				}
+				core::Buffer<glm::vec3> localPositions(positions->count), localNormals;
+				const cgltf_accessor *normals = cgltf_find_accessor(&primitive, cgltf_attribute_type_normal, 0);
+				if (normals) {
+					if (normals->count != positions->count || normals->type != cgltf_type_vec3) {
+						return false;
+					}
+					localNormals.resize(positions->count);
+				}
+				const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(voxelBind)));
+				for (cgltf_size vi = 0; vi < positions->count; ++vi) {
+					float position[3];
+					if (!cgltf_accessor_read_float(positions, vi, position, lengthof(position))) {
+						return false;
+					}
+					for (float value : position) {
+						if (glm::isinf(value)) {
+							return false;
+						}
+					}
+					localPositions[vi] = glm::vec3(voxelBind * glm::vec4(position[0], position[1], position[2], 1));
+					if (glm::any(glm::isinf(localPositions[vi]))) {
+						return false;
+					}
+					if (normals) {
+						float normal[3];
+						if (!cgltf_accessor_read_float(normals, vi, normal, lengthof(normal))) {
+							return false;
+						}
+						const glm::vec3 transformed = normalMatrix * glm::vec3(normal[0], normal[1], normal[2]);
+						localNormals[vi] = glm::length(transformed) > 0 ? glm::normalize(transformed) : glm::vec3(0);
+					}
+				}
+				// Reuse the ordinary material/UV/voxelization path with joint-local geometry.
+				cgltf_buffer buffers[3] = {};
+				cgltf_buffer_view views[3] = {};
+				cgltf_accessor accessors[3] = {};
+				void *bytes[] = {localPositions.data(), localNormals.data(), triangles[ji].data()};
+				const size_t sizes[] = {localPositions.size() * sizeof(glm::vec3),
+										localNormals.size() * sizeof(glm::vec3),
+										triangles[ji].size() * sizeof(uint32_t)};
+				for (int i = 0; i < lengthof(buffers); ++i) {
+					buffers[i].data = bytes[i];
+					buffers[i].size = sizes[i];
+					views[i].buffer = &buffers[i];
+					views[i].size = sizes[i];
+					accessors[i].buffer_view = &views[i];
+					accessors[i].type = i == 2 ? cgltf_type_scalar : cgltf_type_vec3;
+					accessors[i].component_type = i == 2 ? cgltf_component_type_r_32u : cgltf_component_type_r_32f;
+					accessors[i].count = i == 2 ? triangles[ji].size() : positions->count;
+					accessors[i].stride = i == 2 ? sizeof(uint32_t) : sizeof(glm::vec3);
+				}
+				core::Buffer<cgltf_attribute> attributes(primitive.attributes_count);
+				for (cgltf_size ai = 0; ai < primitive.attributes_count; ++ai) {
+					attributes[ai] = primitive.attributes[ai];
+					if (attributes[ai].type == cgltf_attribute_type_position) {
+						attributes[ai].data = &accessors[0];
+					} else if (attributes[ai].type == cgltf_attribute_type_normal) {
+						attributes[ai].data = &accessors[1];
+					}
+				}
+				cgltf_primitive part = primitive;
+				part.attributes = attributes.data();
+				part.indices = &accessors[2];
+				cgltf_mesh mesh = {};
+				mesh.primitives = &part;
+				mesh.primitives_count = 1;
+				const core::String name = core::String::format("%s/%s", source.name ? source.name : "skin",
+															   skin.joints[ji]->name ? skin.joints[ji]->name : "joint");
+				cgltf_node node = {};
+				node.mesh = &mesh;
+				node.name = (char *)name.c_str();
+				node.has_scale = true;
+				for (int axis = 0; axis < 3; ++axis) {
+					node.scale[axis] = 1.0f / units[axis];
+				}
+				core::Map<const cgltf_node *, int> temporaryMap(2);
+				int meshIndex = 0;
+				const int id =
+					addNode_r(data, &node, filename, archive, sceneGraph, parent, temporaryMap, progress, 1, meshIndex);
+				if (id == parent || id == InvalidNodeId) {
+					return false;
+				}
+				sceneGraph.node(id).setProperty("role", "skin-part");
+				sceneGraph.node(id).setProperty("skin.mode", "rigid");
+				sceneGraph.node(id).setProperty("skin.joint", skin.joints[ji]->name ? skin.joints[ji]->name : "joint");
+				applyVengiNodeProperties(source.extensions, source.extensions_count, sceneGraph.node(id));
+			}
+		}
+	}
+	return true;
+}
+
 void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph &sceneGraph,
 								  const core::Map<const cgltf_node *, int> &nodeMap) const {
 	for (cgltf_size ai = 0; ai < data->animations_count; ++ai) {
 		const cgltf_animation &anim = data->animations[ai];
 		core::String animName = anim.name ? anim.name : core::String::format("animation %i", (int)ai);
 		sceneGraph.addAnimation(animName);
+		// A channel replaces only its targeted TRS component. Static ancestors and
+		// untargeted components retain the authored bind/rest transform.
+		for (auto it = sceneGraph.begin(scenegraph::SceneGraphNodeType::All); it != sceneGraph.end(); ++it)
+			(*it).duplicateKeyFrames(DEFAULT_ANIMATION, animName);
 
 		for (cgltf_size ci = 0; ci < anim.channels_count; ++ci) {
 			const cgltf_animation_channel &channel = anim.channels[ci];
@@ -891,6 +1124,9 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 				}
 				scenegraph::FrameIndex frameIdx = (scenegraph::FrameIndex)(time * GLTF_FPS + 0.5f);
 				scenegraph::KeyFrameIndex kfIdx = sgNode.addKeyFrame(frameIdx);
+				if (kfIdx != InvalidKeyFrame) {
+					sgNode.keyFrame(kfIdx).setTransform(sgNode.keyFrames(DEFAULT_ANIMATION).front().transform());
+				}
 				if (kfIdx == InvalidKeyFrame) {
 					kfIdx = sgNode.keyFrameForFrame(frameIdx);
 					if (kfIdx == InvalidKeyFrame) {
@@ -1083,6 +1319,11 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 		}
 	}
 
+	if (!importSkins(data, filename, archive, sceneGraph, nodeMap, progress)) {
+		cgltf_free(data);
+		core_free(buf);
+		return false;
+	}
 	if (data->animations_count > 0) {
 		importAnimations(data, sceneGraph, nodeMap);
 	}

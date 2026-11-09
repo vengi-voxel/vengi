@@ -35,6 +35,9 @@ private:
 								 const io::ArchivePtr &archive) const;
 	void importAnimations(const cgltf_data *data, scenegraph::SceneGraph &sceneGraph,
 						  const core::Map<const cgltf_node *, int> &nodeMap) const;
+	bool importSkins(const cgltf_data *data, const core::String &filename, const io::ArchivePtr &archive,
+					 scenegraph::SceneGraph &sceneGraph, const core::Map<const cgltf_node *, int> &nodeMap,
+					 core::IProgress *progress) const;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
