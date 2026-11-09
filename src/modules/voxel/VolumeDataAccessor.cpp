@@ -9,17 +9,26 @@
 namespace voxel {
 
 void VolumeDataAccessor::init(const RawVolume &volume, const Region &region) {
-	if (!region.isValid() || !volume.valid()) {
+	// The argument may refer to this accessor's current region.
+	const Region requested = region;
+	if (_owned) {
+		core_free(_voxels);
+	}
+	_voxels = nullptr;
+	_owned = false;
+	_region = Region::InvalidRegion;
+	if (!requested.isValid() || !volume.valid()) {
 		return;
 	}
-	_region = region;
-	if (volume.isContiguous() && region == volume.region()) {
+	_region = requested;
+	const Region &copyRegion = _region;
+	if (volume.isContiguous() && copyRegion == volume.region()) {
 		_voxels = volume._data;
 		return;
 	}
 	size_t bytes = sizeof(Voxel);
 	for (int axis = 0; axis < 3; ++axis) {
-		const int dimension = region.getDimensionsInVoxels()[axis];
+		const int dimension = copyRegion.getDimensionsInVoxels()[axis];
 		if (dimension <= 0 || bytes > SIZE_MAX / (size_t)dimension) {
 			_region = Region::InvalidRegion;
 			return;
@@ -33,7 +42,7 @@ void VolumeDataAccessor::init(const RawVolume &volume, const Region &region) {
 	}
 	_owned = true;
 	core_memset((void *)_voxels, 0, bytes);
-	Region overlap = region;
+	Region overlap = copyRegion;
 	if (!overlap.cropTo(volume.region())) {
 		return;
 	}
@@ -41,7 +50,7 @@ void VolumeDataAccessor::init(const RawVolume &volume, const Region &region) {
 	const glm::ivec3 &maxs = overlap.getUpperCorner();
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
-			Voxel *destination = _voxels + region.index(mins.x, y, z);
+			Voxel *destination = _voxels + copyRegion.index(mins.x, y, z);
 			if (volume.isContiguous()) {
 				core_memcpy((void *)destination, volume._data + volume.region().index(mins.x, y, z),
 					(size_t)(maxs.x - mins.x + 1) * sizeof(Voxel));

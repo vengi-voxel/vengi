@@ -67,7 +67,7 @@ public:
 
 	virtual ~RawVolumeWrapper() {}
 
-	inline Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const {
+	inline Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const {
 		return _volume->sampleData(pos, dataLower, dataUpper, yStride, zStride, chunkEntry, defaultVoxel);
 	}
 

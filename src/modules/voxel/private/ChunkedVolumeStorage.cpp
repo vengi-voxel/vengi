@@ -29,14 +29,12 @@ ChunkedVolumeStorage::ChunkedVolumeStorage(const glm::ivec3 &dimensions) : _dime
 		_directorySize = 0;
 		return;
 	}
-	// Use native atomic loads in the sampler hot path, avoiding an out-of-line
-	// SDL call per voxel. Publication still synchronizes chunk initialization.
-	static_assert(std::atomic<Voxel *>::is_always_lock_free, "Chunk pointers must be lock-free");
-	static_assert(sizeof(std::atomic<Voxel *>) == sizeof(void *), "Unexpected atomic pointer size");
-	_chunks = (std::atomic<Voxel *> *)core_malloc(_directorySize * sizeof(*_chunks));
+	// Publish initialized chunks through the project atomic pointer wrapper.
+	static_assert(sizeof(core::AtomicPtr<Voxel>) == sizeof(void *), "Unexpected atomic pointer size");
+	_chunks = (core::AtomicPtr<Voxel> *)core_malloc(_directorySize * sizeof(*_chunks));
 	if (_chunks) {
 		for (size_t i = 0; i < _directorySize; ++i) {
-			new (_chunks + i) std::atomic<Voxel *>(nullptr);
+			new (_chunks + i) core::AtomicPtr<Voxel>(nullptr);
 		}
 	}
 }
@@ -93,7 +91,7 @@ size_t ChunkedVolumeStorage::voxelIndex(const glm::ivec3 &pos) const {
 }
 
 Voxel *ChunkedVolumeStorage::chunk(size_t index) const {
-	return _chunks[index].load(std::memory_order_acquire);
+	return _chunks[index].load();
 }
 
 bool ChunkedVolumeStorage::chunkIsDefault(const Voxel *data) const {
@@ -127,7 +125,7 @@ Voxel *ChunkedVolumeStorage::createChunk(size_t index) {
 	core_memcpy(&pattern, &_default, sizeof(pattern));
 	core_memset4(created, pattern, _chunkVoxels);
 	Voxel *expected = nullptr;
-	if (!_chunks[index].compare_exchange_strong(expected, created, std::memory_order_acq_rel, std::memory_order_acquire)) {
+	if (!_chunks[index].compare_exchange(expected, created)) {
 		core_free(created);
 		return chunk(index);
 	}
@@ -165,14 +163,14 @@ const Voxel *ChunkedVolumeStorage::row(const glm::ivec3 &localPos, int &count) c
 	return data ? data + voxelIndex(localPos) : nullptr;
 }
 
-Voxel *ChunkedVolumeStorage::sampleData(const glm::ivec3 &localPos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const {
+Voxel *ChunkedVolumeStorage::sampleData(const glm::ivec3 &localPos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const {
 	dataLower = localPos & ~(ChunkSide - 1);
 	dataUpper = glm::min(dataLower + (ChunkSide - 1), _dimensions - 1);
 	yStride = _chunkDimensions.x;
 	zStride = (int64_t)_chunkDimensions.x * _chunkDimensions.y;
 	chunkEntry = &_chunks[chunkIndex(localPos)];
 	defaultVoxel = &_default;
-	Voxel *data = chunkEntry->load(std::memory_order_acquire);
+	Voxel *data = chunkEntry->load();
 	return data ? data + voxelIndex(localPos) : nullptr;
 }
 

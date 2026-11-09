@@ -16,7 +16,41 @@ namespace voxel {
 class ChunkedVolumeStorage;
 
 /**
- * Bounded volume facade. Large regions use lazily allocated chunks.
+ * @brief Bounded voxel volume with contiguous or lazily allocated chunk storage.
+ *
+ * Regions below 64 MiB of uncompressed voxel data use a contiguous array. Larger
+ * regions use a fixed directory of chunks with up to 32 voxels along each axis.
+ * This threshold is an initial choice for benchmarking and tuning. Untouched
+ * chunks contain a default voxel without allocating payload; fill() updates that
+ * default. Coordinates are relative to the lower corner, including negative
+ * origins and translations.
+ *
+ * Reads do not allocate chunks or update shared caches. Chunk pointers are
+ * published atomically. Writes to distinct voxels can allocate chunks concurrently;
+ * writes to the same voxel require external synchronization. Bulk mutation,
+ * copying during mutation, materialization and destruction require exclusive access.
+ * There is no paging or eviction. clear() and fill() retain allocated chunk
+ * addresses. Copies omit payload equal to the default without changing the source.
+ * Voxel metadata is preserved, including metadata on air cells.
+ *
+ * Use voxel(), setVoxel() and samplers for storage-independent access. A reference
+ * to a missing cell refers to the default voxel and must be reacquired after a
+ * write. Samplers cache contiguous spans and observe subsequently published chunks.
+ * VolumeDataAccessor borrows a full contiguous buffer or owns a region snapshot
+ * without materializing the source. Snapshot writes do not update the source.
+ *
+ * Legacy voxels() and data() materialize the complete volume and permanently
+ * switch it to contiguous storage. This allocates the full uncompressed payload,
+ * invalidates references and samplers, and requires exclusive access. Check the
+ * returned pointer for allocation failure. copyVoxels() returns an independent copy.
+ *
+ * move() stages non-default cells in temporary chunks and allocates destinations
+ * before changing contents, preserving existing chunk addresses. A fully allocated
+ * nonuniform volume may need temporary payload approaching the full volume size.
+ * allocatedBytes() counts payload and directory bytes, excluding object and
+ * allocator overhead; it does not measure process resident memory.
+ *
+ * @see VolumeDataAccessor
  */
 class RawVolume {
 private:
@@ -194,7 +228,7 @@ public:
 	Voxel *linearVoxels() const { return _data; }
 	bool isContiguous() const { return _storage == nullptr && _data != nullptr; }
 	Voxel *writableVoxel(const glm::ivec3 &pos);
-	Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
+	Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const;
 	/** Allocated payload and chunk-directory bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;
 	bool valid() const;

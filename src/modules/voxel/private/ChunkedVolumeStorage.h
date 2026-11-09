@@ -7,15 +7,15 @@
 #include "voxel/Voxel.h"
 #include <glm/vec3.hpp>
 #include <stddef.h>
-#include <atomic>
+#include "core/concurrent/Atomic.h"
 
 namespace voxel {
 
 /**
  * @brief Bounded, lazily allocated voxel storage, addressed in volume-local coordinates.
  *
- * The directory is fixed for the lifetime of the storage. Reads do not allocate,
- * lock or update shared caches. Chunk publication is atomic; chunks are never
+ * The directory is fixed for the lifetime of the storage. Reads do not allocate
+ * or update shared caches. Chunk publication uses core::AtomicPtr; chunks are never
  * evicted, so references into allocated chunks stay valid until destruction.
  * Concurrent writes to distinct voxels are supported, including in the same
  * newly allocated chunk. Writes to the same voxel, fill, move, copy and destruction
@@ -37,7 +37,7 @@ public:
 	Voxel *writableVoxel(const glm::ivec3 &localPos);
 	/** Read a contiguous X span; nullptr denotes count copies of defaultVoxel(). */
 	const Voxel *row(const glm::ivec3 &localPos, int &count) const;
-	Voxel *sampleData(const glm::ivec3 &localPos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const;
+	Voxel *sampleData(const glm::ivec3 &localPos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const;
 	const Voxel &defaultVoxel() const { return _default; }
 	void fill(const Voxel &value);
 	/** Cyclic left shift; preserves chunk addresses and requires exclusive access. */
@@ -52,7 +52,7 @@ private:
 	glm::ivec3 _chunkCounts;
 	size_t _directorySize = 0;
 	size_t _chunkVoxels = 0;
-	std::atomic<Voxel *> *_chunks = nullptr;
+	core::AtomicPtr<Voxel> *_chunks = nullptr;
 	Voxel _default;
 
 	size_t chunkIndex(const glm::ivec3 &pos) const;

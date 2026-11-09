@@ -21,10 +21,6 @@ namespace voxelutil {
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();
 	const int depth = region.getDepthInVoxels();
-	const int64_t yStride = width;
-	const int64_t zStride = (int64_t)width * height;
-	const voxel::Voxel *data = volume->linearVoxels();
-	const size_t lineSize = sizeof(voxel::Voxel) * width;
 
 	int minZ = depth;
 	int maxZ = -1;
@@ -36,47 +32,18 @@ namespace voxelutil {
 	core::IProgress *progress = core::currentProgressPtr();
 	voxel::RawVolume::Sampler sampler(volume);
 	for (int z = 0; z < depth; ++z) {
-		const int64_t zBase = z * zStride;
 		for (int y = 0; y < height; ++y) {
-			if (!data) {
-				sampler.setPosition(region.getLowerX(), region.getLowerY() + y, region.getLowerZ() + z);
-				for (int x = 0; x < width; ++x) {
-					const voxel::Voxel &value = sampler.voxel();
-					if (core::memchr_not(&value, 0, sizeof(value)) != nullptr) {
-						minX = core_min(minX, x);
-						maxX = core_max(maxX, x);
-						minY = core_min(minY, y);
-						maxY = core_max(maxY, y);
-						minZ = core_min(minZ, z);
-						maxZ = core_max(maxZ, z);
-					}
-					sampler.movePositiveX();
+			sampler.setPosition(region.getLowerX(), region.getLowerY() + y, region.getLowerZ() + z);
+			for (int x = 0; x < width; ++x) {
+				if (!voxel::isAir(sampler.voxel().getMaterial())) {
+					minX = core_min(minX, x);
+					maxX = core_max(maxX, x);
+					minY = core_min(minY, y);
+					maxY = core_max(maxY, y);
+					minZ = core_min(minZ, z);
+					maxZ = core_max(maxZ, z);
 				}
-				continue;
-			}
-			const int64_t baseIndex = zBase + y * yStride;
-			const voxel::Voxel *lineStart = &data[baseIndex];
-
-			const void *found = core::memchr_not(lineStart, 0, lineSize);
-			if (found != nullptr) {
-				minZ = core_min(minZ, z);
-				maxZ = core_max(maxZ, z);
-				minY = core_min(minY, y);
-				maxY = core_max(maxY, y);
-
-				const uint8_t *lineBytes = (const uint8_t *)lineStart;
-				const uint8_t *foundByte = (const uint8_t *)found;
-				const int firstByteOffset = (int)(foundByte - lineBytes);
-				const int firstX = firstByteOffset / (int)sizeof(voxel::Voxel);
-				minX = core_min(minX, firstX);
-
-				for (int x = width - 1; x >= maxX; --x) {
-					const voxel::Voxel *voxel = &lineStart[x];
-					if (core::memchr_not(voxel, 0, sizeof(voxel::Voxel)) != nullptr) {
-						maxX = core_max(maxX, x);
-						break;
-					}
-				}
+				sampler.movePositiveX();
 			}
 		}
 		if (progress != nullptr && depth > 0) {

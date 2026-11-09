@@ -27,6 +27,26 @@ TEST_F(VolumeCropperTest, testChunkedBoundsDoNotMaterialize) {
 	EXPECT_EQ(nullptr, volume.linearVoxels());
 }
 
+TEST_F(VolumeCropperTest, testBoundsIgnoreAirMetadataInBothStorageModes) {
+	const int sides[] = {3, 257};
+	for (const int side : sides) {
+		voxel::RawVolume volume(voxel::Region(-40, side - 41));
+		volume.fill(voxel::Voxel(voxel::VoxelType::Air, 12, 9, voxel::FlagOutline, 3));
+		const size_t bytes = volume.allocatedBytes();
+		glm::ivec3 mins, maxs;
+		EXPECT_FALSE(computeSolidBounds(&volume, mins, maxs));
+		EXPECT_EQ(bytes, volume.allocatedBytes());
+		const glm::ivec3 center = volume.region().getCenter();
+		volume.setVoxel(center, voxel::Voxel(voxel::VoxelType::Generic, 2));
+		const size_t markedBytes = volume.allocatedBytes();
+		ASSERT_TRUE(computeSolidBounds(&volume, mins, maxs));
+		EXPECT_EQ(center, mins);
+		EXPECT_EQ(center, maxs);
+		EXPECT_EQ(markedBytes, volume.allocatedBytes());
+		EXPECT_EQ(side == 3, volume.isContiguous());
+	}
+}
+
 TEST_F(VolumeCropperTest, testCropSmall) {
 	voxel::RawVolume smallVolume(voxel::Region(0, 2));
 	smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));

@@ -1137,7 +1137,7 @@ bool RawVolume::valid() const {
 	return _storage ? _storage->valid() : _data != nullptr;
 }
 
-Voxel *RawVolume::sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, std::atomic<Voxel *> *&chunkEntry, const Voxel *&defaultVoxel) const {
+Voxel *RawVolume::sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const {
 	if (_storage) {
 		Voxel *data = _storage->sampleData(pos - _region.getLowerCorner(), dataLower, dataUpper, yStride, zStride, chunkEntry, defaultVoxel);
 		const glm::ivec3 &lower = _region.getLowerCorner();

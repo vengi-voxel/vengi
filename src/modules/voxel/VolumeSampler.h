@@ -11,7 +11,7 @@
 #include "voxel/VoxelSampling.h"
 #include <glm/common.hpp>
 #include <stdint.h>
-#include <atomic>
+#include "core/concurrent/Atomic.h"
 
 namespace voxel {
 
@@ -97,7 +97,7 @@ public:
 			return *_currentVoxel;
 		}
 		if (this->currentPositionValid() && _chunkEntry) {
-			if (Voxel *data = _chunkEntry->load(std::memory_order_acquire)) {
+			if (Voxel *data = _chunkEntry->load()) {
 				_currentVoxel = data + _dataOffset;
 				return *_currentVoxel;
 			}
@@ -434,7 +434,7 @@ protected:
 
 	/** Other current position information */
 	mutable Voxel *_currentVoxel = nullptr;
-	std::atomic<Voxel *> *_chunkEntry = nullptr;
+	core::AtomicPtr<Voxel> *_chunkEntry = nullptr;
 	const Voxel *_defaultVoxel = nullptr;
 	int64_t _dataOffset = 0;
 	glm::ivec3 _dataLower{0};

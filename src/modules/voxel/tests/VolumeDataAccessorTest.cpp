@@ -113,6 +113,37 @@ TEST_F(VolumeDataAccessorTest, MoveTransfersOwnedAndBorrowedBuffers) {
 	EXPECT_EQ(volume.linearVoxels(), borrowed.voxels());
 }
 
+TEST_F(VolumeDataAccessorTest, ReinitializationReleasesOwnedBuffersAndResetsState) {
+	RawVolume volume(Region(0, 3));
+	const Region subregion(0, 1);
+	VolumeDataAccessor accessor(volume, subregion);
+	ASSERT_TRUE(accessor.ownsBuffer());
+	accessor.init(volume, volume.region());
+	EXPECT_TRUE(accessor.valid());
+	EXPECT_FALSE(accessor.ownsBuffer());
+	EXPECT_EQ(volume.linearVoxels(), accessor.voxels());
+	accessor.init(volume, subregion);
+	ASSERT_TRUE(accessor.valid());
+	ASSERT_TRUE(accessor.ownsBuffer());
+	accessor.init(volume, accessor.region());
+	EXPECT_TRUE(accessor.valid());
+	EXPECT_TRUE(accessor.ownsBuffer());
+	EXPECT_EQ(subregion, accessor.region());
+	accessor.init(volume, Region::InvalidRegion);
+	EXPECT_FALSE(accessor.valid());
+	EXPECT_FALSE(accessor.ownsBuffer());
+	EXPECT_FALSE(accessor.region().isValid());
+	accessor.init(volume, subregion);
+	ASSERT_TRUE(accessor.ownsBuffer());
+	accessor.init(volume, Region(0, INT_MAX - 1));
+	EXPECT_FALSE(accessor.valid());
+	EXPECT_FALSE(accessor.ownsBuffer());
+	EXPECT_FALSE(accessor.region().isValid());
+	accessor.init(volume, volume.region());
+	EXPECT_EQ(volume.linearVoxels(), accessor.voxels());
+	EXPECT_FALSE(accessor.ownsBuffer());
+}
+
 TEST_F(VolumeDataAccessorTest, InvalidAndOverflowRegionsFailCleanly) {
 	RawVolume volume(Region(0, 1));
 	VolumeDataAccessor invalid(volume, Region::InvalidRegion);

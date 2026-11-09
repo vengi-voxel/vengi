@@ -25,6 +25,9 @@ public:
 	VolumeDataAccessor &operator=(VolumeDataAccessor &&other) noexcept;
 	~VolumeDataAccessor();
 
+	/** Replace the current view, releasing any owned snapshot first. */
+	void init(const RawVolume &volume, const Region &region);
+
 	Voxel *voxels() { return _voxels; }
 	const Voxel *voxels() const { return _voxels; }
 	const uint8_t *data() const { return (const uint8_t *)_voxels; }
@@ -37,7 +40,6 @@ public:
 	bool valid() const { return _voxels != nullptr; }
 
 private:
-	void init(const RawVolume &volume, const Region &region);
 	Region _region = Region::InvalidRegion;
 	Voxel *_voxels = nullptr;
 	bool _owned = false;
