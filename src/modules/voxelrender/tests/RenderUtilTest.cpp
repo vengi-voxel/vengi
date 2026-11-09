@@ -56,6 +56,18 @@ TEST_F(RenderUtilTest, testConfigureCameraFreeModePosition) {
 	EXPECT_FLOAT_EQ(cameraPos.y, (float)sceneRegion.getUpperY());
 }
 
+TEST_F(RenderUtilTest, testExplicitFreeAnglesFlatCourseVisibleFromAbove) {
+	video::Camera camera;
+	camera.setSize({256, 256});
+	const voxel::Region region(0, 0, 0, 255, 12, 255);
+	const glm::vec3 angles(glm::radians(55.0f), glm::radians(38.0f), 0.0f);
+	configureCamera(camera, region, SceneCameraMode::Free, 5000.0f, angles);
+	camera.update(0.0);
+	EXPECT_GT(glm::abs(camera.worldPosition().y - region.calcCenterf().y), camera.targetDistance() * .6f);
+	EXPECT_NEAR(camera.targetDistance(), glm::distance(camera.worldPosition(), region.calcCenterf()), .01f);
+	EXPECT_GT(glm::dot(camera.forward(), glm::normalize(region.calcCenterf() - camera.worldPosition())), .99f);
+}
+
 TEST_F(RenderUtilTest, testConfigureCameraTopMode) {
 	video::Camera camera;
 	camera.setSize(glm::ivec2(1920, 1080));

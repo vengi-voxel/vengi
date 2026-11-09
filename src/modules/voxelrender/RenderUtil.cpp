@@ -81,6 +81,10 @@ void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, Sc
 			camera.setAngles(video::Camera::IsometricPitch, isoYaw, 0.0f);
 			return;
 		}
+		if (angles != glm::vec3(0.0f)) {
+			camera.update(0.0);
+			return;
+		}
 		const float diagonalDistance = distance / glm::sqrt(2.0f);
 		camera.setWorldPosition(glm::vec3(center.x - diagonalDistance, (float)sceneRegion.getUpperY(), center.z - diagonalDistance));
 	} else if (mode == SceneCameraMode::Top) {
