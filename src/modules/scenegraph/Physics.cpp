@@ -94,11 +94,15 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 			continue;
 		}
 		const voxel::Region &region = node.volume->region();
-		// Transform the body's position into the model space of the collision node.
-		const glm::vec3 &pos = node.calcModelSpace(nextBodyPos);
-		// Calculate the AABB of the body in the model space of the collision node.
-		const glm::ivec3 &mins = glm::floor(pos - glm::vec3(extents.x + epsilon, epsilon, extents.z + epsilon));
-		const glm::ivec3 &maxs = glm::floor(pos + extents);
+		// Transform the entire body AABB, including scale and rotation of the voxel model.
+		const glm::vec3 lower = nextBodyPos - glm::vec3(extents.x + epsilon, epsilon, extents.z + epsilon);
+		const glm::vec3 upper = nextBodyPos + extents;
+		const glm::vec3 half = (upper - lower) * 0.5f;
+		const glm::vec3 center = node.calcModelSpace((lower + upper) * 0.5f);
+		const glm::mat3 linear(node.worldToModel);
+		const glm::vec3 modelHalf = glm::abs(linear[0]) * half.x + glm::abs(linear[1]) * half.y + glm::abs(linear[2]) * half.z;
+		const glm::ivec3 mins = glm::floor(center - modelHalf);
+		const glm::ivec3 maxs = glm::floor(center + modelHalf);
 		if (!voxel::intersects(region, voxel::Region(mins, maxs))) {
 			continue;
 		}

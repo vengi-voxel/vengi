@@ -6,6 +6,7 @@
 #include "app/tests/AbstractTest.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/SceneUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
@@ -791,6 +792,56 @@ TEST_F(PhysicsTest, testCollisionAtEdgeOfThinGroundPlane) {
 
 	EXPECT_TRUE(body.isGrounded()) << "Body should collide with ground even at the edge of a thin floor with transforms";
 	EXPECT_TRUE(body.collidedY) << "Body should have Y collision at edge";
+}
+
+TEST_F(PhysicsTest, testScaledCollisionSamplesTransformedBodyAABB) {
+	// Shrinking the model makes world-space body extents cover more model voxels.
+	// Sampling only around the transformed center with raw world extents misses the
+	// solid cells under the body edges; the transformed AABB must be used instead.
+	SceneGraph sceneGraph;
+	SceneGraphNode modelNode(SceneGraphNodeType::Model);
+	modelNode.setName("gapped_ground");
+
+	voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(0, 0, 0, 4, 1, 4));
+	const voxel::Voxel solidVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (int z = 0; z <= 4; ++z) {
+		v->setVoxel(0, 0, z, solidVoxel);
+		v->setVoxel(0, 1, z, solidVoxel);
+		v->setVoxel(4, 0, z, solidVoxel);
+		v->setVoxel(4, 1, z, solidVoxel);
+	}
+
+	modelNode.setVolume(v);
+	modelNode.setPivot(glm::vec3(0.0f));
+	SceneGraphTransform transform;
+	transform.setLocalScale(glm::vec3(0.25f));
+	modelNode.setTransform(0, transform);
+	sceneGraph.emplace(core::move(modelNode));
+	sceneGraph.updateTransforms();
+
+	CollisionNodes nodes;
+	const math::AABB<float> aabb(glm::vec3(-2.0f, -2.0f, -2.0f), glm::vec3(4.0f, 4.0f, 4.0f));
+	sceneGraph.getCollisionNodes(nodes, 0, aabb);
+	ASSERT_EQ(1u, nodes.size());
+
+	KinematicBody body;
+	// Model x=2 maps to world x=0.5 with scale 0.25; body spans the gap to the solids at 0 and 4.
+	body.position = glm::vec3(0.5f, 2.0f, 0.5f);
+	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+
+	Physics physics;
+	const float gravity = 9.81f;
+	const double deltaTime = 0.016;
+	for (int i = 0; i < 120; ++i) {
+		physics.update(deltaTime, nodes, body, gravity);
+		if (body.isGrounded()) {
+			break;
+		}
+	}
+
+	EXPECT_TRUE(body.isGrounded()) << "Scaled collision must include body AABB edges in model space";
+	EXPECT_TRUE(body.collidedY);
 }
 
 } // namespace scenegraph
