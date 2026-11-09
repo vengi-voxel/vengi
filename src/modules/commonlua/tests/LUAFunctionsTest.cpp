@@ -343,4 +343,19 @@ TEST_F(LUAFunctionsTest, testIO) {
 	testExec(script);
 }
 
+TEST_F(LUAFunctionsTest, testBoundedAllocatorStopsLargeAllocations) {
+	LUA lua;
+	const size_t limit = 2 * 1024 * 1024;
+	ASSERT_TRUE(lua.setMemoryLimit(limit));
+	EXPECT_GT(lua.memoryUsage(), 0u);
+	EXPECT_FALSE(lua.load("local memory=string.rep('x', 3 * 1024 * 1024)"));
+	EXPECT_LE(lua.memoryPeak(), limit);
+	ASSERT_TRUE(lua.load("local memory=string.rep('x', 1024)"));
+	lua.shutdown();
+	EXPECT_EQ(0u, lua.memoryUsage());
+	EXPECT_FALSE(lua.load("return 1"));
+	ASSERT_TRUE(lua.resetState());
+	ASSERT_TRUE(lua.load("assert(2 + 2 == 4)"));
 }
+
+} // namespace lua

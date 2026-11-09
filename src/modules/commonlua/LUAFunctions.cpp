@@ -1327,9 +1327,20 @@ static int clua_stream_gc(lua_State *s) {
 static int clua_stream_readstring(lua_State *s) {
 	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	const bool terminate = clua_optboolean(s, 2, false);
+	if (!terminate) {
+		const int64_t remaining = stream->size() - stream->pos();
+		if (remaining < 0 || remaining > INT_MAX) {
+			return clua_error(s, "Invalid remaining stream size");
+		}
+		luaL_Buffer buffer;
+		char *bytes = luaL_buffinitsize(s, &buffer, (size_t)remaining);
+		const int count = stream->read(bytes, (size_t)remaining);
+		luaL_pushresultsize(&buffer, count > 0 ? (size_t)count : 0);
+		return 1;
+	}
 	core::String str;
 	stream->readString(stream->size(), str, terminate);
-	lua_pushstring(s, str.c_str());
+	lua_pushlstring(s, str.c_str(), str.size());
 	return 1;
 }
 
@@ -1888,8 +1899,8 @@ static int clua_stream_eos(lua_State *s) {
 static int clua_stream_seek(lua_State *s) {
 	io::SeekableReadWriteStream *stream = clua_tostream(s, 1);
 	int64_t offset = luaL_checkinteger(s, 2);
-	int mode = luaL_checkinteger(s, SEEK_SET);
-	if (!stream->seek(offset, mode)) {
+	int mode = (int)luaL_optinteger(s, 3, SEEK_SET);
+	if (mode < SEEK_SET || mode > SEEK_END || stream->seek(offset, mode) < 0) {
 		return clua_error(s, "Failed to seek");
 	}
 	return 0;
@@ -2043,7 +2054,7 @@ void clua_imageregister(lua_State *s) {
 static int clua_stream_readstring_jsonhelp(lua_State *s) {
 	lua_pushstring(s, R"({
 		"name": "readString",
-		"summary": "Read a string from the stream.",
+		"summary": "Read a string; embedded zero bytes are preserved when terminate is false.",
 		"parameters": [
 			{"name": "terminate", "type": "boolean", "description": "Whether to stop at null terminator (optional)."}
 		],

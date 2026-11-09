@@ -5,6 +5,7 @@
 #include "LUA.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "LUAFunctions.h"
 #include "Trace.h"
@@ -63,10 +64,49 @@ static int clua_print(lua_State *L) {
 	return 0;
 }
 
+void *LUA::allocate(void *owner, void *pointer, size_t oldSize, size_t newSize) {
+	LUA &self = *(LUA *)owner;
+	const size_t previous = pointer ? oldSize : 0;
+	if (newSize == 0) {
+		core_free(pointer);
+		self._memoryUsage = previous > self._memoryUsage ? 0 : self._memoryUsage - previous;
+		return nullptr;
+	}
+	const size_t base = previous > self._memoryUsage ? 0 : self._memoryUsage - previous;
+	if (newSize > SIZE_MAX - base || (self._memoryLimit && base + newSize > self._memoryLimit)) {
+		return nullptr;
+	}
+	void *result = core_realloc(pointer, newSize);
+	if (!result) {
+		return nullptr;
+	}
+	self._memoryUsage = base + newSize;
+	if (self._memoryUsage > self._memoryPeak) {
+		self._memoryPeak = self._memoryUsage;
+	}
+	return result;
+}
+
+bool LUA::setMemoryLimit(size_t bytes) {
+	if (!_destroy || (bytes && bytes < _memoryUsage)) {
+		return false;
+	}
+	_memoryLimit = bytes;
+	return true;
+}
+
+void LUA::shutdown() {
+	closeState();
+}
+
 void LUA::openState() {
 	_error.clear();
 
-	_state = luaL_newstate();
+	_state = lua_newstate(allocate, this);
+	if (!_state) {
+		_error = "Could not allocate a Lua state";
+		return;
+	}
 
 	luaL_openlibs(_state);
 
@@ -115,7 +155,7 @@ void LUA::openState() {
 }
 
 void LUA::closeState() {
-	if (_destroy) {
+	if (_destroy && _state) {
 		lua_close(_state);
 		_state = nullptr;
 	}
@@ -129,10 +169,14 @@ bool LUA::resetState() {
 
 	closeState();
 	openState();
-	return true;
+	return _state != nullptr;
 }
 
 bool LUA::load(const core::String& luaString, int returnValues) {
+	if (!_state) {
+		_error = "Lua state is closed";
+		return false;
+	}
 	if (luaL_loadbufferx(_state, luaString.c_str(), luaString.size(), "", nullptr) || lua_pcall(_state, 0, returnValues, 0)) {
 		setError(lua_tostring(_state, -1));
 		pop(1);
@@ -207,4 +251,4 @@ void LUA::pop(int amount) {
 	lua_pop(_state, amount);
 }
 
-}
+} // namespace lua

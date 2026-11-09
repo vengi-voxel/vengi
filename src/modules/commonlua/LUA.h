@@ -34,6 +34,10 @@ private:
 	core::String _error;
 	bool _destroy;
 	bool _debug;
+	size_t _memoryLimit = 0;
+	size_t _memoryUsage = 0;
+	size_t _memoryPeak = 0;
+	static void *allocate(void *owner, void *pointer, size_t oldSize, size_t newSize);
 
 	void openState();
 	void closeState();
@@ -44,6 +48,14 @@ public:
 
 	explicit LUA(bool debug = false);
 	~LUA();
+	void shutdown();
+	bool setMemoryLimit(size_t bytes);
+	size_t memoryUsage() const {
+		return _memoryUsage;
+	}
+	size_t memoryPeak() const {
+		return _memoryPeak;
+	}
 
 	lua_State* state() const;
 	inline operator lua_State*() const {
@@ -101,7 +113,7 @@ public:
 	}
 };
 
-}
+} // namespace lua
 
 #if LUA_VERSION_NUM >= 502
 #undef lua_equal
