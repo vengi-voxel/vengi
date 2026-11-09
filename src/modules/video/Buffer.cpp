@@ -242,6 +242,15 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 		}
 	}
 	if (size > 0) {
+#ifdef __EMSCRIPTEN__
+		// WebGL has no native buffer mapping. Upload directly instead of using
+		// Emscripten's temporary mapping emulation and unsupported map flags.
+		if (orphaning || oldSize < size || _modes[idx] == BufferMode::Static) {
+			video::bufferData(id, type, _modes[idx], data, size);
+		} else {
+			video::bufferSubData(id, type, 0, data, size);
+		}
+#else
 		if (orphaning) {
 			// Orphaning strategy: allocate new buffer storage to avoid GPU stalls
 			// Always call bufferData with nullptr to orphan the old storage, regardless of size
@@ -273,6 +282,7 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 			// Full reallocation for static buffers or when size changes
 			video::bufferData(id, type, _modes[idx], data, size);
 		}
+#endif
 	}
 
 	return true;

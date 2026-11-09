@@ -14,6 +14,30 @@ namespace video {
 class RendererTest : public app::AbstractTest {};
 
 class RendererStreamingTest : public AbstractGLTest {};
+
+TEST_F(RendererStreamingTest, testDynamicUploadsPreserveContentsWhenResizingAndOrphaning) {
+	Buffer buffer;
+	const int index = buffer.create();
+	ASSERT_GE(index, 0);
+	buffer.setMode(index, BufferMode::Stream);
+	alignas(16) uint32_t payload[16];
+	for (int pass = 0; pass < 4; ++pass) {
+		const size_t words = pass == 0 ? 4 : (pass == 1 ? 16 : 8);
+		for (size_t word = 0; word < words; ++word) {
+			payload[word] = (uint32_t)(pass * 100 + word);
+		}
+		ASSERT_TRUE(buffer.update(index, payload, words * sizeof(uint32_t), pass == 3));
+		const uint32_t *data =
+			(const uint32_t *)mapBuffer(buffer.bufferHandle(index), BufferType::ArrayBuffer, AccessMode::Read);
+		ASSERT_NE(nullptr, data);
+		for (size_t word = 0; word < words; ++word) {
+			EXPECT_EQ(payload[word], data[word]);
+		}
+		ASSERT_TRUE(unmapBuffer(buffer.bufferHandle(index), BufferType::ArrayBuffer));
+	}
+	buffer.shutdown();
+}
+
 TEST_F(RendererStreamingTest, EmptyInitialDataStillAllocatesWritableStorage) {
 	Buffer buffer;
 	const int index = buffer.create(nullptr, 16);
