@@ -5,11 +5,10 @@
 #pragma once
 
 #include "core/String.h"
+#include "image/FontAtlas.h"
 #include "math/Axis.h"
 #include <glm/fwd.hpp>
 #include <stdint.h>
-
-struct stbtt_fontinfo;
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -23,8 +22,7 @@ namespace voxelfont {
  */
 class VoxelFont {
 private:
-	stbtt_fontinfo *_font = nullptr;
-	uint8_t *_ttfBuffer = nullptr;
+	image::FontAtlas _atlas;
 	core::String _filename;
 
 public:

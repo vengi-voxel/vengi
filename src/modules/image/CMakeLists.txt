@@ -6,6 +6,7 @@ set(EXTERNAL_SRCS
 set(SRCS
 	${EXTERNAL_SRCS}
 	Image.cpp Image.h
+	FontAtlas.cpp FontAtlas.h external/stb_truetype.h
 	AVI.cpp AVI.h
 	CaptureTool.cpp CaptureTool.h
 )
@@ -39,12 +40,14 @@ set(USE_LIBPNG ${PNG_FOUND} CACHE BOOL "Use libpng" FORCE)
 
 set(TEST_SRCS
 	tests/ImageTest.cpp
+	tests/FontAtlasTest.cpp
 	tests/AVITest.cpp
 	tests/MPEG2Test.cpp
 	tests/CaptureToolTest.cpp
 )
 
 set(TEST_FILES
+	shared/font.ttf
 	tests/test-palette-in.png
 	tests/benchmark-caveexpress.jpg
 )

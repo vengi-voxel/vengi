@@ -1,5 +1,6 @@
 set(SRCS
 	Axis.cpp Axis.h
+	CanvasRenderer.cpp CanvasRenderer.h
 	BloomRenderer.cpp BloomRenderer.h
 	CameraRenderer.cpp CameraRenderer.h
 	GridRenderer.cpp GridRenderer.h
@@ -7,6 +8,7 @@ set(SRCS
 	SurfaceOverlayRenderer.cpp SurfaceOverlayRenderer.h
 )
 set(SHADERS
+	canvas
 	color
 	combine2
 	convolution
@@ -21,17 +23,19 @@ foreach (SHADER ${SHADERS})
 	list(APPEND SRCS_SHADERS "shaders/${SHADER}.frag")
 endforeach()
 set(LIB render)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} ${SRCS_SHADERS} DEPENDENCIES video FILES shared/font.ttf)
 engine_generate_shaders(${LIB} ${SHADERS})
 
 set(TEST_SRCS
 	tests/RenderShaderTest.cpp
+	tests/CanvasRendererTest.cpp
 	tests/GridRendererTest.cpp
 	tests/ShapeRendererTest.cpp
 	tests/SurfaceOverlayRendererTest.cpp
 )
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_files(tests-${LIB} shared/font.ttf)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
 gtest_suite_deps(tests-${LIB} ${LIB} test-app render)
 gtest_suite_end(tests-${LIB})
