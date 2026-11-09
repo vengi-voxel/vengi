@@ -149,7 +149,7 @@ protected:
 	static ChunkMeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, ChunkMeshes &meshes, int nodeId);
 	glm::vec3 getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs) const;
 	glm::vec3 sceneInputScale() const {
-		return _useSceneInputScale ? _sceneInputScale : glm::vec3(1.0f);
+		return _collectInputBounds ? glm::vec3(1.0f) : _useSceneInputScale ? _sceneInputScale : getScale();
 	}
 	bool savePointClouds(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 const io::ArchivePtr &archive, const glm::vec3 &scale = glm::vec3(1.0f),
