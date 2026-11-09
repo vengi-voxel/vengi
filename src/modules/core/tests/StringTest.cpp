@@ -253,4 +253,12 @@ TEST_F(StringTest, testFormat) {
 	EXPECT_EQ("Hello World 10 after int", core::String::format("Hello World %i after int", 10));
 }
 
+TEST_F(StringTest, FormatPreservesTextBeyondTheStackBufferBoundary) {
+	for (size_t length : {1023u, 1024u, 8192u}) {
+		const core::String input(length, 'x');
+		EXPECT_EQ(input, core::String::format("%s", input.c_str()));
+		EXPECT_EQ("[" + input + "]/7", core::String::format("[%s]/%i", input.c_str(), 7));
+	}
+}
+
 }

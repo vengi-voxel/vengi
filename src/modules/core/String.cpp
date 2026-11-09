@@ -536,8 +536,17 @@ core::String String::format(const char *msg, ...) {
 	int len = SDL_vsnprintf(text, sizeof(text), msg, ap);
 	text[sizeof(text) - 1] = '\0';
 	va_end(ap);
-	if (len >= 0) {
+	if (len >= 0 && (size_t)len < sizeof(text)) {
 		return core::String(text, len);
+	}
+	if (len >= 0) {
+		// snprintf returns the required length, which may exceed the stack buffer.
+		String result((size_t)len, '\0');
+		va_start(ap, msg);
+		const int written = SDL_vsnprintf(result.c_str(), (size_t)len + 1, msg, ap);
+		va_end(ap);
+		if (written == len)
+			return result;
 	}
 	return core::String::Empty;
 }
