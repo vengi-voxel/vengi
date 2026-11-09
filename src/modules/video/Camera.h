@@ -280,6 +280,12 @@ public:
 	 * @return Ray instance with origin and direction
 	 */
 	math::Ray mouseRay(const glm::ivec2 &pixelPos) const;
+	/**
+	 * @brief Map a top-left logical point in a viewport to a world ray.
+	 * Viewport origin/size and point must use the same units. Far edges are excluded.
+	 * Accounts for camera resolution (including high DPI). Leaves ray unchanged on failure.
+	 */
+	bool mouseRay(const glm::vec4 &view, const glm::vec2 &point, math::Ray &ray) const;
 
 	glm::ivec2 worldToScreen(const glm::vec3 &worldPos) const;
 	/** Clip a world segment to the view volume before perspective division. */

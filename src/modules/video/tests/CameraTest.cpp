@@ -83,7 +83,7 @@ TEST_F(CameraTest, OverlaySegmentsClipBeforePerspectiveDivision) {
 	EXPECT_FALSE(camera.worldSegmentToScreen(glm::vec3(0, 0, 2), glm::vec3(1, 0, 1), a, b));
 	EXPECT_FALSE(camera.worldSegmentToScreen(glm::vec3(100, 0, -5), glm::vec3(120, 0, -5), a, b));
 	ASSERT_TRUE(camera.worldSegmentToScreen(glm::vec3(-1, 0, -5), glm::vec3(1, 0, 0.5f), a, b));
-	for (const auto &p : {a, b}) {
+	for (const glm::ivec2 &p : {a, b}) {
 		EXPECT_GE(p.x, 0);
 		EXPECT_LE(p.x, 800);
 		EXPECT_GE(p.y, 0);
@@ -338,6 +338,40 @@ TEST_F(CameraTest, testWorldToScreen) {
 	const glm::ivec2 right = camera.worldToScreen(glm::right());
 	EXPECT_GT(right.x, center.x);
 	EXPECT_EQ(right.y, center.y);
+}
+
+TEST_F(CameraTest, testRayHonorsOffsetEdgesAndRes) {
+	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0, 0, 10), glm::vec3(0), glm::up());
+	const glm::vec4 view(300, 100, 400, 300);
+	math::Ray center(glm::vec3(0), glm::vec3(0));
+	ASSERT_TRUE(camera.mouseRay(view, {500, 250}, center));
+	EXPECT_NEAR(-1, center.direction.z, .001f);
+	math::Ray right = center;
+	ASSERT_TRUE(camera.mouseRay(view, {650, 250}, right));
+	EXPECT_GT(right.direction.x, center.direction.x);
+	EXPECT_FALSE(camera.mouseRay(view, {700, 250}, right));
+	EXPECT_FALSE(camera.mouseRay(view, {500, 400}, right));
+	EXPECT_FALSE(camera.mouseRay(view, {299, 250}, right));
+	EXPECT_FALSE(camera.mouseRay(view, {500, 99}, right));
+	ASSERT_TRUE(camera.mouseRay(view, {300, 100}, right));
+	EXPECT_GT(right.direction.y, 0);
+	camera.setSize({1600, 1200});
+	camera.update(0);
+	ASSERT_TRUE(camera.mouseRay(view, {500, 250}, right));
+	EXPECT_NEAR(0, glm::length(right.direction - center.direction), .001f);
+}
+
+TEST_F(CameraTest, testRayRejectsInvalid) {
+	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0, 0, 10), glm::vec3(0), glm::up());
+	math::Ray ray(glm::vec3(1, 2, 3), glm::vec3(0, 0, -1));
+	for (const glm::vec4 &view :
+		 {glm::vec4(0, 0, 0, 10), glm::vec4(0, 0, 10, -1), glm::vec4(NAN, 0, 10, 10), glm::vec4(0, 0, INFINITY, 10)}) {
+		EXPECT_FALSE(camera.mouseRay(view, {1, 1}, ray));
+	}
+	EXPECT_FALSE(camera.mouseRay({0, 0, 10, 10}, {NAN, 1}, ray));
+	EXPECT_FALSE(camera.mouseRay({0, 0, 10, 10}, {1, INFINITY}, ray));
+	EXPECT_EQ(glm::vec3(1, 2, 3), ray.origin);
+	EXPECT_EQ(glm::vec3(0, 0, -1), ray.direction);
 }
 
 TEST_F(CameraTest, testMouseRay) {

@@ -485,6 +485,25 @@ void Camera::updateViewMatrix() {
 	_invViewMatrix = glm::inverse(_viewMatrix);
 }
 
+bool Camera::mouseRay(const glm::vec4 &view, const glm::vec2 &point, math::Ray &ray) const {
+	if (glm::any(glm::isnan(view)) || glm::any(glm::isinf(view)) || glm::any(glm::isnan(point)) ||
+		glm::any(glm::isinf(point)) || view.z <= 0 || view.w <= 0 || _windowSize.x <= 0 || _windowSize.y <= 0) {
+		return false;
+	}
+	const glm::vec2 relative = point - glm::vec2(view);
+	if (relative.x < 0 || relative.y < 0 || relative.x >= view.z || relative.y >= view.w) {
+		return false;
+	}
+	const glm::vec2 pixel = relative / glm::vec2(view.z, view.w) * glm::vec2(_windowSize);
+	const glm::ivec2 position(glm::min(glm::floor(pixel), glm::vec2(_windowSize - glm::ivec2(1))));
+	const math::Ray candidate = mouseRay(position);
+	if (!candidate.isValid()) {
+		return false;
+	}
+	ray = candidate;
+	return true;
+}
+
 math::Ray Camera::mouseRay(const glm::ivec2 &pixelPos) const {
 	const glm::vec4 viewport(0.0f, 0.0f, _windowSize.x, _windowSize.y);
 
@@ -530,7 +549,7 @@ bool Camera::worldSegmentToScreen(const glm::vec3 &from, const glm::vec3 &to, gl
 								  glm::ivec2 &screenTo) const {
 	glm::vec4 a = viewProjectionMatrix() * glm::vec4(from, 1);
 	glm::vec4 b = viewProjectionMatrix() * glm::vec4(to, 1);
-	if (glm::any(glm::isinf(a)) || glm::any(glm::isinf(b)))
+	if (glm::any(glm::isinf(a)) || glm::any(glm::isinf(b)) || glm::any(glm::isnan(a)) || glm::any(glm::isnan(b)))
 		return false;
 	const glm::vec4 planes[] = {
 		{1, 0, 0, 1}, {-1, 0, 0, 1}, {0, 1, 0, 1}, {0, -1, 0, 1}, {0, 0, 1, clipDepthZeroToOne() ? 0 : 1},
