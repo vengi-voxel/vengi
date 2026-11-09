@@ -71,10 +71,11 @@
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "voxel/Face.h"
-#include <limits>
+#include "voxel/Region.h"
 #include <glm/ext/scalar_constants.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vector_relational.hpp>
+#include <limits>
 
 namespace voxelutil {
 
@@ -90,6 +91,7 @@ struct RaycastHit {
 						///< solid voxel - 1.0 means, that we hit nothing
 	glm::vec3 point{0.0f};
 };
+
 RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &hitPos,
 								float offsetMins = -0.5f, float offsetMaxs = 0.5f);
 RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &hitPos, float offsetMins = -0.5f,
@@ -99,9 +101,11 @@ RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &hit
  * The results of a raycast
  */
 struct RaycastResult {
-	float length = 0.0f;		///< The length the ray traveled before being interrupted or completing
-	float fract = 0.0f;			///< The fraction [0..1] of the ray that was traveled - 0.0 means that we were starting inside a solid voxel - 1.0 means, that we hit nothing
+	float length = 0.0f; ///< The length the ray traveled before being interrupted or completing
+	float fract = 0.0f; ///< The fraction [0..1] of the ray that was traveled - 0.0 means that we were starting inside a
+						///< solid voxel - 1.0 means, that we hit nothing
 	glm::ivec3 normal{0, 0, 0}; ///< The normal of the intersecting face (axis-aligned, volume/voxel space)
+
 	enum Type : uint8_t {
 		Completed,	///< If the ray passed through the volume without being interrupted
 		Interrupted ///< If the ray was interrupted while traveling
@@ -160,7 +164,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 	const float rayLength = glm::length(v3dEnd - v3dStart);
 
 	// Geometric AABB of the voxel region: voxel [L,U] occupies [L, U+1].
-	const auto &region = volData->region();
+	const voxel::Region &region = volData->region();
 	const glm::vec3 boxMins = region.getLowerCornerf();
 	const glm::vec3 boxMaxs = region.getUpperCornerf() + 1.0f;
 
@@ -234,22 +238,19 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 				return RaycastResult::interrupted(0.0f, 0.0f, lastNormal);
 			}
 
-			// hitting a voxel is returing the voxel position - but the voxel geometry at voxel 0,0,0 goes from 0,0,0
-			// to 1,1,1 - we actually want to return the position of the face we hit
-			glm::vec3 r = sampler.position();
-			if (di == -1) {
-				r.x += (1.0f - RaycastOffset);
+			// The distance to a voxel corner is not the distance along the ray.
+			// Intersect the original segment with the entered voxel face instead.
+			// This also avoids including RaycastOffset in reported hit positions.
+			float fract = 0.0f;
+			for (int axis = 0; axis < 3; ++axis) {
+				if (lastNormal[axis] == 0) {
+					continue;
+				}
+				const float face = (float)sampler.position()[axis] + (lastNormal[axis] > 0 ? 1.0f : 0.0f);
+				fract = glm::clamp((face - start[axis]) / (end[axis] - start[axis]), 0.0f, 1.0f);
+				break;
 			}
-			if (dj == -1) {
-				r.y += (1.0f - RaycastOffset);
-			}
-			if (dk == -1) {
-				r.z += (1.0f - RaycastOffset);
-			}
-
-			const float length = glm::length(r - v3dStart);
-			const float fract = rayLength > glm::epsilon<float>() ? (length / rayLength) : 0.0f;
-			return RaycastResult::interrupted(length, fract, lastNormal);
+			return RaycastResult::interrupted(rayLength * fract, fract, lastNormal);
 		}
 
 		if (tx <= ty && tx <= tz) {

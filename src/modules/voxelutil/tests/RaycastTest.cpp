@@ -71,6 +71,28 @@ protected:
 	}
 };
 
+TEST_F(RaycastTest, FractionIntersectsTheVoxelFaceForFractionalVerticalAndObliqueRays) {
+	voxel::RawVolume volume(voxel::Region(0, 0, 0, 15, 12, 15));
+	for (int x = 0; x < 16; ++x)
+		for (int z = 0; z < 16; ++z)
+			volume.setVoxel(x, 2, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+	for (const glm::vec3 &from :
+		 {glm::vec3(13.65f, 16, 8), glm::vec3(14.35f, 16, 8), glm::vec3(8, 16, 13.65f), glm::vec3(8.25f, 16, 7.75f)}) {
+		const glm::vec3 to(from.x, -4, from.z);
+		SimpleRaycastFunctor callback;
+		const RaycastResult result = raycastWithEndpoints(&volume, from, to, callback);
+		ASSERT_TRUE(callback.hitSolid);
+		EXPECT_NEAR(.65f, result.fract, .00001f);
+		EXPECT_NEAR(3, (from + (to - from) * result.fract).y, .00001f);
+	}
+	const glm::vec3 from(1.2f, 10, 3.4f), to(10.2f, -2, 5.6f);
+	SimpleRaycastFunctor callback;
+	const RaycastResult result = raycastWithEndpoints(&volume, from, to, callback);
+	ASSERT_TRUE(callback.hitSolid);
+	EXPECT_NEAR(7.0f / 12.0f, result.fract, .00001f);
+	EXPECT_NEAR(3, (from + (to - from) * result.fract).y, .00001f);
+}
+
 TEST_F(RaycastTest, testRaycastWithEndpointsEmptyVolume) {
 	// Test raycast through an empty volume
 	voxel::RawVolume volume({0, 10});
@@ -87,90 +109,81 @@ TEST_F(RaycastTest, testRaycastWithEndpointsEmptyVolume) {
 }
 
 TEST_F(RaycastTest, testNegativeXStraightOffsets) {
-	glm::vec3 rayOrigin { 0.0f, 0.0f, 0.0f };
-	glm::vec3 hitPos { 14.0f, 0.0f, 0.0f };
+	glm::vec3 rayOrigin{0.0f, 0.0f, 0.0f};
+	glm::vec3 hitPos{14.0f, 0.0f, 0.0f};
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos, 0.0f, 1.0f);
-	ASSERT_EQ(voxel::FaceNames::NegativeX, hit.face)
-		<< "Ray did not hit the expected face. Face: " << (int) hit.face;
+	ASSERT_EQ(voxel::FaceNames::NegativeX, hit.face) << "Ray did not hit the expected face. Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testPositiveXStraight) {
-	glm::vec3 rayOrigin { 0.0f, 0.0f, 0.0f };
-	glm::vec3 hitPos { -14.0f, 0.0f, 0.0f };
+	glm::vec3 rayOrigin{0.0f, 0.0f, 0.0f};
+	glm::vec3 hitPos{-14.0f, 0.0f, 0.0f};
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
-	ASSERT_EQ(voxel::FaceNames::PositiveX, hit.face)
-		<< "Ray did not hit the expected face. Face: " << (int) hit.face;
+	ASSERT_EQ(voxel::FaceNames::PositiveX, hit.face) << "Ray did not hit the expected face. Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testNegativeXStraight) {
-	glm::vec3 rayOrigin { 0.0f, 0.0f, 0.0f };
-	glm::vec3 hitPos { 14.0f, 0.0f, 0.0f };
+	glm::vec3 rayOrigin{0.0f, 0.0f, 0.0f};
+	glm::vec3 hitPos{14.0f, 0.0f, 0.0f};
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
-	ASSERT_EQ(voxel::FaceNames::NegativeX, hit.face)
-		<< "Ray did not hit the expected face. Face: " << (int) hit.face;
+	ASSERT_EQ(voxel::FaceNames::NegativeX, hit.face) << "Ray did not hit the expected face. Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testNegativeX) {
-	glm::vec3 rayOrigin { 0.0f };
-	glm::vec3 hitPos { 14.0f };
+	glm::vec3 rayOrigin{0.0f};
+	glm::vec3 hitPos{14.0f};
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
-	ASSERT_EQ(voxel::FaceNames::NegativeX, hit.face)
-		<< "Ray did not hit the expected face. Face: " << (int) hit.face;
+	ASSERT_EQ(voxel::FaceNames::NegativeX, hit.face) << "Ray did not hit the expected face. Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testPositiveX) {
-	glm::vec3 rayOrigin { 31.0f };
-	glm::vec3 hitPos { 14.0f };
+	glm::vec3 rayOrigin{31.0f};
+	glm::vec3 hitPos{14.0f};
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::PositiveX, hit.face)
-		<< "Ray did not hit the expected face. Direction is "
-		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
-		<< ", Face: " << (int) hit.face;
+		<< "Ray did not hit the expected face. Direction is " << rayDirection.x << ":" << rayDirection.y << ":"
+		<< rayDirection.z << ", Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testNegativeY) {
-	glm::vec3 rayOrigin { 12.0f, 0.0f, 14.0f };
-	glm::vec3 hitPos { 15.0f };
+	glm::vec3 rayOrigin{12.0f, 0.0f, 14.0f};
+	glm::vec3 hitPos{15.0f};
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::NegativeY, hit.face)
-		<< "Ray did not hit the expected face. Direction is "
-		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
-		<< ", Face: " << (int) hit.face;
+		<< "Ray did not hit the expected face. Direction is " << rayDirection.x << ":" << rayDirection.y << ":"
+		<< rayDirection.z << ", Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testPositiveY) {
-	glm::vec3 rayOrigin { 12.0f, 31.0f, 14.0f };
-	glm::vec3 hitPos { 15.0f };
+	glm::vec3 rayOrigin{12.0f, 31.0f, 14.0f};
+	glm::vec3 hitPos{15.0f};
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::PositiveY, hit.face)
-		<< "Ray did not hit the expected face. Direction is "
-		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
-		<< ", Face: " << (int) hit.face;
+		<< "Ray did not hit the expected face. Direction is " << rayDirection.x << ":" << rayDirection.y << ":"
+		<< rayDirection.z << ", Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testNegativeZ) {
-	glm::vec3 rayOrigin { 12.0f, 14.0f, 0.0f };
-	glm::vec3 hitPos { 15.0f };
+	glm::vec3 rayOrigin{12.0f, 14.0f, 0.0f};
+	glm::vec3 hitPos{15.0f};
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::NegativeZ, hit.face)
-		<< "Ray did not hit the expected face. Direction is "
-		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
-		<< ", Face: " << (int) hit.face;
+		<< "Ray did not hit the expected face. Direction is " << rayDirection.x << ":" << rayDirection.y << ":"
+		<< rayDirection.z << ", Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testPositiveZ) {
-	glm::vec3 rayOrigin { 12.0f, 14.0f, 31.0f };
-	glm::vec3 hitPos { 15.0f };
+	glm::vec3 rayOrigin{12.0f, 14.0f, 31.0f};
+	glm::vec3 hitPos{15.0f};
 	glm::vec3 rayDirection = glm::normalize(hitPos - rayOrigin);
 	const RaycastHit hit = raycastFaceDetection(rayOrigin, hitPos);
 	ASSERT_EQ(voxel::FaceNames::PositiveZ, hit.face)
-		<< "Ray did not hit the expected face. Direction is "
-		<< rayDirection.x << ":" << rayDirection.y << ":" << rayDirection.z
-		<< ", Face: " << (int) hit.face;
+		<< "Ray did not hit the expected face. Direction is " << rayDirection.x << ":" << rayDirection.y << ":"
+		<< rayDirection.z << ", Face: " << (int)hit.face;
 }
 
 TEST_F(RaycastTest, testRaycastWithEndpointsHitSolidVoxel) {
@@ -553,9 +566,8 @@ TEST_F(RaycastTest, testClipRaySegmentToAABBHit) {
 	float tEnter = 0.0f;
 	float tExit = 0.0f;
 	glm::ivec3 entryNormal{0};
-	const bool hit =
-		clipRaySegmentToAABB(glm::vec3(-10.0f, 5.0f, 5.0f), glm::vec3(20.0f, 5.0f, 5.0f), glm::vec3(0.0f),
-							 glm::vec3(10.0f), tEnter, tExit, &entryNormal);
+	const bool hit = clipRaySegmentToAABB(glm::vec3(-10.0f, 5.0f, 5.0f), glm::vec3(20.0f, 5.0f, 5.0f), glm::vec3(0.0f),
+										  glm::vec3(10.0f), tEnter, tExit, &entryNormal);
 	ASSERT_TRUE(hit);
 	EXPECT_NEAR(tEnter, 10.0f / 30.0f, 0.0001f);
 	EXPECT_NEAR(tExit, 20.0f / 30.0f, 0.0001f);
@@ -649,7 +661,8 @@ TEST_F(RaycastTest, testRaycastPickingEntryPreviousAndExit) {
 	// Hit path from a distant camera - entry/previous/hit must stay valid.
 	{
 		PickResult result;
-		raycastWithEndpoints(&volume, glm::vec3(-200.0f, 8.5f, 8.5f), glm::vec3(200.0f, 8.5f, 8.5f), makePicking(result));
+		raycastWithEndpoints(&volume, glm::vec3(-200.0f, 8.5f, 8.5f), glm::vec3(200.0f, 8.5f, 8.5f),
+							 makePicking(result));
 		EXPECT_TRUE(result.firstValidPosition);
 		EXPECT_EQ(glm::ivec3(0, 8, 8), result.firstPosition);
 		EXPECT_TRUE(result.didHit);
@@ -662,7 +675,8 @@ TEST_F(RaycastTest, testRaycastPickingEntryPreviousAndExit) {
 	{
 		voxel::RawVolume empty({0, 15});
 		PickResult result;
-		raycastWithEndpoints(&empty, glm::vec3(-200.0f, 8.5f, 8.5f), glm::vec3(200.0f, 8.5f, 8.5f), makePicking(result));
+		raycastWithEndpoints(&empty, glm::vec3(-200.0f, 8.5f, 8.5f), glm::vec3(200.0f, 8.5f, 8.5f),
+							 makePicking(result));
 		EXPECT_TRUE(result.firstValidPosition);
 		EXPECT_EQ(glm::ivec3(0, 8, 8), result.firstPosition);
 		EXPECT_FALSE(result.didHit);
