@@ -24,6 +24,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "palette/PaletteUtil.h"
+#include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphBodyPart.h"
@@ -32,6 +33,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "scenegraph/SceneUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
@@ -1659,6 +1661,11 @@ static int luaVoxel_import_imageasplane(lua_State *s) {
 
 static int luaVoxel_import_scene(lua_State *s) {
 	const char *filename = luaL_checkstring(s, 1);
+	const lua_Integer parentArg = luaL_optinteger(s, 3, 0);
+	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
+	if (!sceneGraph->hasNode((int)parentArg)) {
+		return clua_error(s, "Invalid import parent");
+	}
 	io::SeekableReadStream *readStream = nullptr;
 	if (clua_isstream(s, 2)) {
 		readStream = clua_tostream(s, 2);
@@ -1676,8 +1683,7 @@ static int luaVoxel_import_scene(lua_State *s) {
 		newSceneGraph.~SceneGraph();
 		return clua_error(s, "Could not load file %s", filename);
 	}
-	scenegraph::SceneGraph *sceneGraph = luaVoxel_scenegraph(s);
-	if (scenegraph::addSceneGraphNodes(*sceneGraph, newSceneGraph, sceneGraph->root().id()) <= 0) {
+	if (scenegraph::addSceneGraphNodes(*sceneGraph, newSceneGraph, (int)parentArg) <= 0) {
 		newSceneGraph.~SceneGraph();
 		return clua_error(s, "Could not import scene graph nodes");
 	}
@@ -3735,6 +3741,43 @@ static int luaVoxel_scenegraphnode_region(lua_State* s) {
 	}
 	const voxel::Region &region = node->node->region();
 	return luaVoxel_pushregion(s, region);
+}
+
+static int luaVoxel_scenegraphnode_bounds(lua_State *s) {
+	LuaSceneGraphNode *node = luaVoxel_toscenegraphnode(s, 1);
+	const lua_Integer frame = luaL_optinteger(s, 2, 0);
+	if (frame < 0) {
+		return clua_error(s, "Invalid bounds frame");
+	}
+	scenegraph::SceneGraph &graph = *luaVoxel_scenegraph(s);
+	graph.updateTransforms();
+	bool found = false;
+	glm::vec3 mins(0);
+	glm::vec3 maxs(0);
+	const auto accumulate = [&](const scenegraph::SceneGraphNode &part) {
+		if (!part.isAnyModelNode() || !graph.resolveVolume(part)) {
+			return;
+		}
+		const scenegraph::FrameTransform transform = graph.transformForFrame(part, (scenegraph::FrameIndex)frame);
+		const voxel::Region &region = graph.resolveRegion(part);
+		const math::OBBF obb = scenegraph::toOBB(true, region, part.pivot(), transform);
+		const math::AABB<float> box = scenegraph::toAABB(obb);
+		if (!box.isValid()) {
+			return;
+		}
+		mins = found ? glm::min(mins, box.mins()) : box.mins();
+		maxs = found ? glm::max(maxs, box.maxs()) : box.maxs();
+		found = true;
+	};
+	accumulate(*node->node);
+	graph.visitChildren(node->node->id(), true, accumulate);
+	if (!found) {
+		lua_pushnil(s);
+		return 1;
+	}
+	clua_push(s, mins);
+	clua_push(s, maxs);
+	return 2;
 }
 
 static int luaVoxel_scenegraphnode_clearselection(lua_State* s) {
@@ -6746,7 +6789,8 @@ static int luaVoxel_import_scene_jsonhelp(lua_State* s) {
 		"summary": "Import a scene from a file or stream.",
 		"parameters": [
 			{"name": "filename", "type": "string", "description": "The filename to load."},
-			{"name": "stream", "type": "stream", "description": "Optional stream to read from."}
+			{"name": "stream", "type": "stream", "description": "Optional stream to read from (nil for a file)."},
+			{"name": "parent", "type": "integer", "description": "Destination parent node id (optional, default root)."}
 		],
 		"returns": []})";
 	lua_pushstring(s, json);
@@ -6853,6 +6897,22 @@ static int luaVoxel_genland_jsonhelp(lua_State* s) {
 		"returns": [
 			{"type": "node", "description": "The generated terrain node."}
 		]})";
+	lua_pushstring(s, json);
+	return 1;
+}
+
+static int luaVoxel_scenegraphnode_bounds_jsonhelp(lua_State *s) {
+	const char *json = R"({
+		"name": "bounds",
+		"summary": "World bounds of model geometry under this node, including hidden models and excluding points/empty groups.",
+		"parameters":[
+			{"name": "frame", "type": "integer", "description": "Animation frame (optional, default 0)."}
+		],
+		"returns":[
+			{"type": "vec3", "description": "Lower corner, or nil if there is no model geometry."},
+			{"type": "vec3", "description": "Upper corner (exclusive voxel edges)."}
+		]
+	})";
 	lua_pushstring(s, json);
 	return 1;
 }
@@ -7036,6 +7096,7 @@ void luaVoxel_prepareState(lua_State* s) {
 		{"numKeyFrames", luaVoxel_scenegraphnode_numkeyframes, luaVoxel_scenegraphnode_numkeyframes_jsonhelp},
 		{"children", luaVoxel_scenegraphnode_children, luaVoxel_scenegraphnode_children_jsonhelp},
 		{"region", luaVoxel_scenegraphnode_region, luaVoxel_scenegraphnode_region_jsonhelp},
+		{"bounds", luaVoxel_scenegraphnode_bounds, luaVoxel_scenegraphnode_bounds_jsonhelp},
 		{"clearSelection", luaVoxel_scenegraphnode_clearselection, luaVoxel_scenegraphnode_clearselection_jsonhelp},
 		{"hide", luaVoxel_scenegraphnode_hide, luaVoxel_scenegraphnode_hide_jsonhelp},
 		{"show", luaVoxel_scenegraphnode_show, luaVoxel_scenegraphnode_show_jsonhelp},

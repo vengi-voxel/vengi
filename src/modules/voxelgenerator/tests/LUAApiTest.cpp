@@ -507,6 +507,41 @@ TEST_F(LUAApiTest, DISABLED_testDownloadAndImport) {
 	run(sceneGraph, script);
 }
 
+TEST_F(LUAApiTest, testSceneImportPreservesHierarchyWithParent) {
+	voxelformat::FormatConfig::init();
+	scenegraph::SceneGraph graph;
+	run(graph, R"(
+		function main()
+			local holder = g_scenegraph.new('asset-anchor', true, 'Group')
+			local before = {}
+			for _, id in ipairs(g_scenegraph.nodeIds()) do
+				before[id] = true
+			end
+			assert(not pcall(g_import.scene, 'cube.qb', nil, 999999))
+			g_import.scene('cube.qb', nil, holder:id())
+			local found = false
+			for _, id in ipairs(g_scenegraph.nodeIds()) do
+				if not before[id] then
+					local child = g_scenegraph.get(id)
+					if child:parent() == holder:uuid() then
+						found = true
+					end
+				end
+				before[id] = true
+			end
+			assert(found, 'explicit import parent was ignored')
+			g_import.scene('cube.qb')
+			found = false
+			for _,id in ipairs(g_scenegraph.nodeIds()) do
+				if not before[id] and g_scenegraph.get(id):parent() == g_scenegraph.get(0):uuid() then
+					found = true
+				end
+			end
+			assert(found, 'default imports must remain root-relative')
+		end
+	)");
+}
+
 TEST_F(LUAApiTest, testScriptCompaction) {
 	scenegraph::SceneGraph sceneGraph;
 	runFile(sceneGraph, "compaction.lua");
