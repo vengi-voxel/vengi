@@ -909,4 +909,8 @@ void RawVolume::fill(const voxel::Voxel &voxel) {
 	static_assert(sizeof(Voxel) == sizeof(uint32_t), "Voxel is expected to be 4 bytes");
 }
 
+bool RawVolume::valid() const {
+	return _data != nullptr;
+}
+
 } // namespace voxel

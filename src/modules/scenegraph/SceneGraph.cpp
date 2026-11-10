@@ -1478,7 +1478,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		});
 		if (identityTransforms && !volumes.empty()) {
 			voxel::RawVolume *mergedVolume = voxelutil::merge(volumes);
-			if (mergedVolume == nullptr || mergedVolume->voxels() == nullptr) {
+			if (mergedVolume == nullptr || !mergedVolume->valid()) {
 				Log::error("Failed to allocate merged volume");
 				delete mergedVolume;
 				return MergeResult{};
@@ -1506,7 +1506,7 @@ SceneGraph::MergeResult SceneGraph::merge(bool skipHidden) const {
 		return MergeResult{};
 	}
 	voxel::RawVolume *mergedVolume = new voxel::RawVolume(mergedRegion);
-	if (mergedVolume->voxels() == nullptr) {
+	if (!mergedVolume->valid()) {
 		Log::error("Failed to allocate merged volume (%" SDL_PRIu64 " bytes)", (uint64_t)voxel::RawVolume::size(mergedRegion));
 		delete mergedVolume;
 		return MergeResult{};

@@ -547,4 +547,12 @@ TEST_F(RawVolumeTest, testFillBehindPlanePreservesSliceAndSkipsEmpty) {
 	EXPECT_EQ(nearer, out[3 * 8 + 1]);
 }
 
+TEST_F(RawVolumeTest, testValidReportsAllocationState) {
+	RawVolume volume(Region(0, 7));
+	ASSERT_TRUE(volume.valid());
+	RawVolume moved(core::move(volume));
+	EXPECT_TRUE(moved.valid());
+	EXPECT_FALSE(volume.valid());
+}
+
 }

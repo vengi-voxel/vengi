@@ -287,7 +287,7 @@ bool bakeScene(const scenegraph::SceneGraph &sceneGraph, int nodeId, scenegraph:
 		return false;
 	}
 	out.owned = new voxel::RawVolume(region);
-	if (out.owned->voxels() == nullptr) {
+	if (!out.owned->valid()) {
 		Log::error("Failed to allocate scene image volume");
 		return false;
 	}

@@ -180,6 +180,9 @@ public:
 		return _data;
 	}
 
+	/** True if the volume has allocated storage. */
+	bool valid() const;
+
 	/**
 	 * @brief Shift the region of the volume by the given coordinates
 	 */
