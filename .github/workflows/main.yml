@@ -555,20 +555,20 @@ jobs:
         - name: Setup MSYS2
           uses: msys2/setup-msys2@v2
           with:
-            msystem: MINGW64
+            msystem: UCRT64
             update: false
             install: >-
-              mingw-w64-x86_64-gcc
-              mingw-w64-x86_64-cmake
-              mingw-w64-x86_64-ninja
-              mingw-w64-x86_64-ccache
-              mingw-w64-x86_64-pkg-config
-              mingw-w64-x86_64-sdl3
-              mingw-w64-x86_64-freetype
-              mingw-w64-x86_64-libjpeg-turbo
-              mingw-w64-x86_64-libpng
-              mingw-w64-x86_64-zlib
-              mingw-w64-x86_64-curl
+              mingw-w64-ucrt-x86_64-gcc
+              mingw-w64-ucrt-x86_64-cmake
+              mingw-w64-ucrt-x86_64-ninja
+              mingw-w64-ucrt-x86_64-ccache
+              mingw-w64-ucrt-x86_64-pkg-config
+              mingw-w64-ucrt-x86_64-sdl3
+              mingw-w64-ucrt-x86_64-freetype
+              mingw-w64-ucrt-x86_64-libjpeg-turbo
+              mingw-w64-ucrt-x86_64-libpng
+              mingw-w64-ucrt-x86_64-zlib
+              mingw-w64-ucrt-x86_64-curl
 
         - name: Configure ccache
           shell: msys2 {0}
@@ -580,8 +580,8 @@ jobs:
           uses: actions/cache@v6
           with:
             path: D:/a/_temp/msys64/home/runneradmin/.ccache
-            key: msys2-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
-            restore-keys: msys2-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+            key: msys2-ucrt64-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+            restore-keys: msys2-ucrt64-${{ secrets.CACHE_VERSION }}-build-
 
         - name: Build
           shell: msys2 {0}
