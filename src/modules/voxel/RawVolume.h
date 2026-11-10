@@ -180,6 +180,9 @@ public:
 		return _data;
 	}
 
+	/** Allocated voxel payload in bytes, excluding allocator overhead. */
+	size_t allocatedBytes() const;
+
 	/** True if the volume has allocated storage. */
 	bool valid() const;
 

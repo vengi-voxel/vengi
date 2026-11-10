@@ -913,4 +913,8 @@ bool RawVolume::valid() const {
 	return _data != nullptr;
 }
 
+size_t RawVolume::allocatedBytes() const {
+	return _data ? size(_region) : 0;
+}
+
 } // namespace voxel
