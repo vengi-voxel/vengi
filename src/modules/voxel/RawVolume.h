@@ -231,7 +231,6 @@ public:
 	Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const;
 	/** Allocated payload and chunk-directory bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;
-	bool valid() const;
 
 	/** True if the volume has allocated storage. */
 	bool valid() const;
