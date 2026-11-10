@@ -1204,10 +1204,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeFocusChanged(boolean hasFocus);
     public static native void onNativeDropFile(String filename);
     public static native void nativeSetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate);
-
-    // Vendored SDL does not register nativeSetScreenHDRHeadroom. Keep the Java call site working.
-    public static void nativeSetScreenHDRHeadroom(float headroom) {
-    }
+    public static native void nativeSetScreenHDRHeadroom(float headroom);
     public static native void onNativeResize();
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);

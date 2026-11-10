@@ -339,7 +339,8 @@ extern "C" {
  *
  * If the application doesn't specify the audio channel count when opening the
  * device, this hint can be used to specify a default channel count that will
- * be used. This defaults to "1" for recording and "2" for playback devices.
+ * be used. If the application didn't specify and this hint isn't set, SDL
+ * will choose a reasonable value.
  *
  * This hint should be set before an audio device is opened.
  *
@@ -568,7 +569,8 @@ extern "C" {
  *
  * If the application doesn't specify the audio format when opening the
  * device, this hint can be used to specify a default format that will be
- * used.
+ * used. If the application didn't specify and this hint isn't set, SDL will
+ * choose a reasonable value.
  *
  * The variable can be set to the following values:
  *
@@ -595,7 +597,8 @@ extern "C" {
  *
  * If the application doesn't specify the audio frequency when opening the
  * device, this hint can be used to specify a default frequency that will be
- * used. This defaults to "44100".
+ * used. If the application didn't specify and this hint isn't set, SDL will
+ * choose a reasonable value.
  *
  * This hint should be set before an audio device is opened.
  *
@@ -1399,6 +1402,48 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"
+
+/**
+ * A variable controlling whether a separate thread should be used for
+ * joystick detection and updates.
+ *
+ * If this is enabled, joystick initialization will return immediately.
+ * Connected joysticks and gamepads will not be immediately visible, they will
+ * come in as hotplug events in the background. SDL_UpdateJoysticks() will
+ * also return immediately and joystick state will be updated asynchronously
+ * in the background. Joystick and gamepad events are delivered off the main
+ * thread.
+ *
+ * If you enable this hint, you should not hold the joystick lock while
+ * quitting the joystick subsystem.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": A separate thread is not used. (default)
+ * - "1": A separate thread is used for joystick updates.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_ASYNC "SDL_JOYSTICK_ASYNC"
+
+/**
+ * A variable controlling the polling interval for asynchronous joystick
+ * updates.
+ *
+ * If this hint is set to "-1" (the default), asynchronous joystick updates
+ * will be triggered when the event loop runs. Otherwise this value is the
+ * polling interval, in milliseconds, for asynchronous joystick updates.
+ *
+ * Regardless of the value of this hint, you can trigger an update at a
+ * specific time using SDL_UpdateJoysticks()
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_ASYNC_UPDATE_INTERVAL "SDL_JOYSTICK_ASYNC_UPDATE_INTERVAL"
 
 /**
  * A variable containing a list of devices that should not be considered
@@ -2422,38 +2467,6 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_MFI "SDL_JOYSTICK_MFI"
 
 /**
- * A variable controlling whether the RAWINPUT joystick drivers should be used
- * for better handling XInput-capable devices.
- *
- * The variable can be set to the following values:
- *
- * - "0": RAWINPUT drivers are not used. (default)
- * - "1": RAWINPUT drivers are used.
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
-
-/**
- * A variable controlling whether the RAWINPUT driver should pull correlated
- * data from XInput.
- *
- * The variable can be set to the following values:
- *
- * - "0": RAWINPUT driver will only use data from raw input APIs.
- * - "1": RAWINPUT driver will also pull data from XInput and
- *   Windows.Gaming.Input, providing better trigger axes, guide button
- *   presses, and rumble support for Xbox controllers. (default)
- *
- * This hint should be set before a gamepad is opened.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
-
-/**
  * A variable controlling whether the ROG Chakram mice should show up as
  * joysticks.
  *
@@ -2467,21 +2480,6 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_ROG_CHAKRAM "SDL_JOYSTICK_ROG_CHAKRAM"
-
-/**
- * A variable controlling whether a separate thread should be used for
- * handling joystick detection and raw input messages on Windows.
- *
- * The variable can be set to the following values:
- *
- * - "0": A separate thread is not used.
- * - "1": A separate thread is used for handling raw input messages. (default)
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
 
 /**
  * A variable containing a list of throttle style controllers.
@@ -2520,21 +2518,6 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED "SDL_JOYSTICK_THROTTLE_DEVICES_EXCLUDED"
-
-/**
- * A variable controlling whether Windows.Gaming.Input should be used for
- * controller handling.
- *
- * The variable can be set to the following values:
- *
- * - "0": WGI is not used. (default)
- * - "1": WGI is used.
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_WGI "SDL_JOYSTICK_WGI"
 
 /**
  * A variable containing a list of wheel style controllers.

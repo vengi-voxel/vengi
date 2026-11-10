@@ -106,7 +106,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mIsSurfaceReady = false;
         if (Build.VERSION.SDK_INT >= 26) {
             // We can use CapturedPointerListener and avoid many shenanigans and problems
-            setOnCapturedPointerListener(SDLActivity.getMotionListener());
+            setOnCapturedPointerListener((View.OnCapturedPointerListener)SDLActivity.getMotionListener());
         }
     }
 
@@ -184,14 +184,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
         SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, mDisplay.getRefreshRate());
-        if (Build.VERSION.SDK_INT >= 30) {
-            WindowInsets rootInsets = getRootWindowInsets();
-            if (rootInsets != null) {
-                onApplyWindowInsets(this, rootInsets);
-            } else {
-                requestApplyInsets();
-            }
-        }
         updateHDRHeadroom();
         SDLActivity.onNativeResize();
 
@@ -253,6 +245,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                                                WindowInsets.Type.mandatorySystemGestures() |
                                                WindowInsets.Type.tappableElement() |
                                                WindowInsets.Type.displayCutout());
+
             SDLActivity.onNativeInsetsChanged(combined.left, combined.right, combined.top, combined.bottom);
 
             if (insets.isVisible(WindowInsets.Type.ime())) {

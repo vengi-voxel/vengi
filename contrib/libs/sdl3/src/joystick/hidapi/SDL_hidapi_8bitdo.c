@@ -182,11 +182,12 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
     if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
         // The Ultimate 2 Wireless v1.02 firmware has 12 byte reports, v1.03 firmware has 34 byte reports
         const int ULTIMATE2_WIRELESS_V103_REPORT_SIZE = 34;
-        const int MAX_ATTEMPTS = 3;
+        // When hotplugged over Bluetooth, the first report can take around 250 ms to arrive
+        const int MAX_ATTEMPTS = 5;
 
         for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
             Uint8 data[USB_PACKET_LENGTH];
-            int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
+            int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 100);
             if (size == 0) {
                 // Try again
                 continue;
@@ -276,15 +277,6 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
-}
-
-static int HIDAPI_Driver8BitDo_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_Driver8BitDo_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
 }
 
 static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *device)
@@ -438,16 +430,6 @@ static Uint32 HIDAPI_Driver8BitDo_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
         caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
     return caps;
-}
-
-static bool HIDAPI_Driver8BitDo_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_Driver8BitDo_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -765,34 +747,20 @@ static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
     return (size >= 0);
 }
 
-static void HIDAPI_Driver8BitDo_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
-
-static void HIDAPI_Driver8BitDo_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo = {
-    SDL_HINT_JOYSTICK_HIDAPI_8BITDO,
-    true,
-    HIDAPI_Driver8BitDo_RegisterHints,
-    HIDAPI_Driver8BitDo_UnregisterHints,
-    HIDAPI_Driver8BitDo_IsEnabled,
-    HIDAPI_Driver8BitDo_IsSupportedDevice,
-    HIDAPI_Driver8BitDo_InitDevice,
-    HIDAPI_Driver8BitDo_GetDevicePlayerIndex,
-    HIDAPI_Driver8BitDo_SetDevicePlayerIndex,
-    HIDAPI_Driver8BitDo_UpdateDevice,
-    HIDAPI_Driver8BitDo_OpenJoystick,
-    HIDAPI_Driver8BitDo_RumbleJoystick,
-    HIDAPI_Driver8BitDo_RumbleJoystickTriggers,
-    HIDAPI_Driver8BitDo_GetJoystickCapabilities,
-    HIDAPI_Driver8BitDo_SetJoystickLED,
-    HIDAPI_Driver8BitDo_SendJoystickEffect,
-    HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled,
-    HIDAPI_Driver8BitDo_CloseJoystick,
-    HIDAPI_Driver8BitDo_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_8BITDO,
+    .enabled = true,
+    .RegisterHints = HIDAPI_Driver8BitDo_RegisterHints,
+    .UnregisterHints = HIDAPI_Driver8BitDo_UnregisterHints,
+    .IsEnabled = HIDAPI_Driver8BitDo_IsEnabled,
+    .IsSupportedDevice = HIDAPI_Driver8BitDo_IsSupportedDevice,
+    .InitDevice = HIDAPI_Driver8BitDo_InitDevice,
+    .UpdateDevice = HIDAPI_Driver8BitDo_UpdateDevice,
+    .OpenJoystick = HIDAPI_Driver8BitDo_OpenJoystick,
+    .RumbleJoystick = HIDAPI_Driver8BitDo_RumbleJoystick,
+    .RumbleJoystickTriggers = HIDAPI_Driver8BitDo_RumbleJoystickTriggers,
+    .GetJoystickCapabilities = HIDAPI_Driver8BitDo_GetJoystickCapabilities,
+    .SetJoystickSensorsEnabled = HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_8BITDO
