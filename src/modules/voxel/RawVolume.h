@@ -173,7 +173,7 @@ public:
 	//       usage for big volumes that are empty - and in that case
 	//       the data is no longer linear.
 	inline const uint8_t *data() const {
-		return (const uint8_t *)_data;
+		return (const uint8_t *)voxels();
 	}
 
 	inline Voxel *voxels() const {
