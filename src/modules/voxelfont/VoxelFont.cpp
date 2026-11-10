@@ -49,6 +49,8 @@ int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const
 		return 0;
 	}
 	thickness = core_max(1, thickness);
+	(void)ix0;
+	(void)iy0;
 
 	const int widthIndex = math::getIndexForAxis(axis);
 	glm::ivec3 dim;
@@ -61,7 +63,7 @@ int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const
 			// antialiasing
 			if (bitmap[y * w + x] >= 25) {
 				glm::ivec3 v;
-				v[(widthIndex + 0) % 3] = x + ix0;
+				v[(widthIndex + 0) % 3] = x;
 				v[(widthIndex + 1) % 3] = dim[(widthIndex + 1) % 3] - 1 - y;
 				v[(widthIndex + 2) % 3] = 0;
 				for (int z = 0; z < thickness; ++z) {
