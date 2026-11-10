@@ -25,6 +25,43 @@ protected:
 	}
 };
 
+TEST_F(TextureSurfaceExtractorTest, testChunkedExtractionDoesNotMaterialize) {
+	RawVolume volume(Region(-40, 216));
+	RawVolume dense(Region(-40, 216));
+	ASSERT_NE(nullptr, dense.voxels());
+	const Region extracted(-10, -5);
+	const Voxel value(VoxelType::Generic, 2);
+	volume.setVoxel(-9, -8, -7, value);
+	dense.setVoxel(-9, -8, -7, value);
+	palette::Palette palette;
+	palette.nippon();
+	ChunkMesh chunkMesh, denseMesh;
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, chunkMesh, glm::ivec3(0));
+	auto denseCtx = createContext(SurfaceExtractionType::GreedyTexture, &dense, extracted, palette, denseMesh, glm::ivec3(0));
+	extractSurface(ctx);
+	extractSurface(denseCtx);
+	EXPECT_EQ(denseMesh.mesh[0].getVertexVector().size(), chunkMesh.mesh[0].getVertexVector().size());
+	EXPECT_FALSE(chunkMesh.mesh[0].isEmpty());
+	EXPECT_EQ(denseCtx.textureWidth, ctx.textureWidth);
+	EXPECT_EQ(denseCtx.textureHeight, ctx.textureHeight);
+}
+
+TEST_F(TextureSurfaceExtractorTest, testAccessorIncludesNeighbourOutsideExtractionRegion) {
+	RawVolume volume(Region(-40, 216));
+	const Voxel value(VoxelType::Generic, 2);
+	volume.setVoxel(-5, -5, -5, value);
+	volume.setVoxel(-4, -5, -5, value);
+	const size_t bytes = volume.allocatedBytes();
+	palette::Palette palette;
+	palette.nippon();
+	ChunkMesh mesh;
+	const Region extracted(-10, -5);
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+	extractSurface(ctx);
+	EXPECT_EQ(30u, mesh.mesh[0].getNoOfIndices());
+	EXPECT_EQ(bytes, volume.allocatedBytes());
+}
+
 TEST_F(TextureSurfaceExtractorTest, testTextureExtraction) {
 	voxel::Region region(0, 0, 0, 31, 31, 31);
 	voxel::RawVolume volume(region);
