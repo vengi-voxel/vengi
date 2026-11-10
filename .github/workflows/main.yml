@@ -40,7 +40,7 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: |
               ~/.ccache
@@ -59,7 +59,7 @@ jobs:
             zip linux-rpm.zip vengi*.rpm
 
         - name: Upload the rpm artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: linux-rpm
             path: vengi*.rpm
@@ -90,7 +90,7 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: |
               ~/.ccache
@@ -104,7 +104,7 @@ jobs:
             zip linux-debian.zip vengi*.deb
 
         - name: Upload the ubuntu artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: linux-debian
             path: vengi*.deb
@@ -131,7 +131,7 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: |
               ~/.ccache
@@ -161,31 +161,31 @@ jobs:
             zip -r mac-thumbnailer.zip thumbnailer/vengi-thumbnailer.app
 
         - name: Upload the dmg
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: mac-dmg
             path: build/*.dmg
 
         - name: Upload the voxedit app
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: mac-vengi-voxedit-app
             path: build/voxedit/vengi-voxedit.app
 
         - name: Upload the voxconvert app
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: mac-vengi-voxconvert-app
             path: build/voxconvert/vengi-voxconvert.app
 
         - name: Upload the palconvert app
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: mac-vengi-palconvert-app
             path: build/palconvert/vengi-palconvert.app
 
         - name: Upload the thumbnailer app
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: mac-vengi-thumbnailer-app
             path: build/thumbnailer/vengi-thumbnailer.app
@@ -216,7 +216,7 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: |
               ~/.ccache
@@ -261,7 +261,7 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: |
               ~/.ccache
@@ -297,7 +297,7 @@ jobs:
             zip linux-appimage-voxedit.zip *voxedit*.AppImage
 
         - name: Upload voxedit AppImage artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: linux-appimage-voxedit
             path: "*voxedit*.AppImage"
@@ -332,7 +332,7 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: |
               ~/.ccache
@@ -358,19 +358,19 @@ jobs:
             zip -r palconvert.zip palconvert
 
         - name: Upload the build artifacts voxedit
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: emscripten-voxedit
             path: build/emscripten/voxedit
 
         - name: Upload the build artifacts voxconvert
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: emscripten-voxconvert
             path: build/emscripten/voxconvert
 
         - name: Upload the build artifacts palconvert
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: emscripten-palconvert
             path: build/emscripten/palconvert
@@ -395,7 +395,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends ninja-build ccache unzip ca-certificates
 
-        - uses: actions/setup-java@v4
+        - uses: actions/setup-java@v5
           with:
             distribution: temurin
             java-version: '21'
@@ -406,14 +406,14 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: ~/.ccache
             key: android-${{ secrets.CACHE_VERSION }}-${{ hashFiles('**/CMakeLists.txt') }}
             restore-keys: android-${{ secrets.CACHE_VERSION }}-
 
         - name: Cache Android SDK
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: build/android_sdk
             key: android-sdk-30.0.16248370-37-37.0.0
@@ -425,7 +425,7 @@ jobs:
           run: make android BUILDTYPE=Release
 
         - name: Upload VoxEdit APK
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: android-voxedit
             if-no-files-found: error
@@ -458,7 +458,7 @@ jobs:
             New-Item -ItemType Directory -Force -Path "${{ runner.temp }}\.sccache"
 
         - name: sccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: ${{ runner.temp }}\.sccache
             key: windows-${{ secrets.CACHE_VERSION }}-sccache-${{ matrix.buildType }}-${{ hashFiles('**/CMakeLists.txt') }}
@@ -494,45 +494,45 @@ jobs:
             Compress-Archive -Path thumbnailer-install -DestinationPath win-thumbnailer${{ matrix.artifactsPostfix }}.zip
 
         - name: Upload the cpack logs
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           if: ${{ failure() }}
           with:
             name: cpack-error-logs
             path: build/_CPack_Packages/Windows/*/*.log
 
         - name: Upload the vengi msi
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: win-vengi-msi${{ matrix.artifactsPostfix }}
             path: build/vengi.msi
 
         - name: Upload the voxedit artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: win-voxedit${{ matrix.artifactsPostfix }}
             path: build/voxedit-install/
 
         - name: Upload the tests artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           if: ${{ failure() }}
           with:
             name: windows-tests${{ matrix.artifactsPostfix }}
             path: build/tests-*/*
 
         - name: Upload the voxconvert artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: win-voxconvert${{ matrix.artifactsPostfix }}
             path: build/voxconvert-install/
 
         - name: Upload the palconvert artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: win-palconvert${{ matrix.artifactsPostfix }}
             path: build/palconvert-install/
 
         - name: Upload the thumbnailer artifacts
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: win-thumbnailer${{ matrix.artifactsPostfix }}
             path: build/thumbnailer-install/
@@ -577,7 +577,7 @@ jobs:
             mkdir -p $HOME/.ccache
 
         - name: ccache
-          uses: actions/cache@v4
+          uses: actions/cache@v6
           with:
             path: D:/a/_temp/msys64/home/runneradmin/.ccache
             key: msys2-${{ secrets.CACHE_VERSION }}-build-${{ hashFiles('**/CMakeLists.txt') }}
@@ -611,13 +611,13 @@ jobs:
             git config user.name mgerhardy
             git config user.email mgerhardy@users.noreply.github.com
 
-        - uses: actions/setup-python@v5
+        - uses: actions/setup-python@v7
           with:
             python-version: 3.x
 
         - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
 
-        - uses: actions/cache@v4
+        - uses: actions/cache@v6
           with:
             key: mkdocs-material-${{ env.cache_id }}
             path: .cache
@@ -625,7 +625,7 @@ jobs:
               mkdocs-material-
 
         - name: Download emscripten builds
-          uses: actions/download-artifact@v4
+          uses: actions/download-artifact@v8
           with:
             pattern: emscripten-*
             path: emscripten-artifacts
