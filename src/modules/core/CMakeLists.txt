@@ -123,6 +123,7 @@ endif()
 
 set(TEST_SRCS
 	tests/TestHelper.h
+	tests/AtomicTest.cpp
 	tests/AlgorithmTest.cpp
 	tests/AlphanumericTest.cpp
 	tests/ArrayTest.cpp

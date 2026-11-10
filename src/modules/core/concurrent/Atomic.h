@@ -63,20 +63,28 @@ public:
 		SDL_SetAtomicPointer(&_ptr, (void*)value);
 	}
 
+	AtomicPtr(const AtomicPtr& value) : AtomicPtr(value.load()) {
+	}
+
+	/** Atomically load the pointer, including from a const atomic. */
+	T* load() const {
+		return (T*)SDL_GetAtomicPointer(const_cast<void**>(&_ptr));
+	}
+
 	operator T*() {
-		return (T*)SDL_GetAtomicPointer(&_ptr);
+		return load();
 	}
 
 	operator const T*() const {
-		return (const T*)SDL_GetAtomicPointer(const_cast<void**>(&_ptr));
+		return load();
 	}
 
 	T* exchange(T* value) {
 		return (T*)SDL_SetAtomicPointer(&_ptr, (void*)value);
 	}
 
-	T* compare_exchange(T* expectedPtr, T* newPtr) {
-		return (T*)SDL_CompareAndSwapAtomicPointer(&_ptr, (void*)expectedPtr, (void*)newPtr);
+	bool compare_exchange(T* expectedPtr, T* newPtr) {
+		return SDL_CompareAndSwapAtomicPointer(&_ptr, (void*)expectedPtr, (void*)newPtr);
 	}
 
 	void operator=(T* value) {
@@ -87,7 +95,7 @@ public:
 		if (&value == this) {
 			return;
 		}
-		SDL_SetAtomicPointer(&_ptr, value._ptr);
+		SDL_SetAtomicPointer(&_ptr, value.load());
 	}
 
 	bool operator==(T* value) const {
