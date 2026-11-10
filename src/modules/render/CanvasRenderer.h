@@ -1,7 +1,9 @@
 /**
  * @file
  */
+
 #pragma once
+
 #include "CanvasShader.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
@@ -13,7 +15,10 @@
 
 namespace render {
 
-/** Native 2D drawing facade. Logical pixels, top-left origin, explicit clipping, no UI toolkit dependency. */
+/**
+ * Native 2D drawing facade. Logical pixels, top-left origin,
+ * explicit clipping, no UI toolkit dependency.
+ */
 class CanvasRenderer {
 private:
 	struct Vertex {
@@ -45,20 +50,25 @@ public:
 	void resetClip();
 	bool pushClip(const glm::vec4 &rect);
 	bool popClip();
-	const glm::vec4 &clipRect() const {
-		return _clip;
-	}
+	const glm::vec4 &clipRect() const;
 	void rect(const glm::vec4 &rect, const glm::vec4 &color, float radius = 0);
 	void line(const glm::vec2 &a, const glm::vec2 &b, const glm::vec4 &color, float width = 1);
 	void circle(const glm::vec2 &center, float radius, const glm::vec4 &color, float width = 1);
 	void text(const glm::vec2 &position, const char *text, const glm::vec4 &color, float height = 18);
-	float textWidth(const char *text, float height = 18) const {
-		return _font.width(text, height);
-	}
+	float textWidth(const char *text, float height = 18) const;
 	void image(const glm::vec4 &rect, const video::TexturePtr &texture, const glm::vec4 &uv = glm::vec4(0, 0, 1, 1));
+
 	/** Flush into the current target and viewport; normalized coordinates also support high-DPI targets. */
 	void render();
 	static bool contains(const glm::vec4 &rect, const glm::vec2 &point);
 };
+
+inline const glm::vec4 &CanvasRenderer::clipRect() const {
+	return _clip;
+}
+
+inline float CanvasRenderer::textWidth(const char *text, float height) const {
+	return _font.width(text, height);
+}
 
 } // namespace render

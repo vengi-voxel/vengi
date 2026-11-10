@@ -1,18 +1,23 @@
 /**
  * @file
  */
+
 #include "CanvasRenderer.h"
 #include "core/Unicode.h"
+#include "image/FontAtlas.h"
 #include "image/Image.h"
+#include "video/Buffer.h"
 #include "video/ScopedBlendMode.h"
 #include "video/ScopedState.h"
+#include "video/Texture.h"
 #include <glm/geometric.hpp>
 
 namespace render {
 
 bool CanvasRenderer::init(const char *font, uint32_t lastCodepoint) {
-	if (!_shader.setup() || !_font.init(font, 32, lastCodepoint))
+	if (!_shader.setup() || !_font.init(font, 32, lastCodepoint)) {
 		return false;
+	}
 	_font.image()->setColor(color::RGBA(255, 255, 255, 255), 0, 0);
 	_solidUV = glm::vec2(0.5f / _font.image()->width(), 0.5f / _font.image()->height());
 	_fontTexture = video::createTextureFromImage(_font.image());
@@ -85,9 +90,10 @@ CanvasRenderer::Batch &CanvasRenderer::batch(const video::TexturePtr &texture) {
 void CanvasRenderer::triangle(const glm::vec2 &a, const glm::vec2 &b, const glm::vec2 &c, const glm::vec4 &color) {
 	core::Buffer<Vertex> &vertices = batch(_fontTexture).vertices;
 	for (const glm::vec<2, float> &p : {a, b, c}) {
-		Vertex vertex{glm::vec2(p.x * 2 / _size.x - 1, 1 - p.y * 2 / _size.y), _solidUV, color,
-					  glm::vec4(_clip.x / _size.x, _clip.y / _size.y, (_clip.x + _clip.z) / _size.x,
-								(_clip.y + _clip.w) / _size.y)};
+		glm::vec2 position(p.x * 2 / _size.x - 1, 1 - p.y * 2 / _size.y);
+		glm::vec4 clip(_clip.x / _size.x, _clip.y / _size.y, (_clip.x + _clip.z) / _size.x,
+					   (_clip.y + _clip.w) / _size.y);
+		Vertex vertex{position, _solidUV, color, clip};
 		vertices.emplace_back(vertex);
 	}
 }
@@ -157,29 +163,30 @@ void CanvasRenderer::text(const glm::vec2 &position, const char *text, const glm
 			pen.y += height * 1.25f;
 			continue;
 		}
-		const auto &g = _font.glyph(c);
+		const image::FontAtlas::Glyph &g = _font.glyph(c);
 		image(glm::vec4(pen + glm::vec2(g.bounds) * scale, g.bounds.z * scale, g.bounds.w * scale), _fontTexture, g.uv);
-		auto &vertices = _batches.back().vertices;
-		for (size_t i = vertices.size() - 6; i < vertices.size(); ++i)
+		core::Buffer<Vertex> &vertices = _batches.back().vertices;
+		for (size_t i = vertices.size() - 6; i < vertices.size(); ++i) {
 			vertices[i].color = color;
+		}
 		pen.x += g.advance * scale;
 	}
 }
 
 void CanvasRenderer::render() {
-	const video::ScopedState depth(video::State::DepthTest, false), mask(video::State::DepthMask, false),
-		cull(video::State::CullFace, false), scissor(video::State::Scissor, false);
+	const video::ScopedState depth(video::State::DepthTest, false);
+	const video::ScopedState mask(video::State::DepthMask, false);
+	const video::ScopedState cull(video::State::CullFace, false);
+	const video::ScopedState scissor(video::State::Scissor, false);
 	const video::ScopedBlendMode blend(video::BlendMode::SourceAlpha, video::BlendMode::OneMinusSourceAlpha,
 									   video::BlendEquation::Add);
-	_shader.activate();
+	video::ScopedShader shader(_shader);
 	for (const Batch &batch : _batches) {
-		video::bindTexture(video::TextureUnit::Zero, batch.texture);
+		video::ScopedTexture texture(batch.texture, video::TextureUnit::Zero);
 		_buffer.update(_vertices, batch.vertices.data(), batch.vertices.size() * sizeof(Vertex), true);
-		_buffer.bind();
+		video::ScopedBuffer buffer(_buffer);
 		video::drawArrays(video::Primitive::Triangles, batch.vertices.size());
-		_buffer.unbind();
 	}
-	_shader.deactivate();
 }
 
 } // namespace render
