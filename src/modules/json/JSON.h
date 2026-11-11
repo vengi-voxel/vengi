@@ -120,6 +120,9 @@ public:
 	inline void push_back(float val) { push(val); }
 	inline void push_back(bool val) { push(val); }
 
+	/** @brief Sort object keys recursively in place, preserving array order and child views. */
+	void sortKeys();
+
 	int size() const;
 	bool empty() const;
 
@@ -141,6 +144,8 @@ public:
 		bool operator!=(const Iterator &other) const;
 		Json operator*() const;
 		core::String key() const;
+		/** @brief Borrow the object key without allocation; valid while its parent exists. */
+		const char *cKey() const;
 
 	private:
 		cJSON *_item;
