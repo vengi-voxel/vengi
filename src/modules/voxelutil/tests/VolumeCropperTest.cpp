@@ -47,6 +47,47 @@ TEST_F(VolumeCropperTest, testBoundsIgnoreAirMetadataInBothStorageModes) {
 	}
 }
 
+TEST_F(VolumeCropperTest, testUniformChunkBoundsDoNotAllocate) {
+	voxel::RawVolume volume(voxel::Region(-40, -50, -60, 216, 208, 200));
+	const size_t bytes = volume.allocatedBytes();
+	volume.fill(voxel::Voxel(voxel::VoxelType::Generic, 2));
+	glm::ivec3 mins, maxs;
+	ASSERT_TRUE(computeSolidBounds(&volume, mins, maxs));
+	EXPECT_EQ(volume.region().getLowerCorner(), mins);
+	EXPECT_EQ(volume.region().getUpperCorner(), maxs);
+	EXPECT_EQ(bytes, volume.allocatedBytes());
+	const glm::ivec3 lower = volume.region().getLowerCorner();
+	for (int z = 0; z < volume.depth(); ++z) {
+		for (int y = 0; y < volume.height(); ++y) {
+			volume.setVoxel(lower + glm::ivec3(0, y, z), voxel::Voxel());
+		}
+	}
+	const size_t allocated = volume.allocatedBytes();
+	ASSERT_TRUE(computeSolidBounds(&volume, mins, maxs));
+	EXPECT_EQ(lower + glm::ivec3(1, 0, 0), mins);
+	EXPECT_EQ(volume.region().getUpperCorner(), maxs);
+	EXPECT_EQ(allocated, volume.allocatedBytes());
+}
+
+TEST_F(VolumeCropperTest, testPartialChunksAndThinVolumeBounds) {
+	const voxel::Region regions[] = {voxel::Region(-40, -50, -60, 216, 208, 200),
+		voxel::Region(-3, -2048, -2048, -3, 2047, 2047)};
+	for (const voxel::Region &region : regions) {
+		voxel::RawVolume volume(region);
+		const glm::ivec3 lower = region.getLowerCorner();
+		const glm::ivec3 upper = region.getUpperCorner();
+		volume.setVoxel(lower, voxel::Voxel(voxel::VoxelType::Generic, 1));
+		volume.setVoxel(upper, voxel::Voxel(voxel::VoxelType::Transparent, 2));
+		const size_t bytes = volume.allocatedBytes();
+		glm::ivec3 mins, maxs;
+		ASSERT_TRUE(computeSolidBounds(&volume, mins, maxs));
+		EXPECT_EQ(lower, mins);
+		EXPECT_EQ(upper, maxs);
+		EXPECT_EQ(bytes, volume.allocatedBytes());
+		EXPECT_FALSE(volume.isContiguous());
+	}
+}
+
 TEST_F(VolumeCropperTest, testCropSmall) {
 	voxel::RawVolume smallVolume(voxel::Region(0, 2));
 	smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
