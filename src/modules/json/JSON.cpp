@@ -76,6 +76,15 @@ Json Json::parse(const core::String &str) {
 	return parse(str.c_str());
 }
 
+Json Json::parseStrict(const core::String &str) {
+	const char *end = nullptr;
+	Json value(cJSON_ParseWithLengthOpts(str.c_str(), str.size() + 1, &end, true));
+	if (!value.isValid() || end != str.c_str() + str.size()) {
+		return {};
+	}
+	return value;
+}
+
 bool Json::accept(const char *str) {
 	if (str == nullptr) {
 		return false;

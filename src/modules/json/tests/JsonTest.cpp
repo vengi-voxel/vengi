@@ -9,6 +9,23 @@ namespace json {
 
 // --- Parse ---
 
+TEST(JsonTest, parseStrict) {
+	EXPECT_TRUE(Json::parseStrict(" {\"value\": 1} \n\t").isObject());
+	EXPECT_TRUE(Json::parseStrict("[1,true,null]").isArray());
+	EXPECT_EQ(42, Json::parseStrict("42").intVal());
+	EXPECT_TRUE(Json::parseStrict("true").boolVal());
+	EXPECT_TRUE(Json::parseStrict("null").isNull());
+	EXPECT_EQ("text", Json::parseStrict("\"text\"").str());
+	EXPECT_FALSE(Json::parseStrict("").isValid());
+	EXPECT_FALSE(Json::parseStrict("{invalid}").isValid());
+	EXPECT_FALSE(Json::parseStrict("{} trailing").isValid());
+	EXPECT_FALSE(Json::parseStrict("{} {}").isValid());
+	EXPECT_FALSE(Json::parseStrict("true false").isValid());
+	core::String embeddedNull("{}X {}");
+	embeddedNull[2] = '\0';
+	EXPECT_FALSE(Json::parseStrict(embeddedNull).isValid());
+}
+
 TEST(JsonTest, parseValidObject) {
 	Json j = Json::parse(R"({"key":"value"})");
 	ASSERT_TRUE(j.isValid());

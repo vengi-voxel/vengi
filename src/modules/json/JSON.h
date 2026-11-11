@@ -41,6 +41,8 @@ public:
 	static Json parse(const char *str);
 	/** @brief Parse a JSON string. Returns an owned Json. Check isValid() for success. */
 	static Json parse(const core::String &str);
+	/** @brief Parse one complete JSON value, rejecting trailing data and embedded null bytes. */
+	static Json parseStrict(const core::String &str);
 	/** @brief Validate whether the given string is valid JSON without parsing. */
 	static bool accept(const char *str);
 	/** @brief Create an empty JSON object. */
