@@ -123,11 +123,21 @@ public:
 
 	void autoComplete();
 
+	/**
+	 * @brief Append a command line to the persistent console history (e.g. from the command palette).
+	 */
+	void addToHistory(const core::String &commandLine);
+
 	const core::String &commandLine() const;
+	const core::DynamicArray<core::String> &history() const;
 };
 
 inline const core::String &Console::commandLine() const {
 	return _commandLine;
+}
+
+inline const core::DynamicArray<core::String> &Console::history() const {
+	return _history;
 }
 
 } // namespace util

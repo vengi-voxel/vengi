@@ -112,13 +112,25 @@ void Console::printHistory() {
 	}
 }
 
+void Console::addToHistory(const core::String &commandLine) {
+	const core::String trimmed = core::string::trim(commandLine);
+	if (trimmed.empty()) {
+		return;
+	}
+	if (!_history.empty() && _history.back() == trimmed) {
+		_historyPos = _history.size();
+		return;
+	}
+	_history.push_back(trimmed);
+	_historyPos = _history.size();
+}
+
 void Console::executeCommandLine(command::CommandExecutionListener *listener) {
 	_messages.emplace_back(Log::Level::Info, _consolePrompt + _commandLine);
 	if (_commandLine.empty()) {
 		return;
 	}
-	_history.push_back(_commandLine);
-	_historyPos = _history.size();
+	addToHistory(_commandLine);
 
 	command::executeCommands(_commandLine, listener);
 	clearCommandLine();

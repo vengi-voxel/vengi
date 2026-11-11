@@ -254,6 +254,7 @@ bool MenuBar::update(ui::IMGUIApp *app, command::CommandExecutionListener &liste
 				ImGui::EndMenu();
 			}
 #endif
+			ImGui::CommandIconMenuItem(ICON_LC_SEARCH, _("Command Palette"), "ui_commandpalette", true, &listener);
 			if (ImGui::IconMenuItem(ICON_LC_TERMINAL, _("Show all commands"))) {
 				app->showCommandDialog();
 			}

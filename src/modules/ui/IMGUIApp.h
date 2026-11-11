@@ -5,6 +5,7 @@
 #pragma once
 
 #include "BindingsDialog.h"
+#include "CommandPalette.h"
 #include "FileDialog.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/RingBuffer.h"
@@ -107,11 +108,13 @@ protected:
 	// used for the imgui test engine (IM_REGISTER_TEST)
 	virtual bool registerUITests() {
 		_fileDialog.registerUITests(_imguiTestEngine, "filedialog");
+		_commandPalette.registerUITests(_imguiTestEngine, "commandpalette");
 		return true;
 	}
 #endif
 
 	core::Buffer<Panel*> _panels;
+	CommandPalette _commandPalette;
 	FileDialog _fileDialog;
 	core::RingBuffer<float, 4096> _fpsData;
 
@@ -186,6 +189,7 @@ public:
 	void showCvarDialog();
 	void showFPSDialog();
 	void showCommandDialog();
+	void showCommandPalette();
 	/** @brief Close floating app dialogs (bindings, textures, cvars, ...) and clear their transient state. */
 	virtual void closeTransientDialogs();
 	/** @brief Reload the active keymap defaults on the next frame. */
@@ -215,6 +219,10 @@ inline void IMGUIApp::showFPSDialog() {
 
 inline void IMGUIApp::showCommandDialog() {
 	_showCommandDialog = true;
+}
+
+inline void IMGUIApp::showCommandPalette() {
+	_commandPalette.show();
 }
 
 inline void IMGUIApp::requestResetKeybindings() {
