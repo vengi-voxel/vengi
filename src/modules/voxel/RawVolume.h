@@ -18,9 +18,9 @@ class ChunkedVolumeStorage;
 /**
  * @brief Bounded voxel volume with contiguous or lazily allocated chunk storage.
  *
- * Regions below 64 MiB of uncompressed voxel data use a contiguous array. Larger
+ * Regions below the configured voxel-count threshold use a contiguous array. Larger
  * regions use a fixed directory of chunks with up to 32 voxels along each axis.
- * This threshold is an initial choice for benchmarking and tuning. Untouched
+ * The default threshold is 256^3 voxels (64 MiB). Untouched
  * chunks contain a default voxel without allocating payload; fill() updates that
  * default. Coordinates are relative to the lower corner, including negative
  * origins and translations.
@@ -91,6 +91,13 @@ public:
 	RawVolume(RawVolume &&move) noexcept;
 	RawVolume(const RawVolume &copy, const Region &region, bool *onlyAir = nullptr);
 	RawVolume(const RawVolume &copy, const core::Buffer<Region> &regions);
+
+	/**
+	 * @brief Set the cubic side length at which new volumes use chunks. Must be positive.
+	 * Existing volumes keep their storage. Safe to change during volume creation.
+	 */
+	static void setChunkedStorageThreshold(int sideLength);
+	static int chunkedStorageThreshold();
 
 	bool copyInto(const RawVolume &src);
 	bool copyInto(const RawVolume &src, const voxel::Region &region);

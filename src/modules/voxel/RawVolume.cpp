@@ -8,6 +8,7 @@
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/Common.h"
+#include "core/concurrent/Atomic.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Trace.h"
@@ -15,6 +16,28 @@
 #include <glm/common.hpp>
 
 namespace voxel {
+
+static core::AtomicInt &chunkedThreshold() {
+	static core::AtomicInt threshold(256);
+	return threshold;
+}
+
+void RawVolume::setChunkedStorageThreshold(int sideLength) {
+	core_assert(sideLength > 0);
+	if (sideLength > 0) {
+		chunkedThreshold() = sideLength;
+	}
+}
+
+int RawVolume::chunkedStorageThreshold() {
+	return chunkedThreshold();
+}
+
+static bool useChunkedStorage(const Region &region) {
+	const size_t side = (size_t)RawVolume::chunkedStorageThreshold();
+	// Compare against side cubed without overflowing for large configured sizes.
+	return RawVolume::size(region) / sizeof(Voxel) / side / side >= side;
+}
 
 // The visitor returns true to stop. Missing spans contain copies of defaultVoxel().
 template<class Visitor>
@@ -141,7 +164,7 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (onlyAir) {
 			*onlyAir = true;
 		}
-		if (src._storage || size(_region) >= 64u * 1024u * 1024u) {
+		if (src._storage || useChunkedStorage(_region)) {
 			initialise(_region);
 			copyInto(src, _region);
 			if (onlyAir) {
@@ -1047,7 +1070,7 @@ void RawVolume::initialise(const Region &regValidRegion, bool forceDense) {
 
 	// Create the data
 	const size_t size = RawVolume::size(_region);
-	if (!forceDense && size >= 64u * 1024u * 1024u) {
+	if (!forceDense && useChunkedStorage(_region)) {
 		_storage = new ChunkedVolumeStorage({width(), height(), depth()});
 		if (_storage->valid()) {
 			return;

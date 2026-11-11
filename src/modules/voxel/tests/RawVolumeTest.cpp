@@ -8,6 +8,7 @@
 #include "math/Axis.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include <limits.h>
 
 namespace voxel {
 
@@ -553,6 +554,35 @@ TEST_F(RawVolumeTest, testValidReportsAllocationState) {
 	RawVolume moved(core::move(volume));
 	EXPECT_TRUE(moved.valid());
 	EXPECT_FALSE(volume.valid());
+}
+
+TEST_F(RawVolumeTest, testConfigurableChunkedStorageThreshold) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	RawVolume::setChunkedStorageThreshold(32);
+	RawVolume small(Region(0, 30));
+	RawVolume boundary(Region(0, 31));
+	EXPECT_TRUE(small.isContiguous());
+	EXPECT_FALSE(boundary.isContiguous());
+	const Voxel value(VoxelType::Generic, 17);
+	boundary.setVoxel(31, 31, 31, value);
+	RawVolume::setChunkedStorageThreshold(64);
+	RawVolume rectangular(Region(0, 0, 0, 31, 63, 63));
+	RawVolume dense(Region(0, 62));
+	EXPECT_TRUE(rectangular.isContiguous());
+	EXPECT_TRUE(dense.isContiguous());
+	EXPECT_FALSE(boundary.isContiguous());
+	EXPECT_EQ(value, boundary.voxel(31, 31, 31));
+	dense.setVoxel(1, 1, 1, value);
+	RawVolume::setChunkedStorageThreshold(32);
+	RawVolume extracted(dense, Region(1, 32));
+	EXPECT_FALSE(extracted.isContiguous());
+	EXPECT_EQ(value, extracted.voxel(1, 1, 1));
+	EXPECT_TRUE(dense.isContiguous());
+	// A large configured side must not overflow when compared with voxel counts.
+	RawVolume::setChunkedStorageThreshold(INT_MAX);
+	RawVolume largeThreshold(Region(0, 31));
+	EXPECT_TRUE(largeThreshold.isContiguous());
+	RawVolume::setChunkedStorageThreshold(previous);
 }
 
 }
