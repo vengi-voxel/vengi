@@ -42,7 +42,10 @@ engine_add_library(
 function(configure_lua TARGET)
 	target_link_libraries(${TARGET} ${CMAKE_DL_LIBS})
 	target_compile_definitions(${TARGET} PUBLIC LUA_USE_LONGJMP LUA_COMPAT_MODULE)
-	if (ANDROID OR EMSCRIPTEN)
+	if (EMSCRIPTEN)
+		# C89 selects a 32-bit long in Wasm; scene state needs Lua 64-bit integers.
+		target_compile_definitions(${TARGET} PUBLIC LUA_ANSI)
+	elseif (ANDROID)
 		target_compile_definitions(${TARGET} PUBLIC -DLUA_ANSI -DLUA_USE_C89)
 	elseif (LINUX)
 		target_compile_definitions(${TARGET} PUBLIC -DLUA_USE_LINUX)
