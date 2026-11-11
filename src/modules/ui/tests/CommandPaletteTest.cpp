@@ -67,9 +67,11 @@ void CommandPalette::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusPalette(ctx));
 
 		ctx->ItemClick("##commandpalettefilter");
-		ctx->KeyCharsReplace("alias");
+		// unalias has a required "name" arg (alias's name arg is optional and labeled
+		// "name (optional)"), so the widget id/label is exactly "name".
+		ctx->KeyCharsReplace("unalias");
 		ctx->Yield();
-		IM_CHECK(ctx->ItemExists("name"));
+		IM_CHECK(ctx->ItemExists("**/name"));
 		ctx->ItemClick("###Cancel");
 		ctx->Yield(2);
 		IM_CHECK(!Panel::isPopupOpen(POPUP_TITLE_COMMAND_PALETTE));
