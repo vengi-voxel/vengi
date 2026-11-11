@@ -2,11 +2,14 @@
  * @file
  */
 
-#include "benchmark/benchmark.h"
+#include "app/benchmark/AbstractBenchmark.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeCropper.h"
 
-static void solidBounds(benchmark::State &state) {
+class VolumeCropperBenchmark : public app::AbstractBenchmark {
+};
+
+BENCHMARK_DEFINE_F(VolumeCropperBenchmark, solidBounds)(benchmark::State &state) {
 	const glm::ivec3 dimensions((int)state.range(0), (int)state.range(1), (int)state.range(2));
 	voxel::RawVolume volume(voxel::Region(glm::ivec3(0), dimensions - 1));
 	if (state.range(3) && volume.voxels() == nullptr) {
@@ -55,4 +58,4 @@ static void solidBoundsArguments(benchmark::Benchmark *benchmark) {
 }
 
 // Dimensions, force dense, content: empty/sparse/uniform/air metadata/fully allocated.
-BENCHMARK(solidBounds)->Apply(solidBoundsArguments);
+BENCHMARK_REGISTER_F(VolumeCropperBenchmark, solidBounds)->Apply(solidBoundsArguments);

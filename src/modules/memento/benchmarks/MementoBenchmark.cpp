@@ -34,7 +34,7 @@ BENCHMARK_DEFINE_F(MementoBenchmark, mementoDataExtract)(benchmark::State &state
 BENCHMARK_REGISTER_F(MementoBenchmark, mementoDataCompress);
 BENCHMARK_REGISTER_F(MementoBenchmark, mementoDataExtract);
 
-static void mementoSnapshot(benchmark::State &state) {
+BENCHMARK_DEFINE_F(MementoBenchmark, mementoSnapshot)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region(-128, 127));
 	if (state.range(0) && !volume.voxels()) {
 		state.SkipWithError("Could not allocate dense source");
@@ -52,7 +52,7 @@ static void mementoSnapshot(benchmark::State &state) {
 	const voxel::Region region = state.range(1) ? voxel::Region(-32, 31) : volume.region();
 	const size_t sourceBytes = volume.allocatedBytes();
 	for (auto _ : state) {
-		const memento::MementoData data = memento::MementoData::fromVolume(&volume, region);
+		memento::MementoData data = memento::MementoData::fromVolume(&volume, region);
 		benchmark::DoNotOptimize(data);
 	}
 	state.counters["source_allocated_bytes"] = (double)volume.allocatedBytes();
@@ -62,5 +62,5 @@ static void mementoSnapshot(benchmark::State &state) {
 }
 
 // dense source, subregion, nonuniform content
-BENCHMARK(mementoSnapshot)->ArgsProduct({{0, 1}, {0, 1}, {0, 1}});
+BENCHMARK_REGISTER_F(MementoBenchmark, mementoSnapshot)->ArgsProduct({{0, 1}, {0, 1}, {0, 1}});
 BENCHMARK_MAIN();

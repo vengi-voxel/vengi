@@ -208,7 +208,7 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxelsSampler)(benchmark::State &stat
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxels)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxelsSampler)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
 
-static void cyclicVolumeMove(benchmark::State &state) {
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, cyclicVolumeMove)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region(-128, 127));
 	if (state.range(0) && volume.voxels() == nullptr) {
 		state.SkipWithError("Could not allocate dense comparison volume");
@@ -234,9 +234,9 @@ static void cyclicVolumeMove(benchmark::State &state) {
 	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
 }
 
-BENCHMARK(cyclicVolumeMove)->ArgsProduct({{0, 1}, {0, 1, 2, 3}});
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, cyclicVolumeMove)->ArgsProduct({{0, 1}, {0, 1, 2, 3}});
 
-static void copyVolumeStorage(benchmark::State &state) {
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, copyVolumeStorage)(benchmark::State &state) {
 	voxel::RawVolume source(voxel::Region(-128, 127));
 	if (!source.valid() || (state.range(0) && source.voxels() == nullptr)) {
 		state.SkipWithError("Could not allocate source volume");
@@ -260,34 +260,42 @@ static void copyVolumeStorage(benchmark::State &state) {
 	state.counters["copy_allocated_bytes"] = (double)copyBytes;
 }
 
-BENCHMARK(copyVolumeStorage)->ArgsProduct({{0, 1}, {0, 1}});
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, copyVolumeStorage)->ArgsProduct({{0, 1}, {0, 1}});
 
-// Every benchmark thread reads the same immutable volume. Each owns its sampler.
-// A plain benchmark avoids creating application fixtures concurrently.
-template<int Content, bool Dense>
-static void sharedVolumeRead(benchmark::State &state) {
-	struct SharedVolume {
-		voxel::RawVolume volume{voxel::Region(-128, 127)};
-		bool ready = false;
-		SharedVolume() {
-			if constexpr (Dense) {
-				if (volume.voxels() == nullptr) {
-					return;
-				}
+class SharedVolumeBenchmark : public app::AbstractBenchmark {
+protected:
+	voxel::RawVolume *_volume = nullptr;
+	using Super = app::AbstractBenchmark;
+
+	void SetUp(benchmark::State &state) override {
+		if (state.thread_index() == 0) {
+			Super::SetUp(state);
+			_volume = new voxel::RawVolume(voxel::Region(-128, 127));
+			if (_volume->valid() && (!state.range(1) || _volume->voxels() != nullptr)) {
+				fillBenchmarkVolume(*_volume, (int)state.range(0));
 			}
-			fillBenchmarkVolume(volume, Content);
-			ready = volume.valid();
 		}
-	};
-	static const SharedVolume shared;
-	const voxel::RawVolume &volume = shared.volume;
-	if (!shared.ready) {
-		state.SkipWithError("Could not allocate shared volume");
-		return;
 	}
-	voxel::RawVolume::Sampler sampler(volume);
-	const voxel::Region &region = volume.region();
-	for (auto _ : state) {
+
+	void TearDown(benchmark::State &state) override {
+		if (state.thread_index() == 0) {
+			delete _volume;
+			_volume = nullptr;
+			Super::TearDown(state);
+		}
+	}
+};
+
+BENCHMARK_DEFINE_F(SharedVolumeBenchmark, sharedVolumeRead)(benchmark::State &state) {
+	while (state.KeepRunning()) {
+		// The loop barrier publishes thread zero's fixture setup to every reader.
+		const voxel::RawVolume &volume = *_volume;
+		if (!volume.valid() || (state.range(1) && !volume.isContiguous())) {
+			state.SkipWithError("Could not allocate shared volume");
+			continue;
+		}
+		voxel::RawVolume::Sampler sampler(volume);
+		const voxel::Region &region = volume.region();
 		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 				sampler.setPosition(region.getLowerX(), y, z);
@@ -298,15 +306,11 @@ static void sharedVolumeRead(benchmark::State &state) {
 			}
 		}
 	}
-	state.SetItemsProcessed(state.iterations() * region.voxels());
+	state.SetItemsProcessed(state.iterations() * 256 * 256 * 256);
 }
 
-BENCHMARK_TEMPLATE(sharedVolumeRead, 0, false)->ThreadRange(1, 4)->UseRealTime();
-BENCHMARK_TEMPLATE(sharedVolumeRead, 0, true)->ThreadRange(1, 4)->UseRealTime();
-BENCHMARK_TEMPLATE(sharedVolumeRead, 1, false)->ThreadRange(1, 4)->UseRealTime();
-BENCHMARK_TEMPLATE(sharedVolumeRead, 1, true)->ThreadRange(1, 4)->UseRealTime();
-BENCHMARK_TEMPLATE(sharedVolumeRead, 3, false)->ThreadRange(1, 4)->UseRealTime();
-BENCHMARK_TEMPLATE(sharedVolumeRead, 3, true)->ThreadRange(1, 4)->UseRealTime();
+BENCHMARK_REGISTER_F(SharedVolumeBenchmark, sharedVolumeRead)
+	->ArgsProduct({{0, 1, 3}, {0, 1}})->ThreadRange(1, 4)->UseRealTime();
 
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);

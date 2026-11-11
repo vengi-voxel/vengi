@@ -2,11 +2,14 @@
  * @file
  */
 
-#include "benchmark/benchmark.h"
+#include "app/benchmark/AbstractBenchmark.h"
 #include "voxel/VolumeDataAccessor.h"
 #include "core/StandardLib.h"
 
-static void accessorSnapshot(benchmark::State &state) {
+class VolumeDataAccessorBenchmark : public app::AbstractBenchmark {
+};
+
+BENCHMARK_DEFINE_F(VolumeDataAccessorBenchmark, accessorSnapshot)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region(-128, 127));
 	if (state.range(0) && !volume.voxels()) {
 		state.SkipWithError("Could not allocate dense source");
@@ -61,4 +64,4 @@ static void accessorSnapshot(benchmark::State &state) {
 }
 
 // dense source, subregion, nonuniform content, per-voxel reference
-BENCHMARK(accessorSnapshot)->ArgsProduct({{0, 1}, {0, 1}, {0, 1}, {0, 1}});
+BENCHMARK_REGISTER_F(VolumeDataAccessorBenchmark, accessorSnapshot)->ArgsProduct({{0, 1}, {0, 1}, {0, 1}, {0, 1}});
