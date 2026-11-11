@@ -232,18 +232,26 @@ bool ChunkedVolumeStorage::move(const glm::ivec3 &shift) {
 		const glm::ivec3 origin((int)(index % _chunkCounts.x) * ChunkSide,
 			(int)((index / _chunkCounts.x) % _chunkCounts.y) * ChunkSide, (int)(index / xy) * ChunkSide);
 		const glm::ivec3 count = glm::min(_chunkDimensions, _dimensions - origin);
+		const glm::ivec3 shiftedOrigin = origin - normalized;
 		for (int z = 0; z < count.z; ++z) {
+			int destinationZ = shiftedOrigin.z + z;
+			if (destinationZ < 0) {
+				destinationZ += _dimensions.z;
+			}
 			for (int y = 0; y < count.y; ++y) {
+				int destinationY = shiftedOrigin.y + y;
+				if (destinationY < 0) {
+					destinationY += _dimensions.y;
+				}
+				glm::ivec3 destination(shiftedOrigin.x, destinationY, destinationZ);
 				for (int x = 0; x < count.x; ++x) {
 					const Voxel &value = source[x + (size_t)_chunkDimensions.x * (y + (size_t)_chunkDimensions.y * z)];
 					if (core_memcmp(&value, &_default, sizeof(Voxel)) == 0) {
 						continue;
 					}
-					glm::ivec3 destination = origin + glm::ivec3(x, y, z) - normalized;
-					for (int axis = 0; axis < 3; ++axis) {
-						if (destination[axis] < 0) {
-							destination[axis] += _dimensions[axis];
-						}
+					destination.x = shiftedOrigin.x + x;
+					if (destination.x < 0) {
+						destination.x += _dimensions.x;
 					}
 					Voxel *target = moved.writableVoxel(destination);
 					if (!target) {

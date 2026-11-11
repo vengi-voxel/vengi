@@ -8,6 +8,7 @@
 #include "core/concurrent/Thread.h"
 #include <SDL3/SDL_timer.h>
 #include <gtest/gtest.h>
+#include <glm/common.hpp>
 #include <limits.h>
 
 namespace voxel {
@@ -133,6 +134,8 @@ TEST(ChunkedVolumeStorageTest, MoveMatchesCyclicCoordinateMapping) {
 			const glm::ivec3 marked = dimensions - 1;
 			storage.setVoxel(marked, Voxel(VoxelType::Transparent, 19, 11, 0, 5));
 			storage.setVoxel(glm::ivec3(0), Voxel(VoxelType::Air, 0, 0, 2, 0));
+			storage.setVoxel(glm::min(glm::ivec3(31, 17, 16), marked), Voxel(VoxelType::Generic, 21, 3));
+			storage.setVoxel(glm::min(glm::ivec3(32, 18, 17), marked), Voxel(VoxelType::Transparent, 22, 4));
 			const Voxel *stable = &storage.voxel(marked);
 			const size_t size = (size_t)dimensions.x * dimensions.y * dimensions.z;
 			Voxel *original = (Voxel *)core_malloc(size * sizeof(Voxel));
