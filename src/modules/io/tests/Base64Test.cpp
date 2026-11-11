@@ -43,6 +43,21 @@ protected:
 	}
 };
 
+TEST_F(Base64Test, ValidatesAlphabetGroupsAndTrailingPadding) {
+	for (const char *valid : {"", "Zg==", "Zm8=", "Zm9v", "Zm9vYmFy", "+/8="}) {
+		EXPECT_TRUE(Base64::isValid(valid)) << valid;
+	}
+	for (const char *invalid : {"A", "AAA", "AAAAA", "=AAA", "A===", "====", "AA=A", "AAA=AAAA", "AA==AAAA", "AA-_",
+								"AA A", "AA\nA", "AA\tA"}) {
+		EXPECT_FALSE(Base64::isValid(invalid)) << invalid;
+	}
+	core::String binary("AAAA");
+	binary[1] = (char)0xff;
+	EXPECT_FALSE(Base64::isValid(binary));
+	binary[1] = '\0';
+	EXPECT_FALSE(Base64::isValid(binary));
+}
+
 TEST_F(Base64Test, testBase64Decode) {
 	const core::String input = "Zm9vYmFy";
 	io::BufferedReadWriteStream stream(128);
