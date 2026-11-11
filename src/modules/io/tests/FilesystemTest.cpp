@@ -22,6 +22,28 @@ class FilesystemTest : public app::AbstractTest {};
 	return ostream;
 }
 
+TEST_F(FilesystemTest, RenameReplacesFilesAndPreservesDestinationOnFailure) {
+	const core::String directory = _testApp->filesystem()->homeWritePath("rename-path-test");
+	ASSERT_TRUE(Filesystem::sysCreateDir(directory));
+	const core::String source = directory + "/source";
+	const core::String destination = directory + "/destination";
+	ASSERT_TRUE(Filesystem::sysWrite(source, "new"));
+	ASSERT_TRUE(Filesystem::sysWrite(destination, "old"));
+	ASSERT_TRUE(Filesystem::sysRenamePath(source, destination));
+	EXPECT_FALSE(Filesystem::sysExists(source));
+	EXPECT_EQ("new", _testApp->filesystem()->load(destination));
+	EXPECT_FALSE(Filesystem::sysRenamePath(source, destination));
+	EXPECT_FALSE(Filesystem::sysRenamePath("", destination));
+	EXPECT_FALSE(Filesystem::sysRenamePath(destination, ""));
+	EXPECT_EQ("new", _testApp->filesystem()->load(destination));
+	ASSERT_TRUE(Filesystem::sysRemoveFile(destination));
+	const core::Path moved(directory + "-moved");
+	ASSERT_TRUE(Filesystem::sysRenamePath(core::Path(directory), moved));
+	EXPECT_FALSE(Filesystem::sysExists(directory));
+	EXPECT_TRUE(Filesystem::sysIsReadableDir(moved));
+	EXPECT_TRUE(Filesystem::sysRemoveDir(moved));
+}
+
 TEST_F(FilesystemTest, testListDirectory) {
 	io::Filesystem fs;
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
