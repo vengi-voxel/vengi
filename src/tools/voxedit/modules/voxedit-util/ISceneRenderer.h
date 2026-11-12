@@ -168,6 +168,7 @@ public:
 		CommandEvent cmd;
 		cmd.type = CommandType::Clear;
 		core::ScopedLock lock(_commandBufferMutex);
+		_commandBuffer.clear();
 		_commandBuffer.push_back(cmd);
 	}
 

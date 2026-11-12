@@ -3,10 +3,13 @@
  */
 
 #include "voxedit-util/SceneRenderer.h"
-#include "voxedit-util/modifier/ModifierRenderer.h"
+#include "scenegraph/SceneGraph.h"
+#include "video/Camera.h"
 #include "video/tests/AbstractGLTest.h"
 #include "voxedit-util/Config.h"
+#include "voxedit-util/modifier/ModifierRenderer.h"
 #include "voxel/Region.h"
+#include "voxelrender/RenderContext.h"
 
 namespace voxedit {
 
@@ -108,6 +111,50 @@ TEST_F(SceneRendererTest, testClearCancelsPendingRegionExtractions) {
 	EXPECT_EQ(0, _sceneRenderer.rendererStats().mappedNodes);
 	_sceneRenderer.update();
 	EXPECT_EQ(0, _sceneRenderer.rendererStats().pendingExtractions);
+}
+
+TEST_F(SceneRendererTest, testClearBeforeRenderReleasesBorrowedSceneDataWithoutAnUpdate) {
+	scenegraph::SceneGraph scene;
+	const core::UUID uuid = core::UUID::generate();
+	const voxel::Region region(0, 7);
+	const auto addModel = [&]() {
+		scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model, uuid);
+		model.createVolume(region);
+		model.palette().nippon();
+		const glm::vec3 normal[] = {glm::vec3(0, 1, 0)};
+		model.normalPalette().loadNormalMap(normal, lengthof(normal));
+		const int id = scene.emplace(core::move(model));
+		scene.setActiveNode(id);
+		scene.updateTransforms();
+	};
+	addModel();
+	voxelrender::RenderContext context;
+	ASSERT_TRUE(context.init(glm::ivec2(64)));
+	context.sceneGraph = &scene;
+	video::Camera camera;
+	camera.setSize(glm::ivec2(64));
+	camera.setNearPlane(0.1f);
+	camera.setFarPlane(100);
+	camera.setWorldPosition(glm::vec3(16, 16, 16));
+	camera.lookAt(glm::vec3(4));
+	camera.update(0);
+	context.beginFrame();
+	_sceneRenderer.renderScene(context, camera);
+	context.endFrame();
+	EXPECT_EQ(1, _sceneRenderer.rendererStats().mappedNodes);
+
+	// UI actions can replace a scene between update() and renderScene().
+	_sceneRenderer.updateNodeRegion(uuid, region);
+	_sceneRenderer.clear();
+	scene.clear();
+	addModel();
+	context.beginFrame();
+	_sceneRenderer.renderScene(context, camera);
+	context.endFrame();
+	EXPECT_EQ(1, _sceneRenderer.rendererStats().mappedNodes);
+	_sceneRenderer.clear();
+	_sceneRenderer.update();
+	context.shutdown();
 }
 
 } // namespace voxedit
