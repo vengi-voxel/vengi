@@ -91,6 +91,18 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 
+		// add new model via context menu
+		const int modelsBefore = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
+		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Add new model");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, POPUP_TITLE_MODEL_NODE_SETTINGS));
+		ctx->ItemInputValue("##modelsettingsname", "context menu model");
+		ctx->ItemClick("###Ok");
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, id));
+		const int modelsAfter = sceneGraph.size(scenegraph::SceneGraphNodeType::Model);
+		IM_CHECK_EQ(modelsAfter, modelsBefore + 1);
+
 		// add new group via context menu
 		const int groupsBefore = sceneGraph.size(scenegraph::SceneGraphNodeType::Group);
 		contextMenuForNode(_sceneMgr, ctx, sceneGraph.activeNode(), "Add new group");

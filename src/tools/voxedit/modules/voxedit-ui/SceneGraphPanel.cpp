@@ -36,7 +36,26 @@ static void commandNodeMenu(const char *icon, const char *title, const char *com
 	ImGui::CommandIconMenuItem(icon, title, cmd, enabled, listener);
 }
 
-void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
+void SceneGraphPanel::prepareNewModelNode(const scenegraph::SceneGraph &sceneGraph, int nodeId,
+										  ModelNodeSettings *modelNodeSettings) {
+	modelNodeSettings->palette.setValue(nullptr);
+	scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
+	if (node.isModelNode()) {
+		const voxel::Region &region = node.region();
+		modelNodeSettings->position = region.getLowerCorner();
+		modelNodeSettings->size = region.getDimensionsInVoxels();
+		modelNodeSettings->palette.setValue(node.palette());
+	}
+	if (modelNodeSettings->name.empty()) {
+		modelNodeSettings->name = node.name();
+	}
+	modelNodeSettings->parent = nodeId;
+	_popupNewModelNode = true;
+}
+
+void SceneGraphPanel::contextMenu(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
+								  scenegraph::SceneGraphNode &node, ModelNodeSettings *modelNodeSettings,
+								  command::CommandExecutionListener &listener) {
 	const int nodeId = node.id();
 	char contextMenuId[64];
 	core::String::formatBuf(contextMenuId, sizeof(contextMenuId), "Edit##context-node-%i", nodeId);
@@ -87,6 +106,9 @@ void SceneGraphPanel::contextMenu(video::Camera& camera, const scenegraph::Scene
 		}
 		ImGui::CommandIconMenuItem(ICON_LC_SAVE, _("Save all"), "modelssave", validModels > 1, &listener);
 
+		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new model"))) {
+			prepareNewModelNode(sceneGraph, nodeId, modelNodeSettings);
+		}
 		if (ImGui::IconMenuItem(ICON_LC_SQUARE_PLUS, _("Add new group"))) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName("new group");
@@ -136,8 +158,8 @@ bool SceneGraphPanel::isFiltered(const scenegraph::SceneGraphNode &node) const {
 }
 
 void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
-							  const DisplayNode &displayNode, command::CommandExecutionListener &listener,
-							  int referencedNodeId) {
+								 const DisplayNode &displayNode, ModelNodeSettings *modelNodeSettings,
+								 command::CommandExecutionListener &listener, int referencedNodeId) {
 	core_trace_scoped(RenderNode);
 	const int nodeId = displayNode.nodeId;
 	if (!sceneGraph.hasNode(nodeId)) {
@@ -268,7 +290,7 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 			}
 			ImGui::EndDragDropTarget();
 		}
-		contextMenu(camera, sceneGraph, node, listener);
+		contextMenu(camera, sceneGraph, node, modelNodeSettings, listener);
 		if (ImGui::IsItemActivated()) {
 			_sceneMgr->nodeActivate(node.uuid());
 			_lastActivedNodeUUID = node.uuid();
@@ -357,21 +379,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			ui::Toolbar toolbar("toolbar");
 
 			toolbar.button(ICON_LC_SQUARE_PLUS, _("Add a new model node"), [&sceneGraph, this, modelNodeSettings]() {
-				const int nodeId = sceneGraph.activeNode();
-				modelNodeSettings->palette.setValue(nullptr);
-				scenegraph::SceneGraphNode &node = sceneGraph.node(nodeId);
-				if (node.isModelNode()) {
-					const voxel::RawVolume *v = node.volume();
-					const voxel::Region &region = v->region();
-					modelNodeSettings->position = region.getLowerCorner();
-					modelNodeSettings->size = region.getDimensionsInVoxels();
-					modelNodeSettings->palette.setValue(node.palette());
-				}
-				if (modelNodeSettings->name.empty()) {
-					modelNodeSettings->name = node.name();
-				}
-				modelNodeSettings->parent = nodeId;
-				_popupNewModelNode = true;
+				prepareNewModelNode(sceneGraph, sceneGraph.activeNode(), modelNodeSettings);
 			});
 
 			toolbar.button(ICON_LC_BOX, _("Toggle add node by face in scene view"), [this]() {
@@ -482,7 +490,7 @@ void SceneGraphPanel::update(video::Camera& camera, const char *id, ModelNodeSet
 			while (clipper.Step()) {
 				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
 					const DisplayNode &displayNode = _displayNodes[i];
-					renderNode(camera, sceneGraph, displayNode, listener, referencedNode);
+					renderNode(camera, sceneGraph, displayNode, modelNodeSettings, listener, referencedNode);
 				}
 			}
 			ImGui::EndTable();
