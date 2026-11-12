@@ -5,6 +5,11 @@
 #include "HttpCacheStream.h"
 #include "app/App.h"
 #include "core/Log.h"
+#include "core/ArrayLength.h"
+#include "core/Hash.h"
+#include "core/Path.h"
+#include "core/Trace.h"
+#include "core/concurrent/Lock.h"
 #include "core/StringUtil.h"
 #include "http/Http.h"
 #include "http/Request.h"
@@ -13,6 +18,22 @@
 #include "io/Stream.h"
 
 namespace http {
+
+namespace {
+
+struct CacheReadSlot {
+	core_trace_mutex(core::Lock, lock, "httpCacheRead");
+};
+
+// Bound lock storage without serializing every repository's metadata download.
+CacheReadSlot cacheReadSlots[32];
+
+core::Lock &cacheReadLock(const core::String &file) {
+	const core::String key = core::Path(file).lexicallyNormal();
+	return cacheReadSlots[core::hash(key.c_str()) % lengthof(cacheReadSlots)].lock;
+}
+
+} // namespace
 
 HttpCacheStream::HttpCacheStream(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
 								 bool force) {
@@ -78,6 +99,8 @@ HttpCacheStream::~HttpCacheStream() {
 
 core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
 									 bool force) {
+	const core::String key = core::string::startsWith(url, "file://") ? url.substr(7) : file;
+	core::ScopedLock lock(cacheReadLock(key));
 	HttpCacheStream stream(archive, file, url, force);
 	if (!stream.valid()) {
 		return core::String::Empty;
@@ -90,6 +113,7 @@ core::String HttpCacheStream::string(const io::ArchivePtr &archive, const core::
 core::String HttpCacheStream::stringPost(const io::ArchivePtr &archive, const core::String &file,
 										 const core::String &url, const core::String &postBody,
 										 const core::String &contentType, bool force) {
+	core::ScopedLock lock(cacheReadLock(file));
 	HttpCacheStream stream(archive, file, url, postBody, contentType, force);
 	if (!stream.valid()) {
 		return core::String::Empty;

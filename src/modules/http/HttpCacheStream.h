@@ -72,14 +72,14 @@ public:
 	bool isNewInCache() const;
 
 	/**
-	 * @brief Convenience method for GET requests
+	 * @brief Convenience method for GET requests. Same-cache text calls are serialized until their streams close.
 	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 */
 	static core::String string(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
 							   bool force = false);
 
 	/**
-	 * @brief Convenience method for POST requests
+	 * @brief Convenience method for POST requests. Shares cache coordination with string().
 	 * @param[in] force If @c true, ignore an existing cache entry and re-download
 	 */
 	static core::String stringPost(const io::ArchivePtr &archive, const core::String &file, const core::String &url,
