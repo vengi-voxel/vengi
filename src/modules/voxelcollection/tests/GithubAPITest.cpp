@@ -5,7 +5,9 @@
 #include "voxelcollection/GithubAPI.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Log.h"
+#include "core/StringUtil.h"
 #include "io/FilesystemArchive.h"
+#include "io/MemoryArchive.h"
 
 namespace voxelcollection {
 
@@ -25,6 +27,27 @@ protected:
 		}
 	}
 };
+
+TEST_F(GithubAPITest, testDownloadUrlPreservesExternalUrlsAndResolvesRepositoryFiles) {
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	const char *urls[] = {"https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Sponza/README.md",
+						  "http://example.org/license.txt"};
+	const core::String metadata = R"({"download_url":"https://example.org/wrong-repository-file"})";
+	for (const char *url : urls) {
+		core::String cache = core::String("github-org-repo-main-") + url + ".json";
+		core::string::replaceAllChars(cache, '/', '-');
+		ASSERT_TRUE(archive->add(cache, (const uint8_t *)metadata.c_str(), metadata.size()));
+		EXPECT_EQ(url, github::downloadUrl(archive, "org/repo", "main", url, 0));
+	}
+	const core::String lfsMetadata =
+		R"({"download_url":"https://media.githubusercontent.com/media/org/repo/main/tiny.vox"})";
+	ASSERT_TRUE(
+		archive->add("github-org-repo-main-tiny.vox.json", (const uint8_t *)lfsMetadata.c_str(), lfsMetadata.size()));
+	EXPECT_EQ("https://media.githubusercontent.com/media/org/repo/main/tiny.vox",
+			  github::downloadUrl(archive, "org/repo", "main", "tiny.vox", 80));
+	EXPECT_EQ("https://raw.githubusercontent.com/org/repo/main/models/big%20model.vox",
+			  github::downloadUrl(archive, "org/repo", "main", "models/big model.vox", 512));
+}
 
 // disabled because it requires network access
 TEST_F(GithubAPITest, DISABLED_testReposGitTrees) {
