@@ -1,0 +1,245 @@
+# SceneGraph
+
+Global: `g_scenegraph`
+
+## Functions
+
+| Function | Description |
+| -------- | ----------- |
+| `activeAnimation()` | Get the name of the active animation. |
+| `addAnimation(name)` | Add a new animation to the scene graph. |
+| `align(padding)` | Align all nodes in the scene graph. |
+| `animations()` | Get all animation names. |
+| `detectBodyPartSide(name)` | Detect left/right from a node name. |
+| `duplicateAnimation(source, target)` | Duplicate an existing animation. |
+| `get(id)` | Get a node by its ID. |
+| `getByName(name)` | Get a node by its name. |
+| `getByUUID(uuid)` | Get a node by its UUID. |
+| `hasAnimation(name)` | Check if an animation exists. |
+| `identifyBodyPart(name)` | Map a node name to an animate.lua body-part key, or nil if unrecognized. |
+| `identifyBodyPartSkipMessage()` | Message shown when a node name is not a recognized body part. |
+| `new(name, region, visible, type)` | Create a new node in the scene graph for model nodes the parameters differ. |
+| `nodeIds()` | Get all node IDs in the scene graph. |
+| `setAnimation(name)` | Set the active animation. |
+| `updateTransforms()` | Update all transforms in the scene graph. |
+
+## Detailed Documentation
+
+### activeAnimation
+
+Get the name of the active animation.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | The active animation name. |
+
+### addAnimation
+
+Add a new animation to the scene graph.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The animation name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if animation was added successfully. |
+
+### align
+
+Align all nodes in the scene graph.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `padding` | `integer` | Padding between nodes (optional, default 2). |
+
+### animations
+
+Get all animation names.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `table` | A table of animation names. |
+
+### detectBodyPartSide
+
+Detect left/right from a node name.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The node name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | 'left', 'right', or nil. |
+
+### duplicateAnimation
+
+Duplicate an existing animation.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `source` | `string` | The source animation name. |
+| `target` | `string` | The new animation name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if animation was duplicated successfully. |
+
+### get
+
+Get a node by its ID.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `id` | `integer` | The node ID (optional, defaults to active node). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `node` | The node. |
+
+### getByName
+
+Get a node by its name.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The node name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `node` | The node, or nil if not found. |
+
+### getByUUID
+
+Get a node by its UUID.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `uuid` | `string` | The node UUID. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `node` | The node, or nil if not found. |
+
+### hasAnimation
+
+Check if an animation exists.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The animation name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if animation exists. |
+
+### identifyBodyPart
+
+Map a node name to an animate.lua body-part key, or nil if unrecognized.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The node name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | Body-part key (torso, head, left_arm, ...) or nil. |
+
+### identifyBodyPartSkipMessage
+
+Message shown when a node name is not a recognized body part.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `string` | The skip/error message. |
+
+### new
+
+Create a new node in the scene graph for model nodes the parameters differ.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The node name. |
+| `region` | [`region`](region.md) | The region for model nodes. |
+| `visible` | `boolean` | Whether the node is visible (optional, default true). |
+| `type` | `string` | Node type: 'Model', 'Group', 'Camera', 'Point'. Not given for model nodes which have the 2nd parameter as region. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `node` | The newly created node. |
+
+### nodeIds
+
+Get all node IDs in the scene graph.
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `table` | Table of node IDs. |
+
+### setAnimation
+
+Set the active animation.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `name` | `string` | The animation name. |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| `boolean` | True if animation was set successfully. |
+
+### updateTransforms
+
+Update all transforms in the scene graph.
+

@@ -1,0 +1,199 @@
+# Controls
+
+![voxedit-keybindings](../img/voxedit-keybindings.png)
+
+There are different schemas available to pick from:
+
+- Blender
+- Magicavoxel
+- Qubicle
+- Vengi
+
+See the binding editor in the menu bar to get a complete list of bindings or switch between the keymaps.
+
+You can also manually edit the `keybindings-x.cfg` file in your user settings directory. Go to **About -> Paths** and click the first entry. This will open your user settings directory for voxedit. The file is there if you at least once quit the application.
+
+You can also change the bindings in the console by using the `bind` command.
+
+> Usage of the bind command: `bind <modifier+key> <command> <context>`.
+> `context` is one of `all`, `model`, `scene`, `game`, `editing`, `scenegizmo`, `editgizmo` (`editing` is scene+model+game; `scenegizmo`/`editgizmo` are active while the gizmo is hovered)
+
+To get a list of bindable commands, type the `cmdlist` command to the console and hit enter.
+
+VoxEdit ships with a built-in `selectiontonewnode` alias (`copy; select none; pastenewnode`, bound to `ctrl+shift+n` in model mode) that creates a new model node from the current selection and clears the selection afterwards.
+
+You can also bind your own [alias](../Configuration.md#aliases) that runs several commands at once (`alias mynode "copy; select none; pastenewnode"`).
+
+## Command palette
+
+Press `f1` (or use **Help -> Command Palette**) to open a VS Code style command palette. Focus starts in the filter field so you can type immediately. The list includes console history and all commands; filter matches names and descriptions. Help text is shown on one line and truncated with an ellipsis. Selecting a command shows its parameter fields (Tab completion where available). Confirm with Enter or **Ok**.
+
+## Key bindings
+
+### Contexts
+
+| Context      | Description                                              |
+| ------------ | -------------------------------------------------------- |
+| `all`        | Available in all modes                                   |
+| `model`      | Only available in model mode                             |
+| `scene`      | Only available in scene mode                             |
+| `game`       | Only available in game mode                              |
+| `editing`    | Available in model, scene and game mode                  |
+| `scenegizmo` | Scene mode while the transform gizmo is hovered          |
+| `editgizmo`  | Model mode while the transform/brush gizmo is hovered    |
+
+You can also negate a context by prefixing it with `!`. For example `!scene` means available only when the current context is exactly scene (and not a combination). Use `!scenegizmo` for bindings that must match scene+gizmo exactly.
+
+### Modifiers
+
+Modifiers can be used in two ways:
+
+- As part of a combo: `shift+c` runs when `c` is pressed while shift is held.
+- As a key on their own: `shift` runs when left or right shift is pressed (without needing another key).
+
+If the same modifier is bound both alone and in a combo (e.g. `shift` and `shift+c`), pressing the modifier alone runs the bare binding. Pressing another key while it is held prefers the more specific combo (`shift+c`).
+
+| Modifier      | Description                                      |
+| :------------ | :----------------------------------------------- |
+| `shift`       | Left or right shift                              |
+| `left_shift`  | Left shift                                       |
+| `right_shift` | Right shift                                      |
+| `alt`         | Left or right alt                                |
+| `left_alt`    | Left alt                                         |
+| `right_alt`   | Right alt                                        |
+| `ctrl`        | Left or right control                            |
+| `left_ctrl`   | Left control                                     |
+| `right_ctrl`  | Right control                                    |
+| `gui`         | Left or right GUI key (Windows key, Command key) |
+| `left_gui`    | Left GUI key                                     |
+| `right_gui`   | Right GUI key                                    |
+
+### Mouse
+
+| Button                | Description                      |
+| :-------------------- | :------------------------------- |
+| `left_mouse`          | Left mouse button                |
+| `middle_mouse`        | Middle mouse button              |
+| `right_mouse`         | Right mouse button               |
+| `x1_mouse`            | X1 mouse button                  |
+| `x2_mouse`            | X2 mouse button                  |
+| `wheelup`             | Mouse wheel up                   |
+| `wheeldown`           | Mouse wheel down                 |
+| `wheelleft`           | Mouse wheel left                 |
+| `wheelright`          | Mouse wheel right                |
+| `double_left_mouse`   | Double click left mouse button   |
+| `double_middle_mouse` | Double click middle mouse button |
+| `double_right_mouse`  | Double click right mouse button  |
+| `one_finger_drag`     | Drag with one finger             |
+| `two_finger_drag`     | Drag with two fingers            |
+
+One-finger drag rotates the viewport camera, two-finger drag pans, and a pinch zooms. A short tap still uses the left mouse binding, so placing a voxel stays a tap.
+
+On Android the primary pointer is also treated as a pen (`ve_emulatepen`). Pressure is derived from how fast the pointer moves: a slow stroke uses a larger brush radius, a fast stroke a smaller one. A hardware stylus still sends its own pressure and eraser.
+
+### Keyboard
+
+| Key                  | Name               |
+| :------------------- | :----------------- |
+| `a`                  | A                  |
+| `b`                  | B                  |
+| `c`                  | C                  |
+| `d`                  | D                  |
+| `e`                  | E                  |
+| `f`                  | F                  |
+| `g`                  | G                  |
+| `h`                  | H                  |
+| `i`                  | I                  |
+| `j`                  | J                  |
+| `k`                  | K                  |
+| `l`                  | L                  |
+| `m`                  | M                  |
+| `n`                  | N                  |
+| `o`                  | O                  |
+| `p`                  | P                  |
+| `q`                  | Q                  |
+| `r`                  | R                  |
+| `s`                  | S                  |
+| `t`                  | T                  |
+| `u`                  | U                  |
+| `v`                  | V                  |
+| `w`                  | W                  |
+| `x`                  | X                  |
+| `y`                  | Y                  |
+| `z`                  | Z                  |
+| `1`                  | 1                  |
+| `2`                  | 2                  |
+| `3`                  | 3                  |
+| `4`                  | 4                  |
+| `5`                  | 5                  |
+| `6`                  | 6                  |
+| `7`                  | 7                  |
+| `8`                  | 8                  |
+| `9`                  | 9                  |
+| `0`                  | 0                  |
+| `return`             | Return             |
+| `escape`             | Escape             |
+| `backspace`          | Backspace          |
+| `tab`                | Tab                |
+| `space`              | Space              |
+| `-`                  | -                  |
+| `=`                  | =                  |
+| `[`                  | [                  |
+| `]`                  | ]                  |
+| `\`                  | \                  |
+| `#`                  | #                  |
+| `;`                  | ;                  |
+| `'`                  | '                  |
+| `,`                  | ,                  |
+| `.`                  | .                  |
+| `/`                  | /                  |
+| `f1`                 | F1                 |
+| `f2`                 | F2                 |
+| `f3`                 | F3                 |
+| `f4`                 | F4                 |
+| `f5`                 | F5                 |
+| `f6`                 | F6                 |
+| `f7`                 | F7                 |
+| `f8`                 | F8                 |
+| `f9`                 | F9                 |
+| `f10`                | F10                |
+| `f11`                | F11                |
+| `f12`                | F12                |
+| `pageup`             | PageUp             |
+| `delete`             | Delete             |
+| `end`                | End                |
+| `pagedown`           | PageDown           |
+| `right`              | Right              |
+| `left`               | Left               |
+| `down`               | Down               |
+| `up`                 | Up                 |
+| `f13`                | F13                |
+| `f14`                | F14                |
+| `f15`                | F15                |
+| `f16`                | F16                |
+| `f17`                | F17                |
+| `f18`                | F18                |
+| `f19`                | F19                |
+| `f20`                | F20                |
+| `f21`                | F21                |
+| `f22`                | F22                |
+| `f23`                | F23                |
+| `f24`                | F24                |
+
+## Navigation speed
+
+`cl_cammovementspeed` controls editor keyboard navigation without clipping. Its
+default is 200 screen pixels per second at the camera target plane. It also
+controls the relative scale rate of forward/backward navigation.
+
+Game mode uses `g_movementspeed` instead, with a default of 60 world units per
+second. Changing editor speed does not change game-mode speed or acceleration.
+`+sprint` applies `g_sprintmultiplier` only when clipping is enabled in game mode;
+editor navigation ignores sprint. Wheel zoom uses `cl_camzoomspeed` independently.
+
+## Viewport HUD
+
+Enable `ve_viewporthud` to display brush status and workflow hints. In a layout
+with multiple viewports, the HUD appears only in the hovered viewport and stays
+in the last hovered viewport when the pointer leaves. It remains anchored to the
+lower-left corner of that viewport, including while interacting with its controls.

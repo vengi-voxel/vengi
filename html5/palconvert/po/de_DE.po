@@ -1,0 +1,6307 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: vengi\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-11-02 18:20+0100\n"
+"Last-Translator: \n"
+"Language-Team: German\n"
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: vengi\n"
+"X-Crowdin-Project-ID: 665572\n"
+"X-Crowdin-Language: de\n"
+"X-Crowdin-File: vengi.pot\n"
+"X-Crowdin-File-ID: 2\n"
+"X-Generator: Poedit 3.6\n"
+
+msgid "Log level"
+msgstr "Protokollstufe"
+
+msgid ""
+"The lower the value, the more you see. 1 is the highest log level, 5 is just "
+"fatal errors."
+msgstr ""
+"Je niedriger der Wert, desto mehr sehen Sie. 1 ist das höchste "
+"Protokollniveau, 5 sind nur schwerwiegende Fehler."
+
+msgid "Language"
+msgstr "Sprache"
+
+msgid "The language to use - empty means system default"
+msgstr "Die zu verwendende Sprache - leer bedeutet Systemstandard"
+
+msgid "Max FPS"
+msgstr "Max. FPS"
+
+msgid "The maximum frames per second. Set to 0 to disable the cap."
+msgstr "Die maximale Anzahl Bilder pro Sekunde. 0 schaltet die Begrenzung aus."
+
+msgid "App version"
+msgstr "App-Version"
+
+msgid "The application version"
+msgstr "Die Anwendungsversion"
+
+msgid "Username"
+msgstr "Benutzername"
+
+msgid "The username to use in network sessions"
+msgstr "Der Benutzername für Netzwerksitzungen"
+
+msgid "Print the cvars in json format"
+msgstr "Die cvars im JSON-Format ausgeben"
+
+msgid "Print the version and quit"
+msgstr "Die Version anzeigen und beenden"
+
+msgid "Print this help and quit"
+msgstr "Diese Hilfe anzeigen und beenden"
+
+msgid "Generate completion for bash, zsh and powershell"
+msgstr "Vervollständigung für Bash, ZSH und PowerShell generieren"
+
+msgid "Change log level from 1 (trace) to 6 (only critical)"
+msgstr "Protokollniveau von 1 (Trace) auf 6 (nur kritisch) ändern"
+
+msgid "Metric flavor"
+msgstr "Metrik-Format"
+
+msgid ""
+"The flavor of the metrics output. This can be used to integrate with "
+"different monitoring systems. If empty, metrics are disabled."
+msgstr ""
+"Das Format der Metrik-Ausgabe zur Anbindung an Monitoring-Systeme. Leer "
+"lässt Metriken deaktiviert."
+
+msgid "List all available translated strings"
+msgstr "Alle verfügbaren übersetzten Zeichenketten auflisten"
+
+msgid "Set a variable value"
+msgstr "Einen Variablenwert setzen"
+
+msgid "Clear the variable value"
+msgstr "Einen Variablenwert löschen"
+
+msgid "Quit the application"
+msgstr "Die Anwendung beenden"
+
+msgid "Trigger an assert"
+msgstr "Einen Fehler provozieren"
+
+msgid "Create, update or list command aliases"
+msgstr ""
+
+msgid "Remove a command alias"
+msgstr "Einen Befehlsalias entfernen"
+
+msgid "Clear the value history of a variable"
+msgstr "Den Verlauf des Variablenwerts löschen"
+
+msgid "Just a no-operation command"
+msgstr "Nur ein Befehl ohne Operation"
+
+msgid "Open the given url in a browser"
+msgstr "Die angegebene URL in einem Browser öffnen"
+
+msgid "Print the given arguments to the console (info log level)"
+msgstr ""
+"Die angegebenen Argumente auf der Konsole ausgeben (Info-Protokollniveau)"
+
+msgid "Execute a file with script commands"
+msgstr "Eine Datei mit Skriptbefehlen ausführen"
+
+msgid "Toggle between true/false for a variable"
+msgstr "Umschalten zwischen true/false für eine Variable"
+
+msgid "Increase a cvar value by the given value (default: 1)"
+msgstr "Den Wert einer cvar um den angegebenen Wert erhöhen (Standard: 1)"
+
+msgid "Decrease a cvar value by the given value (default: 1)"
+msgstr "Den Wert einer cvar um den angegebenen Wert verringern (Standard: 1)"
+
+msgid "Show the value of a variable"
+msgstr "Den Wert einer Variable anzeigen"
+
+msgid "Print current milliseconds to console"
+msgstr "Aktuelle Millisekunden auf der Konsole ausgeben"
+
+msgid "Log given message as error"
+msgstr "Die angegebene Nachricht als Fehler protokollieren"
+
+msgid "Log given message as info"
+msgstr "Die angegebene Nachricht als Info protokollieren"
+
+msgid "Log given message as debug"
+msgstr "Die angegebene Nachricht als Debug protokollieren"
+
+msgid "Log given message as warn"
+msgstr "Die angegebene Nachricht als Warnung protokollieren"
+
+msgid "Show the list of known variables (wildcards supported)"
+msgstr "Die Liste der bekannten Variablen anzeigen (Platzhalter unterstützt)"
+
+msgid "Show the list of known commands (wildcards supported)"
+msgstr "Die Liste der bekannten Befehle anzeigen (Platzhalter unterstützt)"
+
+msgid "Enable named pipe for input commands"
+msgstr "Benannte Pipe für Eingabebefehle aktivieren"
+
+msgid "Named pipe"
+msgstr "Named Pipe"
+
+msgid "HTTP timeout"
+msgstr "HTTP-Timeout"
+
+msgid "The timeout for HTTP requests in seconds"
+msgstr "Timeout für HTTP-Anfragen in Sekunden"
+
+msgid "HTTP connect timeout"
+msgstr "HTTP-Verbindungs-Timeout"
+
+msgid "The timeout for HTTP connection in seconds"
+msgstr "Timeout für den HTTP-Verbindungsaufbau in Sekunden"
+
+msgid "Home Path"
+msgstr "Startverzeichnispfad"
+
+msgid "The home directory path for the application"
+msgstr "Pfad zum Home-Verzeichnis der Anwendung"
+
+msgid "Metric UUID"
+msgstr "Metrik-UUID"
+
+msgid "The UUID to use for metrics - if empty, a random one will be generated"
+msgstr "UUID für Metriken – leer erzeugt eine zufällige"
+
+msgid "Metric JSON URL"
+msgstr "Metrik-JSON-URL"
+
+msgid "The URL to send JSON metrics to"
+msgstr "URL, an die JSON-Metriken gesendet werden"
+
+msgid "Metric Host"
+msgstr "Metrik-Host"
+
+msgid "The host to send metrics to"
+msgstr "Host, an den Metriken gesendet werden"
+
+msgid "Metric Port"
+msgstr "Metrik-Port"
+
+msgid "The port to send metrics to"
+msgstr "Port, an den Metriken gesendet werden"
+
+msgid "Color reduction"
+msgstr "Farbreduktion"
+
+msgid "Controls the algorithm that is used to perform the color reduction"
+msgstr "Steuert den Algorithmus, der zur Farbreduktion verwendet wird"
+
+msgid "6 bit colors"
+msgstr "6-Bit Farbwerte"
+
+msgid ""
+"Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
+msgstr ""
+"6-Bit-Farbwerte für die Palette verwenden (0–63) - z. B. in C&C pal-Dateien "
+"verwendet"
+
+msgid "Max image size"
+msgstr "Maximale Bildgröße"
+
+msgid ""
+"The maximum size of an image in x and y direction to quantize to a palette"
+msgstr ""
+"Maximale Größe eines Bildes in X- und Y-Richtung zur Quantisierung auf eine "
+"Palette"
+
+msgid "GIMP RGBA"
+msgstr "GIMP RGBA"
+
+msgid "Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)"
+msgstr ""
+"RGBA-Format für GIMP-Paletten verwenden (statt RGB / Aseprite-Erweiterung)"
+
+msgid "Palette"
+msgstr "Palette"
+
+msgid ""
+"This is the NAME part of palette-<NAME>.png or absolute png file to use "
+"(1x256)"
+msgstr ""
+"Dies ist der NAME-Teil von palette-<NAME>.png oder eine absolute PNG-Datei "
+"zur Verwendung (1x256)"
+
+msgid "Normal palette"
+msgstr "Normalen-Palette"
+
+msgctxt "A palette of normal vectors converted to RGBA values"
+msgid "The normal palette"
+msgstr "Die Normalen Palette"
+
+msgctxt "InterpolationType"
+msgid "Instant"
+msgstr "Sofort"
+
+msgctxt "InterpolationType"
+msgid "Linear"
+msgstr "Linear"
+
+msgctxt "InterpolationType"
+msgid "QuadEaseIn"
+msgstr "QuadEaseIn"
+
+msgctxt "InterpolationType"
+msgid "QuadEaseOut"
+msgstr "QuadEaseOut"
+
+msgctxt "InterpolationType"
+msgid "CubicEaseIn"
+msgstr "CubicEaseIn"
+
+msgctxt "InterpolationType"
+msgid "QuadEaseInOut"
+msgstr "QuadEaseInOut"
+
+msgctxt "InterpolationType"
+msgid "CubicEaseInOut"
+msgstr "CubicEaseInOut"
+
+msgctxt "InterpolationType"
+msgid "CubicEaseOut"
+msgstr "CubicEaseOut"
+
+msgctxt "InterpolationType"
+msgid "CatmullRom"
+msgstr "CatmullRom"
+
+msgctxt "InterpolationType"
+msgid "CubicBezier"
+msgstr "CubicBezier"
+
+msgctxt "SceneGraphNodeType"
+msgid "Model"
+msgstr "Modell"
+
+msgctxt "SceneGraphNodeType"
+msgid "Root"
+msgstr "Wurzel"
+
+msgctxt "SceneGraphNodeType"
+msgid "Group"
+msgstr "Gruppe"
+
+msgctxt "SceneGraphNodeType"
+msgid "ModelReference"
+msgstr "Modellreferenz"
+
+msgctxt "SceneGraphNodeType"
+msgid "Camera"
+msgstr "Kamera"
+
+msgctxt "SceneGraphNodeType"
+msgid "Point"
+msgstr "Punkt"
+
+msgctxt "SceneGraphNodeType"
+msgid "None"
+msgstr "Keine"
+
+msgctxt "SceneGraphNodeType"
+msgid "Unknown"
+msgstr "Unbekannt"
+
+msgctxt "SceneGraphNodeType"
+msgid "All"
+msgstr "Alle"
+
+msgctxt "SceneGraphNodeType"
+msgid "AllModels"
+msgstr "Alle Modelle"
+
+msgid "Enable or disable sound playback"
+msgstr "Tonwiedergabe ein- oder ausschalten"
+
+msgid "Sound enabled"
+msgstr "Ton aktiviert"
+
+msgid "Sound volume"
+msgstr "Lautstärke"
+
+msgid "Sound volume in percent (0-100)"
+msgstr "Lautstärke in Prozent (0–100)"
+
+msgid "Camera free look on toggle"
+msgstr "Kamera-Freisicht umschalten"
+
+msgid "Toggle relative mouse rotation mode"
+msgstr "Relativen Maus-Rotationsmodus umschalten"
+
+msgid "Show all commands"
+msgstr "Alle Befehle anzeigen"
+
+msgid "Show all cvars"
+msgstr "Alle cvars anzeigen"
+
+msgid "Bindings"
+msgstr "Tastenbelegungen"
+
+#, c-format
+msgid "Recording new binding for: %s"
+msgstr "Neue Tastenbelegung für: %s"
+
+msgid ""
+"Press keys to set new binding, then click 'Apply' or press Escape to cancel"
+msgstr ""
+"Tasten drücken, um die Belegung festzulegen, dann 'Übernehmen' oder Escape "
+"zum Abbrechen"
+
+#, c-format
+msgid "New binding: %s"
+msgstr "Neue Tastenbelegungen: %s"
+
+msgid "Apply"
+msgstr "Anwenden"
+
+msgid "Cancel"
+msgstr "Abbrechen"
+
+msgid "Keys"
+msgstr "Tasten"
+
+msgid "Command"
+msgstr "Befehl"
+
+msgid "Context"
+msgstr "Kontext"
+
+msgid "Description"
+msgstr "Beschreibung"
+
+#, c-format
+msgid "Failed to get command for %s"
+msgstr "Fehler beim Abrufen des Befehls für %s"
+
+msgid "Delete binding"
+msgstr "Tastenbelegungen entfernen"
+
+msgid "Reset to default"
+msgstr "Auf Standard zurücksetzen"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "Cloud"
+msgstr "Cloud"
+
+msgid "Desktop"
+msgstr "Desktop"
+
+msgid "Documents"
+msgstr "Dokumente"
+
+msgid "Download"
+msgstr "Herunterladen"
+
+msgid "Fonts"
+msgstr "Schriftarten"
+
+msgid "Pictures"
+msgstr "Bilder"
+
+msgid "Public"
+msgstr "Öffentlich"
+
+msgid "Recent"
+msgstr "Zuletzt"
+
+msgid "Quick Access"
+msgstr "Schnellzugriff"
+
+msgid "This PC"
+msgstr "Dieser PC"
+
+msgid "Bookmarks"
+msgstr "Lesezeichen"
+
+msgid "Remove bookmark"
+msgstr "Lesezeichen entfernen"
+
+msgid "File"
+msgstr "Datei"
+
+msgid "Size"
+msgstr "Größe"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Date"
+msgstr "Datum"
+
+msgid "link"
+msgstr "Link"
+
+msgid "directory"
+msgstr "Verzeichnis"
+
+msgid "Add a bookmark for the current active folder"
+msgstr "Ein Lesezeichen für den aktuellen aktiven Ordner hinzufügen"
+
+msgid "Semicolon separated list of bookmarked directories"
+msgstr "Semikolon-getrennte Liste von Lesezeichen-Verzeichnissen"
+
+msgid "Show hidden"
+msgstr "Versteckte anzeigen"
+
+msgid "Show hidden file system entities"
+msgstr "Versteckte Dateisystem-Entitäten anzeigen"
+
+msgid "Show model preview"
+msgstr "Zeige Modellvorschau"
+
+msgid "Show model preview in file dialog"
+msgstr "Zeige Modellvorschau im Dateidialog"
+
+msgid "Last directory"
+msgstr "Letztes Verzeichnis"
+
+msgid "The last opened directory in the file dialog"
+msgstr "Das zuletzt geöffnete Verzeichnis im Dateidialog"
+
+msgid "Last filter (save)"
+msgstr "Letzter Filter (Speichern)"
+
+msgid "The last selected file type filter in the file dialog"
+msgstr "Der zuletzt ausgewählte Dateitypfilter im Dateidialog"
+
+msgid "Last filter (open)"
+msgstr "Letzter Filter (Öffnen)"
+
+msgid "Not writeable"
+msgstr "Nicht beschreibbar"
+
+msgid "The selected file or directory is not writeable"
+msgstr "Die ausgewählte Datei oder das Verzeichnis ist nicht beschreibbar"
+
+msgid "Create folder"
+msgstr "Ordner erstellen"
+
+msgid "Enter a name for the new folder"
+msgstr "Geben Sie einen Namen für den neuen Ordner ein"
+
+msgid "Create"
+msgstr "Erstellen"
+
+msgid "Folder name can't be empty"
+msgstr "Der Ordnername darf nicht leer sein"
+
+msgid "Folder creation failed"
+msgstr "Ordnererstellung fehlgeschlagen"
+
+msgid "Options"
+msgstr "Optionen"
+
+msgid "File already exists"
+msgstr "Datei existiert bereits"
+
+#, c-format
+msgid ""
+"%s already exist.\n"
+"Do you want to overwrite the file?"
+msgstr ""
+"%s existiert bereits.\n"
+"Möchten Sie die Datei überschreiben?"
+
+msgid "Save file"
+msgstr "Datei speichern"
+
+msgid "Select a directory"
+msgstr "Ein Verzeichnis auswählen"
+
+msgid "Select a file"
+msgstr "Eine Datei auswählen"
+
+msgid "New folder"
+msgstr "Neuer Ordner"
+
+msgid "Filename"
+msgstr "Dateiname"
+
+msgid "Choose"
+msgstr "Auswählen"
+
+msgid "Open"
+msgstr "Öffnen"
+
+msgid "Save"
+msgstr "Speichern"
+
+msgid "Error: You must select a folder!"
+msgstr "Fehler: Sie müssen einen Ordner auswählen!"
+
+msgid "Error: You must select a file!"
+msgstr "Fehler: Sie müssen eine Datei auswählen!"
+
+msgid "Error: You must select a file type!"
+msgstr "Fehler: Sie müssen einen Dateitypen auswählen!"
+
+msgid "Change the ui color theme"
+msgstr "Das UI-Farbschema ändern"
+
+msgid "UI style"
+msgstr "UI-Stil"
+
+msgid "Notification timeout"
+msgstr "Benachrichtigungs-Timeout"
+
+msgid "Timeout for notifications in millis"
+msgstr "Timeout für Benachrichtigungen in Millisekunden"
+
+msgid "Allow multi monitor setups - requires a restart"
+msgstr "Mehrere Monitor-Setups zulassen - erfordert einen Neustart"
+
+msgid "Multi monitor"
+msgstr "Mehrere Monitore"
+
+msgid "Console"
+msgstr "Konsole"
+
+msgid "Show the console panel"
+msgstr "Konsole anzeigen"
+
+msgid "Render UI"
+msgstr "UI rendern"
+
+msgid "Render the ui"
+msgstr "Das UI rendern"
+
+msgid "Show metric and debug window"
+msgstr "Metrik- und Debug-Fenster anzeigen"
+
+msgid "Show metrics"
+msgstr "Metriken anzeigen"
+
+msgid "Only run tests that match the given filter"
+msgstr "Nur Tests ausführen, die dem Filter entsprechen"
+
+msgid "Test filter"
+msgstr "Testfilter"
+
+msgid "Allow to change the ui font size"
+msgstr "Ändern der UI-Schriftgröße zulassen"
+
+msgid "Font size"
+msgstr "Schriftgröße"
+
+msgid "Keymap"
+msgstr "Tastaturbelegung"
+
+msgid "Which keybinding to use"
+msgstr "Welche Tastaturbelegung verwenden"
+
+msgid "Last opened files"
+msgstr "Zuletzt geöffnete Dateien"
+
+msgid "The last opened files in the file dialog, separated by ';'"
+msgstr "Die zuletzt geöffneten Dateien im Dateidialog, getrennt durch ';'"
+
+msgid "Last opened file"
+msgstr "Zuletzt geöffnete Datei"
+
+msgid "The last opened file in the file dialog"
+msgstr "Die zuletzt geöffnete Datei im Dateidialog"
+
+msgid "FPS"
+msgstr "FPS"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Configuration variables"
+msgstr "Konfigurationsvariablen"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Value"
+msgstr "Wert"
+
+msgid "Reset"
+msgstr "Zurücksetzen"
+
+msgid "Reset to default value"
+msgstr "Auf Standardwert zurücksetzen"
+
+msgid "Close"
+msgstr "Schließen"
+
+msgid "Commands"
+msgstr "Befehle"
+
+msgid "Textures"
+msgstr "Texturen"
+
+msgid "Recently opened"
+msgstr "Zuletzt geöffnet"
+
+msgid "Size column to fit###SizeOne"
+msgstr "Spalte anpassen###SizeOne"
+
+msgid "Size all columns to fit###SizeAll"
+msgstr "Alle Spalten anpassen###SizeAll"
+
+msgid "Size all columns to default###SizeAll"
+msgstr "Alle Spalten auf Standardgröße###SizeAll"
+
+msgid "Reset###Reset"
+msgstr "Zurücksetzen###Reset"
+
+msgid "Reset order###ResetOrder"
+msgstr "Reihenfolge zurücksetzen###ResetOrder"
+
+msgid "Reset visibility###ResetVisibility"
+msgstr "Sichtbarkeit zurücksetzen###ResetVisibility"
+
+msgid "(Main menu bar)"
+msgstr "(Hauptmenüleiste)"
+
+msgid "(Popup)"
+msgstr "(Popup)"
+
+msgid "(Untitled)"
+msgstr "(Unbenannt)"
+
+#, c-format
+msgid "Open '%s'"
+msgstr "Öffne '%s'"
+
+msgid "Copy Link###CopyLink"
+msgstr "Link kopieren###CopyLink"
+
+msgid "Hide tab bar###HideTabBar"
+msgstr "Tab-Leiste ausblenden###HideTabBar"
+
+msgid "Hold SHIFT to enable Docking window."
+msgstr "SHIFT gedrückt halten, um das Docking-Fenster zu aktivieren."
+
+msgid "Click and drag to move or undock whole node."
+msgstr ""
+"Klicken und ziehen, um den gesamten Knoten zu verschieben oder zu lösen."
+
+msgid "To change the language everywhere restart the application"
+msgstr ""
+"Um die Sprache überall zu ändern, muss die Applikation neu gestartet werden"
+
+msgid ""
+"The color reduction algorithm that is used when importing RGBA colors from "
+"images or rgba formats"
+msgstr ""
+"Der Farbreduktionsalgorithmus, der beim Importieren von RGBA-Farben aus "
+"Bildern oder RGBA-Formaten verwendet wird"
+
+msgid "Clear"
+msgstr "Löschen"
+
+msgid "Copy"
+msgstr "Kopieren"
+
+msgid "Debug"
+msgstr "Debug"
+
+msgid "Enable debug logging for the console"
+msgstr "Debug-Protokollierung für die Konsole aktivieren"
+
+msgid "Auto scrolling"
+msgstr "Automatisches Scrollen"
+
+msgid "Unknown"
+msgstr "Unbekannt"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Ok"
+msgstr "Ok"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nein"
+
+#, c-format
+msgid ""
+"Open in browser\n"
+"%s"
+msgstr ""
+"Im Browser öffnen\n"
+"%s"
+
+msgid "None selected"
+msgstr "Nichts ausgewählt"
+
+msgid "None"
+msgstr "Nichts"
+
+msgid "Corporate Grey"
+msgstr "Corporate Grey"
+
+msgid "Dark"
+msgstr "Dunkel"
+
+msgid "Light"
+msgstr "Hell"
+
+msgid "Classic"
+msgstr "Klassisch"
+
+msgid "Dark Pastel"
+msgstr "Dunkles Pastell"
+
+msgid "Rose Quartz"
+msgstr "Rosenquarz"
+
+msgid "Gruvbox Hard"
+msgstr "Gruvbox Hard"
+
+msgid "Dracula"
+msgstr "Dracula"
+
+msgid "Enable sending anonymous metrics"
+msgstr "Senden anonymer Metriken aktivieren"
+
+msgid "Send anonymous usage statistics"
+msgstr "Anonyme Nutzungsstatistiken senden"
+
+msgid "About"
+msgstr "Über"
+
+msgid "This is a beta release!"
+msgstr "Dies ist eine Beta-Version!"
+
+msgid "A new version is available!"
+msgstr "Eine neue Version ist verfügbar!"
+
+msgid "You are using the latest version."
+msgstr "Sie verwenden die neueste Version."
+
+msgid "Debug build with reduced performance"
+msgstr "Debug-Build mit verringerter Leistung"
+
+msgid "Website"
+msgstr "Website"
+
+msgid "Bug reports"
+msgstr "Fehlerberichte"
+
+msgid "Mastodon"
+msgstr "Mastodon"
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Credits"
+msgstr "Danksagungen"
+
+msgid "Paths"
+msgstr "Pfade"
+
+msgid "Clear the text from the built-in console"
+msgstr "Den Text aus der integrierten Konsole löschen"
+
+msgid "Print the command history"
+msgstr "Die Befehlshistorie anzeigen"
+
+msgid "Show all known key bindings"
+msgstr "Alle bekannten Tastaturbelegungen anzeigen"
+
+msgid "Bind a command to a key"
+msgstr "Einen Befehl an eine Taste binden"
+
+msgid "Unbind a key"
+msgstr "Eine Taste entbinden"
+
+msgid "Support for DXT/S3TC compressed texture formats"
+msgstr "Unterstützung für DXT/S3TC-komprimierte Texturformate"
+
+msgid "Support for PVRTC compressed texture formats"
+msgstr "Unterstützung für PVRTC-komprimierte Texturformate"
+
+msgid "Support for ETC2 compressed texture formats"
+msgstr "Unterstützung für ETC2-komprimierte Texturformate"
+
+msgid "Support for ATC compressed texture formats"
+msgstr "Unterstützung für ATC-komprimierte Texturformate"
+
+msgid "Support for 32-bit floating point textures"
+msgstr "Unterstützung für 32-Bit-Gleitkomma-Texturen"
+
+msgid "Support for 16-bit half-precision floating point textures"
+msgstr "Unterstützung für 16-Bit-Halbpräzisions-Gleitkomma-Texturen"
+
+msgid "Support for instanced rendering"
+msgstr "Unterstützung für Instanced Rendering"
+
+msgid "Support for renderer debug output messages"
+msgstr "Unterstützung für Renderer-Debugausgaben"
+
+msgid "Support for modifying renderer objects without binding them"
+msgstr "Unterstützung zum Ändern von Renderer-Objekten ohne Binding"
+
+msgid "Support for immutable buffer storage"
+msgstr "Unterstützung für unveränderlichen Pufferspeicher"
+
+msgid "Support for compute shaders"
+msgstr "Unterstützung für Compute-Shader"
+
+msgid "Support for capturing shader output into buffers"
+msgstr "Unterstützung zum Schreiben von Shader-Ausgaben in Puffer"
+
+msgid "Renderer feature cvar"
+msgstr "Renderer-Feature-CVar"
+
+msgid "Show all images in the texture pool"
+msgstr "Alle Bilder im Texturpool anzeigen"
+
+msgid "Multisample buffers"
+msgstr "Multisample-Buffer"
+
+msgid "Window backbuffer MSAA buffers. 0 disables window MSAA."
+msgstr ""
+"MSAA-Puffer des Fenster-Backbuffers. 0 deaktiviert MSAA für das Fenster."
+
+msgid "Multisample samples"
+msgstr "Multisample-Samples"
+
+msgid ""
+"Scene viewport sample count. Also used for the window if "
+"cl_multisamplebuffers is > 0."
+msgstr ""
+"Anzahl der Samples für die Szenenansicht. Wird auch für das Fenster "
+"verwendet, wenn cl_multisamplebuffers > 0 ist."
+
+msgid "Enable high DPI mode"
+msgstr "High-DPI-Modus aktivieren"
+
+msgid "High DPI"
+msgstr "High DPI"
+
+msgid "Activate shadow map"
+msgstr "Aktivieren des Schattenrenderings"
+
+msgid "Shadow map"
+msgstr "Schattenkarte"
+
+msgid "Activate checkerboard rendering"
+msgstr "Schachbrett-Rendering aktivieren"
+
+msgid "Checkerboard"
+msgstr "Schachbrett"
+
+msgid "Activate culling for buffer parts"
+msgstr "Culling für Pufferteile aktivieren"
+
+msgid "Cull buffers"
+msgstr "Buffer ausblenden"
+
+msgid "Activate culling for scene nodes"
+msgstr "Culling für Szenenknoten aktivieren"
+
+msgid "Cull nodes"
+msgstr "Knoten ausblenden"
+
+msgid "Activate bloom post processing"
+msgstr "Bloom-Nachbearbeitung aktivieren"
+
+msgid "Bloom"
+msgstr "Bloom"
+
+msgid "Bloom passes"
+msgstr "Bloom-Durchläufe"
+
+msgid "Number of bloom downsample/upsample passes. Does not reallocate FBOs."
+msgstr ""
+"Anzahl der Bloom-Durchläufe zum Herunter- und Hochskalieren. FBOs werden "
+"dabei nicht neu zugewiesen."
+
+msgid "Activate shadow debug rendering"
+msgstr "Schatten-Debug-Rendering aktivieren"
+
+msgid "Debug shadows"
+msgstr "Schatten debuggen"
+
+msgid "Shadow map size"
+msgstr "Schattenkartengröße"
+
+msgid "The size of the shadow map"
+msgstr "Die Größe der Schattenkarte"
+
+msgid "Activate cascade shadow map debug rendering"
+msgstr "Debug-Rendering für kaskadierende Schattenkarte aktivieren"
+
+msgid "Debug cascades"
+msgstr "Cascades debuggen"
+
+msgid "Gamma"
+msgstr "Gamma"
+
+msgid "Gamma correction"
+msgstr "Gammakorrektur"
+
+msgid "The display index to create the window on"
+msgstr "Anzeigeindex, auf dem das Fenster erstellt wird"
+
+msgid "Window display"
+msgstr "Fensteranzeige"
+
+msgid "OpenGL Version"
+msgstr "OpenGL-Version"
+
+msgid "The OpenGL version to use"
+msgstr "Zu verwendende OpenGL-Version"
+
+msgid "Outlines"
+msgstr "Umrisslinien"
+
+msgid "Render voxel outline"
+msgstr "Voxel-Umriss rendern"
+
+msgid "Color tint applied to selected voxels (RGBA)"
+msgstr "Farbtönung für ausgewählte Voxel (RGBA)"
+
+msgid "Selection tint"
+msgstr "Auswahl-Tönung"
+
+msgid "Normals"
+msgstr "Normalen"
+
+msgid "Render voxel normals"
+msgstr "Voxelnormalen rendern"
+
+msgid "None, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
+msgstr "Keine, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
+
+msgid "Tone mapping"
+msgstr "Tonemapping"
+
+msgid "Limit the framerate to the monitor refresh rate"
+msgstr "Begrenze die Bildrate auf die Bildwiederholfrequenz des Monitors"
+
+msgid "VSync"
+msgstr "VSync"
+
+msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
+msgstr "0 deaktiviert es, 1 nur höchste Schwere, 2 mittlere Schwere, 3 alles"
+
+msgid "Debug severity"
+msgstr "Debug-Schweregrad"
+
+msgid "Rotation speed"
+msgstr "Drehgeschwindigkeit"
+
+msgid "The rotation speed when using the mouse to rotate the camera"
+msgstr "Drehgeschwindigkeit der Kamera mit der Maus"
+
+msgid "The zoom speed when using the mouse to zoom the camera"
+msgstr "Zoomgeschwindigkeit der Kamera mit der Maus"
+
+msgid "Zoom speed"
+msgstr "Zoom-Geschwindigkeit"
+
+msgid "Max anisotropy"
+msgstr "Max. Anisotropie"
+
+msgid "The maximum anisotropy level for textures - -1 means use device max"
+msgstr "Maximale Anisotropiestufe für Texturen; -1 = Gerätemaximum"
+
+msgid "Max zoom"
+msgstr "Max. Zoom"
+
+msgid "The maximum zoom level for the camera"
+msgstr "Die maximale Zoomstufe für die Kamera"
+
+msgid "Min zoom"
+msgstr "Min. Zoom"
+
+msgid "The minimum zoom level for the camera"
+msgstr "Minimale Zoomstufe der Kamera"
+
+msgid "Minimize the window"
+msgstr "Das Fenster minimieren"
+
+msgid "A palette of normal vectors converted to RGBA values"
+msgstr "Eine Palette von Normalenvektoren als RGBA-Werte"
+
+msgid "A palette of voxel colors"
+msgstr "Eine Palette von Voxelfarben"
+
+msgid "Voxel palette"
+msgstr "Voxel-Palette"
+
+msgid "The size of the voxel mesh"
+msgstr "Die Größe des Voxel-Meshs"
+
+msgid "Voxel Mesh Size"
+msgstr "Voxel-Mesh-Größe"
+
+msgid "Mesh mode"
+msgstr "Mesh-Modus"
+
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
+msgstr "0 = Würfel, 1 = Marching Cubes, 2 = binärer Mesher"
+
+msgid "Mesh allocation strategy"
+msgstr "Mesh-Allokationsstrategie"
+
+msgid ""
+"0 = full pre-alloc (best for small models), 1 = small alloc (best for large "
+"models)"
+msgstr ""
+"0 = volle Vorallokation (gut für kleine Modelle), 1 = kleine Allokation (gut "
+"für große Modelle)"
+
+msgid "Local directory"
+msgstr "Lokales Verzeichnis"
+
+msgid "The local directory to load voxel files from"
+msgstr "Lokales Verzeichnis zum Laden von Voxeldateien"
+
+msgid "HTTP connect timeout for assets"
+msgstr "HTTP-Verbindungs-Timeout für Assets"
+
+msgid "The timeout for HTTP connection in seconds for assets"
+msgstr "Timeout für den HTTP-Verbindungsaufbau zu Assets in Sekunden"
+
+msgid "HTTP timeout for assets"
+msgstr "HTTP-Timeout für Assets"
+
+msgid "The timeout for HTTP request in seconds for assets"
+msgstr "Timeout für HTTP-Anfragen zu Assets in Sekunden"
+
+msgid "Merge quads"
+msgstr "Quads zusammenführen"
+
+msgid "Merge similar quads to optimize the mesh"
+msgstr "Ähnliche Quads zusammenführen, um das Mesh zu optimieren"
+
+msgctxt "Voxel mesh mode description"
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
+msgstr "0 = Würfel, 1 = Marching Cubes, 2 = binärer Mesher, 3 = Greedy-Textur"
+
+msgid "Reuse vertices"
+msgstr "Vertices wiederverwenden"
+
+msgid "Reuse vertices or always create new ones"
+msgstr "Vertices wiederverwenden oder immer neue erstellen"
+
+msgid "RGB weighted average"
+msgstr "RGB gewichteter Durchschnitt"
+
+msgid ""
+"If multiple triangles contribute to the same voxel the color values are "
+"averaged based on their area contribution - otherwise only the biggest "
+"triangle counts"
+msgstr ""
+"Wenn mehrere Dreiecke zum selben Voxel beitragen, werden die Farbwerte "
+"basierend auf ihrem Flächenanteil gemittelt - andernfalls zählt nur das "
+"größte Dreieck"
+
+msgid "Ambient occlusion"
+msgstr "Ambient occlusion"
+
+msgid "Extra vertices for ambient occlusion"
+msgstr "Zusätzliche Vertices für Ambient Occlusion"
+
+msgid "RGB flatten factor"
+msgstr "RGB-Abflachfaktor"
+
+msgid "The RGB color flatten factor for importing color and mesh formats"
+msgstr "RGB-Abflachfaktor beim Importieren von Farb- und Mesh-Formaten"
+
+msgid "Target"
+msgstr "Ziel"
+
+msgid ""
+"Target number of colors after voxelization (0 = no limit, otherwise quantize "
+"to this amount)"
+msgstr ""
+"Zielanzahl Farben nach der Voxelisierung (0 = kein Limit, sonst "
+"Quantisierung auf diese Anzahl)"
+
+msgid "Save visible only"
+msgstr "Nur sichtbares speichern"
+
+msgid "Save only visible nodes"
+msgstr "Nur sichtbare Knoten speichern"
+
+msgid "Uniform scale"
+msgstr "Gleichmäßige Skalierung"
+
+msgid "Scale the vertices for voxelization on all axis by the given factor"
+msgstr ""
+"Skaliere die Vertices zur Voxelisierung auf allen Achsen um den angegebenen "
+"Faktor"
+
+msgid "X axis scale"
+msgstr "X-Achsen-Skalierung"
+
+msgid "Scale the vertices for voxelization X axis by the given factor"
+msgstr ""
+"Skaliere die Vertices zur Voxelisierung auf der X-Achse um den angegebenen "
+"Faktor"
+
+msgid "Y axis scale"
+msgstr "Y-Achsen-Skalierung"
+
+msgid "Scale the vertices for voxelization Y axis by the given factor"
+msgstr ""
+"Skaliere die Vertices zur Voxelisierung auf der Y-Achse um den angegebenen "
+"Faktor"
+
+msgid "Z axis scale"
+msgstr "Z-Achsen-Skalierung"
+
+msgid "Scale the vertices for voxelization Z axis by the given factor"
+msgstr ""
+"Skaliere die Vertices zur Voxelisierung auf der Z-Achse um den angegebenen "
+"Faktor"
+
+msgid "Exports quads"
+msgstr "Quads exportieren"
+
+msgid "Export as quads. If this false, triangles will be used."
+msgstr "Exportiere als Quads. Falls false, werden Dreiecke verwendet."
+
+msgid "Vertex colors"
+msgstr "Vertexfarben"
+
+msgid "Export with vertex colors"
+msgstr "Exportiere mit Vertexfarben"
+
+msgid "Export vertex normals"
+msgstr "Vertexnormalen exportieren"
+
+msgid "Voxel normals"
+msgstr "Voxelnormalen"
+
+msgid ""
+"Use stored voxel normals when exporting normals with Cubic or Binary "
+"extraction. May increase vertex count."
+msgstr ""
+"Gespeicherte Voxelnormalen beim Export von Normalen mit kubischer oder "
+"binärer Extraktion verwenden. Kann die Anzahl der Vertices erhöhen."
+
+msgid "Vertex colors as float"
+msgstr "Vertexfarben als Fließkommazahlen"
+
+msgid ""
+"Export with vertex colors as float values (if vertex colors are exported)"
+msgstr ""
+"Exportiere Vertexfarben als Float-Werte (falls Vertexfarben exportiert "
+"werden)"
+
+msgid "Texture coordinates"
+msgstr "Texturkoordinaten"
+
+msgid "Export with uv coordinates of the palette image"
+msgstr "Exportiere mit UV-Koordinaten des Palettenbildes"
+
+msgid "Apply transformations"
+msgstr "Transformationen anwenden"
+
+msgid "Apply the scene graph transform to mesh exports"
+msgstr "Wende die Szenengraph-Transformation auf Mesh-Exporte an"
+
+msgid "Apply optimizations"
+msgstr "Optimierungen anwenden"
+
+msgid "Apply mesh optimization steps when saving mesh based formats"
+msgstr "Mesh-Optimierungsschritte beim Speichern von Mesh-Formaten anwenden"
+
+msgid "Fill hollow"
+msgstr "Hohlraum füllen"
+
+msgid "Fill the hollows when voxelizing a mesh format"
+msgstr "Fülle die Hohlräume bei der Voxelisierung eines Mesh-Formats"
+
+msgid "0 = high quality, 1 = faster and less memory"
+msgstr "0 = hohe Qualität, 1 = schneller und weniger Speicher"
+
+msgid "Voxelize mode"
+msgstr "Voxelisierungsmodus"
+
+msgid "Chunked voxelization"
+msgstr "Chunk-Voxelisierung"
+
+msgid "Enable chunked voxelization for large meshes"
+msgstr "Chunk-Voxelisierung für große Meshes aktivieren"
+
+msgid "Chunk size"
+msgstr "Chunk-Größe"
+
+msgid "Chunk size for chunked voxelization"
+msgstr "Chunk-Größe für die Chunk-Voxelisierung"
+
+msgid "Voxel size"
+msgstr "Voxelgröße"
+
+msgid ""
+"The number of voxels on the largest scene axis (0 = disabled, use scale "
+"cvars instead)."
+msgstr ""
+"Anzahl der Voxel auf der längsten Szenenachse (0 = deaktiviert, stattdessen "
+"Scale-CVars verwenden)."
+
+msgid "Palette mode"
+msgstr "Palettenmodus"
+
+msgid "Use palette mode in qubicle qbt export"
+msgstr "Verwende Palettenmodus beim Qubicle QBT-Export"
+
+msgid "Merge compounds"
+msgstr "Verbindungen zusammenführen"
+
+msgctxt "Merge compounds when loading Qubicle QBT files"
+msgid "Merge compounds on load"
+msgstr "Verbindungen beim Laden zusammenführen"
+
+msgid "Merge all objects into one"
+msgstr "Alle Objekte in eines zusammenführen"
+
+msgid "Single object"
+msgstr "Einzelnes Objekt"
+
+msgid "Empty palette index"
+msgstr "Leerer Paletteneintrag"
+
+msgid "The index of the empty color in the palette"
+msgstr "Der Index der leeren Farbe in der Palette"
+
+msgid "Load HVA"
+msgstr "HVA laden"
+
+msgid "Load the hva for animations"
+msgstr "HVA für Animationen laden"
+
+msgid "Load KFA"
+msgstr "KFA laden"
+
+msgid "Load the kfa sidecar for kv6 hinge animations"
+msgstr "Die KFA-Begleitdatei für KV6-Scharnieranimationen laden"
+
+msgid "Crop on load"
+msgstr "Beim Laden zuschneiden"
+
+msgid "Crop volumes to tight bounds on load to save memory"
+msgstr ""
+"Volumina beim Laden auf enge Grenzen zuschneiden, um Speicher zu sparen"
+
+msgid "Dedupe texture atlas"
+msgstr "Texturatlas deduplizieren"
+
+msgid ""
+"Reuse identical color patches in the greedy texture atlas to pack more faces"
+msgstr ""
+"Identische Farbflächen im Greedy-Texturatlas wiederverwenden, um mehr "
+"Flächen unterzubringen"
+
+msgid "Create groups"
+msgstr "Gruppen erstellen"
+
+msgctxt "Create groups when saving MagicaVoxel vox files"
+msgid "Create groups for vox file"
+msgstr "Gruppen für vox Dateien erstellen"
+
+msgid "Create layers"
+msgstr "Ebenen erstellen"
+
+msgctxt "Create layers when saving MagicaVoxel vox files"
+msgid "Create layers for vox file"
+msgstr "Ebenen für vox Dateien erstellen"
+
+msgid "Animation as nodes"
+msgstr "Animation als Knoten"
+
+msgctxt ""
+"Import MagicaVoxel animation frames as dedicated single volume nodes instead "
+"of keyframe animations"
+msgid "Import animation frames as nodes"
+msgstr "Animationsframes als Knoten importieren"
+
+msgid "Apply transforms"
+msgstr "Transformationen anwenden"
+
+msgctxt ""
+"Bake MagicaVoxel nTRN transforms into voxels on load (default). Disable to "
+"keep shared models and node TRS"
+msgid "Bake MagicaVoxel transforms into voxels"
+msgstr "MagicaVoxel-Transformationen in die Voxeldaten einrechnen"
+
+msgid "Left handed"
+msgstr "Linkshändig"
+
+msgid "Toggle between left and right handed"
+msgstr "Zwischen Links- und Rechtshändig umschalten"
+
+msgid "Compressed"
+msgstr "Komprimiert"
+
+msgctxt "Save qubicle voxel files with RLE compression enabled"
+msgid "Save RLE compressed"
+msgstr "RLE-komprimiert speichern"
+
+msgid "Create palette"
+msgstr "Palette erstellen"
+
+msgid ""
+"Create own palette from textures or colors or remap the existing palette "
+"colors to a new palette"
+msgstr ""
+"Erstelle eine eigene Palette aus Texturen oder Farben oder ordne die "
+"vorhandenen Palettenfarben einer neuen Palette zu"
+
+msgid "Save as point cloud"
+msgstr "Als Punktwolke speichern"
+
+msgid ""
+"Export visible voxels as point samples for mesh formats that support point "
+"cloud saving"
+msgstr ""
+"Sichtbare Voxel als Punktsampelexport für Mesh-Formate mit Punktwolken-"
+"Unterstützung"
+
+msgid "Point cloud size"
+msgstr "Punktwolkengröße"
+
+msgid "Specify the side length for the voxels when loading a point cloud"
+msgstr "Spezifiziere die Seitenlänge der Voxel beim Laden einer Punktwolke an"
+
+msgid "KHR_materials_pbrSpecularGlossiness"
+msgstr "KHR_materials_pbrSpecularGlossiness"
+
+msgid ""
+"Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format "
+"(prefer KHR_materials_specular)"
+msgstr ""
+"Wende KHR_materials_pbrSpecularGlossiness beim Speichern im glTF-Format an "
+"(verwende KHR_materials_specular bevorzugt)"
+
+msgid "KHR_materials_specular"
+msgstr "KHR_materials_specular"
+
+msgid "Apply KHR_materials_specular when saving into the glTF format"
+msgstr "Wende KHR_materials_specular beim Speichern im glTF-Format an"
+
+msgid "Create Godot project"
+msgstr "Godot-Projekt erstellen"
+
+msgid ""
+"Create project.godot beside the scene and set it as the main scene. Existing "
+"projects are preserved."
+msgstr ""
+"project.godot im Verzeichnis der Szene erstellen und die Szene als "
+"Hauptszene festlegen. Bestehende Projekte bleiben erhalten."
+
+msgid "Export materials"
+msgstr "Materialien exportieren"
+
+msgid "Try to export material properties if the formats support it"
+msgstr ""
+"Versuche, Materialeigenschaften zu exportieren, falls die Formate dies "
+"unterstützen"
+
+msgid "Max depth"
+msgstr "Max. Tiefe"
+
+msgid "The maximum depth of the volume when importing an image as volume"
+msgstr ""
+"Die maximale Tiefe des Volumens beim Importieren eines Bildes als Volumen"
+
+msgid "Min height"
+msgstr "Mindesthöhe"
+
+msgid ""
+"The minimum height of the heightmap when importing an image as heightmap"
+msgstr ""
+"Die Mindesthöhe der Höhenkarte beim Importieren eines Bildes als Höhenkarte"
+
+msgid "Both sides"
+msgstr "Beide Seiten"
+
+msgid "Import the image as volume for both sides"
+msgstr "Importiere das Bild als Volumen für beide Seiten"
+
+msgid "Texture search path"
+msgstr "Texturensuchpfad"
+
+msgid "Register an additional search path for texture lookups"
+msgstr "Registriere einen zusätzlichen Suchpfad für die Texturauflösung"
+
+msgid "0 = plane, 1 = heightmap, 2 = volume"
+msgstr "0 = Ebene, 1 = Höhenkarte, 2 = Volumen"
+
+msgid "Image import type"
+msgstr "Bildimporttyp"
+
+msgid "Image save type"
+msgstr "Bildspeichertyp"
+
+msgctxt "Image save type"
+msgid "0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"
+msgstr "0 = Ebene, 1 = Höhenkarte, 2 = Volumen, 3 = Miniaturansicht"
+
+msgid "Slice offset axis"
+msgstr "Slice-Versatz-Achse"
+
+msgid ""
+"The axis to offset the slices when importing images as volumes or heightmaps"
+msgstr ""
+"Die Achse zum Versatz der Slices beim Importieren von Bildern als Volumen "
+"oder Höhenkarten"
+
+msgid "Slice offset"
+msgstr "Slice-Versatz"
+
+msgid "The offset of the slices when importing images as volumes or heightmaps"
+msgstr ""
+"Der Versatz der Slices beim Importieren von Bildern als Volumen oder "
+"Höhenkarten"
+
+msgid "Schematic type"
+msgstr "Schematic-Typ"
+
+msgid "The type of schematic format to use when saving schematics"
+msgstr "Der Typ des Schematic-Formats beim Speichern von Schematics"
+
+msgid "Binvox version"
+msgstr "Binvox Version"
+
+msgctxt "Binvox format version"
+msgid "Save in version 1, 2 or the unofficial version 3"
+msgstr "In Version 1, 2 oder der inoffiziellen Version 3 speichern"
+
+msgid "Apply transforms to Minecraft skins"
+msgstr "Transformationen bei Minecraft Skins anwenden"
+
+msgid "Add groups"
+msgstr "Gruppen hinzufügen"
+
+msgid "Add groups for body parts of Minecraft skins"
+msgstr "Füge Gruppen für Körperteile von Minecraft-Skins hinzu"
+
+msgid "Merge faces"
+msgstr "Seiten zusammenführen"
+
+msgid "Merge face parts into single volume for Minecraft skins"
+msgstr ""
+"Führe Oberflächenteile in ein einzelnes Volumen für Minecraft-Skins zusammen"
+
+msgid "Separate water"
+msgstr "Wasser trennen"
+
+msgid ""
+"Put Minecraft water voxels into a dedicated transparent volume as a child of "
+"each region"
+msgstr ""
+"Minecraft-Wasservoxel in einem eigenen transparenten Volumen als Kindknoten "
+"jeder Region ablegen"
+
+msgid "Merge MC regions"
+msgstr "MC-Regionen zusammenführen"
+
+msgid ""
+"Merge each Minecraft region file into one volume on level.dat / mcworld "
+"load. Disable to keep per-chunk volumes (faster and less memory for large "
+"maps and thumbnails)"
+msgstr ""
+"Beim Laden von level.dat / mcworld jede Minecraft-Regionsdatei zu einem "
+"Volumen zusammenführen. Deaktivieren, um ein Volumen pro Chunk beizubehalten "
+"(schneller und weniger Speicherbedarf bei großen Karten und Vorschaubildern)"
+
+msgid "MC load radius"
+msgstr "MC-Laderadius"
+
+msgid ""
+"Minecraft region files to load around spawn for level.dat / mcworld. -1 = "
+"all regions, 0 = spawn region only, N = Chebyshev distance in region units "
+"(512 blocks)"
+msgstr ""
+"Minecraft-Regionsdateien, die bei level.dat / mcworld um den Spawnpunkt "
+"geladen werden. -1 = alle Regionen, 0 = nur die Spawnregion, N = "
+"Tschebyscheff-Abstand in Regionseinheiten (512 Blöcke)"
+
+msgid "MC load region"
+msgstr "MC-Ladebereich"
+
+msgid ""
+"Optional block AABB filter for Minecraft level.dat / mcworld import. Format: "
+"'minX minY minZ maxX maxY maxZ'. Only region files intersecting this box are "
+"loaded. Combined with voxformat_mcloadradius when both are set."
+msgstr ""
+"Optionaler achsenparalleler Begrenzungsrahmen (AABB) in Blockkoordinaten für "
+"den Import von Minecraft level.dat / mcworld. Format: 'minX minY minZ maxX "
+"maxY maxZ'. Nur Regionsdateien, die diesen Rahmen schneiden, werden geladen. "
+"Wird mit voxformat_mcloadradius kombiniert, wenn beide gesetzt sind."
+
+msgid "Simplify"
+msgstr "Vereinfachen"
+
+msgid "Simplify the mesh when voxelizing a mesh format"
+msgstr "Vereinfache das Mesh bei der Voxelisierung eines Mesh-Formats"
+
+msgid "Mesh simplify ratio"
+msgstr "Mesh-Vereinfachungsrate"
+
+msgid ""
+"Target fraction of triangle indices to keep when simplifying meshes on "
+"import or export (0 or 1 = disable)"
+msgstr ""
+"Zielanteil der Dreiecksindizes, die beim Vereinfachen von Meshes beim Import "
+"oder Export erhalten bleiben (0 oder 1 = deaktivieren)"
+
+msgid "Region filter"
+msgstr "Regionenfilter"
+
+msgid ""
+"World coordinate region filter for GML/CityGML import. Format: 'minX minY "
+"minZ maxX maxY maxZ' in GML world coordinates. Only applied when the "
+"estimated voxel region exceeds the size threshold. Objects fully inside this "
+"region are imported, others are skipped."
+msgstr ""
+"Weltkoordinaten-Regionfilter für GML/CityGML-Import. Format: 'minX minY minZ "
+"maxX maxY maxZ' in GML-Weltkoordinaten. Nur wenn die geschätzte Voxelregion "
+"die Größenschwelle überschreitet. Objekte vollständig in der Region werden "
+"importiert, andere übersprungen."
+
+msgid "Filename filter"
+msgstr "Dateinamenfilter"
+
+msgid ""
+"Filename filter for GML/CityGML import. Only import files that contain this "
+"string in their filename. Wildcards are supported."
+msgstr ""
+"Dateinamensfilter für GML/CityGML-Import. Nur Dateien, deren Name diese "
+"Zeichenkette enthält. Wildcards werden unterstützt."
+
+msgid "Overpass API URL"
+msgstr "Overpass-API-URL"
+
+msgid "The URL of the Overpass API endpoint"
+msgstr "URL des Overpass-API-Endpunkts"
+
+msgid "Meters per voxel"
+msgstr "Meter pro Voxel"
+
+msgid "The number of real-world meters each voxel represents in OSM imports"
+msgstr "Anzahl realer Meter, die ein Voxel bei OSM-Importen darstellt"
+
+msgid "LDraw library path"
+msgstr "LDraw-Bibliothekspfad"
+
+msgid "Path to the LDraw parts library directory for resolving part references"
+msgstr "Pfad zur LDraw-Teilebibliothek zum Auflösen von Teilreferenzen"
+
+msgid "2D depth factor"
+msgstr "2D-Tiefenfaktor"
+
+msgid "Darken farther voxels when rendering a volume to a 2D image"
+msgstr ""
+
+msgid "Background"
+msgstr "Hintergrund"
+
+msgid "Background color for volume image renders (RGBA)"
+msgstr ""
+
+msgid "Image width"
+msgstr "Bildbreite"
+
+msgid "Output width in pixels. -1 keeps the native size"
+msgstr ""
+
+msgid "Image height"
+msgstr "Bildhöhe"
+
+msgid "Output height in pixels. -1 keeps the native size"
+msgstr ""
+
+msgid "Upscale"
+msgstr "Hochskalieren"
+
+msgid "Allow enlarging the image when width or height exceed the native size"
+msgstr ""
+
+msgid "Isometric"
+msgstr "Isometrisch"
+
+msgid "Use isometric projection when rendering a volume to an image"
+msgstr ""
+
+msgid "Iso shading"
+msgstr "Iso-Schattierung"
+
+msgid "Apply face shading to isometric renders"
+msgstr ""
+
+msgid "Iso normals"
+msgstr "Iso-Normalen"
+
+msgid "Light isometric voxels from their stored normal palette direction"
+msgstr ""
+
+msgid "Iso materials"
+msgstr "Iso-Materialien"
+
+msgid "Apply palette materials (emit, metal, roughness) to isometric renders"
+msgstr ""
+
+msgid "Iso transparency"
+msgstr "Iso-Transparenz"
+
+msgid ""
+"Blend palette alpha in isometric renders, and let those voxels show what is "
+"behind them"
+msgstr ""
+
+msgid "Silhouette"
+msgstr ""
+
+msgid "Ink pixels that touch an empty neighbor in isometric renders"
+msgstr ""
+
+msgid "Iso outline color"
+msgstr "Iso-Umrissfarbe"
+
+msgid "Outline color for isometric renders (RGBA)"
+msgstr ""
+
+msgid "Binary"
+msgstr "Binär"
+
+msgid "Cubes"
+msgstr "Würfel"
+
+msgid "Greedy texture"
+msgstr "Greedy-Textur"
+
+msgid "Marching cubes"
+msgstr "Marching Cubes"
+
+msgid "Binvox 1 (white)"
+msgstr "Binvox 1 (weiß)"
+
+msgid "Binvox 2 (multi colors)"
+msgstr "Binvox 2 (Mehrfarbig)"
+
+msgid "Binvox 3 (unofficial)"
+msgstr "Binvox 3 (inoffiziell)"
+
+msgid "Heightmap"
+msgstr "Höhenkarte"
+
+msgid "Plane"
+msgstr "Ebene"
+
+msgid "Thumbnail"
+msgstr "Miniaturansicht"
+
+msgid "Volume"
+msgstr "Volumen"
+
+msgid "Fast"
+msgstr "Schnell"
+
+msgid "High quality"
+msgstr "Hohe Qualität"
+
+msgid "Draw line forwards"
+msgstr "Linie nach vorne zeichnen"
+
+msgid "Set voxel type"
+msgstr "Voxeltyp festlegen"
+
+msgid "Move backwards (no drawing)"
+msgstr "Rückwärts bewegen (kein Zeichnen)"
+
+msgid "Leaf"
+msgstr "Blatt"
+
+msgid "Rotate right"
+msgstr "Nach rechts drehen"
+
+msgid "Rotate left"
+msgstr "Nach links drehen"
+
+msgid "Rotate forward"
+msgstr "Nach vorne drehen"
+
+msgid "Rotate back"
+msgstr "Nach hinten drehen"
+
+msgid "Increment width"
+msgstr "Breite erhöhen"
+
+msgid "Decrement width"
+msgstr "Breite verringern"
+
+msgid "Push"
+msgstr "Drücken"
+
+msgid "Pop"
+msgstr "Herausnehmen"
+
+msgid "Samples"
+msgstr "Samples"
+
+msgid "Per-pixel pathtracer samples"
+msgstr "Pathtracer-Samples pro Pixel"
+
+msgid "Bounces"
+msgstr "Bounces"
+
+msgid "Maximum light bounces for the pathtracer"
+msgstr "Maximale Anzahl der Lichtreflexionen für den Pathtracer"
+
+msgid "Pathtracer samples computed per frame"
+msgstr "Pro Frame berechnete Pathtracer-Samples"
+
+msgid "Samples per pass"
+msgstr "Samples pro Durchlauf"
+
+msgid "Resolution"
+msgstr "Auflösung"
+
+msgid "Square pathtracer output size in pixels"
+msgstr "Quadratische Ausgabegröße des Pathtracers in Pixeln"
+
+msgid "Exposure"
+msgstr "Belichtung"
+
+msgid "Pathtracer exposure compensation in stops"
+msgstr "Belichtungskompensation des Pathtracers in Blendenstufen"
+
+msgid "Pathtracer tone mapping operator"
+msgstr "Tonemapping-Operator des Pathtracers"
+
+msgid "Contrast"
+msgstr "Kontrast"
+
+msgid "Pathtracer contrast"
+msgstr "Kontrast des Pathtracers"
+
+msgid "Saturation"
+msgstr "Sättigung"
+
+msgid "Pathtracer saturation"
+msgstr "Sättigung des Pathtracers"
+
+msgid "Vignette"
+msgstr "Vignette"
+
+msgid "Pathtracer vignette strength"
+msgstr "Vignettenstärke des Pathtracers"
+
+msgid "Aperture"
+msgstr "Blende"
+
+msgid "Pathtracer lens aperture for depth of field"
+msgstr "Objektivblende des Pathtracers für die Tiefenschärfe"
+
+msgid "Focus distance"
+msgstr "Fokusabstand"
+
+msgid "Pathtracer focus distance for depth of field"
+msgstr "Fokusabstand des Pathtracers für die Tiefenschärfe"
+
+msgid "Pathtracer sun elevation angle in degrees"
+msgstr "Sonnenhöhenwinkel des Pathtracers in Grad"
+
+msgid "Sun elevation"
+msgstr "Sonnenhöhe"
+
+msgid "Sun azimuth"
+msgstr "Sonnenazimut"
+
+msgid "Pathtracer sun azimuth angle in degrees"
+msgstr "Azimutwinkel der Sonne des Pathtracers in Grad"
+
+msgid "Pathtracer sun intensity"
+msgstr "Sonnenintensität des Pathtracers"
+
+msgid "Sun intensity"
+msgstr "Sonnenintensität"
+
+msgid "Pathtracer sun disk size in degrees"
+msgstr "Größe der Sonnenscheibe des Pathtracers in Grad"
+
+msgid "Sun softness"
+msgstr "Sonnenweichheit"
+
+msgid "Sun color"
+msgstr "Sonnenfarbe"
+
+msgid "Pathtracer sun color (RGB)"
+msgstr "Sonnenfarbe des Pathtracers (RGB)"
+
+msgid "Sky top"
+msgstr "Himmel oben"
+
+msgid "Pathtracer sky top color (RGB)"
+msgstr "Himmelsfarbe im Zenit des Pathtracers (RGB)"
+
+msgid "Sky horizon"
+msgstr "Himmel Horizont"
+
+msgid "Pathtracer sky horizon color (RGB)"
+msgstr "Himmelsfarbe am Horizont des Pathtracers (RGB)"
+
+msgid "Pathtracer sky intensity"
+msgstr "Himmelsintensität des Pathtracers"
+
+msgid "Sky intensity"
+msgstr "Himmelintensität"
+
+msgid "Floor"
+msgstr "Boden"
+
+msgid "Enable the pathtracer ground plane"
+msgstr "Bodenebene des Pathtracers aktivieren"
+
+msgid "Floor color"
+msgstr "Bodenfarbe"
+
+msgid "Pathtracer ground plane color (RGB)"
+msgstr "Farbe der Bodenebene des Pathtracers (RGB)"
+
+msgid "Floor Y"
+msgstr "Boden-Y"
+
+msgid "Pathtracer ground plane height"
+msgstr "Höhe der Bodenebene des Pathtracers"
+
+msgid "Depth of field"
+msgstr "Tiefenschärfe"
+
+msgid "Enable pathtracer depth of field"
+msgstr "Tiefenschärfe des Pathtracers aktivieren"
+
+msgid "0 = sky, 1 = solid, 2 = transparent"
+msgstr "0 = Himmel, 1 = einfarbig, 2 = transparent"
+
+msgid "Background color"
+msgstr "Hintergrundfarbe"
+
+msgid "Pathtracer solid background color (RGB)"
+msgstr "Einfarbiger Hintergrund des Pathtracers (RGB)"
+
+msgid "Fog density"
+msgstr "Nebeldichte"
+
+msgid "Pathtracer fog density"
+msgstr "Nebeldichte des Pathtracers"
+
+msgid "Fog color"
+msgstr "Nebelfarbe"
+
+msgid "Pathtracer fog color (RGB)"
+msgstr "Nebelfarbe des Pathtracers (RGB)"
+
+msgid "Voxel edge"
+msgstr "Voxelkante"
+
+msgid "Fillet exposed voxel corners (0 = hard cube)"
+msgstr "Freiliegende Voxelecken abrunden (0 = scharfkantiger Würfel)"
+
+msgid "Pathtracer bloom strength"
+msgstr "Bloom-Stärke des Pathtracers"
+
+msgid "Atmosphere"
+msgstr "Atmosphäre"
+
+msgid "Pathtracer world haze that brightens toward the sun"
+msgstr "Dunst des Pathtracers, der sich zur Sonne hin aufhellt"
+
+msgid "Render scale"
+msgstr "Render-Skalierung"
+
+msgid "Trace at a fraction of the output resolution, then upsample"
+msgstr ""
+"Mit einem Bruchteil der Ausgabeauflösung berechnen und anschließend "
+"hochskalieren"
+
+msgid "Movement speed"
+msgstr "Bewegungsgeschwindigkeit"
+
+msgid "Movement speed in world units per second in game mode"
+msgstr "Bewegungsgeschwindigkeit in Welteinheiten pro Sekunde im Spielmodus"
+
+msgid "Editor camera movement speed in screen pixels per second"
+msgstr ""
+"Bewegungsgeschwindigkeit der Editor-Kamera in Bildschirmpixeln pro Sekunde"
+
+msgid "Editor movement speed"
+msgstr "Bewegungsgeschwindigkeit im Editor"
+
+msgid "Jump velocity"
+msgstr "Sprunggeschwindigkeit"
+
+msgid "Jump velocity in game mode"
+msgstr "Sprunggeschwindigkeit im Spielmodus"
+
+msgid "Body height"
+msgstr "Körperhöhe"
+
+msgid "Height of the body in game mode"
+msgstr "Höhe des Körpers im Spielmodus"
+
+msgid "Gravity in game mode"
+msgstr "Schwerkraft im Spielmodus"
+
+msgid "Gravity strength"
+msgstr "Schwerkraftstärke"
+
+msgid "Friction"
+msgstr "Reibung"
+
+msgid "Friction in game mode"
+msgstr "Reibung im Spielmodus"
+
+msgid "Body size"
+msgstr "Körpergröße"
+
+msgid "Body size in game mode"
+msgstr "Körpergröße im Spielmodus"
+
+msgid "Speed multiplier when sprinting"
+msgstr "Geschwindigkeitsmultiplikator beim Sprinten"
+
+msgid "Sprint multiplier"
+msgstr "Sprint-Multiplikator"
+
+msgid "Camera clipping"
+msgstr "Kameraclipping"
+
+msgid "Enable camera clipping"
+msgstr "Kameraclipping aktivieren"
+
+msgid "Enable gravity"
+msgstr "Schwerkraft aktivieren"
+
+msgid "Gravity"
+msgstr "Schwerkraft"
+
+msgid "Bottom"
+msgstr "Unten"
+
+msgid "Free"
+msgstr "Frei"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Top"
+msgstr "Oben"
+
+msgid "Back"
+msgstr "Rückseite"
+
+msgid "Front"
+msgstr "Front"
+
+msgid "Right"
+msgstr "Rechts"
+
+msgid "AgX"
+msgstr "AgX"
+
+msgid "AgX Golden"
+msgstr "AgX Golden"
+
+msgid "AgX Punchy"
+msgstr "AgX Punchy"
+
+msgid "ACES"
+msgstr "ACES"
+
+msgid "Hable"
+msgstr "Hable"
+
+msgid "Reinhard"
+msgstr "Reinhard"
+
+msgid "Map colors to palette"
+msgstr "Mappe Farben auf Palette"
+
+msgid "Layer information"
+msgstr "Ebeneninformationen"
+
+msgid ""
+"This is saving several images as layers per object.\n"
+"\n"
+"The name of the files will include the uuid of the node\n"
+"and the z layer index."
+msgstr ""
+"Dies speichert mehrere Bilder als Ebenen pro Objekt.\n"
+"\n"
+"Der Name der Dateien enthält die UUID des Knotens\n"
+"und den Z-Ebenenindex."
+
+#, c-format
+msgid "Depth map: %s"
+msgstr "Tiefenkarte: %s"
+
+#, c-format
+msgid "Depth map not found: %s"
+msgstr "Tiefenkarte nicht gefunden: %s"
+
+msgid "LUA scripts for manipulating the voxel volumes"
+msgstr "LUA-Skripte zur Manipulation der Voxelvolumen"
+
+msgid "Run"
+msgstr "Ausführen"
+
+msgid "Execute the selected script for the currently loaded voxel volumes"
+msgstr ""
+"Führe das ausgewählte Skript für die aktuell geladenen Voxelvolumen aus"
+
+msgid "Script parameters"
+msgstr "Skriptparameter"
+
+msgid "Preview unavailable"
+msgstr "Vorschau nicht verfügbar"
+
+msgid "No model"
+msgstr "Kein Modell"
+
+msgid "Drag to orbit, wheel to zoom, double-click to reset"
+msgstr "Ziehen zum Umkreisen, Mausrad zum Zoomen, Doppelklick zum Zurücksetzen"
+
+msgid "Select a model"
+msgstr "Modell auswählen"
+
+msgid "Mesh preview not available"
+msgstr "Mesh-Vorschau nicht verfügbar"
+
+msgid "No preview"
+msgstr "Keine Vorschau"
+
+msgid "Failed to load preview"
+msgstr "Vorschau konnte nicht geladen werden"
+
+msgid "Script Browser"
+msgstr "Skript-Browser"
+
+msgid "Fetching scripts..."
+msgstr "Skripte werden geladen…"
+
+msgid "Refresh"
+msgstr "Aktualisieren"
+
+msgid "Filter scripts by name, description or author"
+msgstr "Skripte nach Name, Beschreibung oder Autor filtern"
+
+msgid "No scripts available"
+msgstr "Keine Skripte verfügbar"
+
+msgid "Author"
+msgstr "Autor"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Installed"
+msgstr "Installiert"
+
+#, c-format
+msgid "Uninstall %s"
+msgstr "%s deinstallieren"
+
+#, c-format
+msgid "Download %s"
+msgstr "%s herunterladen"
+
+msgid "Quit"
+msgstr "Beenden"
+
+msgid "Edit"
+msgstr "Bearbeiten"
+
+msgid "Color theme"
+msgstr "Farbthema"
+
+msgid "Show console"
+msgstr "Konsole anzeigen"
+
+msgid "Help"
+msgstr "Hilfe"
+
+msgid "Input"
+msgstr "Eingabe"
+
+msgid "Output"
+msgstr "Ausgabe"
+
+msgid "vengi-voxconvert not found in current dir or PATH"
+msgstr "vengi-voxconvert nicht im aktuellen Verzeichnis oder PATH gefunden"
+
+msgid "Overwrite existing output file"
+msgstr "Überschreibe existierende Zieldatei"
+
+msgid "Input options"
+msgstr "Quelloptionen"
+
+msgid "Output options"
+msgstr "Zieloptionen"
+
+msgid "Script options"
+msgstr "Skriptoptionen"
+
+msgid "Convert"
+msgstr "Konvertieren"
+
+#, c-format
+msgid "Found vengi-voxconvert at %s"
+msgstr "vengi-voxconvert unter %s gefunden"
+
+msgid "Open output file"
+msgstr "Öffne Zieldatei"
+
+msgid "Last Directory"
+msgstr "Letztes Verzeichnis"
+
+msgid "The last directory used for opening/saving files"
+msgstr "Zuletzt genutztes Verzeichnis zum Öffnen/Speichern"
+
+msgid "Client Mouse Rotation Speed"
+msgstr "Client-Mausdrehgeschwindigkeit"
+
+msgid "The speed of mouse rotation for the client"
+msgstr "Mausdrehgeschwindigkeit für den Client"
+
+msgid "Client Camera Zoom Speed"
+msgstr "Client-Kamerazoomgeschwindigkeit"
+
+msgid "The speed of camera zoom for the client"
+msgstr "Kamerazoomgeschwindigkeit für den Client"
+
+msgid ""
+"Print mcp.json for MCP clients using the current network settings and quit"
+msgstr ""
+"mcp.json für MCP-Clients mit den aktuellen Netzwerkeinstellungen ausgeben "
+"und beenden"
+
+msgid "Pen pressure controls radius"
+msgstr "Stiftdruck steuert Radius"
+
+msgid "Map pen pressure to brush radius for radius-based brushes"
+msgstr "Stiftdruck auf Pinselradius für radiusbasierte Pinsel abbilden"
+
+msgid "Pen minimum radius"
+msgstr "Minimaler Stiftradius"
+
+msgid "Minimum brush radius when pressure mapping is active"
+msgstr "Minimaler Pinselradius bei aktiver Druckzuordnung"
+
+msgid "Pen maximum radius"
+msgstr "Maximaler Stiftradius"
+
+msgid "Maximum brush radius when pressure mapping is active"
+msgstr "Maximaler Pinselradius bei aktiver Druckzuordnung"
+
+msgid "Pen eraser switches mode"
+msgstr "Stift-Radierer wechselt Modus"
+
+msgid "Temporarily switch to erase mode while pen eraser is active"
+msgstr ""
+"Temporär in den Löschmodus wechseln, solange der Stift-Radierer aktiv ist"
+
+msgid "Emulate pen"
+msgstr ""
+
+msgid "Treat the primary pointer as a pen and map speed to pressure"
+msgstr ""
+
+msgid "Save the current viewport as screenshot"
+msgstr "Den aktuellen Ansichtsbereich als Screenshot speichern"
+
+msgid "Toggle scene mode on/off"
+msgstr "Szenenmodus ein-/ausschalten"
+
+msgid "Toggle locked mouse look (FPS-style camera rotation)"
+msgstr "Gesperrte Mausblickrichtung umschalten (FPS-Kameradrehung)"
+
+msgid "Save the current scene to the given file"
+msgstr "Die aktuelle Szene als Volumen in die angegebene Datei speichern"
+
+msgid "Save the selection from the current active model node"
+msgstr "Die Auswahl aus dem aktuellen aktiven Modellknoten speichern"
+
+msgid "Load a scene from the given volume file"
+msgstr "Eine Szene aus der angegebenen Volumendatei laden"
+
+msgid "Add a volume to the existing scene from the given file"
+msgstr "Ein Volumen zur vorhandenen Szene aus der angegebenen Datei hinzufügen"
+
+msgid "Import all files from a given directory"
+msgstr "Alle Dateien aus einem angegebenen Verzeichnis importieren"
+
+msgid "Import an image as a palette"
+msgstr "Ein Bild als Palette importieren"
+
+msgid "Start recording the editing session"
+msgstr "Aufzeichnung der Bearbeitungssitzung starten"
+
+msgid "Stop recording the editing session"
+msgstr "Aufzeichnung der Bearbeitungssitzung stoppen"
+
+msgid "Play back a recorded editing session"
+msgstr "Aufgezeichnete Bearbeitungssitzung abspielen"
+
+msgid "Stop playback of a recorded editing session"
+msgstr "Wiedergabe einer aufgezeichneten Bearbeitungssitzung stoppen"
+
+msgid "Pause playback of a recorded editing session"
+msgstr "Wiedergabe einer aufgezeichneten Bearbeitungssitzung pausieren"
+
+msgid "Resume playback of a recorded editing session"
+msgstr "Wiedergabe einer aufgezeichneten Bearbeitungssitzung fortsetzen"
+
+msgid "Create a new scene with ui interaction"
+msgstr "Eine neue Szene mit UI-Interaktion erstellen"
+
+msgid ""
+"Set camera zoom for repeatable framing, respecting configured zoom limits"
+msgstr ""
+"Kamerazoom für einen reproduzierbaren Bildausschnitt unter Einhaltung der "
+"konfigurierten Zoomgrenzen festlegen"
+
+msgid "Reset cameras in viewports"
+msgstr "Kameras in den Ansichtsbereichen zurücksetzen"
+
+msgid "Set the scene camera mode"
+msgstr "Szenenkameramodus setzen"
+
+msgid "Install a lua script from a file path, file:// URI or http(s):// URL"
+msgstr "Lua-Skript aus Dateipfad, file://-URI oder http(s)://-URL installieren"
+
+msgid "Uninstall a previously installed lua script by filename"
+msgstr "Zuvor installiertes Lua-Skript anhand des Dateinamens deinstallieren"
+
+msgid "The last directory used in the UI"
+msgstr "Zuletzt in der UI genutztes Verzeichnis"
+
+msgid "Create animation"
+msgstr "Animation erzeugen"
+
+msgid "Copy from existing animation"
+msgstr "Aus vorhandener Animation kopieren"
+
+msgid "Animation"
+msgstr "Animation"
+
+msgid "Animation already exists"
+msgstr "Animation existiert bereits"
+
+msgid "Add new animation"
+msgstr "Neue Animation hinzufügen"
+
+msgid "Delete"
+msgstr "Löschen"
+
+msgid "Add"
+msgstr "Hinzufügen"
+
+msgid "Add a new keyframe to the current active node"
+msgstr "Ein neues Keyframe zum aktuell aktiven Knoten hinzufügen"
+
+msgid "Add all"
+msgstr "Alle hinzufügen"
+
+msgid "Add a new keyframe to all nodes"
+msgstr "Ein neues Keyframe zu allen Knoten hinzufügen"
+
+msgid "Delete the current keyframe of the active nodes"
+msgstr "Das aktuelle Keyframe der aktiven Knoten löschen"
+
+msgid "Frame all (Home)"
+msgstr ""
+
+msgid "Center playhead"
+msgstr ""
+
+#, c-format
+msgid "Max frames for this animation: %i"
+msgstr "Maximale Anzahl von Bildern für diese Animation: %i"
+
+msgid "Loop"
+msgstr "Schleife"
+
+#, c-format
+msgid "Keyframe %i, Interpolation: %s"
+msgstr "Keyframe %i, Interpolation: %s"
+
+msgid "Paste"
+msgstr "Einfügen"
+
+msgid "Duplicate keyframe"
+msgstr "Keyframe duplizieren"
+
+msgid "Delete keyframes"
+msgstr "Keyframes löschen"
+
+#, c-format
+msgid "Delete %i keyframes"
+msgstr "%i Keyframes löschen"
+
+msgid "Click on a voxel to pick the color"
+msgstr "Klicken Sie auf einen Voxel, um die Farbe auszuwählen"
+
+msgid "Brushes"
+msgstr "Pinsel"
+
+msgid ""
+"Brushes are only available in edit mode - you are currently in scene mode"
+msgstr ""
+"Pinsel sind nur im Bearbeitungsmodus verfügbar - du bist derzeit im "
+"Szenenmodus"
+
+msgid "Brush settings"
+msgstr "Pinsel-Einstellungen"
+
+msgctxt "Sculpt reskin apply mode"
+msgid "Replace"
+msgstr "Ersetzen"
+
+msgctxt "Sculpt reskin apply mode"
+msgid "Blend"
+msgstr "Mischen"
+
+msgctxt "Sculpt reskin apply mode"
+msgid "Negate"
+msgstr "Negieren"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "None"
+msgstr "Keine"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "Median"
+msgstr "Median"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "Voxel"
+msgstr "Voxel"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "Corner Average"
+msgstr "Eckenmittelwert"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Min/Max"
+msgstr "Min/Max"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Min/Min"
+msgstr "Min/Min"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Max/Max"
+msgstr "Max/Max"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Max/Min"
+msgstr "Max/Min"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "0"
+msgstr "0"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "90"
+msgstr "90"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "180"
+msgstr "180"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "270"
+msgstr "270"
+
+msgctxt "Sculpt reskin tiling"
+msgid "Once"
+msgstr "Einmal"
+
+msgctxt "Sculpt reskin tiling"
+msgid "Repeat"
+msgstr "Wiederholen"
+
+msgctxt "Sculpt reskin tiling"
+msgid "Stretch"
+msgstr "Strecken"
+
+msgctxt "Sculpt reskin skin axis"
+msgid "X"
+msgstr "X"
+
+msgctxt "Sculpt reskin skin axis"
+msgid "Y"
+msgstr "Y"
+
+msgctxt "Sculpt reskin skin axis"
+msgid "Z"
+msgstr "Z"
+
+msgctxt "Voxel scale sampling"
+msgid "Linear"
+msgstr "Linear"
+
+msgctxt "Voxel scale sampling"
+msgid "Nearest"
+msgstr "Nächster Nachbar"
+
+msgctxt "Voxel scale sampling"
+msgid "Cubic"
+msgstr "Kubisch"
+
+msgctxt "Sculpt smooth wall interpolation"
+msgid "Linear"
+msgstr "Linear"
+
+msgctxt "Sculpt smooth wall interpolation"
+msgid "Inverse Distance"
+msgstr "Inverse Distanz"
+
+msgctxt "Sculpt smooth wall interpolation"
+msgid "Edge Aware"
+msgstr "Kantenbewusst"
+
+msgid "Add new camera"
+msgstr "Neue Kamera hinzufügen"
+
+msgid "Camera rotation"
+msgstr "Kamerarotation"
+
+msgid "Eye"
+msgstr "Auge"
+
+msgid "Camera movement"
+msgstr "Kamerabewegung"
+
+msgid "Orthogonal"
+msgstr "Orthogonal"
+
+msgid "Perspective"
+msgstr "Perspektive"
+
+msgid "Camera"
+msgstr "Kamera"
+
+msgid "Position"
+msgstr "Position"
+
+msgid "Farplane"
+msgstr "Farplane"
+
+msgid "Nearplane"
+msgstr "Nearplane"
+
+msgid "Target distance"
+msgstr "Entfernung zum Ziel"
+
+msgid "FOV"
+msgstr "FOV"
+
+msgid "Field of view in degrees"
+msgstr "Sichtfeld in Grad"
+
+msgid "Aspect ratio"
+msgstr "Seitenverhältnis"
+
+msgid "Game mode"
+msgstr "Spielmodus"
+
+msgid ""
+"Activating the game mode will enable clipping and switch the eye mode camera "
+"that is controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:"
+"+move_backward>, <cmd:+move_right>, <cmd:+jump> for jumping and <cmd:"
+"+sprint> for sprinting"
+msgstr ""
+"Das Aktivieren des Spielmodus aktiviert das Clipping und schaltet die Eye-"
+"Modus-Kamera um, die durch <cmd:+move_forward>, <cmd:+move_left>, <cmd:"
+"+move_backward>, <cmd:+move_right> und <cmd:+jump> zum Springen und <cmd:"
+"+sprint> für das Sprinten gesteuert wird"
+
+msgid "Enable"
+msgstr "Aktivieren"
+
+msgctxt "Game mode preset"
+msgid "Minecraft"
+msgstr "Minecraft"
+
+msgctxt "Game mode preset"
+msgid "Ace Of Spades"
+msgstr "Ace Of Spades"
+
+msgctxt "Game mode preset"
+msgid "Teardown"
+msgstr "Teardown"
+
+msgid "Forward"
+msgstr "Vorwärts"
+
+msgid "Home"
+msgstr "Startseite"
+
+msgid "Images"
+msgstr "Bilder"
+
+msgid "L-System"
+msgstr "L-System"
+
+msgid "Axiom"
+msgstr "Axiom"
+
+msgid "The initial state of the L-System"
+msgstr "Der Anfangszustand des L-Systems"
+
+msgid "Rules"
+msgstr "Regeln"
+
+msgid "The production rules for the L-System"
+msgstr "Die Produktionsregeln für das L-System"
+
+msgid "Predecessor"
+msgstr "Vorgänger"
+
+msgid "Successor"
+msgstr "Nachfolger"
+
+msgid "Action"
+msgstr "Aktion"
+
+msgid "Add Rule"
+msgstr "Regel hinzufügen"
+
+msgid "Angle"
+msgstr "Winkel"
+
+msgid "The angle in degrees"
+msgstr "Der Winkel in Grad"
+
+msgid "Length"
+msgstr "Länge"
+
+msgid "The length of the segments"
+msgstr "Die Länge der Segmente"
+
+msgid "Length scale"
+msgstr "Längenskalierung"
+
+msgid "Multiply segment length after drawing; 1 keeps the length constant"
+msgstr ""
+
+msgid "Minimum length"
+msgstr ""
+
+msgid "Angle variation"
+msgstr "Winkelvariation"
+
+msgid "Random angle variation in degrees; 0 disables variation"
+msgstr ""
+
+msgid "Seed"
+msgstr ""
+
+msgid "Branch color"
+msgstr "Astfarbe"
+
+msgid ""
+"Wood color from the current palette selection. Change it in the palette "
+"panel."
+msgstr ""
+
+msgid "Leaf color"
+msgstr "Blattfarbe"
+
+msgid ""
+"Defaults to the closest green in the node palette. -1 uses the current "
+"voxel. Drag a palette color here."
+msgstr ""
+
+msgid "Width"
+msgstr "Breite"
+
+msgid "The initial width of the segments"
+msgstr "Die anfängliche Breite der Segmente"
+
+msgid "Width increment"
+msgstr "Breiteninkrement"
+
+msgid "The amount to increment/decrement the width"
+msgstr "Der Betrag zum Erhöhen/Verringern der Breite"
+
+msgid "Iterations"
+msgstr "Iterationen"
+
+msgid "The number of iterations to run"
+msgstr "Die Anzahl der auszuführenden Iterationen"
+
+msgid "Leaves radius"
+msgstr "Blattradius"
+
+msgid "The radius of the leaves"
+msgstr "Der Radius der Blätter"
+
+msgid "Templates"
+msgstr "Vorlagen"
+
+msgid "Select a template"
+msgstr "Wähle die Vorlage aus"
+
+msgid "Adopt Dimensions"
+msgstr "Dimensionen anpassen"
+
+msgid "Scale the L-System so the generated shape fits the current volume"
+msgstr ""
+"Skaliert das L-System, damit die erzeugte Form in das aktuelle Volumen passt"
+
+#, c-format
+msgid "Progress: %.1f%%"
+msgstr "Fortschritt: %.1f%%"
+
+msgid "Tip of the day"
+msgstr "Tipp des Tages"
+
+msgid "Next"
+msgstr "Weiter"
+
+msgid "Minecraft mapping"
+msgstr "Minecraft mapping"
+
+msgid ""
+"The voxel editor uses a different mapping than Minecraft.\n"
+"\n"
+"Here you can see which block type is mapped to which color"
+msgstr ""
+"Der Voxel-Editor verwendet eine andere Zuordnung als Minecraft.\n"
+"\n"
+"Hier können Sie sehen, welcher Blocktyp welcher Farbe zugeordnet ist"
+
+msgid "Color"
+msgstr "Farbe"
+
+msgid "Welcome"
+msgstr "Willkommen"
+
+msgid "Welcome to VoxEdit!"
+msgstr "Willkommen bei VoxEdit!"
+
+msgid ""
+"The mission: Create a free, open-source and multi-platform voxel editor with "
+"animation support for artists and developers."
+msgstr ""
+"Die Mission: Bereitstellen eines kostenlosen, Open-Source- und "
+"plattformübergreifenden Voxel-Editors mit Animationsunterstützung für "
+"Voxelkünstler und Entwickler."
+
+msgid ""
+"We would like to enable anonymous usage metrics to improve the editor. "
+"Please consider enabling it."
+msgstr ""
+"Wir würden gerne anonyme Nutzungsstatistiken aktivieren, um den Editor zu "
+"verbessern. Bitte aktivieren Sie es um uns zu unterstützen."
+
+msgid "Download scripts..."
+msgstr "Skripte herunterladen…"
+
+msgid "VoxBox Browser..."
+msgstr "VoxBox-Browser…"
+
+msgid "Unreference Model"
+msgstr "Referenz auflösen"
+
+msgid ""
+"You can't edit a model reference.\n"
+"\n"
+"Do you want to convert the reference into a model?"
+msgstr ""
+"Sie können eine Modellreferenz nicht bearbeiten.\n"
+"\n"
+"Möchten Sie die Referenz in ein Modell umwandeln?"
+
+msgid "New Scene"
+msgstr "Neue Szene"
+
+msgid "Empty scene"
+msgstr "Leere Szene"
+
+msgid "Height"
+msgstr "Höhe"
+
+msgid "Depth"
+msgstr "Tiefe"
+
+msgid "Failed to save"
+msgstr "Fehler beim Speichern"
+
+msgid "Failed to save the model!"
+msgstr "Fehler beim Speichern des Modells!"
+
+msgid "Unsaved Changes"
+msgstr "Ungespeicherte Änderungen"
+
+msgid "Unsaved changes - are you sure to quit?"
+msgstr "Ungespeicherte Änderungen - Möchten Sie wirklich beenden?"
+
+msgid "Unsaved Modifications"
+msgstr "Nicht gespeicherte Änderungen"
+
+msgid ""
+"There are unsaved modifications.\n"
+"Do you wish to discard them?"
+msgstr ""
+"Es gibt ungespeicherte Änderungen.\n"
+"Möchten Sie sie verwerfen?"
+
+msgid "Volume split"
+msgstr "Volumen teilen"
+
+msgid ""
+"Some model volumes are too big for optimal performance.\n"
+"It's encouraged to split them into smaller volumes.\n"
+"Do you wish to split them now?"
+msgstr ""
+"Einige Modellvolumen sind für eine optimale Leistung zu groß.\n"
+"Es wird empfohlen, sie in kleinere Volumen aufzuteilen.\n"
+"Möchten Sie sie jetzt aufteilen?"
+
+msgid "Model settings"
+msgstr "Modell-Einstellungen"
+
+msgid "Resize node"
+msgstr "Knoten skalieren"
+
+msgid "Lower bound"
+msgstr "Untere Grenze"
+
+msgid "Upper bound"
+msgstr "Obere Grenze"
+
+#, c-format
+msgid "Size: %ix%ix%i"
+msgstr "Größe: %ix%ix%i"
+
+msgid "Rescale content"
+msgstr "Inhalt neu skalieren"
+
+#, c-format
+msgid "Original: %i x %i x %i"
+msgstr "Original: %i x %i x %i"
+
+msgid "Maintain aspect ratio"
+msgstr "Seitenverhältnis beibehalten"
+
+msgid "Target size"
+msgstr "Zielgröße"
+
+msgid "Scale (%)"
+msgstr "Skalieren (%)"
+
+#, c-format
+msgid "Result: %i x %i x %i"
+msgstr "Ergebnis: %i x %i x %i"
+
+msgid "Rename node"
+msgstr "Knoten Umbenennen"
+
+msgid "Node names should be unique"
+msgstr "Knotennamen sollten eindeutig sein"
+
+msgid "Formats"
+msgstr "Formate"
+
+msgid "Voxel load"
+msgstr "Voxel laden"
+
+msgid "Extension"
+msgstr "Erweiterung"
+
+msgid "Voxel save"
+msgstr "Voxel speichern"
+
+msgid "Palettes"
+msgstr "Paletten"
+
+msgid "History"
+msgstr "Verlauf"
+
+#, c-format
+msgid "Current state: %i / %i"
+msgstr "Aktueller Zustand: %i / %i"
+
+msgid "Lit"
+msgstr "Beleuchtet"
+
+msgid "Shadows"
+msgstr "Schatten"
+
+msgid "Unlit"
+msgstr "Unbeleuchtet"
+
+msgid "Shading"
+msgstr "Schattierung"
+
+msgid "New"
+msgstr "Neu"
+
+msgid "Load"
+msgstr "Öffnen"
+
+msgid "Save as"
+msgstr "Speichern unter"
+
+msgid "Save selection"
+msgstr "Auswahl speichern"
+
+msgid "Add file to scene"
+msgstr "Datei zur Szene hinzufügen"
+
+msgid "Add directory to scene"
+msgstr "Verzeichnis zur Szene hinzufügen"
+
+msgid "Record"
+msgstr "Aufnahme"
+
+msgid "Start recording"
+msgstr "Aufnahme starten"
+
+msgid "Stop recording"
+msgstr "Aufnahme stoppen"
+
+msgid "Playback"
+msgstr "Wiedergabe"
+
+msgid "Stop playback"
+msgstr "Wiedergabe stoppen"
+
+msgid "Resume"
+msgstr "Fortsetzen"
+
+msgid "Speed (s)"
+msgstr "Geschwindigkeit (s)"
+
+msgid "Undo"
+msgstr "Rückgängig"
+
+msgid "Redo"
+msgstr "Wiederherstellen"
+
+msgid "Cut"
+msgstr "Ausschneiden"
+
+msgid "Paste at reference"
+msgstr "Einfügen an Referenzposition"
+
+msgid "Paste at cursor"
+msgstr "Einfügen an Cursorposition"
+
+msgid "Paste as new node"
+msgstr "Als neuen Knoten einfügen"
+
+msgid "Paste as stamp"
+msgstr "Als Stempel einfügen"
+
+msgid "Global copy selected"
+msgstr "Global: Auswahl kopieren"
+
+msgid "Global copy visible"
+msgstr "Global: Sichtbares kopieren"
+
+msgid "Global paste to ref"
+msgstr "Global: An Referenz einfügen"
+
+msgid "Global paste as node"
+msgstr "Global: Als Knoten einfügen"
+
+msgid "Select"
+msgstr "Auswählen"
+
+msgid "Invert"
+msgstr "Invertieren"
+
+msgid "All"
+msgstr "Alles"
+
+msgid "Paint selection"
+msgstr "Auswahl bemalen"
+
+msgid "Deselect by color"
+msgstr "Nach Farbe abwählen"
+
+msgid "Select by color"
+msgstr "Nach Farbe auswählen"
+
+msgid "Select Only Edges"
+msgstr "Nur Kanten auswählen"
+
+msgid "Select Only Wall Edges"
+msgstr "Nur Wandkanten auswählen"
+
+msgid "Select Only Corners"
+msgstr "Nur Ecken auswählen"
+
+msgid "Grow Selection"
+msgstr "Auswahl vergrößern"
+
+msgid "View"
+msgstr "Ansicht"
+
+msgid "Reset layout"
+msgstr "Layout zurücksetzen"
+
+msgid "Extensions"
+msgstr "Erweiterungen"
+
+msgid "Install script..."
+msgstr "Skript installieren…"
+
+msgid "Scene insights"
+msgstr "Szeneninterna"
+
+msgid "UI"
+msgstr "Benutzeroberfläche"
+
+msgid "Show FPS stats"
+msgstr "FPS-Statistiken anzeigen"
+
+msgid "Welcome screen"
+msgstr "Willkommensbildschirm"
+
+msgid "License"
+msgstr "Lizenz"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "Use stamp"
+msgstr "Stempel verwenden"
+
+msgid ""
+"This is only possible if the model doesn't exceed the max allowed stamp size"
+msgstr ""
+"Dies ist nur möglich, wenn das Modell die maximale erlaubte Stempelgröße "
+"nicht überschreitet"
+
+msgid "Add to scene"
+msgstr "Zur Szene hinzufügen"
+
+msgid "Hide thumbnails"
+msgstr "Miniaturansicht verstecken"
+
+msgid "Show thumbnails"
+msgstr "Miniaturansicht anzeigen"
+
+msgid "Open target file"
+msgstr "Öffne Zieldatei"
+
+msgid "Open target dir"
+msgstr "Öffne Zielverzeichnis"
+
+msgid "Create thumbnail"
+msgstr "Miniaturansicht erzeugen"
+
+msgid "Double click to create thumbnail"
+msgstr "Doppelklick zum Erstellen der Miniaturansicht"
+
+msgid "No match for filter found"
+msgstr "Keine Übereinstimmung für den Filter gefunden"
+
+msgid "Models"
+msgstr "Modelle"
+
+msgid "Loading..."
+msgstr "Laden..."
+
+msgid "Double click to load"
+msgstr "Doppelklick zum Laden"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "Send"
+msgstr "Senden"
+
+msgid "Network"
+msgstr "Netzwerk"
+
+msgid "Client"
+msgstr "Client"
+
+msgid "Connect to server"
+msgstr "Mit Server verbinden"
+
+msgid "Connected to server"
+msgstr "Mit Server verbunden"
+
+msgid "Disconnect"
+msgstr "Trennen"
+
+msgid "Server"
+msgstr "Server"
+
+#, c-format
+msgid "Server is running on port %i"
+msgstr "Server läuft auf Port %i"
+
+msgid "Stop server"
+msgstr "Stoppe Server"
+
+msgid "Sent"
+msgstr "Gesendet"
+
+msgid "Received"
+msgstr "Empfangen"
+
+msgid "Actions"
+msgstr "Aktionen"
+
+msgid "Kick"
+msgstr "Kicken"
+
+msgid "Interface"
+msgstr "Schnittstelle"
+
+msgid "Start Server"
+msgstr "Starte Server"
+
+msgid "Region"
+msgstr "Region"
+
+msgid "Opacity"
+msgstr "Deckkraft"
+
+msgid "Fade the whole node without changing voxels"
+msgstr "Den gesamten Knoten ausblenden, ohne die Voxeldaten zu ändern"
+
+msgid "Color Histogram"
+msgstr "Farbhistogramm"
+
+msgid "Analyze"
+msgstr "Analysieren"
+
+#, c-format
+msgid "%i colors used"
+msgstr "%i Farben verwendet"
+
+msgid "Voxels"
+msgstr "Voxel"
+
+msgid "Index"
+msgstr "Index"
+
+msgid "Count"
+msgstr "Anzahl"
+
+msgid "Press Analyze to compute"
+msgstr "Zum Berechnen auf Analysieren klicken"
+
+msgid "Tools"
+msgstr "Werkzeuge"
+
+msgid "To transform"
+msgstr "Zu Transform"
+
+msgid "Convert the region offset into the keyframe transforms"
+msgstr ""
+"Wandeln Sie die Position der Region in die Keyframe-Transformationen um"
+
+msgid "Region sizes"
+msgstr "Regionengrößen"
+
+msgid "Reset region sizes"
+msgstr "Regionengrößen zurücksetzen"
+
+msgid "Interpolation"
+msgstr "Interpolation"
+
+msgid "Long rotation"
+msgstr "Lange Drehung"
+
+msgid ""
+"Take the longer rotation path to the next keyframe. For a full turn, add an "
+"intermediate keyframe."
+msgstr ""
+
+msgid "Interpolation details"
+msgstr "Interpolationsdetails"
+
+msgid "Reset transforms"
+msgstr "Transform resetten"
+
+msgid "Mirror X"
+msgstr "Spiegelung X"
+
+msgid "Mirror Y"
+msgstr "Spiegelung Y"
+
+msgid "Mirror XZ"
+msgstr "Spiegelung XZ"
+
+msgid "XZ"
+msgstr "XZ"
+
+msgid "Mirror XYZ"
+msgstr "Spiegelung XYZ"
+
+msgid "XYZ"
+msgstr "XYZ"
+
+msgid "Update all locked nodes with this value"
+msgstr "Aktualisiere alle gesperrten Knoten mit diesem Wert"
+
+msgid "Translation"
+msgstr "Verschiebung"
+
+msgid "Rotation"
+msgstr "Drehung"
+
+msgid "Scale"
+msgstr "Skalierung"
+
+msgid "Center pivot"
+msgstr "Pivot zentrieren"
+
+msgid "Pivot"
+msgstr "Pivot"
+
+msgid "IK Constraints"
+msgstr "IK-Einschränkungen"
+
+msgid "Enable IK"
+msgstr "IK aktivieren"
+
+msgid "Anchor"
+msgstr "Anker"
+
+msgid "Mark this node as a fixed point in the IK chain"
+msgstr "Diesen Knoten als festen Punkt in der IK-Kette markieren"
+
+msgid "Visible"
+msgstr "Sichtbar"
+
+msgid "Effector"
+msgstr "Effektor"
+
+msgid "The target node the IK chain tries to reach"
+msgstr "Zielknoten, den die IK-Kette erreichen soll"
+
+msgid "Roll min"
+msgstr "Roll min."
+
+msgid "Roll max"
+msgstr "Roll max."
+
+msgid "Swing Limits"
+msgstr "Schwinggrenzen"
+
+msgid "Yaw"
+msgstr "Yaw"
+
+msgid "Pitch"
+msgstr "Pitch"
+
+msgid "Radius"
+msgstr "Radius"
+
+msgid "Add swing limit"
+msgstr "Schwinggrenze hinzufügen"
+
+#, c-format
+msgid "UUID: %s"
+msgstr "UUID: %s"
+
+msgid "Delete this node property"
+msgstr "Diese Knoteneigenschaft löschen"
+
+msgid "Add a new node property"
+msgstr "Neue Knoteneigenschaft hinzufügen"
+
+msgid "Node Inspector"
+msgstr "Knoteninspektor"
+
+msgid "Volume Inspector"
+msgstr "Volumeninspektor"
+
+msgid "Node Properties"
+msgstr "Knoteneigenschaften"
+
+msgid "UUID"
+msgstr "UUID"
+
+msgid "Swap entries and preserve painted directions"
+msgstr ""
+
+#, c-format
+msgid "Normal %i: %.3f, %.3f, %.3f"
+msgstr ""
+
+msgid "Empty normal slot - select to create a direction"
+msgstr ""
+
+msgid "Copy normal"
+msgstr "Normale kopieren"
+
+msgid "Paste normal"
+msgstr "Normale einfügen"
+
+msgid "Duplicate normal"
+msgstr "Normale duplizieren"
+
+msgid "Tiberian Sun"
+msgstr "Tiberian Sun"
+
+msgid "Red Alert 2"
+msgstr "Red Alert 2"
+
+msgid "Slab6"
+msgstr "Slab6"
+
+msgid "Export"
+msgstr "Exportieren"
+
+msgid "Auto normals"
+msgstr "Auto Normalen"
+
+msgid "Flat"
+msgstr "Flach"
+
+msgid "Smooth"
+msgstr "Glatt"
+
+msgid "Smoother"
+msgstr "Glätter"
+
+msgid "Normal mode"
+msgstr "Normalen Modus"
+
+msgid "Recalculate all normals"
+msgstr "All Normalen neu berechnen"
+
+msgid "If the model already has normals and you want to replace them"
+msgstr "Falls das Modell bereits Normalen hat und Sie diese ersetzen möchten"
+
+msgid "Model is hollow"
+msgstr "Modell ist hohl"
+
+msgid ""
+"Fill hollows to re-calculate the normals and\n"
+"hollow the model afterwards again.\n"
+"\n"
+"For calculating normals it is needed that the model has a closed\n"
+"surface and the hollow area is filled.\n"
+"\n"
+"Either do it manually or activate this option."
+msgstr ""
+"Hohlräume füllen, um die Normalen neu zu berechnen und\n"
+"das Modell danach wieder auszuhöhlen.\n"
+"\n"
+"Für die Berechnung der Normalen ist es notwendig, dass das Modell eine "
+"geschlossene\n"
+"Oberfläche hat und der hohle Bereich gefüllt ist.\n"
+"\n"
+"Entweder manuell durchführen, oder diese Option aktivieren."
+
+msgid "Calculate normals"
+msgstr "Normalen berechnen"
+
+msgid "Calculate normals for the model"
+msgstr "Normalen für das Modell berechnen"
+
+msgid "Remove all normals"
+msgstr "All Normalen entfernen"
+
+#, c-format
+msgid "Normal index: %i (scene normal index %i)"
+msgstr "Normalenindex: %i (Szene-Normalenindex %i)"
+
+msgid "Normal"
+msgstr "Normale"
+
+msgid "Longitude"
+msgstr "Längengrad"
+
+msgid "Latitude"
+msgstr "Breitengrad"
+
+msgid "Flip"
+msgstr "Umdrehen"
+
+msgid "Rotate 90 deg"
+msgstr "Um 90 Grad drehen"
+
+msgid "Direction"
+msgstr "Richtung"
+
+msgid "Enter a finite, non-zero normal."
+msgstr ""
+
+msgid "Add normal"
+msgstr "Normale hinzufügen"
+
+msgid "Direction edits affect every voxel using this entry."
+msgstr ""
+
+msgid "Full pre-alloc"
+msgstr "Volle Vorallokation"
+
+msgid "Small (grow as needed)"
+msgstr "Klein (nach Bedarf wachsen)"
+
+msgid "Sky"
+msgstr "Himmel"
+
+msgid "Solid"
+msgstr "Voll"
+
+msgid "Transparent"
+msgstr "Transparent"
+
+msgid "General"
+msgstr "Allgemein"
+
+msgid "User Interface"
+msgstr "Benutzeroberfläche"
+
+msgid "Editor"
+msgstr "Editor"
+
+msgid "Metrics"
+msgstr "Metriken"
+
+msgid "Layout"
+msgstr "Layout"
+
+msgid "Pen"
+msgstr "Stift"
+
+msgid "Viewport"
+msgstr "Ansichtsfenster"
+
+msgid "Display"
+msgstr "Anzeige"
+
+msgid "Rendering"
+msgstr "Rendering"
+
+msgid "Pathtracer"
+msgstr "Pathtracer"
+
+msgid "Renderer"
+msgstr "Renderer"
+
+msgid "Mesh Export"
+msgstr "Mesh-Export"
+
+msgid "Voxel Import/Export"
+msgstr "Voxel-Import/Export"
+
+msgid "Minecraft"
+msgstr "Minecraft"
+
+msgid "Advanced"
+msgstr "Erweitert"
+
+msgid "All Variables"
+msgstr "Alle Variablen"
+
+msgid "Search"
+msgstr "Suche"
+
+msgid "Copy color"
+msgstr "Farbe kopieren"
+
+msgid "Paste color"
+msgstr "Farbe einfügen"
+
+msgid "Remove alpha"
+msgstr "Alpha entfernen"
+
+msgid "Material"
+msgstr "Material"
+
+msgid "Copy material"
+msgstr "Material kopieren"
+
+msgid "Paste material"
+msgstr "Material einfügen"
+
+msgid "Reset material"
+msgstr "Material zurücksetzen"
+
+msgid "Palette entries"
+msgstr "Paletteneinträge"
+
+msgid "Model from selected colors"
+msgstr "Modell aus ausgewählten Farben"
+
+msgid "Model from color"
+msgstr "Modell aus Farbe"
+
+msgid "Duplicate color"
+msgstr "Farbe duplizieren"
+
+msgid "Remove color"
+msgstr "Farbe entfernen"
+
+msgid "Reduce to selected"
+msgstr "Auf Auswahl reduzieren"
+
+msgid "Randomize selected colors"
+msgstr "Wähle zufällig ausgewählte Farben"
+
+msgid "Quantize selected colors"
+msgstr "Ausgewählte Farben quantisieren"
+
+msgid "Target colors"
+msgstr "Zielfarben"
+
+msgid "Release CTRL to change the voxel color"
+msgstr "Lassen Sie die STRG-Taste los, um die Voxel-Farbe zu ändern"
+
+msgid "Press CTRL to re-order"
+msgstr "Drücken Sie STRG, um die Reihenfolge zu ändern"
+
+msgid "Empty color slot"
+msgstr "Leerer Farbslot"
+
+msgid "Select Palette"
+msgstr "Palette auswählen"
+
+msgid "Select the palette"
+msgstr "Wähle die Palette aus"
+
+msgid ""
+"To add your own palettes here, put a palette-name.png into one of\n"
+"the search directories or load it into any node to appear here."
+msgstr ""
+"Um Ihre eigenen Paletten hier hinzuzufügen, legen Sie eine palette-name.png "
+"in einen der\n"
+"Suchverzeichnisse oder laden Sie sie in einen beliebigen Knoten, um sie hier "
+"anzuzeigen."
+
+msgid "Color match"
+msgstr "Farbabgleich"
+
+msgid ""
+"Adopt the current voxels to the best fitting colors of\n"
+"the new palette."
+msgstr ""
+"Passen Sie die aktuellen Voxel an die am besten passenden Farben der\n"
+"neuen Palette an."
+
+msgid "Import"
+msgstr "Importieren"
+
+msgid "Switch"
+msgstr "Wechseln"
+
+msgid "Lospec"
+msgstr "Lospec"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Export the palette"
+msgstr "Die Palette exportieren"
+
+msgid "Sort"
+msgstr "Sortieren"
+
+msgid "Original"
+msgstr "Original"
+
+msgid "Hue"
+msgstr "Farbton"
+
+msgid "Brightness"
+msgstr "Helligkeit"
+
+msgid "CIELab"
+msgstr "CIELab"
+
+msgid "Remove unused color"
+msgstr "Unbenutzte Farbe entfernen"
+
+msgid "Remove and re-create palette"
+msgstr "Palette entfernen und neu erstellen"
+
+msgid "Contrast stretching"
+msgstr "Kontrastdehnung"
+
+msgid "White balancing"
+msgstr "Weißabgleich"
+
+msgid "Apply to all nodes"
+msgstr "Auf alle Knoten anwenden"
+
+msgid "Intensity"
+msgstr "Intensität"
+
+msgid "Modify"
+msgstr "Ändern"
+
+msgid "Warmer"
+msgstr "Wärmer"
+
+msgid "Colder"
+msgstr "Kälter"
+
+msgid "Brighter"
+msgstr "Aufhellen"
+
+msgid "Darker"
+msgstr "Abdunkeln"
+
+msgid "Color closest match"
+msgstr "Nächste Farbe"
+
+msgid "Select a color to find the closest match in the current loaded palette"
+msgstr ""
+"Wählen Sie eine Farbe aus, um die nächstgelegene Übereinstimmung in der "
+"aktuellen geladenen Palette zu finden"
+
+#, c-format
+msgid "Palette index: %i (scene voxel index %i)"
+msgstr "Palettenindex: %i (Szene-Voxelindex %i)"
+
+msgid "Pixel art"
+msgstr ""
+
+msgid "2D"
+msgstr ""
+
+msgid "Mode###pixelartmode"
+msgstr ""
+
+msgid "View###pixelartview"
+msgstr ""
+
+msgid ""
+"The scene is larger than the suggested volume size. Isometric preview is "
+"disabled."
+msgstr ""
+
+msgid "Select a voxel model to preview."
+msgstr "Wählen Sie ein Voxelmodell für die Vorschau."
+
+msgid "Quality presets"
+msgstr "Qualitätsvorgaben"
+
+msgid "Reset all"
+msgstr "Alles zurücksetzen"
+
+msgid "Restore default path tracer settings"
+msgstr "Standard-Einstellungen des Pfadtracers wiederherstellen"
+
+msgid "Path tracing with high sample and bounce counts, voxel edge, and bloom"
+msgstr "Pfadtracing mit hoher Sample- und Bounce-Anzahl, Voxelkanten und Bloom"
+
+msgid "Preview"
+msgstr "Vorschau"
+
+msgid "Fast preview for checking lighting and materials"
+msgstr "Schnelle Vorschau zur Prüfung von Beleuchtung und Materialien"
+
+msgid "Quality"
+msgstr "Qualität"
+
+msgid "Per-pixel samples. Higher values reduce noise but take longer."
+msgstr ""
+"Samples pro Pixel. Höhere Werte reduzieren Rauschen, dauern aber länger."
+
+msgid "Maximum light bounces. Increase for glass."
+msgstr "Maximale Lichtreflexionen. Für Glas erhöhen."
+
+msgid "Samples computed per frame"
+msgstr "Pro Frame berechnete Samples"
+
+msgid "Fillet exposed voxel corners. 0 is a hard cube."
+msgstr "Abrunden freiliegender Voxelkanten. 0 ist ein harter Würfel."
+
+msgid "Trace at a fraction of the output resolution, then upsample."
+msgstr "Mit einem Bruchteil der Ausgabeauflösung tracen, dann hochskalieren."
+
+msgid "Dimensions"
+msgstr "Dimensionen"
+
+msgid "Output image size in pixels (square)"
+msgstr "Ausgabegröße in Pixeln (quadratisch)"
+
+msgid "Exposure compensation in stops for tonemapping."
+msgstr "Belichtungskompensation in Blendenstufen für Tonemapping."
+
+msgid "Threshold blur of bright emit and sun highlights."
+msgstr "Weichzeichner für helle Emit- und Sonnenlichter."
+
+msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
+msgstr "Blende für Tiefenschärfe. 0 = Lochkamera (kein DOF)."
+
+msgid "Lighting"
+msgstr "Beleuchtung"
+
+msgid "Sun disk size in degrees."
+msgstr "Größe der Sonnenscheibe in Grad."
+
+msgid "World haze that brightens toward the sun."
+msgstr "Weltdunst, der zur Sonne hin aufhellt."
+
+msgid "Settings"
+msgstr "Einstellungen"
+
+msgid "Save image"
+msgstr "Bild speichern"
+
+#, c-format
+msgid "Sample %i / %i"
+msgstr "Sample %i / %i"
+
+msgid "Volume truncated to GPU 3D texture / memory limits"
+msgstr "Volumen auf GPU-3D-Textur-/Speichergrenzen gekürzt"
+
+msgid "Preparing render"
+msgstr "Rendering wird vorbereitet"
+
+msgid "Preparing"
+msgstr "Vorbereitung"
+
+msgid "Render"
+msgstr "Render"
+
+#, c-format
+msgid "Pending extractions: %i"
+msgstr "Ausstehende Extraktionen: %i"
+
+#, c-format
+msgid "Pending meshes: %i"
+msgstr "Ausstehende Meshes: %i"
+
+#, c-format
+msgid "Culled volumes: %i"
+msgstr "Ausgeblendete Volumen: %i"
+
+#, c-format
+msgid "Mapped nodes: %i"
+msgstr "Zugeordnete Knoten: %i"
+
+#, c-format
+msgid "Volume index high-water: %i"
+msgstr "Volumenindex-Hochwasser: %i"
+
+#, c-format
+msgid "Free volume indices: %i"
+msgstr "Freie Volumenindizes: %i"
+
+msgid "Render stats"
+msgstr "Renderstatistik"
+
+#, c-format
+msgid "Draw calls: %<PRIu64>"
+msgstr "Draw Calls: %<PRIu64>"
+
+#, c-format
+msgid "Pipeline binds: %<PRIu64>"
+msgstr "Pipeline-Bindungen: %<PRIu64>"
+
+#, c-format
+msgid "Descriptor binds: %<PRIu64>"
+msgstr "Deskriptor-Bindungen: %<PRIu64>"
+
+#, c-format
+msgid "Buffer updates: %<PRIu64>"
+msgstr "Pufferaktualisierungen: %<PRIu64>"
+
+#, c-format
+msgid "Render passes: %<PRIu64>"
+msgstr "Renderdurchläufe: %<PRIu64>"
+
+#, c-format
+msgid "Fullscreen passes: %<PRIu64>"
+msgstr "Vollbilddurchläufe: %<PRIu64>"
+
+#, c-format
+msgid "Blits: %<PRIu64>"
+msgstr "Blits: %<PRIu64>"
+
+#, c-format
+msgid "CPU render ms: %.3f"
+msgstr "CPU-Renderzeit in ms: %.3f"
+
+#, c-format
+msgid "Camera position: %.2f %.2f %.2f"
+msgstr "Kameraposition: %.2f %.2f %.2f"
+
+#, c-format
+msgid "Camera velocity: %.2f %.2f %.2f"
+msgstr "Kamerageschwindigkeit: %.2f %.2f %.2f"
+
+#, c-format
+msgid "Collided on x axis: %s"
+msgstr "Kollidiert auf der X-Achse: %s"
+
+#, c-format
+msgid "Collided on y axis: %s"
+msgstr "Kollidiert auf der Y-Achse: %s"
+
+#, c-format
+msgid "Collided on z axis: %s"
+msgstr "Kollidiert auf der Z-Achse: %s"
+
+msgid "Camera extents"
+msgstr "Kamera-Ausmaße"
+
+msgid "Camera friction decay"
+msgstr "Kamera-Reibung Verfall"
+
+#, c-format
+msgid "Recent contact point: %.2f %.2f %.2f"
+msgstr "Letzter Kontaktpunkt: %.2f %.2f %.2f"
+
+msgid "Rename"
+msgstr "Umbenennen"
+
+msgid "Show all"
+msgstr "Alle anzeigen"
+
+msgid "Hide all"
+msgstr "Alle ausblenden"
+
+msgid "Hide others"
+msgstr "Andere ausblenden"
+
+msgid "Lock all"
+msgstr "Alle sperren"
+
+msgid "Unlock all"
+msgstr "Alle entsperren"
+
+msgid "Duplicate"
+msgstr "Duplizieren"
+
+msgid "Bake transform"
+msgstr "Transformationen übertragen"
+
+msgid "Create reference"
+msgstr "Referenz erstellen"
+
+msgid "Merge"
+msgstr "Zusammenführen"
+
+msgid "Use as stamp"
+msgstr "Als Stempel verwenden"
+
+msgid "Merge all"
+msgstr "Alle zusammenführen"
+
+msgid "Merge visible"
+msgstr "Sichtbare zusammenführen"
+
+msgid "Merge locked"
+msgstr "Gesperrte zusammenführen"
+
+msgid "Center origin"
+msgstr "Ursprung zentrieren"
+
+msgid "Center reference"
+msgstr "Referenz zentrieren"
+
+msgid "Resize"
+msgstr "Größe ändern"
+
+msgid "Convert to model"
+msgstr "In Modell umwandeln"
+
+msgid "Use this camera"
+msgstr "Benutze diese Kamera"
+
+msgid "Save all"
+msgstr "Alle speichern"
+
+msgid "Add new group"
+msgstr "Neue Gruppe hinzufügen"
+
+msgid "Add new point"
+msgstr "Neuen Punkt hinzufügen"
+
+msgid ""
+"Disabled because inactive nodes are hidden and the active node is always "
+"visible"
+msgstr ""
+"Deaktiviert, da inaktive Knoten ausgeblendet werden und der aktive Knoten "
+"immer sichtbar ist"
+
+msgid "Reference Node"
+msgstr "Referenzknoten"
+
+msgid "Reference Target Node"
+msgstr "Zielknoten der Referenz"
+
+msgid "Delete this model"
+msgstr "Dieses Modell löschen"
+
+msgid "Scene"
+msgstr "Szene"
+
+msgid "Add a new model node"
+msgstr "Neuen Modellknoten hinzufügen"
+
+msgid "Toggle add node by face in scene view"
+msgstr "Knoten-an-Fläche-hinzufügen in der Szenenansicht umschalten"
+
+msgid "Add a new group"
+msgstr "Neue Gruppe hinzufügen"
+
+msgid "Remove the active node with all its children"
+msgstr "Den aktiven Knoten mit allen seinen Kindern entfernen"
+
+msgid "Merge onto"
+msgstr "Zusammenführen auf"
+
+#, c-format
+msgid "Merge %s onto %s"
+msgstr "%s auf %s zusammenführen"
+
+msgctxt "Scene graph panel node move"
+msgid "Move below"
+msgstr "Unterhalb verschieben"
+
+msgctxt "Scene graph panel node move"
+msgid "Move below but keep position"
+msgstr "Unterhalb verschieben, aber Position behalten"
+
+msgid "Base lighting that affects all surfaces equally"
+msgstr "Basisbeleuchtung, die alle Oberflächen gleich beeinflusst"
+
+msgid "Ambient color is disabled in Unlit mode"
+msgstr "Umgebungsfarbe ist im Unlit-Modus deaktiviert"
+
+msgid "Directional lighting that varies based on surface angle"
+msgstr "Richtungsbeleuchtung, die je nach Oberflächenwinkel variiert"
+
+msgid "Diffuse color is disabled in Unlit mode"
+msgstr "Diffuse Farbe ist im Unlit-Modus deaktiviert"
+
+msgid "Scene settings"
+msgstr "Szene-Einstellungen"
+
+msgid "Lit (No Shadows)"
+msgstr "Beleuchtet (Keine Schatten)"
+
+msgid "Unlit (Pure Colors)"
+msgstr "Unbeleuchtet (Reine Farben)"
+
+msgid "Shading Mode"
+msgstr "Schattierungsmodus"
+
+msgid "Scripts"
+msgstr "Skripte"
+
+msgid "Create a new lua script"
+msgstr "Ein neues LUA-Skript erstellen"
+
+msgid "Edit script"
+msgstr "Skript bearbeiten"
+
+msgid "Edit the selected lua script"
+msgstr "Das ausgewählte LUA-Skript bearbeiten"
+
+msgid "Reload script"
+msgstr "Skript neu laden"
+
+msgid "Reload all scripts"
+msgstr "Alle Skripte neu laden"
+
+msgid "Browse and download scripts from the online repository"
+msgstr "Skripte im Online-Repository durchsuchen und herunterladen"
+
+msgid "Scripting manual"
+msgstr "Skripting-Handbuch"
+
+msgid "Script Editor"
+msgstr "Skripteditor"
+
+msgid "Reload"
+msgstr "Neu laden"
+
+#, c-format
+msgid "Overwrite scripts/%s"
+msgstr "Skripte/%s überschreiben"
+
+msgid "Select all"
+msgstr "Alles auswählen"
+
+msgid "Fit"
+msgstr "Einpassen"
+
+msgid "2D Views"
+msgstr "2D-Ansichten"
+
+msgid "Select a model node to edit its slices."
+msgstr ""
+
+msgid ""
+"This model is larger than the suggested volume size. 2D editing is disabled."
+msgstr ""
+
+msgid "Show voxels behind the current slice with reduced opacity."
+msgstr ""
+
+msgid "Grid"
+msgstr "Raster"
+
+#, c-format
+msgid "Command: %s"
+msgstr "Befehl: %s"
+
+#, c-format
+msgid "Command: %s (%s)"
+msgstr "Befehl: %s (%s)"
+
+#, c-format
+msgid "FPS: %.2f"
+msgstr "FPS: %.2f"
+
+msgid "Load sun from scene"
+msgstr "Sonneneinstellungen aus Szene laden"
+
+msgid "Apply the scene root's stored sun settings to the current controls."
+msgstr ""
+"Die im Wurzelknoten der Szene gespeicherten Sonneneinstellungen in die "
+"aktuellen Bedienelemente übernehmen."
+
+msgid "Save sun to scene"
+msgstr "Sonneneinstellungen in Szene speichern"
+
+msgid "Store the current sun settings on the scene root for saving and export."
+msgstr ""
+"Die aktuellen Sonneneinstellungen zum Speichern und Exportieren im "
+"Wurzelknoten der Szene ablegen."
+
+msgid "Sun angle"
+msgstr "Sonnenwinkel"
+
+msgid "Controls the direction of the sun for shadow casting"
+msgstr "Steuert die Richtung der Sonne für Schattenwerfen"
+
+msgid "Sun angle is only used in Shadows mode"
+msgstr "Sonnenwinkel wird nur im Schattenmodus verwendet"
+
+msgid "Elevation"
+msgstr "Höhenlage"
+
+msgid "Sun elevation angle (pitch): -90 (below) to +90 (above)"
+msgstr "Sonnenelevationswinkel (Pitch): -90 (unten) bis +90 (oben)"
+
+msgid "Azimuth"
+msgstr "Azimut"
+
+msgid "Sun azimuth angle (yaw): 0 (North) to 360"
+msgstr "Sonnenazimutwinkel (Yaw): 0 (Norden) bis 360"
+
+msgid "Preset: Noon"
+msgstr "Voreinstellung: Mittag"
+
+msgid "Preset: Evening"
+msgstr "Voreinstellung: Abend"
+
+msgid "Preset: Morning"
+msgstr "Voreinstellung: Morgen"
+
+msgid ""
+"Switch between scene and edit mode (not in simple UI mode) by pressing the "
+"<cmd:togglescene> key."
+msgstr ""
+"Wechseln Sie zwischen Szenen- und Bearbeitungsmodus (nicht im einfachen UI-"
+"Modus), indem Sie die <cmd:togglescene>-Taste drücken."
+
+msgid "Use the file dialog options for format specific options."
+msgstr "Verwenden Sie die Dateidialogoptionen für formatabhängige Optionen."
+
+msgid ""
+"You can record a video of your rotating model in the viewport by using the "
+"'View' menu and the 'Video' option. Make sure to set the camera rotation "
+"speed to e.g. 1."
+msgstr ""
+"Sie können ein Video Ihres rotierenden Modells in der Ansicht erstellen, "
+"indem Sie das Menü 'Ansicht' und die Option 'Video' verwenden. Stellen Sie "
+"sicher, dass Sie die Kamerarotationsgeschwindigkeit z. B. auf 1 einstellen."
+
+msgid ""
+"When saving to a foreign format you might lose scene details if the format "
+"doesn't support particular features. Make sure to use the vengi format for "
+"highest compatibility."
+msgstr ""
+"Beim Speichern in einem fremden Format können Szenendetails verloren gehen, "
+"wenn das Format bestimmte Funktionen nicht unterstützt. Verwenden Sie für "
+"höchste Kompatibilität das Vengi-Format."
+
+msgid ""
+"Change the color reduction mode to improve the quality of the palette "
+"especially for importing RGBA or mesh based formats."
+msgstr ""
+"Ändern Sie den Farbreduktionsmodus, um die Qualität der Palette zu "
+"verbessern, insbesondere beim Import von RGBA- oder meshbasierten Formaten."
+
+msgid "Drag a model from the assets panel to the stamp brush to use it."
+msgstr ""
+"Ziehen Sie ein Modell aus dem Asset-Panel auf den Stempel-Pinsel, um es zu "
+"verwenden."
+
+msgid "You can reset the camera simply by pressing <cmd:camera_reset>."
+msgstr ""
+"Sie können die Kamera einfach durch Drücken von <cmd:camera_reset> "
+"zurücksetzen."
+
+msgid ""
+"You can animate a camera and then move around in the scene when hitting the "
+"play button in the animation timeline."
+msgstr ""
+"Du kannst eine Kamera animieren und dich dann in der Szene bewegen, wenn du "
+"in der Animationszeitleiste auf Wiedergabe tippst."
+
+msgid ""
+"The editor shows the last executed console command in the status bar. You "
+"can use these commands and bind them to keys."
+msgstr ""
+"Der Editor zeigt den zuletzt ausgeführten Konsolenbefehl in der Statusleiste "
+"an. Sie können diese Befehle verwenden und ihnen Tasten zuweisen."
+
+msgid ""
+"You can switch the camera scene movement by switching the 'Camera movement' "
+"to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing "
+"<cmd:camera_rotation>."
+msgstr ""
+"Du kannst die Kamerabewegung umschalten, indem du unter 'Ansicht' im "
+"Viewport 'Kamerabewegung' auf 'Eye' oder 'Target' setzt oder "
+"<cmd:camera_rotation> drückst."
+
+msgid ""
+"In order to use the path modifier, you have to place the reference position "
+"on top of another voxel and place the end of the path on another existing "
+"and connected voxel."
+msgstr ""
+"Um den Pfadmodifikator zu verwenden, müssen Sie die Referenzposition auf "
+"einem anderen Voxel platzieren und das Ende des Pfads auf einem anderen "
+"vorhandenen und verbundenen Voxel platzieren."
+
+msgid ""
+"When importing meshes, you can switch between different voxelization methods "
+"in the options menu."
+msgstr ""
+"Beim Importieren von Meshes können Sie im Optionsmenü zwischen verschiedenen "
+"Voxelisierungsmethoden wechseln."
+
+msgid ""
+"Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by "
+"using the erase modifier."
+msgstr ""
+"Löschen Sie Voxel im Bearbeitungsmodus, indem Sie <cmd:+actionexecutedelete> "
+"drücken oder den Löschmodifikator verwenden."
+
+msgid "Switch between different color themes in the options menu."
+msgstr "Wechseln Sie im Optionsmenü zwischen verschiedenen Farbthemen."
+
+msgid ""
+"Please activate anonymous usage metrics in the options or the about dialog."
+msgstr ""
+"Bitte aktivieren Sie anonyme Nutzungsstatistiken in den Optionen oder im "
+"Info-Dialog."
+
+msgid ""
+"You can change your default key bindings to Magicavoxel, Blender, Vengi, "
+"Qubicle, Goxel or 3dsMax style. Check the bindings window in the options "
+"menu."
+msgstr ""
+"Sie können Ihre Standard-Tastenbelegungen auf den Magicavoxel-, Blender-, "
+"Qubicle-, Goxel-, 3dsMax- oder Vengi-eigenen Stil ändern. Überprüfen Sie das "
+"Bindungsfenster im Optionsmenü."
+
+msgid "You can save your viewport as video or as screenshot."
+msgstr "Sie können Ihre Ansicht als Video oder als Screenshot speichern."
+
+msgid "Press <cmd:pickcolor> to pick a color from the scene."
+msgstr "Drücken Sie <cmd:pickcolor>, um eine Farbe aus der Szene auszuwählen."
+
+msgid ""
+"Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or "
+"<cmd:mirroraxisshapebrushz> to mirror the current selection."
+msgstr ""
+"Drücken Sie <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> oder "
+"<cmd:mirroraxisshapebrushz>, um die aktuelle Auswahl zu spiegeln."
+
+msgid "Use ctrl+tab to switch between the panels of the application."
+msgstr ""
+"Verwenden Sie Strg+Tab, um zwischen den Panels der Anwendung zu wechseln."
+
+msgid ""
+"It's possible to have multiple viewports and align them next to each other "
+"to get a left, top and so on view of the scene at the same time."
+msgstr ""
+"Es ist möglich, mehrere Ansichtsfenster zu haben und sie nebeneinander "
+"auszurichten, um gleichzeitig eine Links-, Ober- usw. Ansicht der Szene zu "
+"erhalten."
+
+msgid ""
+"Import/Export minecraft skins by using the 'Minecraft skin' option in the "
+"file menu - or by renaming the png the mcskin."
+msgstr ""
+"Importieren/Exportieren Sie Minecraft-Skins mit der Option 'Minecraft-Skin' "
+"im Dateimenü - oder durch Umbenennung des PNG in Mcskin."
+
+msgid ""
+"Extend the editor features by providing your own scripts. Check the "
+"scripting documentation for more information."
+msgstr ""
+"Erweitern Sie die Editor-Funktionen durch Ihre eigenen Skripte. Weitere "
+"Informationen finden Sie in der Scripting-Dokumentation."
+
+msgid ""
+"You can use the asset panel to import models from local or remote locations."
+msgstr ""
+"Sie können das Asset-Panel verwenden, um Modelle aus lokalen oder Remote-"
+"Speicherorten zu importieren."
+
+msgid ""
+"The palette panel is able to directly import lospec palettes by the lospec "
+"palette identifier."
+msgstr ""
+"Das Palette-Panel kann direkt Lospec-Paletten mit dem Lospec-"
+"Palettenidentifizierer importieren."
+
+msgid ""
+"Check the status bar to see the last executed console command of the last "
+"action."
+msgstr ""
+"Überprüfen Sie die Statusleiste, um den zuletzt ausgeführten Konsolenbefehl "
+"der letzten Aktion anzuzeigen."
+
+msgid "Imported scenes are placed centered around the reference position."
+msgstr "Importierte Szenen werden zentriert um die Referenzposition platziert."
+
+msgid ""
+"Switch between different ui modes (Ace Of Spades, Command&Conquer, "
+"Minecraft, ...) in the options menu to enable/disable various features."
+msgstr ""
+"Wechseln Sie im Optionsmenü zwischen verschiedenen UI-Modi (Ace Of Spades, "
+"Command&Conquer, Minecraft, ...), um verschiedene Funktionen ein-/"
+"auszuschalten."
+
+msgid ""
+"You can use the 'View' menu in the viewport to enable/disable various visual "
+"features such as the grid, axis, ..."
+msgstr ""
+"Über das Menü 'Ansicht' im Viewport kannst du visuelle Features wie Gitter, "
+"Achsen usw. ein-/ausschalten."
+
+msgid ""
+"You can use <cmd:camera_rotation> to switch between different camera "
+"rotation modes such as 'Target' and 'Eye'."
+msgstr ""
+"Mit <cmd:camera_rotation> kannst du zwischen Kameradrehmodi wie 'Target' und "
+"'Eye' wechseln."
+
+msgid ""
+"Open the bindings dialog in the options menu to change the default key "
+"bindings to Magicavoxel, Blender, Vengi, Qubicle, Goxel or 3dsMax style and "
+"also check which commands are available."
+msgstr ""
+"Öffne den Belegungsdialog im Optionsmenü, um die Standardtasten auf "
+"Magicavoxel-, Blender-, Vengi-, Qubicle-, Goxel- oder 3dsMax-Stil zu setzen "
+"und verfügbare Befehle zu prüfen."
+
+msgid ""
+"You can download and install community scripts for brushes, generators and "
+"selection modes from the Help menu."
+msgstr ""
+"Über das Hilfe-Menü kannst du Community-Skripte für Pinsel, Generatoren und "
+"Auswahlmodi herunterladen und installieren."
+
+msgid "Rotate all scene models"
+msgstr "Alle Szenenmodelle drehen"
+
+msgid "Rotate by 90 degree on the x axis"
+msgstr "Um 90 Grad um die x-Achse drehen"
+
+msgid "Rotate by 90 degree on the y axis"
+msgstr "Um 90 Grad um die y-Achse drehen"
+
+msgid "Rotate by 90 degree on the z axis"
+msgstr "Um 90 Grad um die z-Achse drehen"
+
+msgid "Rotate on axis"
+msgstr "Um Achse rotieren"
+
+msgid "Flip on axis"
+msgstr "Auf Achse umdrehen"
+
+msgid "Move voxels"
+msgstr "Voxel verschieben"
+
+msgid "Move"
+msgstr "Verschieben"
+
+msgid "Cursor"
+msgstr "Cursor"
+
+msgid "Details"
+msgstr "Details"
+
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+msgid "Distance"
+msgstr "Entfernung"
+
+msgid "Grid size"
+msgstr "Rastergröße"
+
+msgid "Apply this axis size to the other axes"
+msgstr "Diese Achsengröße auf die anderen Achsen übertragen"
+
+msgid "Gizmo settings"
+msgstr "Gizmo-Einstellungen"
+
+msgid "Rotate"
+msgstr "Drehen"
+
+msgid "Activate the rotate operation"
+msgstr "Die Drehoperation aktivieren"
+
+msgid "Translate"
+msgstr "Verschieben"
+
+msgid "Activate the translate operation"
+msgstr "Die Verschiebeoperation aktivieren"
+
+msgid "Show gizmo for brushes that support it"
+msgstr "Gizmo für unterstützende Pinsel anzeigen"
+
+msgid "Simple"
+msgstr "Einfach"
+
+msgid "Minecraft Skin"
+msgstr "Minecraft Skin"
+
+msgid "Ace Of Spades"
+msgstr "Ace Of Spades"
+
+msgid "Minimal"
+msgstr "Minimal"
+
+msgid "Default"
+msgstr "Standard"
+
+msgid "Scene jobs"
+msgstr "Szenenaufträge"
+
+msgid "Abort"
+msgstr "Abbrechen"
+
+#, c-format
+msgid "Pending: %i"
+msgstr "Ausstehend: %i"
+
+msgid "Clear pending"
+msgstr "Ausstehende löschen"
+
+msgid "Abort all"
+msgstr "Alle abbrechen"
+
+#, c-format
+msgid "Slice at %s: %i"
+msgstr "Slice bei %s: %i"
+
+#, c-format
+msgid "pos: %i:%i:%i"
+msgstr "pos: %i:%i:%i"
+
+#, c-format
+msgid "size: %i:%i:%i"
+msgstr "size: %i:%i:%i"
+
+#, c-format
+msgid "cursor: %i:%i:%i"
+msgstr "cursor: %i:%i:%i"
+
+#, c-format
+msgid "rel cursor: %i:%i:%i"
+msgstr "rel cursor: %i:%i:%i"
+
+#, c-format
+msgid "dist: %i:%i:%i"
+msgstr "dist: %i:%i:%i"
+
+msgid "Slice view"
+msgstr "Slice-Ansicht"
+
+msgid "Loading"
+msgstr "Laden..."
+
+msgid "Working"
+msgstr "Arbeitet…"
+
+msgid "Lines"
+msgstr "Linien"
+
+msgid "Points"
+msgstr "Punkte"
+
+msgid "Render mode"
+msgstr "Rendermodus"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Finishing..."
+msgstr "Wird abgeschlossen…"
+
+#, c-format
+msgid "Pending frames: %u"
+msgstr "Ausstehende Frames: %u"
+
+#, c-format
+msgid ""
+"Recording at %i fps\n"
+"Pending frames: %u"
+msgstr ""
+"Aufnahme mit %i fps\n"
+"Ausstehende Frames: %u"
+
+msgid "Screenshot"
+msgstr "Screenshot"
+
+msgid "Reset camera"
+msgstr "Kamera zurücksetzen"
+
+msgid "Scene Mode"
+msgstr "Szenenmodus"
+
+msgid "EditMode"
+msgstr "Bearbeitungsmodus"
+
+msgid "SceneMode"
+msgstr "Szenenmodus"
+
+msgid "Create a reference node"
+msgstr "Referenzknoten erstellen"
+
+msgid "Color picker"
+msgstr "Farbauswahl"
+
+msgid "Place"
+msgstr "Platzieren"
+
+msgid "Erase"
+msgstr "Löschen"
+
+msgid "Override"
+msgstr "Überschreiben"
+
+msgid "Paint"
+msgstr "Bemalen"
+
+msgid "Normal paint"
+msgstr "Normalen malen"
+
+msgid "No brush"
+msgstr "Kein Pinsel"
+
+msgid "Click a voxel face to set extrusion direction"
+msgstr "Klicke auf eine Voxelfläche, um die Extrusionsrichtung festzulegen"
+
+msgid "Select voxels first (Select brush)"
+msgstr "Zuerst Voxel auswählen (Auswahlpinsel)"
+
+msgid "Select voxels, then switch to Sculpt"
+msgstr "Voxel auswählen, dann zu Sculpt wechseln"
+
+msgid "Click a voxel face to set direction"
+msgstr "Klicken Sie auf eine Voxelfläche, um die Richtung festzulegen"
+
+msgid "Add node by face"
+msgstr "Knoten an Fläche hinzufügen"
+
+msgid "Click a face to place, Esc to cancel"
+msgstr "Klicke auf eine Fläche zum Platzieren, Esc zum Abbrechen"
+
+msgid "VoxBox username"
+msgstr "VoxBox-Benutzername"
+
+msgid "Your VoxBox account username"
+msgstr "Dein VoxBox-Benutzername"
+
+msgid "VoxBox password"
+msgstr "VoxBox-Passwort"
+
+msgid "Your VoxBox account password"
+msgstr "Dein VoxBox-Passwort"
+
+msgid "VoxBox API key"
+msgstr "VoxBox-API-Schlüssel"
+
+msgid "VoxBox refresh token for authenticated requests"
+msgstr "VoxBox-Refresh-Token für authentifizierte Anfragen"
+
+#, c-format
+msgid "Logged in as %s"
+msgstr "Angemeldet als %s"
+
+msgid "Logout"
+msgstr "Abmelden"
+
+msgid "Login required"
+msgstr "Anmeldung notwendig"
+
+msgid "A VoxBox account is required to browse, download and upload assets."
+msgstr ""
+"Zum Durchsuchen, Herunterladen und Hochladen von Assets ist ein VoxBox-Konto "
+"erforderlich."
+
+msgid "API key"
+msgstr "API-Schlüssel"
+
+msgid "Refresh token"
+msgstr "Aktualisierungstoken"
+
+msgid "Connect"
+msgstr "Verbinden"
+
+msgid "Use password"
+msgstr "Passwort verwenden"
+
+msgid "Your VoxBox username"
+msgstr "VoxBox-Benutzername"
+
+msgid "Password"
+msgstr "Passwort"
+
+msgid "Your VoxBox password"
+msgstr "VoxBox-Passwort"
+
+msgid "Login"
+msgstr "Anmelden"
+
+msgid "Login failed"
+msgstr "Anmeldung fehlgeschlagen"
+
+msgid "Use API key"
+msgstr "API-Schlüssel verwenden"
+
+msgid "No account yet? Create one at voxbox.store."
+msgstr "Noch kein Konto? Erstellen Sie eines auf voxbox.store."
+
+msgid "VoxBox Store"
+msgstr "VoxBox-Store"
+
+msgid "Fetching models..."
+msgstr "Modelle werden geladen..."
+
+msgid "Search by name..."
+msgstr "Nach Name suchen…"
+
+msgid "Search Options"
+msgstr "Suchoptionen"
+
+msgid "Filter by author..."
+msgstr "Nach Autor filtern…"
+
+msgid "Category"
+msgstr "Kategorie"
+
+msgid "Filter animated"
+msgstr "Animierte filtern"
+
+msgid "Animated only"
+msgstr "Nur animierte"
+
+msgid "No models found"
+msgstr "Keine Modelle gefunden"
+
+msgid "Rating"
+msgstr "Bewertung"
+
+msgid "Load as new scene"
+msgstr "Als neue Szene laden"
+
+msgid "Import into current scene"
+msgstr "In aktuelle Szene importieren"
+
+msgid "Remove downloaded file"
+msgstr "Heruntergeladene Datei entfernen"
+
+msgid "Download and open"
+msgstr "Herunterladen und öffnen"
+
+msgid "Please log in to upload models"
+msgstr "Bitte anmelden, um Modelle hochzuladen"
+
+msgid "Animated"
+msgstr "Animiert"
+
+#, c-format
+msgid "Updating existing model: %s"
+msgstr "Bestehendes Modell wird aktualisiert: %s"
+
+msgid "Cover image"
+msgstr "Titelbild"
+
+msgid "Submit"
+msgstr "Absenden"
+
+msgid "VoxBox Browser"
+msgstr "VoxBox-Browser"
+
+msgid "Upload current scene..."
+msgstr "Aktuelle Szene hochladen…"
+
+msgid "Update on VoxBox..."
+msgstr "Auf VoxBox aktualisieren…"
+
+msgid "Click a voxel face in the viewport to set the extrusion direction"
+msgstr ""
+"Klicke im Viewport auf eine Voxelfläche, um die Extrusionsrichtung "
+"festzulegen"
+
+#, c-format
+msgid "Direction: %s"
+msgstr "Richtung: %s"
+
+msgid "No selection active - use the Select brush first"
+msgstr "Keine Auswahl aktiv – zuerst den Auswahlpinsel verwenden"
+
+msgid "Fill walls"
+msgstr "Wände füllen"
+
+#, c-format
+msgid "Offset %s"
+msgstr "Versatz %s"
+
+msgid "Draws a line from the reference position to the current cursor position"
+msgstr ""
+"Zeichnet eine Linie von der Referenzposition zur aktuellen Cursorposition"
+
+msgid "Continuous"
+msgstr "Kontinuierlich"
+
+msgid "Bezier"
+msgstr "Bezier"
+
+msgid ""
+"First click locks the segment end, the gizmo edits its control point, and "
+"pending segments commit when you apply or leave the brush"
+msgstr ""
+"Erster Klick fixiert das Segmentende, das Gizmo bearbeitet den "
+"Kontrollpunkt; ausstehende Segmente werden beim Anwenden oder Verlassen des "
+"Pinsels übernommen"
+
+msgid "Thickness"
+msgstr "Dicke"
+
+msgid "Sag"
+msgstr "Durchhang"
+
+msgid "Downward sag in voxels for rope/cable effect"
+msgstr "Durchhang nach unten in Voxeln für Seil-/Kabeleffekt"
+
+msgid "Pending segments"
+msgstr "Ausstehende Segmente"
+
+msgid "Segment"
+msgstr "Segment"
+
+#, c-format
+msgid "Segment %i"
+msgstr "Segment %i"
+
+msgid "Select a pending segment to edit its control point with the gizmo"
+msgstr ""
+"Wähle ein ausstehendes Segment, um seinen Kontrollpunkt mit dem Gizmo zu "
+"bearbeiten"
+
+msgid "Stipple pattern"
+msgstr "Strichelmuster"
+
+msgid ""
+"Click cells to toggle: dash places a voxel, gap skips. Pattern length <= 1 "
+"disables stippling"
+msgstr ""
+"Zellen anklicken zum Umschalten: Strich setzt ein Voxel, Lücke überspringt. "
+"Musterlänge ≤ 1 deaktiviert Punktemuster"
+
+msgid "Enable normal rendering to see your changes"
+msgstr "Normalenrendering aktivieren, um Änderungen zu sehen"
+
+msgid "Mode"
+msgstr "Modus"
+
+msgid "Strength"
+msgstr "Stärke"
+
+msgid ""
+"How strongly to apply the gaussian blur of neighboring colors (0 = none, 1 = "
+"full)"
+msgstr ""
+"Stärke der Gaußschen Weichzeichnung benachbarter Farben (0 = keine, 1 = "
+"vollständig)"
+
+msgid "Opacity at the brush center (0 = none, 1 = full)"
+msgstr "Deckkraft in der Pinselmitte (0 = keine, 1 = vollständig)"
+
+msgid "Amount of brighten or darken to apply"
+msgstr "Stärke der Aufhellung oder Abdunkelung"
+
+msgid "Variation chance (1 in N)"
+msgstr "Variationschance (1 von N)"
+
+msgid "Each voxel has a 1 in N chance to be varied"
+msgstr "Jedes Voxel hat eine Chance von 1 zu N, variiert zu werden"
+
+msgid "Flood fill"
+msgstr "Flutfüllung"
+
+msgid "Fill connected voxels of the same color on the clicked face"
+msgstr "Verbundene Voxel derselben Farbe auf der angeklickten Fläche füllen"
+
+msgid "Gradient"
+msgstr "Verlauf"
+
+msgid "Blend from the hit color to the cursor color across the box"
+msgstr "Von der Trefferfarbe zur Cursorfarbe über die Box überblenden"
+
+msgid "Fill the clicked face, or drag to extrude the plane"
+msgstr "Angeklickte Fläche füllen oder ziehen, um die Ebene zu extrudieren"
+
+msgid "Erase voxels on the clicked face, or drag to extrude"
+msgstr "Voxel auf der angeklickten Fläche löschen oder ziehen zum Extrudieren"
+
+msgid "Recolor voxels on the clicked face, or drag to extrude"
+msgstr "Voxel auf der angeklickten Fläche umfärben oder ziehen zum Extrudieren"
+
+msgid "Use reference position"
+msgstr "Referenzposition verwenden"
+
+msgid "Measure the distance from the reference position to the cursor"
+msgstr "Abstand von der Referenzposition zum Cursor messen"
+
+msgid "Click two points to measure the distance between them"
+msgstr "Zwei Punkte anklicken, um den Abstand dazwischen zu messen"
+
+msgid "Measurement"
+msgstr "Messung"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "End"
+msgstr "Ende"
+
+msgid "Delta"
+msgstr "Delta"
+
+#, c-format
+msgid "Length: %.2f"
+msgstr "Länge: %.2f"
+
+#, c-format
+msgid "Manhattan: %i"
+msgstr "Manhattan: %i"
+
+msgid "Grid distance: sum of steps along each axis"
+msgstr "Gitterabstand: Summe der Schritte entlang jeder Achse"
+
+msgid "Rescan"
+msgstr "Neu scannen"
+
+msgid "Select voxels first, then switch to sculpt"
+msgstr "Zuerst Voxel auswählen, dann zu Sculpt wechseln"
+
+msgid "Sculpt mode"
+msgstr "Sculpt-Modus"
+
+msgid "Click a voxel face in the viewport to set the direction"
+msgstr "Klicke im Viewport auf eine Voxelfläche, um die Richtung festzulegen"
+
+msgid "Height threshold"
+msgstr "Höhenschwelle"
+
+msgid "Preserve top height"
+msgstr "Oberkante beibehalten"
+
+msgid "Trim per step"
+msgstr "Pro Schritt trimmen"
+
+msgid "Kernel size"
+msgstr "Kernelgröße"
+
+msgid "Sigma"
+msgstr "Sigma"
+
+msgid "Fill holes"
+msgstr "Löcher füllen"
+
+msgid "Fill enclosed empty areas with interpolated heights"
+msgstr "Eingeschlossene leere Bereiche mit interpolierten Höhen füllen"
+
+msgid "Clear depth"
+msgstr "Löschtiefe"
+
+msgid "How many voxels above the smoothed surface to clear (0 = none)"
+msgstr ""
+"Wie viele Voxel oberhalb der geglätteten Oberfläche gelöscht werden (0 = "
+"keine)"
+
+msgid "Copy voxels to clipboard or load a skin file"
+msgstr "Voxel in die Zwischenablage kopieren oder Skin-Datei laden"
+
+msgid "Load skin"
+msgstr "Skin laden"
+
+msgid "Reskin mode"
+msgstr "Reskin-Modus"
+
+msgid "Follow surface"
+msgstr "Oberfläche folgen"
+
+msgid "Tile"
+msgstr "Kacheln"
+
+msgid "Offset U"
+msgstr "U Versatz"
+
+msgid "Offset V"
+msgstr "V Versatz"
+
+msgid "Surface offset"
+msgstr "Oberflächenversatz"
+
+msgid "Positive = skin floats above surface, negative = sinks below"
+msgstr "Positiv = Skin schwebt über der Oberfläche, negativ = sinkt darunter"
+
+msgid "Skin layers"
+msgstr "Skin-Schichten"
+
+msgid "Invert skin"
+msgstr "Skin invertieren"
+
+msgid "Brush radius"
+msgstr "Pinselradius"
+
+msgid "Extend only"
+msgstr "Nur erweitern"
+
+msgid "Only place voxels adjacent to existing solid voxels"
+msgstr "Nur Voxel neben bestehenden soliden Voxel setzen"
+
+msgid "Remove only"
+msgstr "Nur entfernen"
+
+msgid ""
+"Do not place any voxels - only carve away the voxels above the plane (set "
+"the Remove above depth)"
+msgstr ""
+"Keine Voxel setzen – nur Voxel oberhalb der Ebene entfernen (Löschtiefe "
+"„Remove above“ setzen)"
+
+msgid "Remove above"
+msgstr "Darüber entfernen"
+
+msgid ""
+"Perpendicular depth of voxels to remove above the plane (0 = no removal)"
+msgstr ""
+"Senkrechte Tiefe der oberhalb der Ebene zu entfernenden Voxel (0 = keine "
+"Entfernung)"
+
+msgid "Selection bounds"
+msgstr "Auswahlgrenzen"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Max"
+msgstr "Max"
+
+#, c-format
+msgid "Size: %d x %d x %d"
+msgstr "Größe: %d x %d x %d"
+
+msgid "Circle selection"
+msgstr "Kreisauswahl"
+
+msgid "Center"
+msgstr "Zentriert"
+
+#, c-format
+msgid "Radius %s"
+msgstr "Radius %s"
+
+#, c-format
+msgid "Depth %s"
+msgstr "Tiefe %s"
+
+msgid ""
+"How far from the center the selection extends along the face-normal axis (0 "
+"= single layer)"
+msgstr ""
+"Wie weit die Auswahl vom Zentrum entlang der Flächennormale reicht (0 = eine "
+"Schicht)"
+
+msgid "3D ellipsoid"
+msgstr "3D-Ellipsoid"
+
+msgid ""
+"Select voxels in a 3D ellipsoid shape behind the clicked surface instead of "
+"a 2D ellipse with depth"
+msgstr ""
+"Voxel in einer 3D-Ellipsoidform hinter der angeklickten Oberfläche auswählen "
+"statt einer 2D-Ellipse mit Tiefe"
+
+msgid "Brush selection"
+msgstr "Pinselauswahl"
+
+msgid ""
+"Radius of the round selection brush. Hold the mouse button and drag to "
+"select."
+msgstr ""
+"Radius des runden Auswahlpinsels. Maustaste halten und ziehen zum Auswählen."
+
+msgid "Grow region"
+msgstr "Region vergrößern"
+
+msgid ""
+"Only select voxels adjacent to already-selected voxels. Useful for expanding "
+"an existing selection."
+msgstr ""
+"Nur Voxel neben bereits ausgewählten Voxel auswählen. Nützlich zum Erweitern "
+"einer bestehenden Auswahl."
+
+msgid "Threshold"
+msgstr "Schwellwert"
+
+msgid ""
+"Color distance threshold for fuzzy matching (0 = exact, higher = more "
+"similar colors)"
+msgstr ""
+"Farbabstandsschwelle für unscharfes Matching (0 = exakt, höher = ähnlichere "
+"Farben)"
+
+msgid "Surface deviation"
+msgstr "Oberflächenabweichung"
+
+msgid ""
+"How many voxels above or below the clicked face the fill may deviate from "
+"the start position"
+msgstr ""
+"Wie viele Voxel ober- oder unterhalb der angeklickten Fläche die Füllung von "
+"der Startposition abweichen darf"
+
+msgid "Lasso selection"
+msgstr "Lasso-Auswahl"
+
+msgid "Click and drag to draw a selection polygon"
+msgstr "Klicken und ziehen, um ein Auswahlpolygon zu zeichnen"
+
+msgid "Selection actions"
+msgstr "Auswahlaktionen"
+
+msgid "Draw with"
+msgstr "Zeichnen mit"
+
+msgid "Stroke"
+msgstr "Strich"
+
+msgid "Drag shape"
+msgstr "Form aufziehen"
+
+msgid "Shape"
+msgstr "Form"
+
+msgid "Hold and drag to draw with the selected shape."
+msgstr "Gedrückt halten und ziehen, um mit der ausgewählten Form zu zeichnen."
+
+msgid "Radius 0 draws a single cube. Increase the radius to use other shapes."
+msgstr ""
+"Radius 0 zeichnet einen einzelnen Würfel. Erhöhen Sie den Radius, um andere "
+"Formen zu verwenden."
+
+msgid "Increase radius"
+msgstr "Radius vergrößern"
+
+msgid "Start from"
+msgstr "Ausgangspunkt"
+
+msgid "Corner"
+msgstr "Ecke"
+
+msgid "Drag to define the shape's size."
+msgstr "Ziehen, um die Größe der Form festzulegen."
+
+msgid "Minimum"
+msgstr "Minimum"
+
+msgid "Maximum"
+msgstr ""
+
+msgid "Mirror"
+msgstr "Spiegelung"
+
+msgid "Apply once per voxel per stroke"
+msgstr "Pro Strich einmal auf jedes Voxel anwenden"
+
+msgid "Use selection"
+msgstr "Auswahl verwenden"
+
+msgid "Model"
+msgstr "Modell"
+
+msgid "Select a model from the asset panel or scene graph panel"
+msgstr "Ein Modell aus dem Asset-Panel oder dem Szenegraph-Panel auswählen"
+
+msgid "Offset"
+msgstr "Versatz"
+
+msgid "Replace"
+msgstr "Ersetzen"
+
+msgid "Replace all voxels in the stamp with the selected color"
+msgstr "Alle Voxel im Stempel mit der ausgewählten Farbe ersetzen"
+
+msgid "Rotate 90"
+msgstr "Um 90 Grad drehen"
+
+msgid "Crop stamp"
+msgstr "Stempel zuschneiden"
+
+msgid "Convert palette"
+msgstr "Palette konvertieren"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Horizontal spacing"
+msgstr "Horizontaler Abstand"
+
+msgid "Font"
+msgstr "Schriftart"
+
+msgid "Font to use for rendering text"
+msgstr "Schriftart für die Textwiedergabe"
+
+msgid "Texture"
+msgstr "Texture"
+
+msgid "Project onto surface"
+msgstr "Auf Oberfläche projezieren"
+
+msgid "UV min"
+msgstr "UV min."
+
+msgid "Lower-left corner of the texture on the brush"
+msgstr "Untere linke Ecke der Textur auf dem Pinsel"
+
+msgid "UV max"
+msgstr "UV max."
+
+msgid "Upper-right corner of the texture on the brush"
+msgstr "Obere rechte Ecke der Textur auf dem Pinsel"
+
+msgid "UV editor"
+msgstr "UV-Editor"
+
+msgid "Uniform"
+msgstr "Gleichmäßig"
+
+msgid "Sampling"
+msgstr "Abtastung"
+
+msgid "Off"
+msgstr "Aus"
+
+msgid "Box"
+msgstr "Box"
+
+msgid "No overlap"
+msgstr "Keine Überlappung"
+
+msgid "Use a radius around the current voxel - 0 for spanning a box"
+msgstr ""
+"Radius um den aktuellen Voxel verwenden - 0 für einen umspannenden Bereich"
+
+msgid "Clamp to volume"
+msgstr "Auf Volumen begrenzen"
+
+msgid "Keep the brush inside the active volume bounds"
+msgstr "Pinsel innerhalb der Volumengrenzen halten"
+
+msgid "Test value"
+msgstr "Testwert"
+
+msgctxt "SceneJob"
+msgid "Scene job"
+msgstr "Szenenauftrag"
+
+msgctxt "SceneJob"
+msgid "Cropping"
+msgstr "Zuschneiden"
+
+msgctxt "SceneJob"
+msgid "Scaling up"
+msgstr "Hochskalieren"
+
+msgctxt "SceneJob"
+msgid "Scaling down"
+msgstr "Herunterskalieren"
+
+msgctxt "SceneJob"
+msgid "Resizing"
+msgstr "Größe wird geändert"
+
+msgctxt "SceneJob"
+msgid "Filling"
+msgstr "Wird gefüllt"
+
+msgctxt "SceneJob"
+msgid "Clearing"
+msgstr "Leeren"
+
+msgctxt "SceneJob"
+msgid "Deleting selected voxels"
+msgstr "Ausgewählte Voxel löschen"
+
+msgctxt "SceneJob"
+msgid "Hollowing"
+msgstr "Wird ausgehöhlt"
+
+msgctxt "SceneJob"
+msgid "Filling hollow voxels"
+msgstr "Hohle Voxel füllen"
+
+msgctxt "SceneJob"
+msgid "Splitting objects"
+msgstr "Objekte aufteilen"
+
+msgctxt "SceneJob"
+msgid "Moving color to model"
+msgstr "Farbe ins Modell verschieben"
+
+msgctxt "SceneJob"
+msgid "Splat merging"
+msgstr "Splat-Zusammenführung"
+
+msgctxt "Temporary merged scene graph node name"
+msgid "merged_temp"
+msgstr "merged_temp"
+
+msgid "Palette color cell size relative to the UI frame height"
+msgstr "Größe der Palettenfarbzellen relativ zur Höhe des UI-Rahmens"
+
+msgid "Palette color size"
+msgstr "Palettenfarbgröße"
+
+msgid "Color wheel"
+msgstr "Farbrad"
+
+msgid "Use the color wheel in the palette color editing"
+msgstr "Verwenden Sie das Farbrad zur Bearbeitung der Farben in der Palette"
+
+msgid "Always show the color picker below the palette"
+msgstr "Den Farbwähler immer unterhalb der Palette anzeigen"
+
+msgid "Milliseconds that a region should get highlighted in a few situations"
+msgstr ""
+"Millisekunden, in denen eine Region in bestimmten Situationen hervorgehoben "
+"werden sollte"
+
+msgid "Modification highlight"
+msgstr "Änderungs-Hervorhebung"
+
+msgid "Show fixed region sizes in the volume inspector"
+msgstr "Feste Regionengrößen im Volumeninspektor anzeigen"
+
+msgid "Local transforms"
+msgstr "Lokale Transformationen"
+
+msgid "Use local space for transforms"
+msgstr "Lokalen Raum für Transformationen verwenden"
+
+msgid "Show the grid"
+msgstr "Gitter anzeigen"
+
+msgid "Show locked axis"
+msgstr "Gesperrte Achse anzeigen"
+
+msgid "Show the currently locked axis"
+msgstr "Aktuell gesperrte Achse anzeigen"
+
+msgid "Bounding box"
+msgstr "Begrenzungsrahmen"
+
+msgid "Show the axis aligned bounding box"
+msgstr "Achsenorientierte Begrenzungsbox anzeigen"
+
+msgid "Bones"
+msgstr "Bones"
+
+msgid "Show the bones in scene mode"
+msgstr "Knochen im Szenenmodus anzeigen"
+
+msgid "Render shadows"
+msgstr "Schatten rendern"
+
+msgid "Render with shadows - make sure to set the scene lighting up properly"
+msgstr ""
+"Mit Schatten rendern - stellen Sie sicher, dass die Szenenbeleuchtung "
+"richtig eingestellt ist"
+
+msgid "Shading mode"
+msgstr "Schattierungsmodus"
+
+msgid "Shading mode: 0=Unlit (pure colors), 1=Lit (no shadows), 2=Shadows"
+msgstr ""
+"Schattierungsmodus: 0=Unlit (reine Farben), 1=Lit (keine Schatten), "
+"2=Schatten"
+
+msgid ""
+"Millisecond delay between frames hide/unhide when using the scene graph "
+"panel play button to animate the models in the scene"
+msgstr ""
+"Millisekunden Verzögerung zwischen dem Ein- und Ausblenden von Frames beim "
+"Verwenden der Wiedergabetaste im Szenengraphen-Panel, um die Modelle in der "
+"Szene zu animieren"
+
+msgid "Model animation speed"
+msgstr "Modellanimationsgeschwindigkeit"
+
+msgid "Auto normal mode"
+msgstr "Automatischer Normalen-Modus"
+
+msgid "The size of the voxel grid per axis (e.g. 1 or 1 2 3)"
+msgstr "Die Größe des Voxelgitters pro Achse (z.B. 1 oder 1 2 3)"
+
+msgid "Plane size"
+msgstr "Ebenengröße"
+
+msgid "The size of the plane"
+msgstr "Die Größe der Ebene"
+
+msgid "Show the plane"
+msgstr "Ebene anzeigen"
+
+msgid "Grayscale"
+msgstr "Graustufen"
+
+msgid "Render the inactive nodes in gray scale mode"
+msgstr "Die inaktiven Knoten in grau darstellen"
+
+msgid "Hide the inactive nodes"
+msgstr "Alle inaktiven Knoten ausblenden"
+
+msgid "Only active"
+msgstr "Nur aktiv"
+
+msgid "Scene mode"
+msgstr "Szenenmodus"
+
+msgid "Start in scene mode"
+msgstr "Im Szenenmodus starten"
+
+msgid "Place new nodes adjacent to the active node face in scene view"
+msgstr ""
+"Neue Knoten an der Fläche des aktiven Knotens in der Szenenansicht platzieren"
+
+msgid "Allow overlap"
+msgstr "Überlappung erlauben"
+
+msgid "Allow placing adjacent nodes even if the region overlaps other nodes"
+msgstr "Benachbarte Knoten auch bei Überlappung mit anderen Knoten erlauben"
+
+msgid "Clone voxels"
+msgstr "Voxel klonen"
+
+msgid "Copy voxels when adding a node by face"
+msgstr "Voxel kopieren, wenn ein Knoten an einer Fläche hinzugefügt wird"
+
+msgid "Far plane for the camera"
+msgstr "Farplane für die Kamera"
+
+msgid "View distance"
+msgstr "Sichtweite"
+
+msgid "Show gizmo"
+msgstr "Gizmo anzeigen"
+
+msgid "Show the axis"
+msgstr "Achsen anzeigen"
+
+msgid "Cursor details"
+msgstr "Cursor-Details"
+
+msgid ""
+"Print cursor details in edit mode - measure distance to reference position "
+"in mode 3"
+msgstr ""
+"Cursor-Details im Bearbeitungsmodus anzeigen - Entfernung zur "
+"Referenzposition im Modus 3 messen"
+
+msgid "Face cursor for single voxel"
+msgstr ""
+
+msgid ""
+"Use the red face cursor instead of a full cube preview when the shape brush "
+"radius is 0"
+msgstr ""
+
+msgid "Auto Keyframe"
+msgstr "Automatischer Keyframe"
+
+msgid "Automatically create keyframes when changing transforms"
+msgstr "Automatisch Keyframes erstellen, wenn sich Transformationen ändern"
+
+msgid "Bitmask of gizmo operations in scene mode"
+msgstr "Bitmaske der Gizmo-Operationen im Szenenmodus"
+
+msgid "Gizmo operations"
+msgstr "Gizmo-Operationen"
+
+msgid "Activate the pivot mode for the gizmo in scene mode"
+msgstr "Aktiviere den Pivot-Modus für das Gizmo im Szenenmodus"
+
+msgid "Flip axis"
+msgstr "Achse umkehren"
+
+msgid "Flip axis or stay along the positive world/local axis"
+msgstr "Achse umkehren oder entlang der positiven Welt-/Lokalachse bleiben"
+
+msgid "Snap to grid"
+msgstr "Am Raster ausrichten"
+
+msgid "Use the grid size for snap"
+msgstr "Verwende die Rastergröße für das Einrasten"
+
+msgid "Model gizmo"
+msgstr "Modell-Gizmo"
+
+msgid "Show the gizmo to also translate the region"
+msgstr "Zeige das Gizmo, um auch die Region zu verschieben"
+
+msgid "Brush gizmo"
+msgstr "Pinsel-Gizmo"
+
+msgid "Show the gizmo for brushes that support it"
+msgstr "Gizmo für unterstützende Pinsel anzeigen"
+
+msgid "Viewport HUD"
+msgstr "Viewport-HUD"
+
+msgid "Show status and hints in the viewport"
+msgstr "Status und Hinweise im Viewport anzeigen"
+
+msgid "Last palette"
+msgstr "Letzte Palette"
+
+msgid "The last used palette"
+msgstr "Die zuletzt verwendete Palette"
+
+msgid "The amount of viewports (not in simple ui mode)"
+msgstr "Die Anzahl der Ansichtsbereiche (nicht im einfachen UI-Modus)"
+
+msgid "Viewports"
+msgstr "Ansichten"
+
+msgid "Max volume size"
+msgstr "Maximale Volumengröße"
+
+msgid ""
+"The maximum size of a volume before a few features are disabled (e.g. undo, "
+"autosave, isometric preview, 2D editing)"
+msgstr ""
+"Die maximale Größe eines Volumens, bevor einige Funktionen deaktiviert "
+"werden (z. B. Rückgängig, Autosave, isometrische Vorschau, 2D-Bearbeitung)"
+
+msgid "Configure the editor view mode"
+msgstr "Konfigurieren Sie den Editor-Ansichtsmodus"
+
+msgid "View mode"
+msgstr "Oberflächenmodus"
+
+msgid "Show the palette panel"
+msgstr "Palettenfenster anzeigen"
+
+msgid "Show the normal palette panel"
+msgstr "Normalenpalettenfenster anzeigen"
+
+msgid "Memento"
+msgstr "Verlauf"
+
+msgid "Show the memento panel"
+msgstr "Verlaufsfenster anzeigen"
+
+msgid "Show editable back, right and top slices of the selected model"
+msgstr ""
+
+msgid "Show the camera panel"
+msgstr "Kamerafenster anzeigen"
+
+msgid "Show the L-System panel"
+msgstr "L-System-Fenster anzeigen"
+
+msgid "Script"
+msgstr "Skript"
+
+msgid "Show the script panel"
+msgstr "Skriptfenster anzeigen"
+
+msgid "Show the network panel"
+msgstr "Netzwerkfenster anzeigen"
+
+msgid "Show the game mode panel"
+msgstr "Spielmodusfenster anzeigen"
+
+msgid "Assets"
+msgstr "Assets"
+
+msgid "Show the asset panels"
+msgstr "Asset-Fenster anzeigen"
+
+msgid "Show the render panel"
+msgstr "Renderfenster anzeigen"
+
+msgid "Show the animation settings panel"
+msgstr "Fenster für Animationseinstellungen anzeigen"
+
+msgid "Animation timeline"
+msgstr "Animationszeitleiste"
+
+msgid "Show the animation timeline panel"
+msgstr "Animationszeitleiste anzeigen"
+
+msgid "Show the scene panel"
+msgstr "Szenenfenster anzeigen"
+
+msgid "Show the tools panel"
+msgstr "Werkzeugfenster anzeigen"
+
+msgid "Show the scene settings panel"
+msgstr "Fenster für Szeneneinstellungen anzeigen"
+
+msgid "Show the help panel"
+msgstr "Hilfefenster anzeigen"
+
+msgid "Node properties"
+msgstr "Knoteneigenschaften"
+
+msgid "Show the node properties panel"
+msgstr "Fenster für Knoteneigenschaften anzeigen"
+
+msgid "Show the volume/node inspector panel"
+msgstr "Volumen-/Knoteninspektor anzeigen"
+
+msgid "Volume inspector"
+msgstr "Volumeninspektor"
+
+msgid "Show the brushes and brush settings panels"
+msgstr "Fenster für Pinsel und Pinseleinstellungen anzeigen"
+
+msgid "Show the pixel art preview panel"
+msgstr "Pixel-Art-Vorschaufenster anzeigen"
+
+msgid "Show the tip of the day on startup"
+msgstr "Zeige den Tipp des Tages beim Start"
+
+msgid "Tip of the day popup"
+msgstr "Tipp-des-Tages-Popup"
+
+msgid "Trigger opening of opup"
+msgstr "Öffnen des Popups auslösen"
+
+msgid "Trigger opening of popup"
+msgstr "Öffnen des Popups auslösen"
+
+msgid "Welcome popup"
+msgstr "Willkommen-Popup"
+
+msgid "Minecraft mapping popup"
+msgstr "Minecraft-Mapping-Popup"
+
+msgid "About popup"
+msgstr "Über-Popup"
+
+msgid "Rename node popup"
+msgstr "Knoten-Umbenennen-Popup"
+
+msgid "Create animation popup"
+msgstr "Animation-Erzeugen-Popup"
+
+msgid "Animation playing"
+msgstr "Animationswiedergabe"
+
+msgid "Update the children of a node when the transform of the node changes"
+msgstr ""
+"Aktualisiere die Kinder eines Knotens, wenn sich die Transformation des "
+"Knotens ändert"
+
+msgid "Autosave delay in seconds"
+msgstr "Automatische Speicherverzögerung in Sekunden"
+
+msgid "Delay in second between autosaves - 0 disables autosaves"
+msgstr ""
+"Verzögerung in Sekunden zwischen den automatischen Speicherungen - 0 "
+"deaktiviert automatische Speicherungen"
+
+msgid "Update children"
+msgstr "Kinder aktualisieren"
+
+msgid "Resize the volume to the current selection"
+msgstr "Das Volumen auf die aktuelle Auswahlgröße ändern"
+
+msgid "Executes a lua script"
+msgstr "Führt ein LUA-Skript aus"
+
+msgid "Move the cursor by keys, not by viewport mouse trace"
+msgstr ""
+"Bewegt den Cursor mit den Tasten, nicht mit der Mausverfolgung im "
+"Ansichtsfenster"
+
+msgid "Hold to toggle add-node-by-face mode in scene view"
+msgstr ""
+"Halten, um den Knoten-an-Fläche-Modus in der Szenenansicht umzuschalten"
+
+msgid "Hold shift over the scene gizmo and click to create a reference node"
+msgstr ""
+"Shift über dem Szenen-Gizmo halten und klicken, um einen Referenzknoten zu "
+"erzeugen"
+
+msgid "Change intensity by scaling the rgb values of the palette"
+msgstr "Ändert die Intensität durch Skalierung der RGB-Werte der Palette"
+
+msgid "Make the palette colors warmer"
+msgstr "Die Palettenfarben wärmer machen"
+
+msgid "Make the palette colors colder"
+msgstr "Die Palettenfarben kälter machen"
+
+msgid "Make the palette colors brighter"
+msgstr "Die Palettenfarben heller machen"
+
+msgid "Make the palette colors darker"
+msgstr "Die Palettenfarben dunkler machen"
+
+msgid ""
+"Add a color to the active node's palette. Supports: #RRGGBB, #RRGGBBAA, "
+"argb:AARRGGBB, \"R G B [A]\", \"R,G,B[,A]\", \"rgb(R,G,B)\", \"rgba(R,G,B,A)"
+"\""
+msgstr ""
+"Farbe zur Palette des aktiven Knotens hinzufügen. Unterstützt: #RRGGBB, "
+"#RRGGBBAA, argb:AARRGGBB, \"R G B [A]\", \"R,G,B[,A]\", \"rgb(R,G,B)\", "
+"\"rgba(R,G,B,A)\""
+
+msgid "Remove unused colors from palette"
+msgstr "Entfernt unbenutzte Farben aus der Palette"
+
+msgid "Apply white balance to the current palette"
+msgstr "Weißabgleich auf die aktuelle Palette anwenden"
+
+msgid "Apply color stretching to the current palette"
+msgstr "Kontrastdehnung auf die aktuelle Palette anwenden"
+
+msgid "Apply the current palette to all model nodes"
+msgstr "Die aktuelle Palette auf alle Knoten anwenden"
+
+msgid "Remove normal information from the palette"
+msgstr "Normaleninfos aus der Palette entfernen"
+
+msgid "Scene view interaction: add node by face or activate hovered node"
+msgstr ""
+"Szenenansicht: Knoten an Fläche hinzufügen oder angefahrenen Knoten "
+"aktivieren"
+
+msgid "Toggle lock on the hovered node"
+msgstr "Sperre des angefahrenen Knotens umschalten"
+
+msgid "Select all, nothing or invert"
+msgstr "Alles auswählen, nichts oder invertieren"
+
+msgid "Cycle through all scene objects"
+msgstr "Durch alle Szenenobjekte wechseln"
+
+msgid ""
+"Allow to align all nodes on the floor next to each other without overlapping"
+msgstr ""
+"Ermöglicht das Ausrichten aller Knoten nebeneinander auf dem Boden, ohne "
+"sich zu überlappen"
+
+msgid "Save all model nodes into filenames represented by their node names"
+msgstr ""
+"Alle Modellknoten in Dateinamen speichern, die durch ihre Knotennamen "
+"repräsentiert werden"
+
+msgid "Save a single node to the given path with their node names"
+msgstr ""
+"Einen einzelnen Knoten mit ihren Knotennamen in den angegebenen Pfad "
+"speichern"
+
+msgid "Create a new scene (with a given name and width, height, depth)"
+msgstr ""
+"Eine neue Szene erstellen (mit einem angegebenen Namen und Breite, Höhe, "
+"Tiefe"
+
+msgid "Crop the given node to the voxel boundaries"
+msgstr "Den gegebenen aktiven Knoten auf die Voxelgrenzen zuschneiden"
+
+msgid "Split the given node into multiple nodes"
+msgstr "Den gegebenen Knoten in mehrere Knoten aufteilen"
+
+msgid "Scale the given node down"
+msgstr "Den gegebenen Knoten oder den angegebenen Knoten verkleinern"
+
+msgid "Scale the given node up"
+msgstr "Den gegebenen Knoten oder den angegebenen Knoten vergrößern"
+
+msgid ""
+"Move the voxels of the current selected palette index, the given index or a "
+"comma-separated list of indices into a new node"
+msgstr ""
+"Verschiebt die Voxel des aktuell ausgewählten Palettenindex, des angegebenen "
+"Index oder einer kommaseparierten Liste von Indizes in einen neuen Knoten"
+
+msgid "Aborts the current modifier action or add-node mode"
+msgstr ""
+"Bricht die aktuelle Modifier-Aktion oder den Knoten-hinzufügen-Modus ab"
+
+msgid "Apply pending brush changes without switching brushes"
+msgstr "Ausstehende Pinseländerungen anwenden, ohne den Pinsel zu wechseln"
+
+msgid "Fill the inner parts of closed models"
+msgstr "Füllt die inneren Teile geschlossener Modelle"
+
+msgid "Remove non visible voxels"
+msgstr "Entfernt nicht sichtbare Voxel"
+
+msgid "Fill voxels in the current selection"
+msgstr "Füllt Voxel in der aktuellen Auswahl"
+
+msgid "Remove all voxels in the current selection"
+msgstr "Entfernt alle Voxel in der aktuellen Auswahl"
+
+msgid "Remove selected voxels"
+msgstr "Ausgewählte Voxel entfernen"
+
+msgid "Recolor selected voxels with the active palette color"
+msgstr "Ausgewählte Voxel mit der aktiven Palettenfarbe umfärben"
+
+msgid "Deselect all voxels matching the active palette color"
+msgstr "Alle Voxel der aktiven Palettenfarbe abwählen"
+
+msgid "Deselect all voxels not matching the active palette color"
+msgstr "Alle Voxel abwählen, die nicht der aktiven Palettenfarbe entsprechen"
+
+msgid "Filter selection to only keep edge voxels where two or more faces meet"
+msgstr ""
+"Auswahl filtern: nur Kantenvoxel behalten, an denen zwei oder mehr Flächen "
+"zusammentreffen"
+
+msgid "Filter selection to only keep corner voxels where three faces meet"
+msgstr ""
+"Auswahl filtern: nur Eckvoxel behalten, an denen drei Flächen zusammentreffen"
+
+msgid ""
+"Filter selection to only keep wall edge voxels with at most one solid "
+"neighbor in a perpendicular ring"
+msgstr ""
+"Auswahl filtern: nur Wandkantenvoxel mit höchstens einem soliden Nachbarn im "
+"senkrechten Ring behalten"
+
+msgid "Expand the selection by one voxel in all directions"
+msgstr "Auswahl um ein Voxel in alle Richtungen erweitern"
+
+msgid "Set the reference position to the specified position"
+msgstr "Setzt die Referenzposition auf die angegebene Position"
+
+msgid "Move the cursor by the specified offsets"
+msgstr "Verschiebt den Cursor um die angegebenen Versätze"
+
+msgid "Change the normal palette"
+msgstr "Ändert die Normalen Palette"
+
+msgid "Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'"
+msgstr "Lädt eine Palette nach Namen. Z.B. 'built-in:nippon' oder 'lospec:id'"
+
+msgid "Set the cursor to the specified position"
+msgstr "Setzt den Cursor auf die angegebene Position"
+
+msgid "Set the reference position to the current cursor position"
+msgstr "Setzt die Referenzposition auf die aktuelle Cursorposition"
+
+msgid "Resize your current model node by the specified size"
+msgstr ""
+"Ändert die Größe des aktuellen Modellknotens entsprechend der angegebenen "
+"Größe"
+
+msgid "Rescale the content of a model node to the specified target size"
+msgstr ""
+"Ändert die Größe des aktuellen Modellknotens entsprechend der angegebenen "
+"Zielgröße"
+
+msgid "Shift the volume by the given values"
+msgstr "Verschiebt das Volumen um die angegebenen Werte"
+
+msgid "Center the current active nodes at the reference position"
+msgstr "Zentriert die aktuellen aktiven Knoten auf der Referenzposition"
+
+msgid "Center the current active nodes at the origin"
+msgstr "Zentriert die aktuellen aktiven Knoten am Ursprung"
+
+msgid ""
+"Move the voxels inside the volume by the given values without changing the "
+"volume bounds"
+msgstr ""
+"Verschiebt die Voxel innerhalb des Volumens um die angegebenen Werte, ohne "
+"die Volumengrenzen zu ändern"
+
+msgid "Copy selection"
+msgstr "Auswahl kopieren"
+
+msgid "Paste clipboard to current selection or reference position"
+msgstr ""
+"Fügt die Zwischenablage in die aktuelle Auswahl oder die Referenzposition ein"
+
+msgid "Paste clipboard to current cursor position"
+msgstr "Fügt die Zwischenablage an der aktuellen Cursorposition ein"
+
+msgid "Paste clipboard as a new node"
+msgstr "Fügt die Zwischenablage als neuen Knoten ein"
+
+msgid "Cut selection"
+msgstr "Auswahl ausschneiden"
+
+msgid "Copy selection to a file-based clipboard shared across editor instances"
+msgstr ""
+"Auswahl in eine dateibasierte, editorübergreifende Zwischenablage kopieren"
+
+msgid "Merge all visible nodes and copy to the file-based clipboard"
+msgstr ""
+"Alle sichtbaren Knoten zusammenführen und in die dateibasierte "
+"Zwischenablage kopieren"
+
+msgid ""
+"Paste from the file-based clipboard shared across editor instances to the "
+"cursor position"
+msgstr "Aus der dateibasierten Zwischenablage an die Cursorposition einfügen"
+
+msgid ""
+"Paste from the file-based clipboard shared across editor instances to the "
+"reference position"
+msgstr "Aus der dateibasierten Zwischenablage an die Referenzposition einfügen"
+
+msgid ""
+"Paste from the file-based clipboard as a new node at the cursor position"
+msgstr ""
+"Aus der dateibasierten Zwischenablage als neuen Knoten an der Cursorposition "
+"einfügen"
+
+msgid ""
+"Merge active node voxels into all overlapping nodes and remove the source "
+"node"
+msgstr ""
+"Voxel des aktiven Knotens in alle überlappenden Knoten mergen und den "
+"Quellknoten entfernen"
+
+msgid ""
+"Stamp active node onto all other nodes, overwriting their content in "
+"overlapping regions"
+msgstr ""
+"Aktiven Knoten auf alle anderen Knoten stempeln und überlappende Bereiche "
+"überschreiben"
+
+msgid ""
+"Merge all visible nodes into a temporary editable node, hiding the originals"
+msgstr ""
+"Alle sichtbaren Knoten zu einem temporären editierbaren Knoten "
+"zusammenführen und Originale ausblenden"
+
+msgid "Undo your last step"
+msgstr "Macht den letzten Schritt rückgängig"
+
+msgid "Redo your last step"
+msgstr "Wiederholt den letzten Schritt"
+
+msgid "Rotate active nodes around the given axis"
+msgstr "Rotiert aktive Knoten um die angegebene Achse"
+
+msgid ""
+"Rotate all model nodes around the given axis, preserving their relative "
+"positions"
+msgstr ""
+"Alle Modellknoten um die gegebene Achse drehen und relative Positionen "
+"beibehalten"
+
+msgid "Merge two given nodes or active model node with the next one"
+msgstr ""
+"Führt zwei angegebene Knoten oder den aktiven Modellknoten mit dem nächsten "
+"zusammen"
+
+msgid "Merge all nodes"
+msgstr "Alle Knoten zusammenführen"
+
+msgid "Merge all visible nodes"
+msgstr "Alle sichtbaren Knoten zusammenführen"
+
+msgid "Merge all locked nodes"
+msgstr "Alle gesperrten Knoten zusammenführen"
+
+msgid "Animate all nodes with the given delay in millis between the frames"
+msgstr ""
+"Animiert alle Knoten mit der angegebenen Verzögerung in Millisekunden "
+"zwischen den Frames"
+
+msgid "Use the given index to select the color from the current palette"
+msgstr ""
+"Verwendet den angegebenen Index, um die Farbe aus der aktuellen Palette "
+"auszuwählen"
+
+msgid ""
+"Set the current selected color by finding the closest rgb match in the "
+"palette"
+msgstr ""
+"Setzt die aktuell ausgewählte Farbe, indem der nächstgelegene RGB-Wert in "
+"der Palette gefunden wird"
+
+msgid "Pick the current selected color from current cursor voxel"
+msgstr "Wählt die aktuell ausgewählte Farbe aus dem aktuellen Cursor-Voxel aus"
+
+msgid "Pick the current selected material from current cursor voxel"
+msgstr ""
+"Wählt das aktuell ausgewählte Material aus dem aktuellen Cursor-Voxel aus"
+
+msgid "Flip the selected nodes around the given axis"
+msgstr "Kippt die ausgewählten Knoten um die angegebene Achse"
+
+msgid ""
+"Reset the transform of the current node and keyframe to the default transform"
+msgstr ""
+"Setzt die Transformation des aktuellen Knotens und Keyframes auf die "
+"Standardtransformation zurück"
+
+msgid "Mirrors the transform at the given axes for the given node"
+msgstr ""
+"Spiegelt die Transformation an den angegebenen Achsen für den angegebenen "
+"Knoten"
+
+msgid ""
+"Add a new model node to the current active node (with a given name and "
+"width, height, depth)"
+msgstr ""
+"Fügt einen neuen Modellknoten hinzu (mit einem angegebenen Namen und Breite, "
+"Höhe, Tiefe)"
+
+msgid "Add a new model node adjacent to the hovered face of the active node"
+msgstr ""
+"Fügt einen neuen Modellknoten an der angefahrenen Fläche des aktiven Knotens "
+"hinzu"
+
+msgid ""
+"Bake the current transform into the voxel data for a particular node by id - "
+"or the current active one"
+msgstr ""
+"Brennt die aktuelle Transformation in die Voxel-Daten für einen bestimmten "
+"Knoten nach ID ein - oder den aktuellen aktiven"
+
+msgid "Delete a particular node by id - or the current active one"
+msgstr ""
+"Löscht einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven "
+"Knoten"
+
+msgid "Lock a particular node by id - or the current active one"
+msgstr ""
+"Sperrt einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven "
+"Knoten"
+
+msgid ""
+"Toggle the lock state of a particular node by id - or the current active one"
+msgstr ""
+"Schaltet den Sperrzustand eines bestimmten Knotens anhand der ID um - oder "
+"den aktuellen aktiven"
+
+msgid "Unlock a particular node by id - or the current active one"
+msgstr ""
+"Entsperrt einen bestimmten Knoten anhand der ID - oder den aktuellen aktiven "
+"Knoten"
+
+msgid "Set or print the current active node"
+msgstr "Setzt oder gibt den aktuellen aktiven Knoten aus"
+
+msgid "Toggle the visible state of a node"
+msgstr "Schaltet den Sichtbarkeitszustand eines Knotens um"
+
+msgid "Show all nodes"
+msgstr "Alle Knoten anzeigen"
+
+msgid "Hide all nodes"
+msgstr "Alle Knoten ausblenden"
+
+msgid "Show all children nodes"
+msgstr "Alle Kindknoten anzeigen"
+
+msgid "Hide all children nodes"
+msgstr "Alle Kindknoten ausblenden"
+
+msgid "Hide all nodes except the given one and its children"
+msgstr ""
+"Alle Knoten außer dem angegebenen Knoten und seinen Kindknoten ausblenden"
+
+msgid "Lock all nodes"
+msgstr "Alle Knoten sperren"
+
+msgid "Unlock all nodes"
+msgstr "Alle Knoten entsperren"
+
+msgid "Set the pivot point for a node"
+msgstr "Setzt den Pivot-Punkt für einen Knoten"
+
+msgid "Change the name of a node"
+msgstr "Ändert den Namen eines Knotens"
+
+msgid ""
+"Repeat a volume along its transformed axes; positive counts include the "
+"original (maximum 1024 tiles)"
+msgstr ""
+
+msgid ""
+"Repeat selected voxels by their bounds inside the active volume; positive "
+"counts include the original"
+msgstr ""
+
+msgid "Duplicates the current node or the given node id"
+msgstr "Dupliziert den aktuellen Knoten oder die angegebene Knoten-ID"
+
+msgid "Create a node reference for the given node id"
+msgstr "Erstellt eine Knotenreferenz für die angegebene Knoten-ID"
+
+msgid "Unreference from model and allow to edit the voxels for this node"
+msgstr ""
+"Entfernt die Referenz zum Modell und ermöglicht das Bearbeiten der Voxel für "
+"diesen Knoten"
+
+msgid "Interpolate to the camera node position and orientation"
+msgstr "Interpoliere zur Knotenposition und -ausrichtung"
+
+msgid "Set or toggle the camera rotation mode (target or eye)"
+msgstr "Lege den Kamerarotationsmodus fest oder umschalten (Ziel oder Auge)"
+
+msgid "Set the camera orbit target to the reference point position"
+msgstr "Kamera-Orbit-Ziel auf die Referenzpunktposition setzen"
+
+msgid "Set the camera world position"
+msgstr "Setzt die Weltposition der Kamera"
+
+msgid "Set the camera orbit target position"
+msgstr "Setzt die Orbit-Zielposition der Kamera"
+
+msgid ""
+"Set or cycle the camera projection mode (perspective, orthogonal or "
+"isometric)"
+msgstr ""
+"Setzt oder wechselt den Kameraprojektionsmodus (Perspektive, Orthogonal oder "
+"Isometrisch)"
+
+msgid "Start the local voxedit server"
+msgstr "Lokalen VoxEdit-Server starten"
+
+msgid "Stop the local voxedit server"
+msgstr "Lokalen VoxEdit-Server stoppen"
+
+msgid "Kick a client from the server"
+msgstr "Client vom Server kicken"
+
+msgid "Connect to a voxedit server"
+msgstr "Mit voxedit Server verbinden"
+
+msgid "Disconnect from the current voxedit server"
+msgstr "Vom aktuellen VoxEdit-Server trennen"
+
+msgid "Cancelling"
+msgstr "Wird abgebrochen"
+
+msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
+msgstr "Schattierungsmodus: 0=Unlit, 1=Lit, 2=Schatten"
+
+msgid "Ambient color"
+msgstr "Umgebungslichtfarbe"
+
+msgid "Ambient color for lit rendering in r g b format"
+msgstr "Ambient-Farbe für beleuchtetes Rendering im Format r g b"
+
+msgid "Diffuse color"
+msgstr "Diffuse Farbe"
+
+msgid "Diffuse color for lit rendering in r g b format"
+msgstr "Diffuse Farbe für beleuchtetes Rendering im Format r g b"
+
+msgid "pitch, yaw and ignored roll in degrees"
+msgstr "Pitch, Yaw und ignoriertes Roll in Grad"
+
+msgid "Change the modifier type to 'color picker'"
+msgstr "Ändert den Modifier-Typ auf 'Farbauswahl'"
+
+msgid "Change the modifier type to 'erase'"
+msgstr "Ändert den Modifier-Typ auf 'Löschen'"
+
+msgid "Change the modifier type to 'place'"
+msgstr "Ändert den Modifier-Typ auf 'Platzieren'"
+
+msgid "Change the modifier type to 'override'"
+msgstr "Ändert den Modifier-Typ auf 'Überschreiben'"
+
+#, c-format
+msgid "Change the brush type to '%s'"
+msgstr "Ändert den Pinseltyp auf '%s'"
+
+msgid "Change the brush type to 'none'"
+msgstr "Ändert den Pinseltyp auf 'keiner'"
+
+msgid "Change the brush type to 'script'"
+msgstr "Ändert den Pinseltyp auf 'script'"
+
+msgid "Re-scan the brushes directory for new or changed Lua brush scripts"
+msgstr ""
+"Pinselverzeichnis nach neuen oder geänderten Lua-Pinselskripten neu scannen"
+
+msgid "Toggle locked mode for the given axis at the current cursor position"
+msgstr ""
+"Schaltet den gesperrten Modus für die angegebene Achse an der aktuellen "
+"Cursorposition um"
+
+msgid "Toggle locked mode for the x axis at the current cursor position"
+msgstr ""
+"Schaltet den gesperrten Modus für die X-Achse an der aktuellen "
+"Cursorposition um"
+
+msgid "Toggle locked mode for the y axis at the current cursor position"
+msgstr ""
+"Schaltet den gesperrten Modus für die Y-Achse an der aktuellen "
+"Cursorposition um"
+
+msgid "Toggle locked mode for the z axis at the current cursor position"
+msgstr ""
+"Schaltet den gesperrten Modus für die Z-Achse an der aktuellen "
+"Cursorposition um"
+
+msgid "Auto select added"
+msgstr "Hinzugefügte automatisch auswählen"
+
+msgid "Automatically select newly placed voxels"
+msgstr "Neu gesetzte Voxel automatisch auswählen"
+
+msgid "Invalid operation parameters"
+msgstr "Ungültige Operationsparameter"
+
+msgid "The edit target changed or has no selection"
+msgstr ""
+
+msgid "The edit target changed"
+msgstr ""
+
+msgid "Max preview size"
+msgstr "Maximale Vorschaugröße"
+
+msgid "The maximum size of the preview volume"
+msgstr "Die maximale Größe des Vorschauvolumens"
+
+msgctxt "ShapeType"
+msgid "Box"
+msgstr "Quader"
+
+msgctxt "ShapeType"
+msgid "Torus"
+msgstr "Torus"
+
+msgctxt "ShapeType"
+msgid "Cylinder"
+msgstr "Zylinder"
+
+msgctxt "ShapeType"
+msgid "Cone"
+msgstr "Kegel"
+
+msgctxt "ShapeType"
+msgid "Dome"
+msgstr "Kuppel"
+
+msgctxt "ShapeType"
+msgid "Ellipse"
+msgstr "Ellipse"
+
+msgctxt "ShapeType"
+msgid "Circle"
+msgstr "Kreis"
+
+msgid "Grow the box from the first click as the center"
+msgstr "Box vom ersten Klick als Zentrum wachsen lassen"
+
+msgid "Click and drag to define a box of voxels"
+msgstr "Klicken und ziehen, um einen Voxelbereich zu definieren"
+
+msgid "Place voxels along the cursor while the action button is held"
+msgstr ""
+"Voxel entlang des Cursors setzen, solange die Aktionstaste gehalten wird"
+
+msgid "Like stroke mode, but do not replace the same voxel twice"
+msgstr "Wie Strichmodus, ersetzt dasselbe Voxel aber nicht zweimal"
+
+msgid "Mirror along the x axis at the reference position"
+msgstr "Spiegelt entlang der X-Achse an der Referenzposition"
+
+msgid "Mirror along the y axis at the reference position"
+msgstr "Spiegelt entlang der Y-Achse an der Referenzposition"
+
+msgid "Mirror along the z axis at the reference position"
+msgstr "Spiegelt entlang der Z-Achse an der Referenzposition"
+
+msgid "Turn off mirroring"
+msgstr "Spiegelung ausschalten"
+
+msgid "Brush script execution failed"
+msgstr "Ausführung des Pinselskripts fehlgeschlagen"
+
+msgid "Brush scripts must preserve the target volume bounds"
+msgstr ""
+
+msgid "Toggle continuous line drawing"
+msgstr "Kontinuierliches Linienzeichnen umschalten"
+
+msgid "Toggle quadratic bezier mode for the line brush"
+msgstr "Quadratischen Bezier-Modus für den Linienpinsel umschalten"
+
+msgid "Auto"
+msgstr "Automatisch"
+
+msgid "Manual"
+msgstr "Manuell"
+
+msgid "Brighten"
+msgstr "Aufhellen"
+
+msgid "Darken"
+msgstr "Abdunkeln"
+
+msgid "Random"
+msgstr "Zufällig"
+
+msgid "Blend"
+msgstr "Mischen"
+
+msgid "Blur"
+msgstr "Weichzeichnen"
+
+msgid "Variation"
+msgstr "Variation"
+
+msgid "Toggle measuring from the reference position"
+msgstr "Messen von der Referenzposition umschalten"
+
+msgctxt "Sculpt brush mode"
+msgid "Erode"
+msgstr "Erodieren"
+
+msgctxt "Sculpt brush mode"
+msgid "Grow"
+msgstr "Wachsen"
+
+msgctxt "Sculpt brush mode"
+msgid "Flatten"
+msgstr "Abflachen"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Additive"
+msgstr "Glatt additiv"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Erode"
+msgstr "Glatt erodieren"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Gaussian"
+msgstr "Glatt Gauß"
+
+msgctxt "Sculpt brush mode"
+msgid "Bridge Gap"
+msgstr "Lücke überbrücken"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Wall"
+msgstr "Glatte Wand"
+
+msgctxt "Sculpt brush mode"
+msgid "Extend Plane"
+msgstr "Ebene erweitern"
+
+msgctxt "Sculpt brush mode"
+msgid "Squash to Plane"
+msgstr "Auf Ebene pressen"
+
+msgctxt "Sculpt brush mode"
+msgid "Reskin"
+msgstr "Reskin"
+
+msgid "Selection script execution failed"
+msgstr "Ausführung des Auswahlskripts fehlgeschlagen"
+
+msgctxt "SelectMode"
+msgid "All"
+msgstr "Alles"
+
+msgctxt "SelectMode"
+msgid "Same Color"
+msgstr "Gleiche Farbe"
+
+msgctxt "SelectMode"
+msgid "Surface"
+msgstr "Oberfläche"
+
+msgctxt "SelectMode"
+msgid "Connected"
+msgstr "Zusammenhängend"
+
+msgctxt "SelectMode"
+msgid "Flat Surface"
+msgstr "Flache Oberfläche"
+
+msgctxt "SelectMode"
+msgid "Fuzzy Color"
+msgstr "Unscharfe Farbe"
+
+msgctxt "SelectMode"
+msgid "3D Box"
+msgstr "3D-Box"
+
+msgctxt "SelectMode"
+msgid "Circle"
+msgstr "Kreis"
+
+msgctxt "SelectMode"
+msgid "Brush select"
+msgstr "Pinselauswahl"
+
+msgctxt "SelectMode"
+msgid "Lasso"
+msgstr "Lasso"
+
+msgctxt "SelectMode"
+msgid "Script"
+msgstr "Skript"
+
+#, c-format
+msgid "Change the shape type to %s"
+msgstr "Ändert den Formtyp auf %s"
+
+msgid "Toggle center at cursor"
+msgstr "Schaltet das Zentrum am Cursor um"
+
+msgid "Toggle continuously placing the stamp voxels"
+msgstr "Schaltet das kontinuierliche Platzieren der Stempel-Voxel um"
+
+msgid "Rotate stamp volume around the given axis by 90 degrees"
+msgstr "Rotiert Stempel um 90 Grad um die angegebene Achse"
+
+msgid "Use the current selection as new stamp"
+msgstr "Die aktuelle Auswahl als neuen Stempel verwenden"
+
+msgid "Use the current selected node volume as new stamp"
+msgstr "Den aktuellen Knoten als neuen Stempel verwenden"
+
+msgid "Paste the current clipboard content as stamp"
+msgstr "Die Zwischenablage als neuen Stempel verwenden"
+
+msgid "No stamp volume set"
+msgstr "Kein Stempel gesetzt"
+
+msgid "Change the text brush axis"
+msgstr "Ändere die Achse des Textpinsels"
+
+msgid "No image loaded for texture brush"
+msgstr "Kein Bild für den Texturenpinsel geladen"
+
+msgid "Mirror the uv coordinates along the u axis"
+msgstr "Spiegele die UV-Koordinaten entlang der U-Achse"
+
+msgid "Mirror the uv coordinates along the v axis"
+msgstr "Spiegele die UV-Koordinaten entlang der V-Achse"
+
+msgid "Reset the uv coordinates"
+msgstr "Zurücksetzen der Texturkoordinaten"
+
+msgid "Create a texture from the active model's face colors"
+msgstr "Textur aus den Flächenfarben des aktiven Modells erzeugen"
+
+msgctxt "Transform Modes"
+msgid "Move"
+msgstr "Verschieben"
+
+msgctxt "Transform Modes"
+msgid "Shear"
+msgstr "Scheren"
+
+msgctxt "Transform Modes"
+msgid "Rotate"
+msgstr "Drehen"
+
+msgctxt "Transform Modes"
+msgid "Scale"
+msgstr "Skalieren"
+
+msgid "Host name"
+msgstr "Hostname"
+
+msgid "The voxedit server hostname to connect to"
+msgstr "Der Hostname des Voxedit-Servers, mit dem verbunden werden soll"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "The port to run the voxedit server on"
+msgstr "Der Port, auf dem der Voxedit-Server ausgeführt werden soll"
+
+msgid "Server password"
+msgstr "Server-Passwort"
+
+msgid "The password required to connect to the voxedit server"
+msgstr "Das erforderliche Passwort für die Verbindung mit dem Voxedit-Server"
+
+msgid "Remote console password"
+msgstr "Passwort der Remote-Konsole"
+
+msgid "The rcon password required to send commands to the voxedit server"
+msgstr ""
+"Das erforderliche RCON-Passwort zum Senden von Befehlen an den Voxedit-Server"
+
+msgid "Server interface"
+msgstr "Server-Schnittstelle"
+
+msgid "The interface to run the voxedit server on"
+msgstr "Die Schnittstelle, auf der der Voxedit-Server ausgeführt werden soll"
+
+msgid "Max connections"
+msgstr "Maximale Verbindungen"
+
+msgid "The maximum number of clients that can connect to the server"
+msgstr ""
+"Die maximale Anzahl von Clients, die sich mit dem Server verbinden können"
