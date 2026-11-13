@@ -4,10 +4,12 @@
 
 #include "AbstractVoxelTest.h"
 #include "core/ArrayLength.h"
+#include "core/StandardLib.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include <limits.h>
 
 namespace voxel {
 
@@ -75,6 +77,62 @@ TEST_F(RawVolumeTest, testCopyRegions) {
 	EXPECT_EQ(v2.region(), Region(0, 0, 0, 2, 0, 2));
 	EXPECT_EQ(7, v2.voxel(0, 0, 2).getColor());
 	EXPECT_EQ(3, v2.voxel(2, 0, 0).getColor());
+}
+
+TEST_F(RawVolumeTest, testCopyRegionsSkipsNonOverlappingSelections) {
+	RawVolume source(Region(0, 3));
+	const Voxel value(VoxelType::Generic, 7);
+	source.fill(value);
+	core::Buffer<Region> regions;
+	regions.push_back(Region(1, 2));
+	regions.push_back(Region(8, 9));
+	RawVolume copy(source, regions);
+	ASSERT_TRUE(copy.valid());
+	EXPECT_EQ(Region(1, 3), copy.region());
+	EXPECT_EQ(value, copy.voxel(1, 1, 1));
+	EXPECT_EQ(Voxel(), copy.voxel(3, 3, 3));
+	core::Buffer<Region> outside;
+	outside.push_back(Region(8, 9));
+	RawVolume air(source, outside);
+	ASSERT_TRUE(air.valid());
+	EXPECT_EQ(Region(8, 9), air.region());
+	EXPECT_TRUE(air.isEmpty(air.region()));
+	core::Buffer<Region> empty;
+	RawVolume noSelection(source, empty);
+	EXPECT_FALSE(noSelection.valid());
+}
+
+TEST_F(RawVolumeTest, testOverflowingVolumeSizesFailWithoutAllocation) {
+	const Region regions[] = {
+		Region(0, 0, 0, (1 << 30) - 1, (1 << 30) - 1, 15),
+		Region(0, 0, 0, (1 << 30) - 1, (1 << 30) - 1, 16)
+	};
+	EXPECT_EQ(sizeof(Voxel), RawVolume::size(Region(0, 0)));
+	EXPECT_EQ(0u, RawVolume::size(Region::InvalidRegion));
+	for (const Region &region : regions) {
+		ASSERT_EQ(0u, RawVolume::size(region));
+		RawVolume volume(region);
+		EXPECT_FALSE(volume.valid());
+		volume.clear();
+		volume.fill(Voxel(VoxelType::Generic, 7));
+		EXPECT_EQ(nullptr, volume.voxels());
+		EXPECT_EQ(nullptr, volume.copyVoxels());
+		EXPECT_EQ(0u, volume.allocatedBytes());
+		RawVolume copy(volume);
+		EXPECT_FALSE(copy.valid());
+		RawVolume pointerCopy(&volume);
+		EXPECT_FALSE(pointerCopy.valid());
+		const Voxel data;
+		RawVolume copiedData(&data, region);
+		EXPECT_FALSE(copiedData.valid());
+		Voxel *ownedData = (Voxel *)core_malloc(sizeof(Voxel));
+		ASSERT_NE(nullptr, ownedData);
+		RawVolume wrappedData(ownedData, region);
+		EXPECT_FALSE(wrappedData.valid());
+		RawVolume destination(Region(0, 1));
+		EXPECT_FALSE(destination.copyInto(volume));
+		EXPECT_FALSE(destination.copyInto(volume, destination.region()));
+	}
 }
 
 TEST_F(RawVolumeTest, testCopy) {
@@ -553,6 +611,35 @@ TEST_F(RawVolumeTest, testValidReportsAllocationState) {
 	RawVolume moved(core::move(volume));
 	EXPECT_TRUE(moved.valid());
 	EXPECT_FALSE(volume.valid());
+}
+
+TEST_F(RawVolumeTest, testConfigurableChunkedStorageThreshold) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	RawVolume::setChunkedStorageThreshold(32);
+	RawVolume small(Region(0, 30));
+	RawVolume boundary(Region(0, 31));
+	EXPECT_TRUE(small.isContiguous());
+	EXPECT_FALSE(boundary.isContiguous());
+	const Voxel value(VoxelType::Generic, 17);
+	boundary.setVoxel(31, 31, 31, value);
+	RawVolume::setChunkedStorageThreshold(64);
+	RawVolume rectangular(Region(0, 0, 0, 31, 63, 63));
+	RawVolume dense(Region(0, 62));
+	EXPECT_TRUE(rectangular.isContiguous());
+	EXPECT_TRUE(dense.isContiguous());
+	EXPECT_FALSE(boundary.isContiguous());
+	EXPECT_EQ(value, boundary.voxel(31, 31, 31));
+	dense.setVoxel(1, 1, 1, value);
+	RawVolume::setChunkedStorageThreshold(32);
+	RawVolume extracted(dense, Region(1, 32));
+	EXPECT_FALSE(extracted.isContiguous());
+	EXPECT_EQ(value, extracted.voxel(1, 1, 1));
+	EXPECT_TRUE(dense.isContiguous());
+	// A large configured side must not overflow when compared with voxel counts.
+	RawVolume::setChunkedStorageThreshold(INT_MAX);
+	RawVolume largeThreshold(Region(0, 31));
+	EXPECT_TRUE(largeThreshold.isContiguous());
+	RawVolume::setChunkedStorageThreshold(previous);
 }
 
 }

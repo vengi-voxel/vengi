@@ -3,10 +3,12 @@
  */
 
 #include "RawVolume.h"
+#include "private/ChunkedVolumeStorage.h"
 #include "app/ForParallel.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/Common.h"
+#include "core/concurrent/Atomic.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/Trace.h"
@@ -15,15 +17,61 @@
 
 namespace voxel {
 
+static core::AtomicInt &chunkedThreshold() {
+	static core::AtomicInt threshold(256);
+	return threshold;
+}
+
+void RawVolume::setChunkedStorageThreshold(int sideLength) {
+	core_assert(sideLength > 0);
+	if (sideLength > 0) {
+		chunkedThreshold() = sideLength;
+	}
+}
+
+int RawVolume::chunkedStorageThreshold() {
+	return chunkedThreshold();
+}
+
+static bool useChunkedStorage(const Region &region) {
+	const size_t side = (size_t)RawVolume::chunkedStorageThreshold();
+	// Compare against side cubed without overflowing for large configured sizes.
+	return RawVolume::size(region) / sizeof(Voxel) / side / side >= side;
+}
+
+// The visitor returns true to stop. Missing spans contain copies of defaultVoxel().
+template<class Visitor>
+static bool visitChunkRows(const ChunkedVolumeStorage &storage, const Region &localRegion, Visitor visitor) {
+	for (int z = localRegion.getLowerZ(); z <= localRegion.getUpperZ(); ++z) {
+		for (int y = localRegion.getLowerY(); y <= localRegion.getUpperY(); ++y) {
+			for (int x = localRegion.getLowerX(); x <= localRegion.getUpperX();) {
+				int count;
+				const glm::ivec3 pos(x, y, z);
+				const Voxel *row = storage.row(pos, count);
+				count = core_min(count, localRegion.getUpperX() - x + 1);
+				if (visitor(pos, row, count)) {
+					return true;
+				}
+				x += count;
+			}
+		}
+	}
+	return false;
+}
+
 size_t RawVolume::size(const Region &region) {
 	if (!region.isValid()) {
 		return 0;
 	}
-	const size_t w = region.getWidthInVoxels();
-	const size_t h = region.getHeightInVoxels();
-	const size_t d = region.getDepthInVoxels();
-	const size_t size = w * h * d * sizeof(Voxel);
-	return size;
+	size_t bytes = sizeof(Voxel);
+	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
+	for (int axis = 0; axis < 3; ++axis) {
+		if (dimensions[axis] <= 0 || bytes > SIZE_MAX / (size_t)dimensions[axis]) {
+			return 0;
+		}
+		bytes *= (size_t)dimensions[axis];
+	}
+	return bytes;
 }
 
 RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
@@ -33,6 +81,13 @@ RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
 
 RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	setBorderValue(copy->borderValue());
+	if (!copy->valid()) {
+		return;
+	}
+	if (copy->_storage) {
+		_storage = new ChunkedVolumeStorage(*copy->_storage);
+		return;
+	}
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	if (_data == nullptr) {
@@ -45,6 +100,13 @@ RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 
 RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	setBorderValue(copy.borderValue());
+	if (!copy.valid()) {
+		return;
+	}
+	if (copy._storage) {
+		_storage = new ChunkedVolumeStorage(*copy._storage);
+		return;
+	}
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	if (_data == nullptr) {
@@ -69,12 +131,27 @@ static inline voxel::Region accumulate(const core::Buffer<Region> &regions) {
 
 RawVolume::RawVolume(const RawVolume &src, const core::Buffer<Region> &copyRegions)
 	: _region(accumulate(copyRegions)) {
-	_region.cropTo(src.region());
 	setBorderValue(src.borderValue());
+	if (!src.valid()) {
+		return;
+	}
+	_region.cropTo(src.region());
 	initialise(_region);
+	if (!valid()) {
+		return;
+	}
 
 	for (const Region &copyRegion : copyRegions) {
-		copyInto(src, copyRegion);
+		if (!intersects(_region, copyRegion) || !intersects(src.region(), copyRegion)) {
+			continue;
+		}
+		if (!copyInto(src, copyRegion)) {
+			delete _storage;
+			_storage = nullptr;
+			core_free(_data);
+			_data = nullptr;
+			return;
+		}
 	}
 }
 
@@ -82,18 +159,22 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	core_trace_scoped(RawVolumeCopyRegion);
 	core_assert(region.isValid());
 	setBorderValue(src.borderValue());
+	if (onlyAir) {
+		*onlyAir = false;
+	}
+	if (!src.valid()) {
+		return;
+	}
 	if (!intersects(src.region(), _region)) {
-		if (onlyAir) {
+		initialise(_region);
+		if (onlyAir && valid()) {
 			*onlyAir = true;
 		}
-		const size_t size = RawVolume::size(_region);
-		_data = (Voxel *)core_malloc(size);
-		if (_data == nullptr) {
-			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+	} else if (src.region() == _region) {
+		if (src._storage) {
+			_storage = new ChunkedVolumeStorage(*src._storage);
 			return;
 		}
-		core_memset((void *)_data, 0, size);
-	} else if (src.region() == _region) {
 		const size_t size = RawVolume::size(_region);
 		_data = (Voxel *)core_malloc(size);
 		if (_data == nullptr) {
@@ -101,21 +182,35 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 			return;
 		}
 		core_memcpy((void *)_data, (const void *)src._data, size);
-		if (onlyAir) {
-			*onlyAir = false;
-		}
 	} else {
 		if (!src.region().containsRegion(_region)) {
 			_region.cropTo(src._region);
 		}
-		if (onlyAir) {
-			*onlyAir = true;
+		if (src._storage || useChunkedStorage(_region)) {
+			initialise(_region);
+			if (!valid()) {
+				return;
+			}
+			if (!copyInto(src, _region)) {
+				delete _storage;
+				_storage = nullptr;
+				core_free(_data);
+				_data = nullptr;
+				return;
+			}
+			if (onlyAir) {
+				*onlyAir = isEmpty(_region);
+			}
+			return;
 		}
 		const size_t size = RawVolume::size(_region);
 		_data = (Voxel *)core_malloc(size);
 		if (_data == nullptr) {
 			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
 			return;
+		}
+		if (onlyAir) {
+			*onlyAir = true;
 		}
 		const glm::ivec3 &tgtMins = _region.getLowerCorner();
 		const glm::ivec3 &tgtMaxs = _region.getUpperCorner();
@@ -134,11 +229,13 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		const int lineLength = tgtMaxs.x - tgtMins.x + 1;
 		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
 
-		for (int z = tgtMins.z; z <= tgtMaxs.z; ++z) {
+		for (int dz = 0; dz < _region.getDepthInVoxels(); ++dz) {
+			const int z = tgtMins.z + dz;
 			const int64_t tgtZPos = z - tgtMins.z;
 			const int64_t srcZPos = z - srcMins.z;
 
-			for (int y = tgtMins.y; y <= tgtMaxs.y; ++y) {
+			for (int dy = 0; dy < _region.getHeightInVoxels(); ++dy) {
+				const int y = tgtMins.y + dy;
 				const int64_t tgtYPos = y - tgtMins.y;
 				const int64_t srcYPos = y - srcMins.y;
 
@@ -190,6 +287,20 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	if (!_region.containsRegion(r)) {
 		r.cropTo(_region);
 	}
+	if (_storage) {
+		r = Region(r.getLowerCorner() - _region.getLowerCorner(), r.getUpperCorner() - _region.getLowerCorner());
+		return visitChunkRows(*_storage, r, [&](const glm::ivec3 &, const Voxel *row, int count) {
+			if (!row) {
+				return (_storage->defaultVoxel().getFlags() & flags) != 0;
+			}
+			for (int i = 0; i < count; ++i) {
+				if (row[i].getFlags() & flags) {
+					return true;
+				}
+			}
+			return false;
+		});
+	}
 
 	// This assumes that the flags are stored at a particular position in the Voxel struct
 	const uint32_t flagsMask = (uint32_t)(flags & 0x3) << 2;
@@ -228,12 +339,13 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	const int64_t zStride = (int64_t)width * height;
 	const int xStart = r.getLowerX() - _region.getLowerX();
 	const glm::ivec3 &mins = r.getLowerCorner();
-	const glm::ivec3 &maxs = r.getUpperCorner();
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + yPos * yStride;
 			if (scanFlagsLinear(_data + baseIndex, scanWidth, flagsMask)) {
@@ -245,6 +357,26 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 }
 
 Region RawVolume::regionForFlag(uint8_t flag) const {
+	if (_storage) {
+		Region result = Region::InvalidRegion;
+		visitChunkRows(*_storage, Region(glm::ivec3(0), glm::ivec3(width(), height(), depth()) - 1),
+			[&](const glm::ivec3 &pos, const Voxel *row, int count) {
+				for (int i = 0; i < count; ++i) {
+					if ((row ? row[i] : _storage->defaultVoxel()).getFlags() & flag) {
+						const glm::ivec3 world = pos + glm::ivec3(i, 0, 0) + _region.getLowerCorner();
+						if (result.isValid()) {
+							result.accumulate(world);
+						} else {
+							result = Region(world, world);
+						}
+					} else if (!row) {
+						break;
+					}
+				}
+				return false;
+			});
+		return result;
+	}
 	const int w = _region.getWidthInVoxels();
 	const int h = _region.getHeightInVoxels();
 	const int d = _region.getDepthInVoxels();
@@ -358,6 +490,10 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 }
 
 void RawVolume::removeFlags(const Region &region, uint8_t flags) {
+	if (_storage) {
+		modifyChunkFlags(region, flags, 0);
+		return;
+	}
 	if (!intersects(_region, region)) {
 		return;
 	}
@@ -386,10 +522,12 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
@@ -421,6 +559,10 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 }
 
 void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
+	if (_storage) {
+		modifyChunkFlags(region, flags, 1);
+		return;
+	}
 	if (!intersects(_region, region)) {
 		return;
 	}
@@ -446,10 +588,12 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
@@ -481,6 +625,10 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 }
 
 void RawVolume::setFlags(const Region &region, uint8_t flags) {
+	if (_storage) {
+		modifyChunkFlags(region, flags, 2);
+		return;
+	}
 	if (!intersects(_region, region)) {
 		return;
 	}
@@ -506,10 +654,12 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
@@ -550,6 +700,13 @@ bool RawVolume::isEmpty(const Region &region) const {
 	if (!_region.containsRegion(r)) {
 		r.cropTo(_region);
 	}
+	if (_storage) {
+		r = Region(r.getLowerCorner() - _region.getLowerCorner(), r.getUpperCorner() - _region.getLowerCorner());
+		return !visitChunkRows(*_storage, r, [&](const glm::ivec3 &, const Voxel *row, int count) {
+			return core::memchr_not(row ? row : &_storage->defaultVoxel(), 0,
+				row ? count * sizeof(Voxel) : sizeof(Voxel)) != nullptr;
+		});
+	}
 
 	const glm::ivec3 &mins = r.getLowerCorner();
 	const glm::ivec3 &maxs = r.getUpperCorner();
@@ -561,10 +718,12 @@ bool RawVolume::isEmpty(const Region &region) const {
 	const int lineLength = maxs.x - mins.x + 1;
 	const int voxelLineSize = sizeof(voxel::Voxel) * lineLength;
 	const int64_t xStart = (mins.x - _region.getLowerX());
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 			const voxel::Voxel* dataLine = &_data[baseIndex];
@@ -579,7 +738,13 @@ bool RawVolume::isEmpty(const Region &region) const {
 }
 
 bool RawVolume::copyInto(const RawVolume &src) {
-	if (_region == src.region()) {
+	if (!valid() || !src.valid()) {
+		return false;
+	}
+	if (this == &src) {
+		return true;
+	}
+	if (!_storage && !src._storage && _region == src.region()) {
 		core_memcpy((void *)_data, (const void *)src._data, RawVolume::size(_region));
 		return true;
 	}
@@ -589,6 +754,9 @@ bool RawVolume::copyInto(const RawVolume &src) {
 
 bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	core_trace_scoped(RawVolumeCopyInto);
+	if (!valid() || !src.valid()) {
+		return false;
+	}
 	if (!intersects(_region, region)) {
 		return false;
 	}
@@ -599,8 +767,28 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	if (!srcRegion.cropTo(_region)) {
 		return false;
 	}
+	if (_storage || src._storage) {
+		const glm::ivec3 &dimensions = srcRegion.getDimensionsInVoxels();
+		for (int z = 0; z < dimensions.z; ++z) {
+			for (int y = 0; y < dimensions.y; ++y) {
+				for (int x = 0; x < dimensions.x; ++x) {
+					const glm::ivec3 pos = srcRegion.getLowerCorner() + glm::ivec3(x, y, z);
+					// Copy the complete voxel representation, including unspecified normals.
+					const Voxel &value = src.voxel(pos);
+					if (!(this->voxel(pos) == value)) {
+						Voxel *target = writableVoxel(pos);
+						if (!target) {
+							return false;
+						}
+						core_memcpy(target, &value, sizeof(Voxel));
+					}
+				}
+			}
+		}
+		return true;
+	}
 
-	app::for_parallel(srcRegion.getLowerZ(), srcRegion.getUpperZ() + 1, [&src, this, srcRegion](int start, int end) {
+	app::for_parallel(0, srcRegion.getDepthInVoxels(), [&src, this, srcRegion](int start, int end) {
 		const glm::ivec3 &mins = srcRegion.getLowerCorner();
 		const glm::ivec3 &maxs = srcRegion.getUpperCorner();
 		const voxel::Region &fullSrcRegion = src.region();
@@ -618,18 +806,20 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 		const int64_t srcYStride = srcWidth;
 		const int64_t srcZStride = srcWidth * srcHeight;
 		const int64_t tgtXOffset = mins.x - _region.getLowerX();
+		const int64_t tgtYOffset = mins.y - _region.getLowerY();
+		const int64_t tgtZOffset = mins.z - _region.getLowerZ();
 
 		const int lineLength = maxs.x - mins.x + 1;
 		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
 		for (int z = start; z < end; ++z) {
-			const int64_t tgtZPos = z - _region.getLowerZ();
-			const int64_t srcZPos = srcZOffset + z - mins.z;
+			const int64_t tgtZPos = tgtZOffset + z;
+			const int64_t srcZPos = srcZOffset + z;
 			const int64_t srcXZBaseIndex = srcXOffset + srcZPos * srcZStride;
 			const int64_t tgtXZBaseIndex = tgtZPos * tgtZStride + tgtXOffset;
 
-			for (int y = mins.y; y <= maxs.y; ++y) {
-				const int64_t tgtYPos = y - _region.getLowerY();
-				const int64_t srcYPos = srcYOffset + y - mins.y;
+			for (int y = 0; y < srcRegion.getHeightInVoxels(); ++y) {
+				const int64_t tgtYPos = tgtYOffset + y;
+				const int64_t srcYPos = srcYOffset + y;
 
 				const int64_t tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
 				const int64_t srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
@@ -647,28 +837,45 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 RawVolume::RawVolume(RawVolume &&move) noexcept {
 	_data = move._data;
 	move._data = nullptr;
+	_storage = move._storage;
+	move._storage = nullptr;
 	_region = move._region;
 	_borderVoxel = move._borderVoxel;
 }
 
 RawVolume::RawVolume(const Voxel *data, const voxel::Region &region) {
-	initialise(region);
+	initialise(region, true);
+	if (_data == nullptr) {
+		return;
+	}
 	const size_t size = RawVolume::size(_region);
 	core_memcpy((void *)_data, (const void *)data, size);
 }
 
 RawVolume::RawVolume(Voxel *data, const voxel::Region &region) : _region(region), _data(data) {
+	if (size(_region) == 0) {
+		core_free(_data);
+		_data = nullptr;
+		return;
+	}
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 }
 
 RawVolume::~RawVolume() {
+	delete _storage;
 	core_free(_data);
 	_data = nullptr;
 }
 
 bool RawVolume::move(const glm::ivec3 &shift) {
+	if (!valid()) {
+		return false;
+	}
+	if (_storage) {
+		return _storage->move(shift);
+	}
 	const int w = width();
 	const int h = height();
 	const int d = depth();
@@ -698,9 +905,18 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 }
 
 Voxel *RawVolume::copyVoxels() const {
+	if (!valid()) {
+		return nullptr;
+	}
 	const size_t size = RawVolume::size(_region);
 	Voxel *rawCopy = (Voxel *)core_malloc(size);
-	core_memcpy((void *)rawCopy, (const void *)_data, size);
+	if (rawCopy) {
+		if (_storage) {
+			_storage->copyTo(rawCopy);
+		} else {
+			core_memcpy((void *)rawCopy, (const void *)_data, size);
+		}
+	}
 	return rawCopy;
 }
 
@@ -717,6 +933,9 @@ const Voxel &RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 		const int32_t iLocalXPos = x - _region.getLowerX();
 		const int32_t iLocalYPos = y - _region.getLowerY();
 		const int32_t iLocalZPos = z - _region.getLowerZ();
+		if (_storage) {
+			return _storage->voxel({iLocalXPos, iLocalYPos, iLocalZPos});
+		}
 
 		return _data[(int64_t)iLocalXPos + (int64_t)iLocalYPos * width() + (int64_t)iLocalZPos * _region.stride()];
 	}
@@ -757,6 +976,28 @@ void RawVolume::fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, 
 		}
 	}
 	if (remaining == 0) {
+		return;
+	}
+	if (_storage) {
+		for (int b = 0; b < bCount; ++b) {
+			for (int a = 0; a < aCount; ++a) {
+				Voxel &cell = out[b * aCount + a];
+				if (!isAir(cell.getMaterial())) {
+					continue;
+				}
+				glm::ivec3 pos = lo;
+				pos[aAxis] += a;
+				pos[bAxis] += b;
+				for (int distance = 1; distance <= maxBehind; ++distance) {
+					pos[dAxis] = slice - distance;
+					const Voxel &value = voxel(pos);
+					if (!isAir(value.getMaterial())) {
+						cell = value;
+						break;
+					}
+				}
+			}
+		}
 		return;
 	}
 
@@ -833,6 +1074,10 @@ bool RawVolume::setVoxel(int64_t idx, const Voxel &voxel) {
 	if (idx < 0 || idx >= _region.stride() * depth()) {
 		return false; // Index out of bounds
 	}
+	if (_storage) {
+		const int64_t stride = _region.stride();
+		return _storage->setVoxel({(int)(idx % width()), (int)((idx % stride) / width()), (int)(idx / stride)}, voxel);
+	}
 	if (_data[idx] == voxel) {
 		return false;
 	}
@@ -855,6 +1100,9 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 	}
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
+	if (_storage) {
+		return _storage->setVoxel(localPos, voxel);
+	}
 	const int64_t index = (int64_t)localPos.x + (int64_t)localPos.y * width() + (int64_t)localPos.z * _region.stride();
 	if (_data[index] == voxel) {
 		return false;
@@ -864,6 +1112,10 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 }
 
 void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
+	if (_storage) {
+		_storage->setVoxel(pos - _region.getLowerCorner(), voxel);
+		return;
+	}
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
 	const int64_t index = (int64_t)localPos.x + (int64_t)localPos.y * width() + (int64_t)localPos.z * _region.stride();
@@ -873,15 +1125,27 @@ void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
 /**
  * This function should probably be made internal...
  */
-void RawVolume::initialise(const Region &regValidRegion) {
+void RawVolume::initialise(const Region &regValidRegion, bool forceDense) {
 	_region = regValidRegion;
+	const size_t size = RawVolume::size(_region);
+	if (size == 0) {
+		Log::error("Invalid or oversized volume region");
+		return;
+	}
 
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
 	// Create the data
-	const size_t size = RawVolume::size(_region);
+	if (!forceDense && useChunkedStorage(_region)) {
+		_storage = new ChunkedVolumeStorage({width(), height(), depth()});
+		if (_storage->valid()) {
+			return;
+		}
+		delete _storage;
+		_storage = nullptr;
+	}
 	_data = (Voxel *)core_malloc(size);
 	if (_data == nullptr) {
 		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for a volume with the dimensions %i:%i:%i",
@@ -899,7 +1163,11 @@ void RawVolume::clear() {
 }
 
 void RawVolume::fill(const voxel::Voxel &voxel) {
-	if (!_region.isValid()) {
+	if (!valid()) {
+		return;
+	}
+	if (_storage) {
+		_storage->fill(voxel);
 		return;
 	}
 	const size_t size = _region.stride() * depth();
@@ -909,12 +1177,76 @@ void RawVolume::fill(const voxel::Voxel &voxel) {
 	static_assert(sizeof(Voxel) == sizeof(uint32_t), "Voxel is expected to be 4 bytes");
 }
 
-bool RawVolume::valid() const {
-	return _data != nullptr;
+Voxel *RawVolume::voxels() const {
+	if (_storage) {
+		if (!_storage->valid()) {
+			return nullptr;
+		}
+		Voxel *linear = (Voxel *)core_malloc(size(_region));
+		if (!linear) {
+			Log::error("Failed to materialize chunked volume");
+			return nullptr;
+		}
+		_storage->copyTo(linear);
+		delete _storage;
+		_storage = nullptr;
+		_data = linear;
+	}
+	return _data;
+}
+
+void RawVolume::modifyChunkFlags(const Region &region, uint8_t flags, int operation) {
+	Region r = region;
+	if (!r.cropTo(_region)) {
+		return;
+	}
+	r = Region(r.getLowerCorner() - _region.getLowerCorner(), r.getUpperCorner() - _region.getLowerCorner());
+	visitChunkRows(*_storage, r, [&](const glm::ivec3 &pos, const Voxel *row, int count) {
+		const uint8_t defaultFlags = _storage->defaultVoxel().getFlags();
+		if (!row && ((operation == 0 && !(defaultFlags & flags)) ||
+			(operation == 1 && !flags) || (operation == 2 && (defaultFlags | flags) == defaultFlags))) {
+			return false;
+		}
+		Voxel *target = _storage->writableVoxel(pos);
+		if (!target) {
+			return false;
+		}
+		for (int i = 0; i < count; ++i) {
+			const uint8_t oldFlags = target[i].getFlags();
+			target[i].setFlags(operation == 0 ? oldFlags & ~flags : operation == 1 ? oldFlags ^ flags : oldFlags | flags);
+		}
+		return false;
+	});
+}
+
+Voxel *RawVolume::writableVoxel(const glm::ivec3 &pos) {
+	const glm::ivec3 local = pos - _region.getLowerCorner();
+	return _storage ? _storage->writableVoxel(local) : _data + _region.index(pos);
 }
 
 size_t RawVolume::allocatedBytes() const {
-	return _data ? size(_region) : 0;
+	return _storage ? _storage->allocatedBytes() : (_data ? size(_region) : 0);
+}
+
+bool RawVolume::valid() const {
+	return _storage ? _storage->valid() : _data != nullptr;
+}
+
+Voxel *RawVolume::sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const {
+	if (_storage) {
+		Voxel *data = _storage->sampleData(pos - _region.getLowerCorner(), dataLower, dataUpper, yStride, zStride, chunkEntry, defaultVoxel);
+		const glm::ivec3 &lower = _region.getLowerCorner();
+		dataLower += lower;
+		dataUpper += lower;
+		return data;
+	}
+	chunkEntry = nullptr;
+	defaultVoxel = nullptr;
+	dataLower = _region.getLowerCorner();
+	dataUpper = _region.getUpperCorner();
+	yStride = width();
+	zStride = _region.stride();
+	return _data + _region.index(pos);
 }
 
 } // namespace voxel

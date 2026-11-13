@@ -5,6 +5,7 @@
 #include "../MementoHandler.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Pair.h"
+#include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "math/tests/TestMathHelper.h"
@@ -28,11 +29,13 @@ TEST_F(MementoChunkTest, SerializesWithoutMaterializingSource) {
 	source.setVoxel(pos, value);
 	const size_t allocated = source.allocatedBytes();
 	MementoData data = MementoData::fromVolume(&source, voxel::Region::InvalidRegion);
+	EXPECT_EQ(nullptr, source.linearVoxels());
 	EXPECT_EQ(allocated, source.allocatedBytes());
 	voxel::RawVolume restored(source.region());
 	ASSERT_TRUE(MementoData::toVolume(&restored, data, source.region()));
 	EXPECT_EQ(value, restored.voxel(pos));
 	EXPECT_EQ(voxel::Voxel(), restored.voxel(pos + 1));
+	EXPECT_EQ(nullptr, restored.linearVoxels());
 }
 
 TEST_F(MementoChunkTest, AccessorPreservesCroppedAndOutsideUndoRegions) {
@@ -50,6 +53,52 @@ TEST_F(MementoChunkTest, AccessorPreservesCroppedAndOutsideUndoRegions) {
 	air.fill(value);
 	ASSERT_TRUE(MementoData::toVolume(&air, outside, outside.dataRegion()));
 	EXPECT_TRUE(air.isEmpty(air.region()));
+	EXPECT_FALSE(source.isContiguous());
+}
+
+// No application workers may run while the SDL memory callbacks are replaced.
+TEST(MementoAllocationFailureTest, RestoreReportsFailedChunkWrites) {
+	const int previous = voxel::RawVolume::chunkedStorageThreshold();
+	voxel::RawVolume::setChunkedStorageThreshold(256);
+	voxel::RawVolume source(voxel::Region(0, 64));
+	voxel::RawVolume::setChunkedStorageThreshold(previous);
+	const voxel::Voxel first(voxel::VoxelType::Generic, 7);
+	const voxel::Voxel second(voxel::VoxelType::Generic, 9);
+	source.setVoxel(0, 0, 0, first);
+	source.setVoxel(32, 32, 32, second);
+	const MementoData data = MementoData::fromVolume(&source, source.region());
+	static SDL_malloc_func originalMalloc;
+	static int remainingChunks;
+	SDL_calloc_func originalCalloc;
+	SDL_realloc_func originalRealloc;
+	SDL_free_func originalFree;
+	SDL_GetMemoryFunctions(&originalMalloc, &originalCalloc, &originalRealloc, &originalFree);
+	const auto failingMalloc = [](size_t bytes) -> void * {
+		if (bytes == 32u * 32u * 32u * sizeof(voxel::Voxel) && remainingChunks >= 0 && remainingChunks-- == 0) {
+			return nullptr;
+		}
+		return originalMalloc(bytes);
+	};
+	for (int failure = 0; failure < 2; ++failure) {
+		voxel::RawVolume::setChunkedStorageThreshold(1);
+		voxel::RawVolume target(source.region());
+		voxel::RawVolume::setChunkedStorageThreshold(previous);
+		remainingChunks = failure;
+		const bool installed = SDL_SetMemoryFunctions(failingMalloc, originalCalloc, originalRealloc, originalFree);
+		const bool restoredData = MementoData::toVolume(&target, data, source.region());
+		const bool restored = SDL_SetMemoryFunctions(originalMalloc, originalCalloc, originalRealloc, originalFree);
+		ASSERT_TRUE(installed);
+		ASSERT_TRUE(restored);
+		EXPECT_EQ(-1, remainingChunks);
+		EXPECT_FALSE(restoredData);
+		EXPECT_EQ(failure == 0 ? voxel::Voxel() : first, target.voxel(0, 0, 0));
+		EXPECT_EQ(voxel::Voxel(), target.voxel(32, 32, 32));
+		EXPECT_TRUE(MementoData::toVolume(&target, data, source.region()));
+		EXPECT_EQ(first, target.voxel(0, 0, 0));
+		EXPECT_EQ(second, target.voxel(32, 32, 32));
+		EXPECT_EQ(first, source.voxel(0, 0, 0));
+		EXPECT_EQ(second, source.voxel(32, 32, 32));
+	}
 }
 
 class MementoHandlerTest : public app::AbstractTest {

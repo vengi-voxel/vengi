@@ -18,6 +18,27 @@
 namespace voxedit {
 
 void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
+	IM_REGISTER_TEST(engine, testCategory(), "chunked slices keep source storage")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		util::ScopedVarChange maxSize(cfg::VoxEditMaxSuggestedVolumeSize, "257");
+		util::ScopedVarChange visible(cfg::VoxEditShowSlices, "true");
+		IM_CHECK(_sceneMgr->newScene(true, "chunked slices", voxel::Region(-128, 128)));
+		voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
+		IM_CHECK(volume != nullptr);
+		IM_CHECK(!volume->isContiguous());
+		const size_t allocated = volume->allocatedBytes();
+		ctx->Yield();
+		IM_CHECK(focusWindow(ctx, id));
+		const char *canvases[] = {"**/backcanvas", "**/rightcanvas", "**/topcanvas"};
+		for (const char *canvas : canvases) {
+			IM_CHECK(ctx->ItemInfo(canvas).ID != 0);
+		}
+		IM_CHECK(_gizmoPreview == nullptr);
+		IM_CHECK(!_sliceCells.empty());
+		IM_CHECK(!volume->isContiguous());
+		IM_CHECK_EQ(volume->allocatedBytes(), allocated);
+	};
+
 	IM_REGISTER_TEST(engine, testCategory(), "model bindings pick slice color")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
 		util::ScopedVarChange visible(cfg::VoxEditShowSlices, "true");

@@ -112,7 +112,9 @@ static void fillBenchmarkVolume(voxel::RawVolume &volume, int content) {
 	for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
 		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-				if (x == region.getLowerX() || x == region.getUpperX() || y == region.getLowerY() ||
+				if (content == 3) {
+					volume.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, (uint8_t)(x + 3 * y + 7 * z)));
+				} else if (x == region.getLowerX() || x == region.getUpperX() || y == region.getLowerY() ||
 					y == region.getUpperY() || z == region.getLowerZ() || z == region.getUpperZ()) {
 					volume.setVoxel(x, y, z, voxel);
 				}
@@ -147,6 +149,168 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, FillBehindPlane)(benchmark::State &state)
 		benchmark::DoNotOptimize(cells[0]);
 	}
 }
+
+// Compare facade lookups with sampler traversal before changing the storage.
+// Include nonzero origins and empty, shell and dense volumes.
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxels)(benchmark::State &state) {
+	const int side = (int)state.range(0);
+	const int lower = -side / 2;
+	voxel::RawVolume volume(voxel::Region(lower, lower + side - 1));
+	if (state.range(2)) {
+		if (volume.voxels() == nullptr) {
+			state.SkipWithError("Could not allocate dense comparison volume");
+			return;
+		}
+	}
+	fillBenchmarkVolume(volume, (int)state.range(1));
+	const voxel::Region &region = volume.region();
+	for (auto _ : state) {
+		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					benchmark::DoNotOptimize(volume.voxel(x, y, z).getColor());
+				}
+			}
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * region.voxels());
+	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
+}
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, ReadVoxelsSampler)(benchmark::State &state) {
+	const int side = (int)state.range(0);
+	const int lower = -side / 2;
+	voxel::RawVolume volume(voxel::Region(lower, lower + side - 1));
+	if (state.range(2)) {
+		if (volume.voxels() == nullptr) {
+			state.SkipWithError("Could not allocate dense comparison volume");
+			return;
+		}
+	}
+	fillBenchmarkVolume(volume, (int)state.range(1));
+	const voxel::Region &region = volume.region();
+	voxel::RawVolume::Sampler sampler(volume);
+	for (auto _ : state) {
+		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				sampler.setPosition(region.getLowerX(), y, z);
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					benchmark::DoNotOptimize(sampler.voxel().getColor());
+					sampler.movePositiveX();
+				}
+			}
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * region.voxels());
+	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
+}
+
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxels)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, ReadVoxelsSampler)->ArgsProduct({{32, 64, 128, 256}, {0, 1, 2, 3}, {0, 1}});
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, cyclicVolumeMove)(benchmark::State &state) {
+	voxel::RawVolume volume(voxel::Region(-128, 127));
+	if (state.range(0) && volume.voxels() == nullptr) {
+		state.SkipWithError("Could not allocate dense comparison volume");
+		return;
+	}
+	const voxel::Voxel value(voxel::VoxelType::Generic, 17);
+	if (state.range(1) == 1) {
+		volume.setVoxel(-128, -128, -128, value);
+		volume.setVoxel(-97, -97, -97, value);
+		volume.setVoxel(127, 127, 127, value);
+	} else if (state.range(1) == 2) {
+		volume.fill(value);
+	} else if (state.range(1) == 3) {
+		fillBenchmarkVolume(volume, 3);
+	}
+	for (auto _ : state) {
+		if (!volume.move({1, 0, 0}) || !volume.move({-1, 0, 0})) {
+			state.SkipWithError("Could not shift volume");
+			break;
+		}
+		benchmark::DoNotOptimize(volume.linearVoxels());
+	}
+	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
+}
+
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, cyclicVolumeMove)->ArgsProduct({{0, 1}, {0, 1, 2, 3}});
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, copyVolumeStorage)(benchmark::State &state) {
+	voxel::RawVolume source(voxel::Region(-128, 127));
+	if (!source.valid() || (state.range(0) && source.voxels() == nullptr)) {
+		state.SkipWithError("Could not allocate source volume");
+		return;
+	}
+	fillBenchmarkVolume(source, 3);
+	if (state.range(1)) {
+		source.clear();
+	}
+	size_t copyBytes = 0;
+	for (auto _ : state) {
+		voxel::RawVolume copy(source);
+		if (!copy.valid()) {
+			state.SkipWithError("Could not copy volume");
+			break;
+		}
+		copyBytes = copy.allocatedBytes();
+		benchmark::DoNotOptimize(copy.voxel(-128, -128, -128).getColor());
+	}
+	state.counters["source_allocated_bytes"] = (double)source.allocatedBytes();
+	state.counters["copy_allocated_bytes"] = (double)copyBytes;
+}
+
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, copyVolumeStorage)->ArgsProduct({{0, 1}, {0, 1}});
+
+class SharedVolumeBenchmark : public app::AbstractBenchmark {
+protected:
+	voxel::RawVolume *_volume = nullptr;
+	using Super = app::AbstractBenchmark;
+
+	void SetUp(benchmark::State &state) override {
+		if (state.thread_index() == 0) {
+			Super::SetUp(state);
+			_volume = new voxel::RawVolume(voxel::Region(-128, 127));
+			if (_volume->valid() && (!state.range(1) || _volume->voxels() != nullptr)) {
+				fillBenchmarkVolume(*_volume, (int)state.range(0));
+			}
+		}
+	}
+
+	void TearDown(benchmark::State &state) override {
+		if (state.thread_index() == 0) {
+			delete _volume;
+			_volume = nullptr;
+			Super::TearDown(state);
+		}
+	}
+};
+
+BENCHMARK_DEFINE_F(SharedVolumeBenchmark, sharedVolumeRead)(benchmark::State &state) {
+	while (state.KeepRunning()) {
+		// The loop barrier publishes thread zero's fixture setup to every reader.
+		const voxel::RawVolume &volume = *_volume;
+		if (!volume.valid() || (state.range(1) && !volume.isContiguous())) {
+			state.SkipWithError("Could not allocate shared volume");
+			continue;
+		}
+		voxel::RawVolume::Sampler sampler(volume);
+		const voxel::Region &region = volume.region();
+		for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
+			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
+				sampler.setPosition(region.getLowerX(), y, z);
+				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
+					benchmark::DoNotOptimize(sampler.voxel().getColor());
+					sampler.movePositiveX();
+				}
+			}
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * 256 * 256 * 256);
+}
+
+BENCHMARK_REGISTER_F(SharedVolumeBenchmark, sharedVolumeRead)
+	->ArgsProduct({{0, 1, 3}, {0, 1}})->ThreadRange(1, 4)->UseRealTime();
 
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, SetVoxelSampler);
