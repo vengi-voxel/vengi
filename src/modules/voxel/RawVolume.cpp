@@ -844,6 +844,9 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 }
 
 Voxel *RawVolume::copyVoxels() const {
+	if (!valid()) {
+		return nullptr;
+	}
 	const size_t size = RawVolume::size(_region);
 	Voxel *rawCopy = (Voxel *)core_malloc(size);
 	if (rawCopy) {
@@ -1111,6 +1114,9 @@ void RawVolume::fill(const voxel::Voxel &voxel) {
 
 Voxel *RawVolume::voxels() const {
 	if (_storage) {
+		if (!_storage->valid()) {
+			return nullptr;
+		}
 		Voxel *linear = (Voxel *)core_malloc(size(_region));
 		if (!linear) {
 			Log::error("Failed to materialize chunked volume");

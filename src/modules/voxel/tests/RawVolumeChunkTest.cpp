@@ -19,6 +19,45 @@ protected:
 	const Region largeRegion{-40, -20, -60, 216, 236, 196};
 };
 
+// No application workers may run while the SDL memory callbacks are replaced.
+TEST(RawVolumeAllocationFailureTest, FailedChunkCopyDoesNotMaterialize) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	RawVolume::setChunkedStorageThreshold(1);
+	RawVolume source(Region(0, 64));
+	RawVolume::setChunkedStorageThreshold(previous);
+	const Voxel value(VoxelType::Generic, 7);
+	source.setVoxel(0, 0, 0, value);
+	ASSERT_TRUE(source.valid());
+	const size_t allocated = source.allocatedBytes();
+	static SDL_malloc_func originalMalloc;
+	static bool failChunk;
+	SDL_calloc_func originalCalloc;
+	SDL_realloc_func originalRealloc;
+	SDL_free_func originalFree;
+	SDL_GetMemoryFunctions(&originalMalloc, &originalCalloc, &originalRealloc, &originalFree);
+	failChunk = true;
+	const auto failingMalloc = [](size_t bytes) -> void * {
+		if (failChunk && bytes == 32u * 32u * 32u * sizeof(Voxel)) {
+			failChunk = false;
+			return nullptr;
+		}
+		return originalMalloc(bytes);
+	};
+	ASSERT_TRUE(SDL_SetMemoryFunctions(failingMalloc, originalCalloc, originalRealloc, originalFree));
+	RawVolume copy(source);
+	const bool restored = SDL_SetMemoryFunctions(originalMalloc, originalCalloc, originalRealloc, originalFree);
+	ASSERT_TRUE(restored);
+	EXPECT_FALSE(failChunk);
+	EXPECT_FALSE(copy.valid());
+	EXPECT_EQ(nullptr, copy.voxels());
+	EXPECT_EQ(nullptr, copy.data());
+	EXPECT_EQ(nullptr, copy.copyVoxels());
+	EXPECT_FALSE(copy.valid());
+	EXPECT_EQ(0u, copy.allocatedBytes());
+	EXPECT_EQ(value, source.voxel(0, 0, 0));
+	EXPECT_EQ(allocated, source.allocatedBytes());
+}
+
 TEST_F(RawVolumeChunkTest, QueriesAtMinimumCoordinate) {
 	RawVolume volume(Region(INT_MIN, INT_MIN + 256));
 	const Region cell(INT_MIN, INT_MIN);
