@@ -5,6 +5,7 @@
 #include "AbstractVoxelTest.h"
 #include "core/ArrayLength.h"
 #include "core/StandardLib.h"
+#include "core/ScopedPtr.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Thread.h"
 #include "voxel/RawVolume.h"
@@ -20,42 +21,58 @@ protected:
 };
 
 // No application workers may run while the SDL memory callbacks are replaced.
-TEST(RawVolumeAllocationFailureTest, FailedChunkCopyDoesNotMaterialize) {
+TEST(RawVolumeAllocationFailureTest, CopyConstructorsDoNotReturnPartialVolumes) {
 	const int previous = RawVolume::chunkedStorageThreshold();
 	RawVolume::setChunkedStorageThreshold(1);
 	RawVolume source(Region(0, 64));
 	RawVolume::setChunkedStorageThreshold(previous);
 	const Voxel value(VoxelType::Generic, 7);
+	const Voxel second(VoxelType::Generic, 9);
 	source.setVoxel(0, 0, 0, value);
+	source.setVoxel(32, 32, 32, second);
 	ASSERT_TRUE(source.valid());
 	const size_t allocated = source.allocatedBytes();
+	core::Buffer<Region> regions;
+	regions.push_back(Region(0, 1));
+	regions.push_back(Region(32, 33));
 	static SDL_malloc_func originalMalloc;
-	static bool failChunk;
+	static int remainingChunks;
 	SDL_calloc_func originalCalloc;
 	SDL_realloc_func originalRealloc;
 	SDL_free_func originalFree;
 	SDL_GetMemoryFunctions(&originalMalloc, &originalCalloc, &originalRealloc, &originalFree);
-	failChunk = true;
 	const auto failingMalloc = [](size_t bytes) -> void * {
-		if (failChunk && bytes == 32u * 32u * 32u * sizeof(Voxel)) {
-			failChunk = false;
+		if (bytes == 32u * 32u * 32u * sizeof(Voxel) && remainingChunks >= 0 && remainingChunks-- == 0) {
 			return nullptr;
 		}
 		return originalMalloc(bytes);
 	};
-	ASSERT_TRUE(SDL_SetMemoryFunctions(failingMalloc, originalCalloc, originalRealloc, originalFree));
-	RawVolume copy(source);
-	const bool restored = SDL_SetMemoryFunctions(originalMalloc, originalCalloc, originalRealloc, originalFree);
-	ASSERT_TRUE(restored);
-	EXPECT_FALSE(failChunk);
-	EXPECT_FALSE(copy.valid());
-	EXPECT_EQ(nullptr, copy.voxels());
-	EXPECT_EQ(nullptr, copy.data());
-	EXPECT_EQ(nullptr, copy.copyVoxels());
-	EXPECT_FALSE(copy.valid());
-	EXPECT_EQ(0u, copy.allocatedBytes());
-	EXPECT_EQ(value, source.voxel(0, 0, 0));
-	EXPECT_EQ(allocated, source.allocatedBytes());
+	for (int mode = 0; mode < 3; ++mode) {
+		for (int failure = 0; failure < 2; ++failure) {
+			remainingChunks = failure;
+			bool onlyAir = true;
+			RawVolume::setChunkedStorageThreshold(1);
+			const bool installed = SDL_SetMemoryFunctions(failingMalloc, originalCalloc, originalRealloc, originalFree);
+			core::ScopedPtr<RawVolume> copy(mode == 0 ? new RawVolume(source) : mode == 1
+				? new RawVolume(source, Region(0, 63), &onlyAir) : new RawVolume(source, regions));
+			const bool restored = SDL_SetMemoryFunctions(originalMalloc, originalCalloc, originalRealloc, originalFree);
+			RawVolume::setChunkedStorageThreshold(previous);
+			ASSERT_TRUE(installed);
+			ASSERT_TRUE(restored);
+			EXPECT_EQ(-1, remainingChunks);
+			EXPECT_FALSE(copy->valid());
+			EXPECT_EQ(nullptr, copy->voxels());
+			EXPECT_EQ(nullptr, copy->data());
+			EXPECT_EQ(nullptr, copy->copyVoxels());
+			EXPECT_EQ(0u, copy->allocatedBytes());
+			if (mode == 1) {
+				EXPECT_FALSE(onlyAir);
+			}
+			EXPECT_EQ(value, source.voxel(0, 0, 0));
+			EXPECT_EQ(second, source.voxel(32, 32, 32));
+			EXPECT_EQ(allocated, source.allocatedBytes());
+		}
+	}
 }
 
 TEST_F(RawVolumeChunkTest, QueriesAtMinimumCoordinate) {

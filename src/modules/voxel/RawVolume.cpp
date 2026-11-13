@@ -63,11 +63,15 @@ size_t RawVolume::size(const Region &region) {
 	if (!region.isValid()) {
 		return 0;
 	}
-	const size_t w = region.getWidthInVoxels();
-	const size_t h = region.getHeightInVoxels();
-	const size_t d = region.getDepthInVoxels();
-	const size_t size = w * h * d * sizeof(Voxel);
-	return size;
+	size_t bytes = sizeof(Voxel);
+	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
+	for (int axis = 0; axis < 3; ++axis) {
+		if (dimensions[axis] <= 0 || bytes > SIZE_MAX / (size_t)dimensions[axis]) {
+			return 0;
+		}
+		bytes *= (size_t)dimensions[axis];
+	}
+	return bytes;
 }
 
 RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
@@ -77,6 +81,9 @@ RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
 
 RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	setBorderValue(copy->borderValue());
+	if (!copy->valid()) {
+		return;
+	}
 	if (copy->_storage) {
 		_storage = new ChunkedVolumeStorage(*copy->_storage);
 		return;
@@ -93,6 +100,9 @@ RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 
 RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	setBorderValue(copy.borderValue());
+	if (!copy.valid()) {
+		return;
+	}
 	if (copy._storage) {
 		_storage = new ChunkedVolumeStorage(*copy._storage);
 		return;
@@ -121,12 +131,27 @@ static inline voxel::Region accumulate(const core::Buffer<Region> &regions) {
 
 RawVolume::RawVolume(const RawVolume &src, const core::Buffer<Region> &copyRegions)
 	: _region(accumulate(copyRegions)) {
-	_region.cropTo(src.region());
 	setBorderValue(src.borderValue());
+	if (!src.valid()) {
+		return;
+	}
+	_region.cropTo(src.region());
 	initialise(_region);
+	if (!valid()) {
+		return;
+	}
 
 	for (const Region &copyRegion : copyRegions) {
-		copyInto(src, copyRegion);
+		if (!intersects(_region, copyRegion) || !intersects(src.region(), copyRegion)) {
+			continue;
+		}
+		if (!copyInto(src, copyRegion)) {
+			delete _storage;
+			_storage = nullptr;
+			core_free(_data);
+			_data = nullptr;
+			return;
+		}
 	}
 }
 
@@ -134,17 +159,20 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 	core_trace_scoped(RawVolumeCopyRegion);
 	core_assert(region.isValid());
 	setBorderValue(src.borderValue());
+	if (onlyAir) {
+		*onlyAir = false;
+	}
+	if (!src.valid()) {
+		return;
+	}
 	if (!intersects(src.region(), _region)) {
-		if (onlyAir) {
+		initialise(_region);
+		if (onlyAir && valid()) {
 			*onlyAir = true;
 		}
-		initialise(_region);
 	} else if (src.region() == _region) {
 		if (src._storage) {
 			_storage = new ChunkedVolumeStorage(*src._storage);
-			if (onlyAir) {
-				*onlyAir = false;
-			}
 			return;
 		}
 		const size_t size = RawVolume::size(_region);
@@ -154,19 +182,22 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 			return;
 		}
 		core_memcpy((void *)_data, (const void *)src._data, size);
-		if (onlyAir) {
-			*onlyAir = false;
-		}
 	} else {
 		if (!src.region().containsRegion(_region)) {
 			_region.cropTo(src._region);
 		}
-		if (onlyAir) {
-			*onlyAir = true;
-		}
 		if (src._storage || useChunkedStorage(_region)) {
 			initialise(_region);
-			copyInto(src, _region);
+			if (!valid()) {
+				return;
+			}
+			if (!copyInto(src, _region)) {
+				delete _storage;
+				_storage = nullptr;
+				core_free(_data);
+				_data = nullptr;
+				return;
+			}
 			if (onlyAir) {
 				*onlyAir = isEmpty(_region);
 			}
@@ -177,6 +208,9 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (_data == nullptr) {
 			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
 			return;
+		}
+		if (onlyAir) {
+			*onlyAir = true;
 		}
 		const glm::ivec3 &tgtMins = _region.getLowerCorner();
 		const glm::ivec3 &tgtMaxs = _region.getUpperCorner();
@@ -693,6 +727,9 @@ bool RawVolume::isEmpty(const Region &region) const {
 }
 
 bool RawVolume::copyInto(const RawVolume &src) {
+	if (!valid() || !src.valid()) {
+		return false;
+	}
 	if (this == &src) {
 		return true;
 	}
@@ -706,6 +743,9 @@ bool RawVolume::copyInto(const RawVolume &src) {
 
 bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	core_trace_scoped(RawVolumeCopyInto);
+	if (!valid() || !src.valid()) {
+		return false;
+	}
 	if (!intersects(_region, region)) {
 		return false;
 	}
@@ -792,11 +832,19 @@ RawVolume::RawVolume(RawVolume &&move) noexcept {
 
 RawVolume::RawVolume(const Voxel *data, const voxel::Region &region) {
 	initialise(region, true);
+	if (_data == nullptr) {
+		return;
+	}
 	const size_t size = RawVolume::size(_region);
 	core_memcpy((void *)_data, (const void *)data, size);
 }
 
 RawVolume::RawVolume(Voxel *data, const voxel::Region &region) : _region(region), _data(data) {
+	if (size(_region) == 0) {
+		core_free(_data);
+		_data = nullptr;
+		return;
+	}
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
@@ -1066,13 +1114,17 @@ void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
  */
 void RawVolume::initialise(const Region &regValidRegion, bool forceDense) {
 	_region = regValidRegion;
+	const size_t size = RawVolume::size(_region);
+	if (size == 0) {
+		Log::error("Invalid or oversized volume region");
+		return;
+	}
 
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
 	// Create the data
-	const size_t size = RawVolume::size(_region);
 	if (!forceDense && useChunkedStorage(_region)) {
 		_storage = new ChunkedVolumeStorage({width(), height(), depth()});
 		if (_storage->valid()) {
@@ -1098,7 +1150,7 @@ void RawVolume::clear() {
 }
 
 void RawVolume::fill(const voxel::Voxel &voxel) {
-	if (!_region.isValid()) {
+	if (!valid()) {
 		return;
 	}
 	if (_storage) {

@@ -104,6 +104,7 @@ public:
 
 	/**
 	 * @brief Calculate the amount of bytes a volume with the given region would consume
+	 * @return Zero if the region is invalid or its byte count cannot fit in size_t.
 	 */
 	static size_t size(const Region &region);
 
