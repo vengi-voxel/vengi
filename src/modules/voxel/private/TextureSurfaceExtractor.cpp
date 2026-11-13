@@ -239,8 +239,8 @@ static void collectFacePair(SurfaceExtractionContext &ctx, const VolumeDataAcces
 
 	for (int s = 0; s < sIterMax; ++s) {
 		const int sAbs = sAbsBase + s;
-		const int neighborSPos = sAbs + 1;
-		const int neighborSNeg = sAbs - 1;
+		const int64_t neighborSPos = (int64_t)sAbs + 1;
+		const int64_t neighborSNeg = (int64_t)sAbs - 1;
 		const bool posNeighborInVolume = (neighborSPos >= sVolLower && neighborSPos <= sVolUpper);
 		const bool negNeighborInVolume = (neighborSNeg >= sVolLower && neighborSNeg <= sVolUpper);
 
@@ -296,6 +296,9 @@ static void collectFacePair(SurfaceExtractionContext &ctx, const VolumeDataAcces
 
 void extractTextureMesh(SurfaceExtractionContext &ctx) {
 	const Region &region = ctx.region;
+	if (!intersects(region, ctx.volume->region())) {
+		return;
+	}
 	const int rw = region.getWidthInVoxels();
 	const int rh = region.getHeightInVoxels();
 	const int rd = region.getDepthInVoxels();
@@ -311,8 +314,18 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 
 	Region accessRegion = ctx.volume->region();
 	if (!ctx.volume->isContiguous() || !accessRegion.containsRegion(region)) {
-		accessRegion = region;
-		accessRegion.grow(1);
+		glm::ivec3 lower = region.getLowerCorner();
+		glm::ivec3 upper = region.getUpperCorner();
+		// Only pad toward neighbors that can exist in the source volume.
+		for (int axis = 0; axis < 3; ++axis) {
+			if (lower[axis] > ctx.volume->region().getLowerCorner()[axis]) {
+				--lower[axis];
+			}
+			if (upper[axis] < ctx.volume->region().getUpperCorner()[axis]) {
+				++upper[axis];
+			}
+		}
+		accessRegion = Region(lower, upper);
 	}
 	const VolumeDataAccessor accessor(*ctx.volume, accessRegion);
 	if (!accessor.valid()) {
