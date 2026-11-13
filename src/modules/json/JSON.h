@@ -41,6 +41,8 @@ public:
 	static Json parse(const char *str);
 	/** @brief Parse a JSON string. Returns an owned Json. Check isValid() for success. */
 	static Json parse(const core::String &str);
+	/** @brief Parse one complete JSON value, rejecting trailing data and embedded null bytes. */
+	static Json parseStrict(const core::String &str);
 	/** @brief Validate whether the given string is valid JSON without parsing. */
 	static bool accept(const char *str);
 	/** @brief Create an empty JSON object. */
@@ -118,6 +120,9 @@ public:
 	inline void push_back(float val) { push(val); }
 	inline void push_back(bool val) { push(val); }
 
+	/** @brief Sort object keys recursively in place, preserving array order and child views. */
+	void sortKeys();
+
 	int size() const;
 	bool empty() const;
 
@@ -139,6 +144,8 @@ public:
 		bool operator!=(const Iterator &other) const;
 		Json operator*() const;
 		core::String key() const;
+		/** @brief Borrow the object key without allocation; valid while its parent exists. */
+		const char *cKey() const;
 
 	private:
 		cJSON *_item;

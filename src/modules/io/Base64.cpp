@@ -152,5 +152,21 @@ core::String base64urlToBase64(const core::String &input) {
 	return output;
 }
 
+bool isValid(const core::String &text) {
+	if (text.size() % 4 != 0) {
+		return false;
+	}
+	for (size_t i = 0; i < text.size(); ++i) {
+		const char c = text[i];
+		if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '+' || c == '/') {
+			continue;
+		}
+		if (c != '=' || i + 2 < text.size() || (i + 1 < text.size() && text[i + 1] != '=')) {
+			return false;
+		}
+	}
+	return true;
+}
+
 } // namespace Base64
 } // namespace util

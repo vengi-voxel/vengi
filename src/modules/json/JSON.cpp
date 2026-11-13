@@ -3,6 +3,8 @@
  */
 
 #include "JSON.h"
+#include "core/Algorithm.h"
+#include "core/collection/DynamicArray.h"
 #include "io/Base64.h"
 #include "io/BufferedReadWriteStream.h"
 #include <cJSON.h>
@@ -74,6 +76,15 @@ Json Json::parse(const char *str) {
 
 Json Json::parse(const core::String &str) {
 	return parse(str.c_str());
+}
+
+Json Json::parseStrict(const core::String &str) {
+	const char *end = nullptr;
+	Json value(cJSON_ParseWithLengthOpts(str.c_str(), str.size() + 1, &end, true));
+	if (!value.isValid() || end != str.c_str() + str.size()) {
+		return {};
+	}
+	return value;
 }
 
 bool Json::accept(const char *str) {
@@ -347,6 +358,28 @@ void Json::push(bool val) {
 	cJSON_AddItemToArray(_json, cJSON_CreateBool(val));
 }
 
+void Json::sortKeys() {
+	if (!isArray() && !isObject()) {
+		return;
+	}
+	core::DynamicArray<cJSON *> children;
+	for (cJSON *child = _json->child; child; child = child->next) {
+		Json view(child, false);
+		view.sortKeys();
+		children.push_back(child);
+	}
+	if (!isObject() || children.empty()) {
+		return;
+	}
+	core::sort(children.begin(), children.end(),
+			   [](const cJSON *a, const cJSON *b) { return strcmp(a->string, b->string) < 0; });
+	_json->child = children.front();
+	for (size_t i = 0; i < children.size(); ++i) {
+		children[i]->next = i + 1 < children.size() ? children[i + 1] : nullptr;
+		children[i]->prev = i ? children[i - 1] : children.back();
+	}
+}
+
 int Json::size() const {
 	if (_json == nullptr) {
 		return 0;
@@ -408,8 +441,12 @@ Json Json::Iterator::operator*() const {
 }
 
 core::String Json::Iterator::key() const {
+	return cKey();
+}
+
+const char *Json::Iterator::cKey() const {
 	if (_item != nullptr && _item->string != nullptr) {
-		return core::String(_item->string);
+		return _item->string;
 	}
 	return "";
 }

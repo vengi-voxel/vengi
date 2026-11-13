@@ -219,10 +219,17 @@ public:
 	static bool sysRemoveDir(const core::Path& dir, bool recursive = false) {
 		return sysRemoveDir(dir.str(), recursive);
 	}
+	/** Rename a path as given, replacing an existing file without following its symlink. */
+	static bool sysRenamePath(const core::String &from, const core::String &to);
+	static bool sysRenamePath(const core::Path &from, const core::Path &to) {
+		return sysRenamePath(from.str(), to.str());
+	}
+
 	/**
 	 * @brief This will remove the file without taking the write path into account. BEWARE!
 	 * @param file The full path to the file or relative to the current working dir of your app.
 	 */
+
 	static bool sysRemoveFile(const core::String& file);
 	static bool sysRemoveFile(const core::Path& file) {
 		return sysRemoveFile(file.str());

@@ -29,6 +29,9 @@ core::String treeCacheFile(const core::String &repository, const core::String &b
 
 core::String downloadUrl(const io::ArchivePtr &archive, const core::String &repository, const core::String &branch,
 						 const core::String &path, int size, bool force) {
+	if (core::string::startsWith(path, "https://") || core::string::startsWith(path, "http://")) {
+		return path;
+	}
 	// the git lfs stuff is usually not larger than 150 bytes because it's just a reference
 	if (size < 150) { // TODO: this check is not really good, but it works for now
 		core_assert_msg(!path.empty(), "Path must not be empty (repository: %s, branch: %s)", repository.c_str(), branch.c_str());

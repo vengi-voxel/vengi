@@ -10,6 +10,9 @@
 namespace io {
 namespace Base64 {
 
+/** Check standard alphabet, four-character groups and trailing padding; empty is valid. */
+bool isValid(const core::String &input);
+
 core::String encode(io::ReadStream &stream);
 bool decode(io::WriteStream &stream, const core::String &input);
 bool decode(io::WriteStream &stream, io::ReadStream &input);

@@ -864,7 +864,7 @@ class SDLHapticHandler {
     }
 }
 
-class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, View.OnCapturedPointerListener {
+class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
     protected static final int SDL_PEN_DEVICE_TYPE_UNKNOWN = 0;
     protected static final int SDL_PEN_DEVICE_TYPE_DIRECT = 1;
     protected static final int SDL_PEN_DEVICE_TYPE_INDIRECT = 2;
@@ -979,12 +979,6 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, Vi
     int getPenDeviceType(InputDevice penDevice) {
         return SDL_PEN_DEVICE_TYPE_UNKNOWN;
     }
-
-    @Override
-    public boolean onCapturedPointer(View view, MotionEvent event) {
-        // We can't use captured pointer listener until API 26 or later.
-        return false;
-    }
 }
 
 class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
@@ -1037,7 +1031,7 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
     }
 }
 
-class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
+class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 implements View.OnCapturedPointerListener {
     // Generic Motion (mouse hover, joystick...) events go here
     private boolean mRelativeModeEnabled;
 
@@ -1055,10 +1049,17 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
     public boolean onCapturedPointer(View view, MotionEvent event) {
 
         // Captured Pointer events are *always* relative
-        float x = event.getX();
-        float y = event.getY();
+        float x ,y;
         int buttonState = event.getButtonState();
         int action = event.getActionMasked();
+
+        if (action == MotionEvent.ACTION_SCROLL) {
+            x = event.getAxisValue(MotionEvent.AXIS_HSCROLL);
+            y = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
+        } else {
+            x = event.getX();
+            y = event.getY();
+        }
 
         SDLActivity.onNativeMouse(buttonState, action, x, y, true);
         return true;

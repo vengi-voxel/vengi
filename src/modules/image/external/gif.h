@@ -450,7 +450,7 @@ void GifDitherImage( const uint8_t* lastFrame, const uint8_t* nextFrame, uint8_t
             int32_t bestDiff = 1000000;
             int32_t bestInd = kGifTransIndex;
 
-            // Search the palete
+            // Search the palette
             GifGetClosestPaletteColor(pPal, rr, gg, bb, &bestInd, &bestDiff, 1);
 
             // Write the result to the temp buffer

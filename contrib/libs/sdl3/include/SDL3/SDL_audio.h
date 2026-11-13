@@ -415,6 +415,8 @@ typedef struct SDL_AudioSpec
  * This reports on the size of an audio sample frame: stereo Sint16 data (2
  * channels of 2 bytes each) would be 4 bytes per frame, for example.
  *
+ * This casts the value to unsigned int to avoid implicit sign conversion.
+ *
  * \param x an SDL_AudioSpec to query.
  * \returns the number of bytes used per sample frame.
  *
@@ -422,7 +424,7 @@ typedef struct SDL_AudioSpec
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_AUDIO_FRAMESIZE(x) (SDL_AUDIO_BYTESIZE((x).format) * (x).channels)
+#define SDL_AUDIO_FRAMESIZE(x) (((unsigned int)SDL_AUDIO_BYTESIZE((x).format)) * ((unsigned int)((x).channels)))
 
 /**
  * The opaque handle that represents an audio stream.
@@ -673,6 +675,9 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID
  * The application can hang any data it wants here, but the following
  * properties are understood by SDL:
  *
+ * - `SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING`: a string identifying the
+ *   container for this audio device, if available. This can be compared with
+ *   SDL_PROP_GAMEPAD_CONTAINER_ID_STRING to find associated controllers.
  * - `SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING`: This identifier can be used to
  *   locate a specific device. In optimal conditions, this identifier will not
  *   change between runs of an app, hardware disconnection, and system
@@ -700,7 +705,8 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioDeviceProperties(SDL_AudioDeviceID devid);
 
-#define SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING "SDL.audio.device.unique_id"
+#define SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING   "SDL.audio.device.container_id"
+#define SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING      "SDL.audio.device.unique_id"
 
 
 /**

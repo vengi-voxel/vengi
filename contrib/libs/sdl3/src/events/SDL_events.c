@@ -162,11 +162,15 @@ static struct
 
 
 SDL_Mutex *SDL_event_lock = NULL; // This needs to support recursive locks
+SDL_Mutex *SDL_joystick_lock = NULL; // This needs to support recursive locks
 
 void SDL_CreateEventLock(void)
 {
     if (!SDL_event_lock) {
         SDL_event_lock = SDL_CreateMutex();
+    }
+    if (!SDL_joystick_lock) {
+        SDL_joystick_lock = SDL_CreateMutex();
     }
 }
 
@@ -175,6 +179,10 @@ void SDL_DestroyEventLock(void)
     if (SDL_event_lock) {
         SDL_DestroyMutex(SDL_event_lock);
         SDL_event_lock = NULL;
+    }
+    if (SDL_joystick_lock) {
+        SDL_DestroyMutex(SDL_joystick_lock);
+        SDL_joystick_lock = NULL;
     }
 }
 
@@ -421,13 +429,28 @@ void SDL_FreeTemporaryMemory(void)
     }
 }
 
-#ifndef SDL_JOYSTICK_DISABLED
+#ifdef SDL_JOYSTICK_DISABLED
+
+void SDL_OnUpdateJoysticksChanged(void)
+{
+}
+
+#else
 
 static bool SDL_update_joysticks = true;
 
+void SDL_OnUpdateJoysticksChanged(void)
+{
+    if (SDL_JoystickUpdateThreadRunning() && SDL_GetJoystickAsyncUpdateInterval() >= 0) {
+        SDL_update_joysticks = false;
+    } else {
+        SDL_update_joysticks = SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, true);
+    }
+}
+
 static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_update_joysticks = SDL_GetStringBoolean(hint, true);
+    SDL_OnUpdateJoysticksChanged();
 }
 
 #endif // !SDL_JOYSTICK_DISABLED

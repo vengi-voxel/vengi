@@ -237,6 +237,9 @@ app::AppState IMGUIApp::onConstruct() {
 
 	command::Command::registerCommand("ui_showtextures")
 		.setHandler([&](const command::CommandArgs &args) { _showTexturesDialog = true; });
+	command::Command::registerCommand("ui_commandpalette")
+		.setHandler([&](const command::CommandArgs &args) { showCommandPalette(); })
+		.setHelp(_("Open the command palette"));
 	command::Command::registerCommand("ui_close")
 		.setHandler([&](const command::CommandArgs &args) { _closeModalPopup = true; });
 
@@ -591,6 +594,7 @@ void IMGUIApp::closeTransientDialogs() {
 	_showCommandDialog = false;
 	_showFileDialog = false;
 	_bindingsDialog.reset();
+	_commandPalette.reset();
 }
 
 void IMGUIApp::renderFPSDialog() {
@@ -923,6 +927,8 @@ app::AppState IMGUIApp::onRunning() {
 			renderCommandDialog();
 		}
 
+		_commandPalette.render(_lastExecutedCommand, _console);
+
 		if (_showCvarDialog) {
 			renderCvarDialog();
 		}
@@ -1050,6 +1056,9 @@ app::AppState IMGUIApp::onRunning() {
 
 void IMGUIApp::loadKeymap(int keymap) {
 	_keybindingHandler.registerBinding("escape", "ui_close", "ui");
+	// F1 is the VS Code / Visual Studio shortcut for the command palette and avoids
+	// MagicaVoxel's ctrl+shift+p (nodeduplicate) conflict.
+	_keybindingHandler.registerBinding("f1", "ui_commandpalette", "all");
 }
 
 void IMGUIApp::languageOption() {

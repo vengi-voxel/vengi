@@ -9,6 +9,59 @@ namespace json {
 
 // --- Parse ---
 
+TEST(JsonTest, iteratorBorrowedKeys) {
+	Json object = Json::parseStrict(R"({"name":1,"":2})");
+	Json::Iterator it = object.begin();
+	EXPECT_STREQ("name", it.cKey());
+	EXPECT_EQ(it.key(), it.cKey());
+	++it;
+	EXPECT_STREQ("", it.cKey());
+	++it;
+	EXPECT_STREQ("", it.cKey());
+	Json array = Json::parseStrict("[1]");
+	EXPECT_STREQ("", array.begin().cKey());
+}
+
+TEST(JsonTest, sortKeysRecursivelyPreservesArrayOrderAndViews) {
+	Json value = Json::parseStrict(R"({"z":[{"b":2,"a":1},3,1],"a":{"d":4,"c":3}})");
+	Json borrowed = value.get("z").get(0);
+	value.sortKeys();
+	EXPECT_EQ(R"({"a":{"c":3,"d":4},"z":[{"a":1,"b":2},3,1]})", value.dump());
+	EXPECT_EQ(R"({"a":1,"b":2})", borrowed.dump());
+	value.sortKeys();
+	EXPECT_EQ(R"({"a":{"c":3,"d":4},"z":[{"a":1,"b":2},3,1]})", value.dump());
+	value.set("m", 5);
+	value.get("z").push(7);
+	value.sortKeys();
+	EXPECT_EQ(R"({"a":{"c":3,"d":4},"m":5,"z":[{"a":1,"b":2},3,1,7]})", value.dump());
+	Json empty = Json::object();
+	empty.sortKeys();
+	EXPECT_EQ("{}", empty.dump());
+	Json scalar = Json::parseStrict("42");
+	scalar.sortKeys();
+	EXPECT_EQ(42, scalar.intVal());
+	Json invalid;
+	invalid.sortKeys();
+	EXPECT_FALSE(invalid.isValid());
+}
+
+TEST(JsonTest, parseStrict) {
+	EXPECT_TRUE(Json::parseStrict(" {\"value\": 1} \n\t").isObject());
+	EXPECT_TRUE(Json::parseStrict("[1,true,null]").isArray());
+	EXPECT_EQ(42, Json::parseStrict("42").intVal());
+	EXPECT_TRUE(Json::parseStrict("true").boolVal());
+	EXPECT_TRUE(Json::parseStrict("null").isNull());
+	EXPECT_EQ("text", Json::parseStrict("\"text\"").str());
+	EXPECT_FALSE(Json::parseStrict("").isValid());
+	EXPECT_FALSE(Json::parseStrict("{invalid}").isValid());
+	EXPECT_FALSE(Json::parseStrict("{} trailing").isValid());
+	EXPECT_FALSE(Json::parseStrict("{} {}").isValid());
+	EXPECT_FALSE(Json::parseStrict("true false").isValid());
+	core::String embeddedNull("{}X {}");
+	embeddedNull[2] = '\0';
+	EXPECT_FALSE(Json::parseStrict(embeddedNull).isValid());
+}
+
 TEST(JsonTest, parseValidObject) {
 	Json j = Json::parse(R"({"key":"value"})");
 	ASSERT_TRUE(j.isValid());

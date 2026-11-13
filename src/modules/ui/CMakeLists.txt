@@ -2,6 +2,7 @@ set(LIB ui)
 
 set(SRCS
 	BindingsDialog.cpp BindingsDialog.h
+	CommandPalette.cpp CommandPalette.h
 	FileDialog.cpp FileDialog.h
 	IconsLucide.h
 	IMGUIConsole.cpp IMGUIConsole.h
@@ -95,6 +96,7 @@ set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 if (USE_IMGUITESTENGINE)
 	# use ui_test_engine instead of ui to enable imgui test engine
 	set(TEST_ENGINE_SRCS
+		tests/CommandPaletteTest.cpp
 		tests/FileDialogTest.cpp
 
 		dearimgui/imgui_test_engine/imgui_capture_tool.cpp

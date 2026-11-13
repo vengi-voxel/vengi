@@ -2317,6 +2317,8 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     sdl_sources(
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.h"
+      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_sysfs.c"
+      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_sysfs.h"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_threadprio.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_ubuntu_touch.c"
     )
@@ -2519,14 +2521,6 @@ elseif(WINDOWS OR CYGWIN)
     )
   endif()
 
-  # headers needed elsewhere
-  check_c_source_compiles("
-    #define COBJMACROS
-    #include <windows.gaming.input.h>
-    static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
-    int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
-  )
-
   set(HAVE_GAMEINPUT_H 1)
   sdl_include_directories(PRIVATE SYSTEM "${SDL3_SOURCE_DIR}/src/core/windows/gameinput")
   sdl_sources("${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp")
@@ -2722,7 +2716,6 @@ elseif(WINDOWS OR CYGWIN)
       "${SDL3_SOURCE_DIR}/src/joystick/windows/*.h"
     )
 
-    set(SDL_JOYSTICK_RAWINPUT 1)
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
       sdl_link_dependency(joystick LIBS dinput8)
@@ -2730,9 +2723,6 @@ elseif(WINDOWS OR CYGWIN)
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
       set(HAVE_XINPUT TRUE)
-    endif()
-    if(HAVE_WINDOWS_GAMING_INPUT_H)
-      set(SDL_JOYSTICK_WGI 1)
     endif()
     if(HAVE_GAMEINPUT_H)
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.cpp")
@@ -2770,6 +2760,13 @@ elseif(APPLE)
   # TODO: rework this all for proper macOS, iOS and Darwin support
 
   # !!! FIXME: all the `if(IOS OR TVOS OR VISIONOS)` checks should get merged into one variable, so we're ready for the next platform (or just WatchOS).
+
+  if(MACOS)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/core/macos/*.c"
+      "${SDL3_SOURCE_DIR}/src/core/macos/*.h"
+    )
+  endif()
 
   # We always need these libs on macOS at the moment.
   # !!! FIXME: we need Carbon for some very old API calls in

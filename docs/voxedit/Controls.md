@@ -24,6 +24,10 @@ VoxEdit ships with a built-in `selectiontonewnode` alias (`copy; select none; pa
 
 You can also bind your own [alias](../Configuration.md#aliases) that runs several commands at once (`alias mynode "copy; select none; pastenewnode"`).
 
+## Command palette
+
+Press `f1` (or use **Help -> Command Palette**) to open a VS Code style command palette. Focus starts in the filter field so you can type immediately. The list includes console history and all commands; filter matches names and descriptions. Help text is shown on one line and truncated with an ellipsis. Selecting a command shows its parameter fields (Tab completion where available). Confirm with Enter or **Ok**.
+
 ## Key bindings
 
 ### Contexts

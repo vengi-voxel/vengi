@@ -407,6 +407,8 @@ void SceneRenderer::doUpdateAddNodePreviewMesh() {
 void SceneRenderer::renderScene(voxelrender::RenderContext &renderContext, const video::Camera &camera) {
 	core_trace_scoped(RenderScene);
 	checkMainThread();
+	// UI actions can replace scene data after update(), before this render call.
+	handleCommandBuffer();
 	if (renderContext.sceneGraph == nullptr) {
 		Log::error("No scenegraph given to render");
 		return;

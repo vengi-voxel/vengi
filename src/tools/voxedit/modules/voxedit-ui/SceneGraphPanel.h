@@ -61,16 +61,18 @@ private:
 
 	void registerPopups();
 	void detailView(scenegraph::SceneGraphNode &node);
-	void renderNode(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph,
-							  const DisplayNode &displayNode, command::CommandExecutionListener &listener,
-							  int referencedNodeId);
+	void renderNode(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph, const DisplayNode &displayNode,
+					ModelNodeSettings *modelNodeSettings, command::CommandExecutionListener &listener,
+					int referencedNodeId);
 	void rebuildDisplayList(const scenegraph::SceneGraph &sceneGraph, int nodeId, int depth);
 	void ensureDisplayList(const scenegraph::SceneGraph &sceneGraph);
 
 	// remove nodes from collapsed list to ensure visibility of the given node
 	void makeVisible(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
 
-	void contextMenu(video::Camera& camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener);
+	void prepareNewModelNode(const scenegraph::SceneGraph &sceneGraph, int nodeId, ModelNodeSettings *modelNodeSettings);
+	void contextMenu(video::Camera &camera, const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
+					 ModelNodeSettings *modelNodeSettings, command::CommandExecutionListener &listener);
 public:
 	SceneGraphPanel(ui::IMGUIApp *app, const SceneManagerPtr &sceneMgr) : Super(app, "scenegraph"), _sceneMgr(sceneMgr) {
 	}

@@ -162,6 +162,18 @@ core::String Filesystem::sysSpecialDir(FilesystemDirectories dir) const {
 	return _state._directories[dir];
 }
 
+bool Filesystem::sysRenamePath(const core::String &from, const core::String &to) {
+	if (from.empty() || to.empty()) {
+		Log::error("Can't rename path: No source or destination given");
+		return false;
+	}
+	if (!SDL_RenamePath(from.c_str(), to.c_str())) {
+		Log::error("Failed to rename %s to %s: %s", from.c_str(), to.c_str(), SDL_GetError());
+		return false;
+	}
+	return true;
+}
+
 bool Filesystem::sysRemoveFile(const core::String &file) {
 	if (file.empty()) {
 		Log::error("Can't delete file: No path given");
