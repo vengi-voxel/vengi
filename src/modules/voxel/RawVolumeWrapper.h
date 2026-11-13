@@ -159,6 +159,10 @@ public:
 		}
 	}
 
+	inline const Voxel &borderValue() const {
+		return _volume->borderValue();
+	}
+
 	inline const Region& region() const {
 		return _region;
 	}
@@ -184,8 +188,8 @@ public:
 	}
 
 	/**
-	 * @return @c false if the voxel was not placed because the given position is outside of the valid region, @c
-	 * true if the voxel was placed in the region.
+	 * @return @c false if the position is outside the valid region or allocation fails.
+	 * Returns @c true if the requested value was written or was already present.
 	 * @note The return values have a different meaning as for the wrapped RawVolume.
 	 * @note You should never use this directly - but just with a sampler
 	 */
@@ -196,8 +200,9 @@ public:
 		}
 		if (_volume->setVoxel(p, voxel)) {
 			addToDirtyRegion(p);
+			return true;
 		}
-		return true;
+		return _volume->voxel(p) == voxel;
 	}
 };
 

@@ -61,6 +61,8 @@ TEST(RawVolumeAllocationFailureTest, CopyConstructorsDoNotReturnPartialVolumes) 
 			ASSERT_TRUE(restored);
 			EXPECT_EQ(-1, remainingChunks);
 			EXPECT_FALSE(copy->valid());
+			EXPECT_FALSE(copy->move(glm::ivec3(0)));
+			EXPECT_FALSE(copy->move(glm::ivec3(1)));
 			EXPECT_EQ(nullptr, copy->voxels());
 			EXPECT_EQ(nullptr, copy->data());
 			EXPECT_EQ(nullptr, copy->copyVoxels());
@@ -73,6 +75,180 @@ TEST(RawVolumeAllocationFailureTest, CopyConstructorsDoNotReturnPartialVolumes) 
 			EXPECT_EQ(allocated, source.allocatedBytes());
 		}
 	}
+}
+
+
+// No application workers may run while the SDL memory callbacks are replaced.
+TEST(RawVolumeAllocationFailureTest, WrappersReportFailedWrites) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	static SDL_malloc_func originalMalloc;
+	static bool failChunk;
+	SDL_calloc_func originalCalloc;
+	SDL_realloc_func originalRealloc;
+	SDL_free_func originalFree;
+	SDL_GetMemoryFunctions(&originalMalloc, &originalCalloc, &originalRealloc, &originalFree);
+	const auto failingMalloc = [](size_t bytes) -> void * {
+		if (failChunk && bytes == 32u * 32u * 32u * sizeof(Voxel)) {
+			failChunk = false;
+			return nullptr;
+		}
+		return originalMalloc(bytes);
+	};
+	const Voxel value(VoxelType::Generic, 7);
+	for (int mode = 0; mode < 6; ++mode) {
+		SCOPED_TRACE(mode);
+		RawVolume::setChunkedStorageThreshold(1);
+		RawVolume volume(Region(0, 64));
+		RawVolume::setChunkedStorageThreshold(previous);
+		RawVolumeWrapper wrapper(&volume);
+		RawVolumeMoveWrapper moving(&volume);
+		RawVolumeWrapper::Sampler sampler(wrapper);
+		RawVolumeMoveWrapper::Sampler movingSampler(moving);
+		const bool outside = mode == 2 || mode == 4;
+		const glm::ivec3 requested(outside ? -1 : 0);
+		const glm::ivec3 actual = outside ? volume.region().moveInto(requested.x, requested.y, requested.z) : requested;
+		sampler.setPosition(0, 0, 0);
+		movingSampler.setPosition(requested);
+		const auto write = [&](const Voxel &voxel) {
+			if (mode == 0) {
+				return wrapper.setVoxel(requested, voxel);
+			}
+			if (mode == 1 || mode == 2) {
+				return moving.setVoxel(requested, voxel);
+			}
+			return mode == 5 ? sampler.setVoxel(voxel) : movingSampler.setVoxel(voxel);
+		};
+		const size_t before = volume.allocatedBytes();
+		// Direct setters accept an unchanged value without allocating a payload.
+		if (mode <= 2) {
+			EXPECT_TRUE(write(Voxel()));
+			EXPECT_EQ(before, volume.allocatedBytes());
+			EXPECT_FALSE(wrapper.dirtyRegion().isValid());
+		}
+		failChunk = true;
+		const bool installed = SDL_SetMemoryFunctions(failingMalloc, originalCalloc, originalRealloc, originalFree);
+		const bool written = write(value);
+		const bool restored = SDL_SetMemoryFunctions(originalMalloc, originalCalloc, originalRealloc, originalFree);
+		ASSERT_TRUE(installed);
+		ASSERT_TRUE(restored);
+		EXPECT_FALSE(failChunk);
+		EXPECT_FALSE(written);
+		EXPECT_EQ(Voxel(), volume.voxel(actual));
+		EXPECT_EQ(before, volume.allocatedBytes());
+		sampler.flush();
+		EXPECT_FALSE(wrapper.dirtyRegion().isValid());
+		EXPECT_TRUE(write(value));
+		EXPECT_EQ(value, volume.voxel(actual));
+		if (mode <= 2) {
+			EXPECT_TRUE(write(value));
+		}
+		if (mode == 0) {
+			EXPECT_EQ(Region(actual, actual), wrapper.dirtyRegion());
+		}
+	}
+}
+
+TEST_F(RawVolumeChunkTest, DenseAndChunkedQueriesAtCoordinateLimits) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	for (int threshold : {1, 256}) {
+		RawVolume::setChunkedStorageThreshold(threshold);
+		for (int origin : {INT_MIN, 0, INT_MAX - 2}) {
+			RawVolume source(Region(origin, origin + 2));
+			const Region selected(origin + 1, origin + 2);
+			const Voxel value(VoxelType::Generic, 7);
+			source.fill(value);
+			RawVolume copy(source, selected);
+			RawVolume target(selected);
+			EXPECT_TRUE(target.copyInto(source, selected));
+			EXPECT_EQ(value, target.voxel(origin + 2, origin + 2, origin + 2));
+			EXPECT_EQ(value, copy.voxel(origin + 2, origin + 2, origin + 2));
+			EXPECT_FALSE(source.isEmpty(selected));
+			source.setFlags(selected, FlagOutline);
+			EXPECT_TRUE(source.hasFlags(selected, FlagOutline));
+			EXPECT_EQ(selected, source.regionForFlag(FlagOutline));
+			source.toggleFlags(selected, FlagOutline);
+			EXPECT_FALSE(source.hasFlags(selected, FlagOutline));
+			source.setFlags(selected, FlagOutline);
+			source.removeFlags(selected, FlagOutline);
+			EXPECT_FALSE(source.hasFlags(selected, FlagOutline));
+			source.clear();
+			EXPECT_TRUE(source.isEmpty(selected));
+		}
+	}
+	RawVolume::setChunkedStorageThreshold(previous);
+}
+
+TEST_F(RawVolumeChunkTest, SamplerNeighborsAtCoordinateLimits) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	for (int threshold : {1, 256}) {
+		RawVolume::setChunkedStorageThreshold(threshold);
+		for (int origin : {INT_MIN, 0, INT_MAX - 2}) {
+			RawVolume volume(Region(origin, origin + 2));
+			const Voxel inside(VoxelType::Generic, 7);
+			const Voxel border(VoxelType::Generic, 9);
+			volume.setBorderValue(border);
+			// Leave chunks absent for one pass to exercise both fallback states.
+			for (bool populated : {false, true}) {
+				if (populated) {
+					volume.setVoxel(origin, origin, origin, inside);
+					volume.fill(inside);
+				}
+				const auto checkSampler = [&](auto &sampler) {
+					for (int cell = 0; cell < 3; ++cell) {
+						const int coord = origin + cell;
+						EXPECT_TRUE(sampler.setPosition(coord, coord, coord));
+						const Voxel neighbors[] = {
+						sampler.peekVoxel1nx1ny1nz(),
+						sampler.peekVoxel1nx1ny0pz(),
+						sampler.peekVoxel1nx1ny1pz(),
+						sampler.peekVoxel1nx0py1nz(),
+						sampler.peekVoxel1nx0py0pz(),
+						sampler.peekVoxel1nx0py1pz(),
+						sampler.peekVoxel1nx1py1nz(),
+						sampler.peekVoxel1nx1py0pz(),
+						sampler.peekVoxel1nx1py1pz(),
+						sampler.peekVoxel0px1ny1nz(),
+						sampler.peekVoxel0px1ny0pz(),
+						sampler.peekVoxel0px1ny1pz(),
+						sampler.peekVoxel0px0py1nz(),
+						sampler.peekVoxel0px0py0pz(),
+						sampler.peekVoxel0px0py1pz(),
+						sampler.peekVoxel0px1py1nz(),
+						sampler.peekVoxel0px1py0pz(),
+						sampler.peekVoxel0px1py1pz(),
+						sampler.peekVoxel1px1ny1nz(),
+						sampler.peekVoxel1px1ny0pz(),
+						sampler.peekVoxel1px1ny1pz(),
+						sampler.peekVoxel1px0py1nz(),
+						sampler.peekVoxel1px0py0pz(),
+						sampler.peekVoxel1px0py1pz(),
+						sampler.peekVoxel1px1py1nz(),
+						sampler.peekVoxel1px1py0pz(),
+						sampler.peekVoxel1px1py1pz()};
+						int index = 0;
+						for (int x = -1; x <= 1; ++x) {
+							for (int y = -1; y <= 1; ++y) {
+								for (int z = -1; z <= 1; ++z) {
+									const bool outside = cell + x < 0 || cell + x > 2 || cell + y < 0 ||
+										cell + y > 2 || cell + z < 0 || cell + z > 2;
+									EXPECT_EQ(outside ? border : populated ? inside : Voxel(), neighbors[index++]);
+								}
+							}
+						}
+					}
+				};
+				RawVolume::Sampler sampler(volume);
+				checkSampler(sampler);
+				RawVolumeWrapper wrapper(&volume);
+				RawVolumeWrapper::Sampler wrapped(wrapper);
+				checkSampler(wrapped);
+				RawVolumeMoveWrapper moveWrapper(&volume);
+				RawVolumeMoveWrapper::Sampler moved(moveWrapper);
+				checkSampler(moved);
+			}
+		}
+	}
+	RawVolume::setChunkedStorageThreshold(previous);
 }
 
 TEST_F(RawVolumeChunkTest, QueriesAtMinimumCoordinate) {

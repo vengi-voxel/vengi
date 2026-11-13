@@ -229,11 +229,13 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		const int lineLength = tgtMaxs.x - tgtMins.x + 1;
 		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
 
-		for (int z = tgtMins.z; z <= tgtMaxs.z; ++z) {
+		for (int dz = 0; dz < _region.getDepthInVoxels(); ++dz) {
+			const int z = tgtMins.z + dz;
 			const int64_t tgtZPos = z - tgtMins.z;
 			const int64_t srcZPos = z - srcMins.z;
 
-			for (int y = tgtMins.y; y <= tgtMaxs.y; ++y) {
+			for (int dy = 0; dy < _region.getHeightInVoxels(); ++dy) {
+				const int y = tgtMins.y + dy;
 				const int64_t tgtYPos = y - tgtMins.y;
 				const int64_t srcYPos = y - srcMins.y;
 
@@ -337,12 +339,13 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	const int64_t zStride = (int64_t)width * height;
 	const int xStart = r.getLowerX() - _region.getLowerX();
 	const glm::ivec3 &mins = r.getLowerCorner();
-	const glm::ivec3 &maxs = r.getUpperCorner();
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + yPos * yStride;
 			if (scanFlagsLinear(_data + baseIndex, scanWidth, flagsMask)) {
@@ -519,10 +522,12 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
@@ -583,10 +588,12 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
@@ -647,10 +654,12 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 	const int64_t xStart = mins.x - _region.getLowerX();
 	const int lineLength = maxs.x - mins.x + 1;
 
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 
@@ -709,10 +718,12 @@ bool RawVolume::isEmpty(const Region &region) const {
 	const int lineLength = maxs.x - mins.x + 1;
 	const int voxelLineSize = sizeof(voxel::Voxel) * lineLength;
 	const int64_t xStart = (mins.x - _region.getLowerX());
-	for (int z = mins.z; z <= maxs.z; ++z) {
+	for (int dz = 0; dz < r.getDepthInVoxels(); ++dz) {
+		const int z = mins.z + dz;
 		const int64_t zPos = z - _region.getLowerZ();
 		const int64_t zBase = zPos * zStride + xStart;
-		for (int y = mins.y; y <= maxs.y; ++y) {
+		for (int dy = 0; dy < r.getHeightInVoxels(); ++dy) {
+			const int y = mins.y + dy;
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
 			const voxel::Voxel* dataLine = &_data[baseIndex];
@@ -777,7 +788,7 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 		return true;
 	}
 
-	app::for_parallel(srcRegion.getLowerZ(), srcRegion.getUpperZ() + 1, [&src, this, srcRegion](int start, int end) {
+	app::for_parallel(0, srcRegion.getDepthInVoxels(), [&src, this, srcRegion](int start, int end) {
 		const glm::ivec3 &mins = srcRegion.getLowerCorner();
 		const glm::ivec3 &maxs = srcRegion.getUpperCorner();
 		const voxel::Region &fullSrcRegion = src.region();
@@ -795,18 +806,20 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 		const int64_t srcYStride = srcWidth;
 		const int64_t srcZStride = srcWidth * srcHeight;
 		const int64_t tgtXOffset = mins.x - _region.getLowerX();
+		const int64_t tgtYOffset = mins.y - _region.getLowerY();
+		const int64_t tgtZOffset = mins.z - _region.getLowerZ();
 
 		const int lineLength = maxs.x - mins.x + 1;
 		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
 		for (int z = start; z < end; ++z) {
-			const int64_t tgtZPos = z - _region.getLowerZ();
-			const int64_t srcZPos = srcZOffset + z - mins.z;
+			const int64_t tgtZPos = tgtZOffset + z;
+			const int64_t srcZPos = srcZOffset + z;
 			const int64_t srcXZBaseIndex = srcXOffset + srcZPos * srcZStride;
 			const int64_t tgtXZBaseIndex = tgtZPos * tgtZStride + tgtXOffset;
 
-			for (int y = mins.y; y <= maxs.y; ++y) {
-				const int64_t tgtYPos = y - _region.getLowerY();
-				const int64_t srcYPos = srcYOffset + y - mins.y;
+			for (int y = 0; y < srcRegion.getHeightInVoxels(); ++y) {
+				const int64_t tgtYPos = tgtYOffset + y;
+				const int64_t srcYPos = srcYOffset + y;
 
 				const int64_t tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
 				const int64_t srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
@@ -857,11 +870,11 @@ RawVolume::~RawVolume() {
 }
 
 bool RawVolume::move(const glm::ivec3 &shift) {
+	if (!valid()) {
+		return false;
+	}
 	if (_storage) {
 		return _storage->move(shift);
-	}
-	if (_data == nullptr) {
-		return false;
 	}
 	const int w = width();
 	const int h = height();
