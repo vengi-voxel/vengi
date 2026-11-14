@@ -281,6 +281,7 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	copyRegion.cropTo(mementoData.dataRegion());
 	if (!volume->copyInto(*v, copyRegion)) {
 		Log::error("Failed to copy memento volume region into target volume");
+		return false;
 	}
 	return true;
 }
