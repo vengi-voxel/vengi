@@ -18,6 +18,7 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Voxel.h"
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
@@ -403,83 +404,86 @@ void SlicePanel::drawView(SliceView view, scenegraph::SceneGraphNode &node, cons
 		voxel::Voxel *cells = &_sliceCells[0];
 		uint8_t *state = &_sliceState[0];
 
-		const voxel::Voxel *data = volume.voxels();
-		const bool preview = _gizmoPreview != nullptr;
-		const int64_t strides[3] = {1, (int64_t)volume.width(), region.stride()};
-		glm::ivec3 start(0);
-		start[depthAxis] = _slices[i];
-		start[aAxis] = minA;
-		start[bAxis] = minB;
-		const int64_t row0 = region.index(start);
-		for (int b = 0; b < bCount; ++b) {
-			int64_t idx = row0 + (int64_t)b * strides[bAxis];
-			glm::ivec3 pos = start;
-			pos[bAxis] = minB + b;
-			for (int a = 0; a < aCount; ++a, idx += strides[aAxis]) {
-				voxel::Voxel voxel = data[idx];
-				if (preview) {
-					pos[aAxis] = minA + a;
-					if (_gizmoPreview->region().containsPoint(pos)) {
-						voxel = _gizmoPreview->voxel(pos);
+		const voxel::VolumeDataAccessor accessor(volume);
+		if (accessor.valid()) {
+			const voxel::Voxel *data = accessor.voxels();
+			const bool preview = _gizmoPreview != nullptr;
+			const int64_t strides[3] = {1, (int64_t)volume.width(), region.stride()};
+			glm::ivec3 start(0);
+			start[depthAxis] = _slices[i];
+			start[aAxis] = minA;
+			start[bAxis] = minB;
+			const int64_t row0 = region.index(start);
+			for (int b = 0; b < bCount; ++b) {
+				int64_t idx = row0 + (int64_t)b * strides[bAxis];
+				glm::ivec3 pos = start;
+				pos[bAxis] = minB + b;
+				for (int a = 0; a < aCount; ++a, idx += strides[aAxis]) {
+					voxel::Voxel voxel = data[idx];
+					if (preview) {
+						pos[aAxis] = minA + a;
+						if (_gizmoPreview->region().containsPoint(pos)) {
+							voxel = _gizmoPreview->voxel(pos);
+						}
+					}
+					const int cellIndex = b * aCount + a;
+					cells[cellIndex] = voxel;
+					if (!voxel::isAir(voxel.getMaterial())) {
+						state[cellIndex] = (voxel.getFlags() & voxel::FlagOutline) ? 2 : 1;
 					}
 				}
-				const int cellIndex = b * aCount + a;
-				cells[cellIndex] = voxel;
-				if (!voxel::isAir(voxel.getMaterial())) {
-					state[cellIndex] = (voxel.getFlags() & voxel::FlagOutline) ? 2 : 1;
-				}
 			}
-		}
-		if (_background) {
-			volume.fillBehindPlane(DepthAxis[i], _slices[i], minA, maxA, minB, maxB, cells);
-		}
+			if (_background) {
+				volume.fillBehindPlane(DepthAxis[i], _slices[i], minA, maxA, minB, maxB, cells);
+			}
 
-		const palette::Palette &palette = node.palette();
-		if (palette.hash() != _lastPaletteHash) {
-			for (int paletteIdx = 0; paletteIdx < palette::PaletteMaxColors; ++paletteIdx) {
-				const color::RGBA color = palette.color((uint8_t)paletteIdx);
-				const ImU32 rgb = IM_COL32(color.r, color.g, color.b, 0);
-				_fgLut[paletteIdx] = rgb | foregroundAlpha;
-				_bgLut[paletteIdx] = rgb | backgroundAlpha;
-			}
-			_lastPaletteHash = palette.hash();
-		}
-		draw->PrimReserve(cellCount * 6, cellCount * 4);
-		int emitted = 0;
-		for (int v = 0; v < visH; ++v) {
-			for (int u = 0; u < visW; ++u) {
-				int a;
-				int b;
-				viewUVToPlane(view, u, v, visW, visH, a, b);
-				const int cellIndex = b * aCount + a;
-				const voxel::Voxel &voxel = cells[cellIndex];
-				if (voxel::isAir(voxel.getMaterial())) {
-					continue;
+			const palette::Palette &palette = node.palette();
+			if (palette.hash() != _lastPaletteHash) {
+				for (int paletteIdx = 0; paletteIdx < palette::PaletteMaxColors; ++paletteIdx) {
+					const color::RGBA color = palette.color((uint8_t)paletteIdx);
+					const ImU32 rgb = IM_COL32(color.r, color.g, color.b, 0);
+					_fgLut[paletteIdx] = rgb | foregroundAlpha;
+					_bgLut[paletteIdx] = rgb | backgroundAlpha;
 				}
-				const ImU32 fill = state[cellIndex] != 0 ? _fgLut[voxel.getColor()] : _bgLut[voxel.getColor()];
-				if ((fill & IM_COL32_A_MASK) == 0) {
-					continue;
-				}
-				const float x = origin.x + (float)(firstU + u) * cell;
-				const float y = origin.y + (float)(firstV + v) * cell;
-				draw->PrimRect(ImVec2(x + fillInset, y + fillInset), ImVec2(x + cell - fillInset, y + cell - fillInset),
-							   fill);
-				++emitted;
+				_lastPaletteHash = palette.hash();
 			}
-		}
-		draw->PrimUnreserve((cellCount - emitted) * 6, (cellCount - emitted) * 4);
+			draw->PrimReserve(cellCount * 6, cellCount * 4);
+			int emitted = 0;
+			for (int v = 0; v < visH; ++v) {
+				for (int u = 0; u < visW; ++u) {
+					int a;
+					int b;
+					viewUVToPlane(view, u, v, visW, visH, a, b);
+					const int cellIndex = b * aCount + a;
+					const voxel::Voxel &voxel = cells[cellIndex];
+					if (voxel::isAir(voxel.getMaterial())) {
+						continue;
+					}
+					const ImU32 fill = state[cellIndex] != 0 ? _fgLut[voxel.getColor()] : _bgLut[voxel.getColor()];
+					if ((fill & IM_COL32_A_MASK) == 0) {
+						continue;
+					}
+					const float x = origin.x + (float)(firstU + u) * cell;
+					const float y = origin.y + (float)(firstV + v) * cell;
+					draw->PrimRect(ImVec2(x + fillInset, y + fillInset),
+								   ImVec2(x + cell - fillInset, y + cell - fillInset), fill);
+					++emitted;
+				}
+			}
+			draw->PrimUnreserve((cellCount - emitted) * 6, (cellCount - emitted) * 4);
 
-		for (int v = 0; v < visH; ++v) {
-			for (int u = 0; u < visW; ++u) {
-				int a;
-				int b;
-				viewUVToPlane(view, u, v, visW, visH, a, b);
-				if (state[b * aCount + a] != 2) {
-					continue;
+			for (int v = 0; v < visH; ++v) {
+				for (int u = 0; u < visW; ++u) {
+					int a;
+					int b;
+					viewUVToPlane(view, u, v, visW, visH, a, b);
+					if (state[b * aCount + a] != 2) {
+						continue;
+					}
+					const float x = origin.x + (float)(firstU + u) * cell;
+					const float y = origin.y + (float)(firstV + v) * cell;
+					draw->AddRect(ImVec2(x, y), ImVec2(x + cell, y + cell), selectionColor, 0.0f, selectionThickness);
 				}
-				const float x = origin.x + (float)(firstU + u) * cell;
-				const float y = origin.y + (float)(firstV + v) * cell;
-				draw->AddRect(ImVec2(x, y), ImVec2(x + cell, y + cell), selectionColor, 0.0f, selectionThickness);
 			}
 		}
 	}

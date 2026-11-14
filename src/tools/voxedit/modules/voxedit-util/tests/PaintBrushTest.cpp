@@ -11,6 +11,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/common.hpp>
@@ -439,7 +440,11 @@ TEST_F(PaintBrushTest, testPaletteChangingModesMatchSerialEvaluation) {
 		brush.generate(scene, actualOutput, input, region);
 		EXPECT_GT(expected.palette().colorCount(), palette.colorCount());
 		EXPECT_EQ(expected.palette().hash(), actual.palette().hash());
-		EXPECT_EQ(0, core_memcmp(expected.volume()->data(), actual.volume()->data(), voxel::RawVolume::size(region)));
+		const voxel::VolumeDataAccessor expectedData(*expected.volume());
+		const voxel::VolumeDataAccessor actualData(*actual.volume());
+		ASSERT_TRUE(expectedData.valid());
+		ASSERT_TRUE(actualData.valid());
+		EXPECT_EQ(0, core_memcmp(expectedData.data(), actualData.data(), voxel::RawVolume::size(region)));
 		EXPECT_EQ(region, actualOutput.dirtyRegion());
 	}
 }

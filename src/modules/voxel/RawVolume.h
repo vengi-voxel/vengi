@@ -9,16 +9,29 @@
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "VolumeSampler.h"
+#include "private/LinearVolumeStorage.h"
 #include <glm/ext/vector_int3.hpp>
 
 namespace voxel {
 
+class VolumeDataAccessor;
+
 /**
- * Simple volume implementation which stores data in a single large 3D array.
+ * Volume facade over a storage backend (currently @c LinearVolumeStorage).
+ *
+ * Voxel access goes through storage; samplers bind contiguous windows via
+ * @c sampleData. Swapping in a chunked/disk-backed storage means replacing the
+ * storage type and implementing the same voxel/setVoxel/sampleData/layout ops
+ * without changing VolumeSampler.
+ *
+ * Prefer @c VolumeDataAccessor for dense region reads outside the sampler path.
  */
 class RawVolume {
 private:
 	friend class RawVolumeView;
+	friend class VolumeDataAccessor;
+	friend class RawVolumeWrapper;
+	friend class RawVolumeMoveWrapper;
 public:
 	class Sampler : public VolumeSampler<RawVolume> {
 	private:
@@ -44,6 +57,7 @@ public:
 	RawVolume(const RawVolume *copy);
 	RawVolume(const RawVolume &copy);
 	RawVolume(RawVolume &&move) noexcept;
+	RawVolume &operator=(RawVolume &&move) noexcept;
 	RawVolume(const RawVolume &copy, const Region &region, bool *onlyAir = nullptr);
 	RawVolume(const RawVolume &copy, const core::Buffer<Region> &regions);
 
@@ -141,14 +155,21 @@ public:
 	/**
 	 * Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
 	 */
-	const Voxel &voxel(int32_t x, int32_t y, int32_t z) const;
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS const Voxel &voxel(int32_t x, int32_t y, int32_t z) const {
+		if (_region.containsPoint(x, y, z)) {
+			return _storage->voxel({x - _region.getLowerX(), y - _region.getLowerY(), z - _region.getLowerZ()});
+		}
+		return _borderVoxel;
+	}
 	/**
 	 * @brief This version of the function is provided so that the wrap mode does not need
 	 * to be specified as a template parameter, as it may be confusing to some users.
 	 * @param pos The 3D position of the voxel
 	 * @return The voxel value
 	 */
-	CORE_NO_SANITIZE_ADDRESS inline const Voxel &voxel(const glm::ivec3 &pos) const;
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS const Voxel &voxel(const glm::ivec3 &pos) const {
+		return voxel(pos.x, pos.y, pos.z);
+	}
 
 	/**
 	 * Sets the value used for voxels which are outside the volume
@@ -157,34 +178,48 @@ public:
 	/**
 	 * Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
 	 */
-	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel);
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel) {
+		return setVoxel(glm::ivec3(x, y, z), voxel);
+	}
 	/**
 	 * Sets the voxel at the position given by a 3D vector
 	 */
-	CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
-	CORE_NO_SANITIZE_ADDRESS void setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel);
-	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int64_t idx, const Voxel &voxel);
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
+		if (core_unlikely(!_region.containsPoint(pos))) {
+			return false;
+		}
+		return _storage->setVoxel(pos - _region.getLowerCorner(), voxel);
+	}
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(int64_t idx, const Voxel &voxel) {
+		return _storage->setVoxel(idx, voxel);
+	}
 
 	void clear();
 	void fill(const voxel::Voxel &voxel);
-
-	// TODO: we should not rely on this data to be a linear array.
-	//       We might add chunks to the RawVolume to reduce the memory
-	//       usage for big volumes that are empty - and in that case
-	//       the data is no longer linear.
-	inline const uint8_t *data() const {
-		return (const uint8_t *)voxels();
-	}
-
-	inline Voxel *voxels() const {
-		return _data;
-	}
 
 	/** Allocated voxel payload in bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;
 
 	/** True if the volume has allocated storage. */
 	bool valid() const;
+
+	CORE_FORCE_INLINE Voxel *writableVoxel(const glm::ivec3 &pos) {
+		return _storage->writableVoxel(pos - _region.getLowerCorner());
+	}
+	/**
+	 * @brief Point the sampler at a contiguous storage span covering @p pos.
+	 *
+	 * On return @p dataLower/@p dataUpper are world coordinates of the span
+	 * bounds and @p yStride/@p zStride are element strides within that buffer.
+	 */
+	CORE_FORCE_INLINE Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper,
+										int64_t &yStride, int64_t &zStride) const {
+		Voxel *data = _storage->sampleData(pos - _region.getLowerCorner(), dataLower, dataUpper, yStride, zStride);
+		const glm::ivec3 &lower = _region.getLowerCorner();
+		dataLower += lower;
+		dataUpper += lower;
+		return data;
+	}
 
 	/**
 	 * @brief Shift the region of the volume by the given coordinates
@@ -207,7 +242,7 @@ public:
 	Region regionForFlag(uint8_t flag) const;
 
 private:
-	void initialise(const Region &region);
+	void initialise(const Region &region, bool clear = true);
 
 	/** The size of the volume */
 	Region _region;
@@ -215,8 +250,8 @@ private:
 	/** The border value */
 	Voxel _borderVoxel;
 
-	/** The voxel data */
-	Voxel *_data;
+	/** Voxel payload storage (owned; never null after construction). */
+	LinearVolumeStorage *_storage = nullptr;
 };
 
 inline const Region &RawVolume::region() const {
@@ -237,10 +272,6 @@ inline int32_t RawVolume::height() const {
 
 inline int32_t RawVolume::depth() const {
 	return _region.getDepthInVoxels();
-}
-
-inline const Voxel &RawVolume::voxel(const glm::ivec3 &pos) const {
-	return voxel(pos.x, pos.y, pos.z);
 }
 
 } // namespace voxel

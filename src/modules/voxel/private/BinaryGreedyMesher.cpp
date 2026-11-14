@@ -44,6 +44,7 @@ SOFTWARE.
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
 #include <stdint.h>
@@ -744,13 +745,14 @@ void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &
 	const voxel::Region copyRegion(chunkPos, chunkPos + glm::ivec3(CS_P - 1));
 	voxel::RawVolume copy(copyRegion);
 	copy.copyInto(*volData, copyRegion);
+	VolumeDataAccessor accessor(copy);
 	if (!preserveVoxelNormals) {
-		Voxel *voxels = copy.voxels();
+		Voxel *voxels = accessor.voxels();
 		for (int i = 0; i < CS_P * CS_P * CS_P; ++i) {
 			voxels[i].setNormal(NO_NORMAL);
 		}
 	}
-	VoxelData voxels = copy.voxels();
+	VoxelData voxels = accessor.voxels();
 
 	// Extract opaque geometry (MeshType = 0)
 	extractBinaryGreedyMeshType<0>(translate, ambientOcclusion, voxels, result->mesh[0]);

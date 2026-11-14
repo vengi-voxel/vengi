@@ -30,12 +30,12 @@ static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object
 		return;
 	}
 	if (voxel::isAir(voxel.getMaterial())) {
-		volume.setVoxelUnsafe(position, priv::visited);
+		volume.setVoxel(position, priv::visited);
 		return;
 	}
 
 	object.setVoxel(position, voxel);
-	volume.setVoxelUnsafe(position, priv::visited);
+	volume.setVoxel(position, priv::visited);
 
 	switch (connectivity) {
 	case voxel::Connectivity::TwentySixConnected:
@@ -74,7 +74,7 @@ core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *volume, Vi
 		}
 		const glm::ivec3 position(x, y, z);
 		if (voxel::isAir(voxel.getMaterial())) {
-			copy.setVoxelUnsafe(position, priv::visited);
+			copy.setVoxel(position, priv::visited);
 			return;
 		}
 

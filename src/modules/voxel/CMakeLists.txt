@@ -1,5 +1,6 @@
 set(LIB voxel)
 set(SRCS
+	private/LinearVolumeStorage.h private/LinearVolumeStorage.cpp
 	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
@@ -28,6 +29,7 @@ set(SRCS
 	ConcurrentSparseVolume.h ConcurrentSparseVolume.cpp
 	SparseVolume.h SparseVolume.cpp
 	VolumeData.h
+	VolumeDataAccessor.h VolumeDataAccessor.cpp
 	VolumeSampler.h
 	VolumeSamplerUtil.h
 	VolumeCompression.h VolumeCompression.cpp
@@ -51,6 +53,8 @@ set(TEST_SRCS
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp
 	tests/RawVolumeViewTest.cpp
+	tests/LinearVolumeStorageTest.cpp
+	tests/VolumeDataAccessorTest.cpp
 	tests/RegionTest.cpp
 	tests/ConcurrentSparseVolumeTest.cpp
 	tests/SparseVolumeTest.cpp
@@ -69,6 +73,7 @@ gtest_suite_end(tests-${LIB})
 if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
 		benchmarks/MeshStateBenchmark.cpp
+		benchmarks/VolumeDataAccessorBenchmark.cpp
 		benchmarks/RawVolumeBenchmark.cpp
 		benchmarks/RawVolumeMoveWrapperBenchmark.cpp
 		benchmarks/RawVolumeWrapperBenchmark.cpp

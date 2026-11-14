@@ -14,6 +14,7 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/FormatConfig.h"
 #include <glm/geometric.hpp>
+#include <limits.h>
 
 namespace voxel {
 
@@ -28,7 +29,7 @@ protected:
 TEST_F(TextureSurfaceExtractorTest, testChunkedExtractionDoesNotMaterialize) {
 	RawVolume volume(Region(-40, 216));
 	RawVolume dense(Region(-40, 216));
-	ASSERT_NE(nullptr, dense.voxels());
+	ASSERT_TRUE(dense.valid());
 	const Region extracted(-10, -5);
 	const Voxel value(VoxelType::Generic, 2);
 	volume.setVoxel(-9, -8, -7, value);
@@ -60,6 +61,55 @@ TEST_F(TextureSurfaceExtractorTest, testAccessorIncludesNeighbourOutsideExtracti
 	extractSurface(ctx);
 	EXPECT_EQ(30u, mesh.mesh[0].getNoOfIndices());
 	EXPECT_EQ(bytes, volume.allocatedBytes());
+}
+
+TEST_F(TextureSurfaceExtractorTest, testExtractionAtCoordinateLimits) {
+	const int origins[] = {INT_MIN, INT_MAX - 1};
+	for (const int origin : origins) {
+		const Region region(origin, origin + 1);
+		RawVolume volume(region);
+		ASSERT_TRUE(volume.valid());
+		const Voxel value(VoxelType::Generic, 2);
+		volume.setVoxel(region.getLowerCorner(), value);
+		volume.setVoxel(region.getUpperCorner(), value);
+		const size_t allocated = volume.allocatedBytes();
+		palette::Palette palette;
+		palette.nippon();
+		ChunkMesh mesh;
+		auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, glm::ivec3(0));
+		extractSurface(ctx);
+		EXPECT_EQ(72u, mesh.mesh[0].getNoOfIndices());
+		EXPECT_FALSE(ctx.textureData.empty());
+		EXPECT_EQ(allocated, volume.allocatedBytes());
+	}
+}
+
+TEST_F(TextureSurfaceExtractorTest, testExtractionFarOutsideSourceIsEmpty) {
+	RawVolume volume(Region(0, 1));
+	volume.fill(Voxel(VoxelType::Generic, 2));
+	palette::Palette palette;
+	palette.nippon();
+	const int origins[] = {INT_MIN, INT_MAX - 1};
+	for (const int origin : origins) {
+		ChunkMesh mesh;
+		const Region extracted(origin, origin + 1);
+		auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+		extractSurface(ctx);
+		EXPECT_TRUE(mesh.mesh[0].isEmpty());
+		EXPECT_TRUE(ctx.textureData.empty());
+	}
+}
+
+TEST_F(TextureSurfaceExtractorTest, testAccessorPadsOutsideSourceWithAir) {
+	RawVolume volume(Region(-40, -20));
+	ASSERT_TRUE(volume.setVoxel(-40, -40, -40, Voxel(VoxelType::Generic, 2)));
+	palette::Palette palette;
+	palette.nippon();
+	ChunkMesh mesh;
+	const Region extracted(-42, -35);
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+	extractSurface(ctx);
+	EXPECT_FALSE(mesh.mesh[0].isEmpty());
 }
 
 TEST_F(TextureSurfaceExtractorTest, testTextureExtraction) {

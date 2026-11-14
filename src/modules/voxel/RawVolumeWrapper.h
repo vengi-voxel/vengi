@@ -63,8 +63,17 @@ public:
 
 	virtual ~RawVolumeWrapper() {}
 
-	inline Voxel *voxels() const {
-		return _volume->voxels();
+	inline Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride,
+							 int64_t &zStride) const {
+		return _volume->sampleData(pos, dataLower, dataUpper, yStride, zStride);
+	}
+
+	inline Voxel *writableVoxel(const glm::ivec3 &pos) {
+		return _volume->writableVoxel(pos);
+	}
+
+	inline const Voxel &borderValue() const {
+		return _volume->borderValue();
 	}
 
 	inline int width() const {

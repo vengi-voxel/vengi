@@ -14,6 +14,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphUtil.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <string.h>
 
@@ -166,10 +167,16 @@ bool DraftEditSession<Operation>::valid(const scenegraph::SceneGraph &scene, boo
 		const scenegraph::SceneGraphNode *node = scene.findNodeByUUID(target->uuid);
 		if (!node || node->palette().hash() != target->paletteHash ||
 			node->normalPalette().hash() != target->normalPaletteHash || node->volume() != target->identity ||
-			node->region() != target->original->region() ||
-			(checkContent &&
-			 memcmp(node->volume()->data(), target->original->data(), voxel::RawVolume::size(node->region())) != 0)) {
+			node->region() != target->original->region()) {
 			return false;
+		}
+		if (checkContent) {
+			const voxel::VolumeDataAccessor current(*node->volume());
+			const voxel::VolumeDataAccessor original(*target->original.get());
+			if (!current.valid() || !original.valid() ||
+				memcmp(current.data(), original.data(), voxel::RawVolume::size(node->region())) != 0) {
+				return false;
+			}
 		}
 	}
 	return true;
