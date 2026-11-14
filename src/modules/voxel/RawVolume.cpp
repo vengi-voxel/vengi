@@ -3,6 +3,7 @@
  */
 
 #include "RawVolume.h"
+#include "private/LinearVolumeStorage.h"
 #include "app/ForParallel.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
@@ -33,26 +34,28 @@ RawVolume::RawVolume(const Region &regValid) : _region(regValid) {
 
 RawVolume::RawVolume(const RawVolume *copy) : _region(copy->region()) {
 	setBorderValue(copy->borderValue());
-	const size_t size = RawVolume::size(_region);
-	_data = (Voxel *)core_malloc(size);
-	if (_data == nullptr) {
-		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+	_borderVoxel = copy->_borderVoxel;
+	if (copy->_storage == nullptr || !copy->_storage->valid()) {
 		return;
 	}
-	_borderVoxel = copy->_borderVoxel;
-	core_memcpy((void*)_data, (const void*)copy->_data, size);
+	_storage = new LinearVolumeStorage(*copy->_storage);
+	if (!_storage->valid()) {
+		delete _storage;
+		_storage = nullptr;
+	}
 }
 
 RawVolume::RawVolume(const RawVolume &copy) : _region(copy.region()) {
 	setBorderValue(copy.borderValue());
-	const size_t size = RawVolume::size(_region);
-	_data = (Voxel *)core_malloc(size);
-	if (_data == nullptr) {
-		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+	_borderVoxel = copy._borderVoxel;
+	if (copy._storage == nullptr || !copy._storage->valid()) {
 		return;
 	}
-	_borderVoxel = copy._borderVoxel;
-	core_memcpy((void*)_data, (const void*)copy._data, size);
+	_storage = new LinearVolumeStorage(*copy._storage);
+	if (!_storage->valid()) {
+		delete _storage;
+		_storage = nullptr;
+	}
 }
 
 static inline voxel::Region accumulate(const core::Buffer<Region> &regions) {
@@ -86,21 +89,17 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (onlyAir) {
 			*onlyAir = true;
 		}
-		const size_t size = RawVolume::size(_region);
-		_data = (Voxel *)core_malloc(size);
-		if (_data == nullptr) {
-			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
-			return;
-		}
-		core_memset((void *)_data, 0, size);
+		initialise(_region);
 	} else if (src.region() == _region) {
-		const size_t size = RawVolume::size(_region);
-		_data = (Voxel *)core_malloc(size);
-		if (_data == nullptr) {
-			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+		if (src._storage == nullptr || !src._storage->valid()) {
 			return;
 		}
-		core_memcpy((void *)_data, (const void *)src._data, size);
+		_storage = new LinearVolumeStorage(*src._storage);
+		if (!_storage->valid()) {
+			delete _storage;
+			_storage = nullptr;
+			return;
+		}
 		if (onlyAir) {
 			*onlyAir = false;
 		}
@@ -111,10 +110,8 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 		if (onlyAir) {
 			*onlyAir = true;
 		}
-		const size_t size = RawVolume::size(_region);
-		_data = (Voxel *)core_malloc(size);
-		if (_data == nullptr) {
-			Log::error("Failed to allocate %" SDL_PRIu64 " bytes for volume copy", (uint64_t)size);
+		initialise(_region);
+		if (!valid()) {
 			return;
 		}
 		const glm::ivec3 &tgtMins = _region.getLowerCorner();
@@ -133,6 +130,11 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 
 		const int lineLength = tgtMaxs.x - tgtMins.x + 1;
 		const size_t lineSize = sizeof(voxel::Voxel) * lineLength;
+		Voxel *dst = voxels();
+		const Voxel *source = src.voxels();
+		if (dst == nullptr || source == nullptr) {
+			return;
+		}
 
 		for (int z = tgtMins.z; z <= tgtMaxs.z; ++z) {
 			const int64_t tgtZPos = z - tgtMins.z;
@@ -145,8 +147,8 @@ RawVolume::RawVolume(const RawVolume& src, const Region& region, bool *onlyAir) 
 				const int64_t tgtBaseIndex = tgtZPos * tgtZStride + tgtYPos * tgtYStride + (tgtMins.x - _region.getLowerX());
 				const int64_t srcBaseIndex = srcZPos * srcZStride + srcYPos * srcYStride + (tgtMins.x - srcMins.x);
 
-				voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
-				const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
+				voxel::Voxel* tgtLine = &dst[tgtBaseIndex];
+				const voxel::Voxel* srcLine = &source[srcBaseIndex];
 
 				core_memcpy((void*)tgtLine, (const void*)srcLine, lineSize);
 
@@ -203,7 +205,7 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	// When scanning full width and height, all z-slices are contiguous - single linear scan
 	if (scanWidth == width && scanHeight == height) {
 		const int zStart = r.getLowerZ() - _region.getLowerZ();
-		const Voxel *start = _data + (int64_t)zStart * width * height;
+		const Voxel *start = voxels() + (int64_t)zStart * width * height;
 		const int64_t total = (int64_t)scanDepth * width * height;
 		return scanFlagsLinear(start, total, flagsMask);
 	}
@@ -215,7 +217,7 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 		const int64_t rowsPerSlice = (int64_t)scanHeight * width;
 		for (int z = 0; z < scanDepth; ++z) {
 			const int zPos = r.getLowerZ() - _region.getLowerZ() + z;
-			const Voxel *start = _data + zPos * zStride + (int64_t)yStart * width;
+			const Voxel *start = voxels() + zPos * zStride + (int64_t)yStart * width;
 			if (scanFlagsLinear(start, rowsPerSlice, flagsMask)) {
 				return true;
 			}
@@ -236,7 +238,7 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + yPos * yStride;
-			if (scanFlagsLinear(_data + baseIndex, scanWidth, flagsMask)) {
+			if (scanFlagsLinear(voxels() + baseIndex, scanWidth, flagsMask)) {
 				return true;
 			}
 		}
@@ -256,7 +258,7 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 	// Phase 1: Find Z bounds by scanning slices from both ends
 	int minZ = -1;
 	for (int z = 0; z < d; ++z) {
-		if (scanFlagsLinear(_data + z * zStride, zStride, flagsMask)) {
+		if (scanFlagsLinear(voxels() + z * zStride, zStride, flagsMask)) {
 			minZ = z;
 			break;
 		}
@@ -267,7 +269,7 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 
 	int maxZ = minZ;
 	for (int z = d - 1; z > minZ; --z) {
-		if (scanFlagsLinear(_data + z * zStride, zStride, flagsMask)) {
+		if (scanFlagsLinear(voxels() + z * zStride, zStride, flagsMask)) {
 			maxZ = z;
 			break;
 		}
@@ -281,25 +283,25 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 		const int64_t zBase = z * zStride;
 
 		// Skip empty z-slices (minZ/maxZ are known to have flags)
-		if (z != minZ && z != maxZ && !scanFlagsLinear(_data + zBase, zStride, flagsMask)) {
+		if (z != minZ && z != maxZ && !scanFlagsLinear(voxels() + zBase, zStride, flagsMask)) {
 			continue;
 		}
 
 		// Scan rows below current minY for potential new minimum
 		for (int y = 0; y < minY; ++y) {
 			const int64_t base = zBase + y * yStride;
-			if (!scanFlagsLinear(_data + base, w, flagsMask)) {
+			if (!scanFlagsLinear(voxels() + base, w, flagsMask)) {
 				continue;
 			}
 			minY = y;
 			for (int x = 0; x < minX; ++x) {
-				if (_data[base + x].getFlags() & flag) {
+				if (voxels()[base + x].getFlags() & flag) {
 					minX = x;
 					break;
 				}
 			}
 			for (int x = w - 1; x > maxX; --x) {
-				if (_data[base + x].getFlags() & flag) {
+				if (voxels()[base + x].getFlags() & flag) {
 					maxX = x;
 					break;
 				}
@@ -310,18 +312,18 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 		// Scan rows above current maxY for potential new maximum
 		for (int y = h - 1; y > maxY; --y) {
 			const int64_t base = zBase + y * yStride;
-			if (!scanFlagsLinear(_data + base, w, flagsMask)) {
+			if (!scanFlagsLinear(voxels() + base, w, flagsMask)) {
 				continue;
 			}
 			maxY = y;
 			for (int x = 0; x < minX; ++x) {
-				if (_data[base + x].getFlags() & flag) {
+				if (voxels()[base + x].getFlags() & flag) {
 					minX = x;
 					break;
 				}
 			}
 			for (int x = w - 1; x > maxX; --x) {
-				if (_data[base + x].getFlags() & flag) {
+				if (voxels()[base + x].getFlags() & flag) {
 					maxX = x;
 					break;
 				}
@@ -333,17 +335,17 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 		if (minX > 0 || maxX < w - 1) {
 			for (int y = minY; y <= maxY; ++y) {
 				const int64_t base = zBase + y * yStride;
-				if (!scanFlagsLinear(_data + base, w, flagsMask)) {
+				if (!scanFlagsLinear(voxels() + base, w, flagsMask)) {
 					continue;
 				}
 				for (int x = 0; x < minX; ++x) {
-					if (_data[base + x].getFlags() & flag) {
+					if (voxels()[base + x].getFlags() & flag) {
 						minX = x;
 						break;
 					}
 				}
 				for (int x = w - 1; x > maxX; --x) {
-					if (_data[base + x].getFlags() & flag) {
+					if (voxels()[base + x].getFlags() & flag) {
 						maxX = x;
 						break;
 					}
@@ -398,7 +400,7 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 
 			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
 			if ((baseIndex & 1) && remaining > 0) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
+				uint32_t *data32 = (uint32_t *)&voxels()[baseIndex];
 				*data32 &= clearMask32;
 				offset = 1;
 				remaining--;
@@ -406,14 +408,14 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 
 			// Process two voxels at a time using 64-bit operations
 			const int pairs = remaining / 2;
-			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
+			uint64_t *data64 = (uint64_t *)&voxels()[baseIndex + offset];
 			for (int i = 0; i < pairs; ++i) {
 				data64[i] &= clearMask64;
 			}
 
 			// Handle remaining voxel if line length is odd
 			if (remaining & 1) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
+				uint32_t *data32 = (uint32_t *)&voxels()[baseIndex + offset + pairs * 2];
 				*data32 &= clearMask32;
 			}
 		}
@@ -458,7 +460,7 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 
 			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
 			if ((baseIndex & 1) && remaining > 0) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
+				uint32_t *data32 = (uint32_t *)&voxels()[baseIndex];
 				*data32 ^= flagsMask32;
 				offset = 1;
 				remaining--;
@@ -466,14 +468,14 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 
 			// Process two voxels at a time using 64-bit operations
 			const int pairs = remaining / 2;
-			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
+			uint64_t *data64 = (uint64_t *)&voxels()[baseIndex + offset];
 			for (int i = 0; i < pairs; ++i) {
 				data64[i] ^= flagsMask64;
 			}
 
 			// Handle remaining voxel if line length is odd
 			if (remaining & 1) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
+				uint32_t *data32 = (uint32_t *)&voxels()[baseIndex + offset + pairs * 2];
 				*data32 ^= flagsMask32;
 			}
 		}
@@ -518,7 +520,7 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 
 			// Handle misaligned start (baseIndex is odd means not 8-byte aligned for 4-byte Voxels)
 			if ((baseIndex & 1) && remaining > 0) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex];
+				uint32_t *data32 = (uint32_t *)&voxels()[baseIndex];
 				*data32 |= flagsMask32;
 				offset = 1;
 				remaining--;
@@ -526,14 +528,14 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 
 			// Process two voxels at a time using 64-bit operations
 			const int pairs = remaining / 2;
-			uint64_t *data64 = (uint64_t *)&_data[baseIndex + offset];
+			uint64_t *data64 = (uint64_t *)&voxels()[baseIndex + offset];
 			for (int i = 0; i < pairs; ++i) {
 				data64[i] |= flagsMask64;
 			}
 
 			// Handle remaining voxel if line length is odd
 			if (remaining & 1) {
-				uint32_t *data32 = (uint32_t *)&_data[baseIndex + offset + pairs * 2];
+				uint32_t *data32 = (uint32_t *)&voxels()[baseIndex + offset + pairs * 2];
 				*data32 |= flagsMask32;
 			}
 		}
@@ -567,7 +569,7 @@ bool RawVolume::isEmpty(const Region &region) const {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			const int64_t yPos = y - _region.getLowerY();
 			const int64_t baseIndex = zBase + (yPos * yStride);
-			const voxel::Voxel* dataLine = &_data[baseIndex];
+			const voxel::Voxel* dataLine = &voxels()[baseIndex];
 
 			if (core::memchr_not(dataLine, 0, voxelLineSize) != nullptr) {
 				return false;
@@ -580,7 +582,7 @@ bool RawVolume::isEmpty(const Region &region) const {
 
 bool RawVolume::copyInto(const RawVolume &src) {
 	if (_region == src.region()) {
-		core_memcpy((void *)_data, (const void *)src._data, RawVolume::size(_region));
+		core_memcpy((void *)voxels(), (const void *)src.voxels(), RawVolume::size(_region));
 		return true;
 	}
 	voxel::Region srcRegion = src.region();
@@ -634,8 +636,8 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 				const int64_t tgtBaseIndex = tgtXZBaseIndex + tgtYPos * tgtYStride;
 				const int64_t srcBaseIndex = srcXZBaseIndex + srcYPos * srcYStride;
 
-				const voxel::Voxel* srcLine = &src._data[srcBaseIndex];
-				voxel::Voxel* tgtLine = &_data[tgtBaseIndex];
+				const voxel::Voxel* srcLine = &src.voxels()[srcBaseIndex];
+				voxel::Voxel* tgtLine = &voxels()[tgtBaseIndex];
 
 				core_memcpy((void*)tgtLine, (const void*)srcLine, lineSize);
 			}
@@ -645,63 +647,66 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 }
 
 RawVolume::RawVolume(RawVolume &&move) noexcept {
-	_data = move._data;
-	move._data = nullptr;
+	_storage = move._storage;
+	move._storage = nullptr;
 	_region = move._region;
 	_borderVoxel = move._borderVoxel;
 }
 
-RawVolume::RawVolume(const Voxel *data, const voxel::Region &region) {
-	initialise(region);
-	const size_t size = RawVolume::size(_region);
-	core_memcpy((void *)_data, (const void *)data, size);
+RawVolume &RawVolume::operator=(RawVolume &&move) noexcept {
+	if (this == &move) {
+		return *this;
+	}
+	delete _storage;
+	_storage = move._storage;
+	move._storage = nullptr;
+	_region = move._region;
+	_borderVoxel = move._borderVoxel;
+	return *this;
 }
 
-RawVolume::RawVolume(Voxel *data, const voxel::Region &region) : _region(region), _data(data) {
+RawVolume::RawVolume(const Voxel *data, const voxel::Region &region) {
+	initialise(region);
+	if (_storage != nullptr && _storage->valid()) {
+		core_memcpy((void *)_storage->voxels(), (const void *)data, RawVolume::size(_region));
+	}
+}
+
+RawVolume::RawVolume(Voxel *data, const voxel::Region &region) : _region(region) {
 	core_assert_msg(width() > 0, "Volume width must be greater than zero.");
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
+	_storage = new LinearVolumeStorage(data, {width(), height(), depth()}, true);
+	if (!_storage->valid()) {
+		delete _storage;
+		_storage = nullptr;
+	}
 }
 
 RawVolume::~RawVolume() {
-	core_free(_data);
-	_data = nullptr;
+	delete _storage;
+	_storage = nullptr;
 }
 
 bool RawVolume::move(const glm::ivec3 &shift) {
-	const int w = width();
-	const int h = height();
-	const int d = depth();
-
-	glm::ivec3 t = shift;
-	t.x = (t.x % w + w) % w;
-	t.y = (t.y % h + h) % h;
-	t.z = (t.z % d + d) % d;
-
-	const int64_t hwstride = (int64_t)h * w;
-	for (int z = 0; z < d; ++z) {
-		const int64_t zhwstride = (int64_t)z * hwstride;
-		for (int y = 0; y < h; ++y) {
-			const int64_t begin = zhwstride + (int64_t)y * w;
-			core::rotate(_data + begin, _data + begin + t.x, _data + zhwstride + (int64_t)(y + 1) * w);
-		}
+	if (_storage == nullptr) {
+		return false;
 	}
-
-	const int64_t yoffset = (int64_t)t.y * w;
-	for (int z = 0; z < d; ++z) {
-		core::rotate(_data + (int64_t)z * hwstride, _data + (int64_t)z * hwstride + yoffset, _data + (int64_t)(z + 1) * hwstride);
-	}
-
-	core::rotate(_data, _data + (int64_t)t.z * hwstride, _data + (int64_t)d * hwstride);
-
-	return true;
+	return _storage->move(shift);
 }
 
 Voxel *RawVolume::copyVoxels() const {
 	const size_t size = RawVolume::size(_region);
 	Voxel *rawCopy = (Voxel *)core_malloc(size);
-	core_memcpy((void *)rawCopy, (const void *)_data, size);
+	if (rawCopy == nullptr || _storage == nullptr || !_storage->valid()) {
+		return rawCopy;
+	}
+	_storage->copyTo(rawCopy);
 	return rawCopy;
+}
+
+Voxel *RawVolume::voxels() const {
+	return _storage != nullptr ? _storage->voxels() : nullptr;
 }
 
 /**
@@ -718,7 +723,7 @@ const Voxel &RawVolume::voxel(int32_t x, int32_t y, int32_t z) const {
 		const int32_t iLocalYPos = y - _region.getLowerY();
 		const int32_t iLocalZPos = z - _region.getLowerZ();
 
-		return _data[(int64_t)iLocalXPos + (int64_t)iLocalYPos * width() + (int64_t)iLocalZPos * _region.stride()];
+		return voxels()[(int64_t)iLocalXPos + (int64_t)iLocalYPos * width() + (int64_t)iLocalZPos * _region.stride()];
 	}
 	return _borderVoxel;
 }
@@ -769,7 +774,7 @@ void RawVolume::fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, 
 		const int64_t bStride = strides[bAxis];
 		int i = 0;
 		for (int b = 0; b < bCount && remaining > 0; ++b) {
-			const Voxel *column = _data + startIndex + (int64_t)b * bStride;
+			const Voxel *column = voxels() + startIndex + (int64_t)b * bStride;
 			for (int a = 0; a < aCount; ++a, ++i, column += aStride) {
 				if (!isAir(out[i].getMaterial())) {
 					continue;
@@ -801,7 +806,7 @@ void RawVolume::fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, 
 				if (!isAir(out[i].getMaterial())) {
 					continue;
 				}
-				const Voxel &voxel = _data[row];
+				const Voxel &voxel = voxels()[row];
 				if (!isAir(voxel.getMaterial())) {
 					out[i] = voxel;
 					--remaining;
@@ -833,10 +838,10 @@ bool RawVolume::setVoxel(int64_t idx, const Voxel &voxel) {
 	if (idx < 0 || idx >= _region.stride() * depth()) {
 		return false; // Index out of bounds
 	}
-	if (_data[idx] == voxel) {
+	if (voxels()[idx] == voxel) {
 		return false;
 	}
-	_data[idx] = voxel;
+	voxels()[idx] = voxel;
 	return true;
 }
 
@@ -856,10 +861,10 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
 	const int64_t index = (int64_t)localPos.x + (int64_t)localPos.y * width() + (int64_t)localPos.z * _region.stride();
-	if (_data[index] == voxel) {
+	if (voxels()[index] == voxel) {
 		return false;
 	}
-	_data[index] = voxel;
+	voxels()[index] = voxel;
 	return true;
 }
 
@@ -867,7 +872,7 @@ void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
 	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
 	const glm::ivec3 localPos = pos - lowerCorner;
 	const int64_t index = (int64_t)localPos.x + (int64_t)localPos.y * width() + (int64_t)localPos.z * _region.stride();
-	_data[index] = voxel;
+	voxels()[index] = voxel;
 }
 
 /**
@@ -880,17 +885,12 @@ void RawVolume::initialise(const Region &regValidRegion) {
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
-	// Create the data
-	const size_t size = RawVolume::size(_region);
-	_data = (Voxel *)core_malloc(size);
-	if (_data == nullptr) {
-		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for a volume with the dimensions %i:%i:%i",
-				   (uint64_t)size, width(), height(), depth());
-		return;
+	delete _storage;
+	_storage = new LinearVolumeStorage({width(), height(), depth()});
+	if (!_storage->valid()) {
+		delete _storage;
+		_storage = nullptr;
 	}
-
-	// Clear to zeros
-	clear();
 }
 
 void RawVolume::clear() {
@@ -899,22 +899,18 @@ void RawVolume::clear() {
 }
 
 void RawVolume::fill(const voxel::Voxel &voxel) {
-	if (!_region.isValid()) {
+	if (_storage == nullptr) {
 		return;
 	}
-	const size_t size = _region.stride() * depth();
-	uint32_t val;
-	core_memcpy(&val, &voxel, sizeof(val));
-	core_memset4((void *)_data, val, size);
-	static_assert(sizeof(Voxel) == sizeof(uint32_t), "Voxel is expected to be 4 bytes");
+	_storage->fill(voxel);
 }
 
 bool RawVolume::valid() const {
-	return _data != nullptr;
+	return _storage != nullptr && _storage->valid();
 }
 
 size_t RawVolume::allocatedBytes() const {
-	return _data ? size(_region) : 0;
+	return _storage != nullptr ? _storage->allocatedBytes() : 0;
 }
 
 } // namespace voxel

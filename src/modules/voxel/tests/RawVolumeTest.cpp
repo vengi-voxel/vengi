@@ -555,4 +555,21 @@ TEST_F(RawVolumeTest, testValidReportsAllocationState) {
 	EXPECT_FALSE(volume.valid());
 }
 
+TEST_F(RawVolumeTest, testMoveAssign) {
+	RawVolume volume(Region(0, 7));
+	ASSERT_TRUE(volume.valid());
+	const Voxel value = createVoxel(VoxelType::Generic, 3);
+	ASSERT_TRUE(volume.setVoxel(1, 2, 3, value));
+	Voxel *payload = volume.voxels();
+
+	RawVolume target(Region(0, 1));
+	ASSERT_TRUE(target.valid());
+	target = core::move(volume);
+	EXPECT_TRUE(target.valid());
+	EXPECT_FALSE(volume.valid());
+	EXPECT_EQ(payload, target.voxels());
+	EXPECT_EQ(value, target.voxel(1, 2, 3));
+	EXPECT_EQ(Region(0, 7), target.region());
+}
+
 }

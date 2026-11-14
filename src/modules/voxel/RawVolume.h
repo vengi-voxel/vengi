@@ -13,6 +13,8 @@
 
 namespace voxel {
 
+class LinearVolumeStorage;
+
 /**
  * Simple volume implementation which stores data in a single large 3D array.
  */
@@ -44,6 +46,7 @@ public:
 	RawVolume(const RawVolume *copy);
 	RawVolume(const RawVolume &copy);
 	RawVolume(RawVolume &&move) noexcept;
+	RawVolume &operator=(RawVolume &&move) noexcept;
 	RawVolume(const RawVolume &copy, const Region &region, bool *onlyAir = nullptr);
 	RawVolume(const RawVolume &copy, const core::Buffer<Region> &regions);
 
@@ -176,9 +179,7 @@ public:
 		return (const uint8_t *)voxels();
 	}
 
-	inline Voxel *voxels() const {
-		return _data;
-	}
+	Voxel *voxels() const;
 
 	/** Allocated voxel payload in bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;
@@ -215,8 +216,8 @@ private:
 	/** The border value */
 	Voxel _borderVoxel;
 
-	/** The voxel data */
-	Voxel *_data;
+	/** Contiguous voxel payload. */
+	LinearVolumeStorage *_storage = nullptr;
 };
 
 inline const Region &RawVolume::region() const {

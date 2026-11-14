@@ -1,5 +1,6 @@
 set(LIB voxel)
 set(SRCS
+	private/LinearVolumeStorage.h private/LinearVolumeStorage.cpp
 	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
@@ -51,6 +52,7 @@ set(TEST_SRCS
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp
 	tests/RawVolumeViewTest.cpp
+	tests/LinearVolumeStorageTest.cpp
 	tests/RegionTest.cpp
 	tests/ConcurrentSparseVolumeTest.cpp
 	tests/SparseVolumeTest.cpp
