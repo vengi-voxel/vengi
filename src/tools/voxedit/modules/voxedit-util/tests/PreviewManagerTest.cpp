@@ -13,6 +13,7 @@
 #include "palette/NormalPalette.h"
 #include "memento/MementoHandler.h"
 #include "voxel/VoxelNormalUtil.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxelrender/RenderContext.h"
 #include "video/Camera.h"
 #include "util/VarUtil.h"
@@ -157,7 +158,13 @@ TEST_F(PreviewManagerTest, testPlanePreviewTracksExtrusionHeightUntilRelease) {
 			core::DynamicArray<BrushGizmoState> handles;
 			modifier.brushHandles(handles);
 			EXPECT_TRUE(handles.empty());
-			EXPECT_EQ(0, core_memcmp(original.data(), volume->data(), voxel::RawVolume::size(volume->region())));
+			{
+				const voxel::VolumeDataAccessor originalData(original);
+				const voxel::VolumeDataAccessor volumeData(*volume);
+				ASSERT_TRUE(originalData.valid());
+				ASSERT_TRUE(volumeData.valid());
+				EXPECT_EQ(0, core_memcmp(originalData.data(), volumeData.data(), voxel::RawVolume::size(volume->region())));
+			}
 			EXPECT_EQ(states, mgr.mementoHandler().stateSize());
 		}
 		modifier.finishEdit();
@@ -171,7 +178,13 @@ TEST_F(PreviewManagerTest, testPlanePreviewTracksExtrusionHeightUntilRelease) {
 		}
 		ASSERT_TRUE(mgr.undo());
 		volume = mgr.sceneGraphNodeByUUID(uuid)->volume();
-		EXPECT_EQ(0, core_memcmp(original.data(), volume->data(), voxel::RawVolume::size(volume->region())));
+		{
+				const voxel::VolumeDataAccessor originalData(original);
+				const voxel::VolumeDataAccessor volumeData(*volume);
+				ASSERT_TRUE(originalData.valid());
+				ASSERT_TRUE(volumeData.valid());
+				EXPECT_EQ(0, core_memcmp(originalData.data(), volumeData.data(), voxel::RawVolume::size(volume->region())));
+			}
 		mgr.shutdown();
 	}
 }
@@ -314,7 +327,13 @@ TEST_F(PreviewManagerTest, testPaintPreviewRendersWithItsOwnPalette) {
 			}
 			EXPECT_EQ(paletteHash, node.palette().hash());
 			EXPECT_EQ(history, mgr.mementoHandler().stateSize());
-			EXPECT_EQ(0, core_memcmp(original.data(), node.volume()->data(), voxel::RawVolume::size(original.region())));
+			{
+			const voxel::VolumeDataAccessor originalData(original);
+			const voxel::VolumeDataAccessor volumeData(*node.volume());
+			ASSERT_TRUE(originalData.valid());
+			ASSERT_TRUE(volumeData.valid());
+			EXPECT_EQ(0, core_memcmp(originalData.data(), volumeData.data(), voxel::RawVolume::size(original.region())));
+		}
 			modifier.shutdown();
 			mgr.shutdown();
 		}
@@ -382,7 +401,13 @@ TEST_F(PreviewManagerTest, testBlurPreviewMatchesFullVolumeIncludingMirrors) {
 		}
 		EXPECT_EQ(paletteHash, node.palette().hash());
 		EXPECT_EQ(history, mgr.mementoHandler().stateSize());
-		EXPECT_EQ(0, core_memcmp(original.data(), node.volume()->data(), voxel::RawVolume::size(original.region())));
+		{
+			const voxel::VolumeDataAccessor originalData(original);
+			const voxel::VolumeDataAccessor volumeData(*node.volume());
+			ASSERT_TRUE(originalData.valid());
+			ASSERT_TRUE(volumeData.valid());
+			EXPECT_EQ(0, core_memcmp(originalData.data(), volumeData.data(), voxel::RawVolume::size(original.region())));
+		}
 		preview.shutdown();
 		modifier.shutdown();
 		mgr.shutdown();

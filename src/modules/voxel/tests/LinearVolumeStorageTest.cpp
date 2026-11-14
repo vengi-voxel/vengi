@@ -12,7 +12,6 @@ namespace voxel {
 
 TEST(LinearVolumeStorageTest, AllocateFillCopyAndMove) {
 	LinearVolumeStorage storage({8, 4, 2});
-	ASSERT_TRUE(storage.valid());
 	EXPECT_EQ(8 * 4 * 2 * sizeof(Voxel), storage.allocatedBytes());
 	EXPECT_EQ(Voxel(), storage.voxel({0, 0, 0}));
 	EXPECT_EQ(Voxel(), storage.voxel({7, 3, 1}));
@@ -27,7 +26,6 @@ TEST(LinearVolumeStorageTest, AllocateFillCopyAndMove) {
 	EXPECT_EQ(value, storage.voxel({7, 3, 1}));
 
 	LinearVolumeStorage copy(storage);
-	ASSERT_TRUE(copy.valid());
 	EXPECT_EQ(storage.allocatedBytes(), copy.allocatedBytes());
 	EXPECT_EQ(value, copy.voxel({3, 1, 0}));
 	EXPECT_TRUE(copy.setVoxel({0, 0, 0}, Voxel(VoxelType::Transparent, 9)));
@@ -41,7 +39,6 @@ TEST(LinearVolumeStorageTest, AllocateFillCopyAndMove) {
 	core_free(linear);
 
 	LinearVolumeStorage moved({2, 1, 1});
-	ASSERT_TRUE(moved.valid());
 	ASSERT_TRUE(moved.setVoxel({0, 0, 0}, createVoxel(VoxelType::Generic, 1)));
 	ASSERT_TRUE(moved.move({1, 0, 0}));
 	EXPECT_EQ((int)VoxelType::Air, (int)moved.voxel({0, 0, 0}).getMaterial());
@@ -52,29 +49,26 @@ TEST(LinearVolumeStorageTest, AllocateFillCopyAndMove) {
 
 TEST(LinearVolumeStorageTest, MoveConstructAndAssign) {
 	LinearVolumeStorage storage({4, 2, 1});
-	ASSERT_TRUE(storage.valid());
 	const Voxel value = createVoxel(VoxelType::Generic, 5);
 	ASSERT_TRUE(storage.setVoxel({3, 1, 0}, value));
 	Voxel *payload = storage.voxels();
 
 	LinearVolumeStorage moved(core::move(storage));
-	ASSERT_TRUE(moved.valid());
-	EXPECT_FALSE(storage.valid());
 	EXPECT_EQ(payload, moved.voxels());
 	EXPECT_EQ(value, moved.voxel({3, 1, 0}));
+	EXPECT_NE(payload, storage.voxels());
+	EXPECT_EQ(glm::ivec3(1), storage.dimensions());
 
 	LinearVolumeStorage assigned({1, 1, 1});
-	ASSERT_TRUE(assigned.valid());
 	assigned = core::move(moved);
-	ASSERT_TRUE(assigned.valid());
-	EXPECT_FALSE(moved.valid());
 	EXPECT_EQ(payload, assigned.voxels());
 	EXPECT_EQ(value, assigned.voxel({3, 1, 0}));
+	EXPECT_NE(payload, moved.voxels());
+	EXPECT_EQ(glm::ivec3(1), moved.dimensions());
 }
 
 TEST(LinearVolumeStorageTest, SampleDataAndRow) {
 	LinearVolumeStorage storage({5, 3, 2});
-	ASSERT_TRUE(storage.valid());
 	const Voxel value(VoxelType::Generic, 3);
 	ASSERT_TRUE(storage.setVoxel({2, 1, 0}, value));
 
@@ -97,6 +91,27 @@ TEST(LinearVolumeStorageTest, SampleDataAndRow) {
 	EXPECT_EQ(value, *sample);
 }
 
+TEST(LinearVolumeStorageTest, CopyFromHasFlagsAndRegionForFlag) {
+	LinearVolumeStorage src({4, 3, 2});
+	const Voxel value = createVoxel(VoxelType::Generic, 7);
+	ASSERT_TRUE(src.setVoxel({1, 1, 0}, value));
+	src.setFlags({1, 1, 0}, {2, 2, 0}, FlagOutline);
+
+	LinearVolumeStorage dst({4, 3, 2});
+	dst.copyFrom(src, {1, 1, 0}, {0, 0, 0}, {2, 2, 1});
+	EXPECT_EQ(value.getMaterial(), dst.voxel({0, 0, 0}).getMaterial());
+	EXPECT_EQ(value.getColor(), dst.voxel({0, 0, 0}).getColor());
+	EXPECT_TRUE(dst.hasFlags({0, 0, 0}, {1, 1, 0}, FlagOutline));
+	EXPECT_FALSE(dst.hasFlags({2, 0, 0}, {3, 2, 1}, FlagOutline));
+
+	glm::ivec3 mins(0);
+	glm::ivec3 maxs(0);
+	ASSERT_TRUE(src.regionForFlag(FlagOutline, mins, maxs));
+	EXPECT_EQ(glm::ivec3(1, 1, 0), mins);
+	EXPECT_EQ(glm::ivec3(2, 2, 0), maxs);
+	EXPECT_FALSE(src.isEmpty({1, 1, 0}, {1, 1, 0}));
+}
+
 TEST(LinearVolumeStorageTest, AdoptExternalBuffer) {
 	const glm::ivec3 dimensions(2, 2, 1);
 	Voxel *data = (Voxel *)core_malloc(2 * 2 * sizeof(Voxel));
@@ -107,7 +122,6 @@ TEST(LinearVolumeStorageTest, AdoptExternalBuffer) {
 	core_memcpy((void *)data, &solid, sizeof(Voxel));
 	{
 		LinearVolumeStorage storage(data, dimensions, true);
-		ASSERT_TRUE(storage.valid());
 		EXPECT_EQ(data, storage.voxels());
 		EXPECT_EQ(solid, storage.voxel({0, 0, 0}));
 		EXPECT_EQ(air, storage.voxel({1, 0, 0}));

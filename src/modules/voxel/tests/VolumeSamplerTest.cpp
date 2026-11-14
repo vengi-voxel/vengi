@@ -148,4 +148,36 @@ TEST_F(VolumeSamplerTest, testSampleNearestEmptyIsAir) {
 	EXPECT_TRUE(voxel::isAir(sampleNearest(sampler, {1.5f, 1.5f, 1.5f}).getMaterial()));
 }
 
+TEST_F(VolumeSamplerTest, testSampleDataReportsFullRegionBounds) {
+	const voxel::Region region(-2, -1, 0, 5, 4, 3);
+	voxel::RawVolume v(region);
+	glm::ivec3 dataLower(0);
+	glm::ivec3 dataUpper(0);
+	int64_t yStride = 0;
+	int64_t zStride = 0;
+	Voxel *ptr = v.sampleData(region.getLowerCorner(), dataLower, dataUpper, yStride, zStride);
+	ASSERT_NE(nullptr, ptr);
+	EXPECT_EQ(region.getLowerCorner(), dataLower);
+	EXPECT_EQ(region.getUpperCorner(), dataUpper);
+	EXPECT_EQ(region.getWidthInVoxels(), yStride);
+	EXPECT_EQ(region.stride(), zStride);
+}
+
+TEST_F(VolumeSamplerTest, testSamplerSpanCoversOffsetRegion) {
+	const voxel::Region region(-4, -3, -2, 3, 2, 1);
+	voxel::RawVolume v(region);
+	const Voxel value = createVoxel(VoxelType::Generic, 9);
+	ASSERT_TRUE(v.setVoxel(-4, -3, -2, value));
+	ASSERT_TRUE(v.setVoxel(3, 2, 1, value));
+
+	RawVolume::Sampler sampler(v);
+	ASSERT_TRUE(sampler.setPosition(-4, -3, -2));
+	EXPECT_EQ(value, sampler.voxel());
+	ASSERT_TRUE(sampler.setPosition(3, 2, 1));
+	EXPECT_EQ(value, sampler.voxel());
+	ASSERT_TRUE(sampler.setPosition(0, 0, 0));
+	sampler.setVoxel(createVoxel(VoxelType::Generic, 3));
+	EXPECT_EQ(3, v.voxel(0, 0, 0).getColor());
+}
+
 } // namespace voxel

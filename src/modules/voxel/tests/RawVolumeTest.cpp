@@ -7,6 +7,7 @@
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Voxel.h"
 
 namespace voxel {
@@ -560,14 +561,14 @@ TEST_F(RawVolumeTest, testMoveAssign) {
 	ASSERT_TRUE(volume.valid());
 	const Voxel value = createVoxel(VoxelType::Generic, 3);
 	ASSERT_TRUE(volume.setVoxel(1, 2, 3, value));
-	Voxel *payload = volume.voxels();
+	Voxel *payload = VolumeDataAccessor(volume).voxels();
 
 	RawVolume target(Region(0, 1));
 	ASSERT_TRUE(target.valid());
 	target = core::move(volume);
 	EXPECT_TRUE(target.valid());
 	EXPECT_FALSE(volume.valid());
-	EXPECT_EQ(payload, target.voxels());
+	EXPECT_EQ(payload, VolumeDataAccessor(target).voxels());
 	EXPECT_EQ(value, target.voxel(1, 2, 3));
 	EXPECT_EQ(Region(0, 7), target.region());
 }

@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/brush/PaintBrush.h"
 #include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "app/tests/AbstractTest.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "util/VarUtil.h"
 #include "voxedit-util/Config.h"
 #include "scenegraph/SceneGraph.h"
@@ -138,7 +139,11 @@ TEST_F(ShapeBrushTest, testCapturedShapeParametersAreValidated) {
 	parameters.region = voxel::Region::InvalidRegion;
 	EXPECT_FALSE(evaluateShape(settings, parameters, invalid));
 	EXPECT_FALSE(invalid.dirtyRegion().isValid());
-	EXPECT_EQ(0, core_memcmp(before.data(), volume.data(), voxel::RawVolume::size(volume.region())));
+	const voxel::VolumeDataAccessor beforeData(before);
+	const voxel::VolumeDataAccessor volumeData(volume);
+	ASSERT_TRUE(beforeData.valid());
+	ASSERT_TRUE(volumeData.valid());
+	EXPECT_EQ(0, core_memcmp(beforeData.data(), volumeData.data(), voxel::RawVolume::size(volume.region())));
 }
 
 TEST_F(ShapeBrushTest, testMovingMirrorPlaneInvalidatesPreview) {

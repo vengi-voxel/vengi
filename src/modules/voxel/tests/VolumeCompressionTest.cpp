@@ -8,6 +8,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipWriteStream.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 
@@ -30,8 +31,10 @@ TEST_F(VoxelCompressionTest, testToVolume) {
 	const int allVoxels = v.region().voxels();
 	io::BufferedReadWriteStream outStream((int64_t)allVoxels * sizeof(voxel::Voxel));
 	{
+		const voxel::VolumeDataAccessor accessor(v);
+		ASSERT_TRUE(accessor.valid());
 		io::ZipWriteStream stream(outStream, 12);
-		ASSERT_NE(stream.write(v.data(), allVoxels * sizeof(voxel::Voxel)), -1);
+		ASSERT_NE(stream.write(accessor.data(), allVoxels * sizeof(voxel::Voxel)), -1);
 		ASSERT_TRUE(stream.flush());
 	}
 	ASSERT_NE(outStream.seek(0), -1);

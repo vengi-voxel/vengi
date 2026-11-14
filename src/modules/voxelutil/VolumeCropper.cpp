@@ -7,6 +7,7 @@
 #include "core/Common.h"
 #include "core/ProgressScope.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxelutil/VolumeMerger.h"
 
 namespace voxelutil {
@@ -23,7 +24,11 @@ namespace voxelutil {
 	const int depth = region.getDepthInVoxels();
 	const int64_t yStride = width;
 	const int64_t zStride = (int64_t)width * height;
-	const voxel::Voxel *data = volume->voxels();
+	const voxel::VolumeDataAccessor accessor(*volume);
+	if (!accessor.valid()) {
+		return false;
+	}
+	const voxel::Voxel *data = accessor.voxels();
 	const size_t lineSize = sizeof(voxel::Voxel) * width;
 
 	int minZ = depth;
