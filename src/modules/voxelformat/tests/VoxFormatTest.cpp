@@ -6,9 +6,11 @@
 #include "voxelformat/private/magicavoxel/MagicaVoxel.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "core/IProgress.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryArchive.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -42,6 +44,70 @@ TEST_F(VoxFormatTest, testTransform) {
 
 TEST_F(VoxFormatTest, testLoad) {
 	testLoad("magicavoxel.vox");
+}
+
+TEST_F(VoxFormatTest, testExtractBakeAffineMatchesCalcTransform) {
+	const glm::mat4 rot = glm::mat4(glm::vec4(0, 1, 0, 0), glm::vec4(0, 0, -1, 0), glm::vec4(-1, 0, 0, 0),
+									glm::vec4(3.5f, -2.5f, 8.0f, 1.0f));
+	const BakeAffine affine = extractBakeAffine(rot);
+	ASSERT_TRUE(affine.valid);
+	for (int z = 0; z < 4; ++z) {
+		for (int y = 0; y < 4; ++y) {
+			for (int x = 0; x < 4; ++x) {
+				const glm::ivec3 expected = calcTransform(rot, glm::vec3(x, y, z));
+				const glm::ivec3 got = affine.apply(x, y, z);
+				EXPECT_EQ(expected, got) << "at " << x << "," << y << "," << z;
+			}
+		}
+	}
+}
+
+TEST_F(VoxFormatTest, testBakeRotationKeyIgnoresTranslation) {
+	const glm::mat4 a = glm::mat4(glm::vec4(0, 1, 0, 0), glm::vec4(0, 0, -1, 0), glm::vec4(-1, 0, 0, 0),
+								  glm::vec4(3.5f, -2.5f, 8.0f, 1.0f));
+	const glm::mat4 b = glm::mat4(glm::vec4(0, 1, 0, 0), glm::vec4(0, 0, -1, 0), glm::vec4(-1, 0, 0, 0),
+								  glm::vec4(30.5f, 12.5f, -4.0f, 1.0f));
+	const BakeAffine affineA = extractBakeAffine(a);
+	const BakeAffine affineB = extractBakeAffine(b);
+	ASSERT_TRUE(affineA.valid);
+	ASSERT_TRUE(affineB.valid);
+	EXPECT_EQ(bakeRotationKey(7u, affineA), bakeRotationKey(7u, affineB));
+	EXPECT_NE(bakeRotationKey(7u, affineA), bakeRotationKey(8u, affineB));
+}
+
+TEST_F(VoxFormatTest, testLoadReportsIntermediateProgress) {
+	class RecordingProgress : public core::IProgress {
+	public:
+		core::DynamicArray<float> values;
+		void setProgress(float value) override {
+			if (!values.empty() && values.back() == value) {
+				return;
+			}
+			values.push_back(value);
+		}
+	};
+
+	RecordingProgress progress;
+	LoadContext ctx;
+	ctx.progress = &progress;
+
+	VoxFormat format;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(format.load("test-transform.vox", helper_filesystemarchive(), sceneGraph, ctx));
+	ASSERT_GE(sceneGraph.size(), 2u);
+
+	bool sawMid = false;
+	for (float v : progress.values) {
+		EXPECT_GE(v, 0.0f);
+		EXPECT_LE(v, 1.0f);
+		if (v > 0.05f && v < 0.95f) {
+			sawMid = true;
+		}
+	}
+	ASSERT_FALSE(progress.values.empty());
+	EXPECT_FLOAT_EQ(1.0f, progress.values.back());
+	EXPECT_TRUE(sawMid) << "expected intermediate progress updates, got " << progress.values.size()
+						<< " samples ending at " << progress.values.back();
 }
 
 TEST_F(VoxFormatTest, testTeardownLoad) {

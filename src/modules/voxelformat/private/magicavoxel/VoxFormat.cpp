@@ -4,12 +4,17 @@
 
 #include "VoxFormat.h"
 #include "TrenchblocksFormat.h"
+#include "app/Async.h"
 #include "color/ColorUtil.h"
 #include "core/ConfigVar.h"
+#include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "core/Var.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Map.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
@@ -70,9 +75,34 @@ static void applyInstanceMetadata(scenegraph::SceneGraphNode &node, const ogt_vo
 	node.setVisible(!instanceHidden(scene, ogtInstance));
 }
 
+struct OgtProgressState {
+	core::IProgress *sink = nullptr;
+	float lastReported = -1.0f;
+};
+
+static bool ogtProgressCallback(float progress, void *userData) {
+	OgtProgressState *state = (OgtProgressState *)userData;
+	if (state == nullptr || state->sink == nullptr) {
+		return true;
+	}
+	// ogt reports very frequently while scanning chunks; keep UI updates coarse.
+	if (progress < 1.0f && progress - state->lastReported < 0.01f) {
+		return true;
+	}
+	state->lastReported = progress;
+	state->sink->setProgress(progress);
+	return true;
+}
+
+static void reportInstanceProgress(const LoadContext &ctx, int &loadedInstances, int totalInstances) {
+	++loadedInstances;
+	ctx.report("instance", loadedInstances, totalInstances);
+}
+
 bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceIdx, scenegraph::SceneGraph &sceneGraph,
 							 int parent, core::DynamicArray<MVModelToNode> &models, const palette::Palette &palette,
 							 core::DynamicArray<int> &instanceNodeIds) {
+	core_trace_scoped(VoxLoadInstance);
 	const ogt_vox_instance &ogtInstance = scene->instances[ogt_instanceIdx];
 	if (ogtInstance.model_index >= scene->num_models) {
 		Log::error("Invalid model index %u for instance %u", ogtInstance.model_index, ogt_instanceIdx);
@@ -233,7 +263,8 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 
 bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, scenegraph::SceneGraph &sceneGraph,
 						  int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
-						  const palette::Palette &palette, core::DynamicArray<int> &instanceNodeIds) {
+						  const palette::Palette &palette, core::DynamicArray<int> &instanceNodeIds,
+						  const LoadContext &ctx, int &loadedInstances, int totalInstances) {
 	const ogt_vox_group &ogt_group = scene->groups[ogt_groupIdx];
 	bool hidden = ogt_group.hidden;
 	const char *name = ogt_group.name ? ogt_group.name : "<group>";
@@ -287,11 +318,13 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 			continue;
 		}
 		Log::debug("Found matching group (%u) with scene graph parent: %i", groupIdx, groupId);
-		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, models, addedInstances, palette, instanceNodeIds)) {
+		if (!loadGroup(scene, groupIdx, sceneGraph, groupId, models, addedInstances, palette, instanceNodeIds, ctx,
+					   loadedInstances, totalInstances)) {
 			return false;
 		}
 	}
 
+	core::DynamicArray<uint32_t> groupInstances;
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
 		const ogt_vox_instance &ogtInstance = scene->instances[n];
 		if (ogtInstance.group_index != ogt_groupIdx) {
@@ -300,9 +333,140 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		if (!addedInstances.insert(n)) {
 			continue;
 		}
-		if (!loadInstance(scene, n, sceneGraph, groupId, models, palette, instanceNodeIds)) {
+		groupInstances.push_back(n);
+	}
+
+	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
+	const bool animAsNodes = core::getVar(cfg::VoxformatVOXAnimAsNodes)->boolVal();
+	// Bake instances in parallel, then emplace serially - scenegraph is not thread-safe.
+	// Volumes that share model+rotation (only translation differs) are baked once and cloned.
+	if (applyTransform && !animAsNodes && groupInstances.size() > 1) {
+		struct UniqueBake {
+			uint32_t modelIndex = 0;
+			glm::mat4 bakeMat{1.0f};
+			voxel::RawVolume *volume = nullptr;
+			bool transferred = false;
+		};
+		struct BakedInstance {
+			voxel::RawVolume *volume = nullptr;
+			glm::ivec3 shift{0};
+			int uniqueIdx = -1;
+			glm::mat4 bakeMat{1.0f};
+			const ogt_vox_model *model = nullptr;
+		};
+		core::DynamicArray<UniqueBake> uniques;
+		uniques.reserve(groupInstances.size());
+		core::Map<uint64_t, int> keyToUnique((int)core_max(16u, groupInstances.size() * 2u));
+		core::DynamicArray<BakedInstance> baked;
+		baked.resize(groupInstances.size());
+
+		for (size_t i = 0; i < groupInstances.size(); ++i) {
+			const uint32_t instanceIdx = groupInstances[i];
+			const ogt_vox_instance &ogtInstance = scene->instances[instanceIdx];
+			if (ogtInstance.model_index >= scene->num_models) {
+				continue;
+			}
+			const ogt_vox_model *ogtModel = scene->models[ogtInstance.model_index];
+			if (ogtModel == nullptr) {
+				continue;
+			}
+			const glm::mat4 bakeMat = ogtInstanceBakeMatrix(ogtInstance, 0, scene, ogtModel);
+			baked[i].bakeMat = bakeMat;
+			baked[i].model = ogtModel;
+			const BakeAffine affine = extractBakeAffine(bakeMat);
+			if (!affine.valid) {
+				baked[i].uniqueIdx = -2; // bake privately below
+				continue;
+			}
+			const uint64_t key = bakeRotationKey(ogtInstance.model_index, affine);
+			int uniqueIdx = -1;
+			if (!keyToUnique.get(key, uniqueIdx)) {
+				uniqueIdx = (int)uniques.size();
+				UniqueBake entry;
+				entry.modelIndex = ogtInstance.model_index;
+				entry.bakeMat = bakeMat;
+				uniques.push_back(entry);
+				keyToUnique.put(key, uniqueIdx);
+			}
+			baked[i].uniqueIdx = uniqueIdx;
+		}
+
+		voxel::Voxel bakeLut[256];
+		buildBakeVoxelLut(palette, bakeLut);
+		auto bakeFn = [scene, &uniques, &palette, &bakeLut](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				const ogt_vox_model *ogtModel = scene->models[uniques[i].modelIndex];
+				glm::ivec3 shift(0);
+				uniques[i].volume = bakeOgtModel(ogtModel, uniques[i].bakeMat, palette, shift, false, bakeLut);
+			}
+		};
+		if (!uniques.empty()) {
+			app::for_parallel(0, (int)uniques.size(), bakeFn);
+		}
+
+		for (size_t i = 0; i < groupInstances.size(); ++i) {
+			BakedInstance &slot = baked[i];
+			if (slot.model == nullptr) {
+				continue;
+			}
+			slot.shift = bakeModelWorldShift(slot.model, slot.bakeMat);
+			if (slot.uniqueIdx >= 0) {
+				UniqueBake &shared = uniques[slot.uniqueIdx];
+				if (shared.volume == nullptr) {
+					continue;
+				}
+				if (!shared.transferred) {
+					slot.volume = shared.volume;
+					shared.transferred = true;
+				} else {
+					slot.volume = new voxel::RawVolume(*shared.volume);
+				}
+			} else if (slot.uniqueIdx == -2) {
+				slot.volume = bakeOgtModel(slot.model, slot.bakeMat, palette, slot.shift, false, bakeLut);
+			}
+		}
+		for (UniqueBake &entry : uniques) {
+			if (!entry.transferred) {
+				delete entry.volume;
+			}
+			entry.volume = nullptr;
+		}
+
+		for (size_t i = 0; i < groupInstances.size(); ++i) {
+			const uint32_t instanceIdx = groupInstances[i];
+			if (baked[i].volume == nullptr) {
+				if (!loadInstance(scene, instanceIdx, sceneGraph, groupId, models, palette, instanceNodeIds)) {
+					return false;
+				}
+				reportInstanceProgress(ctx, loadedInstances, totalInstances);
+				continue;
+			}
+			cropOnLoad(baked[i].volume);
+			scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+			scenegraph::SceneGraphTransform transform;
+			transform.setWorldTranslation(glm::vec3(baked[i].shift));
+			modelNode.setTransform(0, transform);
+			modelNode.setPivot(glm::vec3(0.0f));
+			applyInstanceMetadata(modelNode, scene, scene->instances[instanceIdx]);
+			modelNode.setVolume(baked[i].volume);
+			modelNode.setPalette(palette);
+			const int nodeId = sceneGraph.emplace(core::move(modelNode), groupId);
+			if (nodeId == InvalidNodeId) {
+				return false;
+			}
+			if (instanceIdx < instanceNodeIds.size()) {
+				instanceNodeIds[instanceIdx] = nodeId;
+			}
+			reportInstanceProgress(ctx, loadedInstances, totalInstances);
+		}
+		return true;
+	}
+
+	for (uint32_t instanceIdx : groupInstances) {
+		if (!loadInstance(scene, instanceIdx, sceneGraph, groupId, models, palette, instanceNodeIds)) {
 			return false;
 		}
+		reportInstanceProgress(ctx, loadedInstances, totalInstances);
 	}
 
 	return true;
@@ -311,6 +475,9 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 								  const LoadContext &ctx) {
+	core_trace_scoped(VoxLoadGroupsPalette);
+	ctx.setProgress(0.0f);
+	ctx.setProgressText("Reading");
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -322,33 +489,55 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		core_free(buffer);
 		return false;
 	}
-	const uint32_t ogt_vox_flags = k_read_scene_flags_keyframes | k_read_scene_flags_groups |
-								   k_read_scene_flags_keep_empty_models_instances |
-								   k_read_scene_flags_keep_duplicate_models;
+	ctx.setProgress(0.05f);
+
+	// When transforms are baked per instance, duplicate models can be merged by ogt.
+	// Keep duplicates only when shared ModelReference volumes are required.
+	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
+	const bool animAsNodes = core::getVar(cfg::VoxformatVOXAnimAsNodes)->boolVal();
+	uint32_t ogt_vox_flags = k_read_scene_flags_groups | k_read_scene_flags_keep_empty_models_instances;
+	// Keyframes are unused when baking a single frame into volumes without anim-as-nodes.
+	if (!applyTransform || animAsNodes) {
+		ogt_vox_flags |= k_read_scene_flags_keyframes;
+	}
+	if (!applyTransform) {
+		ogt_vox_flags |= k_read_scene_flags_keep_duplicate_models;
+	}
 	VoxCustomChunkContext customChunks;
+	core::ProgressRange parseRange(ctx.progressRef(), 0.05f, 0.40f);
+	ctx.setProgressText("Parsing");
+	OgtProgressState ogtProgress{&parseRange, -1.0f};
+	ogt_vox_set_progress_callback_func(ogtProgressCallback, &ogtProgress);
 	ogt_vox_set_read_custom_chunk_func(readVoxCustomChunk, &customChunks);
 	const ogt_vox_scene *scene = ogt_vox_read_scene_with_flags(buffer, (uint32_t)size, ogt_vox_flags);
 	ogt_vox_set_read_custom_chunk_func(nullptr, nullptr);
+	ogt_vox_set_progress_callback_func(nullptr, nullptr);
 	core_free(buffer);
 	if (scene == nullptr) {
 		Log::error("Could not load scene %s", filename.c_str());
 		return false;
 	}
+	parseRange.setProgress(1.0f);
 
 	printDetails(scene);
 	Log::debug("froxel bones: %u binds: %u clips: %u scripts: %u", (uint32_t)customChunks.froxel.bones.size(),
 			   (uint32_t)customChunks.froxel.binds.size(), (uint32_t)customChunks.froxel.clips.size(),
 			   (uint32_t)customChunks.froxel.scripts.size());
 	loadPaletteFromScene(scene, palette);
+
+	core::ProgressRange convertRange(ctx.progressRef(), 0.40f, 1.0f);
+	LoadContext convertCtx = ctx.nested(convertRange);
+	convertCtx.setProgressText("Converting");
 	const bool loaded = TrenchblocksFormat::isTrenchblocksScene(scene)
 		? TrenchblocksFormat::loadScene(scene, sceneGraph)
-		: loadScene(scene, sceneGraph, palette, ctx, customChunks.froxel);
+		: loadScene(scene, sceneGraph, palette, convertCtx, customChunks.froxel);
 	if (!loaded) {
 		ogt_vox_destroy_scene(scene);
 		return false;
 	}
 
 	ogt_vox_destroy_scene(scene);
+	ctx.setProgress(1.0f);
 
 	if (sceneGraph.empty() && palette.colorCount() > 0) {
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -362,34 +551,43 @@ bool VoxFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 
 bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph,
 						  const palette::Palette &palette, const LoadContext &ctx, const FroxelVoxData &froxel) {
+	core_trace_scoped(VoxLoadScene);
 	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
 	core::DynamicArray<MVModelToNode> models;
+	const int totalInstances = (int)scene->num_instances;
+	const bool needSharedModels = !applyTransform || totalInstances == 0;
 	// Shared model volumes are only needed when transforms stay on nodes (references).
 	// Bake path reads voxels from ogt models per instance. Still load when there are no
 	// instances so orphan models can be imported.
-	if (!applyTransform || scene->num_instances == 0) {
+	if (needSharedModels) {
+		const float modelsEnd = totalInstances > 0 ? 0.35f : 1.0f;
+		core::ProgressRange modelsRange(ctx.progressRef(), 0.0f, modelsEnd);
+		modelsRange.setText("models");
 		models = loadModels(scene, palette);
+		modelsRange.setProgress(1.0f);
 	} else {
 		models.resize(scene->num_models);
 	}
+
+	core::ProgressRange instancesRange(ctx.progressRef(), needSharedModels && totalInstances > 0 ? 0.35f : 0.0f, 1.0f);
+	LoadContext instancesCtx = ctx.nested(instancesRange);
+	int loadedInstances = 0;
 	core::Set<uint32_t> addedInstances;
 	core::DynamicArray<int> instanceNodeIds;
 	instanceNodeIds.resize(scene->num_instances);
 	instanceNodeIds.fill(InvalidNodeId);
 	for (uint32_t i = 0; i < scene->num_groups; ++i) {
-		ctx.report("group", (int)i, (int)scene->num_groups);
 		const ogt_vox_group &group = scene->groups[i];
 		if (group.parent_group_index != k_invalid_group_index) {
 			continue;
 		}
 		Log::debug("Add root group %u/%u", i, scene->num_groups);
-		if (!loadGroup(scene, i, sceneGraph, InvalidNodeId, models, addedInstances, palette, instanceNodeIds)) {
+		if (!loadGroup(scene, i, sceneGraph, InvalidNodeId, models, addedInstances, palette, instanceNodeIds,
+					   instancesCtx, loadedInstances, totalInstances)) {
 			return false;
 		}
 	}
-	ctx.report("group", (int)scene->num_groups, (int)scene->num_groups);
 	for (uint32_t n = 0; n < scene->num_instances; ++n) {
-		ctx.report("instance", (int)n, (int)scene->num_instances);
 		if (addedInstances.has(n)) {
 			continue;
 		}
@@ -397,8 +595,13 @@ bool VoxFormat::loadScene(const ogt_vox_scene *scene, scenegraph::SceneGraph &sc
 		if (!loadInstance(scene, n, sceneGraph, sceneGraph.root().id(), models, palette, instanceNodeIds)) {
 			return false;
 		}
+		reportInstanceProgress(instancesCtx, loadedInstances, totalInstances);
 	}
-	ctx.report("instance", (int)scene->num_instances, (int)scene->num_instances);
+	if (totalInstances > 0) {
+		instancesCtx.report("instance", totalInstances, totalInstances);
+	} else {
+		instancesCtx.setProgress(1.0f);
+	}
 	if (scene->num_instances == 0 && scene->num_models > 0) {
 		for (MVModelToNode &m : models) {
 			if (m.volume == nullptr) {

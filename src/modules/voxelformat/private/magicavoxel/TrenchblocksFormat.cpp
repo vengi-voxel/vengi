@@ -36,8 +36,12 @@ static const MarkerType MarkerTypes[] = {
 	{"PickupSatchel", {0, 0, 0, 255}},	   {"SpectatorSpawnPoint", {255, 255, 255, 255}}};
 
 bool TrenchblocksFormat::isTrenchblocksScene(const ogt_vox_scene *scene) {
-	if (scene->num_models != lengthof(TileNames) || scene->num_instances != lengthof(TileNames) ||
-		scene->num_groups != 1 || scene->groups[0].parent_group_index != k_invalid_group_index) {
+	// ogt may merge duplicate tile models when k_read_scene_flags_keep_duplicate_models is
+	// off (default with VoxformatMVApplyTransform), so num_models can be < 4 and model_index
+	// may be shared. Detection must follow instance.model_index, not models[i].
+	if (scene->num_instances != lengthof(TileNames) || scene->num_models == 0 ||
+		scene->num_models > lengthof(TileNames) || scene->num_groups != 1 ||
+		scene->groups[0].parent_group_index != k_invalid_group_index) {
 		return false;
 	}
 	for (int i = 0; i < (int)lengthof(MarkerTypes); ++i) {
@@ -48,16 +52,22 @@ bool TrenchblocksFormat::isTrenchblocksScene(const ogt_vox_scene *scene) {
 		}
 	}
 	glm::mat4 first(1.0f);
+	const ogt_vox_model *firstModel = nullptr;
 	for (uint32_t i = 0; i < 4; ++i) {
 		const ogt_vox_instance &instance = scene->instances[i];
-		const ogt_vox_model *model = scene->models[i];
 		if (instance.group_index != 0 || instance.transform_anim.num_keyframes > 1 ||
-			scene->groups[0].transform_anim.num_keyframes > 1) {
+			scene->groups[0].transform_anim.num_keyframes > 1 ||
+			instance.model_index >= scene->num_models) {
 			return false;
 		}
+		const ogt_vox_model *model = scene->models[instance.model_index];
 		if (model == nullptr || model->size_x != 256 || model->size_y != 256 || model->size_z == 0 ||
-			model->size_z > 256 || model->size_z != scene->models[0]->size_z || instance.model_index != i ||
-			instance.name == nullptr || core::String(instance.name) != TileNames[i]) {
+			model->size_z > 256 || instance.name == nullptr || core::String(instance.name) != TileNames[i]) {
+			return false;
+		}
+		if (i == 0) {
+			firstModel = model;
+		} else if (model->size_z != firstModel->size_z) {
 			return false;
 		}
 		const glm::mat4 transform = ogtInstanceBakeMatrix(instance, 0, scene, model);
@@ -81,12 +91,22 @@ bool TrenchblocksFormat::loadScene(const ogt_vox_scene *scene, scenegraph::Scene
 	palette::Palette palette;
 	loadPaletteFromScene(scene, palette);
 	core::DynamicArray<MVModelToNode> models = loadModels(scene, palette);
+	uint32_t modelRefs[lengthof(TileNames)]{};
+	for (uint32_t i = 0; i < lengthof(TileNames); ++i) {
+		const uint32_t modelIndex = scene->instances[i].model_index;
+		if (modelIndex >= models.size() || models[modelIndex].volume == nullptr) {
+			return false;
+		}
+		++modelRefs[modelIndex];
+	}
 	for (uint32_t i = 0; i < lengthof(TileNames); ++i) {
 		if (stopExecution()) {
 			return false;
 		}
 		const ogt_vox_instance &instance = scene->instances[i];
-		const glm::mat4 bake = ogtInstanceBakeMatrix(instance, 0, scene, scene->models[i]);
+		const uint32_t modelIndex = instance.model_index;
+		const ogt_vox_model *ogtModel = scene->models[modelIndex];
+		const glm::mat4 bake = ogtInstanceBakeMatrix(instance, 0, scene, ogtModel);
 		const glm::ivec3 corner = calcTransform(bake, glm::vec3(255, 0, 0));
 		const glm::ivec3 shift(-1 - corner.x, corner.z, corner.y);
 		const bool visible = !instanceHidden(scene, instance);
@@ -96,9 +116,15 @@ bool TrenchblocksFormat::loadScene(const ogt_vox_scene *scene, scenegraph::Scene
 		node.setVisible(visible);
 		node.setPivot(glm::vec3(0.0f));
 		node.transform().setLocalTranslation(glm::vec3(shift));
-		voxel::RawVolume *volume = models[i].volume;
+		// Shared ogt models (merged duplicates) need a per-tile volume so marker extraction
+		// can clear voxels without affecting other tiles.
+		voxel::RawVolume *volume = models[modelIndex].volume;
+		if (modelRefs[modelIndex] > 1) {
+			volume = new voxel::RawVolume(*volume);
+		} else {
+			models[modelIndex].volume = nullptr;
+		}
 		node.setVolume(volume);
-		models[i].volume = nullptr;
 		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
 			return false;
 		}

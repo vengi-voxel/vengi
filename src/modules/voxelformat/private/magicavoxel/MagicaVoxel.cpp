@@ -10,6 +10,7 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "core/Var.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
@@ -141,8 +142,64 @@ glm::mat4 ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frame
 	return computeBakeMatrix(ogtToMat(t), glm::vec3(ogtVolumePivot(model)));
 }
 
+BakeAffine extractBakeAffine(const glm::mat4 &bakeMat) {
+	BakeAffine affine;
+	for (int outAxis = 0; outAxis < 3; ++outAxis) {
+		int found = -1;
+		float foundVal = 0.0f;
+		for (int inAxis = 0; inAxis < 3; ++inAxis) {
+			const float v = bakeMat[inAxis][outAxis];
+			if (glm::abs(v) <= 0.0001f) {
+				continue;
+			}
+			if (glm::abs(glm::abs(v) - 1.0f) > 0.001f || found >= 0) {
+				affine.valid = false;
+				return affine;
+			}
+			found = inAxis;
+			foundVal = v;
+		}
+		if (found < 0) {
+			affine.valid = false;
+			return affine;
+		}
+		affine.src[outAxis] = (int8_t)found;
+		affine.sign[outAxis] = foundVal > 0.0f ? (int8_t)1 : (int8_t)-1;
+		affine.translate[outAxis] = (int32_t)glm::floor(bakeMat[3][outAxis]);
+	}
+	affine.valid = true;
+	return affine;
+}
+
+glm::ivec3 bakeModelWorldShift(const ogt_vox_model *model, const glm::mat4 &bakeMat) {
+	const glm::vec3 volSize = ogtVolumeSize(model);
+	const glm::vec3 corners[8] = {glm::vec3(0),
+								  glm::vec3(volSize.x, 0, 0),
+								  glm::vec3(0, volSize.y, 0),
+								  glm::vec3(volSize.x, volSize.y, 0),
+								  glm::vec3(0, 0, volSize.z),
+								  glm::vec3(volSize.x, 0, volSize.z),
+								  glm::vec3(0, volSize.y, volSize.z),
+								  volSize};
+	glm::ivec3 mins(std::numeric_limits<int>::max());
+	for (int c = 0; c < 8; ++c) {
+		const glm::ivec3 ogtCorner = calcTransform(bakeMat, corners[c]);
+		const glm::ivec3 pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
+		mins = glm::min(mins, pos);
+	}
+	return mins;
+}
+
+void buildBakeVoxelLut(const palette::Palette &palette, voxel::Voxel lut[256]) {
+	lut[0] = voxel::Voxel();
+	for (int c = 1; c < 256; ++c) {
+		lut[c] = voxel::createVoxel(palette, (uint8_t)(c - 1));
+	}
+}
+
 voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat, const palette::Palette &palette,
-							   glm::ivec3 &outShift) {
+							   glm::ivec3 &outShift, bool parallelZ, const voxel::Voxel *lut) {
+	core_trace_scoped(VoxBakeOgtModel);
 	const glm::vec3 volSize = ogtVolumeSize(model);
 	const glm::vec3 corners[8] = {glm::vec3(0),
 								  glm::vec3(volSize.x, 0, 0),
@@ -165,23 +222,91 @@ voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bake
 	region.shift(-outShift);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 
-	auto fn = [model, v, &palette, bakeMat, outShift](int start, int end) {
+	voxel::Voxel localLut[256];
+	if (lut == nullptr) {
+		buildBakeVoxelLut(palette, localLut);
+		lut = localLut;
+	}
+
+	const BakeAffine affine = extractBakeAffine(bakeMat);
+	const int width = v->width();
+	const int64_t stride = v->region().stride();
+	const glm::ivec3 shift = outShift;
+	voxel::Voxel *data = v->voxels();
+
+	// volume: x=-(ogt.x+1)-shift.x, y=ogt.z-shift.y, z=ogt.y-shift.z
+	int64_t idxBase = 0;
+	int64_t dI = 0, dJ = 0, dK = 0;
+	if (affine.valid) {
+		const glm::ivec3 ogt0 = affine.apply(0, 0, 0);
+		idxBase = (int64_t)(-(ogt0.x + 1) - shift.x) + (int64_t)(ogt0.z - shift.y) * (int64_t)width +
+				  (int64_t)(ogt0.y - shift.z) * stride;
+		const glm::ivec3 ogtI = affine.apply(1, 0, 0);
+		const glm::ivec3 ogtJ = affine.apply(0, 1, 0);
+		const glm::ivec3 ogtK = affine.apply(0, 0, 1);
+		dI = (int64_t)(-(ogtI.x + 1) - shift.x) + (int64_t)(ogtI.z - shift.y) * (int64_t)width +
+			 (int64_t)(ogtI.y - shift.z) * stride - idxBase;
+		dJ = (int64_t)(-(ogtJ.x + 1) - shift.x) + (int64_t)(ogtJ.z - shift.y) * (int64_t)width +
+			 (int64_t)(ogtJ.y - shift.z) * stride - idxBase;
+		dK = (int64_t)(-(ogtK.x + 1) - shift.x) + (int64_t)(ogtK.z - shift.y) * (int64_t)width +
+			 (int64_t)(ogtK.y - shift.z) * stride - idxBase;
+	}
+
+	auto writeVoxel = [data, width, stride, shift](const glm::ivec3 &ogtPos, const voxel::Voxel &voxel) {
+		const int x = -(ogtPos.x + 1) - shift.x;
+		const int y = ogtPos.z - shift.y;
+		const int z = ogtPos.y - shift.z;
+		const int64_t idx = (int64_t)x + (int64_t)y * (int64_t)width + (int64_t)z * stride;
+		data[idx].overwrite(voxel);
+	};
+
+	auto fn = [model, lut, &affine, bakeMat, writeVoxel, data, idxBase, dI, dJ, dK](int start, int end) {
 		const uint8_t *ogtVoxel = model->voxel_data + start * model->size_x * model->size_y;
+		if (affine.valid) {
+			for (int k = start; k < end; ++k) {
+				const int64_t kBase = idxBase + (int64_t)k * dK;
+				for (uint32_t j = 0; j < model->size_y; ++j) {
+					int64_t idx = kBase + (int64_t)j * dJ;
+					for (uint32_t i = 0; i < model->size_x; ++i, ++ogtVoxel, idx += dI) {
+						const uint8_t color = ogtVoxel[0];
+						if (color == 0) {
+							continue;
+						}
+						data[idx].overwrite(lut[color]);
+					}
+				}
+			}
+			return;
+		}
+		const float m00 = bakeMat[0][0], m01 = bakeMat[1][0], m02 = bakeMat[2][0], m03 = bakeMat[3][0];
+		const float m10 = bakeMat[0][1], m11 = bakeMat[1][1], m12 = bakeMat[2][1], m13 = bakeMat[3][1];
+		const float m20 = bakeMat[0][2], m21 = bakeMat[1][2], m22 = bakeMat[2][2], m23 = bakeMat[3][2];
 		for (int k = start; k < end; ++k) {
 			for (uint32_t j = 0; j < model->size_y; ++j) {
 				for (uint32_t i = 0; i < model->size_x; ++i, ++ogtVoxel) {
-					if (ogtVoxel[0] == 0) {
+					const uint8_t color = ogtVoxel[0];
+					if (color == 0) {
 						continue;
 					}
-					const voxel::Voxel voxel = voxel::createVoxel(palette, ogtVoxel[0] - 1);
-					const glm::ivec3 &ogtPos = calcTransform(bakeMat, glm::vec3(i, j, k));
-					const glm::ivec3 pos(-(ogtPos.x + 1), ogtPos.z, ogtPos.y);
-					v->setVoxel(pos - outShift, voxel);
+					const float fi = (float)i;
+					const float fj = (float)j;
+					const float fk = (float)k;
+					const glm::ivec3 ogtPos((int)glm::floor(m00 * fi + m01 * fj + m02 * fk + m03),
+											(int)glm::floor(m10 * fi + m11 * fj + m12 * fk + m13),
+											(int)glm::floor(m20 * fi + m21 * fj + m22 * fk + m23));
+					writeVoxel(ogtPos, lut[color]);
 				}
 			}
 		}
 	};
-	app::for_parallel(0, (int)model->size_z, fn);
+
+	const int sizeZ = (int)model->size_z;
+	// Only skip the thread pool when there is almost no Z work to split.
+	if (parallelZ && sizeZ > 4) {
+		app::for_parallel(0, sizeZ, fn);
+	} else {
+		app::for_not_parallel(0, sizeZ, fn);
+	}
 	return v;
 }
 

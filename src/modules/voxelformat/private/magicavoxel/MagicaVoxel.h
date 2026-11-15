@@ -5,12 +5,15 @@
 #pragma once
 
 #include "color/RGBA.h"
+#include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "core/GLM.h"
+#include "voxel/Voxel.h"
 #include <glm/mat4x4.hpp>
+#include <stdint.h>
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/external/ogt_vox.h"
 
@@ -218,18 +221,53 @@ inline glm::ivec3 calcTransform(const glm::mat4x4 &mat, const glm::vec3 &pos) {
 }
 
 /**
+ * @brief Signed-permutation bake map extracted from a MagicaVoxel bake matrix.
+ *
+ * MagicaVoxel nTRN rotations are signed permutations, so per-voxel placement can
+ * use integer arithmetic instead of a full float mat4 multiply + floor.
+ */
+struct BakeAffine {
+	int8_t src[3] = {0, 1, 2};
+	int8_t sign[3] = {1, 1, 1};
+	int32_t translate[3] = {0, 0, 0};
+	bool valid = false;
+
+	CORE_FORCE_INLINE glm::ivec3 apply(int x, int y, int z) const {
+		const int in[3] = {x, y, z};
+		return glm::ivec3(sign[0] * in[src[0]] + translate[0], sign[1] * in[src[1]] + translate[1],
+						  sign[2] * in[src[2]] + translate[2]);
+	}
+};
+
+BakeAffine extractBakeAffine(const glm::mat4 &bakeMat);
+
+/** Rotation-only key for reuse of baked volumes that differ only by translation. */
+inline uint64_t bakeRotationKey(uint32_t modelIndex, const BakeAffine &affine) {
+	const uint32_t rot = (uint32_t)(uint8_t)affine.src[0] | ((uint32_t)(uint8_t)affine.src[1] << 8) |
+						 ((uint32_t)(uint8_t)affine.src[2] << 16) | ((affine.sign[0] < 0 ? 1u : 0u) << 24) |
+						 ((affine.sign[1] < 0 ? 1u : 0u) << 25) | ((affine.sign[2] < 0 ? 1u : 0u) << 26);
+	return ((uint64_t)modelIndex << 32) | (uint64_t)rot;
+}
+
+glm::ivec3 bakeModelWorldShift(const ogt_vox_model *model, const glm::mat4 &bakeMat);
+
+/**
  * @brief MagicaVoxel bake matrix: global nTRN * translate(0.5) * translate(-floor(size/2)).
  * Used with @c calcTransform for per-voxel placement when @c cfg::VoxformatMVApplyTransform is on.
  */
 glm::mat4 ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frameIdx, const ogt_vox_scene *scene,
 								const ogt_vox_model *model);
 
+void buildBakeVoxelLut(const palette::Palette &palette, voxel::Voxel lut[256]);
+
 /**
  * @brief Bake an ogt model through @p bakeMat into a vengi volume (region mins at 0).
  * @p outShift is the world translation that places the volume (former region lower corner).
+ * @p parallelZ splits work across Z slices; disable when the caller already parallelizes bakes.
+ * @p lut optional MagicaVoxel color->Voxel table from @c buildBakeVoxelLut; built locally if null.
  */
 voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat, const palette::Palette &palette,
-							   glm::ivec3 &outShift);
+							   glm::ivec3 &outShift, bool parallelZ = true, const voxel::Voxel *lut = nullptr);
 
 struct MVModelToNode {
 	MVModelToNode();

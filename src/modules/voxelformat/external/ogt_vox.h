@@ -773,11 +773,20 @@
         return &fp->buffer[fp->offset];
     }
 
-    // hash utilities
+    // hash utilities - word-at-a-time FNV-1a style (byte loop was ~half of VOX parse time)
     static uint32_t _vox_hash(const uint8_t* data, uint32_t data_size) {
-        uint32_t hash = 0;
-        for (uint32_t i = 0; i < data_size; i++)
-            hash = data[i] + (hash * 65559);
+        uint32_t hash = 2166136261u;
+        uint32_t i = 0;
+        for (; i + 4u <= data_size; i += 4u) {
+            uint32_t block;
+            memcpy(&block, data + i, sizeof(block));
+            hash ^= block;
+            hash *= 16777619u;
+        }
+        for (; i < data_size; ++i) {
+            hash ^= data[i];
+            hash *= 16777619u;
+        }
         return hash;
     }
 

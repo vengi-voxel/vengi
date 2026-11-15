@@ -88,6 +88,16 @@ public:
 		return *this;
 	}
 
+	/** Full field replace without operator= normal-merge semantics. */
+	CORE_FORCE_INLINE void overwrite(const Voxel &other) {
+		_material = other._material;
+		_flags = other._flags;
+		_unused = other._unused;
+		_colorIndex = other._colorIndex;
+		_normalIndex = other._normalIndex;
+		_boneIdx = other._boneIdx;
+	}
+
 	/**
 	 * @brief Compares by the material type
 	 */

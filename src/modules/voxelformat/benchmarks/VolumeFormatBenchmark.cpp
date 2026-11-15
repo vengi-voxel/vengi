@@ -11,6 +11,7 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/quake/MapFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"
 #include "voxelformat/private/qubicle/QBCLFormat.h"
@@ -32,6 +33,15 @@ protected:
 		voxelformat::FormatConfig::init();
 	}
 };
+
+BENCHMARK_DEFINE_F(VolumeFormatBenchmark, magicavoxel_vox)(benchmark::State &state) {
+	for (auto _ : state) {
+		voxelformat::VoxFormat f;
+		const core::String filename = "magicavoxel.vox";
+		f.load(filename, _archive, _sceneGraph, _ctx);
+		_sceneGraph.clear();
+	}
+}
 
 BENCHMARK_DEFINE_F(VolumeFormatBenchmark, chr_knight_QB)(benchmark::State &state) {
 	for (auto _ : state) {
@@ -97,6 +107,7 @@ BENCHMARK_DEFINE_F(VolumeFormatBenchmark, MapVoxelize)(benchmark::State &state) 
 	}
 }
 
+BENCHMARK_REGISTER_F(VolumeFormatBenchmark, magicavoxel_vox);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_QB);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_QBCL);
 BENCHMARK_REGISTER_F(VolumeFormatBenchmark, chr_knight_GOX);

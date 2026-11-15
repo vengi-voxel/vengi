@@ -57,7 +57,8 @@ private:
 					  core::DynamicArray<int> &instanceNodeIds);
 	bool loadGroup(const ogt_vox_scene *scene, uint32_t ogt_parentGroupIdx, scenegraph::SceneGraph &sceneGraph,
 				   int parent, core::DynamicArray<MVModelToNode> &models, core::Set<uint32_t> &addedInstances,
-				   const palette::Palette &palette, core::DynamicArray<int> &instanceNodeIds);
+				   const palette::Palette &palette, core::DynamicArray<int> &instanceNodeIds, const LoadContext &ctx,
+				   int &loadedInstances, int totalInstances);
 	bool loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 						   scenegraph::SceneGraph &sceneGraph, palette::Palette &palette,
 						   const LoadContext &ctx) override;
