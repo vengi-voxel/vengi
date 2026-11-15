@@ -31,6 +31,13 @@ void debugHook(lua_State *L, lua_Debug *ar) {
 			ar->short_src,
 			ar->currentline);
 }
+
+#ifdef TRACY_ENABLE
+void tracyDebugHook(lua_State *L, lua_Debug *ar) {
+	tracy::LuaHook(L, ar);
+	debugHook(L, ar);
+}
+#endif
 }
 
 #ifdef DEBUG
@@ -144,9 +151,11 @@ void LUA::openState() {
 	clua_registertrace(_state);
 
 #ifdef TRACY_ENABLE
-	// Automatic per-call/return Lua zones when a Tracy session is connected
-	// (TRACY_ON_DEMAND). Prefer this over the debug log hook.
-	lua_sethook(_state, tracy::LuaHook, LUA_MASKCALL | LUA_MASKRET, 0);
+	if (_debug) {
+		lua_sethook(_state, tracyDebugHook, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE, 0);
+	} else {
+		lua_sethook(_state, tracy::LuaHook, LUA_MASKCALL | LUA_MASKRET, 0);
+	}
 #else
 	int mask = 0;
 	if (_debug) {

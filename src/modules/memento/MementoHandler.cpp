@@ -16,14 +16,15 @@
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"
-#include "io/ZipWriteStream.h"
+#include "io/LZ4ReadStream.h"
+#include "io/LZ4WriteStream.h"
+#include "io/MemoryReadStream.h"
 #include "palette/NormalPalette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeDataAccessor.h"
 #include "voxel/Region.h"
-#include "voxel/VolumeCompression.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
@@ -237,12 +238,15 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 		return MementoData();
 	}
 	io::BufferedReadWriteStream outStream(voxel::RawVolume::size(actualRegion));
-	io::ZipWriteStream stream(outStream);
+	io::LZ4WriteStream stream(outStream);
 	if (stream.write(accessor.data(), voxel::RawVolume::size(actualRegion)) == -1) {
 		Log::error("Failed to compress memento volume data");
 		return MementoData();
 	}
-	stream.flush();
+	if (!stream.flush()) {
+		Log::error("Failed to finish memento compression");
+		return MementoData();
+	}
 	const size_t size = (size_t)outStream.size();
 	MementoData data(outStream.release(), size, actualRegion, volume->region());
 	if (region.isValid() && actualRegion != region) {
@@ -263,8 +267,27 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 		return false;
 	}
 
+	const voxel::Region &dataRegion = mementoData.dataRegion();
+	const size_t uncompressedBufferSize = voxel::RawVolume::size(dataRegion);
+	if (uncompressedBufferSize == 0) {
+		return false;
+	}
+	io::MemoryReadStream dataStream(mementoData._buffer, mementoData._compressedSize);
+	io::LZ4ReadStream stream(dataStream);
+	if (stream.size() != (int64_t)uncompressedBufferSize) {
+		Log::error("Invalid memento volume data size");
+		return false;
+	}
+	uint8_t *uncompressedBuf = (uint8_t *)core_malloc(uncompressedBufferSize);
+	if (uncompressedBuf == nullptr ||
+		stream.read(uncompressedBuf, uncompressedBufferSize) != (int64_t)uncompressedBufferSize) {
+		core_free(uncompressedBuf);
+		Log::error("Failed to decompress memento volume data");
+		return false;
+	}
+	// don't pass const voxel::Voxel here - would create a memory leak - see the RawVolume ctors
 	core::ScopedPtr<voxel::RawVolume> v(
-		voxel::toVolume(mementoData._buffer, (uint32_t)mementoData._compressedSize, mementoData.dataRegion()));
+		voxel::RawVolume::createRaw((voxel::Voxel *)uncompressedBuf, dataRegion));
 	if (!v) {
 		return false;
 	}
@@ -273,7 +296,7 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	// both sides of the mirror plane but previous states may only cover a
 	// partial region.
 	voxel::Region copyRegion = region;
-	copyRegion.cropTo(mementoData.dataRegion());
+	copyRegion.cropTo(dataRegion);
 	if (!volume->copyInto(*v, copyRegion)) {
 		Log::error("Failed to copy memento volume region into target volume");
 		return false;

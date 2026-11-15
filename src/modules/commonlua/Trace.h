@@ -4,7 +4,10 @@
 
 #pragma once
 
+#include <lua.h>
+
 #ifdef TRACY_ENABLE
+// TracyLua.hpp must be included after the Lua headers (see Tracy manual).
 #include "core/tracy/public/tracy/TracyLua.hpp"
 #endif
 
@@ -16,6 +19,10 @@ static int trace_Dummy(lua_State* s) {
 }
 #endif
 
+/**
+ * Register the global @c tracy table for manual Lua instrumentation
+ * (@c ZoneBegin / @c ZoneEnd / …) as described in the Tracy manual.
+ */
 static bool clua_registertrace(lua_State* s) {
 #ifdef TRACY_ENABLE
 	tracy::LuaRegister(s);
@@ -38,6 +45,10 @@ static bool clua_registertrace(lua_State* s) {
 	lua_setfield(s, -2, "ZoneName");
 	lua_pushcfunction(s, trace_Dummy);
 	lua_setfield(s, -2, "Message");
+	lua_pushcfunction(s, trace_Dummy);
+	lua_setfield(s, -2, "SectionEnter");
+	lua_pushcfunction(s, trace_Dummy);
+	lua_setfield(s, -2, "SectionLeave");
 	lua_setglobal(s, "tracy");
 	return true;
 #endif

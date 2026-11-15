@@ -8,6 +8,8 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
+#include "io/LZ4ReadStream.h"
+#include "io/MemoryReadStream.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/IKConstraint.h"
 #include "scenegraph/SceneGraph.h"
@@ -21,6 +23,29 @@
 namespace memento {
 
 class MementoChunkTest : public app::AbstractTest {};
+
+TEST_F(MementoChunkTest, SnapshotUsesLZ4AndRejectsCorruptedFrames) {
+	voxel::RawVolume source(voxel::Region(0, 3));
+	const voxel::Voxel value(voxel::VoxelType::Generic, 42, 8, voxel::FlagOutline, 3);
+	source.fill(value);
+	const MementoData data = MementoData::fromVolume(&source, source.region());
+	ASSERT_TRUE(data.hasVolume());
+	io::MemoryReadStream compressed(data.buffer(), data.size());
+	io::LZ4ReadStream decoded(compressed);
+	voxel::Voxel voxels[64];
+	ASSERT_EQ((int64_t)sizeof(voxels), decoded.size());
+	ASSERT_EQ((int)sizeof(voxels), decoded.read(voxels, sizeof(voxels)));
+	for (const voxel::Voxel &voxel : voxels) {
+		EXPECT_EQ(value, voxel);
+	}
+	MementoData corrupted(data);
+	((uint8_t *)corrupted.buffer())[corrupted.size() - 1] ^= 0xff;
+	voxel::RawVolume target(source.region());
+	EXPECT_FALSE(MementoData::toVolume(&target, corrupted, source.region()));
+	EXPECT_TRUE(target.isEmpty(target.region()));
+	ASSERT_TRUE(MementoData::toVolume(&target, data, source.region()));
+	EXPECT_EQ(value, target.voxel(0, 0, 0));
+}
 
 TEST_F(MementoChunkTest, SerializesWithoutMaterializingSource) {
 	voxel::RawVolume source(voxel::Region(-40, 216));

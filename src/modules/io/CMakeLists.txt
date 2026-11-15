@@ -4,6 +4,8 @@ set(SRCS
 	Archive.cpp Archive.h
 	BrotliReadStream.cpp BrotliReadStream.h
 	BrotliWriteStream.cpp BrotliWriteStream.h
+	LZ4ReadStream.cpp LZ4ReadStream.h
+	LZ4WriteStream.cpp LZ4WriteStream.h
 	Base64.cpp Base64.h
 	Base64Stream.cpp Base64Stream.h
 	CachingArchive.cpp CachingArchive.h
@@ -46,7 +48,7 @@ set(SRCS
 )
 
 set(LIB io)
-set(LIBS core lzfse minlzma brotli)
+set(LIBS core lzfse minlzma brotli lz4)
 
 if (USE_LIBDEFLATE)
 	find_package(libdeflate)
@@ -123,6 +125,7 @@ set(TEST_FILES
 set(TEST_SRCS
 	tests/BrotliReadStreamTest.cpp
 	tests/BrotliWriteStreamTest.cpp
+	tests/LZ4StreamTest.cpp
 	tests/Base64Test.cpp
 	tests/BufferedReadWriteStreamTest.cpp
 	tests/BufferedWriteStreamTest.cpp

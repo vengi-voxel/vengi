@@ -65,6 +65,9 @@ def convert_to_unix_line_endings(src, dest):
     and writes it to the destination.
     """
     try:
+        dest_dir = os.path.dirname(dest)
+        if dest_dir:
+            os.makedirs(dest_dir, exist_ok=True)
         with open(src, 'r', newline=None) as infile, open(dest, 'w', newline='\n') as outfile:
             for line in infile:
                 outfile.write(line.rstrip() + '\n')
@@ -455,6 +458,25 @@ def update_brotli():
         ]
     )
 
+def update_lz4():
+    # Level 3 (frame) build from https://github.com/lz4/lz4 - needed for streaming LZ4F API
+    update_target(
+        "lz4",
+        "https://github.com/lz4/lz4.git",
+        [
+            ("lib/lz4.c", "contrib/libs/lz4/lz4.c"),
+            ("lib/lz4.h", "contrib/libs/lz4/lz4.h"),
+            ("lib/lz4hc.c", "contrib/libs/lz4/lz4hc.c"),
+            ("lib/lz4hc.h", "contrib/libs/lz4/lz4hc.h"),
+            ("lib/lz4frame.c", "contrib/libs/lz4/lz4frame.c"),
+            ("lib/lz4frame.h", "contrib/libs/lz4/lz4frame.h"),
+            ("lib/lz4frame_static.h", "contrib/libs/lz4/lz4frame_static.h"),
+            ("lib/xxhash.c", "contrib/libs/lz4/xxhash.c"),
+            ("lib/xxhash.h", "contrib/libs/lz4/xxhash.h"),
+            ("lib/LICENSE", "contrib/libs/lz4/LICENSE"),
+        ]
+    )
+
 def update_minlzma():
     update_target(
         "minlzma",
@@ -528,6 +550,7 @@ def main():
         update_miniz,
         update_minlzma,
         update_brotli,
+        update_lz4,
         update_opengametools,
         update_imgui_markdown,
         update_gif_h
