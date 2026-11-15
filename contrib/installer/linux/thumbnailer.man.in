@@ -252,7 +252,7 @@ Override the pathtracer sample count from the selected quality. Only used with \
 .PP
 \fBvoxformat_voxelsize\fP: The number of voxels on the largest scene axis (0 = disabled, use scale cvars instead).
 .PP
-\fBvoxformat_vxllodhva\fP: Load the hva for animations
+\fBvoxformat_vxlloadhva\fP: Load the hva for animations
 .PP
 \fBvoxformat_withcolor\fP: Export with vertex colors
 .PP
