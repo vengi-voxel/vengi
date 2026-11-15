@@ -225,4 +225,39 @@ TEST_F(CachingArchiveTest, testAbsoluteFullPathRelativeSearchDirWindows) {
 	EXPECT_EQ(3, stream->size());
 }
 
+TEST_F(CachingArchiveTest, testLazyDirectExistsDoesNotRequireList) {
+	// Archive that can exists()/readStream() but fails list() - forces the direct-exists path.
+	class ExistsOnlyArchive : public Archive {
+	private:
+		MemoryArchivePtr _mem = openMemoryArchive();
+
+	public:
+		void add(const core::String &fileName, const uint8_t *data, size_t size) {
+			_mem->add(fileName, data, size);
+		}
+		bool exists(const core::String &file) const override {
+			return _mem->exists(file);
+		}
+		void list(const core::String &, ArchiveFiles &, const core::String &) const override {
+			ADD_FAILURE() << "list() should not be required for direct exists() hits";
+		}
+		SeekableReadStream *readStream(const core::String &filePath) override {
+			return _mem->readStream(filePath);
+		}
+		SeekableWriteStream *writeStream(const core::String &filePath) override {
+			return _mem->writeStream(filePath);
+		}
+	};
+
+	uint8_t buf[] = {10, 20, 30};
+	auto archive = core::make_shared<ExistsOnlyArchive>();
+	archive->add("parts/brick.dat", buf, sizeof(buf));
+
+	CachingArchive cache(archive);
+	cache.registerSearchDir("parts", "*.dat");
+	core::ScopedPtr<SeekableReadStream> stream(cache.findStream("brick.dat"));
+	ASSERT_TRUE(stream);
+	EXPECT_EQ(3, stream->size());
+}
+
 } // namespace io

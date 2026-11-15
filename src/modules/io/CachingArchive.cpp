@@ -5,7 +5,6 @@
 #include "CachingArchive.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/collection/DynamicStringMap.h"
 
 namespace io {
 
@@ -42,109 +41,166 @@ static bool relativePath(const core::String &dirPath, const core::String &fullPa
 	return false;
 }
 
+static bool matchesFilter(const core::String &name, const core::String &filter) {
+	return filter.empty() || core::string::fileMatchesMultiple(name.c_str(), filter.c_str());
+}
+
 } // namespace priv
 
 CachingArchive::CachingArchive(const ArchivePtr &archive) : _archive(archive) {
 }
 
-void CachingArchive::registerSearchDirRecursive(const core::String &path, const core::String &filter,
-											  const core::String &cachePrefix) {
-	const core::String prefix = priv::dirPrefix(path);
-	ArchiveFiles files;
-	_archive->list(path, files, filter);
-
-	core::DynamicStringMap<bool> subdirs;
-	int cached = 0;
-
-	for (const FilesystemEntry &entry : files) {
-		if (!entry.isFile()) {
-			continue;
-		}
-		core::String relative;
-		if (!priv::relativePath(path, entry.fullPath, relative)) {
-			// list() is already scoped to the search dir; fall back to the entry name so
-			// absolute fullPath values from e.g. FilesystemArchive are still cached.
-			if (entry.name.empty()) {
-				continue;
-			}
-			relative = entry.name;
-		}
-		const size_t slash = relative.find("/");
-		if (slash != core::String::npos) {
-			if (slash > 0) {
-				subdirs.put(relative.substr(0, slash), true);
-			}
-			continue;
-		}
-
-		const core::String lowerName = entry.name.toLower();
-		if (!_nameToPath.hasKey(lowerName)) {
-			_nameToPath.put(lowerName, entry.fullPath);
-		}
-		if (!cachePrefix.empty()) {
-			const core::String relKey = core::string::path(cachePrefix, entry.name).toLower();
-			if (!_nameToPath.hasKey(relKey)) {
-				_nameToPath.put(relKey, entry.fullPath);
-			}
-		}
-		++cached;
-	}
-
-	ArchiveFiles entries;
-	_archive->list(path, entries, "");
-	for (const FilesystemEntry &entry : entries) {
-		if (entry.isDirectory()) {
-			subdirs.put(entry.name, true);
-		}
-	}
-
-	for (const auto &iter : subdirs) {
-		const core::String subPath = core::string::path(path, iter->first);
-		const core::String subPrefix =
-			cachePrefix.empty() ? iter->first : core::string::path(cachePrefix, iter->first);
-		registerSearchDirRecursive(subPath, filter, subPrefix);
-	}
-
-	Log::debug("Registered search dir '%s' with filter '%s' (%i files cached)", path.c_str(), filter.c_str(), cached);
-}
-
 void CachingArchive::registerSearchDir(const core::String &path, const core::String &filter) {
-	registerSearchDirRecursive(path, filter, core::String::Empty);
+	SearchRoot root;
+	root.path = path;
+	root.filter = filter;
+	_roots.push_back(core::move(root));
+	Log::debug("Registered search dir '%s' with filter '%s' (lazy)", path.c_str(), filter.c_str());
 }
 
-static bool lookupCachedPath(const core::DynamicStringMap<core::String> &nameToPath, const core::String &filename,
-							 core::String &fullPath) {
+bool CachingArchive::lookupCachedPath(const core::String &filename, core::String &fullPath) const {
 	const core::String sanitized = core::string::sanitizePath(filename);
 	const core::String lower = sanitized.toLower();
-	if (nameToPath.get(lower, fullPath)) {
+	if (_nameToPath.get(lower, fullPath)) {
 		return true;
 	}
 	const core::String baseName = core::string::extractFilenameWithExtension(sanitized).toLower();
-	if (baseName != lower && nameToPath.get(baseName, fullPath)) {
+	if (baseName != lower && _nameToPath.get(baseName, fullPath)) {
 		return true;
 	}
 	return false;
 }
 
+bool CachingArchive::cacheEntry(const core::String &searchPath, const core::String &cachePrefix,
+								const FilesystemEntry &entry) const {
+	if (!entry.isFile()) {
+		return false;
+	}
+	core::String relative;
+	if (!priv::relativePath(searchPath, entry.fullPath, relative)) {
+		if (entry.name.empty()) {
+			return false;
+		}
+		relative = entry.name;
+	}
+	const size_t slash = relative.find("/");
+	if (slash != core::String::npos) {
+		return false;
+	}
+
+	bool added = false;
+	const core::String lowerName = entry.name.toLower();
+	if (!_nameToPath.hasKey(lowerName)) {
+		_nameToPath.put(lowerName, entry.fullPath);
+		added = true;
+	}
+	if (!cachePrefix.empty()) {
+		const core::String relKey = core::string::path(cachePrefix, entry.name).toLower();
+		if (!_nameToPath.hasKey(relKey)) {
+			_nameToPath.put(relKey, entry.fullPath);
+			added = true;
+		}
+	}
+	return added;
+}
+
+void CachingArchive::listDirIntoCache(SearchRoot &root, const core::String &relDir) const {
+	const core::String listKey = relDir.toLower();
+	if (root.listedDirs.hasKey(listKey)) {
+		return;
+	}
+	root.listedDirs.put(listKey, true);
+
+	const core::String searchPath =
+		relDir.empty() ? root.path : core::string::path(root.path, relDir);
+	ArchiveFiles files;
+	_archive->list(searchPath, files, root.filter);
+	int cached = 0;
+	for (const FilesystemEntry &entry : files) {
+		if (cacheEntry(searchPath, relDir, entry)) {
+			++cached;
+		}
+	}
+	Log::debug("Listed search dir '%s' filter '%s' (%i files cached)", searchPath.c_str(), root.filter.c_str(),
+			   cached);
+}
+
+bool CachingArchive::resolvePath(const core::String &filename, core::String &fullPath) const {
+	if (lookupCachedPath(filename, fullPath)) {
+		return true;
+	}
+
+	const core::String sanitized = core::string::sanitizePath(filename);
+	const core::String baseName = core::string::extractFilenameWithExtension(sanitized);
+
+	for (SearchRoot &root : _roots) {
+		if (!priv::matchesFilter(baseName, root.filter)) {
+			continue;
+		}
+
+		// Path relative to this search root (strip root prefix if the lookup includes it).
+		core::String relUnderRoot = sanitized;
+		const core::String prefix = priv::dirPrefix(root.path);
+		if (!prefix.empty() && core::string::startsWith(relUnderRoot, prefix)) {
+			relUnderRoot = relUnderRoot.substr(prefix.size());
+		}
+
+		const core::String candidateRel = core::string::path(root.path, relUnderRoot);
+		if (_archive->exists(candidateRel)) {
+			const core::String lower = sanitized.toLower();
+			if (!_nameToPath.hasKey(lower)) {
+				_nameToPath.put(lower, candidateRel);
+			}
+			if (baseName.toLower() != lower && !_nameToPath.hasKey(baseName.toLower())) {
+				_nameToPath.put(baseName.toLower(), candidateRel);
+			}
+			fullPath = candidateRel;
+			return true;
+		}
+		if (relUnderRoot != baseName) {
+			const core::String candidateBase = core::string::path(root.path, baseName);
+			if (_archive->exists(candidateBase)) {
+				const core::String lowerBase = baseName.toLower();
+				if (!_nameToPath.hasKey(lowerBase)) {
+					_nameToPath.put(lowerBase, candidateBase);
+				}
+				fullPath = candidateBase;
+				return true;
+			}
+		}
+
+		// Case-insensitive / absolute-fullPath archives: list only the needed directory.
+		const size_t slash = relUnderRoot.find("/");
+		const core::String parentDir =
+			slash == core::String::npos ? core::String::Empty : relUnderRoot.substr(0, slash);
+		listDirIntoCache(root, parentDir);
+		if (lookupCachedPath(filename, fullPath) || lookupCachedPath(relUnderRoot, fullPath) ||
+			lookupCachedPath(baseName, fullPath)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool CachingArchive::exists(const core::String &file) const {
-	core::String fullPath;
-	return lookupCachedPath(_nameToPath, file, fullPath);
+	core::String resolved;
+	return resolvePath(file, resolved);
 }
 
 core::String CachingArchive::fullPath(const core::String &file) const {
-	core::String fullPath;
-	if (lookupCachedPath(_nameToPath, file, fullPath)) {
-		return fullPath;
+	core::String resolved;
+	if (resolvePath(file, resolved)) {
+		return resolved;
 	}
 	return file;
 }
 
 SeekableReadStream *CachingArchive::findStream(const core::String &filename) {
-	core::String fullPath;
-	if (!lookupCachedPath(_nameToPath, filename, fullPath)) {
+	core::String resolved;
+	if (!resolvePath(filename, resolved)) {
 		return nullptr;
 	}
-	return _archive->readStream(fullPath);
+	return _archive->readStream(resolved);
 }
 
 } // namespace io
