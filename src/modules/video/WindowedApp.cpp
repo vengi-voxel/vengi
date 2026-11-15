@@ -742,7 +742,6 @@ app::AppState WindowedApp::onCleanup() {
 		SDL_DestroyWindow(_window);
 		_window = nullptr;
 	}
-	SDL_Quit();
 	video_trace_shutdown();
 
 	_keybindingHandler.shutdown(_keybindingsVersion);

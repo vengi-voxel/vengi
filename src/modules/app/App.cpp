@@ -1836,7 +1836,7 @@ AppState App::onCleanup() {
 
 	saveConfiguration();
 
-	_threadPool->shutdown();
+	_threadPool->shutdown(true);
 	http::shutdown();
 
 	command::Command::shutdown();
