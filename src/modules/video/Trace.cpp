@@ -3,6 +3,7 @@
  */
 
 #include "video/Trace.h"
+#include "core/Log.h"
 
 namespace video {
 
@@ -18,7 +19,9 @@ VideoTraceScoped::~VideoTraceScoped() {
 void traceVideoFrameEnd() {
 #ifdef TRACY_ENABLE
 #ifdef USE_GL_RENDERER
-	TracyGpuCollect
+	if (tracy::GetGpuCtx().ptr != nullptr) {
+		TracyGpuCollect;
+	}
 #endif
 #endif
 }
@@ -26,7 +29,10 @@ void traceVideoFrameEnd() {
 void traceVideoInit() {
 #ifdef TRACY_ENABLE
 #ifdef USE_GL_RENDERER
-	TracyGpuContext
+	TracyGpuContext;
+	if (tracy::GetGpuCtx().ptr == nullptr) {
+		Log::warn("TracyGpuContext failed; GPU zones disabled");
+	}
 #endif
 	// USE_VK_RENDERER: Tracy Vulkan context init requires VkDevice/VkQueue/VkCommandBuffer.
 	// Deferred until per-frame command buffer infrastructure is wired through.

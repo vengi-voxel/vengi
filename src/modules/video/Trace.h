@@ -65,7 +65,7 @@ extern void traceVideoFrameEnd();
 #define video_trace_begin(name)
 #define video_trace_begin_dynamic(name)
 #define video_trace_end()
-#define video_trace_scoped(name) TracyGpuNamedZone(__tracy_scoped_##name, #name, true)
+#define video_trace_scoped(name) TracyGpuNamedZone(__tracy_scoped_##name, #name, tracy::GetGpuCtx().ptr != nullptr)
 #else
 #define video_trace_begin(name) video::traceVideoBegin(#name)
 #define video_trace_begin_dynamic(name) video::traceVideoBegin(#name)

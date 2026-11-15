@@ -960,6 +960,7 @@ AppState App::onInit() {
 	metric::count("start", 1, {{"os", _osName}, {"os_version", _osVersion}});
 
 	core_trace_init();
+	core_trace_app_info(core::String::format("%s " PROJECT_VERSION, _appname.c_str()).c_str());
 
 	return AppState::Running;
 }

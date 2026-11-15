@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/Common.h"
 #include "command/Command.h"
+#include <string.h>
 
 #ifdef USE_EMTRACE
 #include <emscripten/trace.h>
@@ -84,6 +85,17 @@ void traceInit() {
 #endif
 }
 
+void traceAppInfo(const char *name) {
+#ifdef TRACY_ENABLE
+	if (name == nullptr || name[0] == '\0') {
+		return;
+	}
+	TracyAppInfo(name, strlen(name));
+#else
+	(void)name;
+#endif
+}
+
 void traceShutdown() {
 }
 
@@ -124,6 +136,11 @@ void traceMessage(const char* message) {
 
 void traceThread(const char* name) {
 	_threadName = name;
+#ifdef TRACY_ENABLE
+	if (name != nullptr && name[0] != '\0') {
+		tracy::SetThreadName(name);
+	}
+#endif
 }
 
 }

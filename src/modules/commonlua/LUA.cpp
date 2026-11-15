@@ -141,17 +141,21 @@ void LUA::openState() {
 	// Register panic callback function
 	lua_atpanic(_state, panicCB);
 
+	clua_registertrace(_state);
+
+#ifdef TRACY_ENABLE
+	// Automatic per-call/return Lua zones when a Tracy session is connected
+	// (TRACY_ON_DEMAND). Prefer this over the debug log hook.
+	lua_sethook(_state, tracy::LuaHook, LUA_MASKCALL | LUA_MASKRET, 0);
+#else
 	int mask = 0;
 	if (_debug) {
 		mask |= LUA_MASKCALL;
 		mask |= LUA_MASKRET;
 		mask |= LUA_MASKLINE;
 	}
-
-	// Register debug callback function
 	lua_sethook(_state, debugHook, mask, 0);
-
-	clua_registertrace(_state);
+#endif
 }
 
 void LUA::closeState() {
