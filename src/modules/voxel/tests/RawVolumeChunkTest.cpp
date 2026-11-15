@@ -253,6 +253,32 @@ TEST_F(RawVolumeChunkTest, SamplerNeighborsAtCoordinateLimits) {
 	RawVolume::setChunkedStorageThreshold(previous);
 }
 
+TEST_F(RawVolumeChunkTest, PositionReferenceTracksSamplerMovement) {
+	RawVolume volume(Region(-4, 4));
+	ASSERT_NE(nullptr, volume.voxels());
+	const auto check = [](auto &sampler) {
+		ASSERT_TRUE(sampler.setPosition(-2, 1, 0));
+		const glm::ivec3 &position = sampler.position();
+		EXPECT_EQ(glm::ivec3(-2, 1, 0), position);
+		sampler.movePositiveX(3);
+		EXPECT_EQ(glm::ivec3(1, 1, 0), position);
+		sampler.moveNegativeY(2);
+		EXPECT_EQ(glm::ivec3(1, -1, 0), position);
+		EXPECT_FALSE(sampler.setPosition(8, 1, 2));
+		EXPECT_EQ(glm::ivec3(8, 1, 2), position);
+		auto copy = sampler;
+		ASSERT_TRUE(copy.setPosition(-1, -2, -3));
+		EXPECT_EQ(glm::ivec3(-1, -2, -3), copy.position());
+		EXPECT_EQ(glm::ivec3(8, 1, 2), position);
+		ASSERT_TRUE(sampler.setPosition(0, 0, 0));
+		EXPECT_EQ(glm::ivec3(0), position);
+	};
+	RawVolume::Sampler generic(volume);
+	check(generic);
+	RawVolume::DenseSampler dense(volume);
+	check(dense);
+}
+
 TEST_F(RawVolumeChunkTest, DenseSamplerMatchesGenericSampler) {
 	for (int origin : {INT_MIN, -40, INT_MAX - 4}) {
 		RawVolume volume(Region(origin, origin + 4));

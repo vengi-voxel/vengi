@@ -95,7 +95,7 @@ public:
 	}
 
 	CORE_FORCE_INLINE const glm::ivec3 &position() const {
-		return *(const glm::ivec3*)&_posInVolume.x;
+		return _posInVolume;
 	}
 
 	CORE_FORCE_INLINE const Voxel &voxel() const {
@@ -344,7 +344,7 @@ public:
 		// Then we update the voxel pointer
 		if (currentPositionValid()) {
 			if constexpr (Dense) {
-				const glm::aligned_ivec4 local = _posInVolume - _region.getLowerCorner4();
+				const glm::ivec3 local = _posInVolume - glm::ivec3(_region.getLowerCorner4());
 				_currentVoxel = _volume->linearVoxels() + (int64_t)local.x +
 					(int64_t)local.y * dataYStride() + (int64_t)local.z * dataZStride();
 				return true;
@@ -506,7 +506,7 @@ protected:
 	voxel::Region _region;
 
 	// The current position in the volume
-	glm::aligned_ivec4 _posInVolume{0, 0, 0, 0};
+	alignas(16) glm::ivec3 _posInVolume{0, 0, 0};
 
 	/** Other current position information */
 	mutable Voxel *_currentVoxel = nullptr;
