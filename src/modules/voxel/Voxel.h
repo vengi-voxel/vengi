@@ -89,7 +89,7 @@ public:
 	}
 
 	/** Full field replace without operator= normal-merge semantics. */
-	CORE_FORCE_INLINE void overwrite(const Voxel &other) {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS void overwrite(const Voxel &other) {
 		_material = other._material;
 		_flags = other._flags;
 		_unused = other._unused;

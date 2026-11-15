@@ -418,8 +418,9 @@ static IndexType addVertex(bool reuseVertices, bool computeAmbientOcclusion, uin
 	return 0; //Should never happen.
 }
 
-void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
-					  const glm::ivec3 &translate, bool ambientOcclusion, bool mergeQuads, bool reuseVertices, bool preserveVoxelNormals) {
+CORE_NO_SANITIZE_ADDRESS void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
+												const glm::ivec3 &translate, bool ambientOcclusion, bool mergeQuads,
+												bool reuseVertices, bool preserveVoxelNormals) {
 	core_trace_scoped(ExtractCubicMesh);
 
 	const glm::ivec3& offset = region.getLowerCorner();

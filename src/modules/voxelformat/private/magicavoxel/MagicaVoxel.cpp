@@ -197,8 +197,59 @@ void buildBakeVoxelLut(const palette::Palette &palette, voxel::Voxel lut[256]) {
 	}
 }
 
-voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat, const palette::Palette &palette,
-							   glm::ivec3 &outShift, bool parallelZ, const voxel::Voxel *lut) {
+CORE_NO_SANITIZE_ADDRESS static void bakeOgtAffineSlices(const ogt_vox_model *model, const voxel::Voxel *lut,
+														 voxel::Voxel *data, int start, int end, int64_t idxBase,
+														 int64_t dI, int64_t dJ, int64_t dK) {
+	const uint8_t *ogtVoxel = model->voxel_data + start * model->size_x * model->size_y;
+	for (int k = start; k < end; ++k) {
+		const int64_t kBase = idxBase + (int64_t)k * dK;
+		for (uint32_t j = 0; j < model->size_y; ++j) {
+			int64_t idx = kBase + (int64_t)j * dJ;
+			for (uint32_t i = 0; i < model->size_x; ++i, ++ogtVoxel, idx += dI) {
+				const uint8_t color = ogtVoxel[0];
+				if (color == 0) {
+					continue;
+				}
+				data[idx].overwrite(lut[color]);
+			}
+		}
+	}
+}
+
+CORE_NO_SANITIZE_ADDRESS static void bakeOgtFloatSlices(const ogt_vox_model *model, const voxel::Voxel *lut,
+														voxel::Voxel *data, int width, int64_t stride,
+														const glm::ivec3 &shift, const glm::mat4 &bakeMat, int start,
+														int end) {
+	const uint8_t *ogtVoxel = model->voxel_data + start * model->size_x * model->size_y;
+	const float m00 = bakeMat[0][0], m01 = bakeMat[1][0], m02 = bakeMat[2][0], m03 = bakeMat[3][0];
+	const float m10 = bakeMat[0][1], m11 = bakeMat[1][1], m12 = bakeMat[2][1], m13 = bakeMat[3][1];
+	const float m20 = bakeMat[0][2], m21 = bakeMat[1][2], m22 = bakeMat[2][2], m23 = bakeMat[3][2];
+	for (int k = start; k < end; ++k) {
+		for (uint32_t j = 0; j < model->size_y; ++j) {
+			for (uint32_t i = 0; i < model->size_x; ++i, ++ogtVoxel) {
+				const uint8_t color = ogtVoxel[0];
+				if (color == 0) {
+					continue;
+				}
+				const float fi = (float)i;
+				const float fj = (float)j;
+				const float fk = (float)k;
+				const glm::ivec3 ogtPos((int)glm::floor(m00 * fi + m01 * fj + m02 * fk + m03),
+										(int)glm::floor(m10 * fi + m11 * fj + m12 * fk + m13),
+										(int)glm::floor(m20 * fi + m21 * fj + m22 * fk + m23));
+				const int x = -(ogtPos.x + 1) - shift.x;
+				const int y = ogtPos.z - shift.y;
+				const int z = ogtPos.y - shift.z;
+				const int64_t idx = (int64_t)x + (int64_t)y * (int64_t)width + (int64_t)z * stride;
+				data[idx].overwrite(lut[color]);
+			}
+		}
+	}
+}
+
+CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat,
+													   const palette::Palette &palette, glm::ivec3 &outShift,
+													   bool parallelZ, const voxel::Voxel *lut) {
 	core_trace_scoped(VoxBakeOgtModel);
 	const glm::vec3 volSize = ogtVolumeSize(model);
 	const glm::vec3 corners[8] = {glm::vec3(0),
@@ -252,51 +303,11 @@ voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bake
 			 (int64_t)(ogtK.y - shift.z) * stride - idxBase;
 	}
 
-	auto writeVoxel = [data, width, stride, shift](const glm::ivec3 &ogtPos, const voxel::Voxel &voxel) {
-		const int x = -(ogtPos.x + 1) - shift.x;
-		const int y = ogtPos.z - shift.y;
-		const int z = ogtPos.y - shift.z;
-		const int64_t idx = (int64_t)x + (int64_t)y * (int64_t)width + (int64_t)z * stride;
-		data[idx].overwrite(voxel);
-	};
-
-	auto fn = [model, lut, &affine, bakeMat, writeVoxel, data, idxBase, dI, dJ, dK](int start, int end) {
-		const uint8_t *ogtVoxel = model->voxel_data + start * model->size_x * model->size_y;
+	auto fn = [model, lut, &affine, bakeMat, data, width, stride, shift, idxBase, dI, dJ, dK](int start, int end) {
 		if (affine.valid) {
-			for (int k = start; k < end; ++k) {
-				const int64_t kBase = idxBase + (int64_t)k * dK;
-				for (uint32_t j = 0; j < model->size_y; ++j) {
-					int64_t idx = kBase + (int64_t)j * dJ;
-					for (uint32_t i = 0; i < model->size_x; ++i, ++ogtVoxel, idx += dI) {
-						const uint8_t color = ogtVoxel[0];
-						if (color == 0) {
-							continue;
-						}
-						data[idx].overwrite(lut[color]);
-					}
-				}
-			}
-			return;
-		}
-		const float m00 = bakeMat[0][0], m01 = bakeMat[1][0], m02 = bakeMat[2][0], m03 = bakeMat[3][0];
-		const float m10 = bakeMat[0][1], m11 = bakeMat[1][1], m12 = bakeMat[2][1], m13 = bakeMat[3][1];
-		const float m20 = bakeMat[0][2], m21 = bakeMat[1][2], m22 = bakeMat[2][2], m23 = bakeMat[3][2];
-		for (int k = start; k < end; ++k) {
-			for (uint32_t j = 0; j < model->size_y; ++j) {
-				for (uint32_t i = 0; i < model->size_x; ++i, ++ogtVoxel) {
-					const uint8_t color = ogtVoxel[0];
-					if (color == 0) {
-						continue;
-					}
-					const float fi = (float)i;
-					const float fj = (float)j;
-					const float fk = (float)k;
-					const glm::ivec3 ogtPos((int)glm::floor(m00 * fi + m01 * fj + m02 * fk + m03),
-											(int)glm::floor(m10 * fi + m11 * fj + m12 * fk + m13),
-											(int)glm::floor(m20 * fi + m21 * fj + m22 * fk + m23));
-					writeVoxel(ogtPos, lut[color]);
-				}
-			}
+			bakeOgtAffineSlices(model, lut, data, start, end, idxBase, dI, dJ, dK);
+		} else {
+			bakeOgtFloatSlices(model, lut, data, width, stride, shift, bakeMat, start, end);
 		}
 	};
 

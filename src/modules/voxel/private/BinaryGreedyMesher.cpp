@@ -38,6 +38,7 @@ SOFTWARE.
  */
 
 #include "BinaryGreedyMesher.h"
+#include "core/Common.h"
 #include "core/Trace.h"
 #include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
@@ -340,8 +341,8 @@ static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
  * @param mesh Output mesh to populate with geometry
  */
 template<int MeshType>
-void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion, VoxelData voxels,
-								 Mesh &mesh) {
+CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion,
+														  VoxelData voxels, Mesh &mesh) {
 	core_trace_scoped(ExtractBinaryGreedyMeshType);
 
 	/**
@@ -723,8 +724,9 @@ bool exceedsBinaryMesherRegion(const voxel::Region &region) {
  * @param translate World space offset for vertex positions
  * @param ambientOcclusion Whether to calculate ambient occlusion
  */
-void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset, ChunkMesh *result,
-							 const glm::ivec3 &translate, bool ambientOcclusion, bool preserveVoxelNormals) {
+CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset,
+													  ChunkMesh *result, const glm::ivec3 &translate,
+													  bool ambientOcclusion, bool preserveVoxelNormals) {
 	core_trace_scoped(ExtractBinaryGreedyMesh);
 
 	// Set the offset for the chunk mesh

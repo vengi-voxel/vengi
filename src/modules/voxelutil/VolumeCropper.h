@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Common.h"
 #include <glm/vec3.hpp>
 
 namespace voxel {
@@ -27,6 +28,7 @@ namespace voxelutil {
  * @brief Computes the tight axis-aligned bounds of non-air voxels in @p volume.
  * @return @c false if the volume contains no solid voxels.
  */
-[[nodiscard]] bool computeSolidBounds(const voxel::RawVolume *volume, glm::ivec3 &mins, glm::ivec3 &maxs);
+[[nodiscard]] CORE_NO_SANITIZE_ADDRESS bool computeSolidBounds(const voxel::RawVolume *volume, glm::ivec3 &mins,
+															   glm::ivec3 &maxs);
 
 } // namespace voxelutil

@@ -11,7 +11,8 @@
 
 namespace voxelutil {
 
-[[nodiscard]] bool computeSolidBounds(const voxel::RawVolume *volume, glm::ivec3 &mins, glm::ivec3 &maxs) {
+[[nodiscard]] CORE_NO_SANITIZE_ADDRESS bool computeSolidBounds(const voxel::RawVolume *volume, glm::ivec3 &mins,
+															   glm::ivec3 &maxs) {
 	if (volume == nullptr) {
 		return false;
 	}

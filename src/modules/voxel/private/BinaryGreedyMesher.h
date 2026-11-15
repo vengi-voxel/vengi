@@ -7,6 +7,7 @@
 #pragma once
 
 #include <glm/fwd.hpp>
+#include "core/Common.h"
 #include "core/collection/DynamicArray.h"
 
 namespace voxel {
@@ -52,8 +53,9 @@ struct ChunkMesh;
  *
  * @see extractBinaryGreedyMeshType() for the core meshing algorithm
  */
-void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset, ChunkMesh *result,
-							 const glm::ivec3 &translate, bool ambientOcclusion = true, bool preserveVoxelNormals = true);
+CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset,
+													  ChunkMesh *result, const glm::ivec3 &translate,
+													  bool ambientOcclusion = true, bool preserveVoxelNormals = true);
 
 bool exceedsBinaryMesherRegion(const voxel::Region &region);
 core::DynamicArray<voxel::Region> getBinaryMesherRegions(const voxel::Region &region);

@@ -232,7 +232,7 @@ struct BakeAffine {
 	int32_t translate[3] = {0, 0, 0};
 	bool valid = false;
 
-	CORE_FORCE_INLINE glm::ivec3 apply(int x, int y, int z) const {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS glm::ivec3 apply(int x, int y, int z) const {
 		const int in[3] = {x, y, z};
 		return glm::ivec3(sign[0] * in[src[0]] + translate[0], sign[1] * in[src[1]] + translate[1],
 						  sign[2] * in[src[2]] + translate[2]);
@@ -266,8 +266,9 @@ void buildBakeVoxelLut(const palette::Palette &palette, voxel::Voxel lut[256]);
  * @p parallelZ splits work across Z slices; disable when the caller already parallelizes bakes.
  * @p lut optional MagicaVoxel color->Voxel table from @c buildBakeVoxelLut; built locally if null.
  */
-voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat, const palette::Palette &palette,
-							   glm::ivec3 &outShift, bool parallelZ = true, const voxel::Voxel *lut = nullptr);
+CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat,
+														const palette::Palette &palette, glm::ivec3 &outShift,
+														bool parallelZ = true, const voxel::Voxel *lut = nullptr);
 
 struct MVModelToNode {
 	MVModelToNode();

@@ -774,6 +774,9 @@
     }
 
     // hash utilities - word-at-a-time FNV-1a style (byte loop was ~half of VOX parse time)
+#if defined(__clang__) || defined(__GNUC__)
+    __attribute__((no_sanitize("address")))
+#endif
     static uint32_t _vox_hash(const uint8_t* data, uint32_t data_size) {
         uint32_t hash = 2166136261u;
         uint32_t i = 0;

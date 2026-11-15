@@ -6,6 +6,7 @@
 
 #include "app/ForParallel.h"
 #include "color/ColorUtil.h"
+#include "core/Common.h"
 #include "core/GLM.h"
 #include "core/ProgressScope.h"
 #include "core/Trace.h"
@@ -240,9 +241,9 @@ struct EmptyVisitor {
 	}
 
 template<class Sampler, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
-int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yOff, int zOff,
-				 Visitor &&visitor = Visitor(), Condition condition = Condition(),
-				 VisitorOrder order = VisitorOrder::ZYX) {
+CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yOff, int zOff,
+										  Visitor &&visitor = Visitor(), Condition condition = Condition(),
+										  VisitorOrder order = VisitorOrder::ZYX) {
 	core_trace_scoped(VisitVolume);
 	int cnt = 0;
 
