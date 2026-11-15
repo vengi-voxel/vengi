@@ -171,6 +171,10 @@ public:
 	 */
 	glm::vec3 centerPos(int idx, bool applyModel) const;
 	const glm::mat4 &model(int idx) const;
+	/**
+	 * @return @c true if @p model already matches the stored model matrix (exact float compare).
+	 */
+	bool sameModelMatrix(int idx, const glm::mat4 &model) const;
 	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &maxs);
 
 	/**

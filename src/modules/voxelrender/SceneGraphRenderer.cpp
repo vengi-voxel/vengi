@@ -173,6 +173,10 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	const glm::vec3 &pivot = node.pivot();
 	const glm::vec3 dimensions(region.getDimensionsInVoxels());
 	const glm::mat4 worldMatrix = glm::translate(wm, -pivot * dimensions);
+	// Static scenes recompute the same matrix every frame; skip AABB rebuild when unchanged.
+	if (meshState->sameModelMatrix(idx, worldMatrix)) {
+		return;
+	}
 	glm::vec3 mins;
 	glm::vec3 maxs;
 	region.transformArvo(worldMatrix, mins, maxs);

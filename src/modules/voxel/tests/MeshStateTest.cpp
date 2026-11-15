@@ -8,6 +8,7 @@
 #include "palette/Palette.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/SurfaceExtractor.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace voxel {
 
@@ -92,6 +93,23 @@ TEST_F(MeshStateTest, testExtractRegionNeighborCounts) {
 	meshState.scheduleRegionExtraction(0, voxel::Region(20, 10, 12, 20, 10, 12));
 	EXPECT_EQ(1, meshState.pendingExtractions()) << "interior must not fan out to neighboring chunks";
 
+	(void)meshState.shutdown();
+}
+
+TEST_F(MeshStateTest, testSameModelMatrix) {
+	MeshState meshState;
+	meshState.construct();
+	meshState.init();
+	voxel::RawVolume v(voxel::Region(0, 1));
+	palette::Palette pal;
+	pal.nippon();
+	bool deleted = false;
+	(void)meshState.setVolume(0, &v, &pal, nullptr, true, deleted);
+	const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+	EXPECT_FALSE(meshState.sameModelMatrix(0, model));
+	ASSERT_TRUE(meshState.setModelMatrix(0, model, glm::vec3(0.0f), glm::vec3(1.0f)));
+	EXPECT_TRUE(meshState.sameModelMatrix(0, model));
+	EXPECT_FALSE(meshState.sameModelMatrix(0, glm::mat4(1.0f)));
 	(void)meshState.shutdown();
 }
 

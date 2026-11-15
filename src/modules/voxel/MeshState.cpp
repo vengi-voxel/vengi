@@ -81,6 +81,13 @@ const glm::mat4 &MeshState::model(int idx) const {
 	return _volumeData[idx]._model;
 }
 
+bool MeshState::sameModelMatrix(int idx, const glm::mat4 &model) const {
+	if (idx < 0 || idx >= (int)_volumeData.size()) {
+		return false;
+	}
+	return _volumeData[idx]._model == model;
+}
+
 bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &maxs) {
 	if (idx < 0) {
 		Log::error("Given id %i is out of bounds", idx);

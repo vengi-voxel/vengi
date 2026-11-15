@@ -10,6 +10,7 @@
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
 #include "voxelrender/SceneGraphRenderer.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 /**
  * @brief Benchmark-only class that inherits from SceneGraphRenderer to access protected methods
@@ -84,6 +85,28 @@ public:
 
 BENCHMARK_DEFINE_F(SceneGraphRendererBenchmark, PrepareMeshStateTransform)(benchmark::State &state) {
 	const scenegraph::FrameIndex frame = 0;
+	_sceneGraph.buildFrameTransforms(frame);
+	for (auto _ : state) {
+		for (int i = 0; i < NumNodes; ++i) {
+			const int nodeId = _nodeIds[i];
+			const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+			const int idx = _renderer.getVolumeIdx(node);
+			// Force AABB rebuild to measure the dirty path
+			_meshState->setModelMatrix(idx, glm::mat4(1.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+			_renderer.prepareMeshStateTransform(_meshState, _sceneGraph, frame, node, idx);
+		}
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphRendererBenchmark, PrepareMeshStateTransformUnchanged)(benchmark::State &state) {
+	const scenegraph::FrameIndex frame = 0;
+	_sceneGraph.buildFrameTransforms(frame);
+	for (int i = 0; i < NumNodes; ++i) {
+		const int nodeId = _nodeIds[i];
+		const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
+		const int idx = _renderer.getVolumeIdx(node);
+		_renderer.prepareMeshStateTransform(_meshState, _sceneGraph, frame, node, idx);
+	}
 	for (auto _ : state) {
 		for (int i = 0; i < NumNodes; ++i) {
 			const int nodeId = _nodeIds[i];
@@ -96,15 +119,18 @@ BENCHMARK_DEFINE_F(SceneGraphRendererBenchmark, PrepareMeshStateTransform)(bench
 
 BENCHMARK_DEFINE_F(SceneGraphRendererBenchmark, PrepareMeshStateTransformSingle)(benchmark::State &state) {
 	const scenegraph::FrameIndex frame = 0;
+	_sceneGraph.buildFrameTransforms(frame);
 	const int nodeId = _nodeIds[0];
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	const int idx = _renderer.getVolumeIdx(node);
+	_renderer.prepareMeshStateTransform(_meshState, _sceneGraph, frame, node, idx);
 	for (auto _ : state) {
 		_renderer.prepareMeshStateTransform(_meshState, _sceneGraph, frame, node, idx);
 	}
 }
 
 BENCHMARK_REGISTER_F(SceneGraphRendererBenchmark, PrepareMeshStateTransform);
+BENCHMARK_REGISTER_F(SceneGraphRendererBenchmark, PrepareMeshStateTransformUnchanged);
 BENCHMARK_REGISTER_F(SceneGraphRendererBenchmark, PrepareMeshStateTransformSingle);
 
 BENCHMARK_MAIN();
