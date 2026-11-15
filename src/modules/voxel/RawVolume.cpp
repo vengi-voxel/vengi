@@ -870,9 +870,6 @@ void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
 	_data[index] = voxel;
 }
 
-/**
- * This function should probably be made internal...
- */
 void RawVolume::initialise(const Region &regValidRegion) {
 	_region = regValidRegion;
 
@@ -880,7 +877,6 @@ void RawVolume::initialise(const Region &regValidRegion) {
 	core_assert_msg(height() > 0, "Volume height must be greater than zero.");
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
-	// Create the data
 	const size_t size = RawVolume::size(_region);
 	_data = (Voxel *)core_malloc(size);
 	if (_data == nullptr) {
@@ -889,7 +885,6 @@ void RawVolume::initialise(const Region &regValidRegion) {
 		return;
 	}
 
-	// Clear to zeros
 	clear();
 }
 
