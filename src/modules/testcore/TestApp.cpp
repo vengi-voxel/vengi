@@ -29,6 +29,7 @@ TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPt
 	_systemLanguage = app::Language::fromSpec("aa");
 	_persistUISettings = false;
 	_showConsole = false;
+	_skipCrashDialog = true;
 }
 
 TestApp::~TestApp() {

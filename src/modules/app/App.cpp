@@ -375,66 +375,71 @@ void App::onFrame() {
 
 			if (createPid()) {
 				Log::error("Previous session crashed for %s", _appname.c_str());
-				SDL_MessageBoxData messageboxdata;
-				core_memset(&messageboxdata, 0, sizeof(messageboxdata));
-				messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
-				messageboxdata.title = "Detected previous crash";
 				const io::FilePtr &file = _filesystem->open(core_crashlog_path(), io::FileMode::SysRead);
 				core::String crashLog = file->load();
 				const core::String crashlogFilename = file->name();
 				file->close();
-				messageboxdata.numbuttons = crashLog.empty() ? 2 : 4;
-				if (messageboxdata.numbuttons == 4) {
-					messageboxdata.message = "Please upload the crash logs."
-						"\n"
-						"If the error persists, reset the configuration\n\n";
+				// Unclean kills leave app.pid without a crash.log; don't block startup
+				// on a modal. Profiling/automation can also set VENGI_SKIP_CRASH_DIALOG=1
+				const char *skipCrashDialog = SDL_getenv("VENGI_SKIP_CRASH_DIALOG");
+				const bool skipDialog = _skipCrashDialog || crashLog.empty() ||
+					(skipCrashDialog != nullptr && skipCrashDialog[0] != '\0' && skipCrashDialog[0] != '0');
+				if (skipDialog) {
+					if (crashLog.empty()) {
+						Log::warn("Stale app.pid without crash.log - continuing");
+					} else {
+						Log::warn("Skipping crash dialog");
+					}
 				} else {
-					messageboxdata.message = "If the error persists, reset the configuration\n\n";
-				}
-				SDL_MessageBoxButtonData buttons[4];
-				core_memset(&buttons, 0, sizeof(buttons));
-				buttons[0].text = "Reset";
-				buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-				buttons[1].text = "Continue";
-				buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-				buttons[2].text = "Upload";
-				if (!crashLog.empty()) {
+					SDL_MessageBoxData messageboxdata;
+					core_memset(&messageboxdata, 0, sizeof(messageboxdata));
+					messageboxdata.flags = SDL_MESSAGEBOX_ERROR;
+					messageboxdata.title = "Detected previous crash";
+					messageboxdata.numbuttons = 4;
+					messageboxdata.message = "Please upload the crash logs."
+											 "\n"
+											 "If the error persists, reset the configuration\n\n";
+					SDL_MessageBoxButtonData buttons[4];
+					core_memset(&buttons, 0, sizeof(buttons));
+					buttons[0].text = "Reset";
+					buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+					buttons[1].text = "Continue";
+					buttons[2].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+					buttons[2].text = "Upload";
 					buttons[3].text = "Copy to clipboard";
-				}
-				buttons[0].buttonID = 0;
-				buttons[1].buttonID = 1;
-				buttons[2].buttonID = 2;
-				if (!crashLog.empty()) {
+					buttons[0].buttonID = 0;
+					buttons[1].buttonID = 1;
+					buttons[2].buttonID = 2;
 					buttons[3].buttonID = 3;
-				}
-				messageboxdata.buttons = buttons;
-				int buttonId = -1;
-				if (SDL_ShowMessageBox(&messageboxdata, &buttonId) == 0) {
-					if (buttonId == 0) {
-						Log::info("Reset cvars to their default values");
-						core::Var::visit([](const core::VarPtr &var) { var->reset(); });
-					}
-					if (buttonId == 2) {
-						Log::info("Upload crash log");
-						http::Request request("https://vengi-voxel.de/api/crashlog", http::RequestType::POST);
-						request.setBody(crashLog);
-						const core::String userAgent = fullAppname() + "/" PROJECT_VERSION;
-						request.setUserAgent(userAgent);
-						request.addHeader("Content-Type", "text/plain");
-						request.addHeader("X-OperatingSystem", _osName);
-						request.addHeader("X-OperatingSystemVersion", _osVersion);
-						static http::Client crashLogClient;
-						crashLogClient.execute(request, [crashlogFilename](const http::Response &response) {
-							if (response.success && response.statusCode >= 200 && response.statusCode < 300) {
-								io::Filesystem::sysRemoveFile(crashlogFilename);
-							} else {
-								Log::error("Failed to upload crash log with status: %i", response.statusCode);
-							}
-						});
-					}
-					if (buttonId == 3 && !crashLog.empty()) {
-						Log::info("Copy crash log to clipboard");
-						SDL_SetClipboardText(crashLog.c_str());
+					messageboxdata.buttons = buttons;
+					int buttonId = -1;
+					if (SDL_ShowMessageBox(&messageboxdata, &buttonId) == 0) {
+						if (buttonId == 0) {
+							Log::info("Reset cvars to their default values");
+							core::Var::visit([](const core::VarPtr &var) { var->reset(); });
+						}
+						if (buttonId == 2) {
+							Log::info("Upload crash log");
+							http::Request request("https://vengi-voxel.de/api/crashlog", http::RequestType::POST);
+							request.setBody(crashLog);
+							const core::String userAgent = fullAppname() + "/" PROJECT_VERSION;
+							request.setUserAgent(userAgent);
+							request.addHeader("Content-Type", "text/plain");
+							request.addHeader("X-OperatingSystem", _osName);
+							request.addHeader("X-OperatingSystemVersion", _osVersion);
+							static http::Client crashLogClient;
+							crashLogClient.execute(request, [crashlogFilename](const http::Response &response) {
+								if (response.success && response.statusCode >= 200 && response.statusCode < 300) {
+									io::Filesystem::sysRemoveFile(crashlogFilename);
+								} else {
+									Log::error("Failed to upload crash log with status: %i", response.statusCode);
+								}
+							});
+						}
+						if (buttonId == 3) {
+							Log::info("Copy crash log to clipboard");
+							SDL_SetClipboardText(crashLog.c_str());
+						}
 					}
 				}
 			}

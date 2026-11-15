@@ -9,11 +9,9 @@
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicStringMap.h"
-#include "core/collection/Set.h"
 #include "engine-config.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/FormatDescription.h"
-#include "io/MemoryReadStream.h"
 #include "palette/FormatConfig.h"
 #include "palette/PaletteFormatDescription.h"
 #include "voxedit-util/modifier/brush/LUABrush.h"
@@ -22,12 +20,12 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/LUAApi.h"
 #include "json/JSON.h"
-#include <ctype.h>
 
 FormatPrinter::FormatPrinter(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
 	init(ORGANISATION, "formatprinter");
 	_saveConfiguration = false;
+	_skipCrashDialog = true;
 }
 
 app::AppState FormatPrinter::onConstruct() {
