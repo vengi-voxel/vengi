@@ -3,19 +3,17 @@
  */
 
 #include "CubicSurfaceExtractor.h"
-#include "app/Async.h"
 #include "core/Common.h"
-#include "core/concurrent/Atomic.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
-#include "core/Common.h"
 #include "core/Assert.h"
 #include "core/Enum.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/NonCopyable.h"
+#include "core/collection/DynamicMap.h"
 #include "voxel/Region.h"
 #include "core/Trace.h"
 #include "voxel/Face.h"
@@ -88,10 +86,19 @@ public:
 };
 
 /**
- * @brief Should be a list because random inserts which we need in @c performQuadMerging are O(1)
+ * @brief Should be a list because random erase in @c performQuadMerging is O(1)
  */
 typedef std::list<Quad> QuadList;
 typedef std::vector<QuadList> QuadListVector;
+
+/**
+ * Undirected edge key for adjacent-quad lookup during merging.
+ */
+static CORE_FORCE_INLINE uint64_t quadEdgeKey(IndexType a, IndexType b) {
+	const uint64_t minV = a < b ? (uint64_t)a : (uint64_t)b;
+	const uint64_t maxV = a < b ? (uint64_t)b : (uint64_t)a;
+	return (minV << 32) | maxV;
+}
 
 /**
  * @section Surface extraction
@@ -229,68 +236,75 @@ static bool mergeQuadsAO(Quad& q1, Quad& q2, Mesh* meshCurrent) {
 
 template<bool AmbientOcclusion>
 static bool performQuadMerging(QuadList &quads, Mesh *meshCurrent) {
-	if (quads.empty()) {
+	if (quads.size() < 2) {
 		return false;
 	}
 	core_trace_scoped(PerformQuadMerging);
-
-	if (quads.size() > 1000) {
-		const size_t nBuckets = (quads.size() + 1000 - 1) / 1000;
-		std::vector<QuadList> buckets(nBuckets);
-		auto it = quads.begin();
-		const size_t bucketSize = quads.size() / nBuckets;
-		for (size_t i = 0; i < nBuckets; ++i) {
-			auto end = it;
-			if (i == nBuckets - 1) {
-				end = quads.end();
-			} else {
-				std::advance(end, bucketSize);
-			}
-			buckets[i].splice(buckets[i].begin(), quads, it, end);
-			it = end;
-		}
-
-		core::AtomicBool didMergeAny{false};
-		app::for_parallel(0, (int)nBuckets, [&](int start, int end) {
-			for (int i = start; i < end; ++i) {
-				if (performQuadMerging<AmbientOcclusion>(buckets[i], meshCurrent)) {
-					didMergeAny = true;
-				}
-			}
-		});
-
-		for (auto &bucket : buckets) {
-			quads.splice(quads.end(), bucket);
-		}
-		return didMergeAny;
-	}
-	bool didMerge = false;
-
-	// TODO: PERF: this loop is eliminating duplicates in O(n^2)
-	// we could do better with building an edge map or similar structure
-	// and only merge quads that share an edge
 	Log::trace("Merge quads: starting with %i quads", (int)quads.size());
-	for (QuadList::iterator outerIter = quads.begin(); outerIter != quads.end(); ++outerIter) {
-		QuadList::iterator innerIter = outerIter;
-		++innerIter;
-		while (innerIter != quads.end()) {
-			Quad& q1 = *outerIter;
-			Quad& q2 = *innerIter;
 
-			bool result;
-			if constexpr (AmbientOcclusion) {
-				result = mergeQuadsAO(q1, q2, meshCurrent);
-			} else {
-				result = mergeQuads(q1, q2, meshCurrent);
-			}
+	// Only quads that share an edge can merge. Map each undirected edge to the
+	// earlier quad that owns it and match later quads against that map (O(n)
+	// instead of the previous all-pairs O(n^2) scan).
+	using EdgeMap = core::DynamicMap<uint64_t, QuadList::iterator, 4093>;
+	EdgeMap edgeMap;
+	edgeMap.reserve(quads.size() * 2);
 
-			if (result) {
+	auto removeEdgeIfOwner = [&edgeMap](uint64_t key, QuadList::iterator expected) {
+		QuadList::iterator current;
+		if (edgeMap.get(key, current) && current == expected) {
+			edgeMap.remove(key);
+		}
+	};
+
+	bool didMerge = false;
+	for (QuadList::iterator iter = quads.begin(); iter != quads.end(); ++iter) {
+		for (;;) {
+			const Quad &q = *iter;
+			const uint64_t keys[4] = {quadEdgeKey(q.vertices[0], q.vertices[1]),
+									  quadEdgeKey(q.vertices[1], q.vertices[2]),
+									  quadEdgeKey(q.vertices[2], q.vertices[3]),
+									  quadEdgeKey(q.vertices[3], q.vertices[0])};
+
+			bool merged = false;
+			for (int e = 0; e < 4; ++e) {
+				QuadList::iterator other;
+				if (!edgeMap.get(keys[e], other) || other == iter) {
+					continue;
+				}
+
+				bool result;
+				if constexpr (AmbientOcclusion) {
+					result = mergeQuadsAO(*iter, *other, meshCurrent);
+				} else {
+					result = mergeQuads(*iter, *other, meshCurrent);
+				}
+				if (!result) {
+					continue;
+				}
+
+				const IndexType ov0 = other->vertices[0];
+				const IndexType ov1 = other->vertices[1];
+				const IndexType ov2 = other->vertices[2];
+				const IndexType ov3 = other->vertices[3];
+				removeEdgeIfOwner(quadEdgeKey(ov0, ov1), other);
+				removeEdgeIfOwner(quadEdgeKey(ov1, ov2), other);
+				removeEdgeIfOwner(quadEdgeKey(ov2, ov3), other);
+				removeEdgeIfOwner(quadEdgeKey(ov3, ov0), other);
+				quads.erase(other);
 				didMerge = true;
-				innerIter = quads.erase(innerIter);
-			} else {
-				++innerIter;
+				merged = true;
+				break;
+			}
+			if (!merged) {
+				break;
 			}
 		}
+
+		const Quad &q = *iter;
+		edgeMap.putIfAbsent(quadEdgeKey(q.vertices[0], q.vertices[1]), iter);
+		edgeMap.putIfAbsent(quadEdgeKey(q.vertices[1], q.vertices[2]), iter);
+		edgeMap.putIfAbsent(quadEdgeKey(q.vertices[2], q.vertices[3]), iter);
+		edgeMap.putIfAbsent(quadEdgeKey(q.vertices[3], q.vertices[0]), iter);
 	}
 
 	return didMerge;

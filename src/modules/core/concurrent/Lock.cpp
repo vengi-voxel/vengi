@@ -45,10 +45,10 @@ void Lock::lock() const {
 }
 
 void Lock::unlock() const {
-	SDL_UnlockMutex(_mutex);
 #ifdef TRACY_ENABLE
-	_ctx.AfterUnlock();
+	_ctx.BeforeUnlock();
 #endif
+	SDL_UnlockMutex(_mutex);
 }
 
 bool Lock::try_lock() const {

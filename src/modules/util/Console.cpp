@@ -286,7 +286,7 @@ void Console::logOutputFunction(void *userdata, int category, SDL_LogPriority pr
 
 void Console::addLogLine(int category, Log::Level priority, const char *message) {
 	_messages.emplace_back(priority, removeAnsiColors(message));
-	if (_useOriginalLogFunction) {
+	if (_useOriginalLogFunction && _logFunction != nullptr) {
 		SDL_LogPriority prio = toPriority(priority);
 		((SDL_LogOutputFunction)_logFunction)(_logUserData, category, prio, message);
 	}
@@ -294,8 +294,11 @@ void Console::addLogLine(int category, Log::Level priority, const char *message)
 
 void Console::update(double /*deltaFrameSeconds*/) {
 	core_assert(_mainThread == core::getCurrentThreadId());
-	LogLine msg;
-	while (_messageQueue.pop(msg)) {
+	core::DynamicArray<LogLine> pending;
+	if (!_messageQueue.popAll(pending)) {
+		return;
+	}
+	for (const LogLine &msg : pending) {
 		core_assert(msg.message);
 		addLogLine(msg.category, msg.priority, msg.message);
 	}

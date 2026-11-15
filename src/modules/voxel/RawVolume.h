@@ -234,7 +234,6 @@ public:
 	 * Sets the voxel at the position given by a 3D vector
 	 */
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
-	CORE_NO_SANITIZE_ADDRESS void setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel);
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int64_t idx, const Voxel &voxel);
 
 	void clear();

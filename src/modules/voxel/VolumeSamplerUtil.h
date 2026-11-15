@@ -50,6 +50,64 @@ inline bool setVoxels(Volume &volume, int x, int y, int z, int nx, int nz, const
 }
 
 /**
+ * @brief Scan the 3x3x3 neighborhood for the closest non-air voxel.
+ * Kept out-of-line so the solid hit path in sampleNearest stays tiny.
+ */
+template<class Sampler>
+__attribute__((noinline)) static voxel::Voxel sampleNearestNeighborhood(const Sampler &sampler,
+																		const glm::vec3 &pos,
+																		const glm::ivec3 &rounded) {
+	voxel::Voxel best;
+	float bestDistSq = FLT_MAX;
+
+	const auto consider = [&](const voxel::Voxel &v, int dx, int dy, int dz) {
+		if (voxel::isAir(v.getMaterial())) {
+			return;
+		}
+		const float fx = (float)(rounded.x + dx) - pos.x;
+		const float fy = (float)(rounded.y + dy) - pos.y;
+		const float fz = (float)(rounded.z + dz) - pos.z;
+		const float distSq = fx * fx + fy * fy + fz * fz;
+		if (distSq < bestDistSq) {
+			bestDistSq = distSq;
+			best = v;
+		}
+	};
+
+	// setPosition(rounded) already ran; peeks are relative to that cell.
+	if (!sampler.currentPositionValid()) {
+		consider(sampler.peekVoxel0px0py0pz(), 0, 0, 0);
+	}
+	consider(sampler.peekVoxel1nx1ny1nz(), -1, -1, -1);
+	consider(sampler.peekVoxel1nx1ny0pz(), -1, -1, 0);
+	consider(sampler.peekVoxel1nx1ny1pz(), -1, -1, 1);
+	consider(sampler.peekVoxel1nx0py1nz(), -1, 0, -1);
+	consider(sampler.peekVoxel1nx0py0pz(), -1, 0, 0);
+	consider(sampler.peekVoxel1nx0py1pz(), -1, 0, 1);
+	consider(sampler.peekVoxel1nx1py1nz(), -1, 1, -1);
+	consider(sampler.peekVoxel1nx1py0pz(), -1, 1, 0);
+	consider(sampler.peekVoxel1nx1py1pz(), -1, 1, 1);
+	consider(sampler.peekVoxel0px1ny1nz(), 0, -1, -1);
+	consider(sampler.peekVoxel0px1ny0pz(), 0, -1, 0);
+	consider(sampler.peekVoxel0px1ny1pz(), 0, -1, 1);
+	consider(sampler.peekVoxel0px0py1nz(), 0, 0, -1);
+	consider(sampler.peekVoxel0px0py1pz(), 0, 0, 1);
+	consider(sampler.peekVoxel0px1py1nz(), 0, 1, -1);
+	consider(sampler.peekVoxel0px1py0pz(), 0, 1, 0);
+	consider(sampler.peekVoxel0px1py1pz(), 0, 1, 1);
+	consider(sampler.peekVoxel1px1ny1nz(), 1, -1, -1);
+	consider(sampler.peekVoxel1px1ny0pz(), 1, -1, 0);
+	consider(sampler.peekVoxel1px1ny1pz(), 1, -1, 1);
+	consider(sampler.peekVoxel1px0py1nz(), 1, 0, -1);
+	consider(sampler.peekVoxel1px0py0pz(), 1, 0, 0);
+	consider(sampler.peekVoxel1px0py1pz(), 1, 0, 1);
+	consider(sampler.peekVoxel1px1py1nz(), 1, 1, -1);
+	consider(sampler.peekVoxel1px1py0pz(), 1, 1, 0);
+	consider(sampler.peekVoxel1px1py1pz(), 1, 1, 1);
+	return best;
+}
+
+/**
  * @brief Nearest-neighbor sampling: find the closest non-air voxel in a 3x3x3 neighborhood.
  *
  * First checks the rounded position. If solid, returns it directly.
@@ -63,31 +121,7 @@ static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
 	if (sampler.setPosition(rounded) && !voxel::isAir(sampler.voxel().getMaterial())) {
 		return sampler.voxel();
 	}
-
-	// TODO: use the sampler peek functions and make the sampler const
-	voxel::Voxel best;
-	float bestDistSq = FLT_MAX;
-	for (int dz = -1; dz <= 1; ++dz) {
-		for (int dy = -1; dy <= 1; ++dy) {
-			for (int dx = -1; dx <= 1; ++dx) {
-				const glm::ivec3 neighbor(rounded.x + dx, rounded.y + dy, rounded.z + dz);
-				if (!sampler.setPosition(neighbor)) {
-					continue;
-				}
-				const voxel::Voxel &v = sampler.voxel();
-				if (voxel::isAir(v.getMaterial())) {
-					continue;
-				}
-				const glm::vec3 d = glm::vec3(neighbor) - pos;
-				const float distSq = glm::dot(d, d);
-				if (distSq < bestDistSq) {
-					bestDistSq = distSq;
-					best = v;
-				}
-			}
-		}
-	}
-	return best;
+	return sampleNearestNeighborhood(sampler, pos, rounded);
 }
 
 // For discrete voxels, the rounded cell already has the greatest contribution.
@@ -110,68 +144,53 @@ template<class Sampler>
 static voxel::Voxel sampleCubic(const Sampler &sampler, const glm::vec3 &pos) {
 	static constexpr int HalfExtent = 2;
 	static constexpr float MaxCubicDistanceSq = 3.5f * 3.5f;
-	static constexpr int MaxMaterials = 64; // 4x4x4 worst case
 
 	const glm::ivec3 center = glm::ivec3(glm::round(pos));
+	const int x0 = center.x - HalfExtent + 1;
+	const int y0 = center.y - HalfExtent + 1;
+	const int z0 = center.z - HalfExtent + 1;
+	const int x1 = center.x + HalfExtent;
+	const int y1 = center.y + HalfExtent;
+	const int z1 = center.z + HalfExtent;
 
-	struct MaterialWeight {
-		voxel::Voxel voxel;
-		float weight;
-	};
-	MaterialWeight materials[MaxMaterials] = {};
-	int materialCount = 0;
+	// Color-indexed weights: O(1) per voxel, stack-local (no per-instance cost).
+	float weights[256] = {};
+	voxel::Voxel bestVoxel;
+	float bestWeight = 0.0f;
 
 	Sampler zSampler = sampler;
-	zSampler.setPosition(center.x - HalfExtent + 1, center.y - HalfExtent + 1, center.z - HalfExtent + 1);
-	for (int dz = -HalfExtent + 1; dz <= HalfExtent; ++dz) {
+	zSampler.setPosition(x0, y0, z0);
+	for (int z = z0; z <= z1; ++z) {
 		Sampler ySampler = zSampler;
-		for (int dy = -HalfExtent + 1; dy <= HalfExtent; ++dy) {
+		for (int y = y0; y <= y1; ++y) {
 			Sampler xSampler = ySampler;
-			for (int dx = -HalfExtent + 1; dx <= HalfExtent; ++dx) {
-				if (!xSampler.currentPositionValid()) {
-					xSampler.movePositiveX();
-					continue;
-				}
-				const voxel::Voxel v = xSampler.voxel();
-				xSampler.movePositiveX();
-				if (voxel::isAir(v.getMaterial())) {
-					continue;
-				}
-				const glm::vec3 d = glm::vec3(xSampler.position()) - pos;
-				const float dist2 = glm::dot(d, d);
-				if (dist2 > MaxCubicDistanceSq) {
-					continue;
-				}
-				const float weight = 1.0f / (dist2 + 0.001f);
-				const uint8_t color = v.getColor();
-				bool found = false;
-				for (int mi = 0; mi < materialCount; ++mi) {
-					if (materials[mi].voxel.getColor() == color) {
-						materials[mi].weight += weight;
-						found = true;
-						break;
+			for (int x = x0; x <= x1; ++x) {
+				if (xSampler.currentPositionValid()) {
+					const voxel::Voxel &v = xSampler.voxel();
+					if (!voxel::isAir(v.getMaterial())) {
+						const float dx = (float)x - pos.x;
+						const float dy = (float)y - pos.y;
+						const float dz = (float)z - pos.z;
+						const float dist2 = dx * dx + dy * dy + dz * dz;
+						if (dist2 <= MaxCubicDistanceSq) {
+							const float weight = 1.0f / (dist2 + 0.001f);
+							const uint8_t color = v.getColor();
+							weights[color] += weight;
+							if (weights[color] > bestWeight) {
+								bestWeight = weights[color];
+								bestVoxel = v;
+							}
+						}
 					}
 				}
-				if (!found && materialCount < MaxMaterials) {
-					materials[materialCount++] = {v, weight};
-				}
+				xSampler.movePositiveX();
 			}
 			ySampler.movePositiveY();
 		}
 		zSampler.movePositiveZ();
 	}
 
-	if (materialCount == 0) {
-		return voxel::Voxel();
-	}
-
-	int bestIdx = 0;
-	for (int mi = 1; mi < materialCount; ++mi) {
-		if (materials[mi].weight > materials[bestIdx].weight) {
-			bestIdx = mi;
-		}
-	}
-	return materials[bestIdx].voxel;
+	return bestVoxel;
 }
 
 template<class Sampler>

@@ -922,6 +922,32 @@ TEST_F(SurfaceExtractorTest, testCubicSingleVoxel) {
 	EXPECT_EQ(mesh.mesh[0].getNoOfIndices(), 36u);
 }
 
+TEST_F(SurfaceExtractorTest, testCubicSolidBlockMergesToSixQuads) {
+	// Without AO, a solid same-material block merges each face to a single quad
+	// (6 quads * 2 tris * 3 indices = 36), matching a single voxel.
+	// Leave a 1-voxel air margin so positive-direction faces are included.
+	const Region region(0, 0, 0, 9, 9, 9);
+	RawVolume volume(region);
+	const Voxel solid = createVoxel(VoxelType::Generic, 1);
+	for (int z = 1; z <= 8; ++z) {
+		for (int y = 1; y <= 8; ++y) {
+			for (int x = 1; x <= 8; ++x) {
+				volume.setVoxel(x, y, z, solid);
+			}
+		}
+	}
+	ChunkMesh meshMerged;
+	ChunkMesh meshUnmerged;
+	SurfaceExtractionContext ctxMerged =
+		buildCubicContext(&volume, region, meshMerged, glm::ivec3(0), true, true, false);
+	SurfaceExtractionContext ctxUnmerged =
+		buildCubicContext(&volume, region, meshUnmerged, glm::ivec3(0), false, true, false);
+	extractSurface(ctxMerged);
+	extractSurface(ctxUnmerged);
+	EXPECT_EQ(meshMerged.mesh[0].getNoOfIndices(), 36u);
+	EXPECT_GT(meshUnmerged.mesh[0].getNoOfIndices(), meshMerged.mesh[0].getNoOfIndices());
+}
+
 TEST_F(SurfaceExtractorTest, testCubicNoMergeQuads) {
 	const Region region(0, 0, 0, 2, 0, 2);
 	RawVolume volume(region);

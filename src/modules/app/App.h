@@ -81,6 +81,7 @@ protected:
 	bool _suspendRequested = false;
 	bool _saveConfiguration = true;
 	bool _failedToSaveConfiguration = false;
+	bool _skipCrashDialog = false;
 
 	/**
 	 * @brief Should the application log to the syslog daemon

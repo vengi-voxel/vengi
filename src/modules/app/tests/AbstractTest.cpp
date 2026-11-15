@@ -48,6 +48,7 @@ AbstractTest::TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::
 		Super(filesystem, timeProvider, threadPoolSize), _test(test) {
 	init(ORGANISATION, "test");
 	_initialLogLevel = Log::Level::Warn;
+	_skipCrashDialog = true;
 	_argc = ::_argc;
 	_argv = ::_argv;
 }

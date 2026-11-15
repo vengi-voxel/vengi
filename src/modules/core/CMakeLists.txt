@@ -109,7 +109,9 @@ endif()
 
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES ${LIBS})
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
-	target_compile_definitions(${LIB} PUBLIC TRACY_ENABLE TRACY_ON_DEMAND)
+	# TRACY_NO_CRASH_HANDLER: Tracy's SIGPWR ThreadFreezer races with backward/other
+	# handlers and can freeze the whole process after a profiler connect
+	target_compile_definitions(${LIB} PUBLIC TRACY_ENABLE TRACY_ON_DEMAND TRACY_NO_CRASH_HANDLER)
 endif()
 
 if (WINDOWS)

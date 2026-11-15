@@ -22,6 +22,7 @@ ShaderTool::ShaderTool(const io::FilesystemPtr &filesystem, const core::TimeProv
 	init(ORGANISATION, "shadertool");
 	_initialLogLevel = Log::Level::Warn;
 	_saveConfiguration = false;
+	_skipCrashDialog = true;
 }
 
 bool ShaderTool::createPid() {

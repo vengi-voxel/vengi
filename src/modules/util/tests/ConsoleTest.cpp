@@ -175,6 +175,28 @@ TEST_F(ConsoleTest, testAutoCompleteSetCvarNameMultipleMatches) {
 	command::Command::unregisterCommand("set");
 }
 
+TEST_F(ConsoleTest, testUpdateDrainsQueuedMessages) {
+	class DrainConsole : public util::Console {
+	public:
+		size_t messageCount() const {
+			return _messages.size();
+		}
+		void enqueueFromWorker(const char *msg) {
+			_messageQueue.emplace(0, Log::Level::Info, msg);
+		}
+	};
+
+	// Heap-allocate: Console embeds a RingBuffer of log lines.
+	DrainConsole *console = new DrainConsole();
+	SDL_SetLogOutputFunction(nullptr, nullptr);
+	for (int i = 0; i < 100; ++i) {
+		console->enqueueFromWorker("queued");
+	}
+	console->update(0.0);
+	ASSERT_GE(console->messageCount(), 100u);
+	delete console;
+}
+
 TEST_F(ConsoleTest, testAutoCompleteSetEnumValueNoPartial) {
 	command::CommandArg cvarArg("name", command::ArgType::String, false, "", "Variable name");
 	cvarArg.completer = command::cvarCompleter();

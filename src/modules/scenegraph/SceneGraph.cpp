@@ -462,7 +462,7 @@ glm::mat4 SceneGraph::worldMatrix(const scenegraph::SceneGraphNode &node, sceneg
 	return mat;
 }
 
-// TODO: PERF: sweeping
+// TODO: PERF: sweeping (sweep plane algorithm)
 void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, const math::AABB<float> &aabb) const {
 	core_trace_scoped(GetCollisionNodes);
 	const voxel::Region &regionAABB = toRegion(aabb);

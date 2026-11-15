@@ -9,6 +9,7 @@
 #include "core/String.h"
 #include "core/collection/ConcurrentQueue.h"
 #include "core/collection/DynamicArray.h"
+#include "core/collection/RingBuffer.h"
 #include "core/concurrent/Thread.h"
 #include <SDL3/SDL_log.h>
 
@@ -21,12 +22,14 @@ namespace util {
 class Console : public core::IComponent {
 protected:
 	struct Message {
-		Log::Level priority;
+		Log::Level priority = Log::Level::None;
 		core::String message;
-		Message(Log::Level _priority, core::String &&_message) : priority(_priority), message(_message) {
+		Message() = default;
+		Message(Log::Level _priority, core::String &&_message) : priority(_priority), message(core::move(_message)) {
 		}
 	};
-	using Messages = core::DynamicArray<Message, 1024u>;
+	static constexpr size_t MaxMessages = 1024u;
+	using Messages = core::RingBuffer<Message, MaxMessages>;
 	Messages _messages;
 
 	const char *_historyFilename = "history";
