@@ -740,6 +740,7 @@ app::AppState WindowedApp::onCleanup() {
 	video::destroyContext(_rendererContext);
 	if (_window != nullptr) {
 		SDL_DestroyWindow(_window);
+		_window = nullptr;
 	}
 	SDL_Quit();
 	video_trace_shutdown();
