@@ -42,7 +42,6 @@ protected:
 	core::VarPtr _applyGravity;
 	core::VarPtr _clipping;
 	core::VarPtr _rotationSpeed;
-	core::VarPtr _zoomSpeed;
 	util::Movement _movement;
 	scenegraph::KinematicBody _body;
 	scenegraph::Physics _physics;

@@ -197,7 +197,7 @@ TEST_F(CameraMovementTest, testIsometricRotationKeepsPitch) {
 	EXPECT_GT(glm::length(camera.forward() - initialForward), 0.01f);
 }
 
-TEST_F(CameraMovementTest, navigationMovementAndDollyMatchAtEqualFraming) {
+TEST_F(CameraMovementTest, navigationMovementMatchesScreenPixelsAtEqualFraming) {
 	CameraMovementExt setup;
 	setup.construct();
 	util::ScopedVarChange speed(cfg::ClientCameraMovementSpeed, "60");
@@ -206,7 +206,7 @@ TEST_F(CameraMovementTest, navigationMovementAndDollyMatchAtEqualFraming) {
 	for (video::CameraMode mode : modes) {
 		for (video::CameraRotationType rotation : rotations) {
 			for (float distance : {50.0f, 500.0f}) {
-				for (const char *button : {"move_left", "move_forward", "move_backward"}) {
+				for (const char *button : {"move_left", "move_right", "move_forward", "move_backward"}) {
 					CameraMovementExt m;
 					m.construct();
 					ASSERT_TRUE(m.init());
@@ -222,6 +222,8 @@ TEST_F(CameraMovementTest, navigationMovementAndDollyMatchAtEqualFraming) {
 					}
 					camera.setRotationType(rotation);
 					camera.update(0);
+					const float wupp = camera.worldUnitsPerPixel();
+					const glm::vec3 beforePos = camera.worldPosition();
 					const glm::vec3 landmark = camera.target() + camera.right() * 10.0f;
 					const glm::ivec2 before = camera.worldToScreen(landmark);
 					scenegraph::SceneGraph graph;
@@ -233,19 +235,65 @@ TEST_F(CameraMovementTest, navigationMovementAndDollyMatchAtEqualFraming) {
 							camera.update(0);
 						}
 					}
-					const glm::ivec2 after = camera.worldToScreen(landmark);
-					if (core::String(button) == "move_left") {
-						EXPECT_NEAR(after.x - before.x, 60, 1);
+					const core::String btn(button);
+					if (btn == "move_left" || btn == "move_right") {
+						const glm::ivec2 after = camera.worldToScreen(landmark);
+						const float expected = btn == "move_left" ? 60.0f : -60.0f;
+						EXPECT_NEAR(after.x - before.x, expected, 1);
 					} else {
-						const float rate = 2 * glm::tan(glm::radians(45.0f) / 2) * 60 / 800;
-						const float sign = core::String(button) == "move_forward" ? 1 : -1;
-						const float initialPixels = 10 / (2 * distance * glm::tan(glm::radians(45.0f) / 2) / 800);
-						EXPECT_NEAR(glm::abs(after.x - 500), initialPixels * glm::exp(sign * rate), 1.1f);
+						EXPECT_NEAR(glm::distance(beforePos, camera.worldPosition()), 60.0f * wupp, 0.05f);
 					}
+					EXPECT_NEAR(camera.targetDistance(), distance, 0.01f);
 					m.shutdown();
 				}
 			}
 		}
+	}
+}
+
+TEST_F(CameraMovementTest, editorForwardKeepsConstantWorldSpeedAndDistance) {
+	// Regression for #904: WASD must not slow down as you fly farther into a scene.
+	CameraMovementExt setup;
+	setup.construct();
+	util::ScopedVarChange speed(cfg::ClientCameraMovementSpeed, "60");
+	util::ScopedVarChange clipping(cfg::GameModeClipping, "false");
+	for (video::CameraRotationType rotation : {video::CameraRotationType::Target, video::CameraRotationType::Eye}) {
+		CameraMovementExt m;
+		m.construct();
+		ASSERT_TRUE(m.init());
+		video::Camera camera;
+		camera.setSize({1000, 800});
+		camera.setTarget(glm::vec3(0));
+		camera.setWorldPosition({0, 0, 200});
+		camera.setTargetDistance(200);
+		camera.setRotationType(rotation);
+		camera.update(0);
+		scenegraph::SceneGraph graph;
+		m.update(0, &camera, graph, 0);
+		const float startDistance = camera.targetDistance();
+		const float wupp = camera.worldUnitsPerPixel();
+		float firstHalf = 0.0f;
+		float secondHalf = 0.0f;
+		{
+			command::ScopedButtonCommand pressed("move_forward", 10, 0);
+			glm::vec3 prev = camera.worldPosition();
+			for (int frame = 1; frame <= 120; ++frame) {
+				m.update(frame / 60.0, &camera, graph, 0);
+				camera.update(0);
+				const float step = glm::distance(prev, camera.worldPosition());
+				if (frame <= 60) {
+					firstHalf += step;
+				} else {
+					secondHalf += step;
+				}
+				prev = camera.worldPosition();
+			}
+		}
+		EXPECT_NEAR(camera.targetDistance(), startDistance, 0.01f) << "rotation " << (int)rotation;
+		EXPECT_NEAR(camera.worldUnitsPerPixel(), wupp, 0.0001f) << "rotation " << (int)rotation;
+		EXPECT_NEAR(firstHalf, 60.0f * wupp, 0.05f) << "rotation " << (int)rotation;
+		EXPECT_NEAR(secondHalf, firstHalf, 0.05f) << "rotation " << (int)rotation;
+		m.shutdown();
 	}
 }
 
@@ -270,6 +318,49 @@ TEST_F(CameraMovementTest, wheelZoomHasEqualRelativeResponse) {
 	}
 }
 
+TEST_F(CameraMovementTest, perspectiveWheelKeepsMovingPastTarget) {
+	for (video::CameraRotationType rotation : {video::CameraRotationType::Target, video::CameraRotationType::Eye}) {
+		CameraMovementExt m;
+		m.construct();
+		util::ScopedVarChange clipping(cfg::GameModeClipping, "false");
+		video::Camera camera;
+		camera.setSize({1000, 800});
+		camera.setTarget(glm::vec3(0));
+		camera.setWorldPosition({0, 0, 100});
+		camera.setTargetDistance(100);
+		camera.setRotationType(rotation);
+		camera.update(0);
+		const glm::vec3 forward = camera.forward();
+		const float wupp = camera.worldUnitsPerPixel();
+		float firstStep = 0.0f;
+		for (int step = 0; step < 200; ++step) {
+			const glm::vec3 before = camera.worldPosition();
+			m.zoom(camera, -1);
+			camera.update(0);
+			const float distance = glm::dot(camera.worldPosition() - before, forward);
+			if (step == 0) {
+				firstStep = distance;
+				ASSERT_GT(firstStep, 0.0f);
+			}
+			EXPECT_NEAR(distance, firstStep, 0.001f) << "step " << step << " rotation " << (int)rotation;
+		}
+		EXPECT_LT(camera.worldPosition().z, 0.0f);
+		EXPECT_NEAR(camera.targetDistance(), 100.0f, 0.001f);
+		EXPECT_NEAR(camera.worldUnitsPerPixel(), wupp, 0.0001f);
+		EXPECT_LT(glm::distance(camera.forward(), forward), 0.001f);
+		const glm::vec3 before = camera.worldPosition();
+		m.zoom(camera, 1);
+		camera.update(0);
+		EXPECT_NEAR(glm::dot(before - camera.worldPosition(), forward), 100.0f * (glm::exp(0.1f) - 1.0f), 0.001f);
+		EXPECT_NEAR(camera.targetDistance(), 100.0f, 0.001f);
+		const glm::vec3 after = camera.worldPosition();
+		util::ScopedVarChange enableClipping(cfg::GameModeClipping, "true");
+		m.zoom(camera, -1);
+		camera.update(0);
+		EXPECT_FLOAT_EQ(glm::distance(camera.worldPosition(), after), 0.0f);
+	}
+}
+
 TEST_F(CameraMovementTest, navigationSpeedScalesResponseAndIgnoresSprint) {
 	for (const char *button : {"move_left", "move_forward"}) {
 		float responses[3];
@@ -283,11 +374,13 @@ TEST_F(CameraMovementTest, navigationSpeedScalesResponseAndIgnoresSprint) {
 			video::Camera camera;
 			camera.setSize({1000, 800});
 			camera.setTarget(glm::vec3(0));
+			camera.setWorldPosition({0, 0, 100});
 			camera.setTargetDistance(100);
 			camera.update(0);
 			scenegraph::SceneGraph graph;
 			m.update(0, &camera, graph, 0);
 			const glm::vec3 before = camera.worldPosition();
+			const float beforeDistance = camera.targetDistance();
 			{
 				command::ScopedButtonCommand pressed(button, 10, 0);
 				if (run == 2) {
@@ -298,9 +391,8 @@ TEST_F(CameraMovementTest, navigationSpeedScalesResponseAndIgnoresSprint) {
 				}
 			}
 			camera.update(0);
-			responses[run] = core::String(button) == "move_left"
-				? glm::distance(before, camera.worldPosition())
-				: glm::log(100.0f / camera.targetDistance());
+			responses[run] = glm::distance(before, camera.worldPosition());
+			EXPECT_NEAR(camera.targetDistance(), beforeDistance, 0.01f);
 			m.shutdown();
 		}
 		ASSERT_GT(responses[0], 0.0f);

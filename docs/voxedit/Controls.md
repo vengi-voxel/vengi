@@ -183,13 +183,17 @@ On Android the primary pointer is also treated as a pen (`ve_emulatepen`). Press
 ## Navigation speed
 
 `cl_cammovementspeed` controls editor keyboard navigation without clipping. Its
-default is 200 screen pixels per second at the camera target plane. It also
-controls the relative scale rate of forward/backward navigation.
+default is 200 screen pixels per second at the camera target plane. WASD and
+vertical move keys translate the camera (and target) without changing zoom, so
+speed stays constant while flying through a scene. Mouse wheel navigation uses
+`cl_camzoomspeed`. In perspective views it moves the camera and target together,
+so you can keep moving forward through the scene in either rotation mode. In
+orthographic views it changes the view scale.
 
 Game mode uses `g_movementspeed` instead, with a default of 60 world units per
 second. Changing editor speed does not change game-mode speed or acceleration.
 `+sprint` applies `g_sprintmultiplier` only when clipping is enabled in game mode;
-editor navigation ignores sprint. Wheel zoom uses `cl_camzoomspeed` independently.
+editor navigation ignores sprint.
 
 ## Viewport HUD
 

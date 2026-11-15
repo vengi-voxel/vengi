@@ -34,7 +34,6 @@ void CameraMovement::construct() {
 	const core::VarDef gameModeApplyGravity(cfg::GameModeApplyGravity, false, N_("Gravity"), N_("Enable gravity"), core::CV_NOPERSIST);
 	_applyGravity = core::Var::registerVar(gameModeApplyGravity);
 	_rotationSpeed = core::getVar(cfg::ClientMouseRotationSpeed);
-	_zoomSpeed = core::getVar(cfg::ClientCameraZoomSpeed);
 	_movement.construct();
 }
 
@@ -80,22 +79,13 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 
 	if (_movement.moving()) {
 		glm::vec3 direction(0);
-		if (!clipping) {
-			// Forward/backward dolly has the same relative scale response as orthographic zoom.
-			const int forward = (int)_movement.backward() - (int)_movement.forward();
-			const float height = (float)core_max(1, camera->size().y);
-			const float rate = 2.0f * glm::tan(glm::radians(camera->fieldOfView()) * 0.5f) * speed / height;
-			const float zoomSpeed = _zoomSpeed->floatVal();
-			if (forward != 0 && zoomSpeed > 0.0f) {
-				camera->zoom((float)forward * rate * (float)_deltaSeconds / zoomSpeed);
-			}
-		} else {
-			if (_movement.forward()) {
-				direction += camForward;
-			}
-			if (_movement.backward()) {
-				direction -= camForward;
-			}
+		// Translate on all axes (including forward/back). Zooming via WASD would shrink
+		// target distance and make worldUnitsPerPixel()-scaled movement slower over time.
+		if (_movement.forward()) {
+			direction += camForward;
+		}
+		if (_movement.backward()) {
+			direction -= camForward;
 		}
 		if (_movement.left()) {
 			direction -= camRight;
@@ -201,8 +191,18 @@ void CameraMovement::rotate(video::Camera &camera, float yaw, float pitch) {
 }
 
 void CameraMovement::zoom(video::Camera &camera, float level) {
-	if (!_clipping->boolVal()) {
+	if (_clipping->boolVal()) {
+		return;
+	}
+	if (camera.isOrthographic()) {
 		camera.zoom(level);
+	} else {
+		// Move the orbit target too, so wheel navigation can continue through the scene.
+		const float speed = core::getVar(cfg::ClientCameraZoomSpeed)->floatVal();
+		const float distance = camera.targetDistance() * (1.0f - glm::exp(speed * level));
+		const glm::vec3 delta = camera.forward() * distance;
+		camera.setTarget(camera.target() + delta);
+		camera.setWorldPosition(camera.worldPosition() + delta);
 	}
 }
 
