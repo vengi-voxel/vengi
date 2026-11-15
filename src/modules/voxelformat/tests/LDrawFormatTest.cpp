@@ -3,9 +3,11 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "core/ConfigVar.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
+#include "util/VarUtil.h"
 #include "voxelutil/VolumeVisitor.h"
 
 namespace voxelformat {
@@ -13,6 +15,8 @@ namespace voxelformat {
 class LDrawFormatTest : public AbstractFormatTest {};
 
 TEST_F(LDrawFormatTest, testLoadLDR) {
+	// Pin to bundled data/tests/parts so a system /usr/share/ldraw install is not indexed.
+	util::ScopedVarChange ldrawDir(cfg::VoxformatLDrawDir, "");
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "ldraw-simple.ldr", 1);
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
@@ -26,6 +30,7 @@ TEST_F(LDrawFormatTest, testLoadLDR) {
 }
 
 TEST_F(LDrawFormatTest, testLoadMPD) {
+	util::ScopedVarChange ldrawDir(cfg::VoxformatLDrawDir, "");
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "ldraw-simple.mpd", 2);
 	const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();

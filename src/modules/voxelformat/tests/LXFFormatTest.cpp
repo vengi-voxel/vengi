@@ -73,6 +73,7 @@ TEST_F(LXFFormatTest, testRegisterLdrawSearchPathsFallback) {
 
 TEST_F(LXFFormatTest, testLoadAmsterdamCanalStreet) {
 	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.01");
+	util::ScopedVarChange ldrawDir(cfg::VoxformatLDrawDir, "");
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "test.lxf", 1, true);
 	if (IsSkipped()) {
@@ -142,6 +143,7 @@ TEST_F(LXFFormatTest, testLoadLXFMLRotatedPart) {
 
 TEST_F(LXFFormatTest, testLoadLXFMLLight1Fixture) {
 	util::ScopedVarChange scaleVar(cfg::VoxformatScale, "0.01");
+	util::ScopedVarChange ldrawDir(cfg::VoxformatLDrawDir, "");
 	scenegraph::SceneGraph sceneGraph;
 	testLoad(sceneGraph, "lxf-light1.lxfml", 3, true);
 	if (IsSkipped()) {
