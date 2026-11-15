@@ -3366,6 +3366,7 @@ int SceneManager::mergeNodes(int nodeId1, int nodeId2) {
 }
 
 void SceneManager::resetSceneState() {
+	core_trace_scoped(ResetSceneState);
 	// this also resets the cursor voxel - but nodeActivate() will set it to the first usable index
 	// that's why this call must happen before the nodeActivate() call.
 	_modifier->reset();
@@ -3382,9 +3383,15 @@ void SceneManager::resetSceneState() {
 	// ensure that the first model node is active and re-select the first model node.
 	// therefore we first "select" the root node, then switch back to the first model node.
 	_sceneGraph.setActiveNode(_sceneGraph.root().id());
-	nodeActivate(nodeId);
+	{
+		core_trace_scoped(ResetSceneNodeActivate);
+		nodeActivate(nodeId);
+	}
 	setCurrentFrame(0);
-	_mementoHandler->clearStates();
+	{
+		core_trace_scoped(MementoClearStates);
+		_mementoHandler->clearStates();
+	}
 	Log::debug("New volume for node %i", nodeId);
 	_mementoHandler->markInitialSceneState(_sceneGraph);
 	_dirty = false;
@@ -3397,6 +3404,7 @@ void SceneManager::resetSceneState() {
 		resetLastTrace();
 	}
 	if (server().isRunning()) {
+		core_trace_scoped(ResetSceneBroadcastState);
 		SceneStateMessage msg(_sceneGraph);
 		server().network().broadcast(msg, 0);
 	}
@@ -3461,9 +3469,15 @@ bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disc
 		disconnectFromServer();
 	}
 
-	_sceneGraph = core::move(sceneGraph);
+	{
+		core_trace_scoped(LoadSceneGraphAssign);
+		_sceneGraph = core::move(sceneGraph);
+	}
 	sceneLoadSun();
-	_sceneRenderer->clear();
+	{
+		core_trace_scoped(LoadSceneGraphRendererClear);
+		_sceneRenderer->clear();
+	}
 	// stop any running animation
 	core::getVar(cfg::VoxEditAnimationPlaying)->setVal(false);
 	command::executeCommands("animate 0");

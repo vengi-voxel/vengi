@@ -12,6 +12,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"
@@ -219,6 +220,7 @@ MementoData &MementoData::operator=(const MementoData &o) noexcept {
 }
 
 MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel::Region &region) {
+	core_trace_scoped(MementoDataFromVolume);
 	if (volume == nullptr) {
 		return MementoData();
 	}
