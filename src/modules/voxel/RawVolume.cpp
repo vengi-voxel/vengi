@@ -863,13 +863,6 @@ bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
 	return true;
 }
 
-void RawVolume::setVoxelUnsafe(const glm::ivec3 &pos, const Voxel &voxel) {
-	const glm::ivec3 &lowerCorner = _region.getLowerCorner();
-	const glm::ivec3 localPos = pos - lowerCorner;
-	const int64_t index = (int64_t)localPos.x + (int64_t)localPos.y * width() + (int64_t)localPos.z * _region.stride();
-	_data[index] = voxel;
-}
-
 void RawVolume::initialise(const Region &regValidRegion) {
 	_region = regValidRegion;
 
