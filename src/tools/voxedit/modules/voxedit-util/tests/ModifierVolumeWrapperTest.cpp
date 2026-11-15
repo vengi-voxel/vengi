@@ -14,6 +14,35 @@ namespace voxedit {
 
 class ModifierVolumeWrapperTest : public app::AbstractTest {};
 
+TEST_F(ModifierVolumeWrapperTest, SamplerMovementRespectsSelection) {
+	const int previous = voxel::RawVolume::chunkedStorageThreshold();
+	for (int threshold : {1, 256}) {
+		voxel::RawVolume::setChunkedStorageThreshold(threshold);
+		voxel::RawVolume volume(voxel::Region(-3, 3));
+		voxel::RawVolume::setChunkedStorageThreshold(previous);
+		const glm::ivec3 selected(-1, 1, 0);
+		volume.setVoxel(selected, voxel::Voxel(voxel::VoxelType::Generic, 1, NO_NORMAL, voxel::FlagOutline));
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setUnownedVolume(&volume);
+		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+		ModifierVolumeWrapper::Sampler sampler(wrapper);
+		ASSERT_TRUE(sampler.setPosition(selected - glm::ivec3(1, 0, 0)));
+		const voxel::Voxel replacement(voxel::VoxelType::Generic, 7);
+		EXPECT_FALSE(sampler.setVoxel(replacement));
+		EXPECT_FALSE(wrapper.dirtyRegion().isValid());
+		sampler.movePositiveX();
+		ASSERT_EQ(selected, sampler.position());
+		ASSERT_TRUE(sampler.setVoxel(replacement));
+		EXPECT_EQ(7, volume.voxel(selected).getColor());
+		EXPECT_TRUE(volume.voxel(selected).getFlags() & voxel::FlagOutline);
+		EXPECT_EQ(voxel::Region(selected, selected), wrapper.dirtyRegion());
+		sampler.movePositiveX();
+		EXPECT_FALSE(sampler.setVoxel(replacement));
+		EXPECT_TRUE(voxel::isAir(volume.voxel(selected + glm::ivec3(1, 0, 0)).getMaterial()));
+		EXPECT_EQ(voxel::Region(selected, selected), wrapper.dirtyRegion());
+	}
+}
+
 TEST_F(ModifierVolumeWrapperTest, testChunkedSamplerPlaceAndErase) {
 	voxel::RawVolume volume(voxel::Region(-40, 216));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

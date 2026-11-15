@@ -34,7 +34,7 @@ private:
 	voxel::Region _box3DSelectionRegion;
 
 	// if we have a selection, we only handle voxels inside the selection
-	bool skip(const glm::aligned_ivec4 &pos) const {
+	bool skip(const glm::ivec3 &pos) const {
 		if (!_hasSelection) {
 			return false;
 		}
@@ -89,7 +89,7 @@ public:
 				}
 			}
 
-			if (_volume->skip(_posInVolume)) {
+			if (_volume->skip(position())) {
 				return false;
 			}
 			voxel::Voxel *currentVoxel = this->writableVoxel();
