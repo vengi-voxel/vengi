@@ -92,6 +92,7 @@ void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvail
 #endif
 					ImGui::URLItem("lua", "https://www.lua.org/", urlIconWidth);
 					ImGui::URLItem("lucide", "https://lucide.dev/", urlIconWidth);
+					ImGui::URLItem("lz4", "https://github.com/lz4/lz4", urlIconWidth);
 					ImGui::URLItem("meshoptimizer", "https://github.com/zeux/meshoptimizer", urlIconWidth);
 					ImGui::URLItem("minlzma", "https://github.com/ionescu007/minlzma", urlIconWidth);
 					ImGui::URLItem("natsort", "https://github.com/sourcefrog/natsort", urlIconWidth);

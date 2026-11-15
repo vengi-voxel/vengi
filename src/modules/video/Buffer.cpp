@@ -168,9 +168,6 @@ bool Buffer::bind() const {
 		if (_targets[i] != BufferType::IndexBuffer) {
 			continue;
 		}
-		if (_size[i] == 0u) {
-			continue;
-		}
 		video::bindBuffer(_targets[i], _handles[i]);
 	}
 	video::bindVertexArray(InvalidId);
