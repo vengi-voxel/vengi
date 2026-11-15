@@ -97,6 +97,8 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		_frameTransformCache.clear();
 		other._frameWorldMatricesReady = false;
 		_frameWorldMatricesReady = false;
+		other._frameWorldMatricesStatic = false;
+		_frameWorldMatricesStatic = false;
 		other._frameWorldMatrices.clear();
 		_frameWorldMatrices.clear();
 	}
@@ -531,6 +533,7 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, con
 
 void SceneGraph::invalidateFrameTransformCache(int nodeId) {
 	_frameWorldMatricesReady = false;
+	_frameWorldMatricesStatic = false;
 	if (nodeId == InvalidNodeId || !hasNode(nodeId)) {
 		core::ScopedLock scoped(_mutex);
 		_frameTransformCache.clear();
@@ -605,12 +608,46 @@ void SceneGraph::buildFrameTransforms(FrameIndex frameIdx) const {
 	if (_frameWorldMatricesReady && _frameWorldMatricesFrame == frameIdx) {
 		return;
 	}
+	// Static scenes keep the same world matrices for every frame index.
+	if (_frameWorldMatricesReady && _frameWorldMatricesStatic) {
+		_frameWorldMatricesFrame = frameIdx;
+		return;
+	}
 	core_trace_scoped(BuildFrameTransforms);
 	if ((int)_frameWorldMatrices.size() < _nextNodeId) {
 		_frameWorldMatrices.resize(_nextNodeId);
 	}
-	const SceneGraphNode &root = node(0);
-	buildFrameTransforms_r(root, glm::mat4(1.0f), frameIdx);
+
+	// Single pass: copy solved keyframe worlds for static scenes. If any node has
+	// multiple keyframes, fall back to hierarchical sampling for this frameIdx.
+	bool animated = false;
+	{
+		core_trace_scoped(BuildFrameTransformsFromKeyFrames);
+		for (const auto &entry : _nodes) {
+			const SceneGraphNode &n = entry->value;
+			if (n.keyFrames().size() > 1) {
+				animated = true;
+				break;
+			}
+			const int id = n.id();
+			if (id < 0 || id >= (int)_frameWorldMatrices.size()) {
+				continue;
+			}
+			if (n.keyFrames().empty()) {
+				_frameWorldMatrices[id] = glm::mat4(1.0f);
+				continue;
+			}
+			const SceneGraphKeyFrame *kf = n.keyFrame(0);
+			_frameWorldMatrices[id] = kf != nullptr ? kf->transform().worldMatrix() : glm::mat4(1.0f);
+		}
+	}
+	if (animated) {
+		const SceneGraphNode &root = node(0);
+		buildFrameTransforms_r(root, glm::mat4(1.0f), frameIdx);
+		_frameWorldMatricesStatic = false;
+	} else {
+		_frameWorldMatricesStatic = true;
+	}
 	_frameWorldMatricesFrame = frameIdx;
 	_frameWorldMatricesReady = true;
 }
@@ -704,6 +741,7 @@ void SceneGraph::updateTransforms(bool updateChildren) {
 	clearCache |= solveIK();
 	if (clearCache) {
 		_frameWorldMatricesReady = false;
+		_frameWorldMatricesStatic = false;
 		core::ScopedLock scoped(_mutex);
 		_frameTransformCache.clear();
 	}

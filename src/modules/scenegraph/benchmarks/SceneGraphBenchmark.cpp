@@ -145,27 +145,61 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameCached)(benchmark::Stat
 	}
 }
 
-BENCHMARK_DEFINE_F(SceneGraphBenchmark, BuildFrameTransforms512)(benchmark::State &state) {
-	scenegraph::SceneGraph sceneGraph;
-	core::Buffer<int> nodeIds;
-	nodeIds.reserve(512);
+static void addHierarchyModels(scenegraph::SceneGraph &sceneGraph, core::Buffer<int> &nodeIds, int count,
+							   bool animated) {
+	nodeIds.clear();
+	nodeIds.reserve(count);
 	int parentId = 0;
-	for (int i = 0; i < 512; ++i) {
+	for (int i = 0; i < count; ++i) {
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 		scenegraph::SceneGraphTransform transform;
 		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
 		modelNode.setTransform(0, transform);
-		// Shallow groups of 16 under the previous node to exercise hierarchy walks
+		if (animated) {
+			const scenegraph::KeyFrameIndex kf1 = modelNode.addKeyFrame(10);
+			scenegraph::SceneGraphTransform transform1;
+			transform1.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 1.0f));
+			modelNode.setTransform(kf1, transform1);
+		}
 		const int useParent = (i % 16 == 0) ? 0 : parentId;
 		parentId = sceneGraph.emplace(core::move(modelNode), useParent);
 		nodeIds.push_back(parentId);
 	}
 	sceneGraph.updateTransforms();
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, BuildFrameTransforms512)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	core::Buffer<int> nodeIds;
+	addHierarchyModels(sceneGraph, nodeIds, 512, false);
 	for (auto _ : state) {
 		sceneGraph.invalidateFrameTransformCache(InvalidNodeId);
 		sceneGraph.buildFrameTransforms(0);
 		benchmark::ClobberMemory();
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, BuildFrameTransforms512Animated)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	core::Buffer<int> nodeIds;
+	addHierarchyModels(sceneGraph, nodeIds, 512, true);
+	for (auto _ : state) {
+		sceneGraph.invalidateFrameTransformCache(InvalidNodeId);
+		sceneGraph.buildFrameTransforms(0);
+		benchmark::ClobberMemory();
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, BuildFrameTransforms512StaticReuse)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	core::Buffer<int> nodeIds;
+	addHierarchyModels(sceneGraph, nodeIds, 512, false);
+	sceneGraph.buildFrameTransforms(0);
+	for (auto _ : state) {
+		// Same static matrices for a different frame index - should be nearly free
+		sceneGraph.buildFrameTransforms(1);
+		benchmark::DoNotOptimize(sceneGraph.transformForFrame(sceneGraph.node(nodeIds[0]), 1));
 	}
 }
 
@@ -348,6 +382,8 @@ BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodes256);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, UpdateTransformsMany);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameCached);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, BuildFrameTransforms512);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, BuildFrameTransforms512Animated);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, BuildFrameTransforms512StaticReuse);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameAfterBuild512);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameParallelNoBuild512);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameParallelAfterBuild512);

@@ -76,6 +76,8 @@ protected:
 	mutable core::Buffer<glm::mat4> _frameWorldMatrices;
 	mutable FrameIndex _frameWorldMatricesFrame = InvalidFrame;
 	mutable bool _frameWorldMatricesReady = false;
+	/** True when the table was filled from single-keyframe world matrices (no sampling). */
+	mutable bool _frameWorldMatricesStatic = false;
 
 	bool updateTransforms_r(SceneGraphNode &node, bool updateChildren = true);
 	bool solveIK();

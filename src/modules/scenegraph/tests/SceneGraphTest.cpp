@@ -1312,6 +1312,23 @@ TEST_F(SceneGraphTest, testBuildFrameTransformsMatchesLazy) {
 	EXPECT_EQ(lazyChild.worldTranslation(), builtChild.worldTranslation());
 }
 
+TEST_F(SceneGraphTest, testBuildFrameTransformsStaticUsesKeyFrameWorld) {
+	SceneGraph sceneGraph;
+	SceneGraphNode model(SceneGraphNodeType::Model);
+	model.createVolume(voxel::Region(0, 1));
+	SceneGraphTransform transform;
+	transform.setWorldTranslation(glm::vec3(3.0f, 4.0f, 5.0f));
+	model.setTransform(0, transform);
+	const int nodeId = sceneGraph.emplace(core::move(model));
+	sceneGraph.updateTransforms();
+	ASSERT_FALSE(sceneGraph.hasAnimations());
+
+	sceneGraph.buildFrameTransforms(0);
+	const FrameTransform built = sceneGraph.transformForFrame(sceneGraph.node(nodeId), 0);
+	EXPECT_EQ(glm::vec3(3.0f, 4.0f, 5.0f), built.worldTranslation());
+	EXPECT_EQ(sceneGraph.node(nodeId).transform(0).worldTranslation(), built.worldTranslation());
+}
+
 TEST_F(SceneGraphTest, testColorHistogramEmpty) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.createVolume(voxel::Region(0, 3));
