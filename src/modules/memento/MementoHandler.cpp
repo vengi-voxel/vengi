@@ -4,7 +4,6 @@
 
 #include "MementoHandler.h"
 
-#include "app/ForParallel.h"
 #include "command/Command.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
@@ -773,25 +772,13 @@ bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph &sceneGr
 		return false;
 	}
 
-	// Compress volumes in parallel, then take @_mutex once to append the group.
-	// Calling markNodeAdded from nodes().for_parallel() contended on addState and
-	// made large scene loads much slower without speeding up the zip work.
-	core::DynamicArray<const scenegraph::SceneGraphNode *> nodes;
-	nodes.reserve(sceneGraph.nodeSize());
-	for (auto i = sceneGraph.nodes().begin(); i != sceneGraph.nodes().end(); ++i) {
-		nodes.push_back(&i->value);
-	}
-
-	const int n = (int)nodes.size();
 	core::DynamicArray<MementoState> states;
-	states.resize(n);
-	app::for_parallel(0, n, [&](int start, int end) {
-		for (int i = start; i < end; ++i) {
-			const scenegraph::SceneGraphNode &node = *nodes[i];
-			states[i] = createNodeState(node, node.volume(), MementoType::SceneNodeAdded,
-									   voxel::Region::InvalidRegion);
-		}
-	});
+	states.reserve(sceneGraph.nodeSize());
+	for (auto i = sceneGraph.nodes().begin(); i != sceneGraph.nodes().end(); ++i) {
+		const scenegraph::SceneGraphNode &node = i->value;
+		states.push_back(createNodeState(node, node.volume(), MementoType::SceneNodeAdded,
+										 voxel::Region::InvalidRegion));
+	}
 	return addStates(core::move(states));
 }
 
