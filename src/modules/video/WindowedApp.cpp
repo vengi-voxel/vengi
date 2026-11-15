@@ -676,8 +676,6 @@ app::AppState WindowedApp::onConstruct() {
 	core::Var::registerVar(clientShadowMap);
 	const core::VarDef renderCheckerBoard(cfg::RenderCheckerBoard, false, N_("Checkerboard"), _("Activate checkerboard rendering"));
 	core::Var::registerVar(renderCheckerBoard);
-	const core::VarDef renderCullBuffers(cfg::RenderCullBuffers, false, N_("Cull buffers"), _("Activate culling for buffer parts"));
-	core::Var::registerVar(renderCullBuffers);
 	const core::VarDef renderCullNodes(cfg::RenderCullNodes, true, N_("Cull nodes"), _("Activate culling for scene nodes"));
 	core::Var::registerVar(renderCullNodes);
 	const core::VarDef clientBloom(cfg::ClientBloom, true, N_("Bloom"), _("Activate bloom post processing"));

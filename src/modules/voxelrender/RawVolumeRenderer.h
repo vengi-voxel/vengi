@@ -97,7 +97,6 @@ protected:
 	uint8_t *ensureUploadScratch(core::Buffer<uint8_t> &scratch, size_t bytes);
 
 	core::VarPtr _shadowMap;
-	core::VarPtr _cullBuffers;
 	core::VarPtr _cullNodes;
 	core::VarPtr _selectionTint;
 	core::VarPtr _gamma;
@@ -135,8 +134,6 @@ protected:
 	void shutdownStateBuffers();
 	bool resetStateBuffers(bool normals);
 	bool updateIndexBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, size_t indCount);
-	bool updateIndexBufferForVolumeCull(const voxel::MeshStatePtr &meshState, const video::Camera &camera, int idx,
-										voxel::MeshType type, size_t indCount);
 	/**
 	 * @brief Updates the vertex buffers manually
 	 */

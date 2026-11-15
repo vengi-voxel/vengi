@@ -908,12 +908,6 @@ msgstr "Schachbrett-Rendering aktivieren"
 msgid "Checkerboard"
 msgstr "Schachbrett"
 
-msgid "Activate culling for buffer parts"
-msgstr "Culling für Pufferteile aktivieren"
-
-msgid "Cull buffers"
-msgstr "Buffer ausblenden"
-
 msgid "Activate culling for scene nodes"
 msgstr "Culling für Szenenknoten aktivieren"
 

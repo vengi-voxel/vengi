@@ -864,12 +864,6 @@ msgstr ""
 msgid "Checkerboard"
 msgstr ""
 
-msgid "Activate culling for buffer parts"
-msgstr ""
-
-msgid "Cull buffers"
-msgstr ""
-
 msgid "Activate culling for scene nodes"
 msgstr ""
 

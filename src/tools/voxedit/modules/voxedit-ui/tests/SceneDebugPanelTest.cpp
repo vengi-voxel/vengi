@@ -30,13 +30,6 @@ void SceneDebugPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(cullNodes->boolVal() != beforeNodes);
 		ctx->ItemClick("Cull nodes");
 		IM_CHECK(cullNodes->boolVal() == beforeNodes);
-
-		core::VarPtr cullBuffers = core::getVar(cfg::RenderCullBuffers);
-		const bool beforeBuffers = cullBuffers->boolVal();
-		ctx->ItemClick("Cull buffers");
-		IM_CHECK(cullBuffers->boolVal() != beforeBuffers);
-		ctx->ItemClick("Cull buffers");
-		IM_CHECK(cullBuffers->boolVal() == beforeBuffers);
 	};
 }
 

@@ -53,7 +53,6 @@ void SceneDebugPanel::update(const char *id) {
 		ImGui::Text(_("Volume index high-water: %i"), stats.nextVolumeIdx);
 		ImGui::Text(_("Free volume indices: %i"), stats.freeVolumeIndices);
 		ImGui::CheckboxVar(cfg::RenderCullNodes);
-		ImGui::CheckboxVar(cfg::RenderCullBuffers);
 		if (ImGui::CollapsingHeader(_("Render stats"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			const video::RenderStats &videoStats = video::renderStats();
 			ImGui::Text(_("Draw calls: %" PRIu64), videoStats.drawCalls);

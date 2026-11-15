@@ -195,7 +195,6 @@ void RawVolumeRenderer::ensureSize(int idx) {
 
 bool RawVolumeRenderer::init(bool normals) {
 	_shadowMap = core::getVar(cfg::ClientShadowMap);
-	_cullBuffers = core::getVar(cfg::RenderCullBuffers);
 	_cullNodes = core::getVar(cfg::RenderCullNodes);
 	_selectionTint = core::getVar(cfg::RenderSelectionTint);
 	_gamma = core::getVar(cfg::ClientGamma);
@@ -394,55 +393,6 @@ void RawVolumeRenderer::update(const voxel::MeshStatePtr &meshState) {
 	}
 }
 
-bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr &meshState,
-													   const video::Camera &camera, int idx, voxel::MeshType type,
-													   size_t indCount) {
-	core_trace_scoped(UpdateIndexBufferForVolumeCull);
-	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
-	voxel::IndexType *indicesBuf = (voxel::IndexType *)ensureUploadScratch(_uploadIndicesScratch, indicesBufSize);
-	voxel::IndexType *indicesPos = indicesBuf;
-	voxel::IndexType offset = (voxel::IndexType)0;
-	const int bufferIndex = meshState->resolveIdx(idx);
-	RenderState &state = _state[bufferIndex];
-	const voxel::MeshState::MeshesMap &meshesMap = meshState->meshes(type);
-	core::VarPtr meshSize = core::getVar(cfg::VoxelMeshSize);
-	int culled = 0;
-	for (const auto &i : meshesMap) {
-		const voxel::MeshState::Meshes &meshes = i->second;
-		if (bufferIndex >= (int)meshes.size()) {
-			continue;
-		}
-		const voxel::Mesh *mesh = meshes[bufferIndex];
-		if (mesh == nullptr || mesh->getNoOfIndices() <= 0) {
-			continue;
-		}
-		const glm::ivec3 &mins = i->first;
-		const glm::ivec3 &maxs = mins + (meshSize->intVal() - 1);
-		glm::vec3 worldMins;
-		glm::vec3 worldMaxs;
-		voxel::Region(mins, maxs).transformArvo(meshState->model(idx), worldMins, worldMaxs);
-		if (!camera.isVisible(worldMins, worldMaxs)) {
-			offset += mesh->getNoOfVertices();
-			++culled;
-			Log::trace("Culled mesh at index %i at pos %i:%i:%i", idx, mins.x, mins.y, mins.z);
-			continue;
-		}
-		const voxel::IndexArray &indexVector = mesh->getIndexVector();
-		core_memcpy(indicesPos, &indexVector[0], indexVector.size() * sizeof(voxel::IndexType));
-		for (size_t j = 0; j < indexVector.size(); ++j) {
-			*indicesPos++ += offset;
-		}
-		offset += mesh->getNoOfVertices();
-	}
-	Log::debug("update indexbuffer with culling: %i (type: %i, culled: %i)", idx, type, culled);
-	const size_t reducedIndices = (size_t)(indicesPos - indicesBuf) * sizeof(voxel::IndexType);
-	if (!state._vertexBuffer[type].update(state._indexBufferIndex[type], indicesBuf, reducedIndices, true)) {
-		Log::error("Failed to update the index buffer with culling");
-		return false;
-	}
-	return true;
-}
-
 bool RawVolumeRenderer::updateIndexBufferForVolume(const voxel::MeshStatePtr &meshState, int idx, voxel::MeshType type, size_t indCount) {
 	core_trace_scoped(UpdateIndexBufferForVolume);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
@@ -500,10 +450,6 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		state._dirtyNormals = true;
 		return true;
 	}
-
-	// TODO: PERF: maybe we could cull here by updating the index buffer only to leave out the mesh instances that are not visible
-	//             right now only the whole RenderState is culled or not - but for huge volumes, it might make a big difference to
-	//             cull individual mesh instances here
 
 	if (flags == UpdateBufferFlags::Indices) {
 		return updateIndexBufferForVolume(meshState, idx, type, indCount);
@@ -1295,22 +1241,6 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	renderContext.sceneHasGlow = frame.sceneHasGlow;
 	if (!frame.anyVisible) {
 		return;
-	}
-
-	if (_cullBuffers->boolVal()) {
-		core_trace_scoped(CullBuffers);
-		for (int idx : frame.opaque) {
-			size_t indCount = 0u;
-			size_t vertCount = 0u;
-			size_t normalsCount = 0u;
-			meshState->count(voxel::MeshType_Opaque, idx, vertCount, normalsCount, indCount);
-			if (indCount == 0u || vertCount == 0u) {
-				continue;
-			}
-			if (!updateIndexBufferForVolumeCull(meshState, camera, idx, voxel::MeshType_Opaque, indCount)) {
-				Log::error("Failed to update the opaque mesh at index %i", idx);
-			}
-		}
 	}
 
 	{

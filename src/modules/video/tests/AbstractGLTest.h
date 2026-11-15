@@ -52,8 +52,6 @@ protected:
 		core::Var::registerVar(clientGamma);
 		const core::VarDef clientBloom(cfg::ClientBloom, false, "", "");
 		core::Var::registerVar(clientBloom);
-		const core::VarDef renderCullBuffers(cfg::RenderCullBuffers, false, "", "");
-		core::Var::registerVar(renderCullBuffers);
 		const core::VarDef renderCullNodes(cfg::RenderCullNodes, true, "", "");
 		core::Var::registerVar(renderCullNodes);
 		const core::VarDef renderOutline(cfg::RenderOutline, false, "", "");

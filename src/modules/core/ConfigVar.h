@@ -54,7 +54,6 @@ constexpr const char *HttpTimeout = "http_timeout";
 constexpr const char *HttpConnectTimeoutAssets = "http_connecttimeout_assets";
 constexpr const char *HttpTimeoutAssets = "http_timeout_assets";
 
-constexpr const char *RenderCullBuffers = "r_cullbuffers";
 constexpr const char *RenderCullNodes = "r_cullnodes";
 constexpr const char *RenderOutline = "r_renderoutline";
 constexpr const char *RenderSelectionTint = "r_selectiontint";
