@@ -67,17 +67,17 @@ private:
 	static thread_local bool _inThreadPool;
 	const size_t _threads;
 	const char *_name;
-	// need to keep track of threads so we can join them
-	core::DynamicArray<core::Thread> _workers;
-	// the task queue
-	core::Queue<core::Function<void()> > _tasks core_thread_guarded_by(_queueMutex);
 
-	// synchronization
+	// Synchronization
 	core_trace_mutex(core::Lock, _queueMutex, "ThreadPoolQueue");
 	core::ConditionVariable _queueCondition;
 	core::AtomicBool _stop { false };
 	core::AtomicBool _force { false };
 	core::AtomicInt _activeWorkers { 0 };
+	// the task queue
+	core::Queue<core::Function<void()> > _tasks core_thread_guarded_by(_queueMutex);
+	// need to keep track of threads so we can join them
+	core::DynamicArray<core::Thread> _workers;
 };
 
 inline void ThreadPool::reserve(size_t n) {
