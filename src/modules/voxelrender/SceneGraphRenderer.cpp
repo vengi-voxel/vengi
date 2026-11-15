@@ -397,6 +397,8 @@ void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const Ren
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
 	releaseMissingNodes(meshState, *renderContext.sceneGraph);
+	// Fill world matrices once so parallel prepareMeshStateTransform lookups stay lock-free.
+	renderContext.sceneGraph->buildFrameTransforms(renderContext.frame);
 	prepareCameraNodes(renderContext);
 	prepareModelNodes(meshState, renderContext);
 	prepareReferenceNodes(meshState, renderContext);

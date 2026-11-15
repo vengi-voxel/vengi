@@ -2,9 +2,12 @@
  * @file
  */
 
+#include "app/Async.h"
 #include "app/benchmark/AbstractBenchmark.h"
+#include "core/collection/Buffer.h"
 #include "palette/Palette.h"
 #include "scenegraph/CollisionNode.h"
+#include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -142,6 +145,110 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameCached)(benchmark::Stat
 	}
 }
 
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, BuildFrameTransforms512)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	core::Buffer<int> nodeIds;
+	nodeIds.reserve(512);
+	int parentId = 0;
+	for (int i = 0; i < 512; ++i) {
+		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		modelNode.setTransform(0, transform);
+		// Shallow groups of 16 under the previous node to exercise hierarchy walks
+		const int useParent = (i % 16 == 0) ? 0 : parentId;
+		parentId = sceneGraph.emplace(core::move(modelNode), useParent);
+		nodeIds.push_back(parentId);
+	}
+	sceneGraph.updateTransforms();
+	for (auto _ : state) {
+		sceneGraph.invalidateFrameTransformCache(InvalidNodeId);
+		sceneGraph.buildFrameTransforms(0);
+		benchmark::ClobberMemory();
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameAfterBuild512)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	core::Buffer<int> nodeIds;
+	nodeIds.reserve(512);
+	int parentId = 0;
+	for (int i = 0; i < 512; ++i) {
+		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		modelNode.setTransform(0, transform);
+		const int useParent = (i % 16 == 0) ? 0 : parentId;
+		parentId = sceneGraph.emplace(core::move(modelNode), useParent);
+		nodeIds.push_back(parentId);
+	}
+	sceneGraph.updateTransforms();
+	sceneGraph.buildFrameTransforms(0);
+	for (auto _ : state) {
+		for (int id : nodeIds) {
+			scenegraph::FrameTransform ft = sceneGraph.transformForFrame(sceneGraph.node(id), 0);
+			benchmark::DoNotOptimize(ft);
+		}
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameParallelNoBuild512)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	core::Buffer<int> nodeIds;
+	nodeIds.reserve(512);
+	int parentId = 0;
+	for (int i = 0; i < 512; ++i) {
+		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		modelNode.setTransform(0, transform);
+		const int useParent = (i % 16 == 0) ? 0 : parentId;
+		parentId = sceneGraph.emplace(core::move(modelNode), useParent);
+		nodeIds.push_back(parentId);
+	}
+	sceneGraph.updateTransforms();
+	for (auto _ : state) {
+		sceneGraph.invalidateFrameTransformCache(InvalidNodeId);
+		app::for_parallel(0, (int)nodeIds.size(), [&](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				scenegraph::FrameTransform ft = sceneGraph.transformForFrame(sceneGraph.node(nodeIds[i]), 0);
+				benchmark::DoNotOptimize(ft);
+			}
+		});
+	}
+}
+
+BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameParallelAfterBuild512)(benchmark::State &state) {
+	scenegraph::SceneGraph sceneGraph;
+	core::Buffer<int> nodeIds;
+	nodeIds.reserve(512);
+	int parentId = 0;
+	for (int i = 0; i < 512; ++i) {
+		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
+		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
+		scenegraph::SceneGraphTransform transform;
+		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		modelNode.setTransform(0, transform);
+		const int useParent = (i % 16 == 0) ? 0 : parentId;
+		parentId = sceneGraph.emplace(core::move(modelNode), useParent);
+		nodeIds.push_back(parentId);
+	}
+	sceneGraph.updateTransforms();
+	for (auto _ : state) {
+		sceneGraph.invalidateFrameTransformCache(InvalidNodeId);
+		sceneGraph.buildFrameTransforms(0);
+		app::for_parallel(0, (int)nodeIds.size(), [&](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				scenegraph::FrameTransform ft = sceneGraph.transformForFrame(sceneGraph.node(nodeIds[i]), 0);
+				benchmark::DoNotOptimize(ft);
+			}
+		});
+	}
+}
+
 BENCHMARK_DEFINE_F(SceneGraphBenchmark, MergeSamePaletteChunks)(benchmark::State &state) {
 	palette::Palette pal;
 	pal.minecraft();
@@ -240,6 +347,10 @@ BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodesSparseQuery);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, GetCollisionNodes256);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, UpdateTransformsMany);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameCached);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, BuildFrameTransforms512);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameAfterBuild512);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameParallelNoBuild512);
+BENCHMARK_REGISTER_F(SceneGraphBenchmark, TransformForFrameParallelAfterBuild512);
 BENCHMARK_REGISTER_F(SceneGraphBenchmark, MergeSamePaletteChunks);
 
 BENCHMARK_MAIN();

@@ -13,6 +13,7 @@
 #include "core/DirtyState.h"
 #include "core/Trace.h"
 #include "core/UUID.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicParallelMap.h"
 #include "core/concurrent/Lock.h"
@@ -68,10 +69,20 @@ protected:
 	core::Buffer<SceneGraphListener*> _listeners;
 	mutable core_trace_mutex(core::Lock, _mutex, "FrameTransformCache");
 	mutable FrameTransformCache _frameTransformCache;
+	/**
+	 * Per-frame world matrices indexed by node id. Filled by @c buildFrameTransforms()
+	 * on the main thread so parallel @c transformForFrame() callers avoid the cache lock.
+	 */
+	mutable core::Buffer<glm::mat4> _frameWorldMatrices;
+	mutable FrameIndex _frameWorldMatricesFrame = InvalidFrame;
+	mutable bool _frameWorldMatricesReady = false;
 
 	bool updateTransforms_r(SceneGraphNode &node, bool updateChildren = true);
 	bool solveIK();
 	voxel::Region calcRegion() const;
+	void buildFrameTransforms_r(const SceneGraphNode &node, const glm::mat4 &parentWorld, FrameIndex frameIdx) const;
+	FrameTransform composeFrameTransform(const SceneGraphNode &node, const glm::mat4 &parentWorld,
+										 FrameIndex frameIdx) const;
 
 public:
 	SceneGraph();
@@ -171,8 +182,15 @@ public:
 	 * @brief Interpolates the transforms for the given frame. It searches the keyframe before and after
 	 * the given input frame and interpolates according to the given delta frames between the particular
 	 * keyframes.
+	 * @note Prefer @c buildFrameTransforms() once per frame before many parallel lookups.
 	 */
 	FrameTransform transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const;
+
+	/**
+	 * @brief Top-down fill of world matrices for @p frameIdx. Call once before parallel
+	 * @c transformForFrame usage so lookups are lock-free.
+	 */
+	void buildFrameTransforms(FrameIndex frameIdx) const;
 
 	void invalidateFrameTransformCache(int nodeId);
 

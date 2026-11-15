@@ -1283,6 +1283,35 @@ TEST_F(SceneGraphTest, testTransformCacheInvalidation) {
 		<< "Child transform should be updated after parent transform change";
 }
 
+TEST_F(SceneGraphTest, testBuildFrameTransformsMatchesLazy) {
+	SceneGraph sceneGraph;
+	SceneGraphNode parent(SceneGraphNodeType::Model);
+	parent.createVolume(voxel::Region(0, 1));
+	SceneGraphTransform parentTransform;
+	parentTransform.setWorldTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
+	parent.setTransform(0, parentTransform);
+	const int parentId = sceneGraph.emplace(core::move(parent));
+
+	SceneGraphNode child(SceneGraphNodeType::Model);
+	child.createVolume(voxel::Region(0, 1));
+	SceneGraphTransform childTransform;
+	childTransform.setWorldTranslation(glm::vec3(0.0f, 5.0f, 0.0f));
+	child.setTransform(0, childTransform);
+	const int childId = sceneGraph.emplace(core::move(child), parentId);
+	sceneGraph.updateTransforms();
+
+	const FrameTransform lazyParent = sceneGraph.transformForFrame(sceneGraph.node(parentId), 0);
+	const FrameTransform lazyChild = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
+
+	sceneGraph.invalidateFrameTransformCache(InvalidNodeId);
+	sceneGraph.buildFrameTransforms(0);
+	const FrameTransform builtParent = sceneGraph.transformForFrame(sceneGraph.node(parentId), 0);
+	const FrameTransform builtChild = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
+
+	EXPECT_EQ(lazyParent.worldTranslation(), builtParent.worldTranslation());
+	EXPECT_EQ(lazyChild.worldTranslation(), builtChild.worldTranslation());
+}
+
 TEST_F(SceneGraphTest, testColorHistogramEmpty) {
 	SceneGraphNode node(SceneGraphNodeType::Model);
 	node.createVolume(voxel::Region(0, 3));

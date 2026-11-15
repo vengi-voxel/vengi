@@ -95,6 +95,10 @@ SceneGraph &SceneGraph::operator=(SceneGraph &&other) noexcept {
 		_dirty = other.dirty();
 		other._frameTransformCache.clear();
 		_frameTransformCache.clear();
+		other._frameWorldMatricesReady = false;
+		_frameWorldMatricesReady = false;
+		other._frameWorldMatrices.clear();
+		_frameWorldMatrices.clear();
 	}
 	return *this;
 }
@@ -526,6 +530,7 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, con
 }
 
 void SceneGraph::invalidateFrameTransformCache(int nodeId) {
+	_frameWorldMatricesReady = false;
 	if (nodeId == InvalidNodeId || !hasNode(nodeId)) {
 		core::ScopedLock scoped(_mutex);
 		_frameTransformCache.clear();
@@ -556,8 +561,70 @@ void SceneGraph::invalidateFrameTransformCache(int nodeId) {
 	}
 }
 
+FrameTransform SceneGraph::composeFrameTransform(const SceneGraphNode &node, const glm::mat4 &parentWorld,
+												 FrameIndex frameIdx) const {
+	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
+	// https://github.com/vengi-voxel/vengi/issues/420
+	FrameTransform transform;
+	KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
+	if (node.keyFrames().size() == 1) {
+		const SceneGraphKeyFrame *kf = node.keyFrame(0);
+		transform.setWorldMatrix(parentWorld * kf->transform().localMatrix());
+	} else if (node.hasKeyFrameForFrame(frameIdx, &keyFrameIdx)) {
+		const SceneGraphKeyFrame *kf = node.keyFrame(keyFrameIdx);
+		transform.setWorldMatrix(parentWorld * kf->transform().localMatrix());
+	} else {
+		const KeyFrameIndex start = node.previousKeyFrameForFrame(frameIdx);
+		const KeyFrameIndex end = node.nextKeyFrameForFrame(frameIdx);
+		if (start == end) {
+			const SceneGraphKeyFrame *kf = node.keyFrame(start);
+			transform.setWorldMatrix(parentWorld * kf->transform().localMatrix());
+		} else {
+			const SceneGraphTransform local = sampleLocalTransform(node.keyFrames(), frameIdx);
+			transform.setWorldMatrix(parentWorld * local.calculateLocalMatrix());
+		}
+	}
+	return transform;
+}
+
+void SceneGraph::buildFrameTransforms_r(const SceneGraphNode &node, const glm::mat4 &parentWorld,
+										FrameIndex frameIdx) const {
+	const FrameTransform transform = composeFrameTransform(node, parentWorld, frameIdx);
+	const int id = node.id();
+	if (id >= 0 && id < (int)_frameWorldMatrices.size()) {
+		_frameWorldMatrices[id] = transform.worldMatrix();
+	}
+	for (const core::UUID &childUUID : node.children()) {
+		if (const SceneGraphNode *child = findNodeByUUID(childUUID)) {
+			buildFrameTransforms_r(*child, transform.worldMatrix(), frameIdx);
+		}
+	}
+}
+
+void SceneGraph::buildFrameTransforms(FrameIndex frameIdx) const {
+	if (_frameWorldMatricesReady && _frameWorldMatricesFrame == frameIdx) {
+		return;
+	}
+	core_trace_scoped(BuildFrameTransforms);
+	if ((int)_frameWorldMatrices.size() < _nextNodeId) {
+		_frameWorldMatrices.resize(_nextNodeId);
+	}
+	const SceneGraphNode &root = node(0);
+	buildFrameTransforms_r(root, glm::mat4(1.0f), frameIdx);
+	_frameWorldMatricesFrame = frameIdx;
+	_frameWorldMatricesReady = true;
+}
+
 FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIndex frameIdx) const {
 	core_trace_scoped(TransformForFrame);
+	if (_frameWorldMatricesReady && _frameWorldMatricesFrame == frameIdx) {
+		const int id = node.id();
+		if (id >= 0 && id < (int)_frameWorldMatrices.size()) {
+			FrameTransform transform;
+			transform.setWorldMatrix(_frameWorldMatrices[id]);
+			return transform;
+		}
+	}
 	const FrameTransformCacheKey nf{node.id(), frameIdx};
 	{
 		core_trace_scoped(CachePath);
@@ -568,8 +635,6 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 		}
 	}
 	core_trace_scoped(NoneCachePath);
-	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
-	// https://github.com/vengi-voxel/vengi/issues/420
 	FrameTransform parentTransform;
 	if (const SceneGraphNode *parent = parentNode(node)) {
 		parentTransform = transformForFrame(*parent, frameIdx);
@@ -577,25 +642,7 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 		parentTransform.setWorldMatrix(glm::mat4(1.0f));
 	}
 
-	FrameTransform transform;
-	KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
-	if (node.keyFrames().size() == 1) {
-		const SceneGraphKeyFrame *kf = node.keyFrame(0);
-		transform.setWorldMatrix(parentTransform.worldMatrix() * kf->transform().localMatrix());
-	} else if (node.hasKeyFrameForFrame(frameIdx, &keyFrameIdx)) {
-		const SceneGraphKeyFrame *kf = node.keyFrame(keyFrameIdx);
-		transform.setWorldMatrix(parentTransform.worldMatrix() * kf->transform().localMatrix());
-	} else {
-		const KeyFrameIndex start = node.previousKeyFrameForFrame(frameIdx);
-		const KeyFrameIndex end = node.nextKeyFrameForFrame(frameIdx);
-		if (start == end) {
-			const SceneGraphKeyFrame *kf = node.keyFrame(start);
-			transform.setWorldMatrix(parentTransform.worldMatrix() * kf->transform().localMatrix());
-		} else {
-			const SceneGraphTransform local = sampleLocalTransform(node.keyFrames(), frameIdx);
-			transform.setWorldMatrix(parentTransform.worldMatrix() * local.calculateLocalMatrix());
-		}
-	}
+	FrameTransform transform = composeFrameTransform(node, parentTransform.worldMatrix(), frameIdx);
 	core::ScopedLock scoped(_mutex);
 	_frameTransformCache.put(nf, transform);
 	return transform;
@@ -656,6 +703,7 @@ void SceneGraph::updateTransforms(bool updateChildren) {
 	// Run the IK solver after all transforms are updated
 	clearCache |= solveIK();
 	if (clearCache) {
+		_frameWorldMatricesReady = false;
 		core::ScopedLock scoped(_mutex);
 		_frameTransformCache.clear();
 	}
