@@ -106,20 +106,19 @@ void ThreadPool::init() {
 }
 
 ThreadPool::~ThreadPool() {
-	shutdown();
+	shutdown(true);
 }
 
 void ThreadPool::shutdown(bool wait) {
-	if (_stop) {
-		return;
+	if (!_stop) {
+		_force = !wait;
+		_stop = true;
+		if (_force) {
+			core::ScopedLock lock(_queueMutex);
+			_tasks.clear();
+		}
+		_queueCondition.notify_all();
 	}
-	_force = !wait;
-	_stop = true;
-	if (_force) {
-		core::ScopedLock lock(_queueMutex);
-		_tasks.clear();
-	}
-	_queueCondition.notify_all();
 	for (core::Thread &worker : _workers) {
 		if (worker.joinable()) {
 			worker.join();

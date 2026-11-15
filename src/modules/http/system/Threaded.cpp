@@ -43,8 +43,11 @@ void cancelAsync(const AsyncRequestPtr &) {
 }
 
 void shutdownAsync() {
-	delete workers;
-	workers = nullptr;
+	if (workers != nullptr) {
+		workers->shutdown(true);
+		delete workers;
+		workers = nullptr;
+	}
 #if USE_CURL
 	curl_global_cleanup();
 #endif
