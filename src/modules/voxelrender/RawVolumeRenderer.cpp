@@ -32,6 +32,7 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
+#include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -417,9 +418,10 @@ bool RawVolumeRenderer::updateIndexBufferForVolumeCull(const voxel::MeshStatePtr
 		}
 		const glm::ivec3 &mins = i->first;
 		const glm::ivec3 &maxs = mins + (meshSize->intVal() - 1);
-		const glm::vec3 &mi = meshState->model(idx) * glm::vec4(mins, 1.0f);
-		const glm::vec3 &ma = meshState->model(idx) * glm::vec4(maxs, 1.0f);
-		if (!camera.isVisible(mi, ma)) {
+		glm::vec3 worldMins;
+		glm::vec3 worldMaxs;
+		voxel::Region(mins, maxs).transformArvo(meshState->model(idx), worldMins, worldMaxs);
+		if (!camera.isVisible(worldMins, worldMaxs)) {
 			offset += mesh->getNoOfVertices();
 			++culled;
 			Log::trace("Culled mesh at index %i at pos %i:%i:%i", idx, mins.x, mins.y, mins.z);
