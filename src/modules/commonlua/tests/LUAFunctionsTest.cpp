@@ -358,4 +358,31 @@ TEST_F(LUAFunctionsTest, testBoundedAllocatorStopsLargeAllocations) {
 	ASSERT_TRUE(lua.load("assert(2 + 2 == 4)"));
 }
 
+#ifdef TRACY_ENABLE
+TEST_F(LUAFunctionsTest, testTracyManualZonesAreRegistered) {
+	// Tracy manual: LuaRegister exposes tracy.ZoneBegin/ZoneEnd (no-ops without a
+	// connected session under TRACY_ON_DEMAND). openState() installs that table.
+	LUA lua;
+	ASSERT_TRUE(lua.load(R"(
+		assert(type(tracy) == "table")
+		assert(type(tracy.ZoneBegin) == "function")
+		assert(type(tracy.ZoneBeginN) == "function")
+		assert(type(tracy.ZoneEnd) == "function")
+		assert(type(tracy.ZoneText) == "function")
+		assert(type(tracy.ZoneName) == "function")
+		assert(type(tracy.Message) == "function")
+		function work()
+			tracy.ZoneBeginN("LUAFunctionsTest")
+			tracy.ZoneText("hello")
+			tracy.ZoneEnd()
+			tracy.Message("lua-tracy-ok")
+			return 42
+		end
+	)")) << lua.error();
+	ASSERT_TRUE(lua.execute("work", 1)) << lua.error();
+	EXPECT_EQ(42, lua_tointeger(lua, -1));
+	lua.pop();
+}
+#endif
+
 } // namespace lua
