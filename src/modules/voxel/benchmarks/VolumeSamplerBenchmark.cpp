@@ -33,6 +33,17 @@ BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleNearest)(benchmark::State &stat
 	}
 }
 
+BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleNearestGap)(benchmark::State &state) {
+	// Air cell at the rounded position forces the 3x3x3 neighbor search path.
+	voxel::RawVolume gapVol(v);
+	gapVol.setVoxel(15, 16, 15, voxel::Voxel());
+	voxel::RawVolume::Sampler sampler(&gapVol);
+	const glm::vec3 pos(15.3f, 15.7f, 15.1f);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(voxel::sampleVoxel(sampler, voxel::VoxelSampling::Nearest, pos));
+	}
+}
+
 BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleLinear)(benchmark::State &state) {
 	voxel::RawVolume::Sampler sampler(&v);
 	const glm::vec3 pos(15.3f, 15.7f, 15.1f);
@@ -50,5 +61,6 @@ BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleCubic)(benchmark::State &state)
 }
 
 BENCHMARK_REGISTER_F(VolumeSamplerBenchmark, SampleNearest);
+BENCHMARK_REGISTER_F(VolumeSamplerBenchmark, SampleNearestGap);
 BENCHMARK_REGISTER_F(VolumeSamplerBenchmark, SampleLinear);
 BENCHMARK_REGISTER_F(VolumeSamplerBenchmark, SampleCubic);

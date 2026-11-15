@@ -5,7 +5,6 @@
 #include "../MementoHandler.h"
 #include "app/tests/AbstractTest.h"
 #include "core/Pair.h"
-#include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/IKConstraint.h"
@@ -127,7 +126,7 @@ protected:
 
 			ASSERT_TRUE(volume.region().containsPoint(pos)) << "State " << description << ": Position " << pos.x << ","
 															<< pos.y << "," << pos.z << " is outside volume region";
-			const voxel::Voxel voxelAtPos = volume.voxel(pos);
+			const voxel::Voxel &voxelAtPos = volume.voxel(pos);
 			EXPECT_EQ(voxel::VoxelType::Generic, voxelAtPos.getMaterial())
 				<< "State " << description << ": Expected Generic voxel at " << pos.x << "," << pos.y << "," << pos.z;
 			EXPECT_EQ(expectedColor, voxelAtPos.getColor())
@@ -138,7 +137,7 @@ protected:
 		// Check expected air voxels
 		for (const glm::ivec3 &pos : expectedAirVoxels) {
 			if (volume.region().containsPoint(pos)) {
-				const voxel::Voxel voxelAtPos = volume.voxel(pos);
+				const voxel::Voxel &voxelAtPos = volume.voxel(pos);
 				EXPECT_TRUE(voxel::isAir(voxelAtPos.getMaterial()))
 					<< "State " << description << ": Expected empty voxel at " << pos.x << "," << pos.y << "," << pos.z
 					<< " but got material type " << (int)voxelAtPos.getMaterial();
