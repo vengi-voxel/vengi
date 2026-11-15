@@ -1,5 +1,7 @@
 # Usage
 
+For cvars, environment variables and Windows DLL / shell integration, see [Settings](Settings.md).
+
 Print a detailed description of the program parameters for your particular version.
 
 ```sh
