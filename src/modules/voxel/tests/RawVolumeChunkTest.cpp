@@ -11,6 +11,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeMoveWrapper.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "voxel/VolumeSamplerDispatch.h"
+#include "voxel/VolumeSamplerUtil.h"
 #include <limits.h>
 
 namespace voxel {
@@ -249,6 +251,82 @@ TEST_F(RawVolumeChunkTest, SamplerNeighborsAtCoordinateLimits) {
 		}
 	}
 	RawVolume::setChunkedStorageThreshold(previous);
+}
+
+TEST_F(RawVolumeChunkTest, DenseSamplerMatchesGenericSampler) {
+	for (int origin : {INT_MIN, -40, INT_MAX - 4}) {
+		RawVolume volume(Region(origin, origin + 4));
+		ASSERT_NE(nullptr, volume.voxels());
+		const Voxel border(VoxelType::Generic, 99);
+		volume.setBorderValue(border);
+		RawVolume::Sampler generic(volume);
+		RawVolume::DenseSampler dense(volume);
+		EXPECT_EQ(volume.region().containsPoint(0, 0, 0), dense.currentPositionValid());
+		EXPECT_EQ(volume.voxel(0, 0, 0), dense.voxel());
+		for (int z = 0; z < 5; ++z) {
+			for (int y = 0; y < 5; ++y) {
+				for (int x = 0; x < 5; ++x) {
+					const glm::ivec3 pos = glm::ivec3(origin) + glm::ivec3(x, y, z);
+					EXPECT_TRUE(dense.setPosition(pos));
+					EXPECT_TRUE(generic.setPosition(pos));
+					const Voxel value(VoxelType::Generic, (uint8_t)(x + y * 5 + z * 25), 3, FlagOutline, 2);
+					EXPECT_TRUE(dense.setVoxel(value));
+					EXPECT_EQ(generic.voxel(), dense.voxel());
+					EXPECT_EQ(generic.peekVoxel1nx1ny1nz(), dense.peekVoxel1nx1ny1nz());
+					EXPECT_EQ(generic.peekVoxel1px1py1pz(), dense.peekVoxel1px1py1pz());
+				}
+			}
+		}
+		for (math::Axis axis : {math::Axis::X, math::Axis::Y, math::Axis::Z}) {
+			generic.setPosition(glm::ivec3(origin + 1));
+			dense.setPosition(glm::ivec3(origin + 1));
+			for (int step : {0, 1, 2, 1}) {
+				generic.movePositive(axis, step);
+				dense.movePositive(axis, step);
+				EXPECT_EQ(generic.position(), dense.position());
+				EXPECT_EQ(generic.currentPositionValid(), dense.currentPositionValid());
+				EXPECT_EQ(generic.voxel(), dense.voxel());
+			}
+			generic.moveNegative(axis, 2);
+			dense.moveNegative(axis, 2);
+			EXPECT_EQ(generic.voxel(), dense.voxel());
+			EXPECT_EQ(generic.currentPositionValid(), dense.currentPositionValid());
+			auto copied = dense;
+			EXPECT_EQ(dense.voxel(), copied.voxel());
+		}
+	}
+}
+
+TEST_F(RawVolumeChunkTest, BulkDispatchKeepsWrappersAndChunkStorage) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	for (int threshold : {1, 256}) {
+		RawVolume::setChunkedStorageThreshold(threshold);
+		RawVolume volume(Region(-3, 8));
+		RawVolume::setChunkedStorageThreshold(previous);
+		const Voxel column[] = {Voxel(VoxelType::Generic, 7), Voxel(VoxelType::Generic, 8)};
+		EXPECT_TRUE(setVoxels(volume, 0, 0, column, 2));
+		EXPECT_EQ(column[0], volume.voxel(0, 0, 0));
+		EXPECT_EQ(column[1], volume.voxel(0, 1, 0));
+		EXPECT_TRUE(setVoxels(volume, 1, 2, 3, 2, 2, column, 2));
+		for (int z = 3; z < 5; ++z) {
+			for (int y = 2; y < 4; ++y) {
+				for (int x = 1; x < 3; ++x) {
+					EXPECT_EQ(column[y - 2], volume.voxel(x, y, z));
+				}
+			}
+		}
+		const Region selected(0, 1);
+		RawVolumeWrapper wrapper(&volume, selected);
+		withVolumeSampler(wrapper, [&](auto &sampler) {
+			EXPECT_FALSE(sampler.setPosition(2, 2, 2));
+			EXPECT_FALSE(sampler.setVoxel(column[0]));
+			EXPECT_TRUE(sampler.setPosition(1, 1, 1));
+			EXPECT_TRUE(sampler.setVoxel(column[1]));
+		});
+		EXPECT_EQ(Region(1, 1), wrapper.dirtyRegion());
+		EXPECT_EQ(Voxel(), volume.voxel(2, 2, 2));
+		EXPECT_EQ(threshold != 1, volume.isContiguous());
+	}
 }
 
 TEST_F(RawVolumeChunkTest, QueriesAtMinimumCoordinate) {

@@ -31,6 +31,7 @@ set(SRCS
 	VolumeData.h
 	VolumeDataAccessor.h VolumeDataAccessor.cpp
 	VolumeSampler.h
+	VolumeSamplerDispatch.h
 	VolumeSamplerUtil.h
 	VolumeCompression.h VolumeCompression.cpp
 	VoxelVertex.h
@@ -83,6 +84,7 @@ if (USE_BENCHMARKS)
 		benchmarks/SparseVolumeBenchmark.cpp
 		benchmarks/SurfaceExtractorBenchmark.cpp
 		benchmarks/VolumeSamplerBenchmark.cpp
+		benchmarks/VolumeSamplerPositionBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB} voxelformat)

@@ -7,10 +7,83 @@
 #include "app/tests/AbstractTest.h"
 #include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"
+#include "voxel/RawVolumeWrapper.h"
 
 namespace voxel {
 
 class VolumeSamplerTest : public app::AbstractTest {};
+
+TEST_F(VolumeSamplerTest, TrilinearPreservesCornerSelectionAndMetadata) {
+	const int previous = RawVolume::chunkedStorageThreshold();
+	for (int threshold : {1, 256}) {
+		RawVolume::setChunkedStorageThreshold(threshold);
+		RawVolume volume(Region(-2, -3, -4, 3, 4, 5));
+		RawVolume::setChunkedStorageThreshold(previous);
+		volume.setBorderValue(Voxel(VoxelType::Generic, 99));
+		for (int z = -4; z <= 5; ++z) {
+			for (int y = -3; y <= 4; ++y) {
+				for (int x = -2; x <= 3; ++x) {
+					volume.setVoxel(x, y, z, Voxel((x + y + z) % 3 == 0 ? VoxelType::Air : VoxelType::Generic,
+						(uint8_t)(x + 2 + 6 * (y + 3) + 48 * (z + 4)), 9, FlagOutline, 7));
+				}
+			}
+		}
+		const auto compare = [&](auto &sampler, const Region &bounds) {
+			for (int z = -12; z <= 16; ++z) {
+				for (int y = -12; y <= 16; ++y) {
+					for (int x = -12; x <= 16; ++x) {
+						const glm::vec3 pos = glm::vec3(x, y, z) * 0.25f;
+						const glm::ivec3 base = glm::ivec3(glm::round(pos));
+						const Voxel expected = bounds.containsPoint(base) ? volume.voxel(base) : Voxel();
+						EXPECT_EQ(expected, sampleTrilinear(sampler, pos));
+						EXPECT_EQ(base, sampler.position());
+						EXPECT_EQ(bounds.containsPoint(base), sampler.currentPositionValid());
+					}
+				}
+			}
+		};
+		RawVolume::Sampler sampler(volume);
+		compare(sampler, volume.region());
+		const Region selected(-1, -1, -1, 1, 2, 3);
+		RawVolumeWrapper wrapper(&volume, selected);
+		RawVolumeWrapper::Sampler wrapped(wrapper);
+		compare(wrapped, selected);
+		if (volume.isContiguous()) {
+			RawVolume::DenseSampler dense(volume);
+			compare(dense, volume.region());
+		}
+	}
+}
+
+class CornerCountingSampler : public RawVolume::Sampler {
+	using Super = RawVolume::Sampler;
+public:
+	explicit CornerCountingSampler(RawVolume &volume) : Super(volume) {}
+	mutable int reads = 0;
+#define COUNT_CORNER(Name) const Voxel &Name() const { ++reads; return Super::Name(); }
+	COUNT_CORNER(peekVoxel0px0py0pz)
+	COUNT_CORNER(peekVoxel1px0py0pz)
+	COUNT_CORNER(peekVoxel0px1py0pz)
+	COUNT_CORNER(peekVoxel1px1py0pz)
+	COUNT_CORNER(peekVoxel0px0py1pz)
+	COUNT_CORNER(peekVoxel1px0py1pz)
+	COUNT_CORNER(peekVoxel0px1py1pz)
+	COUNT_CORNER(peekVoxel1px1py1pz)
+#undef COUNT_CORNER
+};
+
+TEST_F(VolumeSamplerTest, TrilinearReadsOnlyTheSelectedCorner) {
+	RawVolume volume(Region(-2, 3));
+	volume.fill(Voxel(VoxelType::Generic, 17, 9, FlagOutline, 7));
+	CornerCountingSampler sampler(volume);
+	for (const glm::vec3 pos : {glm::vec3(0.25f), glm::vec3(-0.5f), glm::vec3(0.5f), glm::vec3(3.0f), glm::vec3(10.0f)}) {
+		const glm::ivec3 base = glm::ivec3(glm::round(pos));
+		const Voxel expected = volume.region().containsPoint(base) ? volume.voxel(base) : Voxel();
+		sampler.reads = 0;
+		EXPECT_EQ(expected, sampleTrilinear(sampler, pos));
+		EXPECT_EQ(sampler.currentPositionValid() ? 1 : 0, sampler.reads);
+	}
+}
 
 TEST_F(VolumeSamplerTest, testTriplanarSampling) {
 	voxel::RawVolume v({0, 2});

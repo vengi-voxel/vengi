@@ -80,6 +80,25 @@ public:
 		}
 	};
 
+	/**
+	 * Dense traversal for a full contiguous volume. Requires isContiguous().
+	 * Prefer withVolumeSampler() to select this path without materializing chunks.
+	 * Storage and region must stay unchanged for the sampler lifetime.
+	 */
+	class DenseSampler : public VolumeSampler<RawVolume, true> {
+		using Super = VolumeSampler<RawVolume, true>;
+	public:
+		using Super::VolumeSampler;
+
+		CORE_FORCE_INLINE bool setVoxel(const Voxel &voxel) {
+			if (_currentPositionInvalid) {
+				return false;
+			}
+			*_currentVoxel = voxel;
+			return true;
+		}
+	};
+
 	RawVolume(const Voxel *data, const voxel::Region &region);
 	RawVolume(Voxel *data, const voxel::Region &region);
 
