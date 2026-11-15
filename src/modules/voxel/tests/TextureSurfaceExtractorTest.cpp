@@ -14,6 +14,7 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/FormatConfig.h"
 #include <glm/geometric.hpp>
+#include <limits.h>
 
 namespace voxel {
 
@@ -44,6 +45,52 @@ TEST_F(TextureSurfaceExtractorTest, testChunkedExtractionDoesNotMaterialize) {
 	EXPECT_FALSE(chunkMesh.mesh[0].isEmpty());
 	EXPECT_EQ(denseCtx.textureWidth, ctx.textureWidth);
 	EXPECT_EQ(denseCtx.textureHeight, ctx.textureHeight);
+	EXPECT_EQ(nullptr, volume.linearVoxels());
+}
+
+TEST_F(TextureSurfaceExtractorTest, testExtractionAtCoordinateLimits) {
+	const int origins[] = {INT_MIN, INT_MAX - 1};
+	for (const int origin : origins) {
+		for (int dense = 0; dense < 2; ++dense) {
+			const Region region(origin, origin + 1);
+			const int previous = RawVolume::chunkedStorageThreshold();
+			RawVolume::setChunkedStorageThreshold(1);
+			RawVolume volume(region);
+			RawVolume::setChunkedStorageThreshold(previous);
+			if (dense) {
+				ASSERT_NE(nullptr, volume.voxels());
+			}
+			const Voxel value(VoxelType::Generic, 2);
+			volume.setVoxel(region.getLowerCorner(), value);
+			volume.setVoxel(region.getUpperCorner(), value);
+			const size_t allocated = volume.allocatedBytes();
+			palette::Palette palette;
+			palette.nippon();
+			ChunkMesh mesh;
+			auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, glm::ivec3(0));
+			extractSurface(ctx);
+			EXPECT_EQ(72u, mesh.mesh[0].getNoOfIndices());
+			EXPECT_FALSE(ctx.textureData.empty());
+			EXPECT_EQ(allocated, volume.allocatedBytes());
+			EXPECT_EQ(dense != 0, volume.isContiguous());
+		}
+	}
+}
+
+TEST_F(TextureSurfaceExtractorTest, testExtractionFarOutsideSourceIsEmpty) {
+	RawVolume volume(Region(0, 1));
+	volume.fill(Voxel(VoxelType::Generic, 2));
+	palette::Palette palette;
+	palette.nippon();
+	const int origins[] = {INT_MIN, INT_MAX - 1};
+	for (const int origin : origins) {
+		ChunkMesh mesh;
+		const Region extracted(origin, origin + 1);
+		auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+		extractSurface(ctx);
+		EXPECT_TRUE(mesh.mesh[0].isEmpty());
+		EXPECT_TRUE(ctx.textureData.empty());
+	}
 }
 
 TEST_F(TextureSurfaceExtractorTest, testAccessorIncludesNeighbourOutsideExtractionRegion) {
@@ -60,6 +107,20 @@ TEST_F(TextureSurfaceExtractorTest, testAccessorIncludesNeighbourOutsideExtracti
 	extractSurface(ctx);
 	EXPECT_EQ(30u, mesh.mesh[0].getNoOfIndices());
 	EXPECT_EQ(bytes, volume.allocatedBytes());
+	EXPECT_FALSE(volume.isContiguous());
+}
+
+TEST_F(TextureSurfaceExtractorTest, testAccessorPadsOutsideSourceWithAir) {
+	RawVolume volume(Region(-40, 216));
+	volume.setVoxel(-40, -40, -40, Voxel(VoxelType::Generic, 2));
+	palette::Palette palette;
+	palette.nippon();
+	ChunkMesh mesh;
+	const Region extracted(-42, -35);
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+	extractSurface(ctx);
+	EXPECT_EQ(36u, mesh.mesh[0].getNoOfIndices());
+	EXPECT_FALSE(volume.isContiguous());
 }
 
 TEST_F(TextureSurfaceExtractorTest, testTextureExtraction) {

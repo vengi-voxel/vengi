@@ -1,5 +1,6 @@
 set(LIB voxel)
 set(SRCS
+	private/ChunkedVolumeStorage.h private/ChunkedVolumeStorage.cpp
 	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
@@ -28,7 +29,9 @@ set(SRCS
 	ConcurrentSparseVolume.h ConcurrentSparseVolume.cpp
 	SparseVolume.h SparseVolume.cpp
 	VolumeData.h
+	VolumeDataAccessor.h VolumeDataAccessor.cpp
 	VolumeSampler.h
+	VolumeSamplerDispatch.h
 	VolumeSamplerUtil.h
 	VolumeCompression.h VolumeCompression.cpp
 	VoxelVertex.h
@@ -40,6 +43,9 @@ engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES palette meshoptimizer 
 engine_target_optimize(${LIB})
 
 set(TEST_SRCS
+	tests/VolumeDataAccessorTest.cpp
+	tests/ChunkedVolumeStorageTest.cpp
+	tests/RawVolumeChunkTest.cpp
 	tests/AbstractVoxelTest.h
 	tests/AmbientOcclusionTest.cpp
 	tests/BitVolumeTest.cpp
@@ -68,6 +74,7 @@ gtest_suite_end(tests-${LIB})
 
 if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
+		benchmarks/VolumeDataAccessorBenchmark.cpp
 		benchmarks/MeshStateBenchmark.cpp
 		benchmarks/RawVolumeBenchmark.cpp
 		benchmarks/RawVolumeMoveWrapperBenchmark.cpp
@@ -77,6 +84,7 @@ if (USE_BENCHMARKS)
 		benchmarks/SparseVolumeBenchmark.cpp
 		benchmarks/SurfaceExtractorBenchmark.cpp
 		benchmarks/VolumeSamplerBenchmark.cpp
+		benchmarks/VolumeSamplerPositionBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB} voxelformat)

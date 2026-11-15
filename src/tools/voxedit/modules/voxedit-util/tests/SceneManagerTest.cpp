@@ -647,6 +647,25 @@ TEST_F(SceneManagerTest, testExceedsMaxSuggestedVolumeSize) {
 	ASSERT_FALSE(_sceneMgr->exceedsMaxSuggestedVolumeSize());
 }
 
+TEST_F(SceneManagerTest, testChunkedStorageThresholdFollowsSuggestedSize) {
+	EXPECT_EQ(core::getVar(cfg::VoxEditMaxSuggestedVolumeSize)->intVal(),
+		voxel::RawVolume::chunkedStorageThreshold());
+	{
+		util::ScopedVarChange scoped(cfg::VoxEditMaxSuggestedVolumeSize, "32");
+		_sceneMgr->update(0.0);
+		voxel::RawVolume chunked(voxel::Region(0, 31));
+		EXPECT_FALSE(chunked.isContiguous());
+		core::getVar(cfg::VoxEditMaxSuggestedVolumeSize)->setVal(64);
+		_sceneMgr->update(0.0);
+		voxel::RawVolume dense(voxel::Region(0, 31));
+		EXPECT_TRUE(dense.isContiguous());
+		EXPECT_FALSE(chunked.isContiguous());
+	}
+	_sceneMgr->update(0.0);
+	EXPECT_EQ(core::getVar(cfg::VoxEditMaxSuggestedVolumeSize)->intVal(),
+		voxel::RawVolume::chunkedStorageThreshold());
+}
+
 TEST_F(SceneManagerTest, testMergeVengiFile) {
 	loadVengiFile("test-merge.vengi");
 	if (HasFailure()) {

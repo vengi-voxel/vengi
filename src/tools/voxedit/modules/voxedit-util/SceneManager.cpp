@@ -4160,6 +4160,7 @@ void SceneManager::construct() {
 	const core::VarDef voxEditTransformUpdateChildren(cfg::VoxEditTransformUpdateChildren, true, N_("Update children"), N_("Update the children of a node when the transform of the node changes"));
 	_transformUpdateChildren = core::Var::registerVar(voxEditTransformUpdateChildren);
 	_maxSuggestedVolumeSize = core::getVar(cfg::VoxEditMaxSuggestedVolumeSize);
+	voxel::RawVolume::setChunkedStorageThreshold(_maxSuggestedVolumeSize->intVal());
 	_lastDirectory = core::getVar(cfg::UILastDirectory);
 
 	voxelformat::FormatConfig::init();
@@ -6323,6 +6324,10 @@ void SceneManager::setPlaybackSpeed(float speed) {
 
 bool SceneManager::update(double nowSeconds) {
 	core_trace_scoped(SceneManagerUpdate);
+	const int chunkedThreshold = _maxSuggestedVolumeSize->intVal();
+	if (voxel::RawVolume::chunkedStorageThreshold() != chunkedThreshold) {
+		voxel::RawVolume::setChunkedStorageThreshold(chunkedThreshold);
+	}
 	if (_lsystemRunning) {
 		stepLSystem();
 	}

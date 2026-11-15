@@ -18,6 +18,7 @@
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxel/VolumeSamplerDispatch.h"
 #include <stdint.h>
 
 namespace voxelutil {
@@ -858,8 +859,15 @@ int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yO
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
 int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor = Visitor(),
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
-	typename Volume::Sampler sampler(volume);
-	return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
+	return voxel::withVolumeSampler(volume, [&](auto &sampler) {
+		if constexpr (std::is_invocable_v<Condition &, decltype(sampler)>) {
+			return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
+		} else {
+			// Keep conditions that explicitly accept the volume's original sampler.
+			typename Volume::Sampler fallback(volume);
+			return visitSampler(fallback, region, xOff, yOff, zOff, visitor, condition, order);
+		}
+	});
 }
 
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>

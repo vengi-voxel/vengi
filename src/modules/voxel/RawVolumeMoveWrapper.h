@@ -29,16 +29,27 @@ public:
 		inline bool setVoxel(const Voxel &voxel) {
 			if (_currentPositionInvalid) {
 				const glm::ivec3& into = _region.moveInto(position().x, position().y, position().z);
-				_volume->setVoxel(into, voxel);
-				return true;
+				return _volume->setVoxel(into, voxel);
 			}
-			*_currentVoxel = voxel;
+			Voxel *target = this->writableVoxel();
+			if (!target) {
+				return false;
+			}
+			*target = voxel;
 			return true;
 		}
 	};
 
 	RawVolumeMoveWrapper(voxel::RawVolume* volume) :
 			_volume(volume), _region(volume->region()) {
+	}
+
+	inline Voxel *sampleData(const glm::ivec3 &pos, glm::ivec3 &dataLower, glm::ivec3 &dataUpper, int64_t &yStride, int64_t &zStride, core::AtomicPtr<Voxel> *&chunkEntry, const Voxel *&defaultVoxel) const {
+		return _volume->sampleData(pos, dataLower, dataUpper, yStride, zStride, chunkEntry, defaultVoxel);
+	}
+
+	inline Voxel *writableVoxel(const glm::ivec3 &pos) {
+		return _volume->writableVoxel(pos);
 	}
 
 	inline Voxel *voxels() const {
@@ -73,6 +84,10 @@ public:
 		return _volume;
 	}
 
+	inline const Voxel &borderValue() const {
+		return _volume->borderValue();
+	}
+
 	inline const Region& region() const {
 		return _region;
 	}
@@ -92,11 +107,9 @@ public:
 	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		if (!_region.containsPoint(x, y, z)) {
 			const glm::ivec3& into = _region.moveInto(x, y, z);
-			_volume->setVoxel(into, voxel);
-			return true;
+			return _volume->setVoxel(into, voxel) || _volume->voxel(into) == voxel;
 		}
-		_volume->setVoxel(x, y, z, voxel);
-		return true;
+		return _volume->setVoxel(x, y, z, voxel) || _volume->voxel(x, y, z) == voxel;
 	}
 };
 

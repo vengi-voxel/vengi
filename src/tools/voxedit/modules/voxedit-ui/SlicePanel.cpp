@@ -403,7 +403,7 @@ void SlicePanel::drawView(SliceView view, scenegraph::SceneGraphNode &node, cons
 		voxel::Voxel *cells = &_sliceCells[0];
 		uint8_t *state = &_sliceState[0];
 
-		const voxel::Voxel *data = volume.voxels();
+		const voxel::Voxel *data = volume.linearVoxels();
 		const bool preview = _gizmoPreview != nullptr;
 		const int64_t strides[3] = {1, (int64_t)volume.width(), region.stride()};
 		glm::ivec3 start(0);
@@ -416,7 +416,14 @@ void SlicePanel::drawView(SliceView view, scenegraph::SceneGraphNode &node, cons
 			glm::ivec3 pos = start;
 			pos[bAxis] = minB + b;
 			for (int a = 0; a < aCount; ++a, idx += strides[aAxis]) {
-				voxel::Voxel voxel = data[idx];
+				voxel::Voxel voxel;
+				if (data) {
+					voxel = data[idx];
+				} else {
+					glm::ivec3 samplePos = pos;
+					samplePos[aAxis] = minA + a;
+					voxel = volume.voxel(samplePos);
+				}
 				if (preview) {
 					pos[aAxis] = minA + a;
 					if (_gizmoPreview->region().containsPoint(pos)) {

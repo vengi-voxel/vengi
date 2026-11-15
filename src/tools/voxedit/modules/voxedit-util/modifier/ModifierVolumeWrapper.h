@@ -34,7 +34,7 @@ private:
 	voxel::Region _box3DSelectionRegion;
 
 	// if we have a selection, we only handle voxels inside the selection
-	bool skip(const glm::aligned_ivec4 &pos) const {
+	bool skip(const glm::ivec3 &pos) const {
 		if (!_hasSelection) {
 			return false;
 		}
@@ -89,33 +89,37 @@ public:
 				}
 			}
 
-			if (_volume->skip(_posInVolume)) {
+			if (_volume->skip(position())) {
+				return false;
+			}
+			voxel::Voxel *currentVoxel = this->writableVoxel();
+			if (!currentVoxel) {
 				return false;
 			}
 			// Preserve the FlagOutline (selection) flag when modifying voxels
-			const voxel::Voxel previousVoxel = *_currentVoxel;
-			const uint8_t existingFlags = _currentVoxel->getFlags();
+			const voxel::Voxel previousVoxel = *currentVoxel;
+			const uint8_t existingFlags = currentVoxel->getFlags();
 			if (_volume->_erase) {
 				if (!_volume->_normalPaint) {
-					*_currentVoxel = {};
+					*currentVoxel = {};
 				}
-				_currentVoxel->setNormal(NO_NORMAL);
+				currentVoxel->setNormal(NO_NORMAL);
 			} else {
 				if (_volume->_normalPaint) {
-					_currentVoxel->setNormal(voxel.getNormal());
+					currentVoxel->setNormal(voxel.getNormal());
 				} else {
 					// Empty cells must not pass a previous voxel's normal to new geometry.
-					if (voxel::isAir(_currentVoxel->getMaterial())) {
-						_currentVoxel->setNormal(NO_NORMAL);
+					if (voxel::isAir(currentVoxel->getMaterial())) {
+						currentVoxel->setNormal(NO_NORMAL);
 					}
-					*_currentVoxel = voxel;
+					*currentVoxel = voxel;
 				}
 			}
 			// Restore FlagOutline from original solid voxel
 			if (existingFlags & voxel::FlagOutline) {
-				_currentVoxel->setFlags(existingFlags);
+				currentVoxel->setFlags(existingFlags);
 			}
-			if (*_currentVoxel == previousVoxel) {
+			if (*currentVoxel == previousVoxel) {
 				return false;
 			}
 			_volume->addToDirtyRegion(glm::ivec3(_posInVolume));

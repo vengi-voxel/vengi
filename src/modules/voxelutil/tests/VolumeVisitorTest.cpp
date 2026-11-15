@@ -16,6 +16,38 @@ namespace voxelutil {
 
 class VolumeVisitorTest : public app::AbstractTest {};
 
+TEST_F(VolumeVisitorTest, DenseDispatchPreservesOrderConditionsAndBreaks) {
+	voxel::RawVolume volume(voxel::Region(-3, 3));
+	ASSERT_NE(nullptr, volume.voxels());
+	volume.fill(voxel::Voxel(voxel::VoxelType::Generic, 7));
+	volume.setVoxel(0, 0, 0, voxel::Voxel());
+	const auto typedCondition = [](const voxel::RawVolume::Sampler &sampler) {
+		return !voxel::isAir(sampler.voxel().getMaterial());
+	};
+	EXPECT_EQ(342, visitVolume(volume, EmptyVisitor(), typedCondition));
+	for (int i = 0; i < (int)VisitorOrder::Max; ++i) {
+		const VisitorOrder order = (VisitorOrder)i;
+		core::DynamicArray<glm::ivec3> expected;
+		core::DynamicArray<glm::ivec3> actual;
+		voxel::RawVolume::Sampler generic(volume);
+		const auto collectExpected = [&](int x, int y, int z, const voxel::Voxel &) {
+			expected.push_back(glm::ivec3(x, y, z));
+			return (x + y + z) % 3 == 0;
+		};
+		const auto collectActual = [&](int x, int y, int z, const voxel::Voxel &) {
+			actual.push_back(glm::ivec3(x, y, z));
+			return (x + y + z) % 3 == 0;
+		};
+		const voxel::Region selected(-2, 2);
+		const int count = visitSampler(generic, selected, 1, 1, 1, collectExpected, VisitSolid(), order);
+		EXPECT_EQ(count, visitVolume(volume, selected, collectActual, VisitSolid(), order));
+		ASSERT_EQ(expected.size(), actual.size());
+		for (size_t pos = 0; pos < expected.size(); ++pos) {
+			EXPECT_EQ(expected[pos], actual[pos]);
+		}
+	}
+}
+
 TEST_F(VolumeVisitorTest, testVisitSurface) {
 	const voxel::Region region(0, 2);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);

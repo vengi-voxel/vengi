@@ -59,6 +59,7 @@ gtest_suite_end(tests-${LIB})
 
 if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
+		benchmarks/VolumeCropperBenchmark.cpp
 		benchmarks/VoxelUtilBenchmark.cpp
 		benchmarks/VoxelVisitorBenchmark.cpp
 		benchmarks/RaycastBenchmark.cpp

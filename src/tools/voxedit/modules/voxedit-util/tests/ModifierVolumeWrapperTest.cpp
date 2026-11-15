@@ -14,6 +14,59 @@ namespace voxedit {
 
 class ModifierVolumeWrapperTest : public app::AbstractTest {};
 
+TEST_F(ModifierVolumeWrapperTest, SamplerMovementRespectsSelection) {
+	const int previous = voxel::RawVolume::chunkedStorageThreshold();
+	for (int threshold : {1, 256}) {
+		voxel::RawVolume::setChunkedStorageThreshold(threshold);
+		voxel::RawVolume volume(voxel::Region(-3, 3));
+		voxel::RawVolume::setChunkedStorageThreshold(previous);
+		const glm::ivec3 selected(-1, 1, 0);
+		volume.setVoxel(selected, voxel::Voxel(voxel::VoxelType::Generic, 1, NO_NORMAL, voxel::FlagOutline));
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setUnownedVolume(&volume);
+		ModifierVolumeWrapper wrapper(node, ModifierType::Override);
+		ModifierVolumeWrapper::Sampler sampler(wrapper);
+		ASSERT_TRUE(sampler.setPosition(selected - glm::ivec3(1, 0, 0)));
+		const voxel::Voxel replacement(voxel::VoxelType::Generic, 7);
+		EXPECT_FALSE(sampler.setVoxel(replacement));
+		EXPECT_FALSE(wrapper.dirtyRegion().isValid());
+		sampler.movePositiveX();
+		ASSERT_EQ(selected, sampler.position());
+		ASSERT_TRUE(sampler.setVoxel(replacement));
+		EXPECT_EQ(7, volume.voxel(selected).getColor());
+		EXPECT_TRUE(volume.voxel(selected).getFlags() & voxel::FlagOutline);
+		EXPECT_EQ(voxel::Region(selected, selected), wrapper.dirtyRegion());
+		sampler.movePositiveX();
+		EXPECT_FALSE(sampler.setVoxel(replacement));
+		EXPECT_TRUE(voxel::isAir(volume.voxel(selected + glm::ivec3(1, 0, 0)).getMaterial()));
+		EXPECT_EQ(voxel::Region(selected, selected), wrapper.dirtyRegion());
+	}
+}
+
+TEST_F(ModifierVolumeWrapperTest, testChunkedSamplerPlaceAndErase) {
+	voxel::RawVolume volume(voxel::Region(-40, 216));
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.setUnownedVolume(&volume);
+	const glm::ivec3 positions[] = {{-9, -9, -9}, {-8, -8, -8}};
+	for (const auto &pos : positions) {
+		volume.setVoxel(pos, voxel::Voxel(voxel::VoxelType::Air, 0, 8));
+		ModifierVolumeWrapper place(node, ModifierType::Place);
+		ModifierVolumeWrapper::Sampler sampler(place);
+		ASSERT_TRUE(sampler.setPosition(pos));
+		ASSERT_TRUE(sampler.setVoxel(voxel::Voxel(voxel::VoxelType::Generic, 2)));
+		EXPECT_EQ(NO_NORMAL, sampler.voxel().getNormal());
+		EXPECT_EQ(2, sampler.voxel().getColor());
+		EXPECT_TRUE(place.dirtyRegion().containsPoint(pos));
+		ModifierVolumeWrapper erase(node, ModifierType::Erase);
+		ModifierVolumeWrapper::Sampler eraser(erase);
+		ASSERT_TRUE(eraser.setPosition(pos));
+		ASSERT_TRUE(eraser.setVoxel({}));
+		EXPECT_TRUE(voxel::isAir(volume.voxel(pos).getMaterial()));
+		EXPECT_EQ(NO_NORMAL, volume.voxel(pos).getNormal());
+	}
+	EXPECT_EQ(nullptr, volume.linearVoxels());
+}
+
 TEST_F(ModifierVolumeWrapperTest, testPlace) {
 	voxel::RawVolume volume(voxel::Region(-3, 3));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

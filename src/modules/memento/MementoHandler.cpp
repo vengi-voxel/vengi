@@ -23,6 +23,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeDataAccessor.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VoxelUtil.h"
@@ -225,41 +226,33 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	if (volume == nullptr) {
 		return MementoData();
 	}
-	// Preserve the requested region. If it's invalid, fall back to the full volume region.
-	if (region.isValid()) {
-		// Use the RawVolume copy-with-region constructor which will handle regions
-		// that extend outside the source by filling with air or cropping as needed.
-		voxel::RawVolume v(*volume, region);
-		const int64_t actualVoxels = v.region().voxels();
-		io::BufferedReadWriteStream outStream(actualVoxels * (int64_t)sizeof(voxel::Voxel));
-		io::LZ4WriteStream stream(outStream);
-		if (stream.write(v.data(), actualVoxels * sizeof(voxel::Voxel)) == -1) {
-			Log::error("Failed to compress memento volume data");
-			return MementoData();
-		}
-		stream.flush();
-		const size_t size = (size_t)outStream.size();
-		const voxel::Region actualRegion = v.region();
-		MementoData data(outStream.release(), size, actualRegion, volume->region());
-		// If the actual region was cropped from the requested region, store
-		// the originally requested region as modified region. This is needed
-		// for resize operations where the volume region changed and the undo
-		// must restore data across the full extent of the change.
-		if (actualRegion != region) {
-			data._modifiedRegion = region;
-		}
-		return data;
+	voxel::Region actualRegion = region.isValid() ? region : volume->region();
+	// Preserve existing undo region semantics: crop partial overlaps, but retain
+	// a wholly outside region as air. The accessor itself never crops its region.
+	if (voxel::intersects(actualRegion, volume->region())) {
+		actualRegion.cropTo(volume->region());
 	}
-	const int64_t allVoxels = volume->region().voxels();
-	io::BufferedReadWriteStream outStream(allVoxels * (int64_t)sizeof(voxel::Voxel));
+	const voxel::VolumeDataAccessor accessor(*volume, actualRegion);
+	if (!accessor.valid()) {
+		Log::error("Failed to access memento volume data");
+		return MementoData();
+	}
+	io::BufferedReadWriteStream outStream(voxel::RawVolume::size(actualRegion));
 	io::LZ4WriteStream stream(outStream);
-	if (stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel)) == -1) {
+	if (stream.write(accessor.data(), voxel::RawVolume::size(actualRegion)) == -1) {
 		Log::error("Failed to compress memento volume data");
 		return MementoData();
 	}
-	stream.flush();
+	if (!stream.flush()) {
+		Log::error("Failed to finish memento compression");
+		return MementoData();
+	}
 	const size_t size = (size_t)outStream.size();
-	return {outStream.release(), size, volume->region(), volume->region()};
+	MementoData data(outStream.release(), size, actualRegion, volume->region());
+	if (region.isValid() && actualRegion != region) {
+		data._modifiedRegion = region;
+	}
+	return data;
 }
 
 bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData, const voxel::Region &region) {
@@ -275,11 +268,19 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	}
 
 	const voxel::Region &dataRegion = mementoData.dataRegion();
-	const size_t uncompressedBufferSize = (size_t)dataRegion.voxels() * sizeof(voxel::Voxel);
+	const size_t uncompressedBufferSize = voxel::RawVolume::size(dataRegion);
+	if (uncompressedBufferSize == 0) {
+		return false;
+	}
 	io::MemoryReadStream dataStream(mementoData._buffer, mementoData._compressedSize);
-	io::LZ4ReadStream stream(dataStream, (int)mementoData._compressedSize);
+	io::LZ4ReadStream stream(dataStream);
+	if (stream.size() != (int64_t)uncompressedBufferSize) {
+		Log::error("Invalid memento volume data size");
+		return false;
+	}
 	uint8_t *uncompressedBuf = (uint8_t *)core_malloc(uncompressedBufferSize);
-	if (stream.read(uncompressedBuf, uncompressedBufferSize) == -1) {
+	if (uncompressedBuf == nullptr ||
+		stream.read(uncompressedBuf, uncompressedBufferSize) != (int64_t)uncompressedBufferSize) {
 		core_free(uncompressedBuf);
 		Log::error("Failed to decompress memento volume data");
 		return false;
