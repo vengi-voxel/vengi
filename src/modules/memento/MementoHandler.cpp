@@ -4,6 +4,7 @@
 
 #include "MementoHandler.h"
 
+#include "app/ForParallel.h"
 #include "command/Command.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
@@ -11,6 +12,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/ZipWriteStream.h"
@@ -120,9 +122,10 @@ MementoState::MementoState(MementoType _type, MementoData &&_data, core::UUID &&
 						   glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames,
 						   palette::Palette &&_palette, palette::NormalPalette &&_normalPalette,
 						   scenegraph::SceneGraphNodeProperties &&_properties)
-	: type(_type), data(_data), parentUUID(_parentId), nodeUUID(_nodeId), referenceUUID(_referenceId),
-	  nodeType(_nodeType), keyFrames(_keyFrames), properties(_properties), name(_name), pivot(_pivot),
-	  palette(_palette), normalPalette(_normalPalette) {
+	: type(_type), data(core::move(_data)), parentUUID(core::move(_parentId)), nodeUUID(core::move(_nodeId)),
+	  referenceUUID(core::move(_referenceId)), nodeType(_nodeType), keyFrames(core::move(_keyFrames)),
+	  properties(core::move(_properties)), name(core::move(_name)), pivot(core::move(_pivot)),
+	  palette(core::move(_palette)), normalPalette(core::move(_normalPalette)) {
 }
 
 MementoState::MementoState(MementoType _type, const core::DynamicArray<core::String> &_stringList)
@@ -755,11 +758,27 @@ bool MementoHandler::markInitialSceneState(const scenegraph::SceneGraph &sceneGr
 	if (!markAllAnimations(sceneGraph.animations())) {
 		return false;
 	}
-	sceneGraph.nodes().for_parallel(
-		[&](const scenegraph::SceneGraphNodes::key_type &n, const scenegraph::SceneGraphNodes::value_type &v) {
-			markInitialNodeState(sceneGraph, v);
-		});
-	return true;
+
+	// Compress volumes in parallel, then take @_mutex once to append the group.
+	// Calling markNodeAdded from nodes().for_parallel() contended on addState and
+	// made large scene loads much slower without speeding up the zip work.
+	core::DynamicArray<const scenegraph::SceneGraphNode *> nodes;
+	nodes.reserve(sceneGraph.nodeSize());
+	for (auto i = sceneGraph.nodes().begin(); i != sceneGraph.nodes().end(); ++i) {
+		nodes.push_back(&i->value);
+	}
+
+	const int n = (int)nodes.size();
+	core::DynamicArray<MementoState> states;
+	states.resize(n);
+	app::for_parallel(0, n, [&](int start, int end) {
+		for (int i = start; i < end; ++i) {
+			const scenegraph::SceneGraphNode &node = *nodes[i];
+			states[i] = createNodeState(node, node.volume(), MementoType::SceneNodeAdded,
+									   voxel::Region::InvalidRegion);
+		}
+	});
+	return addStates(core::move(states));
 }
 
 bool MementoHandler::markInitialNodeState(const scenegraph::SceneGraph &sceneGraph,
@@ -862,19 +881,26 @@ bool MementoHandler::removeLast() {
 	return true;
 }
 
-bool MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
-							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion) {
-	const core::UUID &parentId = node.parentUUID();
-	const core::UUID &referenceId = node.referenceUUID();
+MementoState MementoHandler::createNodeState(const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume,
+											 MementoType type, const voxel::Region &modifiedRegion) {
 	Log::debug("New memento state for node %s with name '%s'", node.uuid().str().c_str(), node.name().c_str());
 	voxel::logRegion("MarkUndo", modifiedRegion);
-	const MementoData &data = MementoData::fromVolume(volume, modifiedRegion);
-	core::ScopedPtr<MementoState> state(new MementoState(type, data, parentId, node.uuid(), referenceId, node.name(), node.type(), node.pivot(),
-					   node.allKeyFrames(), node.palette(), node.normalPalette(), node.properties()));
+	MementoData data = MementoData::fromVolume(volume, modifiedRegion);
+	MementoState state(type, core::move(data), core::UUID(node.parentUUID()), core::UUID(node.uuid()),
+					   core::UUID(node.referenceUUID()), core::String(node.name()), node.type(), glm::vec3(node.pivot()),
+					   scenegraph::SceneGraphKeyFramesMap(node.allKeyFrames()), palette::Palette(node.palette()),
+					   palette::NormalPalette(node.normalPalette()),
+					   scenegraph::SceneGraphNodeProperties(node.properties()));
 	if (node.hasIKConstraint()) {
-		state->ikConstraint.setValue(*node.ikConstraint());
+		state.ikConstraint.setValue(*node.ikConstraint());
 	}
-	return addState(core::move(*state));
+	return state;
+}
+
+bool MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion) {
+	(void)sceneGraph;
+	return addState(createNodeState(node, volume, type, modifiedRegion));
 }
 
 bool MementoHandler::markUndo(const core::UUID &parentId, const core::UUID &nodeId, const core::UUID &referenceId,
@@ -907,7 +933,7 @@ bool MementoHandler::addState(MementoState &&state) {
 	core::ScopedLock lock(_mutex);
 	if (_groupState > 0) {
 		Log::debug("add group state: %i", _groupState);
-		_groups.back().states.emplace_back(state);
+		_groups.back().states.emplace_back(core::move(state));
 		for (auto *listener : _listeners) {
 			listener->onMementoStateAdded(_groups.back().states.back());
 		}
@@ -915,13 +941,68 @@ bool MementoHandler::addState(MementoState &&state) {
 	}
 	MementoStateGroup group;
 	group.name = "single";
-	group.states.emplace_back(state);
+	group.states.emplace_back(core::move(state));
 	cutFromGroupStatePosition();
 	_groups.emplace_back(core::move(group));
 	_groupStatePosition = stateSize() - 1;
 
 	for (auto *listener : _listeners) {
 		listener->onMementoStateAdded(_groups.back().states.back());
+	}
+	return true;
+}
+
+bool MementoHandler::addStates(core::DynamicArray<MementoState> &&states) {
+	if (states.empty()) {
+		return true;
+	}
+	if (locked()) {
+		for (const MementoState &state : states) {
+			for (auto *listener : _listeners) {
+				listener->onMementoStateSkipped(state);
+			}
+		}
+		return false;
+	}
+
+	size_t firstIdx = 0;
+	size_t count = 0;
+	{
+		core::ScopedLock lock(_mutex);
+		if (_groupState > 0) {
+			Log::debug("add %i group states: %i", (int)states.size(), _groupState);
+			MementoStateGroup &group = _groups.back();
+			firstIdx = group.states.size();
+			group.states.reserve(firstIdx + states.size());
+			for (MementoState &state : states) {
+				group.states.emplace_back(core::move(state));
+			}
+			count = group.states.size() - firstIdx;
+		} else {
+			for (MementoState &state : states) {
+				MementoStateGroup group;
+				group.name = "single";
+				group.states.emplace_back(core::move(state));
+				cutFromGroupStatePosition();
+				_groups.emplace_back(core::move(group));
+				_groupStatePosition = stateSize() - 1;
+				for (auto *listener : _listeners) {
+					listener->onMementoStateAdded(_groups.back().states.back());
+				}
+			}
+			return true;
+		}
+	}
+
+	// Notify outside the lock: compression already finished and only the
+	// ring-buffer insert needed @_mutex. Listeners (network) must not hold it.
+	if (count > 0 && _groupState > 0) {
+		const MementoStateGroup &group = _groups.back();
+		for (size_t i = 0; i < count; ++i) {
+			for (auto *listener : _listeners) {
+				listener->onMementoStateAdded(group.states[firstIdx + i]);
+			}
+		}
 	}
 	return true;
 }

@@ -456,6 +456,16 @@ private:
 	void cutFromGroupStatePosition();
 	bool addState(MementoState &&state);
 	/**
+	 * @brief Append already-built states to the active memento group under one lock.
+	 * @note Compression must happen before this call so workers are not serialized on @_mutex.
+	 */
+	bool addStates(core::DynamicArray<MementoState> &&states);
+	/**
+	 * @brief Build a node memento (including volume compression) without touching @_mutex.
+	 */
+	static MementoState createNodeState(const scenegraph::SceneGraphNode &node, const voxel::RawVolume *volume,
+										MementoType type, const voxel::Region &modifiedRegion);
+	/**
 	 * @return @c true if it's not allowed to create a new undo state
 	 */
 	bool locked();
