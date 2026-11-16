@@ -8,6 +8,7 @@
 #include "VoxeloitShader.h"
 #include "VoxelnormoitShader.h"
 #include "OitShader.h"
+#include "ShadowmapShader.h"
 
 namespace voxelrender {
 
@@ -42,6 +43,17 @@ TEST_P(VoxelRenderShaderTest, testOitShader) {
 	shader::OitShader shader;
 	EXPECT_TRUE(shader.setup());
 	shader.shutdown();
+}
+
+TEST_P(VoxelRenderShaderTest, testShadowmapShader) {
+	for (bool instanced : {false, true}) {
+		shader::ShadowmapShader shader;
+		if (instanced) {
+			shader.addDefine("USEDRAWPARAMETERS", "1");
+		}
+		EXPECT_TRUE(shader.setup());
+		shader.shutdown();
+	}
 }
 
 VIDEO_SHADERTEST(VoxelRenderShaderTest)

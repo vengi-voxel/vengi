@@ -4,6 +4,9 @@
 
 #include "TestSceneGraphRenderer.h"
 #include "core/Log.h"
+#include "core/ConfigVar.h"
+#include "core/Var.h"
+#include "scenegraph/SceneGraphUtil.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "testcore/TestAppMain.h"
@@ -23,6 +26,8 @@ TestSceneGraphRenderer::TestSceneGraphRenderer(const io::FilesystemPtr &filesyst
 	setCameraMotion(true);
 	setRenderPlane(true);
 	setRenderAxis(true);
+	registerArg("--shadow-close").setDescription("Inspect contact shadows close to the first casters").addFlag(ARGUMENT_FLAG_BOOL);
+	registerArg("--shadow-grid").setDescription("Render a grid of shadow casters (side length, up to 32)");
 }
 
 app::AppState TestSceneGraphRenderer::onInit() {
@@ -105,10 +110,43 @@ app::AppState TestSceneGraphRenderer::onInit() {
 		_sceneGraph.emplace(core::move(node));
 	}
 
+	if (hasArg("--shadow-grid")) {
+		core::getVar(cfg::ClientShadowMap)->setVal(true);
+		const int side = glm::clamp(getArgVal("--shadow-grid", "8").toInt(), 1, 32);
+		for (int z = 0; z < side; ++z) {
+			for (int x = 0; x < side; ++x) {
+				const auto &source = _sceneGraph.node(1 + (x + z) % 2);
+				const int id = z % 2 ? scenegraph::copyNodeToSceneGraph(_sceneGraph, source, 0)
+									: scenegraph::createNodeReference(_sceneGraph, source);
+				auto &transform = _sceneGraph.node(id).transform();
+				transform.setLocalTranslation({x * 40.0f, 0.0f, z * 40.0f});
+				if (x % 2) {
+					transform.setLocalScale({-1.0f, 1.0f, 1.0f});
+				}
+			}
+		}
+		scenegraph::SceneGraphNode floor(scenegraph::SceneGraphNodeType::Model);
+		floor.createVolume(voxel::Region(-40, -2, -40, side * 40, -1, side * 40));
+		voxelgenerator::shape::createCubeNoCenter(*floor.volume(), floor.region().getLowerCorner(),
+			floor.region().getWidthInVoxels(), 2, floor.region().getDepthInVoxels(),
+			voxel::createVoxel(voxel::VoxelType::Generic, 3));
+		palette::Palette pal;
+		pal.nippon();
+		floor.setPalette(pal);
+		_sceneGraph.emplace(core::move(floor));
+	}
+
 	_sceneGraph.updateTransforms();
 
 	const voxel::Region sceneRegion = _sceneGraph.sceneRegion();
 	voxelrender::configureCamera(camera(), sceneRegion, voxelrender::SceneCameraMode::Free, 500.0f);
+	if (hasArg("--shadow-close")) {
+		camera().setRotationType(video::CameraRotationType::Eye);
+		camera().setNearPlane(0.1f);
+		camera().setTargetDistance(100.0f);
+		camera().setWorldPosition({105.0f, 85.0f, 150.0f});
+		camera().lookAt({55.0f, 5.0f, 55.0f});
+	}
 	camera().update(0.0);
 
 	return state;

@@ -79,6 +79,7 @@ protected:
 	int _oitTexBufferIndex = -1;
 
 	core::Buffer<int> _volumeSortScratch;
+	core::Buffer<int> _shadowCasterScratch;
 	core::Buffer<int> _deferredUploadScratch;
 	core::Buffer<int> _sortBeforeRenderScratch;
 	core::Buffer<uint8_t> _uploadVerticesScratch;

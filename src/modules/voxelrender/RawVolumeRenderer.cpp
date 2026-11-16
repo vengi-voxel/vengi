@@ -943,47 +943,78 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 void RawVolumeRenderer::renderShadowVolumes(const voxel::MeshStatePtr &meshState, const core::Buffer<int> &sorted,
 											const glm::mat4 &lightViewProjection) {
 	core_trace_scoped(RenderShadowVolumes);
-	// Unique meshes keep the UBO path; repeated references share one direct
-	// instanced draw and one transform upload per mesh/cull-face run.
+	if (sorted.empty()) {
+		return;
+	}
+	const bool instanced = _useMultiDraw && video::hasFeature(video::Feature::InstancedArrays);
 	alignas(16) shader::ShadowmapData::BlockData var{};
 	var.lightviewprojection = lightViewProjection;
+	var.usedrawinstances = instanced ? 1 : 0;
 	core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
+	if (instanced) {
+		// Upload all cascade transforms once; each mesh run selects its range by offset.
+		_drawInstanceScratch.clear();
+		_drawInstanceScratch.reserve(sorted.size());
+		for (int idx : sorted) {
+			DrawInstanceData instance{};
+			instance.model = meshState->model(idx);
+			_drawInstanceScratch.push_back(instance);
+		}
+		bindDrawInstances(_drawInstanceScratch.data(), (int)_drawInstanceScratch.size());
+		core_assert_always(_shadowMapUniformBlock.update(var));
+		_indirectScratch.clear();
+		for (size_t i = 0; i < sorted.size();) {
+			const int idx = sorted[i];
+			const int bufferIndex = meshState->resolveIdx(idx);
+			size_t end = i + 1;
+			while (end < sorted.size() && meshState->resolveIdx(sorted[end]) == bufferIndex &&
+				   meshState->cullFace(sorted[end]) == meshState->cullFace(idx)) {
+				++end;
+			}
+			video::DrawElementsIndirectCommand cmd{};
+			cmd.count = _state[bufferIndex].indices(voxel::MeshType_Opaque);
+			cmd.instanceCount = (uint32_t)(end - i);
+			cmd.baseInstance = (uint32_t)i;
+			_indirectScratch.push_back(cmd);
+			i = end;
+		}
+		video::bindVertexArray(video::InvalidId);
+		core_assert_always(_indirectDrawBuffer.update(_indirectDrawBufferIdx, _indirectScratch.data(),
+			_indirectScratch.size() * sizeof(video::DrawElementsIndirectCommand), true));
+		video::bindBuffer(video::BufferType::IndirectBuffer, _indirectDrawBuffer.bufferHandle(_indirectDrawBufferIdx));
+	}
+	int commandIndex = 0;
+	const video::Face oldCullFace = video::currentCullFace();
 	for (size_t i = 0; i < sorted.size();) {
 		const int idx = sorted[i];
 		const int bufferIndex = meshState->resolveIdx(idx);
 		const uint32_t indices = _state[bufferIndex].indices(voxel::MeshType_Opaque);
 		const video::Face face = meshState->cullFace(idx);
 		size_t end = i + 1;
-		if (_useMultiDraw && video::hasFeature(video::Feature::InstancedArrays)) {
+		if (instanced) {
 			while (end < sorted.size() && meshState->resolveIdx(sorted[end]) == bufferIndex &&
-				   meshState->cullFace(sorted[end]) == face)
+				   meshState->cullFace(sorted[end]) == face) {
 				++end;
-		}
-		if (indices > 0u) {
-			const bool instanced = end - i > 1;
+			}
+		} else {
 			var.model = meshState->model(idx);
-			var.usedrawinstances = instanced ? 1 : 0;
-			if (instanced) {
-				_drawInstanceScratch.clear();
-				for (size_t k = i; k < end; ++k) {
-					DrawInstanceData instance{};
-					instance.model = meshState->model(sorted[k]);
-					_drawInstanceScratch.push_back(instance);
-				}
-				bindDrawInstances(_drawInstanceScratch.data(), (int)_drawInstanceScratch.size());
-			}
-			_shadowMapUniformBlock.update(var);
-			video::ScopedBuffer scopedBuf(_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque]);
-			video::ScopedFaceCull scopedFaceCull(face);
-			if (instanced) {
-				video::drawElementsInstanced(video::Primitive::Triangles, indices, video::mapType<voxel::IndexType>(),
-											 end - i);
-			} else {
-				video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
-			}
+			core_assert_always(_shadowMapUniformBlock.update(var));
+		}
+		_state[bufferIndex]._vertexBuffer[voxel::MeshType_Opaque].bind();
+		video::cullFace(face);
+		if (instanced) {
+			video::multiDrawElementsIndirect(video::Primitive::Triangles, video::mapType<voxel::IndexType>(),
+				(const void *)((uintptr_t)commandIndex++ * sizeof(video::DrawElementsIndirectCommand)), 1, 0);
+		} else {
+			video::drawElements<voxel::IndexType>(video::Primitive::Triangles, indices);
 		}
 		i = end;
 	}
+	if (instanced) {
+		video::unbindBuffer(video::BufferType::IndirectBuffer);
+	}
+	video::bindVertexArray(video::InvalidId);
+	video::cullFace(oldCullFace);
 }
 
 void RawVolumeRenderer::renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
@@ -1214,6 +1245,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 	prepareRenderFrame(meshState, camera, _renderFrames[prepareIdx], useOit);
 	_submitFrameIdx = prepareIdx;
 
+	_shadowCasterScratch.clear();
 	if (_shadowMap->boolVal()) {
 		glm::vec3 sceneMins(1.0e8f);
 		glm::vec3 sceneMaxs(-1.0e8f);
@@ -1229,6 +1261,9 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			sceneMins = glm::min(sceneMins, meshState->mins(idx));
 			sceneMaxs = glm::max(sceneMaxs, meshState->maxs(idx));
 			hasScene = true;
+			if (shadow && _state[bufferIndex].indices(voxel::MeshType_Opaque) > 0u) {
+				_shadowCasterScratch.push_back(idx);
+			}
 		}
 		if (hasScene) {
 			_shadow.update(camera, true, sceneMins, sceneMaxs);
@@ -1253,36 +1288,30 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		video::ScopedState scopedDepthMask(video::State::DepthMask);
 		if (_shadowMap->boolVal() && shadow) {
 			video::ScopedShader scoped(_shadowMapShader);
-			auto renderFunc = [this, &meshState, &activeForRender](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
+			// Filtering a sorted list preserves mesh/cull-face runs in every cascade.
+			{
+				core_trace_scoped(SortShadowCasters);
+				core::sort(_shadowCasterScratch.begin(), _shadowCasterScratch.end(), [&meshState](int a, int b) {
+					const video::Face faceA = meshState->cullFace(a);
+					const video::Face faceB = meshState->cullFace(b);
+					if (faceA != faceB) {
+						return faceA < faceB;
+					}
+					return meshState->resolveIdx(a) < meshState->resolveIdx(b);
+				});
+			}
+			auto renderFunc = [this, &meshState](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
 				math::Frustum frustum;
 				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection, video::clipDepthZeroToOne());
 
 				core::Buffer<int> &sorted = _volumeSortScratch;
 				sorted.clear();
-				sorted.reserve(activeForRender.size());
-				for (int idx : activeForRender) {
-					if (meshState->hidden(idx) || meshState->opacity(idx) <= 0.0f) {
-						continue;
+				sorted.reserve(_shadowCasterScratch.size());
+				for (int idx : _shadowCasterScratch) {
+					if (frustum.isVisible(meshState->mins(idx), meshState->maxs(idx))) {
+						sorted.push_back(idx);
 					}
-					const int bufferIndex = meshState->resolveIdx(idx);
-					if (_state[bufferIndex]._empty) {
-						continue;
-					}
-					const glm::vec3 &mins = meshState->mins(idx);
-					const glm::vec3 &maxs = meshState->maxs(idx);
-					if (!frustum.isVisible(mins, maxs)) {
-						continue;
-					}
-					sorted.push_back(idx);
 				}
-				app::sort_parallel(sorted.begin(), sorted.end(), [&meshState](int a, int b) {
-					const video::Face faceA = meshState->cullFace(a);
-					const video::Face faceB = meshState->cullFace(b);
-					if (faceA != faceB) {
-						return (int)faceA < (int)faceB;
-					}
-					return meshState->resolveIdx(a) < meshState->resolveIdx(b);
-				});
 
 				renderShadowVolumes(meshState, sorted, lightViewProjection);
 				return true;
@@ -1474,6 +1503,7 @@ void RawVolumeRenderer::shutdown() {
 	_shapeRenderer.shutdown();
 	_shapeBuilder.shutdown();
 	_volumeSortScratch.release();
+	_shadowCasterScratch.release();
 	_deferredUploadScratch.release();
 	_sortBeforeRenderScratch.release();
 	_uploadVerticesScratch.release();

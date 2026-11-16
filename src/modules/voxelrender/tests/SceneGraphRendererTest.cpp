@@ -76,7 +76,7 @@ TEST_F(SceneGraphRendererTest, InstancedReferenceShadowsMatchUniqueMeshesIncludi
 	_renderer.setSunAngle({45, 40, 0});
 	palette::Palette palette;
 	palette.minecraft();
-	image::ImagePtr images[2];
+	image::ImagePtr images[2][3];
 	uint64_t calls[2]{};
 	for (int variant = 0; variant < 2; ++variant) {
 		scenegraph::SceneGraph scene;
@@ -124,22 +124,28 @@ TEST_F(SceneGraphRendererTest, InstancedReferenceShadowsMatchUniqueMeshesIncludi
 		camera.lookAt({12, 0, 12});
 		camera.update(0);
 		video::clearColor({0, 0, 0, 1});
-		context.beginFrame();
-		const uint64_t before = video::renderStats().drawCalls;
-		_renderer.render(_meshState, context, camera, true, true);
-		calls[variant] = video::renderStats().drawCalls - before;
-		context.endFrame();
-		images[variant] = context.frameBuffer.image("reference shadows");
-		ASSERT_TRUE(images[variant]);
+		for (int view = 0; view < 3; ++view) {
+			camera.setWorldPosition({36.0f - view * 20.0f, 30.0f, 40.0f - view * 10.0f});
+			camera.lookAt({12, 0, 12});
+			camera.update(0);
+			context.beginFrame();
+			const uint64_t before = video::renderStats().drawCalls;
+			_renderer.render(_meshState, context, camera, true, true);
+			calls[variant] += video::renderStats().drawCalls - before;
+			context.endFrame();
+			images[variant][view] = context.frameBuffer.image("reference shadows");
+			ASSERT_TRUE(images[variant][view]);
+		}
 		_renderer.clear(_meshState);
 		context.shutdown();
 	}
 	EXPECT_LT(calls[0], calls[1]);
 	int visible = 0;
+	for (int view = 0; view < 3; ++view)
 	for (int y = 0; y < 128; ++y)
 		for (int x = 0; x < 128; ++x) {
-			const auto a = images[0]->colorAt(x, y);
-			const auto b = images[1]->colorAt(x, y);
+			const auto a = images[0][view]->colorAt(x, y);
+			const auto b = images[1][view]->colorAt(x, y);
 			visible += a.r > 10 || a.g > 10 || a.b > 10;
 			EXPECT_NEAR(a.r, b.r, 1);
 			EXPECT_NEAR(a.g, b.g, 1);
