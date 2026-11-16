@@ -302,6 +302,7 @@ void SceneGraphRenderer::prepareCameraNodes(const RenderContext &renderContext) 
 		if (!cameraNode.visible()) {
 			continue;
 		}
+		core_trace_scoped(PrepareCameraNode);
 		const glm::ivec2 size(cameraNode.width(), cameraNode.height());
 		_cameras.emplace_back(cameraNode.id(), toCamera(size, sceneGraph, cameraNode, renderContext.frame), cameraNode.color());
 	}
@@ -335,31 +336,35 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 
 	// Phase 1: update visibility flags sequentially (cheap, avoids thread pool overhead)
 	core::Buffer<VisibleNode> &visibleNodes = _visibleNodesScratch;
-	visibleNodes.clear();
-	visibleNodes.reserve(sceneGraph.size());
-	for (auto entry : sceneGraph.nodes()) {
-		const scenegraph::SceneGraphNode &node = entry->value;
-		if (!node.isModelNode()) {
-			continue;
-		}
-		const int nodeId = entry->key;
-		const int idx = getOrAssignVolumeIdx(node);
-		if (idx < 0) {
-			continue;
-		}
-		updateNodeState(meshState, renderContext, activeNode, node, idx);
+	{
+		core_trace_value_scoped(PrepareModelNodesVisibility, sceneGraph.size());
+		visibleNodes.clear();
+		visibleNodes.reserve(sceneGraph.size());
+		for (auto entry : sceneGraph.nodes()) {
+			const scenegraph::SceneGraphNode &node = entry->value;
+			if (!node.isModelNode()) {
+				continue;
+			}
+			const int nodeId = entry->key;
+			const int idx = getOrAssignVolumeIdx(node);
+			if (idx < 0) {
+				continue;
+			}
+			updateNodeState(meshState, renderContext, activeNode, node, idx);
 
-		if (meshState->hidden(idx)) {
-			continue;
+			if (meshState->hidden(idx)) {
+				continue;
+			}
+			if (meshState->volume(idx) == nullptr) {
+				continue;
+			}
+			visibleNodes.push_back({nodeId, idx});
 		}
-		if (meshState->volume(idx) == nullptr) {
-			continue;
-		}
-		visibleNodes.push_back({nodeId, idx});
 	}
 
 	// Phase 2: compute transforms in parallel (expensive, only for visible nodes)
 	if (!visibleNodes.empty()) {
+		core_trace_value_scoped(PrepareModelNodesTransforms, visibleNodes.size());
 		app::for_parallel(0, (int)visibleNodes.size(), [&](int start, int end) {
 			for (int i = start; i < end; ++i) {
 				const VisibleNode &vn = visibleNodes[i];
@@ -369,6 +374,7 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 		});
 	}
 
+	core_trace_scoped(PrepareModelNodesSyncVolumes);
 	for (auto entry : sceneGraph.nodes()) {
 		scenegraph::SceneGraphNode &node = entry->value;
 		if (!node.isModelNode()) {
@@ -400,7 +406,10 @@ void SceneGraphRenderer::prepareModelNodes(const voxel::MeshStatePtr &meshState,
 void SceneGraphRenderer::prepare(const voxel::MeshStatePtr &meshState, const RenderContext &renderContext) {
 	core_trace_scoped(Prepare);
 	core_assert_always(renderContext.sceneGraph != nullptr);
-	releaseMissingNodes(meshState, *renderContext.sceneGraph);
+	{
+		core_trace_scoped(ReleaseMissingNodes);
+		releaseMissingNodes(meshState, *renderContext.sceneGraph);
+	}
 	// Fill world matrices once so parallel prepareMeshStateTransform lookups stay lock-free.
 	renderContext.sceneGraph->buildFrameTransforms(renderContext.frame);
 	prepareCameraNodes(renderContext);

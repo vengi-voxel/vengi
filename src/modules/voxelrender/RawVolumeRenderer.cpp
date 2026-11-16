@@ -618,6 +618,7 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 }
 
 bool RawVolumeRenderer::uploadVertUniforms(bool paletteChanged) {
+	core_trace_scoped(UploadVertUniforms);
 	if (paletteChanged) {
 		return _voxelData.update(_voxelShaderVertData);
 	}
@@ -739,6 +740,7 @@ void RawVolumeRenderer::prepareRenderFrame(const voxel::MeshStatePtr &meshState,
 		}
 	});
 
+	core_trace_value_scoped(BuildRenderLists, active.size());
 	frame.opaque.reserve(active.size());
 	frame.transparent.reserve(active.size());
 	for (int idx : active) {
@@ -793,6 +795,7 @@ void RawVolumeRenderer::bindDrawInstances(const DrawInstanceData *data, int coun
 
 void RawVolumeRenderer::submitMultiDraw(int bufferIndex, voxel::MeshType meshType, uint32_t indexCount,
 										int batchCount) {
+	core_trace_value_scoped(SubmitMultiDraw, batchCount);
 	core_assert(_useMultiDraw);
 	core_assert(batchCount > 0);
 	core_assert((int)_drawInstanceScratch.size() == batchCount);
@@ -839,17 +842,21 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 	_voxelShaderVertData.vertrenderoutline = _renderOutline->intVal();
 	_voxelShaderVertData.shownormals = _renderNormals->intVal();
 
-	if (_voxelNormShader.isActive()) {
-		core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
-		core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
-	} else {
-		core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
-		core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
+	{
+		core_trace_scoped(OpaqueBindUniformBlocks);
+		if (_voxelNormShader.isActive()) {
+			core_assert_always(_voxelNormShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelNormShader.setVert(_voxelData.getVertUniformBuffer()));
+		} else {
+			core_assert_always(_voxelShader.setFrag(_voxelData.getFragUniformBuffer()));
+			core_assert_always(_voxelShader.setVert(_voxelData.getVertUniformBuffer()));
+		}
 	}
 
 	uint64_t lastPaletteHash = _paletteHash;
 	uint32_t lastNormalsHash = _normalsPaletteHash;
 
+	core_trace_value_scoped(OpaqueDrawLoop, sorted.size());
 	if (!_useMultiDraw) {
 		for (int idx : sorted) {
 			const int bufferIndex = meshState->resolveIdx(idx);
@@ -919,17 +926,20 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 		} else {
 			_voxelShaderVertData.usedrawinstances = 1;
 			core_assert_always(uploadVertUniforms(paletteChanged));
-			_drawInstanceScratch.clear();
-			_drawInstanceScratch.reserve(batchCount);
-			for (int k = i; k < j; ++k) {
-				const int idx = sorted[k];
-				DrawInstanceData inst;
-				inst.model = meshState->model(idx);
-				inst.gray = meshState->grayed(idx) ? 1 : 0;
-				inst.locked = meshState->locked(idx) ? 1 : 0;
-				inst.opacity = meshState->opacity(idx);
-				inst.pad = 0;
-				_drawInstanceScratch.push_back(inst);
+			{
+				core_trace_value_scoped(FillDrawInstances, batchCount);
+				_drawInstanceScratch.clear();
+				_drawInstanceScratch.reserve(batchCount);
+				for (int k = i; k < j; ++k) {
+					const int idx = sorted[k];
+					DrawInstanceData inst;
+					inst.model = meshState->model(idx);
+					inst.gray = meshState->grayed(idx) ? 1 : 0;
+					inst.locked = meshState->locked(idx) ? 1 : 0;
+					inst.opacity = meshState->opacity(idx);
+					inst.pad = 0;
+					_drawInstanceScratch.push_back(inst);
+				}
 			}
 			submitMultiDraw(bufferIndex, voxel::MeshType_Opaque, indexCount, batchCount);
 		}
@@ -952,16 +962,20 @@ void RawVolumeRenderer::renderShadowVolumes(const voxel::MeshStatePtr &meshState
 	var.usedrawinstances = instanced ? 1 : 0;
 	core_assert_always(_shadowMapShader.setBlock(_shadowMapUniformBlock.getBlockUniformBuffer()));
 	if (instanced) {
-		// Upload all cascade transforms once; each mesh run selects its range by offset.
-		_drawInstanceScratch.clear();
-		_drawInstanceScratch.reserve(sorted.size());
-		for (int idx : sorted) {
-			DrawInstanceData instance{};
-			instance.model = meshState->model(idx);
-			_drawInstanceScratch.push_back(instance);
+		{
+			core_trace_value_scoped(ShadowUploadInstances, sorted.size());
+			// Upload all cascade transforms once; each mesh run selects its range by offset.
+			_drawInstanceScratch.clear();
+			_drawInstanceScratch.reserve(sorted.size());
+			for (int idx : sorted) {
+				DrawInstanceData instance{};
+				instance.model = meshState->model(idx);
+				_drawInstanceScratch.push_back(instance);
+			}
+			bindDrawInstances(_drawInstanceScratch.data(), (int)_drawInstanceScratch.size());
+			core_assert_always(_shadowMapUniformBlock.update(var));
 		}
-		bindDrawInstances(_drawInstanceScratch.data(), (int)_drawInstanceScratch.size());
-		core_assert_always(_shadowMapUniformBlock.update(var));
+		core_trace_scoped(ShadowBuildIndirect);
 		_indirectScratch.clear();
 		for (size_t i = 0; i < sorted.size();) {
 			const int idx = sorted[i];
@@ -983,6 +997,7 @@ void RawVolumeRenderer::renderShadowVolumes(const voxel::MeshStatePtr &meshState
 			_indirectScratch.size() * sizeof(video::DrawElementsIndirectCommand), true));
 		video::bindBuffer(video::BufferType::IndirectBuffer, _indirectDrawBuffer.bufferHandle(_indirectDrawBufferIdx));
 	}
+	core_trace_value_scoped(ShadowDrawRuns, sorted.size());
 	int commandIndex = 0;
 	const video::Face oldCullFace = video::currentCullFace();
 	for (size_t i = 0; i < sorted.size();) {
@@ -1250,19 +1265,22 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 		glm::vec3 sceneMins(1.0e8f);
 		glm::vec3 sceneMaxs(-1.0e8f);
 		bool hasScene = false;
-		for (int idx : activeForRender) {
-			if (meshState->hidden(idx) || meshState->opacity(idx) <= 0.0f) {
-				continue;
-			}
-			const int bufferIndex = meshState->resolveIdx(idx);
-			if (_state[bufferIndex]._empty) {
-				continue;
-			}
-			sceneMins = glm::min(sceneMins, meshState->mins(idx));
-			sceneMaxs = glm::max(sceneMaxs, meshState->maxs(idx));
-			hasScene = true;
-			if (shadow && _state[bufferIndex].indices(voxel::MeshType_Opaque) > 0u) {
-				_shadowCasterScratch.push_back(idx);
+		{
+			core_trace_value_scoped(CollectShadowCasters, activeForRender.size());
+			for (int idx : activeForRender) {
+				if (meshState->hidden(idx) || meshState->opacity(idx) <= 0.0f) {
+					continue;
+				}
+				const int bufferIndex = meshState->resolveIdx(idx);
+				if (_state[bufferIndex]._empty) {
+					continue;
+				}
+				sceneMins = glm::min(sceneMins, meshState->mins(idx));
+				sceneMaxs = glm::max(sceneMaxs, meshState->maxs(idx));
+				hasScene = true;
+				if (shadow && _state[bufferIndex].indices(voxel::MeshType_Opaque) > 0u) {
+					_shadowCasterScratch.push_back(idx);
+				}
 			}
 		}
 		if (hasScene) {
@@ -1305,11 +1323,14 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection, video::clipDepthZeroToOne());
 
 				core::Buffer<int> &sorted = _volumeSortScratch;
-				sorted.clear();
-				sorted.reserve(_shadowCasterScratch.size());
-				for (int idx : _shadowCasterScratch) {
-					if (frustum.isVisible(meshState->mins(idx), meshState->maxs(idx))) {
-						sorted.push_back(idx);
+				{
+					core_trace_value_scoped(CullShadowCasters, _shadowCasterScratch.size());
+					sorted.clear();
+					sorted.reserve(_shadowCasterScratch.size());
+					for (int idx : _shadowCasterScratch) {
+						if (frustum.isVisible(meshState->mins(idx), meshState->maxs(idx))) {
+							sorted.push_back(idx);
+						}
 					}
 				}
 
@@ -1325,38 +1346,42 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			_shadow.render(renderFunc);
 		}
 
-		_voxelShaderFragData.depthsize = _shadow.dimension();
-		for (int i = 0; i < shader::VoxelShaderConstants::getMaxDepthBuffers(); ++i) {
-			_voxelShaderFragData.cascades[i] = _shadow.cascades()[i];
-			_voxelShaderFragData.distances[i] = _shadow.distances()[i];
-		}
-		_voxelShaderFragData.lightdir = _shadow.sunDirection();
-		_voxelShaderFragData.camerapos = glm::vec4(camera.eye(), 0.0f);
-		_voxelShaderFragData.cameradir = glm::vec4(camera.forward(), 0.0f);
 		{
+			core_trace_scoped(UploadVoxelFragUniforms);
+			_voxelShaderFragData.depthsize = _shadow.dimension();
+			for (int i = 0; i < shader::VoxelShaderConstants::getMaxDepthBuffers(); ++i) {
+				_voxelShaderFragData.cascades[i] = _shadow.cascades()[i];
+				_voxelShaderFragData.distances[i] = _shadow.distances()[i];
+			}
+			_voxelShaderFragData.lightdir = _shadow.sunDirection();
+			_voxelShaderFragData.camerapos = glm::vec4(camera.eye(), 0.0f);
+			_voxelShaderFragData.cameradir = glm::vec4(camera.forward(), 0.0f);
 			float t[4];
 			_selectionTint->vec4Val(t);
 			_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
+			_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
+			_voxelShaderFragData.gamma = _gamma->floatVal();
+			_voxelShaderFragData.checkerboard = _checkerboard->intVal();
+			_voxelShaderFragData.debugshadow = _debugShadow->intVal();
+			_voxelShaderFragData.debugcascade = _debugCascade->intVal();
+			_voxelShaderFragData.tonemapping = _tonemapping->intVal();
+			_voxelShaderFragData.renderoutline = _renderOutline->intVal();
+			_voxelShaderFragData.shadowmap = _shadowMap->intVal();
+			core_assert_always(_voxelData.update(_voxelShaderFragData));
 		}
-		_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
-		_voxelShaderFragData.gamma = _gamma->floatVal();
-		_voxelShaderFragData.checkerboard = _checkerboard->intVal();
-		_voxelShaderFragData.debugshadow = _debugShadow->intVal();
-		_voxelShaderFragData.debugcascade = _debugCascade->intVal();
-		_voxelShaderFragData.tonemapping = _tonemapping->intVal();
-		_voxelShaderFragData.renderoutline = _renderOutline->intVal();
-		_voxelShaderFragData.shadowmap = _shadowMap->intVal();
-		core_assert_always(_voxelData.update(_voxelShaderFragData));
 
 		const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
 		const bool normals = meshMode == voxel::SurfaceExtractionType::MarchingCubes;
 		video::Id oldShader = video::getProgram();
-		if (normals) {
-			_voxelNormShader.activate();
-		} else {
-			_voxelShader.activate();
+		{
+			core_trace_scoped(ActivateVoxelShader);
+			if (normals) {
+				_voxelNormShader.activate();
+			} else {
+				_voxelShader.activate();
+			}
+			core_assert_always(_shadow.bind(video::TextureUnit::Two));
 		}
-		core_assert_always(_shadow.bind(video::TextureUnit::Two));
 
 		const video::PolygonMode mode = camera.polygonMode();
 		if (mode == video::PolygonMode::Points) {

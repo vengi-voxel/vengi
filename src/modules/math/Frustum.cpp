@@ -162,7 +162,6 @@ FrustumResult Frustum::test(const glm::vec3& position) const {
 }
 
 bool Frustum::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
-	core_trace_scoped(FrustumIsVisible);
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
 		const glm::vec3& normal = p.norm();

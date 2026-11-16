@@ -3953,7 +3953,10 @@ void SceneManager::releasePreview(const scenegraph::SceneGraph &view) {
 }
 
 void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender::RenderContext &modifierRenderContext, const video::Camera& camera, uint8_t renderMask) {
-	renderContext.beginFrame();
+	{
+		core_trace_scoped(RenderContextBeginFrame);
+		renderContext.beginFrame();
+	}
 	renderContext.frame = _currentFrameIdx;
 	renderContext.sceneGraph = renderContext.isEditMode() ? &_modifier->renderSceneGraph() : &_sceneGraph;
 
@@ -3962,8 +3965,11 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender
 		_sceneRenderer->renderScene(renderContext, camera);
 	}
 
-	// Bloom the volume before overlays so grid, cursor, and gizmos stay unbloomed.
-	renderContext.resolveMultisampling();
+	{
+		core_trace_scoped(ResolveMultisampling);
+		// Bloom the volume before overlays so grid, cursor, and gizmos stay unbloomed.
+		renderContext.resolveMultisampling();
+	}
 	renderContext.applyBloom();
 	renderContext.beginOverlays();
 
@@ -3972,12 +3978,16 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender
 		_sceneRenderer->setAddNodePreview(*_addNodePreview);
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
+			core_trace_scoped(ModifierRender);
 			const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
 			_modifier->render(modifierRenderContext, camera, activePalette(), mat);
 		}
 	}
 
-	renderContext.endFrame();
+	{
+		core_trace_scoped(RenderContextEndFrame);
+		renderContext.endFrame();
+	}
 }
 
 int SceneManager::toNodeId(const command::CommandArgs& args, int defaultVal, const core::String &name) const {

@@ -148,6 +148,7 @@ bool Shadow::bind(video::TextureUnit unit) {
 }
 
 void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
+	core_trace_scoped(ShadowPass);
 	video_trace_scoped(ShadowRender);
 	const bool oldBlend = video::disable(video::State::Blend);
 	// Greedy voxel meshes are single-sided. Front-face culling wrote only the
@@ -161,6 +162,7 @@ void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	video::colorMask(false, false, false, false);
 	_depthBuffer.bind(false);
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
+		core_trace_value_scoped(ShadowCascade, i);
 		_depthBuffer.bindTextureAttachment(video::FrameBufferAttachment::Depth, i, clearDepthBuffer);
 		if (!renderCallback(i, _cascades[i])) {
 			break;
