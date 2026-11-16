@@ -11,7 +11,10 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "voxelgenerator/ShapeGenerator.h"
 #include "voxelrender/RenderUtil.h"
+
+#include <glm/gtc/quaternion.hpp>
 
 TestSceneGraphRenderer::TestSceneGraphRenderer(const io::FilesystemPtr &filesystem,
 											   const core::TimeProviderPtr &timeProvider)
@@ -53,21 +56,11 @@ app::AppState TestSceneGraphRenderer::onInit() {
 	{
 		const voxel::Region region(0, 0, 0, 31, 31, 31);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		const glm::vec3 center = glm::vec3(region.getCenter());
-		const float radius = 14.0f;
-		const float radiusSq = radius * radius;
-		for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-					const glm::ivec3 pos(x, y, z);
-					const glm::vec3 diff = glm::vec3(pos) - center;
-					if (glm::dot(diff, diff) <= radiusSq) {
-						const int colorIdx = 1 + (x + y + z) % 254;
-						volume->setVoxel(pos, voxel::createVoxel(voxel::VoxelType::Generic, colorIdx));
-					}
-				}
-			}
-		}
+		const glm::ivec3 center = region.getCenter();
+		const int diameter = 29;
+		const glm::ivec3 centerBottom(center.x, region.getLowerY(), center.z);
+		voxelgenerator::shape::createEllipse(*volume, centerBottom, math::Axis::Y, diameter, diameter, diameter,
+											 voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(volume);
@@ -75,6 +68,14 @@ app::AppState TestSceneGraphRenderer::onInit() {
 		palette::Palette pal;
 		pal.nippon();
 		node.setPalette(pal);
+		scenegraph::SceneGraphTransform transform;
+		const glm::quat orientation =
+			glm::angleAxis(glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
+			glm::angleAxis(glm::radians(35.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::angleAxis(glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transform.setLocalOrientation(orientation);
+		const scenegraph::FrameIndex frameIdx = 0;
+		node.setTransform(frameIdx, transform);
 		_sceneGraph.emplace(core::move(node));
 	}
 
@@ -82,13 +83,9 @@ app::AppState TestSceneGraphRenderer::onInit() {
 	{
 		const voxel::Region region(0, 0, 0, 15, 15, 15);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-			for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-					volume->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-				}
-			}
-		}
+		voxelgenerator::shape::createCubeNoCenter(*volume, region.getLowerCorner(), region.getWidthInVoxels(),
+												  region.getHeightInVoxels(), region.getDepthInVoxels(),
+												  voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(volume);
@@ -98,6 +95,11 @@ app::AppState TestSceneGraphRenderer::onInit() {
 		node.setPalette(pal);
 		scenegraph::SceneGraphTransform transform;
 		transform.setLocalTranslation(glm::vec3(40.0f, 0.0f, 0.0f));
+		const glm::quat orientation =
+			glm::angleAxis(glm::radians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
+			glm::angleAxis(glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
+			glm::angleAxis(glm::radians(10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transform.setLocalOrientation(orientation);
 		const scenegraph::FrameIndex frameIdx = 0;
 		node.setTransform(frameIdx, transform);
 		_sceneGraph.emplace(core::move(node));
