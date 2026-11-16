@@ -7,6 +7,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string.h>
 #include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "color/RGBA.h"
@@ -90,12 +91,8 @@ public:
 
 	/** Full field replace without operator= normal-merge semantics. */
 	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS void overwrite(const Voxel &other) {
-		_material = other._material;
-		_flags = other._flags;
-		_unused = other._unused;
-		_colorIndex = other._colorIndex;
-		_normalIndex = other._normalIndex;
-		_boneIdx = other._boneIdx;
+		// a field wise copy of the bitfields compiles to byte read-modify-writes
+		memcpy((void *)this, (const void *)&other, sizeof(Voxel));
 	}
 
 	/**
