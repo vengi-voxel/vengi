@@ -871,14 +871,12 @@ void RawVolume::initialise(const Region &regValidRegion) {
 	core_assert_msg(depth() > 0, "Volume depth must be greater than zero.");
 
 	const size_t size = RawVolume::size(_region);
-	_data = (Voxel *)core_malloc(size);
+	_data = (Voxel *)core_calloc(1, size);
 	if (_data == nullptr) {
 		Log::error("Failed to allocate %" SDL_PRIu64 " bytes for a volume with the dimensions %i:%i:%i",
 				   (uint64_t)size, width(), height(), depth());
 		return;
 	}
-
-	clear();
 }
 
 void RawVolume::clear() {
