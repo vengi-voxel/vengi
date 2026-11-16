@@ -26,7 +26,10 @@ set(SRCS
 	RawVolumeMoveWrapper.h
 	Region.h Region.cpp
 	ConcurrentSparseVolume.h ConcurrentSparseVolume.cpp
+	SparseChunk.h SparseChunk.cpp
 	SparseVolume.h SparseVolume.cpp
+	SparseVolumeSampler.h
+	SparseVolumeUtil.h
 	VolumeData.h
 	VolumeSampler.h
 	VolumeSamplerUtil.h
@@ -53,6 +56,7 @@ set(TEST_SRCS
 	tests/RawVolumeViewTest.cpp
 	tests/RegionTest.cpp
 	tests/ConcurrentSparseVolumeTest.cpp
+	tests/SparseChunkTest.cpp
 	tests/SparseVolumeTest.cpp
 	tests/SurfaceExtractorTest.cpp
 	tests/TextureSurfaceExtractorTest.cpp

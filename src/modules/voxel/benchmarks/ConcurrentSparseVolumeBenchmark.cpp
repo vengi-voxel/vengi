@@ -74,6 +74,53 @@ BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, SetVoxels)(benchmark::State 
 	}
 }
 
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, FillDenseParallel)(benchmark::State &state) {
+	const int size = (int)state.range(0);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	for (auto _ : state) {
+		voxel::ConcurrentSparseVolume dense;
+		app::for_parallel(0, size, [&dense, &voxel, size](int start, int end) {
+			for (int z = start; z < end; ++z) {
+				for (int y = 0; y < size; ++y) {
+					for (int x = 0; x < size; ++x) {
+						dense.setVoxel(x, y, z, voxel);
+					}
+				}
+			}
+		});
+		benchmark::DoNotOptimize(dense.size());
+	}
+	state.SetItemsProcessed(state.iterations() * size * size * size);
+}
+
+BENCHMARK_DEFINE_F(ConcurrentSparseVolumeBenchmark, ReadDenseParallel)(benchmark::State &state) {
+	const int size = (int)state.range(0);
+	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
+	voxel::ConcurrentSparseVolume dense;
+	for (int z = 0; z < size; ++z) {
+		dense.setVoxelsRow(0, 0, z, size, voxel);
+		for (int y = 1; y < size; ++y) {
+			dense.setVoxelsRow(0, y, z, size, voxel);
+		}
+	}
+	for (auto _ : state) {
+		core::AtomicInt solid{0};
+		app::for_parallel(0, size, [&dense, &solid, size](int start, int end) {
+			int localSolid = 0;
+			for (int z = start; z < end; ++z) {
+				for (int y = 0; y < size; ++y) {
+					for (int x = 0; x < size; ++x) {
+						localSolid += voxel::isBlocked(dense.voxel(x, y, z).getMaterial());
+					}
+				}
+			}
+			solid.increment(localSolid);
+		});
+		benchmark::DoNotOptimize((int)solid);
+	}
+	state.SetItemsProcessed(state.iterations() * size * size * size);
+}
+
 BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxel);
 BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxelSampler);
 BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxel_unlimit);
@@ -81,3 +128,5 @@ BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxelSampler_unlimit);
 BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, CalculateRegion);
 BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxelsY);
 BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, SetVoxels);
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, FillDenseParallel)->Arg(128)->Unit(benchmark::kMillisecond)->UseRealTime();
+BENCHMARK_REGISTER_F(ConcurrentSparseVolumeBenchmark, ReadDenseParallel)->Arg(128)->Unit(benchmark::kMillisecond)->UseRealTime();

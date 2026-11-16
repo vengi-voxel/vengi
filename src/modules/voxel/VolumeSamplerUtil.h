@@ -51,7 +51,7 @@ inline bool setVoxels(Volume &volume, int x, int y, int z, int nx, int nz, const
  * Kept out-of-line so the solid hit path in sampleNearest stays tiny.
  */
 template<class Sampler>
-__attribute__((noinline)) static voxel::Voxel sampleNearestNeighborhood(const Sampler &sampler,
+CORE_NO_INLINE static voxel::Voxel sampleNearestNeighborhood(const Sampler &sampler,
 																		const glm::vec3 &pos,
 																		const glm::ivec3 &rounded) {
 	voxel::Voxel best;

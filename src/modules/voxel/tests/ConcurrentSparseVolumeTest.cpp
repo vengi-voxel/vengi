@@ -353,4 +353,119 @@ TEST_F(ConcurrentSparseVolumeTest, testThreadSafeChunkedSetVoxel) {
 	EXPECT_EQ(0u, v.size());
 }
 
+TEST_F(ConcurrentSparseVolumeTest, testParallelFillReadRemove) {
+	ConcurrentSparseVolume v;
+	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 3);
+	const int size = 40;
+	const int offset = -20;
+	app::for_parallel(0, size, [&](int start, int end) {
+		for (int z = start; z < end; ++z) {
+			for (int y = 0; y < size; ++y) {
+				v.setVoxelsRow(offset, offset + y, offset + z, size, voxel);
+			}
+		}
+	});
+	ASSERT_EQ((size_t)(size * size * size), v.size());
+	const Region region = v.calculateRegion();
+	EXPECT_EQ(glm::ivec3(offset), region.getLowerCorner());
+	EXPECT_EQ(glm::ivec3(offset + size - 1), region.getUpperCorner());
+
+	core::AtomicInt mismatches{0};
+	app::for_parallel(0, size, [&](int start, int end) {
+		for (int z = start; z < end; ++z) {
+			for (int y = 0; y < size; ++y) {
+				for (int x = 0; x < size; ++x) {
+					const glm::ivec3 pos(offset + x, offset + y, offset + z);
+					if (v.voxel(pos).getColor() != 3) {
+						mismatches.increment(1);
+					}
+					// remove every second voxel while other threads are reading
+					if ((x + y + z) % 2 == 0) {
+						v.setVoxel(pos, voxel::Voxel());
+					}
+				}
+			}
+		}
+	});
+	EXPECT_EQ(0, (int)mismatches);
+	EXPECT_EQ((size_t)(size * size * size / 2), v.size());
+	EXPECT_FALSE(v.hasVoxel(offset, offset, offset));
+	EXPECT_TRUE(v.hasVoxel(offset + 1, offset, offset));
+}
+
+TEST_F(ConcurrentSparseVolumeTest, testCopyToRegion) {
+	ConcurrentSparseVolume v;
+	const voxel::Voxel voxel = voxel::createVoxel(VoxelType::Generic, 1);
+	ASSERT_TRUE(v.setVoxel(1, 1, 1, voxel));
+	ASSERT_TRUE(v.setVoxel(5, 5, 5, voxel));
+	ASSERT_TRUE(v.setVoxel(-300, 1, 1, voxel));
+	ASSERT_TRUE(v.setVoxel(600, 1, 1, voxel));
+	voxel::RawVolume rv(voxel::Region(0, 7));
+	v.copyTo(rv, voxel::Region(0, 3));
+	EXPECT_EQ(1, voxelutil::countVoxels(rv));
+	EXPECT_TRUE(voxel::isBlocked(rv.voxel(1, 1, 1).getMaterial()));
+}
+
+TEST_F(ConcurrentSparseVolumeTest, testSamplerMovesAcrossChunks) {
+	ConcurrentSparseVolume v;
+	auto colorAt = [](int x, int y, int z) { return (uint8_t)(1 + ((x * 7 + y * 13 + z * 29) & 0x7f)); };
+	for (int i = 250; i <= 260; ++i) {
+		v.setVoxel(i, 0, 0, voxel::createVoxel(VoxelType::Generic, colorAt(i, 0, 0)));
+		v.setVoxel(0, -i, 0, voxel::createVoxel(VoxelType::Generic, colorAt(0, -i, 0)));
+		v.setVoxel(0, 0, i, voxel::createVoxel(VoxelType::Generic, colorAt(0, 0, i)));
+	}
+	ConcurrentSparseVolume::Sampler sampler(v);
+	sampler.setPosition(250, 0, 0);
+	for (int i = 250; i <= 260; ++i) {
+		EXPECT_EQ(colorAt(i, 0, 0), sampler.voxel().getColor()) << "x " << i;
+		sampler.movePositive(math::Axis::X);
+	}
+	sampler.setPosition(0, -250, 0);
+	for (int i = 250; i <= 260; ++i) {
+		EXPECT_EQ(colorAt(0, -i, 0), sampler.voxel().getColor()) << "y " << i;
+		sampler.moveNegativeY();
+	}
+	sampler.setPosition(0, 0, 260);
+	for (int i = 260; i >= 250; i -= 2) {
+		EXPECT_EQ(colorAt(0, 0, i), sampler.voxel().getColor()) << "z " << i;
+		sampler.moveNegative(math::Axis::Z, 2);
+	}
+}
+
+TEST_F(ConcurrentSparseVolumeTest, testSamplerLeavesAndReentersRegion) {
+	ConcurrentSparseVolume v(voxel::Region(0, 3));
+	v.setVoxel(0, 0, 0, voxel::createVoxel(VoxelType::Generic, 1));
+	v.setVoxel(3, 0, 0, voxel::createVoxel(VoxelType::Generic, 2));
+	ConcurrentSparseVolume::Sampler sampler(v);
+	EXPECT_TRUE(sampler.setPosition(3, 0, 0));
+	sampler.movePositiveX();
+	EXPECT_FALSE(sampler.currentPositionValid());
+	EXPECT_FALSE(sampler.setVoxel(voxel::createVoxel(VoxelType::Generic, 3)));
+	EXPECT_TRUE(voxel::isAir(sampler.voxel().getMaterial()));
+	EXPECT_EQ(2, sampler.peekVoxel1nx0py0pz().getColor());
+	sampler.moveNegativeX();
+	EXPECT_TRUE(sampler.currentPositionValid());
+	EXPECT_EQ(2, sampler.voxel().getColor());
+	sampler.moveNegativeX(3);
+	EXPECT_EQ(1, sampler.voxel().getColor());
+	sampler.moveNegativeY();
+	EXPECT_FALSE(sampler.currentPositionValid());
+	sampler.movePositiveY();
+	EXPECT_EQ(1, sampler.voxel().getColor());
+}
+
+TEST_F(ConcurrentSparseVolumeTest, testSetVoxelsClipsToRegion) {
+	ConcurrentSparseVolume v(voxel::Region(0, 3));
+	const voxel::Voxel column[6] = {
+		voxel::createVoxel(VoxelType::Generic, 1), voxel::createVoxel(VoxelType::Generic, 2),
+		voxel::createVoxel(VoxelType::Generic, 3), voxel::createVoxel(VoxelType::Generic, 4),
+		voxel::createVoxel(VoxelType::Generic, 5), voxel::createVoxel(VoxelType::Generic, 6)};
+	// starts two voxels below the lower corner on every axis - the first two column entries are below the region
+	voxel::setVoxels(v, -2, -2, -2, 6, 6, column, 6);
+	EXPECT_EQ(64u, v.size());
+	EXPECT_EQ(3, v.voxel(0, 0, 0).getColor());
+	EXPECT_EQ(4, v.voxel(0, 1, 0).getColor());
+	EXPECT_EQ(6, v.voxel(3, 3, 3).getColor());
+}
+
 } // namespace voxel
