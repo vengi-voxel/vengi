@@ -5,6 +5,7 @@ in vec4 v_glow;
 in float v_ambientocclusion;
 flat in uint v_flags;
 #include "_shared.glsl"
+#define CUBICSHADOWRECEIVER
 #include "_sharedfrag.glsl"
 #include "_tonemapping.glsl"
 

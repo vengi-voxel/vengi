@@ -111,33 +111,55 @@ void Shadow::update(const video::Camera& camera, bool active, const glm::vec3& s
 
 	const bool hasScene = sceneMins.x < sceneMaxs.x && sceneMins.y < sceneMaxs.y && sceneMins.z < sceneMaxs.z;
 	const glm::ivec2 &dim = dimension();
-	float planes[shader::VoxelShaderConstants::getMaxDepthBuffers() * 2];
-	camera.sliceFrustum(planes, _parameters.maxDepthBuffers * 2, _parameters.maxDepthBuffers, _parameters.sliceWeight);
-
+	float near = camera.isOrthographic() ? camera.nearPlane() : core_max(camera.nearPlane(), 0.01f);
+	float far = camera.farPlane();
+	glm::vec3 sceneLightMins(0.0f);
+	glm::vec3 sceneLightMaxs(0.0f);
 	if (hasScene) {
-		// Voxel scenes are small. Fit every cascade to the volumes, not to a camera
-		// slice that may sit in empty space in front of an isometric camera.
-		glm::vec3 sceneLightMins;
-		glm::vec3 sceneLightMaxs;
 		worldAABBToLightSpace(_lightView, sceneMins, sceneMaxs, sceneLightMins, sceneLightMaxs);
-		const glm::mat4 cascade = lightOrtho(_lightView, sceneLightMins, sceneLightMaxs, dim);
-		for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
-			_cascades[i] = cascade;
-			_distances[i] = planes[i * 2 + 1];
+		glm::vec3 sceneViewMins;
+		glm::vec3 sceneViewMaxs;
+		worldAABBToLightSpace(camera.viewMatrix(), sceneMins, sceneMaxs, sceneViewMins, sceneViewMaxs);
+		const float sceneNear = core_max(near, -sceneViewMaxs.z);
+		const float sceneFar = core_min(far, -sceneViewMins.z);
+		if (sceneNear < sceneFar) {
+			near = sceneNear;
+			far = sceneFar;
 		}
-		return;
 	}
 
+	float sliceNear = near;
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
-		const float near = planes[i * 2 + 0];
-		const float far = planes[i * 2 + 1];
+		const float fraction = (float)(i + 1) / (float)_parameters.maxDepthBuffers;
+		float sliceFar = glm::mix(near, far, fraction);
+		if (!camera.isOrthographic()) {
+			const float logarithmic = near * glm::pow(far / near, fraction);
+			sliceFar = glm::mix(sliceFar, logarithmic, glm::clamp(_parameters.sliceWeight, 0.0f, 1.0f));
+		}
 		glm::vec3 corners[math::FRUSTUM_VERTICES_MAX];
-		camera.splitFrustum(near, far, corners);
+		camera.splitFrustum(sliceNear, sliceFar, corners);
 		glm::vec3 lightMins;
 		glm::vec3 lightMaxs;
 		lightSpaceAABB(_lightView, corners, math::FRUSTUM_VERTICES_MAX, lightMins, lightMaxs);
+		if (hasScene) {
+			const glm::vec2 clippedMins = glm::max(glm::vec2(lightMins), glm::vec2(sceneLightMins));
+			const glm::vec2 clippedMaxs = glm::min(glm::vec2(lightMaxs), glm::vec2(sceneLightMaxs));
+			if (clippedMins.x < clippedMaxs.x && clippedMins.y < clippedMaxs.y) {
+				lightMins.x = clippedMins.x;
+				lightMins.y = clippedMins.y;
+				lightMaxs.x = clippedMaxs.x;
+				lightMaxs.y = clippedMaxs.y;
+			} else {
+				lightMins = sceneLightMins;
+				lightMaxs = sceneLightMaxs;
+			}
+			// Keep upstream casters even when they lie outside the camera slice.
+			lightMins.z = sceneLightMins.z;
+			lightMaxs.z = sceneLightMaxs.z;
+		}
 		_cascades[i] = lightOrtho(_lightView, lightMins, lightMaxs, dim);
-		_distances[i] = far;
+		_distances[i] = sliceFar;
+		sliceNear = sliceFar;
 	}
 }
 

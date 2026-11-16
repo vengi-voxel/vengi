@@ -1355,7 +1355,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			}
 			_voxelShaderFragData.lightdir = _shadow.sunDirection();
 			_voxelShaderFragData.camerapos = glm::vec4(camera.eye(), 0.0f);
-			_voxelShaderFragData.cameradir = glm::vec4(camera.forward(), 0.0f);
+			_voxelShaderFragData.cameradir = glm::vec4(camera.forward(), camera.isOrthographic() ? 1.0f : 0.0f);
 			float t[4];
 			_selectionTint->vec4Val(t);
 			_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
@@ -1366,7 +1366,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			_voxelShaderFragData.debugcascade = _debugCascade->intVal();
 			_voxelShaderFragData.tonemapping = _tonemapping->intVal();
 			_voxelShaderFragData.renderoutline = _renderOutline->intVal();
-			_voxelShaderFragData.shadowmap = _shadowMap->intVal();
+			_voxelShaderFragData.shadowmap = _shadowMap->boolVal() && shadow ? 1 : 0;
 			core_assert_always(_voxelData.update(_voxelShaderFragData));
 		}
 

@@ -16,7 +16,7 @@ layout(std140, binding = 1) uniform u_frag {
 	int u_renderoutline;
 	int u_shadowmap;
 	vec4 u_camerapos;
-	vec4 u_cameradir;
+	vec4 u_cameradir; // xyz = forward, w = orthographic projection
 };
 
 layout(location = 0) out vec4 o_color;
@@ -30,22 +30,60 @@ flat in vec3 v_nm2;
 
 layout(binding = 2) uniform sampler2DArrayShadow u_shadowmaptex;
 
-/**
- * Hard 1-tap compare. Linear/PCF on voxel casters produces concentric acne on large planes.
- */
-float sampleShadow(in float bias, in int cascade, in vec2 uv, in float compare) {
-	return texture(u_shadowmaptex, vec4(uv, cascade, compare - bias));
+vec3 cubicWorldNormal(vec3 pos);
+
+// Compare at each texel's receiver-plane depth, rather than at the fragment's depth.
+float sampleShadow(in int cascade, in vec3 uv, in vec2 sampleUV, in vec2 depthGradient) {
+	// Only cover floating-point error; a large normalized bias detaches shadows in wide scenes.
+	float compare = uv.z + dot(sampleUV - uv.xy, depthGradient) - 0.000002;
+	// Clear-depth texels must stay lit even when the receiver plane extrapolates past the far plane.
+	// Cascades have discontinuous UVs; implicit texture derivatives produce seams between them.
+	return textureGrad(u_shadowmaptex, vec4(sampleUV, cascade, min(compare, 1.0 - 0.000002)), vec2(0.0), vec2(0.0));
 }
 
-// Nearest 2x2 min. Average/Linear PCF haloed voxel planes; at cube edges a 1-tap
-// sample often hits an empty shadow texel (border=lit) and draws a bright rim.
-float sampleShadowConservative(in float bias, in int cascade, in vec2 uv, in float compare) {
-	vec2 texel = 1.0 / max(u_depthsize, vec2(1.0));
-	float s00 = sampleShadow(bias, cascade, uv, compare);
-	float s10 = sampleShadow(bias, cascade, uv + vec2(texel.x, 0.0), compare);
-	float s01 = sampleShadow(bias, cascade, uv + vec2(0.0, texel.y), compare);
-	float s11 = sampleShadow(bias, cascade, uv + texel, compare);
-	return min(min(s00, s10), min(s01, s11));
+float filteredShadow(in int cascade, in vec3 uv, in vec3 worldpos) {
+#ifdef CUBICSHADOWRECEIVER
+	// World-position derivatives lose precision on close, oblique cube faces.
+	vec3 receiverNormal = cubicWorldNormal(v_pos);
+#else
+	vec3 receiverNormal = cross(dFdx(worldpos), dFdy(worldpos));
+#endif
+	vec3 toCamera = u_cameradir.w != 0.0 ? -u_cameradir.xyz : u_camerapos.xyz - worldpos;
+	if (dot(receiverNormal, toCamera) < 0.0) {
+		receiverNormal = -receiverNormal;
+	}
+	float facing = dot(receiverNormal, normalize(u_lightdir)) / max(length(receiverNormal), 1.0e-20);
+	// Opaque alpha can interpolate just below 1.0 in perspective views.
+	bool opaque = v_color.a >= 1.0 - 1.0e-5;
+	// Rays toward the sun enter the solid volume on an opaque back-facing surface.
+	if (opaque && facing <= 0.00001) {
+		return 0.0;
+	}
+	// Orthographic cascade rows are orthogonal; avoid inverting a grazing screen-space Jacobian.
+	mat3 rows = transpose(mat3(u_cascades[cascade]));
+	vec3 planeNormal = vec3(dot(rows[0], receiverNormal), dot(rows[1], receiverNormal), dot(rows[2], receiverNormal));
+	planeNormal /= vec3(dot(rows[0], rows[0]), dot(rows[1], rows[1]), dot(rows[2], rows[2]));
+	planeNormal.xy *= 2.0;
+#ifndef CLIPDEPTHZ0TO1
+	planeNormal.z *= 2.0;
+#endif
+#ifdef CLIPORIGINUPPERLEFT
+	planeNormal.y = -planeNormal.y;
+#endif
+	vec2 depthGradient = abs(planeNormal.z) > 1.0e-20 ? -planeNormal.xy / planeNormal.z : vec2(0.0);
+	if (!opaque) {
+		depthGradient *= smoothstep(0.0, 0.05, abs(facing));
+	}
+	vec2 size = max(u_depthsize, vec2(1.0));
+	vec2 texelPosition = uv.xy * size - 0.5;
+	vec2 base = (floor(texelPosition) + 0.5) / size;
+	vec2 fraction = fract(texelPosition);
+	vec2 texel = 1.0 / size;
+	float s00 = sampleShadow(cascade, uv, base, depthGradient);
+	float s10 = sampleShadow(cascade, uv, base + vec2(texel.x, 0.0), depthGradient);
+	float s01 = sampleShadow(cascade, uv, base + vec2(0.0, texel.y), depthGradient);
+	float s11 = sampleShadow(cascade, uv, base + texel, depthGradient);
+	return mix(mix(s00, s10, fraction.x), mix(s01, s11, fraction.x), fraction.y);
 }
 
 vec3 calculateShadowUVZ(in vec4 lightspacepos, in int cascade) {
@@ -76,21 +114,7 @@ vec3 shadow(in vec4 lightspacepos, vec3 color, in vec3 diffuse, in vec3 ambient)
 	cascade = clamp(cascade, 0, MaxDepthBuffers - 1);
 
 	vec3 uv = calculateShadowUVZ(lightspacepos, cascade);
-	const float bias = 0.0002;
-	// 2x2 min on large planes recreates the concentric PCF rings. Only use it
-	// where screen-space derivatives mix two cube faces (silhouette / crease).
-	vec3 nRaw = cross(dFdx(lightspacepos.xyz), dFdy(lightspacepos.xyz));
-	float axis = 1.0;
-	if (dot(nRaw, nRaw) > 1.0e-20) {
-		vec3 nAbs = abs(normalize(nRaw));
-		axis = max(nAbs.x, max(nAbs.y, nAbs.z));
-	}
-	float shadow;
-	if (axis > 0.92) {
-		shadow = sampleShadow(bias, cascade, uv.xy, uv.z);
-	} else {
-		shadow = sampleShadowConservative(bias, cascade, uv.xy, uv.z);
-	}
+	float shadow = filteredShadow(cascade, uv, lightspacepos.xyz);
 	if (u_debugcascade != 0) {
 		if (cascade == 0) {
 			color.r = 0.0;

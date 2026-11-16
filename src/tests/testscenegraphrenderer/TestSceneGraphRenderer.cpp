@@ -110,7 +110,7 @@ app::AppState TestSceneGraphRenderer::onInit() {
 		_sceneGraph.emplace(core::move(node));
 	}
 
-	if (hasArg("--shadow-grid")) {
+	if (hasArg("--shadow-grid") || hasArg("--shadow-close")) {
 		core::getVar(cfg::ClientShadowMap)->setVal(true);
 		const int side = glm::clamp(getArgVal("--shadow-grid", "8").toInt(), 1, 32);
 		for (int z = 0; z < side; ++z) {
@@ -141,11 +141,14 @@ app::AppState TestSceneGraphRenderer::onInit() {
 	const voxel::Region sceneRegion = _sceneGraph.sceneRegion();
 	voxelrender::configureCamera(camera(), sceneRegion, voxelrender::SceneCameraMode::Free, 500.0f);
 	if (hasArg("--shadow-close")) {
+		setRenderPlane(false);
+		setRenderAxis(false);
 		camera().setRotationType(video::CameraRotationType::Eye);
 		camera().setNearPlane(0.1f);
 		camera().setTargetDistance(100.0f);
-		camera().setWorldPosition({105.0f, 85.0f, 150.0f});
-		camera().lookAt({55.0f, 5.0f, 55.0f});
+		camera().setWorldPosition({65.0f, 6.0f, 65.0f});
+		camera().lookAt({85.0f, 1.0f, 85.0f});
+		_renderer.setSunAngle({35.0f, 90.3f, 0.0f});
 	}
 	camera().update(0.0);
 
