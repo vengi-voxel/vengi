@@ -22,9 +22,8 @@ private:
 
 public:
 #ifdef TRACY_ENABLE
-	const tracy::SourceLocationData _srcLoc;
 	mutable tracy::LockableCtx _ctx;
-	Lock(const tracy::SourceLocationData &srcloc);
+	Lock(const tracy::SourceLocationData *srcloc);
 	void Mark(const tracy::SourceLocationData *srcloc);
 	void CustomName(const char *name, size_t size);
 #else

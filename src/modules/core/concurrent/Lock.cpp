@@ -8,7 +8,7 @@
 namespace core {
 
 #ifdef TRACY_ENABLE
-Lock::Lock(const tracy::SourceLocationData& srcloc) : _mutex(SDL_CreateMutex()), _srcLoc(srcloc), _ctx(&_srcLoc) {
+Lock::Lock(const tracy::SourceLocationData *srcloc) : _mutex(SDL_CreateMutex()), _ctx(srcloc) {
 }
 
 void Lock::Mark(const tracy::SourceLocationData *srcloc) {

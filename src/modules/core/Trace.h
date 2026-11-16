@@ -50,13 +50,13 @@ public:
 #define core_trace_app_info(name) core::traceAppInfo(name)
 #define core_trace_msg(message) TracyMessageL(message)
 #define core_trace_thread(name) tracy::SetThreadName(name)
-#define core_trace_mutex(type, varname, name) type varname { tracy::SourceLocationData{ name, name, __FILE__, (uint32_t)__LINE__, 0 } }
+#define core_trace_mutex(type, varname, name) type varname { [] () -> const tracy::SourceLocationData * { static constexpr tracy::SourceLocationData srcloc { name, name, __FILE__, (uint32_t)__LINE__, 0 }; return &srcloc; }() }
 #define core_trace_begin_frame(name)
 #define core_trace_end_frame(name) FrameMark
 #define core_trace_begin(name)
 #define core_trace_end()
 #define core_trace_scoped(name) ZoneNamedN(__tracy_scoped_##name, #name, true)
-#define core_trace_mutex_static(type, classname, name) type classname::name { tracy::SourceLocationData{ #name, #name, __FILE__, (uint32_t)__LINE__, 0 } }
+#define core_trace_mutex_static(type, classname, name) type classname::name { [] () -> const tracy::SourceLocationData * { static constexpr tracy::SourceLocationData srcloc { #name, #name, __FILE__, (uint32_t)__LINE__, 0 }; return &srcloc; }() }
 #elif USE_EMTRACE
 #define core_trace_value_scoped(name, x)
 #define core_trace_plot(name, x)
