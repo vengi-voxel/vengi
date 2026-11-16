@@ -47,6 +47,10 @@ static inline void* debug_core_malloc(size_t size, const char* file, int line) {
 # endif
 #endif
 
+#ifndef core_calloc
+#define core_calloc SDL_calloc
+#endif
+
 #ifndef core_realloc
 #define core_realloc SDL_realloc
 #endif
