@@ -325,6 +325,14 @@ bool App::createPid() {
 	return _wantCrashLogs;
 }
 
+void App::recordInitFailure() {
+	_initFailed = true;
+	Log::error("Initialization failed");
+	if (!Log::copyContent(core_crashlog_path())) {
+		io::Filesystem::sysWrite(core_crashlog_path(), "Initialization failed\n");
+	}
+}
+
 void App::deletePid() {
 	core::String oldPid = _filesystem->load(_filesystem->homeWritePath("app.pid"));
 	if (oldPid.empty()) {
@@ -413,7 +421,9 @@ void App::onFrame() {
 					buttons[3].buttonID = 3;
 					messageboxdata.buttons = buttons;
 					int buttonId = -1;
-					if (SDL_ShowMessageBox(&messageboxdata, &buttonId) == 0) {
+					if (!SDL_ShowMessageBox(&messageboxdata, &buttonId)) {
+						Log::error("Failed to show crash dialog: %s", SDL_GetError());
+					} else {
 						if (buttonId == 0) {
 							Log::info("Reset cvars to their default values");
 							core::Var::visit([](const core::VarPtr &var) { var->reset(); });
@@ -462,6 +472,10 @@ void App::onFrame() {
 			core_trace_scoped(AppOnCleanup);
 			if (_exitCode == 0) {
 				_exitCode = 1;
+			}
+			// Leave app.pid in place, same as a segfault, so the next start shows the crash dialog.
+			if (_wantCrashLogs) {
+				recordInitFailure();
 			}
 
 			shutdownTimeout();
@@ -512,7 +526,9 @@ void App::onFrame() {
 			core_trace_scoped(AppOnDestroy);
 			_nextState = onDestroy();
 			_curState = AppState::InvalidAppState;
-			deletePid();
+			if (!_initFailed) {
+				deletePid();
+			}
 			Log::debug("AppState::Destroy done");
 			break;
 		}

@@ -82,6 +82,7 @@ protected:
 	bool _saveConfiguration = true;
 	bool _failedToSaveConfiguration = false;
 	bool _skipCrashDialog = false;
+	bool _initFailed = false;
 
 	/**
 	 * @brief Should the application log to the syslog daemon
@@ -146,6 +147,7 @@ protected:
 	bool isRunning(int pid) const;
 	virtual bool createPid();
 	void deletePid();
+	void recordInitFailure();
 	void shutdownTimeout();
 
 #ifdef __EMSCRIPTEN__

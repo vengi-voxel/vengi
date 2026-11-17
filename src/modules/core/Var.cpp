@@ -309,6 +309,11 @@ VarPtr Var::createVar(const VarDef &def) {
 	if (v->_def.description.empty() && !def.description.empty()) {
 		v->_def.description = def.description;
 	}
+	// File and -set create the var before the code default is registered. Keep that default for reset().
+	const uint32_t incoming = def.flags < 0 ? 0u : static_cast<uint32_t>(def.flags);
+	if ((incoming & (CV_FROMFILE | CV_FROMCOMMANDLINE | CV_FROMENV)) == 0u) {
+		v->_def.value = def.value;
+	}
 	return v;
 }
 

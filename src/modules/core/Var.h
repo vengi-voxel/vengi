@@ -193,7 +193,11 @@ public:
 	~Var();
 
 	void reset() {
+		// Readonly only blocks the console. Crash-dialog reset must restore startup cvars like cl_openglversion.
+		const uint32_t flags = _flags;
+		_flags &= ~CV_READONLY;
 		setVal(_def.value);
+		_flags = flags;
 	}
 
 	static size_t size() {

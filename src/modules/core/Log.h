@@ -25,6 +25,8 @@ class Log {
 
 	static void init(const char *logfile = nullptr);
 	static void shutdown();
+	// Copy the open log file to path. False when no log file is open or it is empty.
+	static bool copyContent(const char *path);
 	static void trace(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 	static void debug(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);
 	static void info(CORE_FORMAT_STRING const char* msg, ...) CORE_PRINTF_VARARG_FUNC(1);

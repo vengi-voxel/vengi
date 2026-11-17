@@ -98,7 +98,8 @@ void core_write_stacktrace(const char *file) {
 		p = "crash.log";
 	}
 	printf("write crash to file: %s\n", p.c_str());
-	std::ofstream os(p.c_str());
+	// Append so an assert during cleanup does not wipe the init-failure log already written there.
+	std::ofstream os(p.c_str(), std::ios::app);
 	backward::StackTrace st;
 	st.load_here(32);
 	backward::Printer printer;

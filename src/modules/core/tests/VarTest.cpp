@@ -38,6 +38,16 @@ TEST_F(VarTest, testFlagsOverride) {
 	EXPECT_EQ(CV_READONLY, v->getFlags());
 }
 
+TEST_F(VarTest, testResetReadonlyToCodeDefault) {
+	const VarPtr &v = Var::registerVar(VarDef("cl_openglversion", "3.3", CV_FROMFILE | CV_READONLY));
+	Var::registerVar(VarDef("cl_openglversion", "4.3", "OpenGL Version", "The OpenGL version to use", CV_READONLY));
+	EXPECT_EQ("3.3", v->strVal());
+	EXPECT_FALSE(v->setVal("4.5"));
+	EXPECT_EQ("3.3", v->strVal());
+	v->reset();
+	EXPECT_EQ("4.3", v->strVal());
+}
+
 TEST_F(VarTest, testDirty) {
 	const VarPtr& v = Var::registerVar(VarDef("test", "nonsense", nullptr, nullptr));
 	v->setVal("reasonable");

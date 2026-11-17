@@ -167,7 +167,7 @@ void Log::init(const char *logfile) {
 	SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, (SDL_LogPriority)Log::Level::Trace);
 
 	if (priv::_logfile == nullptr && logfile != nullptr) {
-		priv::_logfile = fopen(logfile, "w");
+		priv::_logfile = fopen(logfile, "w+");
 	}
 
 #ifdef _WIN32
@@ -182,6 +182,31 @@ void Log::init(const char *logfile) {
 		SDL_GetLogOutputFunction(&priv::_logCallback, &priv::_logCallbackUserData);
 		SDL_SetLogOutputFunction(priv::logOutputFunction, nullptr);
 	}
+}
+
+bool Log::copyContent(const char *path) {
+	FILE *fp = priv::_logfile;
+	if (fp == nullptr || path == nullptr || path[0] == '\0') {
+		return false;
+	}
+	if (fflush(fp) != 0 || fseek(fp, 0, SEEK_SET) != 0) {
+		return false;
+	}
+	FILE *out = fopen(path, "w");
+	if (out == nullptr) {
+		fseek(fp, 0, SEEK_END);
+		return false;
+	}
+	char buf[1024];
+	bool wrote = false;
+	while (fgets(buf, sizeof(buf), fp) != nullptr) {
+		fputs(buf, out);
+		wrote = true;
+	}
+	clearerr(fp);
+	fseek(fp, 0, SEEK_END);
+	fclose(out);
+	return wrote;
 }
 
 void Log::shutdown() {
