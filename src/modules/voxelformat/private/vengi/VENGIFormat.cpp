@@ -3,14 +3,15 @@
  */
 
 #include "VENGIFormat.h"
+#include "app/ForParallel.h"
 #include "core/ArrayLength.h"
 #include "core/FourCC.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/StandardLib.h"
 #include "core/Var.h"
 #include "core/collection/Array.h"
-#include "io/BufferedReadWriteStream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include "palette/Material.h"
@@ -21,7 +22,6 @@
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeVisitor.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -83,13 +83,26 @@ bool VENGIFormat::saveAnimation(const scenegraph::SceneGraphNode &node, const co
 	return true;
 }
 
+struct ColumnBytes {
+	uint8_t *bytes = nullptr;
+	int64_t *lens = nullptr;
+	~ColumnBytes() {
+		core_free(bytes);
+		core_free(lens);
+	}
+};
+
 bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 							   io::WriteStream &stream) {
 	if (node.type() != scenegraph::SceneGraphNodeType::Model) {
 		return true;
 	}
-	wrapBool(stream.writeUInt32(FourCC('D', 'A', 'T', 'A')))
 	const voxel::RawVolume *v = node.volume();
+	if (v == nullptr || v->voxels() == nullptr) {
+		Log::error("Model node has no volume");
+		return false;
+	}
+	wrapBool(stream.writeUInt32(FourCC('D', 'A', 'T', 'A')))
 	const voxel::Region &region = v->region();
 	wrapBool(stream.writeInt32(region.getLowerX()))
 	wrapBool(stream.writeInt32(region.getLowerY()))
@@ -103,32 +116,62 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 		replacement = node.palette().findReplacement(replaceIndex);
 		Log::debug("Looking for a similar color in the palette: %d", replacement);
 	}
-	// solid voxel: color + normal + bone index
-	const int64_t bufSize = region.getHeightInVoxels() * region.getDepthInVoxels() * sizeof(uint8_t) * 4;
-	core::DynamicArray<io::BufferedReadWriteStream> streamBuffers;
-	streamBuffers.reserve(region.getWidthInVoxels());
-	for (int n = 0; n < region.getWidthInVoxels(); ++n) {
-		streamBuffers.emplace_back(io::BufferedReadWriteStream(bufSize));
+	const int32_t w = region.getWidthInVoxels();
+	const int32_t h = region.getHeightInVoxels();
+	const int32_t d = region.getDepthInVoxels();
+	if (w <= 0 || h <= 0 || d <= 0 || (int64_t)h > (INT64_MAX / 4) / d) {
+		Log::error("Volume is too large to save");
+		return false;
 	}
-	auto func = [&streamBuffers, replacement, replaceIndex, &region](int x, int, int, const voxel::Voxel &voxel) {
-		const bool air = isAir(voxel.getMaterial());
-		io::BufferedReadWriteStream &streamBuf = streamBuffers[x - region.getLowerX()];
-		streamBuf.writeBool(air);
-		if (!air) {
-			if (voxel.getColor() == replaceIndex) {
-				streamBuf.writeUInt8(replacement);
-			} else {
-				streamBuf.writeUInt8(voxel.getColor());
+	// air is 1 byte, a solid voxel is bool + color + normal + bone
+	const int64_t colCap = (int64_t)h * d * 4;
+	if ((uint64_t)colCap > SIZE_MAX / (uint64_t)w) {
+		Log::error("Volume is too large to save");
+		return false;
+	}
+	ColumnBytes columns;
+	columns.bytes = (uint8_t *)core_malloc((size_t)colCap * (size_t)w);
+	columns.lens = (int64_t *)core_malloc(sizeof(int64_t) * (size_t)w);
+	if (columns.bytes == nullptr || columns.lens == nullptr) {
+		Log::error("Failed to allocate voxel save buffers");
+		return false;
+	}
+	const voxel::Voxel *voxels = v->voxels();
+	const int64_t zStride = region.stride();
+	app::for_parallel(0, w, [&](int start, int end) {
+		for (int x = start; x < end; ++x) {
+			uint8_t *p = columns.bytes + (int64_t)x * colCap;
+			const uint8_t *begin = p;
+			for (int y = 0; y < h; ++y) {
+				const int64_t row = (int64_t)x + (int64_t)y * w;
+				for (int z = 0; z < d; ++z) {
+					const voxel::Voxel &voxel = voxels[row + (int64_t)z * zStride];
+					if (isAir(voxel.getMaterial())) {
+						*p++ = 1;
+						continue;
+					}
+					*p++ = 0;
+					if (voxel.getColor() == replaceIndex) {
+						*p++ = (uint8_t)replacement;
+					} else {
+						*p++ = voxel.getColor();
+					}
+					*p++ = voxel.getNormal();
+					*p++ = voxel.getBoneIdx();
+				}
 			}
-			streamBuf.writeUInt8(voxel.getNormal());
-			streamBuf.writeUInt8(voxel.getBoneIdx());
+			columns.lens[x] = (int64_t)(p - begin);
 		}
-	};
-	voxelutil::visitVolumeParallel(*v, func, voxelutil::VisitAll(), voxelutil::VisitorOrder::XYZ);
-	for (auto &s : streamBuffers) {
-		s.seek(0);
-		wrapBool(stream.writeStream(s))
-		s.trim();
+	});
+	for (int x = 0; x < w; ++x) {
+		const int64_t n = columns.lens[x];
+		if (n <= 0) {
+			continue;
+		}
+		if (n > INT32_MAX || stream.write(columns.bytes + (int64_t)x * colCap, (size_t)n) != (int)n) {
+			Log::error("Failed to write voxel column");
+			return false;
+		}
 	}
 	return true;
 }
@@ -311,8 +354,66 @@ bool VENGIFormat::loadNodeProperties(scenegraph::SceneGraph &sceneGraph, scenegr
 	return true;
 }
 
+struct StreamVoxelReader {
+	io::ReadStream &stream;
+	bool u8(uint8_t &out) {
+		return stream.read(&out, 1) == 1;
+	}
+};
+
+struct PointerVoxelReader {
+	const uint8_t *p;
+	const uint8_t *end;
+	bool u8(uint8_t &out) {
+		if (p >= end) {
+			return false;
+		}
+		out = *p++;
+		return true;
+	}
+};
+
+template<typename Reader>
+static bool loadVoxels(Reader &reader, voxel::RawVolume &volume, const palette::Palette &palette, uint32_t version) {
+	const voxel::Region &region = volume.region();
+	voxel::Voxel *data = volume.voxels();
+	const int32_t w = region.getWidthInVoxels();
+	const int32_t h = region.getHeightInVoxels();
+	const int32_t d = region.getDepthInVoxels();
+	const int64_t zStride = region.stride();
+	for (int32_t x = 0; x < w; ++x) {
+		for (int32_t y = 0; y < h; ++y) {
+			const int64_t row = (int64_t)x + (int64_t)y * w;
+			for (int32_t z = 0; z < d; ++z) {
+				uint8_t air = 0;
+				if (!reader.u8(air)) {
+					return false;
+				}
+				if (air != 0) {
+					continue;
+				}
+				uint8_t color = 0;
+				uint8_t normal = NO_NORMAL;
+				uint8_t bone = 0;
+				if (version >= 4u) {
+					if (!reader.u8(color) || !reader.u8(normal)) {
+						return false;
+					}
+					if (version >= 8u && !reader.u8(bone)) {
+						return false;
+					}
+				} else if (!reader.u8(color)) {
+					return false;
+				}
+				data[row + (int64_t)z * zStride].overwrite(voxel::createVoxel(palette, color, normal, 0u, bone));
+			}
+		}
+	}
+	return true;
+}
+
 bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
-							   io::ReadStream &stream) {
+							   io::ZipReadStream &stream) {
 	glm::ivec3 mins, maxs;
 	wrap(stream.readInt32(mins.x))
 	wrap(stream.readInt32(mins.y))
@@ -323,67 +424,29 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	Log::debug("Load region of %i:%i:%i %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
+	if (v->voxels() == nullptr) {
+		delete v;
+		Log::error("Failed to allocate volume");
+		return false;
+	}
 	node.setVolume(v);
 	const palette::Palette &palette = node.palette();
 
-	if (version >= 4u) {
-		union Data {
-			uint16_t data;
-			struct {
-				uint8_t color;
-				uint8_t normal;
-			};
-		};
-		voxel::RawVolume::Sampler sampler(*v);
-		sampler.setPosition(region.getLowerCorner());
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-					const bool air = stream.readBool();
-					if (air) {
-						sampler3.movePositiveZ();
-						continue;
-					}
-
-					Data data;
-					data.normal = NO_NORMAL;
-					stream.readUInt16(data.data);
-					uint8_t boneIdx = 0;
-					if (version >= 8u) {
-						wrap(stream.readUInt8(boneIdx))
-					}
-					sampler3.setVoxel(voxel::createVoxel(palette, data.color, data.normal, 0u, boneIdx));
-					sampler3.movePositiveZ();
-				}
-				sampler2.movePositiveY();
-			}
-			sampler.movePositiveX();
+	int64_t available = 0;
+	const uint8_t *cursor = stream.peek(available);
+	if (cursor != nullptr) {
+		PointerVoxelReader reader{cursor, cursor + available};
+		if (!loadVoxels(reader, *v, palette, version)) {
+			Log::error("Failed to read voxel data");
+			return false;
 		}
-	} else {
-		voxel::RawVolume::Sampler sampler(*v);
-		sampler.setPosition(region.getLowerCorner());
-		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int32_t y = region.getLowerY(); y <= region.getUpperY(); ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-					const bool air = stream.readBool();
-					if (air) {
-						sampler3.movePositiveZ();
-						continue;
-					}
-
-					uint8_t color;
-					stream.readUInt8(color);
-					sampler3.setVoxel(voxel::createVoxel(palette, color));
-					sampler3.movePositiveZ();
-				}
-				sampler2.movePositiveY();
-			}
-			sampler.movePositiveX();
-		}
+		stream.consume((int64_t)(reader.p - cursor));
+		return true;
+	}
+	StreamVoxelReader reader{stream};
+	if (!loadVoxels(reader, *v, palette, version)) {
+		Log::error("Failed to read voxel data");
+		return false;
 	}
 	return true;
 }
@@ -538,7 +601,7 @@ bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegrap
 	return true;
 }
 
-bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
+bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ZipReadStream &stream,
 						   NodeMapping &nodeMapping, PendingReferences &pendingReferences,
 						   PendingIKEffectors &pendingIKEffectors) {
 	core::String name;

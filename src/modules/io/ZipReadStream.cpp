@@ -427,4 +427,59 @@ int ZipReadStream::read(void *buf, size_t size) {
 #endif
 }
 
+const uint8_t *ZipReadStream::peek(int64_t &available) {
+	available = 0;
+#if !USE_LIBDEFLATE
+	return nullptr;
+#else
+	if (_err) {
+		return nullptr;
+	}
+	ZipReadLibDeflateState *state = (ZipReadLibDeflateState *)_stream;
+	if (!state->decompressed) {
+		uint8_t byte = 0;
+		const int n = read(&byte, 1);
+		if (n <= 0) {
+			return nullptr;
+		}
+		state->uncompressedPos -= 1;
+		_eos = false;
+	}
+	if (state->uncompressedPos > state->uncompressedData.size()) {
+		return nullptr;
+	}
+	available = (int64_t)(state->uncompressedData.size() - state->uncompressedPos);
+	if (available <= 0) {
+		return nullptr;
+	}
+	return state->uncompressedData.data() + state->uncompressedPos;
+#endif
+}
+
+void ZipReadStream::consume(int64_t n) {
+#if !USE_LIBDEFLATE
+	(void)n;
+#else
+	if (n <= 0 || _err) {
+		return;
+	}
+	ZipReadLibDeflateState *state = (ZipReadLibDeflateState *)_stream;
+	if (!state->decompressed || state->uncompressedPos > state->uncompressedData.size()) {
+		_err = true;
+		return;
+	}
+	const size_t avail = state->uncompressedData.size() - state->uncompressedPos;
+	if ((uint64_t)n > avail) {
+		_err = true;
+		state->uncompressedPos = state->uncompressedData.size();
+		_eos = true;
+		return;
+	}
+	state->uncompressedPos += (size_t)n;
+	if (state->uncompressedPos >= state->uncompressedData.size()) {
+		_eos = true;
+	}
+#endif
+}
+
 } // namespace io

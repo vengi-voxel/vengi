@@ -6,6 +6,10 @@
 
 #include "voxelformat/Format.h"
 
+namespace io {
+class ZipReadStream;
+}
+
 namespace scenegraph {
 class SceneGraphKeyFrame;
 }
@@ -54,7 +58,7 @@ private:
 	bool loadNodeProperties(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
 							io::ReadStream &stream);
 	bool loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
-					  io::ReadStream &stream);
+					  io::ZipReadStream &stream);
 	bool loadAnimation(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
 					   io::ReadStream &stream);
 	bool loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
@@ -67,7 +71,7 @@ private:
 								io::ReadStream &stream);
 	bool loadIKConstraint(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
 						  io::ReadStream &stream, PendingIKEffectors &pendingIKEffectors);
-	bool loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ReadStream &stream,
+	bool loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint32_t version, io::ZipReadStream &stream,
 				  NodeMapping &nodeMapping, PendingReferences &pendingReferences,
 				  PendingIKEffectors &pendingIKEffectors);
 

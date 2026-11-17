@@ -58,6 +58,13 @@ public:
 	 */
 	int read(void *dataPtr, size_t dataSize) override;
 	/**
+	 * @brief Unread inflated bytes. Does not advance the position.
+	 * @return @c nullptr when the caller has to use read().
+	 */
+	const uint8_t *peek(int64_t &available);
+	/** Advances over bytes previously returned by peek(). */
+	void consume(int64_t n);
+	/**
 	 * @return @c true if the end of the compressed stream was found
 	 */
 	bool eos() const override;
