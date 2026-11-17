@@ -46,6 +46,8 @@ private:
 	glm::ivec3 _cachedBrickPosition{INT32_MAX, INT32_MAX, INT32_MAX};
 	// incremented whenever a brick or chunk gets released - samplers compare it before using their cached pointers
 	uint32_t _releaseGeneration = 0u;
+	// Changes in occupancy can shift packed rows, move their storage or make cached air rows obsolete.
+	uint32_t _rowGeneration = 0u;
 
 	// direct mapped cache for the write path - spares the hashing for volumes with more than one chunk
 	struct ChunkCacheEntry {
@@ -73,34 +75,109 @@ private:
 	}
 
 public:
+	/** References returned by voxel() can be invalidated by structural edits to the volume. */
 	class Sampler : public SparseVolumeSampler<Sampler, SparseVolume> {
 	private:
 		using Super = SparseVolumeSampler<Sampler, SparseVolume>;
 		friend Super;
+
+		template<int Axis, int Direction>
+		CORE_FORCE_INLINE bool moveCached(uint32_t offset) {
+			if (_cachedPayload == nullptr) {
+				return false;
+			}
+			if constexpr (Axis != 0) {
+				if (!_cachedWholeBrick) {
+					return false;
+				}
+			}
+			int &coord = _posInVolume[Axis];
+			const int available = Direction > 0 ? _cachedUpper[Axis] - coord : coord - _cachedLower[Axis];
+			if (offset > (uint32_t)available) {
+				return false;
+			}
+			if constexpr (Axis != 0) {
+				// The borrowed row may have been released since the previous read.
+				if (_cachedPayloadGeneration != _volume->_rowGeneration) {
+					return false;
+				}
+				_cachedPayload += (int)offset * (Direction * (1 << (Axis * SparseChunk::BrickShift)));
+			}
+			coord += Direction * (int)offset;
+			return true;
+		}
 
 	public:
 		using Super::Super;
 
 		bool setVoxel(const Voxel &voxel);
 
+		CORE_FORCE_INLINE void movePositiveX(uint32_t offset = 1) {
+			const int64_t newX = (int64_t)_posInVolume.x + offset;
+			if (_cachedPayload && newX <= _cachedUpperX) {
+				_posInVolume.x = (int)newX;
+				return;
+			}
+			Super::movePositiveX(offset);
+		}
+		CORE_FORCE_INLINE void movePositiveY(uint32_t offset = 1) {
+			if (!moveCached<1, 1>(offset)) {
+				Super::movePositiveY(offset);
+			}
+		}
+		CORE_FORCE_INLINE void movePositiveZ(uint32_t offset = 1) {
+			if (!moveCached<2, 1>(offset)) {
+				Super::movePositiveZ(offset);
+			}
+		}
+		CORE_FORCE_INLINE void moveNegativeX(uint32_t offset = 1) {
+			if (!moveCached<0, -1>(offset)) {
+				Super::moveNegativeX(offset);
+			}
+		}
+		CORE_FORCE_INLINE void moveNegativeY(uint32_t offset = 1) {
+			if (!moveCached<1, -1>(offset)) {
+				Super::moveNegativeY(offset);
+			}
+		}
+		CORE_FORCE_INLINE void moveNegativeZ(uint32_t offset = 1) {
+			if (!moveCached<2, -1>(offset)) {
+				Super::moveNegativeZ(offset);
+			}
+		}
+
 	protected:
+		CORE_FORCE_INLINE const Voxel &sampledVoxel() const {
+			if (_cachedPayload == nullptr) {
+				return Super::sampledVoxel();
+			}
+			if (_cachedPayloadGeneration == _volume->_rowGeneration) {
+				return _cachedPayload[_posInVolume.x & (SparseChunk::BrickSide - 1)];
+			}
+			return _volume->voxel(_posInVolume);
+		}
+
 		// Cached chunk for performance
 		mutable Chunk *_cachedChunk = nullptr;
 		mutable glm::ivec3 _cachedChunkPos{0, 0, 0};
-		// chunk local position of _posInVolume, 8 bits per component - one 32 bit value instead of a vector
-		int _cachedLocalPacked = 0;
-		// brick of the current position (nullptr if not allocated) and the voxel index inside of it - moves
-		// that stay inside the brick only adjust the index
 		SparseChunk::Brick *_cachedBrick = nullptr;
-		int _cachedVoxelIdx = 0;
+		const Voxel *_cachedPayload = nullptr;
+		int _cachedUpperX = 0;
+		uint32_t _cachedPayloadGeneration = 0u;
 		// SparseVolume::_releaseGeneration at the time _cachedChunk and _cachedBrick were resolved
 		uint32_t _cachedGeneration = 0u;
+		bool _cachedWholeBrick = false;
+		glm::ivec3 _cachedLower{0};
+		glm::ivec3 _cachedUpper{0};
 
-		void updateCurrentVoxel();
+		void invalidateSample() {
+			_cachedPayload = nullptr;
+		}
+
+		void updateCurrentVoxel(bool cacheRow = true);
+		void sampleVoxel(const glm::ivec3 &pos, bool cacheRow);
 		template<int Axis>
 		void moved(int oldCoord, int newCoord, int delta);
-
-		void invalidateChunkCache();
 	};
 
 	// invalid region means unlimited size

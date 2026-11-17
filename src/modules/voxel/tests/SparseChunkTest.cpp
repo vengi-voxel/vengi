@@ -354,4 +354,40 @@ TEST_F(SparseChunkTest, testDensePayloadSlotReusedForPackedBrick) {
 	EXPECT_TRUE(isAir(chunk.voxel(17, 5, 2)->getMaterial()));
 }
 
+TEST_F(SparseChunkTest, testReadBrickRow) {
+	SparseChunk chunk;
+	const Voxel filled = createVoxel(VoxelType::Generic, 3, 4);
+	const Voxel markedAir = createVoxel(VoxelType::Air, 0, 0, FlagOutline);
+	Voxel scratch[SparseChunk::BrickSide];
+	EXPECT_TRUE(chunk.readBrickRow(0, 1, 1, scratch)[0] == Voxel());
+	chunk.setVoxelsRow(8, 1, 1, SparseChunk::BrickSide, filled);
+	chunk.setVoxel(0, 1, 1, markedAir);
+	chunk.setVoxel(7, 1, 1, filled);
+	for (int z = 0; z < 2; ++z) {
+		for (int y = 0; y < SparseChunk::BrickSide; ++y) {
+			chunk.setVoxelsRow(16, y, z, SparseChunk::BrickSide, filled);
+		}
+	}
+	chunk.removeVoxel(17, 1, 1);
+
+	for (int x = 0; x < 32; x += SparseChunk::BrickSide) {
+		const Voxel *row = chunk.readBrickRow(x, 1, 1, scratch);
+		for (int i = 0; i < SparseChunk::BrickSide; ++i) {
+			const Voxel *point = chunk.voxel(x + i, 1, 1);
+			EXPECT_TRUE(row[i] == (point ? *point : Voxel())) << x + i;
+		}
+	}
+
+	const Voxel edited = createVoxel(VoxelType::Generic, 11, 7);
+	chunk.setVoxel(11, 1, 1, edited);
+	EXPECT_TRUE(chunk.readBrickRow(8, 1, 1, scratch)[3] == edited);
+	for (int y = 0; y < SparseChunk::BrickSide; ++y) {
+		chunk.setVoxelsRow(8, y, 0, SparseChunk::BrickSide, filled);
+	}
+	ASSERT_TRUE(chunk.brick(8, 1, 1)->dense());
+	EXPECT_TRUE(chunk.readBrickRow(8, 1, 1, scratch)[3] == edited);
+	chunk.removeVoxel(11, 1, 1);
+	EXPECT_TRUE(chunk.readBrickRow(8, 1, 1, scratch)[3] == Voxel());
+}
+
 } // namespace voxel

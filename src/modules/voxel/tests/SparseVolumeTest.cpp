@@ -521,6 +521,131 @@ TEST_F(SparseVolumeTest, testSamplerSeesBrickReleasedByVolume) {
 	EXPECT_EQ(1u, v.size());
 }
 
+TEST_F(SparseVolumeTest, testSamplerBorrowedRowAfterPackedEdits) {
+	SparseVolume v(voxel::Region(0, 10));
+	const Voxel row = createVoxel(VoxelType::Generic, 1, 7);
+	const Voxel other = createVoxel(VoxelType::Generic, 2);
+	v.setVoxelsRow(0, 1, 0, SparseChunk::BrickSide, row);
+
+	SparseVolume::Sampler sampler(v);
+	ASSERT_TRUE(sampler.setPosition(0, 1, 0));
+	sampler.movePositiveX(2);
+	EXPECT_EQ(row, sampler.peekVoxel0px0py0pz());
+	auto copy = sampler;
+
+	// Inserting an earlier row shifts the packed indices even if the allocation stays put.
+	v.setVoxelsRow(0, 0, 0, SparseChunk::BrickSide, other);
+	copy.movePositiveX();
+	EXPECT_EQ(row, copy.voxel());
+
+	// Inserting with a borrowed voxel must work even when the packed payload grows.
+	ASSERT_TRUE(v.setVoxel(0, 2, 0, copy.voxel()));
+	EXPECT_EQ(row, v.voxel(0, 2, 0));
+	sampler.movePositiveX();
+	EXPECT_EQ(row, sampler.voxel());
+
+	ASSERT_TRUE(v.setVoxel(4, 1, 0, Voxel()));
+	sampler.movePositiveX();
+	EXPECT_TRUE(isAir(sampler.voxel().getMaterial()));
+	EXPECT_TRUE(sampler.setVoxel(other));
+	EXPECT_EQ(other, sampler.voxel());
+	sampler.movePositiveX();
+	EXPECT_EQ(row, sampler.voxel());
+
+	// Warm the cache again, then replace the packed storage with a dense brick.
+	ASSERT_TRUE(sampler.setPosition(0, 1, 0));
+	for (int y = 0; y < SparseChunk::BrickSide; ++y) {
+		v.setVoxelsRow(0, y, 1, SparseChunk::BrickSide, other);
+	}
+	sampler.movePositiveX();
+	EXPECT_EQ(row, sampler.voxel());
+	sampler.movePositiveZ();
+	EXPECT_EQ(other, sampler.voxel());
+}
+
+TEST_F(SparseVolumeTest, testSamplerBorrowedAirAndRegionBoundary) {
+	SparseVolume v(voxel::Region(-10, 0, 0, 2, 7, 7));
+	SparseVolume::Sampler sampler(v);
+	ASSERT_TRUE(sampler.setPosition(-2, 0, 0));
+	sampler.movePositiveX();
+	EXPECT_TRUE(isAir(sampler.voxel().getMaterial()));
+	sampler.movePositiveX();
+	EXPECT_TRUE(isAir(sampler.voxel().getMaterial()));
+
+	const Voxel solid = createVoxel(VoxelType::Generic, 3);
+	ASSERT_TRUE(v.setVoxel(1, 0, 0, solid));
+	sampler.movePositiveX();
+	EXPECT_EQ(solid, sampler.voxel());
+
+	// Make this brick dense while keeping the region boundary inside the row.
+	for (int z = 0; z < 3; ++z) {
+		for (int y = 0; y < SparseChunk::BrickSide; ++y) {
+			v.setVoxelsRow(0, y, z, 3, solid);
+		}
+	}
+	ASSERT_TRUE(sampler.setPosition(1, 0, 0));
+	sampler.movePositiveX();
+	EXPECT_EQ(solid, sampler.voxel());
+	sampler.movePositiveX();
+	EXPECT_FALSE(sampler.currentPositionValid());
+	sampler.moveNegativeX();
+	EXPECT_EQ(solid, sampler.voxel());
+
+	v.clear();
+	sampler.moveNegativeX();
+	EXPECT_TRUE(isAir(sampler.voxel().getMaterial()));
+}
+
+TEST_F(SparseVolumeTest, testSamplerDenseBrickMixedMoves) {
+	SparseVolume v(voxel::Region(-5, 1));
+	for (int z = -5; z < 0; ++z) {
+		for (int y = -5; y < 0; ++y) {
+			for (int x = -5; x < 0; ++x) {
+				const int color = 1 + (x + 5) + 5 * (y + 5) + 25 * (z + 5);
+				ASSERT_TRUE(v.setVoxel(x, y, z, createVoxel(VoxelType::Generic, (uint8_t)color)));
+			}
+		}
+	}
+
+	SparseVolume::Sampler sampler(v);
+	ASSERT_TRUE(sampler.setPosition(-4, -4, -4));
+	const auto expectAt = [&](int x, int y, int z) {
+		EXPECT_EQ(glm::ivec3(x, y, z), sampler.position());
+		EXPECT_EQ(v.voxel(x, y, z), sampler.voxel());
+	};
+	sampler.movePositiveX(2);
+	expectAt(-2, -4, -4);
+	sampler.movePositiveY(3);
+	expectAt(-2, -1, -4);
+	sampler.movePositiveZ(2);
+	expectAt(-2, -1, -2);
+	sampler.moveNegativeX();
+	expectAt(-3, -1, -2);
+	sampler.moveNegative(math::Axis::Y, 4);
+	expectAt(-3, -5, -2);
+	sampler.moveNegativeZ(3);
+	expectAt(-3, -5, -5);
+	sampler.moveNegativeY();
+	EXPECT_FALSE(sampler.currentPositionValid());
+	sampler.movePositiveY(2);
+	expectAt(-3, -4, -5);
+
+	auto copy = sampler;
+	const Voxel edited = createVoxel(VoxelType::Generic, 130);
+	ASSERT_TRUE(sampler.setVoxel(edited));
+	EXPECT_EQ(edited, copy.voxel());
+	v.clear();
+	copy.movePositiveY();
+	EXPECT_TRUE(isAir(copy.voxel().getMaterial()));
+	copy.movePositiveZ(2);
+	EXPECT_TRUE(isAir(copy.voxel().getMaterial()));
+
+	sampler.setPosition(-3, -4, -5);
+	ASSERT_TRUE(v.setVoxel(-3, -3, -5, edited));
+	sampler.movePositiveY();
+	EXPECT_EQ(edited, sampler.voxel());
+}
+
 TEST_F(SparseVolumeTest, testSamplerCurrentVoxelMatchesStoredVoxel) {
 	SparseVolume v;
 	SparseVolume::Sampler sampler(v);

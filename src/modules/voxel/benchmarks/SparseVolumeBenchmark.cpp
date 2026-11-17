@@ -167,12 +167,13 @@ BENCHMARK_REGISTER_F(SparseVolumeBenchmark, CopyToRawVolume)->Arg(128)->Unit(ben
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, CalculateRegionDense)->Arg(128)->Unit(benchmark::kMillisecond);
 BENCHMARK_REGISTER_F(SparseVolumeBenchmark, FillScattered)->Arg(10000)->Arg(100000)->Unit(benchmark::kMillisecond);
 
-enum class ChunkRead { LinearScan, CoordinateScan, LinearCopy, RegionCopy };
+enum class ChunkRead { LinearScan, CoordinateScan, BrickRowScan, LinearCopy, RegionCopy };
 
 static void sparseChunkRead(benchmark::State &state, ChunkRead read) {
 	constexpr int Side = 128;
 	constexpr int Cells = Side * Side * Side;
-	const bool sparse = state.range(0) != 0;
+	// 0: dense; 1: one in eight bricks filled; 2: one plane per brick; 3: planes with holes.
+	const int layout = (int)state.range(0);
 	voxel::SparseChunk chunk;
 	voxel::RawVolume linear(voxel::Region(0, Side - 1));
 	voxel::RawVolume output(voxel::Region(0, Side - 1));
@@ -180,7 +181,9 @@ static void sparseChunkRead(benchmark::State &state, ChunkRead read) {
 		for (int y = 0; y < Side; ++y) {
 			for (int x = 0; x < Side; ++x) {
 				constexpr int Shift = voxel::SparseChunk::BrickShift;
-				if (sparse && (((x >> Shift) + (y >> Shift) + (z >> Shift)) & 7) != 0) {
+				constexpr int Mask = voxel::SparseChunk::BrickSide - 1;
+				if ((layout == 1 && (((x >> Shift) + (y >> Shift) + (z >> Shift)) & 7) != 0) ||
+					(layout >= 2 && (z & Mask) != 0) || (layout == 3 && ((x ^ y) & 3) == 0)) {
 					continue;
 				}
 				const voxel::Voxel value = voxel::createVoxel(voxel::VoxelType::Generic, (uint8_t)(1 + (x ^ y ^ z)));
@@ -209,6 +212,21 @@ static void sparseChunkRead(benchmark::State &state, ChunkRead read) {
 				}
 			}
 			break;
+		case ChunkRead::BrickRowScan: {
+			constexpr int BrickSide = voxel::SparseChunk::BrickSide;
+			voxel::Voxel scratch[BrickSide];
+			for (int z = 0; z < Side; ++z) {
+				for (int y = 0; y < Side; ++y) {
+					for (int x = 0; x < Side; x += BrickSide) {
+						const voxel::Voxel *row = chunk.readBrickRow(x, y, z, scratch);
+						for (int i = 0; i < BrickSide; ++i) {
+							sum += row[i].getColor();
+						}
+					}
+				}
+			}
+			break;
+		}
 		case ChunkRead::LinearCopy:
 			memcpy((void *)output.voxels(), linear.data(), Cells * sizeof(voxel::Voxel));
 			break;
@@ -222,7 +240,8 @@ static void sparseChunkRead(benchmark::State &state, ChunkRead read) {
 	state.SetItemsProcessed(state.iterations() * Cells);
 }
 
-BENCHMARK_CAPTURE(sparseChunkRead, LinearScan, ChunkRead::LinearScan)->Arg(0)->Arg(1)->ArgName("sparse")->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(sparseChunkRead, CoordinateScan, ChunkRead::CoordinateScan)->Arg(0)->Arg(1)->ArgName("sparse")->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(sparseChunkRead, LinearCopy, ChunkRead::LinearCopy)->Arg(0)->Arg(1)->ArgName("sparse")->Unit(benchmark::kMillisecond);
-BENCHMARK_CAPTURE(sparseChunkRead, RegionCopy, ChunkRead::RegionCopy)->Arg(0)->Arg(1)->ArgName("sparse")->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(sparseChunkRead, LinearScan, ChunkRead::LinearScan)->DenseRange(0, 3)->ArgName("layout")->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(sparseChunkRead, CoordinateScan, ChunkRead::CoordinateScan)->DenseRange(0, 3)->ArgName("layout")->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(sparseChunkRead, BrickRowScan, ChunkRead::BrickRowScan)->DenseRange(0, 3)->ArgName("layout")->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(sparseChunkRead, LinearCopy, ChunkRead::LinearCopy)->DenseRange(0, 3)->ArgName("layout")->Unit(benchmark::kMillisecond);
+BENCHMARK_CAPTURE(sparseChunkRead, RegionCopy, ChunkRead::RegionCopy)->DenseRange(0, 3)->ArgName("layout")->Unit(benchmark::kMillisecond);

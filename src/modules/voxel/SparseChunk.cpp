@@ -199,6 +199,15 @@ int SparseChunk::setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel
 	return added + addedPacked;
 }
 
+const Voxel *SparseChunk::unpackRow(uint64_t bits, const Voxel *v, int width, Voxel *scratch) {
+	memcpy((void *)scratch, EmptyRow, width * sizeof(Voxel));
+	while (bits != 0) {
+		scratch[ctz64(bits)].overwrite(*v++);
+		bits &= bits - 1;
+	}
+	return scratch;
+}
+
 void SparseChunk::readRegion(const glm::ivec3 &mins, const glm::ivec3 &size, Voxel *target) const {
 	const glm::ivec3 end = mins + size;
 	core_assert(glm::all(glm::greaterThanEqual(mins, glm::ivec3(0))));
@@ -214,27 +223,19 @@ void SparseChunk::readRegion(const glm::ivec3 &mins, const glm::ivec3 &size, Vox
 				const int width = xEnd - bx;
 				const Brick *b = brick(bx, by, bz);
 				static constexpr Voxel air[BrickVoxels]{};
-				const Voxel *payload = b == nullptr ? air : (b->dense() ? b->voxels : nullptr);
+				const Voxel *payload = b ? (b->dense() ? b->voxels : nullptr) : air;
 				const int first = voxelIndex(bx, by, bz);
 				const int base = (bz - mins.z) * planeStride + (by - mins.y) * size.x + bx - mins.x;
 				for (int z = 0; z < zEnd - bz; ++z) {
 					for (int y = 0; y < yEnd - by; ++y) {
 						Voxel *out = target + base + z * planeStride + y * size.x;
 						const int idx = first + (z * BrickSide + y) * BrickSide;
-						if (payload) {
-							if (width == BrickSide) {
-								memcpy((void *)out, payload + idx, BrickSide * sizeof(Voxel));
-							} else {
-								memcpy((void *)out, payload + idx, width * sizeof(Voxel));
-							}
+						Voxel scratch[BrickSide];
+						const Voxel *row = payload ? payload + idx : packedRow(b, idx, width, scratch);
+						if (width == BrickSide) {
+							memcpy((void *)out, row, BrickSide * sizeof(Voxel));
 						} else {
-							memcpy((void *)out, air, width * sizeof(Voxel));
-							uint64_t bits = (b->mask[idx >> 6] >> (idx & 63)) & (((uint64_t)1 << width) - 1);
-							int packed = packedIndex(b, idx);
-							while (bits) {
-								out[ctz64(bits)].overwrite(b->voxels[packed++]);
-								bits &= bits - 1;
-							}
+							memcpy((void *)out, row, width * sizeof(Voxel));
 						}
 					}
 				}

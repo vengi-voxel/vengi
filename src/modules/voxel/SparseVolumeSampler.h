@@ -39,6 +39,13 @@ private:
 	void move(int delta);
 
 protected:
+	inline void invalidateSample() {
+	}
+
+	inline const Voxel &sampledVoxel() const {
+		return currentPositionValid() ? _currentVoxel : _volume->voxel(_posInVolume.x, _posInVolume.y, _posInVolume.z);
+	}
+
 	// volatile so these stay 4-byte loads. A wide reload of _posInVolume does not forward from the stores in setPosition.
 	void readPosition(int &x, int &y, int &z) const {
 		x = *(const volatile int *)&_posInVolume.x;
@@ -65,10 +72,7 @@ public:
 	}
 
 	inline const Voxel &voxel() const {
-		if (currentPositionValid()) {
-			return _currentVoxel;
-		}
-		return _volume->voxel(_posInVolume.x, _posInVolume.y, _posInVolume.z);
+		return static_cast<const Derived *>(this)->sampledVoxel();
 	}
 
 	inline bool setPosition(const glm::ivec3 &pos) {
@@ -162,6 +166,7 @@ bool SparseVolumeSampler<Derived, Volume>::setPosition(int32_t xPos, int32_t yPo
 		derived().updateCurrentVoxel();
 		return true;
 	}
+	derived().invalidateSample();
 	return false;
 }
 
@@ -192,6 +197,7 @@ void SparseVolumeSampler<Derived, Volume>::move(int delta) {
 		return;
 	}
 	if (!currentPositionValid()) {
+		derived().invalidateSample();
 		return;
 	}
 	derived().template moved<Axis>(oldCoord, newCoord, delta);
@@ -231,13 +237,13 @@ template<class Derived, class Volume>
 void SparseVolumeSampler<Derived, Volume>::movePositive(math::Axis axis, uint32_t offset) {
 	switch (axis) {
 	case math::Axis::X:
-		movePositiveX(offset);
+		derived().movePositiveX(offset);
 		break;
 	case math::Axis::Y:
-		movePositiveY(offset);
+		derived().movePositiveY(offset);
 		break;
 	case math::Axis::Z:
-		movePositiveZ(offset);
+		derived().movePositiveZ(offset);
 		break;
 	default:
 		break;
@@ -248,13 +254,13 @@ template<class Derived, class Volume>
 void SparseVolumeSampler<Derived, Volume>::moveNegative(math::Axis axis, uint32_t offset) {
 	switch (axis) {
 	case math::Axis::X:
-		moveNegativeX(offset);
+		derived().moveNegativeX(offset);
 		break;
 	case math::Axis::Y:
-		moveNegativeY(offset);
+		derived().moveNegativeY(offset);
 		break;
 	case math::Axis::Z:
-		moveNegativeZ(offset);
+		derived().moveNegativeZ(offset);
 		break;
 	default:
 		break;

@@ -76,6 +76,8 @@ public:
 	static constexpr Voxel EmptyVoxel{};
 
 private:
+	static constexpr Voxel EmptyRow[BrickSide]{};
+
 	/** per brick cell: pool index + 1 or 0 if there is no brick - allocated with the first brick */
 	uint16_t *_cells = nullptr;
 	core::DynamicArray<Brick *> _blocks;
@@ -109,6 +111,32 @@ private:
 	static inline int packedIndex(const Brick *b, int idx) {
 		const int w = idx >> 6;
 		return b->prefix[w] + popcount64(b->mask[w] & ((((uint64_t)1u) << (idx & 63)) - 1u));
+	}
+
+	static inline const Voxel &packedVoxel(const Brick *b, int idx) {
+		const uint64_t word = b->mask[idx >> 6];
+		const uint64_t bit = (uint64_t)1 << (idx & 63);
+		if ((word & bit) == 0) {
+			return EmptyVoxel;
+		}
+		return b->voxels[b->prefix[idx >> 6] + popcount64(word & (bit - 1))];
+	}
+
+	static const Voxel *unpackRow(uint64_t bits, const Voxel *v, int width, Voxel *scratch);
+
+	CORE_FORCE_INLINE static const Voxel *packedRow(const Brick *b, int idx, int width, Voxel *scratch) {
+		const uint64_t rowMask = ((uint64_t)1 << width) - 1;
+		const uint64_t word = b->mask[idx >> 6];
+		const int offset = idx & 63;
+		const uint64_t bits = (word >> offset) & rowMask;
+		if (bits == 0) {
+			return EmptyRow;
+		}
+		if (bits != rowMask && scratch == nullptr) {
+			return nullptr;
+		}
+		const Voxel *v = b->voxels + b->prefix[idx >> 6] + popcount64(word & (((uint64_t)1 << offset) - 1));
+		return bits == rowMask ? v : unpackRow(bits, v, width, scratch);
 	}
 
 	inline Brick *poolBrick(int i) const {
@@ -186,13 +214,7 @@ public:
 	 * @note References into packed bricks are invalidated by modifications of the brick
 	 */
 	static inline const Voxel &voxel(const Brick *b, int idx) {
-		if (b->dense()) {
-			return b->voxels[idx];
-		}
-		if ((b->mask[idx >> 6] >> (idx & 63)) & 1u) {
-			return b->voxels[packedIndex(b, idx)];
-		}
-		return EmptyVoxel;
+		return b->dense() ? b->voxels[idx] : packedVoxel(b, idx);
 	}
 
 	/**
@@ -210,7 +232,32 @@ public:
 		}
 		const int idx = voxelIndex(x, y, z);
 		const Voxel *dense = _densePayloads.data()[i];
-		return dense ? dense + idx : &voxel(poolBrick(i), idx);
+		return dense ? dense + idx : &packedVoxel(poolBrick(i), idx);
+	}
+
+	/**
+	 * @brief Read the BrickSide consecutive voxels starting at a brick-aligned x.
+	 * The returned row can refer to the chunk, shared air, or scratch. Use it before modifying the chunk
+	 * or reusing scratch.
+	 */
+	CORE_FORCE_INLINE const Voxel *readBrickRow(int x, int y, int z, Voxel (&scratch)[BrickSide]) const {
+		core_assert((x & (BrickSide - 1)) == 0);
+		const int cell = _cells ? _cells[brickCellIndex(x, y, z)] : 0;
+		if (cell == 0) {
+			return EmptyRow;
+		}
+		const int idx = voxelIndex(0, y, z);
+		const Voxel *dense = _densePayloads.data()[cell - 1];
+		return dense ? dense + idx : packedRow(poolBrick(cell - 1), idx, BrickSide, scratch);
+	}
+
+	/** Borrow a contiguous row or return nullptr if it has to be unpacked. */
+	static CORE_FORCE_INLINE const Voxel *borrowBrickRow(const Brick *brick, int idx) {
+		const int row = idx & ~(BrickSide - 1);
+		if (brick == nullptr) {
+			return EmptyRow;
+		}
+		return brick->dense() ? brick->voxels + row : packedRow(brick, row, BrickSide, nullptr);
 	}
 
 	inline bool hasVoxel(int x, int y, int z) const {
