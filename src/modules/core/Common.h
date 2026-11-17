@@ -13,10 +13,13 @@
 
 #if defined(_MSC_VER)
 #define CORE_FORCE_INLINE __forceinline
+#define CORE_NO_INLINE __declspec(noinline)
 #elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
 #define CORE_FORCE_INLINE __attribute__((always_inline)) __inline__
+#define CORE_NO_INLINE __attribute__((noinline))
 #else
 #define CORE_FORCE_INLINE inline
+#define CORE_NO_INLINE
 #endif
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
