@@ -628,7 +628,13 @@ void FormatPrinter::printInstallerWix() {
 	Log::printf("		</RegistryKey>\n");
 	core::StringSet uniqueExtensions;
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		if (voxelformat::FormatConfig::isImageFormat(*desc)) {
+			continue;
+		}
 		for (const core::String &e : desc->exts) {
+			if (io::isImage(core::String::format("file.%s", e.c_str()))) {
+				continue;
+			}
 			if (!uniqueExtensions.insert(e)) {
 				continue;
 			}
@@ -738,6 +744,9 @@ void FormatPrinter::printUtiDeclaration(const io::FormatDescription &desc) {
 void FormatPrinter::printSupportedContentTypes() {
 	core::StringSet seen;
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		if (voxelformat::FormatConfig::isImageFormat(*desc)) {
+			continue;
+		}
 		const core::String uti = uniqueUti(*desc);
 		if (!seen.insert(uti)) {
 			continue;
@@ -890,6 +899,20 @@ void FormatPrinter::printMimeInfo() {
 	_uniqueMimetypes.clear();
 	Log::printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 	Log::printf("<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n");
+	core::String thumbnailerExclude;
+	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
+		if (!voxelformat::FormatConfig::isImageFormat(*desc)) {
+			continue;
+		}
+		if (!thumbnailerExclude.empty()) {
+			thumbnailerExclude += ";";
+		}
+		thumbnailerExclude += uniqueMimetype(*desc);
+	}
+	if (!thumbnailerExclude.empty()) {
+		// mimetypes.py drops these from the thumbnailer entry. The desktop file still lists them.
+		Log::printf("\t<!-- thumbnailer-exclude: %s -->\n", thumbnailerExclude.c_str());
+	}
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
 		const core::String &m = uniqueMimetype(*desc);
 		Log::printf("\t<mime-type type=\"%s\">\n", m.c_str());

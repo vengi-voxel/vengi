@@ -9,6 +9,10 @@
 #include "io/FormatDescription.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/binvox/BinVoxFormat.h"
+#include "voxelformat/private/image/AsepriteFormat.h"
+#include "voxelformat/private/image/PNGFormat.h"
+#include "voxelformat/private/image/PxoFormat.h"
+#include "voxelformat/private/minecraft/SkinFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
@@ -249,6 +253,16 @@ TEST_F(FormatConfigTest, testWriteConfigJsonExtra) {
 	ASSERT_NE(colorJson, nullptr);
 	EXPECT_NE(strstr(colorJson, "GL Transmission Format"), nullptr);
 	EXPECT_EQ(strstr(colorJson, "Standard Triangle Language"), nullptr);
+}
+
+TEST_F(FormatConfigTest, testIsImageFormat) {
+	EXPECT_TRUE(FormatConfig::isImageFormat(PNGFormat::format()));
+	EXPECT_TRUE(FormatConfig::isImageFormat(AsepriteFormat::format()));
+	EXPECT_TRUE(FormatConfig::isImageFormat(PxoFormat::format()));
+	EXPECT_FALSE(FormatConfig::isImageFormat(VoxFormat::format()));
+	EXPECT_FALSE(FormatConfig::isImageFormat(SkinFormat::format()));
+	EXPECT_TRUE(io::isImage("skin.png"));
+	EXPECT_FALSE(io::isImage("skin.mcskin"));
 }
 
 TEST_F(FormatConfigTest, testImageSaveTypeAllowsThumbnail) {

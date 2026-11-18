@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
 
 import os
-import subprocess
+import re
 import xml.etree.ElementTree as ET
 
 def get_script_dir():
     return os.path.dirname(os.path.realpath(__file__))
 
-def extract_mimetypes(xml_file):
+def thumbnailer_excludes(xml_file):
+    text = open(xml_file, encoding="utf-8").read()
+    match = re.search(r"thumbnailer-exclude:\s*(.*?)\s*-->", text)
+    if not match:
+        return set()
+    return {item.strip() for item in match.group(1).split(";") if item.strip()}
+
+def extract_mimetypes(xml_file, exclude=None):
     ns = {'x': 'http://www.freedesktop.org/standards/shared-mime-info'}
     tree = ET.parse(xml_file)
     root = tree.getroot()
     mimetypes = sorted(set(elem.attrib['type'] for elem in root.findall(".//x:mime-type", ns)))
+    if exclude:
+        mimetypes = [mime for mime in mimetypes if mime not in exclude]
     return ';'.join(mimetypes)
 
 def replace_mimetype_line(file_path, mimetypes):
@@ -33,9 +42,10 @@ def main():
     thumbnailer_file = "thumbnailer.thumbnailer.in"
 
     mimetypes = extract_mimetypes(mime_xml)
+    thumbnailer_mimetypes = extract_mimetypes(mime_xml, thumbnailer_excludes(mime_xml))
 
     replace_mimetype_line(desktop_file, mimetypes)
-    replace_mimetype_line(thumbnailer_file, mimetypes)
+    replace_mimetype_line(thumbnailer_file, thumbnailer_mimetypes)
 
     print(f"Updated MimeType lines in {desktop_file} and {thumbnailer_file}")
 

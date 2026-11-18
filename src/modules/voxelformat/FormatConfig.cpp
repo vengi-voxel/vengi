@@ -509,7 +509,7 @@ static bool hasFormats(const FormatVarMeta &meta) {
 	return meta.formats[0] != nullptr;
 }
 
-static bool isImageFormat(const io::FormatDescription &desc) {
+bool FormatConfig::isImageFormat(const io::FormatDescription &desc) {
 	return desc == PNGFormat::format() || desc == AsepriteFormat::format() || desc == PxoFormat::format();
 }
 
@@ -574,7 +574,7 @@ bool FormatConfig::appliesTo(const FormatVarMeta &meta, bool save, const io::For
 		}
 		return true;
 	}
-	if ((meta.flags & FormatCVarFlag_Image) && isImageFormat(desc)) {
+	if ((meta.flags & FormatCVarFlag_Image) && FormatConfig::isImageFormat(desc)) {
 		return true;
 	}
 	if ((meta.flags & FormatCVarFlag_RGB) && isRGBFormat(desc)) {

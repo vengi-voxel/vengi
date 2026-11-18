@@ -27,8 +27,6 @@
         <key>QLSupportedContentTypes</key>
         <array>
           <string>com.github.vengi.vengi</string>
-          <string>com.github.vengi.aseprite</string>
-          <string>com.github.vengi.pixelorama</string>
           <string>com.github.vengi.qubicle-binary</string>
           <string>com.github.vengi.benvoxel</string>
           <string>com.github.vengi.magicavoxel</string>
@@ -98,7 +96,6 @@
           <string>com.github.vengi.voxelcdx</string>
           <string>com.github.vengi.spritestack</string>
           <string>com.github.vengi.veloren-terrain</string>
-          <string>com.github.vengi.portable-network-graphics</string>
           <string>com.github.vengi.minecraft-skin</string>
         </array>
         <key>QLThumbnailMinimumDimension</key>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+	<!-- thumbnailer-exclude: image/aseprite;application/x-pixelorama;image/png -->
 	<mime-type type="application/x-vengi">
 		<comment>Vengi</comment>
 		<glob pattern="*.vengi"/>

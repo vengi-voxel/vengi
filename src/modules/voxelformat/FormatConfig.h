@@ -64,6 +64,7 @@ public:
 	/** Mesh save UI: STL has no vertex colors or texcoords. */
 	static bool meshSaveSupportsColor(const io::FormatDescription &desc);
 	static bool meshSaveSupportsTexCoords(const io::FormatDescription &desc);
+	static bool isImageFormat(const io::FormatDescription &desc);
 };
 
 } // namespace voxelformat
