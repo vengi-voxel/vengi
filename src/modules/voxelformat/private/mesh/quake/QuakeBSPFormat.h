@@ -7,6 +7,7 @@
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include <glm/vec3.hpp>
 
 namespace voxelformat {
 
@@ -106,10 +107,29 @@ private:
 		int16_t textureId = 0; // texture info idx
 		int32_t index = -1;
 		bool used = false;
+		bool hidden = false; // clip, sky, trigger, liquid, ...
+	};
+
+	// hull 0 of a Quake 1 BSP, used to decide which voxels are solid
+	struct Quake1Plane {
+		float normal[3]{0.0f, 0.0f, 0.0f};
+		float dist = 0.0f;
+	};
+	struct Quake1Node {
+		int32_t plane = 0;
+		int16_t children[2]{0, 0};
+	};
+	struct Quake1Leaf {
+		int32_t contents = 0;
+	};
+	struct Quake1Model {
+		int32_t headnode = -1;
+		int32_t faceId = 0;
+		int32_t faceCount = 0;
 	};
 
 	struct Texture : public BspTexture {
-		MeshMaterialIndex materialIdx;
+		MeshMaterialIndex materialIdx = -1;
 	};
 
 	bool voxelize(const core::DynamicArray<Texture> &textures, core::Buffer<Face> &faces,
@@ -129,6 +149,22 @@ private:
 						 core::Buffer<int32_t> &surfEdges);
 	bool loadQuake1Vertices(io::SeekableReadStream &stream, const BspHeader &header,
 							core::Buffer<BspVertex> &vertices);
+	bool loadQuake1Planes(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<Quake1Plane> &planes);
+	bool loadQuake1Nodes(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<Quake1Node> &nodes);
+	bool loadQuake1Leaves(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<Quake1Leaf> &leaves);
+	bool loadQuake1BrushModels(io::SeekableReadStream &stream, const BspHeader &header,
+							   core::Buffer<Quake1Model> &models);
+	static float distSqPointTriangle(const glm::vec3 &p, const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c);
+	static bool quakePointSolid(const core::Buffer<Quake1Plane> &planes, const core::Buffer<Quake1Node> &nodes,
+								const core::Buffer<Quake1Leaf> &leaves, int root, const glm::vec3 &pos,
+								const glm::vec3 &half);
+
+	bool voxelizeQuake1Models(const core::DynamicArray<Texture> &textures, core::Buffer<Face> &faces,
+							  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
+							  const core::Buffer<BspVertex> &vertices, const core::Buffer<Quake1Plane> &planes,
+							  const core::Buffer<Quake1Node> &nodes, const core::Buffer<Quake1Leaf> &leaves,
+							  const core::Buffer<Quake1Model> &models, scenegraph::SceneGraph &sceneGraph,
+							  const core::String &name, const MeshMaterialArray &meshMaterialArray);
 
 	bool loadUFOAlienInvasionBsp(const core::String &filename, io::SeekableReadStream &stream,
 								 scenegraph::SceneGraph &sceneGraph, const BspHeader &header,

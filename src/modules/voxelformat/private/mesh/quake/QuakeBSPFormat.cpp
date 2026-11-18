@@ -4,18 +4,31 @@
 
 #include "QuakeBSPFormat.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/FourCC.h"
+#include "core/GLM.h"
 #include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/Buffer.h"
+#include "core/collection/DynamicArray.h"
+#include "core/collection/Map.h"
 #include "image/Image.h"
-#include "scenegraph/SceneGraph.h"
+#include "palette/NormalPalette.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
+#include "scenegraph/SceneGraph.h"
+#include "scenegraph/SceneGraphNode.h"
+#include "voxel/RawVolume.h"
+#include "voxel/Voxel.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "voxelformat/private/mesh/MeshTri.h"
+#include "voxelformat/private/mesh/PosSampling.h"
 #include "voxelutil/VoxelUtil.h"
+#include <math.h>
 
 namespace voxelformat {
 
@@ -29,12 +42,68 @@ static const uint32_t ufoaiEdgesLump = 11;
 static const uint32_t ufoaiSurfedgesLump = 12;
 static const uint32_t ufoaiModelsLump = 13;
 
+static const uint32_t quake1PlanesLump = 1;
 static const uint32_t quake1VerticesLump = 3;
 static const uint32_t quake1TexturesLump = 2;
+static const uint32_t quake1NodesLump = 5;
 static const uint32_t quake1TexinfoLump = 6;
 static const uint32_t quake1FacesLump = 7;
+static const uint32_t quake1LeavesLump = 10;
 static const uint32_t quake1EdgesLump = 12;
 static const uint32_t quake1SurfedgesLump = 13;
+static const uint32_t quake1ModelsLump = 14;
+
+static const size_t quake1PlaneSize = 20;
+static const size_t quake1NodeSize = 24;
+static const size_t quake1LeafSize = 28;
+static const size_t quake1ModelSize = 64;
+
+// shortcut: fixed 2 voxel shell. Raise it if thin brushes disappear.
+static const float quakeShellVoxels = 2.0f;
+static const int quakeShellChunk = 64;
+
+static char asciiLower(char c) {
+	if (c >= 'A' && c <= 'Z') {
+		return (char)(c - 'A' + 'a');
+	}
+	return c;
+}
+
+static bool asciiEq(const char *a, const char *b) {
+	while (*a != '\0' && *b != '\0') {
+		if (asciiLower(*a) != asciiLower(*b)) {
+			return false;
+		}
+		++a;
+		++b;
+	}
+	return *a == *b;
+}
+
+static bool asciiStarts(const char *a, const char *b) {
+	while (*b != '\0') {
+		if (asciiLower(*a) != asciiLower(*b)) {
+			return false;
+		}
+		++a;
+		++b;
+	}
+	return true;
+}
+
+bool hiddenQuakeTexture(const char *name, uint32_t value) {
+	if (name == nullptr || name[0] == '\0' || name[0] == '*') {
+		return true;
+	}
+	if (value == 1) {
+		return true;
+	}
+	if (asciiStarts(name, "sky")) {
+		return true;
+	}
+	return asciiEq(name, "clip") || asciiEq(name, "trigger") || asciiEq(name, "skip") || asciiEq(name, "hint") ||
+		   asciiEq(name, "origin");
+}
 
 } // namespace _priv
 
@@ -188,6 +257,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		} else {
 			Log::warn("Failed to load %s", texture.name);
 		}
+		core_free(pixels);
 	}
 	return true;
 }
@@ -258,21 +328,24 @@ bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHe
 		Log::error("Invalid faces lump offset - can't seek");
 		return false;
 	}
-	faces.reserve(faceCount);
+	faces.resize(faceCount);
 	for (int32_t i = 0; i < faceCount; i++) {
 		stream.skip(2); // planeId
 		stream.skip(2); // side
 
-		Face face;
+		Face &face = faces[i];
 		wrap(stream.readInt32(face.edgeId))
 		wrap(stream.readInt16(face.edgeCount))
 		wrap(stream.readInt16(face.textureId))
 
-		const char *texName = textures[face.textureId].name;
-		if (!core::string::startsWith(texName, "sky") /* && texName[0] != '*'*/) {
-			faces.push_back(face);
+		if (face.textureId < 0 || face.textureId >= (int)textures.size()) {
+			face.hidden = true;
 		} else {
-			Log::debug("skip face with %s", texName);
+			const Texture &texture = textures[face.textureId];
+			face.hidden = _priv::hiddenQuakeTexture(texture.name, texture.value);
+			if (face.hidden) {
+				Log::debug("skip face with %s", texture.name);
+			}
 		}
 
 		uint8_t lightType; // type of lighting, for the face
@@ -289,7 +362,7 @@ bool QuakeBSPFormat::loadQuake1Faces(io::SeekableReadStream &stream, const BspHe
 		wrap(stream.readInt32(lightmap))
 	}
 	Log::debug("Loaded %i faces", faceCount);
-	return !faces.empty();
+	return true;
 }
 
 bool QuakeBSPFormat::loadUFOAlienInvasionFaces(io::SeekableReadStream &stream, const BspHeader &header,
@@ -462,6 +535,553 @@ bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const Bs
 	return true;
 }
 
+float QuakeBSPFormat::distSqPointTriangle(const glm::vec3 &p, const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c) {
+	const auto len2 = [](const glm::vec3 &v) {
+		return glm::dot(v, v);
+	};
+	const glm::vec3 ab = b - a;
+	const glm::vec3 ac = c - a;
+	const glm::vec3 ap = p - a;
+	const float d1 = glm::dot(ab, ap);
+	const float d2 = glm::dot(ac, ap);
+	if (d1 <= 0.0f && d2 <= 0.0f) {
+		return len2(ap);
+	}
+	const glm::vec3 bp = p - b;
+	const float d3 = glm::dot(ab, bp);
+	const float d4 = glm::dot(ac, bp);
+	if (d3 >= 0.0f && d4 <= d3) {
+		return len2(bp);
+	}
+	const float vc = d1 * d4 - d3 * d2;
+	if (vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f) {
+		const float v = d1 / (d1 - d3);
+		return len2(a + ab * v - p);
+	}
+	const glm::vec3 cp = p - c;
+	const float d5 = glm::dot(ab, cp);
+	const float d6 = glm::dot(ac, cp);
+	if (d6 >= 0.0f && d5 <= d6) {
+		return len2(cp);
+	}
+	const float vb = d5 * d2 - d1 * d6;
+	if (vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f) {
+		const float w = d2 / (d2 - d6);
+		return len2(a + ac * w - p);
+	}
+	const float va = d3 * d6 - d5 * d4;
+	if (va <= 0.0f && (d4 - d3) >= 0.0f && (d5 - d6) >= 0.0f) {
+		const float w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+		return len2(b + (c - b) * w - p);
+	}
+	const float denom = 1.0f / (va + vb + vc);
+	const float v = vb * denom;
+	const float w = vc * denom;
+	return len2(a + ab * v + ac * w - p);
+}
+
+bool QuakeBSPFormat::quakePointSolid(const core::Buffer<Quake1Plane> &planes, const core::Buffer<Quake1Node> &nodes,
+									 const core::Buffer<Quake1Leaf> &leaves, int root, const glm::vec3 &pos,
+									 const glm::vec3 &half) {
+	if (root < 0) {
+		return false;
+	}
+	// shortcut: stack of 256. A deeper tree is treated as solid.
+	int stack[256];
+	int sp = 0;
+	stack[sp++] = root;
+	const glm::vec3 pmin = pos - half;
+	const glm::vec3 pmax = pos + half;
+	while (sp > 0) {
+		const int idx = stack[--sp];
+		if (idx < 0) {
+			const int leaf = ~idx;
+			if (leaf < 0 || leaf >= (int)leaves.size()) {
+				continue;
+			}
+			const int32_t contents = leaves[leaf].contents;
+			const bool empty = contents == -1 || (contents <= -3 && contents >= -14);
+			if (!empty) {
+				return true;
+			}
+			continue;
+		}
+		if (idx >= (int)nodes.size()) {
+			continue;
+		}
+		const Quake1Node &node = nodes[idx];
+		if (node.plane < 0 || node.plane >= (int)planes.size()) {
+			continue;
+		}
+		const Quake1Plane &plane = planes[node.plane];
+		float minD = 0.0f;
+		float maxD = 0.0f;
+		for (int axis = 0; axis < 3; ++axis) {
+			const float n = plane.normal[axis];
+			if (n > 0.0f) {
+				minD += n * pmin[axis];
+				maxD += n * pmax[axis];
+			} else {
+				minD += n * pmax[axis];
+				maxD += n * pmin[axis];
+			}
+		}
+		const float d = plane.normal[0] * pos.x + plane.normal[1] * pos.y + plane.normal[2] * pos.z - plane.dist;
+		const bool straddle = minD < plane.dist && maxD > plane.dist;
+		const int front = d >= 0.0f ? node.children[0] : node.children[1];
+		const int back = d >= 0.0f ? node.children[1] : node.children[0];
+		if (straddle) {
+			if (sp >= 256) {
+				return true;
+			}
+			stack[sp++] = back;
+			if (sp >= 256) {
+				return true;
+			}
+			stack[sp++] = front;
+		} else {
+			if (sp >= 256) {
+				return true;
+			}
+			stack[sp++] = front;
+		}
+	}
+	return false;
+}
+
+bool QuakeBSPFormat::loadQuake1Planes(io::SeekableReadStream &stream, const BspHeader &header,
+									  core::Buffer<Quake1Plane> &planes) {
+	const int32_t count = validateLump(header.lumps[_priv::quake1PlanesLump], _priv::quake1PlaneSize);
+	if (count <= 0) {
+		Log::error("Invalid bsp file with no planes");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1PlanesLump].offset) == -1) {
+		Log::error("Invalid planes lump offset - can't seek");
+		return false;
+	}
+	planes.resize(count);
+	for (int32_t i = 0; i < count; ++i) {
+		wrap(stream.readFloat(planes[i].normal[0]))
+		wrap(stream.readFloat(planes[i].normal[1]))
+		wrap(stream.readFloat(planes[i].normal[2]))
+		wrap(stream.readFloat(planes[i].dist))
+		if (stream.skip(4) == -1) {
+			Log::error("Failed to skip plane type");
+			return false;
+		}
+	}
+	return true;
+}
+
+bool QuakeBSPFormat::loadQuake1Nodes(io::SeekableReadStream &stream, const BspHeader &header,
+									 core::Buffer<Quake1Node> &nodes) {
+	const int32_t count = validateLump(header.lumps[_priv::quake1NodesLump], _priv::quake1NodeSize);
+	if (count <= 0) {
+		Log::error("Invalid bsp file with no nodes");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1NodesLump].offset) == -1) {
+		Log::error("Invalid nodes lump offset - can't seek");
+		return false;
+	}
+	nodes.resize(count);
+	for (int32_t i = 0; i < count; ++i) {
+		wrap(stream.readInt32(nodes[i].plane))
+		wrap(stream.readInt16(nodes[i].children[0]))
+		wrap(stream.readInt16(nodes[i].children[1]))
+		if (stream.skip(16) == -1) {
+			Log::error("Failed to skip node bounds");
+			return false;
+		}
+	}
+	return true;
+}
+
+bool QuakeBSPFormat::loadQuake1Leaves(io::SeekableReadStream &stream, const BspHeader &header,
+									  core::Buffer<Quake1Leaf> &leaves) {
+	const int32_t count = validateLump(header.lumps[_priv::quake1LeavesLump], _priv::quake1LeafSize);
+	if (count <= 0) {
+		Log::error("Invalid bsp file with no leaves");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1LeavesLump].offset) == -1) {
+		Log::error("Invalid leaves lump offset - can't seek");
+		return false;
+	}
+	leaves.resize(count);
+	for (int32_t i = 0; i < count; ++i) {
+		wrap(stream.readInt32(leaves[i].contents))
+		if (stream.skip(24) == -1) {
+			Log::error("Failed to skip leaf data");
+			return false;
+		}
+	}
+	return true;
+}
+
+bool QuakeBSPFormat::loadQuake1BrushModels(io::SeekableReadStream &stream, const BspHeader &header,
+										   core::Buffer<Quake1Model> &models) {
+	const int32_t count = validateLump(header.lumps[_priv::quake1ModelsLump], _priv::quake1ModelSize);
+	if (count <= 0) {
+		Log::error("Invalid bsp file with no models");
+		return false;
+	}
+	if (stream.seek(header.lumps[_priv::quake1ModelsLump].offset) == -1) {
+		Log::error("Invalid models lump offset - can't seek");
+		return false;
+	}
+	models.resize(count);
+	for (int32_t i = 0; i < count; ++i) {
+		if (stream.skip(36) == -1) {
+			Log::error("Failed to skip model bounds");
+			return false;
+		}
+		wrap(stream.readInt32(models[i].headnode))
+		if (stream.skip(16) == -1) {
+			Log::error("Failed to skip model hulls");
+			return false;
+		}
+		wrap(stream.readInt32(models[i].faceId))
+		wrap(stream.readInt32(models[i].faceCount))
+	}
+	return true;
+}
+
+bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &textures, core::Buffer<Face> &faces,
+										  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
+										  const core::Buffer<BspVertex> &vertices,
+										  const core::Buffer<Quake1Plane> &planes, const core::Buffer<Quake1Node> &nodes,
+										  const core::Buffer<Quake1Leaf> &leaves, const core::Buffer<Quake1Model> &models,
+										  scenegraph::SceneGraph &sceneGraph, const core::String &name,
+										  const MeshMaterialArray &meshMaterialArray) {
+	const glm::vec3 scale = sceneInputScale();
+	if (scale.x == 0.0f || scale.y == 0.0f || scale.z == 0.0f) {
+		Log::error("Invalid scale for bsp voxelization");
+		return false;
+	}
+	palette::Palette palette;
+	if (!palette.quake1()) {
+		Log::error("Failed to load the quake palette");
+		return false;
+	}
+	palette::PaletteLookup palLookup(palette);
+	palette::NormalPalette normalPalette;
+	const core::VarPtr &normalPaletteVar = core::getVar(cfg::NormalPalette);
+	if (!normalPalette.load(normalPaletteVar->strVal().c_str())) {
+		normalPalette.redAlert2();
+	}
+	const glm::vec3 half(0.5f / scale.x, 0.5f / scale.z, 0.5f / scale.y);
+	const float shellSq = _priv::quakeShellVoxels * _priv::quakeShellVoxels;
+	bool any = false;
+
+	for (int modelIndex = 0; modelIndex < (int)models.size(); ++modelIndex) {
+		if (stopExecution()) {
+			break;
+		}
+		const Quake1Model &model = models[modelIndex];
+		if (model.faceId < 0 || model.faceCount < 0 || model.faceId + model.faceCount > (int)faces.size()) {
+			Log::error("Model %i face range is out of bounds", modelIndex);
+			return false;
+		}
+		const core::String modelName =
+			modelIndex == 0 ? name : core::String::format("%s*%i", name.c_str(), modelIndex);
+
+		core::Buffer<Face> visible;
+		for (int f = model.faceId; f < model.faceId + model.faceCount; ++f) {
+			if (!faces[f].hidden) {
+				visible.push_back(faces[f]);
+			}
+		}
+		if (visible.empty()) {
+			continue;
+		}
+		const bool haveHull = model.headnode >= 0 && model.headnode < (int)nodes.size();
+		if (!haveHull) {
+			if (voxelize(textures, visible, edges, surfEdges, vertices, sceneGraph, modelName, meshMaterialArray,
+						 nullptr)) {
+				any = true;
+			}
+			continue;
+		}
+
+		core::DynamicArray<MeshTri> tris;
+		for (Face &face : visible) {
+			core::DynamicArray<glm::vec3> poly;
+			core::DynamicArray<glm::vec2> uvs;
+			bool bad = false;
+			for (int j = 0; j < face.edgeCount; ++j) {
+				const int surfEdgesIdx = face.edgeId + j;
+				if (surfEdgesIdx < 0 || surfEdgesIdx >= (int)surfEdges.size()) {
+					bad = true;
+					break;
+				}
+				const int index = surfEdges[surfEdgesIdx];
+				const int edgeIndex = index >= 0 ? index : -index;
+				if (edgeIndex < 0 || edgeIndex >= (int)edges.size()) {
+					bad = true;
+					break;
+				}
+				const BspEdge &edge = edges[edgeIndex];
+				const int vertIndex = index > 0 ? edge.vertexIndices[0] : edge.vertexIndices[1];
+				if (vertIndex < 0 || vertIndex >= (int)vertices.size()) {
+					bad = true;
+					break;
+				}
+				const BspVertex &vert = vertices[vertIndex];
+				const glm::vec3 quakePos(vert.x, vert.y, vert.z);
+				poly.push_back(glm::vec3(quakePos.x * scale.x, quakePos.z * scale.y, quakePos.y * scale.z));
+				glm::vec2 uv(0.0f);
+				if (face.textureId >= 0 && face.textureId < (int)textures.size()) {
+					const Texture &texture = textures[face.textureId];
+					if (texture.materialIdx >= 0 && texture.materialIdx < (int)meshMaterialArray.size()) {
+						const MeshMaterialPtr &material = meshMaterialArray[texture.materialIdx];
+						if (material->texture) {
+							const glm::vec3 sdir(texture.vecS[0], texture.vecS[1], texture.vecS[2]);
+							const glm::vec3 tdir(texture.vecT[0], texture.vecT[1], texture.vecT[2]);
+							uv.x = (glm::dot(quakePos, sdir) + texture.distS) / (float)material->texture->width();
+							uv.y = (glm::dot(quakePos, tdir) + texture.distT) / (float)material->texture->height();
+						}
+					}
+				}
+				uvs.push_back(uv);
+			}
+			if (bad) {
+				Log::error("Invalid face edges in model %i", modelIndex);
+				return false;
+			}
+			if (poly.size() < 3) {
+				continue;
+			}
+			const color::RGBA white(255, 255, 255, 255);
+			const MeshMaterialIndex materialIdx =
+				face.textureId >= 0 && face.textureId < (int)textures.size() ? textures[face.textureId].materialIdx : -1;
+			for (int k = 1; k + 1 < (int)poly.size(); ++k) {
+				MeshTri tri;
+				tri.materialIdx = materialIdx;
+				tri.setVertices(poly[0], poly[k], poly[k + 1]);
+				tri.setUVs(uvs[0], uvs[k], uvs[k + 1]);
+				tri.setColor(white);
+				tris.push_back(tri);
+			}
+		}
+		if (tris.empty()) {
+			continue;
+		}
+
+		glm::vec3 boundsMin(tris[0].mins());
+		glm::vec3 boundsMax(tris[0].maxs());
+		for (const MeshTri &tri : tris) {
+			boundsMin = glm::min(boundsMin, tri.mins());
+			boundsMax = glm::max(boundsMax, tri.maxs());
+		}
+		const glm::vec3 shell(_priv::quakeShellVoxels);
+		const int x0 = (int)glm::floor(boundsMin.x - shell.x);
+		const int y0 = (int)glm::floor(boundsMin.y - shell.y);
+		const int z0 = (int)glm::floor(boundsMin.z - shell.z);
+		const int x1 = (int)glm::floor(boundsMax.x + shell.x);
+		const int y1 = (int)glm::floor(boundsMax.y + shell.y);
+		const int z1 = (int)glm::floor(boundsMax.z + shell.z);
+
+		// shortcut: each occupied chunk tests every triangle. Index triangles per chunk if large maps are slow.
+		core::Map<glm::ivec3, int, 1031, glm::hash<glm::ivec3>> chunkIds(16384);
+		bool tooManyChunks = false;
+		for (const MeshTri &tri : tris) {
+			const int cx0 = ((int)glm::floor(tri.mins().x - shell.x) - x0) / _priv::quakeShellChunk;
+			const int cy0 = ((int)glm::floor(tri.mins().y - shell.y) - y0) / _priv::quakeShellChunk;
+			const int cz0 = ((int)glm::floor(tri.mins().z - shell.z) - z0) / _priv::quakeShellChunk;
+			const int cx1 = ((int)glm::floor(tri.maxs().x + shell.x) - x0) / _priv::quakeShellChunk;
+			const int cy1 = ((int)glm::floor(tri.maxs().y + shell.y) - y0) / _priv::quakeShellChunk;
+			const int cz1 = ((int)glm::floor(tri.maxs().z + shell.z) - z0) / _priv::quakeShellChunk;
+			for (int cz = cz0; cz <= cz1 && !tooManyChunks; ++cz) {
+				for (int cy = cy0; cy <= cy1 && !tooManyChunks; ++cy) {
+					for (int cx = cx0; cx <= cx1; ++cx) {
+						const glm::ivec3 key(cx, cy, cz);
+						if (chunkIds.find(key) != chunkIds.end()) {
+							continue;
+						}
+						if ((int)chunkIds.size() >= 16384) {
+							tooManyChunks = true;
+							break;
+						}
+						chunkIds.put(key, 1);
+					}
+				}
+			}
+		}
+		if (tooManyChunks) {
+			Log::warn("BSP model %s is too large for the solid shell, using triangle voxelization", modelName.c_str());
+			if (voxelize(textures, visible, edges, surfEdges, vertices, sceneGraph, modelName, meshMaterialArray,
+						 nullptr)) {
+				any = true;
+			}
+			continue;
+		}
+
+		core::DynamicArray<glm::ivec3> chunkCoords;
+		chunkCoords.reserve((int)chunkIds.size());
+		for (auto it = chunkIds.begin(); it != chunkIds.end(); ++it) {
+			chunkCoords.push_back(it->key);
+		}
+
+		const int parent = [&]() {
+			if (chunkCoords.size() <= 1) {
+				return 0;
+			}
+			scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group);
+			group.setName(modelName);
+			return sceneGraph.emplace(core::move(group));
+		}();
+
+		struct ShellCell {
+			float distSq = 1.0e30f;
+			uint8_t color = 0;
+			uint8_t state = 0;
+		};
+		core::Buffer<ShellCell> cells;
+		int chunkIndex = 0;
+		for (const glm::ivec3 &chunk : chunkCoords) {
+			if (stopExecution()) {
+				break;
+			}
+			const int xStart = x0 + chunk.x * _priv::quakeShellChunk;
+			const int yStart = y0 + chunk.y * _priv::quakeShellChunk;
+			const int zStart = z0 + chunk.z * _priv::quakeShellChunk;
+			const int xEnd = core_min(xStart + _priv::quakeShellChunk - 1, x1);
+			const int yEnd = core_min(yStart + _priv::quakeShellChunk - 1, y1);
+			const int zEnd = core_min(zStart + _priv::quakeShellChunk - 1, z1);
+			const int dx = xEnd - xStart + 1;
+			const int dy = yEnd - yStart + 1;
+			const int dz = zEnd - zStart + 1;
+			if (dx <= 0 || dy <= 0 || dz <= 0) {
+				continue;
+			}
+			const int cellCount = dx * dy * dz;
+			cells.resize(cellCount);
+			for (int i = 0; i < cellCount; ++i) {
+				cells[i] = ShellCell();
+			}
+			for (const MeshTri &tri : tris) {
+				const float eminX = tri.mins().x - shell.x;
+				const float eminY = tri.mins().y - shell.y;
+				const float eminZ = tri.mins().z - shell.z;
+				const float emaxX = tri.maxs().x + shell.x;
+				const float emaxY = tri.maxs().y + shell.y;
+				const float emaxZ = tri.maxs().z + shell.z;
+				if (emaxX < (float)xStart || eminX >= (float)(xEnd + 1) || emaxY < (float)yStart ||
+					eminY >= (float)(yEnd + 1) || emaxZ < (float)zStart || eminZ >= (float)(zEnd + 1)) {
+					continue;
+				}
+				const int vx0 = core_max(xStart, (int)glm::floor(eminX));
+				const int vy0 = core_max(yStart, (int)glm::floor(eminY));
+				const int vz0 = core_max(zStart, (int)glm::floor(eminZ));
+				const int vx1 = core_min(xEnd, (int)glm::floor(emaxX));
+				const int vy1 = core_min(yEnd, (int)glm::floor(emaxY));
+				const int vz1 = core_min(zEnd, (int)glm::floor(emaxZ));
+				const glm::vec3 n = glm::cross(tri.vertex1() - tri.vertex0(), tri.vertex2() - tri.vertex0());
+				const float n2 = glm::dot(n, n);
+				for (int z = vz0; z <= vz1; ++z) {
+					for (int y = vy0; y <= vy1; ++y) {
+						for (int x = vx0; x <= vx1; ++x) {
+							const glm::vec3 center(x + 0.5f, y + 0.5f, z + 0.5f);
+							const float distSq = distSqPointTriangle(center, tri.vertex0(), tri.vertex1(), tri.vertex2());
+							if (distSq > shellSq) {
+								continue;
+							}
+							const int cell = (x - xStart) + (y - yStart) * dx + (z - zStart) * dx * dy;
+							ShellCell &slot = cells[cell];
+							if (distSq >= slot.distSq) {
+								continue;
+							}
+							const glm::vec3 quake = glm::vec3(center.x / scale.x, center.z / scale.z, center.y / scale.y);
+							if (!quakePointSolid(planes, nodes, leaves, model.headnode, quake, half)) {
+								continue;
+							}
+							slot.distSq = distSq;
+							glm::vec2 uv = tri.centerUV();
+							if (n2 > 1.0e-12f) {
+								const glm::vec3 nn = n / sqrtf(n2);
+								const glm::vec3 proj = center - nn * glm::dot(nn, center - tri.vertex0());
+								glm::vec2 projected;
+								if (tri.calcUVs(proj, projected)) {
+									uv = projected;
+								}
+							}
+							const color::RGBA rgba = colorAt(tri, meshMaterialArray, uv);
+							if (rgba.a <= AlphaThreshold) {
+								slot.state = 2;
+								continue;
+							}
+							slot.state = 1;
+							slot.color = palLookup.findClosestIndex(rgba);
+						}
+					}
+				}
+			}
+
+			glm::ivec3 tightMin(0);
+			glm::ivec3 tightMax(0);
+			int hitCount = 0;
+			for (int z = zStart; z <= zEnd; ++z) {
+				for (int y = yStart; y <= yEnd; ++y) {
+					for (int x = xStart; x <= xEnd; ++x) {
+						const int cell = (x - xStart) + (y - yStart) * dx + (z - zStart) * dx * dy;
+						if (cells[cell].state != 1) {
+							continue;
+						}
+						const glm::ivec3 pos(x, y, z);
+						if (hitCount == 0) {
+							tightMin = pos;
+							tightMax = pos;
+						} else {
+							tightMin = glm::min(tightMin, pos);
+							tightMax = glm::max(tightMax, pos);
+						}
+						++hitCount;
+					}
+				}
+			}
+			if (hitCount == 0) {
+				continue;
+			}
+			const voxel::Region region(tightMin, tightMax);
+			if (!checkValidRegion(region)) {
+				return false;
+			}
+			voxel::RawVolume *volume = new voxel::RawVolume(region);
+			for (int z = zStart; z <= zEnd; ++z) {
+				for (int y = yStart; y <= yEnd; ++y) {
+					for (int x = xStart; x <= xEnd; ++x) {
+						const int cell = (x - xStart) + (y - yStart) * dx + (z - zStart) * dx * dy;
+						if (cells[cell].state != 1) {
+							continue;
+						}
+						volume->setVoxel(x, y, z, voxel::createVoxel(palette, cells[cell].color));
+					}
+				}
+			}
+			scenegraph::SceneGraphTransform transform;
+			transform.setLocalTranslation(region.getLowerCornerf());
+			volume->translate(-region.getLowerCorner());
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+			if (chunkCoords.size() <= 1) {
+				node.setName(modelName);
+			} else {
+				node.setName(core::String::format("%s_%i", modelName.c_str(), chunkIndex));
+			}
+			node.setVolume(volume);
+			node.setPalette(palette);
+			node.setNormalPalette(normalPalette);
+			node.setTransform(0, transform);
+			if (sceneGraph.emplace(core::move(node), parent) != InvalidNodeId) {
+				any = true;
+			}
+			++chunkIndex;
+		}
+	}
+	return any;
+}
+
 bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream,
 								   scenegraph::SceneGraph &sceneGraph, const BspHeader &header,
 								   core::IProgress *progress) {
@@ -493,7 +1113,20 @@ bool QuakeBSPFormat::loadQuake1Bsp(const core::String &filename, io::SeekableRea
 	}
 
 	const core::String &name = core::string::extractFilename(filename);
-	if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, name, meshMaterialArray, progress)) {
+	core::Buffer<Quake1Plane> planes;
+	core::Buffer<Quake1Node> nodes;
+	core::Buffer<Quake1Leaf> leaves;
+	core::Buffer<Quake1Model> models;
+	const bool haveTree = !collectingInputBounds() && loadQuake1Planes(stream, header, planes) &&
+						  loadQuake1Nodes(stream, header, nodes) && loadQuake1Leaves(stream, header, leaves) &&
+						  loadQuake1BrushModels(stream, header, models);
+	if (!haveTree) {
+		if (!voxelize(textures, faces, edges, surfEdges, vertices, sceneGraph, name, meshMaterialArray, progress)) {
+			Log::error("Failed to voxelize %s", filename.c_str());
+			return false;
+		}
+	} else if (!voxelizeQuake1Models(textures, faces, edges, surfEdges, vertices, planes, nodes, leaves, models,
+									 sceneGraph, name, meshMaterialArray)) {
 		Log::error("Failed to voxelize %s", filename.c_str());
 		return false;
 	}
@@ -631,6 +1264,9 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 	int vertexCount = 0;
 	int indexCount = 0;
 	for (const Face &face : faces) {
+		if (face.hidden) {
+			continue;
+		}
 		vertexCount += face.edgeCount;
 		if (face.edgeCount > 2) {
 			indexCount += (face.edgeCount - 2) * 3;
@@ -650,6 +1286,9 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 
 	int offset = 0;
 	for (Face &face : faces) {
+		if (face.hidden) {
+			continue;
+		}
 		face.index = offset;
 
 		for (int j = 0; j < face.edgeCount; j++) {
@@ -702,7 +1341,7 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 	}
 	int numIndices = 0;
 	for (const Face &face : faces) {
-		if (face.edgeCount <= 2) {
+		if (face.hidden || face.edgeCount <= 2) {
 			continue;
 		}
 		// triangle fan

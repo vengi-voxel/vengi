@@ -151,6 +151,9 @@ protected:
 	glm::vec3 sceneInputScale() const {
 		return _collectInputBounds ? glm::vec3(1.0f) : _useSceneInputScale ? _sceneInputScale : getScale();
 	}
+	bool collectingInputBounds() const {
+		return _collectInputBounds;
+	}
 	bool savePointClouds(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 							 const io::ArchivePtr &archive, const glm::vec3 &scale = glm::vec3(1.0f),
 							 bool withColor = true) const;
