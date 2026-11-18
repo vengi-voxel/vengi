@@ -17,7 +17,7 @@ namespace voxelformat {
 
 namespace {
 
-void writeSolidCubeBsp(io::BufferedReadWriteStream &stream) {
+void writeSolidCubeBsp(io::BufferedReadWriteStream &stream, const char *wallName = "wall", uint8_t wallIndex = 4) {
 	struct Lump {
 		uint32_t offset = 0;
 		uint32_t len = 0;
@@ -69,7 +69,7 @@ void writeSolidCubeBsp(io::BufferedReadWriteStream &stream) {
 				stream.writeUInt8(index);
 			}
 		};
-		writeMip("wall", 4);
+		writeMip(wallName, wallIndex);
 		writeMip("clip", 4);
 		finish(2, start);
 	}
@@ -374,6 +374,20 @@ TEST_F(QuakeBSPFormatTest, testQuake2Cube) {
 	scenegraph::SceneGraph sceneGraph;
 	ASSERT_TRUE(format.load("cube.bsp", archive, sceneGraph, testLoadCtx));
 	expectHollowCube(sceneGraph);
+}
+
+TEST_F(QuakeBSPFormatTest, testGoldSrcStyleMaskedMiptex) {
+	util::ScopedVarChange scale(cfg::VoxformatScale, "1");
+	for (const bool masked : {false, true}) {
+		io::BufferedReadWriteStream bytes;
+		writeSolidCubeBsp(bytes, masked ? "{wall" : "wall", 255);
+		const io::MemoryArchivePtr archive = io::openMemoryArchive();
+		ASSERT_TRUE(archive->add("cube.bsp", bytes.getBuffer(), (size_t)bytes.size()));
+
+		QuakeBSPFormat format;
+		scenegraph::SceneGraph sceneGraph;
+		EXPECT_EQ(!masked, format.load("cube.bsp", archive, sceneGraph, testLoadCtx));
+	}
 }
 
 } // namespace voxelformat

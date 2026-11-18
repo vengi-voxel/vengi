@@ -304,8 +304,13 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 
 		core::Buffer<color::RGBA> buffer;
 		buffer.resize(pixelSize);
+		const bool masked = texture.name[0] == '{';
 		for (int j = 0; j < pixelSize; ++j) {
 			buffer[j] = pal.color(pixels[j]);
+			// Quake { textures use palette index 255 as the hole color.
+			if (masked && pixels[j] == 255) {
+				buffer[j].a = 0;
+			}
 		}
 		if (tex->loadRGBA((const uint8_t *)buffer.data(), width, height)) {
 			Log::debug("Use image %s", texture.name);
