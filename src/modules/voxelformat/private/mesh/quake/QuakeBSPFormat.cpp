@@ -170,6 +170,7 @@ bool QuakeBSPFormat::loadQuake1Textures(const core::String &filename, io::Seekab
 		const int pixelSize = width * height;
 		uint8_t *pixels = (uint8_t *)core_malloc(pixelSize);
 		if (stream.read(pixels, pixelSize) == -1) {
+			core_free(pixels);
 			Log::error("Failed to read %i bytes to pixel data %i", pixelSize, i);
 			continue;
 		}
