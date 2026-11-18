@@ -148,6 +148,8 @@ private:
 	bool loadQuake2Textures(const core::String &filename, io::SeekableReadStream &stream, const io::ArchivePtr &archive,
 							const BspHeader &header, core::DynamicArray<Texture> &textures,
 							MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray);
+	bool loadQuetooBsp(const core::String &filename, io::SeekableReadStream &stream, const io::ArchivePtr &archive,
+					   scenegraph::SceneGraph &sceneGraph, const BspHeader &header, core::IProgress *progress);
 	bool loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
 							core::DynamicArray<Texture> &textures, MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray);
 	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<Face> &faces,
@@ -213,6 +215,17 @@ public:
 
 	static const io::FormatDescription &formatQuake2() {
 		static io::FormatDescription f{"Quake 2", "", {"bsp"}, {"IBSP"}, VOX_FORMAT_FLAG_MESH};
+		return f;
+	}
+
+	static const io::FormatDescription &formatQuetoo() {
+		static io::FormatDescription f{"Quetoo", "", {"bsp"}, {"IBSP"}, VOX_FORMAT_FLAG_MESH};
+		return f;
+	}
+
+	// No zip magic here: a PK magic would claim every other zip format.
+	static const io::FormatDescription &formatQuetooPk3() {
+		static io::FormatDescription f{"Quetoo PK3", "", {"pk3"}, {}, VOX_FORMAT_FLAG_MESH};
 		return f;
 	}
 };

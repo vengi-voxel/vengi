@@ -4,8 +4,10 @@
 
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "core/ScopedPtr.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryArchive.h"
+#include "io/ZipArchive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
@@ -313,6 +315,120 @@ void writeQuake2CubeBsp(io::BufferedReadWriteStream &stream) {
 	}
 }
 
+void writeQuetooCubeBsp(io::BufferedReadWriteStream &stream) {
+	struct Lump {
+		uint32_t offset = 0;
+		uint32_t len = 0;
+	};
+	Lump lumps[21];
+	for (int i = 0; i < 8 + 21 * 8; ++i) {
+		stream.writeUInt8(0);
+	}
+	auto finish = [&](int lump, int64_t start) {
+		lumps[lump].offset = (uint32_t)start;
+		lumps[lump].len = (uint32_t)(stream.pos() - start);
+	};
+	const int quads[6][4] = {{1, 2, 6, 5}, {3, 7, 6, 2}, {4, 5, 6, 7}, {0, 4, 7, 3}, {0, 1, 5, 4}, {0, 3, 2, 1}};
+
+	{
+		const int64_t start = stream.pos();
+		writePadded(stream, "wall", 64);
+		writePadded(stream, "common/clip", 64);
+		finish(1, start);
+	}
+	{
+		const int64_t start = stream.pos();
+		auto writeSide = [&](int material, int surface) {
+			stream.writeInt32(0);
+			stream.writeInt32(material);
+			for (int i = 0; i < 8; ++i) {
+				stream.writeFloat(0.0f);
+			}
+			stream.writeInt32(1);
+			stream.writeInt32(surface);
+			stream.writeInt32(0);
+		};
+		writeSide(0, 0);
+		writeSide(1, 0x80);
+		finish(3, start);
+	}
+	{
+		const int64_t start = stream.pos();
+		const float v[8][3] = {{0, 0, 0}, {32, 0, 0}, {32, 32, 0}, {0, 32, 0},
+							   {0, 0, 32}, {32, 0, 32}, {32, 32, 32}, {0, 32, 32}};
+		for (int i = 0; i < 8; ++i) {
+			for (int k = 0; k < 3; ++k) {
+				stream.writeFloat(v[i][k]);
+			}
+			for (int k = 0; k < 9; ++k) {
+				stream.writeFloat(0.0f);
+			}
+			stream.writeFloat(0.0f);
+			stream.writeFloat(0.0f);
+			stream.writeUInt32(0xffffffffu);
+		}
+		finish(6, start);
+	}
+	{
+		const int64_t start = stream.pos();
+		for (int i = 0; i < 6; ++i) {
+			const int *q = quads[i];
+			const int tris[6] = {q[0], q[1], q[2], q[0], q[2], q[3]};
+			for (int k = 0; k < 6; ++k) {
+				stream.writeInt32(tris[k]);
+			}
+		}
+		finish(7, start);
+	}
+	{
+		const int64_t start = stream.pos();
+		for (int i = 0; i < 7; ++i) {
+			stream.writeInt32(i < 6 ? 0 : 1); // brush side
+			stream.writeInt32(0);			  // plane
+			stream.writeInt32(-1);			  // patch
+			stream.writeInt32(0);
+			stream.writeInt32(0);
+			for (int b = 0; b < 6; ++b) {
+				stream.writeFloat(0.0f);
+			}
+			stream.writeInt32(0);
+			stream.writeInt32(4);
+			stream.writeInt32(i < 6 ? i * 6 : 0);
+			stream.writeInt32(6);
+		}
+		finish(8, start);
+	}
+	{
+		const int64_t start = stream.pos();
+		auto writeModel = [&](int first, int count) {
+			stream.writeInt32(0);
+			stream.writeInt32(0);
+			for (int i = 0; i < 12; ++i) {
+				stream.writeFloat(0.0f);
+			}
+			stream.writeInt32(first);
+			stream.writeInt32(count);
+			for (int i = 0; i < 6; ++i) {
+				stream.writeInt32(0);
+			}
+		};
+		writeModel(0, 6);
+		writeModel(6, 1);
+		finish(14, start);
+	}
+
+	stream.seek(0);
+	stream.writeUInt8('I');
+	stream.writeUInt8('B');
+	stream.writeUInt8('S');
+	stream.writeUInt8('P');
+	stream.writeUInt32(84);
+	for (int i = 0; i < 21; ++i) {
+		stream.writeUInt32(lumps[i].offset);
+		stream.writeUInt32(lumps[i].len);
+	}
+}
+
 void expectHollowCube(const scenegraph::SceneGraph &sceneGraph) {
 	ASSERT_EQ(1u, sceneGraph.size());
 	const scenegraph::SceneGraphNode &node = *sceneGraph.beginModel();
@@ -388,6 +504,46 @@ TEST_F(QuakeBSPFormatTest, testGoldSrcStyleMaskedMiptex) {
 		scenegraph::SceneGraph sceneGraph;
 		EXPECT_EQ(!masked, format.load("cube.bsp", archive, sceneGraph, testLoadCtx));
 	}
+}
+
+TEST_F(QuakeBSPFormatTest, testQuetooCube) {
+	util::ScopedVarChange scale(cfg::VoxformatScale, "1");
+	util::ScopedVarChange fill(cfg::VoxformatFillHollow, "false");
+	io::BufferedReadWriteStream bytes;
+	writeQuetooCubeBsp(bytes);
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("cube.bsp", bytes.getBuffer(), (size_t)bytes.size()));
+
+	QuakeBSPFormat format;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(format.load("cube.bsp", archive, sceneGraph, testLoadCtx));
+	expectHollowCube(sceneGraph);
+}
+
+TEST_F(QuakeBSPFormatTest, testQuetooPk3) {
+	util::ScopedVarChange scale(cfg::VoxformatScale, "1");
+	util::ScopedVarChange fill(cfg::VoxformatFillHollow, "false");
+	io::BufferedReadWriteStream bsp;
+	writeQuetooCubeBsp(bsp);
+	io::BufferedReadWriteStream zipFile(4096);
+	{
+		io::ZipArchive zipArchive;
+		ASSERT_TRUE(zipArchive.init(&zipFile));
+		{
+			core::ScopedPtr<io::SeekableWriteStream> entry(zipArchive.writeStream("maps/cube.bsp"));
+			ASSERT_TRUE(entry);
+			ASSERT_EQ((int)bsp.size(), entry->write(bsp.getBuffer(), (size_t)bsp.size()));
+		}
+		zipArchive.shutdown();
+	}
+	zipFile.seek(0);
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("map-cube.pk3", zipFile.getBuffer(), (size_t)zipFile.size()));
+
+	QuakeBSPFormat format;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(format.load("map-cube.pk3", archive, sceneGraph, testLoadCtx));
+	expectHollowCube(sceneGraph);
 }
 
 } // namespace voxelformat

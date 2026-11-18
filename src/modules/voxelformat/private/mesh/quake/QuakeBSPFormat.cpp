@@ -17,6 +17,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
 #include "image/Image.h"
+#include "io/ZipArchive.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -115,8 +116,9 @@ const char *textureLeaf(const char *name) {
 	return leaf;
 }
 
+// Quake 2 and Quetoo share these surface bits. NODE and BEVEL are Quetoo-only brush sides.
 bool hiddenSurface(const char *name, uint32_t flags) {
-	const uint32_t hideFlags = 0x4u | 0x80u | 0x100u | 0x200u;
+	const uint32_t hideFlags = 0x4u | 0x80u | 0x100u | 0x200u | 0x20000000u | 0x40000000u;
 	if ((flags & hideFlags) != 0u) {
 		return true;
 	}
@@ -1570,6 +1572,249 @@ bool QuakeBSPFormat::loadQuake2Bsp(const core::String &filename, io::SeekableRea
 	return true;
 }
 
+bool QuakeBSPFormat::loadQuetooBsp(const core::String &filename, io::SeekableReadStream &stream,
+								  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+								  const BspHeader &header, core::IProgress *progress) {
+	// shortcut: Bezier patches are skipped; a map that fits in one chunk is filled by voxformat_fillhollow.
+	static const uint32_t materialsLump = 1;
+	static const uint32_t brushSidesLump = 3;
+	static const uint32_t verticesLump = 6;
+	static const uint32_t elementsLump = 7;
+	static const uint32_t facesLump = 8;
+	static const uint32_t modelsLump = 14;
+	static const size_t materialSize = 64;
+	static const size_t brushSideSize = 52;
+	static const size_t vertexSize = 60;
+	static const size_t faceSize = 60;
+	static const size_t modelSize = 88;
+
+	struct Vert {
+		float x, y, z, u, v;
+	};
+	struct Side {
+		int32_t material = -1;
+		int32_t surface = 0;
+	};
+	struct QFace {
+		int32_t brushSide = -1;
+		int32_t firstElement = 0;
+		int32_t numElements = 0;
+		bool hidden = false;
+	};
+	struct QModel {
+		int32_t faceId = 0;
+		int32_t faceCount = 0;
+	};
+
+	const int32_t materialCount = validateLump(header.lumps[materialsLump], materialSize);
+	if (materialCount < 0) {
+		return false;
+	}
+	core::DynamicArray<core::String> materials((size_t)materialCount);
+	if (materialCount > 0) {
+		if (stream.seek(header.lumps[materialsLump].offset) == -1) {
+			Log::error("Invalid material lump offset - can't seek");
+			return false;
+		}
+		for (int32_t i = 0; i < materialCount; ++i) {
+			char name[64];
+			if (stream.read(name, sizeof(name)) != (int)sizeof(name)) {
+				Log::error("Failed to read material %i", i);
+				return false;
+			}
+			name[sizeof(name) - 1] = '\0';
+			materials[i] = name;
+		}
+	}
+
+	const int32_t sideCount = validateLump(header.lumps[brushSidesLump], brushSideSize);
+	if (sideCount < 0) {
+		return false;
+	}
+	core::Buffer<Side> sides((size_t)glm::max(sideCount, 0));
+	if (sideCount > 0) {
+		if (stream.seek(header.lumps[brushSidesLump].offset) == -1) {
+			Log::error("Invalid brush side lump offset - can't seek");
+			return false;
+		}
+		for (int32_t i = 0; i < sideCount; ++i) {
+			stream.skip(4); // plane
+			wrap(stream.readInt32(sides[i].material))
+			stream.skip(32); // texture axis
+			stream.skip(4);	 // contents
+			wrap(stream.readInt32(sides[i].surface))
+			stream.skip(4); // value
+		}
+	}
+
+	const int32_t vertexCount = validateLump(header.lumps[verticesLump], vertexSize);
+	if (vertexCount <= 0) {
+		Log::error("Invalid bsp file with no vertices in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[verticesLump].offset) == -1) {
+		Log::error("Invalid vertices lump offset - can't seek");
+		return false;
+	}
+	core::Buffer<Vert> vertices((size_t)vertexCount);
+	for (int32_t i = 0; i < vertexCount; ++i) {
+		wrap(stream.readFloat(vertices[i].x))
+		wrap(stream.readFloat(vertices[i].y))
+		wrap(stream.readFloat(vertices[i].z))
+		stream.skip(36); // normal, tangent, bitangent
+		wrap(stream.readFloat(vertices[i].u))
+		wrap(stream.readFloat(vertices[i].v))
+		stream.skip(4); // color
+	}
+
+	const int32_t elementCount = validateLump(header.lumps[elementsLump], sizeof(int32_t));
+	if (elementCount <= 0) {
+		Log::error("Invalid bsp file with no elements in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[elementsLump].offset) == -1) {
+		Log::error("Invalid elements lump offset - can't seek");
+		return false;
+	}
+	core::Buffer<int32_t> elements((size_t)elementCount);
+	for (int32_t i = 0; i < elementCount; ++i) {
+		wrap(stream.readInt32(elements[i]))
+	}
+
+	const int32_t faceCount = validateLump(header.lumps[facesLump], faceSize);
+	if (faceCount <= 0) {
+		Log::error("Invalid bsp file with no faces in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[facesLump].offset) == -1) {
+		Log::error("Invalid faces lump offset - can't seek");
+		return false;
+	}
+	core::Buffer<QFace> faces((size_t)faceCount);
+	for (int32_t i = 0; i < faceCount; ++i) {
+		QFace &face = faces[i];
+		wrap(stream.readInt32(face.brushSide))
+		stream.skip(16); // plane, patch, node, block
+		stream.skip(24); // bounds
+		stream.skip(8);	 // firstVertex, numVertexes
+		wrap(stream.readInt32(face.firstElement))
+		wrap(stream.readInt32(face.numElements))
+		const char *name = "";
+		uint32_t surface = 0;
+		if (face.brushSide >= 0 && face.brushSide < sideCount) {
+			const Side &side = sides[face.brushSide];
+			surface = (uint32_t)side.surface;
+			if (side.material >= 0 && side.material < materialCount) {
+				name = materials[side.material].c_str();
+			}
+		}
+		face.hidden = _priv::hiddenSurface(name, surface);
+	}
+
+	const int32_t modelCount = validateLump(header.lumps[modelsLump], modelSize);
+	if (modelCount <= 0) {
+		Log::error("Invalid bsp file with no models in lump");
+		return false;
+	}
+	if (stream.seek(header.lumps[modelsLump].offset) == -1) {
+		Log::error("Invalid models lump offset - can't seek");
+		return false;
+	}
+	core::Buffer<QModel> models((size_t)modelCount);
+	for (int32_t i = 0; i < modelCount; ++i) {
+		stream.skip(8);	 // entity, headNode
+		stream.skip(48); // bounds, visibleBounds
+		wrap(stream.readInt32(models[i].faceId))
+		wrap(stream.readInt32(models[i].faceCount))
+		stream.skip(24); // depth pass, draw elements, blocks
+	}
+
+	const core::String &baseDir = _priv::textureBaseDir(filename);
+	MeshMaterialArray meshMaterialArray;
+	core::Buffer<MeshMaterialIndex> materialIndex((size_t)materialCount);
+	for (int32_t i = 0; i < materialCount; ++i) {
+		materialIndex[i] = -1;
+		if (_priv::hiddenSurface(materials[i].c_str(), 0)) {
+			continue;
+		}
+		const image::ImagePtr &tex = _priv::loadExternalTexture(archive, baseDir, materials[i]);
+		if (tex && tex->isLoaded()) {
+			meshMaterialArray.push_back(createMaterial(tex));
+			materialIndex[i] = (MeshMaterialIndex)(meshMaterialArray.size() - 1);
+		}
+	}
+
+	const core::String &baseName = core::string::extractFilename(filename);
+	bool any = false;
+	for (int m = 0; m < modelCount; ++m) {
+		const QModel &model = models[m];
+		if (model.faceId < 0 || model.faceCount <= 0 || model.faceId + model.faceCount > faceCount) {
+			continue;
+		}
+		Mesh mesh;
+		mesh.materials = meshMaterialArray;
+		for (int f = model.faceId; f < model.faceId + model.faceCount; ++f) {
+			const QFace &face = faces[f];
+			if (face.hidden || face.numElements < 3) {
+				continue;
+			}
+			if (face.firstElement < 0 || face.firstElement + face.numElements > elementCount) {
+				Log::error("Face %i element range is out of bounds", f);
+				return false;
+			}
+			MeshMaterialIndex matIdx = -1;
+			if (face.brushSide >= 0 && face.brushSide < sideCount) {
+				const int32_t mat = sides[face.brushSide].material;
+				if (mat >= 0 && mat < materialCount) {
+					matIdx = materialIndex[mat];
+				}
+			}
+			const int triCount = face.numElements / 3;
+			for (int t = 0; t < triCount; ++t) {
+				const int32_t idx[3] = {elements[face.firstElement + t * 3], elements[face.firstElement + t * 3 + 1],
+										elements[face.firstElement + t * 3 + 2]};
+				glm::vec3 pos[3];
+				glm::vec2 uv[3];
+				bool ok = true;
+				for (int k = 0; k < 3; ++k) {
+					if (idx[k] < 0 || idx[k] >= vertexCount) {
+						ok = false;
+						break;
+					}
+					const Vert &vert = vertices[idx[k]];
+					pos[k] = glm::vec3(vert.x, vert.z, vert.y);
+					uv[k] = glm::vec2(vert.u, vert.v);
+				}
+				if (!ok) {
+					Log::error("Face %i references a vertex out of bounds", f);
+					return false;
+				}
+				MeshTri meshTri;
+				meshTri.setVertices(pos[0], pos[1], pos[2]);
+				meshTri.setUVs(uv[0], uv[1], uv[2]);
+				meshTri.materialIdx = matIdx;
+				mesh.addTriangle(meshTri);
+			}
+		}
+		if (mesh.indices.empty()) {
+			continue;
+		}
+		const core::String modelName = m == 0 ? baseName : core::String::format("%s*%i", baseName.c_str(), m);
+		if (progress != nullptr) {
+			progress->setText(modelName.c_str());
+		}
+		if (importMesh(modelName, sceneGraph, core::move(mesh), 0, true, progress) != InvalidNodeId) {
+			any = true;
+		}
+	}
+	if (!any) {
+		Log::error("Failed to voxelize %s", filename.c_str());
+		return false;
+	}
+	sceneGraph.updateTransforms();
+	return true;
+}
+
 bool QuakeBSPFormat::loadBsp(const core::String &filename, io::SeekableReadStream &stream, const io::ArchivePtr &archive,
 							 scenegraph::SceneGraph &sceneGraph, core::IProgress *progress) {
 	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
@@ -1585,6 +1830,8 @@ bool QuakeBSPFormat::loadBsp(const core::String &filename, io::SeekableReadStrea
 	int lumpCount = lengthof(header.lumps);
 	if (header.magic == bspMagic && header.version == 38) {
 		lumpCount = 19;
+	} else if (header.magic == bspMagic && header.version == 84) {
+		lumpCount = 21;
 	}
 	for (int i = 0; i < lumpCount; ++i) {
 		wrap(stream.readUInt32(header.lumps[i].offset))
@@ -1600,6 +1847,9 @@ bool QuakeBSPFormat::loadBsp(const core::String &filename, io::SeekableReadStrea
 	if (header.version == 38 && header.magic == bspMagic) {
 		return loadQuake2Bsp(filename, stream, archive, sceneGraph, header, progress);
 	}
+	if (header.version == 84 && header.magic == bspMagic) {
+		return loadQuetooBsp(filename, stream, archive, sceneGraph, header, progress);
+	}
 
 	uint8_t buf[4];
 	FourCCRev(buf, header.magic);
@@ -1614,6 +1864,33 @@ bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::Arch
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
+	}
+	if (io::ZipArchive::validStream(*stream)) {
+		stream->seek(0);
+		const io::ArchivePtr &zip = io::openZipArchive(stream);
+		if (!zip) {
+			Log::error("Failed to open pk3 %s", filename.c_str());
+			return false;
+		}
+		io::ArchiveFiles bsps;
+		zip->list("*.bsp", bsps);
+		if (bsps.empty()) {
+			Log::error("No bsp found in %s", filename.c_str());
+			return false;
+		}
+		const io::FilesystemEntry *chosen = &bsps[0];
+		for (const io::FilesystemEntry &entry : bsps) {
+			if (core::string::icontains(entry.fullPath, "maps/")) {
+				chosen = &entry;
+				break;
+			}
+		}
+		core::ScopedPtr<io::SeekableReadStream> bsp(zip->readStream(chosen->fullPath));
+		if (!bsp) {
+			Log::error("Could not read %s from %s", chosen->fullPath.c_str(), filename.c_str());
+			return false;
+		}
+		return loadBsp(filename, *bsp, zip, sceneGraph, ctx.progress);
 	}
 	return loadBsp(filename, *stream, archive, sceneGraph, ctx.progress);
 }

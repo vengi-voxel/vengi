@@ -87,6 +87,8 @@
 | Quake 3 Model              | md3       | X       |           |            |
 | Quake Map                  | map       | X       |           |            |
 | Standard Triangle Language | stl       | X       | X         |            |
+| Quetoo                     | bsp       | X       |           |            |
+| Quetoo map package         | pk3       | X       |           |            |
 | UFO:Alien Invasion         | bsp       | X       |           |            |
 | Wavefront Object           | obj       | X       | X         |            |
 

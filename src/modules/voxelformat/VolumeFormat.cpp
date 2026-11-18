@@ -129,6 +129,8 @@ const io::FormatDescription *voxelFormats() {
 												 QuakeBSPFormat::formatUFOAI(),
 												 QuakeBSPFormat::formatQuake1(),
 												 QuakeBSPFormat::formatQuake2(),
+												 QuakeBSPFormat::formatQuetoo(),
+												 QuakeBSPFormat::formatQuetooPk3(),
 												 MDLFormat::format(),
 												 MD2Format::format(),
 												 MD3Format::format(),
@@ -299,7 +301,9 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<StudioIOFormat>();
 		} else if (io::isA(QuakeBSPFormat::formatUFOAI(), desc, ext, magic) ||
 				   isA(QuakeBSPFormat::formatQuake1(), desc, ext, magic) ||
-				   isA(QuakeBSPFormat::formatQuake2(), desc, ext, magic)) {
+				   isA(QuakeBSPFormat::formatQuake2(), desc, ext, magic) ||
+				   isA(QuakeBSPFormat::formatQuetoo(), desc, ext, magic) ||
+				   isA(QuakeBSPFormat::formatQuetooPk3(), desc, ext, magic)) {
 			return core::make_shared<QuakeBSPFormat>();
 		} else if (io::isA(MapFormat::format(), desc, ext, magic)) {
 			return core::make_shared<MapFormat>();
