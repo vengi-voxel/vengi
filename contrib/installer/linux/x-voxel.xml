@@ -231,6 +231,24 @@
 			<match type="byte" offset="0" value="0x1d"/>
 		</magic>
 	</mime-type>
+	<mime-type type="application/x-quake-2">
+		<comment>Quake 2</comment>
+		<glob pattern="*.bsp"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="IBSP"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-quetoo">
+		<comment>Quetoo</comment>
+		<glob pattern="*.bsp"/>
+		<magic priority="50">
+			<match type="string" offset="0" value="IBSP"/>
+		</magic>
+	</mime-type>
+	<mime-type type="application/x-quetoo-pk3">
+		<comment>Quetoo PK3</comment>
+		<glob pattern="*.pk3"/>
+	</mime-type>
 	<mime-type type="application/x-quake-1-model">
 		<comment>Quake 1 Model</comment>
 		<glob pattern="*.mdl"/>

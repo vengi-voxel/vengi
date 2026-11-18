@@ -698,6 +698,72 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>Quake 2</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-quake-2</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>bsp</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quake-2</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Quetoo</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-quetoo</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>bsp</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quetoo</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
+        <string>Quetoo PK3</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>application/x-quetoo-pk3</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>pk3</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.quetoo-pk3</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>Quake 1 Model</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
@@ -2338,6 +2404,69 @@
           <key>public.mime-type</key>
           <array>
             <string>application/x-quake-1</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quake-2</string>
+        <key>UTTypeDescription</key>
+        <string>Quake 2</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>bsp</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quake-2</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quetoo</string>
+        <key>UTTypeDescription</key>
+        <string>Quetoo</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>bsp</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quetoo</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.quetoo-pk3</string>
+        <key>UTTypeDescription</key>
+        <string>Quetoo PK3</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>pk3</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>application/x-quetoo-pk3</string>
           </array>
         </dict>
       </dict>

@@ -1,4 +1,4 @@
-const data = {
+const jsonData = {
   "palettes": [
     {
       "name": "Adobe Color Bock",
@@ -728,6 +728,52 @@ const data = {
       "save": false
     },
     {
+      "name": "Quake 2",
+      "extensions": [
+        "bsp"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x49425350"
+        }
+      ],
+      "mimetype": "application/x-quake-2",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
+      "name": "Quetoo",
+      "extensions": [
+        "bsp"
+      ],
+      "magics": [
+        {
+          "type": "bytes",
+          "value": "0x49425350"
+        }
+      ],
+      "mimetype": "application/x-quetoo",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
+      "name": "Quetoo PK3",
+      "extensions": [
+        "pk3"
+      ],
+      "magics": [],
+      "mimetype": "application/x-quetoo-pk3",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": false
+    },
+    {
       "name": "Quake 1 Model",
       "extensions": [
         "mdl"
@@ -1358,4 +1404,3 @@ const data = {
     }
   ]
 }
-;

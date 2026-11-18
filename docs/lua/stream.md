@@ -18,7 +18,7 @@
 | `readInt64()` | Read a signed 64-bit integer (little-endian) from the stream. |
 | `readInt64BE()` | Read a signed 64-bit integer (big-endian) from the stream. |
 | `readInt8()` | Read a signed 8-bit integer from the stream. |
-| `readString(terminate)` | Read a string from the stream. |
+| `readString(terminate)` | Read a string; embedded zero bytes are preserved when terminate is false. |
 | `readUInt16()` | Read an unsigned 16-bit integer (little-endian) from the stream. |
 | `readUInt16BE()` | Read an unsigned 16-bit integer (big-endian) from the stream. |
 | `readUInt32()` | Read an unsigned 32-bit integer (little-endian) from the stream. |
@@ -188,7 +188,7 @@ Read a signed 8-bit integer from the stream.
 
 ### readString
 
-Read a string from the stream.
+Read a string; embedded zero bytes are preserved when terminate is false.
 
 **Parameters:**
 

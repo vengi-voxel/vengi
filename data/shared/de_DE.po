@@ -394,6 +394,30 @@ msgstr "Auf Standard zurücksetzen"
 msgid "Filter"
 msgstr "Filter"
 
+msgid "Console history"
+msgstr "Konsolenverlauf"
+
+msgid "Parameters"
+msgstr "Parameter"
+
+msgid "(optional)"
+msgstr ""
+
+msgid "Press Tab to autocomplete"
+msgstr "Drücken Sie Tab zur Autovervollständigung"
+
+msgid "Command Palette"
+msgstr "Befehlspalette"
+
+msgid "Filter commands and history"
+msgstr "Befehle und Verlauf filtern"
+
+msgid "recently used"
+msgstr "Zuletzt verwendet"
+
+msgid "commands"
+msgstr "Befehle"
+
 msgid "Cloud"
 msgstr "Cloud"
 
@@ -614,6 +638,9 @@ msgstr "Zuletzt geöffnete Datei"
 
 msgid "The last opened file in the file dialog"
 msgstr "Die zuletzt geöffnete Datei im Dateidialog"
+
+msgid "Open the command palette"
+msgstr "Die Befehlspalette öffnen"
 
 msgid "FPS"
 msgstr "FPS"
@@ -2913,6 +2940,9 @@ msgstr "Einfügen an Cursorposition"
 msgid "Paste as new node"
 msgstr "Als neuen Knoten einfügen"
 
+msgid "New model from selection"
+msgstr "Neues Modell aus der Auswahl"
+
 msgid "Paste as stamp"
 msgstr "Als Stempel einfügen"
 
@@ -2940,11 +2970,17 @@ msgstr "Alles"
 msgid "Paint selection"
 msgstr "Auswahl bemalen"
 
+msgid "Select voxels by color"
+msgstr "Voxel nach Farbe auswählen"
+
 msgid "Deselect by color"
 msgstr "Nach Farbe abwählen"
 
-msgid "Select by color"
-msgstr "Nach Farbe auswählen"
+msgid "Keep only color in selection"
+msgstr ""
+
+msgid "Delete voxels by color"
+msgstr "Voxel nach Farbe löschen"
 
 msgid "Select Only Edges"
 msgstr "Nur Kanten auswählen"
@@ -3024,8 +3060,24 @@ msgstr "Keine Übereinstimmung für den Filter gefunden"
 msgid "Models"
 msgstr "Modelle"
 
+msgid "Reload collections"
+msgstr "Sammlungen neu laden"
+
+msgid ""
+"Re-download the collection source list and clear loaded online collections"
+msgstr ""
+
+msgid "Reload"
+msgstr "Neu laden"
+
+msgid "Re-download the cached collection listing"
+msgstr ""
+
 msgid "Loading..."
 msgstr "Laden..."
+
+msgid "Loading from cache..."
+msgstr "Laden aus dem Cache..."
 
 msgid "Double click to load"
 msgstr "Doppelklick zum Laden"
@@ -3458,17 +3510,13 @@ msgstr "Farbe duplizieren"
 msgid "Remove color"
 msgstr "Farbe entfernen"
 
-msgid "Reduce to selected"
-msgstr "Auf Auswahl reduzieren"
+msgid "Reduce to clicked color"
+msgstr "Auf angeklickte Farbe reduzieren"
 
-msgid "Randomize selected colors"
-msgstr "Wähle zufällig ausgewählte Farben"
-
-msgid "Quantize selected colors"
-msgstr "Ausgewählte Farben quantisieren"
-
-msgid "Target colors"
-msgstr "Zielfarben"
+msgid ""
+"Merge every other selected color into the clicked slot and remaps those "
+"voxels"
+msgstr ""
 
 msgid "Release CTRL to change the voxel color"
 msgstr "Lassen Sie die STRG-Taste los, um die Voxel-Farbe zu ändern"
@@ -3503,6 +3551,46 @@ msgid ""
 msgstr ""
 "Passen Sie die aktuellen Voxel an die am besten passenden Farben der\n"
 "neuen Palette an."
+
+msgid "Selection"
+msgstr "Auswahl"
+
+msgid "Select two or more colors (Ctrl/Shift+click)"
+msgstr ""
+
+msgid "Randomize colors"
+msgstr "Farben zufällig setzen"
+
+msgid "Gradient"
+msgstr "Verlauf"
+
+msgid ""
+"Interpolate colors between the first and last selected slots in palette order"
+msgstr ""
+
+msgid "Adjust"
+msgstr ""
+
+msgid "Brighter"
+msgstr "Aufhellen"
+
+msgid "Darker"
+msgstr "Abdunkeln"
+
+msgid "Warmer"
+msgstr "Wärmer"
+
+msgid "Colder"
+msgstr "Kälter"
+
+msgid "Quantize"
+msgstr ""
+
+msgid "Target colors"
+msgstr "Zielfarben"
+
+msgid "Merge similar selected colors, remap voxels, then clear the selection"
+msgstr ""
 
 msgid "Import"
 msgstr "Importieren"
@@ -3554,18 +3642,6 @@ msgstr "Intensität"
 
 msgid "Modify"
 msgstr "Ändern"
-
-msgid "Warmer"
-msgstr "Wärmer"
-
-msgid "Colder"
-msgstr "Kälter"
-
-msgid "Brighter"
-msgstr "Aufhellen"
-
-msgid "Darker"
-msgstr "Abdunkeln"
 
 msgid "Color closest match"
 msgstr "Nächste Farbe"
@@ -3831,6 +3907,9 @@ msgstr "Benutze diese Kamera"
 msgid "Save all"
 msgstr "Alle speichern"
 
+msgid "Add new model"
+msgstr "Neues Modell hinzufügen"
+
 msgid "Add new group"
 msgstr "Neue Gruppe hinzufügen"
 
@@ -3933,9 +4012,6 @@ msgstr "Skripting-Handbuch"
 
 msgid "Script Editor"
 msgstr "Skripteditor"
-
-msgid "Reload"
-msgstr "Neu laden"
 
 #, c-format
 msgid "Overwrite scripts/%s"
@@ -4670,14 +4746,33 @@ msgstr "Variationschance (1 von N)"
 msgid "Each voxel has a 1 in N chance to be varied"
 msgstr "Jedes Voxel hat eine Chance von 1 zu N, variiert zu werden"
 
+#, c-format
+msgid "Random pool: %i selected colors"
+msgstr "Zufallspool: %i ausgewählte Farben"
+
+msgid ""
+"Multi-select colors in the palette panel to limit Random painting to that "
+"pool"
+msgstr ""
+
+msgid "Random pool: full palette"
+msgstr ""
+
+msgid ""
+"Multi-select two or more colors in the palette panel to limit Random painting"
+msgstr ""
+
+msgid "Only selected colors"
+msgstr "Nur ausgewählte Farben"
+
+msgid "Skip voxels whose current color is outside the palette multi-selection"
+msgstr ""
+
 msgid "Flood fill"
 msgstr "Flutfüllung"
 
 msgid "Fill connected voxels of the same color on the clicked face"
 msgstr "Verbundene Voxel derselben Farbe auf der angeklickten Fläche füllen"
-
-msgid "Gradient"
-msgstr "Verlauf"
 
 msgid "Blend from the hit color to the cursor color across the box"
 msgstr "Von der Trefferfarbe zur Cursorfarbe über die Box überblenden"
@@ -4916,6 +5011,9 @@ msgstr "Klicken und ziehen, um ein Auswahlpolygon zu zeichnen"
 
 msgid "Selection actions"
 msgstr "Auswahlaktionen"
+
+msgid "Select by color"
+msgstr "Nach Farbe auswählen"
 
 msgid "Draw with"
 msgstr "Zeichnen mit"
@@ -5537,6 +5635,9 @@ msgstr "Alles auswählen, nichts oder invertieren"
 msgid "Cycle through all scene objects"
 msgstr "Durch alle Szenenobjekte wechseln"
 
+msgid "Create a new model node from the current selection"
+msgstr "Einen neuen Modellknoten aus der aktuellen Auswahl erstellen"
+
 msgid ""
 "Allow to align all nodes on the floor next to each other without overlapping"
 msgstr ""
@@ -5602,11 +5703,33 @@ msgstr "Ausgewählte Voxel entfernen"
 msgid "Recolor selected voxels with the active palette color"
 msgstr "Ausgewählte Voxel mit der aktiven Palettenfarbe umfärben"
 
-msgid "Deselect all voxels matching the active palette color"
-msgstr "Alle Voxel der aktiven Palettenfarbe abwählen"
+msgid ""
+"Deselect all voxels matching the active palette color, or any multi-selected "
+"palette colors"
+msgstr ""
+"Alle Voxel abwählen, die der aktiven Palettenfarbe oder einer mehrfach "
+"ausgewählten Palettenfarbe entsprechen"
 
-msgid "Deselect all voxels not matching the active palette color"
-msgstr "Alle Voxel abwählen, die nicht der aktiven Palettenfarbe entsprechen"
+msgid ""
+"Deselect all voxels not matching the active palette color, or keep voxels "
+"matching any multi-selected palette colors"
+msgstr ""
+"Alle Voxel abwählen, die nicht der aktiven Palettenfarbe entsprechen, oder "
+"Voxel behalten, die einer mehrfach ausgewählten Palettenfarbe entsprechen"
+
+msgid ""
+"Select all voxels matching the active palette color, or any multi-selected "
+"palette colors"
+msgstr ""
+"Alle Voxel auswählen, die der aktiven Palettenfarbe oder einer mehrfach "
+"ausgewählten Palettenfarbe entsprechen"
+
+msgid ""
+"Delete all voxels matching the active palette color, or any multi-selected "
+"palette colors"
+msgstr ""
+"Alle Voxel löschen, die der aktiven Palettenfarbe oder einer mehrfach "
+"ausgewählten Palettenfarbe entsprechen"
 
 msgid "Filter selection to only keep edge voxels where two or more faces meet"
 msgstr ""

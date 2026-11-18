@@ -5,6 +5,7 @@
 | Method | Description |
 | ------ | ----------- |
 | `addKeyFrame(frame, interpolation)` | Add a new keyframe at the specified frame. |
+| `bounds(frame)` | World bounds of model geometry under this node, including hidden models and excluding points/empty groups. |
 | `children()` | Get the child node UUIDs. |
 | `clearSelection()` | Clear all selection flags from the node's volume. |
 | `clone()` | Create a copy of the node. |
@@ -62,6 +63,23 @@ Add a new keyframe at the specified frame.
 | Type | Description |
 | ---- | ----------- |
 | [`keyframe`](keyframe.md) | The newly created keyframe. |
+
+### bounds
+
+World bounds of model geometry under this node, including hidden models and excluding points/empty groups.
+
+**Parameters:**
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| `frame` | `integer` | Animation frame (optional, default 0). |
+
+**Returns:**
+
+| Type | Description |
+| ---- | ----------- |
+| [`vec3`](vector.md) | Lower corner, or nil if there is no model geometry. |
+| [`vec3`](vector.md) | Upper corner (exclusive voxel edges). |
 
 ### children
 

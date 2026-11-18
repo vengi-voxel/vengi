@@ -114,6 +114,8 @@ Quake 1 (*.bsp)
 .TP
 Quake 1 Model (*.mdl)
 .TP
+Quake 2 (*.bsp)
+.TP
 Quake 2 Model (*.md2)
 .TP
 Quake 3 Model (*.md3)
@@ -127,6 +129,10 @@ Qubicle Binary Tree (*.qbt)
 Qubicle Exchange (*.qef)
 .TP
 Qubicle Project (*.qbcl)
+.TP
+Quetoo (*.bsp)
+.TP
+Quetoo PK3 (*.pk3)
 .TP
 Rooms.xyz Thing (*.thing)
 .TP

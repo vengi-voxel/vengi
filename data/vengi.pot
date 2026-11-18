@@ -361,6 +361,30 @@ msgstr ""
 msgid "Filter"
 msgstr ""
 
+msgid "Console history"
+msgstr ""
+
+msgid "Parameters"
+msgstr ""
+
+msgid "(optional)"
+msgstr ""
+
+msgid "Press Tab to autocomplete"
+msgstr ""
+
+msgid "Command Palette"
+msgstr ""
+
+msgid "Filter commands and history"
+msgstr ""
+
+msgid "recently used"
+msgstr ""
+
+msgid "commands"
+msgstr ""
+
 msgid "Cloud"
 msgstr ""
 
@@ -578,6 +602,9 @@ msgid "Last opened file"
 msgstr ""
 
 msgid "The last opened file in the file dialog"
+msgstr ""
+
+msgid "Open the command palette"
 msgstr ""
 
 msgid "FPS"
@@ -2770,6 +2797,9 @@ msgstr ""
 msgid "Paste as new node"
 msgstr ""
 
+msgid "New model from selection"
+msgstr ""
+
 msgid "Paste as stamp"
 msgstr ""
 
@@ -2797,10 +2827,16 @@ msgstr ""
 msgid "Paint selection"
 msgstr ""
 
+msgid "Select voxels by color"
+msgstr ""
+
 msgid "Deselect by color"
 msgstr ""
 
-msgid "Select by color"
+msgid "Keep only color in selection"
+msgstr ""
+
+msgid "Delete voxels by color"
 msgstr ""
 
 msgid "Select Only Edges"
@@ -2879,7 +2915,23 @@ msgstr ""
 msgid "Models"
 msgstr ""
 
+msgid "Reload collections"
+msgstr ""
+
+msgid ""
+"Re-download the collection source list and clear loaded online collections"
+msgstr ""
+
+msgid "Reload"
+msgstr ""
+
+msgid "Re-download the cached collection listing"
+msgstr ""
+
 msgid "Loading..."
+msgstr ""
+
+msgid "Loading from cache..."
 msgstr ""
 
 msgid "Double click to load"
@@ -3304,16 +3356,12 @@ msgstr ""
 msgid "Remove color"
 msgstr ""
 
-msgid "Reduce to selected"
+msgid "Reduce to clicked color"
 msgstr ""
 
-msgid "Randomize selected colors"
-msgstr ""
-
-msgid "Quantize selected colors"
-msgstr ""
-
-msgid "Target colors"
+msgid ""
+"Merge every other selected color into the clicked slot and remaps those "
+"voxels"
 msgstr ""
 
 msgid "Release CTRL to change the voxel color"
@@ -3342,6 +3390,46 @@ msgstr ""
 msgid ""
 "Adopt the current voxels to the best fitting colors of\n"
 "the new palette."
+msgstr ""
+
+msgid "Selection"
+msgstr ""
+
+msgid "Select two or more colors (Ctrl/Shift+click)"
+msgstr ""
+
+msgid "Randomize colors"
+msgstr ""
+
+msgid "Gradient"
+msgstr ""
+
+msgid ""
+"Interpolate colors between the first and last selected slots in palette order"
+msgstr ""
+
+msgid "Adjust"
+msgstr ""
+
+msgid "Brighter"
+msgstr ""
+
+msgid "Darker"
+msgstr ""
+
+msgid "Warmer"
+msgstr ""
+
+msgid "Colder"
+msgstr ""
+
+msgid "Quantize"
+msgstr ""
+
+msgid "Target colors"
+msgstr ""
+
+msgid "Merge similar selected colors, remap voxels, then clear the selection"
 msgstr ""
 
 msgid "Import"
@@ -3393,18 +3481,6 @@ msgid "Intensity"
 msgstr ""
 
 msgid "Modify"
-msgstr ""
-
-msgid "Warmer"
-msgstr ""
-
-msgid "Colder"
-msgstr ""
-
-msgid "Brighter"
-msgstr ""
-
-msgid "Darker"
 msgstr ""
 
 msgid "Color closest match"
@@ -3668,6 +3744,9 @@ msgstr ""
 msgid "Save all"
 msgstr ""
 
+msgid "Add new model"
+msgstr ""
+
 msgid "Add new group"
 msgstr ""
 
@@ -3767,9 +3846,6 @@ msgid "Scripting manual"
 msgstr ""
 
 msgid "Script Editor"
-msgstr ""
-
-msgid "Reload"
 msgstr ""
 
 #, c-format
@@ -4424,13 +4500,32 @@ msgstr ""
 msgid "Each voxel has a 1 in N chance to be varied"
 msgstr ""
 
+#, c-format
+msgid "Random pool: %i selected colors"
+msgstr ""
+
+msgid ""
+"Multi-select colors in the palette panel to limit Random painting to that "
+"pool"
+msgstr ""
+
+msgid "Random pool: full palette"
+msgstr ""
+
+msgid ""
+"Multi-select two or more colors in the palette panel to limit Random painting"
+msgstr ""
+
+msgid "Only selected colors"
+msgstr ""
+
+msgid "Skip voxels whose current color is outside the palette multi-selection"
+msgstr ""
+
 msgid "Flood fill"
 msgstr ""
 
 msgid "Fill connected voxels of the same color on the clicked face"
-msgstr ""
-
-msgid "Gradient"
 msgstr ""
 
 msgid "Blend from the hit color to the cursor color across the box"
@@ -4652,6 +4747,9 @@ msgid "Click and drag to draw a selection polygon"
 msgstr ""
 
 msgid "Selection actions"
+msgstr ""
+
+msgid "Select by color"
 msgstr ""
 
 msgid "Draw with"
@@ -5243,6 +5341,9 @@ msgstr ""
 msgid "Cycle through all scene objects"
 msgstr ""
 
+msgid "Create a new model node from the current selection"
+msgstr ""
+
 msgid ""
 "Allow to align all nodes on the floor next to each other without overlapping"
 msgstr ""
@@ -5297,10 +5398,24 @@ msgstr ""
 msgid "Recolor selected voxels with the active palette color"
 msgstr ""
 
-msgid "Deselect all voxels matching the active palette color"
+msgid ""
+"Deselect all voxels matching the active palette color, or any multi-selected "
+"palette colors"
 msgstr ""
 
-msgid "Deselect all voxels not matching the active palette color"
+msgid ""
+"Deselect all voxels not matching the active palette color, or keep voxels "
+"matching any multi-selected palette colors"
+msgstr ""
+
+msgid ""
+"Select all voxels matching the active palette color, or any multi-selected "
+"palette colors"
+msgstr ""
+
+msgid ""
+"Delete all voxels matching the active palette color, or any multi-selected "
+"palette colors"
 msgstr ""
 
 msgid "Filter selection to only keep edge voxels where two or more faces meet"

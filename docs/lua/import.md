@@ -9,7 +9,7 @@ Global: `g_import`
 | `image(filename, stream)` | Load an image from a stream. |
 | `imageAsPlane(image, palette, thickness)` | Import an image as a voxel plane. |
 | `palette(filename, stream)` | Load a palette from a stream. |
-| `scene(filename, stream)` | Import a scene from a file or stream. |
+| `scene(filename, stream, parent)` | Import a scene from a file or stream. |
 
 ## Detailed Documentation
 
@@ -74,5 +74,6 @@ Import a scene from a file or stream.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `filename` | `string` | The filename to load. |
-| `stream` | [`stream`](stream.md) | Optional stream to read from. |
+| `stream` | [`stream`](stream.md) | Optional stream to read from (nil for a file). |
+| `parent` | `integer` | Destination parent node id (optional, default root). |
 

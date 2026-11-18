@@ -117,6 +117,9 @@
 		<RegistryKey Root="HKCR" Key=".bsp">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".pk3">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".mdl">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -447,6 +450,10 @@
 			</Feature>
 			<Feature Id="Assoc_bsp" Title=".bsp" Description="Open .bsp files with VoxEdit (UFO:Alien Invasion). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
 				<ComponentRef Id="AssocRegistration_bsp" />
+				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
+			</Feature>
+			<Feature Id="Assoc_pk3" Title=".pk3" Description="Open .pk3 files with VoxEdit (Quetoo PK3). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
+				<ComponentRef Id="AssocRegistration_pk3" />
 				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
 			</Feature>
 			<Feature Id="Assoc_mdl" Title=".mdl" Description="Open .mdl files with VoxEdit (Quake 1 Model). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
@@ -1068,6 +1075,17 @@
 					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
 				</RegistryKey>
 				<RegistryValue Root="HKCR" Key=".bsp" Type="string" Value="vengi-voxedit.bsp" />
+			</Component>
+			<Component Id="AssocRegistration_pk3" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".pk3" Value="vengi-voxedit.pk3" Type="string" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi-voxedit.exe\SupportedTypes" Name=".pk3" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".pk3\OpenWithProgids" Name="vengi-voxedit.pk3" Value="" Type="string" />
+				<RegistryKey Root="HKCR" Key="vengi-voxedit.pk3">
+					<RegistryValue Type="string" Value="Quetoo PK3" KeyPath="yes" />
+					<RegistryValue Key="DefaultIcon" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot;,0" />
+					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
+				</RegistryKey>
+				<RegistryValue Root="HKCR" Key=".pk3" Type="string" Value="vengi-voxedit.pk3" />
 			</Component>
 			<Component Id="AssocRegistration_mdl" Guid="*">
 				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".mdl" Value="vengi-voxedit.mdl" Type="string" />
