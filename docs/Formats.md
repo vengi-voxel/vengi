@@ -82,6 +82,7 @@
 | Polygon File Format        | ply       | X       | X         |            |
 | Quake 1                    | bsp       | X       |           |            |
 | Quake 1 Model              | mdl       | X       |           |            |
+| Quake 2                    | bsp       | X       |           |            |
 | Quake 2 Model              | md2       | X       |           |            |
 | Quake 3 Model              | md3       | X       |           |            |
 | Quake Map                  | map       | X       |           |            |

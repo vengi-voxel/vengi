@@ -105,6 +105,64 @@ bool hiddenQuakeTexture(const char *name, uint32_t value) {
 		   asciiEq(name, "origin");
 }
 
+const char *textureLeaf(const char *name) {
+	const char *leaf = name != nullptr ? name : "";
+	for (const char *p = leaf; *p != '\0'; ++p) {
+		if (*p == '/' || *p == '\\') {
+			leaf = p + 1;
+		}
+	}
+	return leaf;
+}
+
+bool hiddenSurface(const char *name, uint32_t flags) {
+	const uint32_t hideFlags = 0x4u | 0x80u | 0x100u | 0x200u;
+	if ((flags & hideFlags) != 0u) {
+		return true;
+	}
+	const char *leaf = textureLeaf(name);
+	if (hiddenQuakeTexture(leaf, 0)) {
+		return true;
+	}
+	return asciiEq(leaf, "nodraw") || asciiEq(leaf, "caulk");
+}
+
+core::String textureBaseDir(const core::String &filename) {
+	const size_t pos = filename.rfind("maps/");
+	if (pos != core::String::npos) {
+		return filename.substr(0, pos);
+	}
+	return core::string::extractDir(filename);
+}
+
+image::ImagePtr loadExternalTexture(const io::ArchivePtr &archive, const core::String &baseDir, const core::String &name) {
+	static const char *exts[] = {"png", "jpg", "jpeg", "tga", "webp"};
+	const core::String rel = core::string::path("textures", name);
+	if (archive) {
+		for (const char *ext : exts) {
+			const core::String file = core::String::format("%s.%s", rel.c_str(), ext);
+			if (!archive->exists(file)) {
+				continue;
+			}
+			core::ScopedPtr<io::SeekableReadStream> texStream(archive->readStream(file));
+			if (!texStream) {
+				continue;
+			}
+			const image::ImagePtr &img = image::loadImage(file, *texStream);
+			if (img && img->isLoaded()) {
+				return img;
+			}
+		}
+	}
+	if (!baseDir.empty()) {
+		const image::ImagePtr &img = image::loadImage(core::string::path(baseDir, rel));
+		if (img && img->isLoaded()) {
+			return img;
+		}
+	}
+	return image::ImagePtr{};
+}
+
 } // namespace _priv
 
 #define wrap(read)                                                                                                     \
@@ -1383,33 +1441,159 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 	return importMesh(name, sceneGraph, core::move(mesh), 0, true, progress) != InvalidNodeId;
 }
 
-bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
-									scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
-	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
-	if (!stream) {
-		Log::error("Could not load file %s", filename.c_str());
+bool QuakeBSPFormat::loadQuake2Textures(const core::String &filename, io::SeekableReadStream &stream,
+										const io::ArchivePtr &archive, const BspHeader &header,
+										core::DynamicArray<Texture> &textures, MeshMaterialMap &meshMaterials,
+										MeshMaterialArray &meshMaterialArray) {
+	// Quake 2 texinfo is the UFO layout plus a trailing nexttexinfo int.
+	static const size_t quake2TexinfoSize = sizeof(BspTexture) + sizeof(int32_t);
+	const int32_t textureCount = validateLump(header.lumps[_priv::ufoaiTexinfoLump], quake2TexinfoSize);
+	if (textureCount <= 0) {
+		Log::error("Invalid bsp file with no textures in lump");
 		return false;
 	}
+	if (stream.seek(header.lumps[_priv::ufoaiTexinfoLump].offset) == -1) {
+		Log::error("Invalid texture lump offset - can't seek");
+		return false;
+	}
+
+	const core::String &baseDir = _priv::textureBaseDir(filename);
+	textures.resize((size_t)textureCount);
+	for (int32_t i = 0; i < textureCount; i++) {
+		Texture &texture = textures[i];
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecS[j]))
+		}
+		wrap(stream.readFloat(texture.distS))
+		for (int j = 0; j < 3; ++j) {
+			wrap(stream.readFloat(texture.vecT[j]))
+		}
+		wrap(stream.readFloat(texture.distT))
+		wrap(stream.readUInt32(texture.surfaceFlags))
+		wrap(stream.readUInt32(texture.value))
+		if (!stream.readString(lengthof(texture.name), texture.name, false)) {
+			Log::error("Failed to read bsp - texture name invalid");
+			return false;
+		}
+		texture.name[lengthof(texture.name) - 1] = '\0';
+		stream.skip(4); // nexttexinfo
+
+		auto meshMaterialIter = meshMaterials.find(texture.name);
+		if (meshMaterialIter != meshMaterials.end()) {
+			texture.materialIdx = meshMaterialIter->second;
+			continue;
+		}
+		const image::ImagePtr &tex = _priv::loadExternalTexture(archive, baseDir, texture.name);
+		if (tex && tex->isLoaded()) {
+			meshMaterialArray.push_back(createMaterial(tex));
+			texture.materialIdx = (MeshMaterialIndex)(meshMaterialArray.size() - 1);
+			meshMaterials.put(texture.name, texture.materialIdx);
+		} else {
+			Log::debug("No image for %s", texture.name);
+		}
+	}
+	return true;
+}
+
+bool QuakeBSPFormat::loadQuake2Bsp(const core::String &filename, io::SeekableReadStream &stream,
+								   const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+								   const BspHeader &header, core::IProgress *progress) {
+	// shortcut: .wal images inside a pak are not read; drop a png/jpg next to the map. A map that fits in one chunk is filled by voxformat_fillhollow.
+	MeshMaterialMap meshMaterials;
+	MeshMaterialArray meshMaterialArray;
+	core::DynamicArray<Texture> textures;
+	if (!loadQuake2Textures(filename, stream, archive, header, textures, meshMaterials, meshMaterialArray)) {
+		Log::error("Failed to load textures");
+		return false;
+	}
+
+	core::Buffer<Face> faces;
+	if (!loadUFOAlienInvasionFaces(stream, header, faces)) {
+		Log::error("Failed to load faces");
+		return false;
+	}
+	for (Face &face : faces) {
+		if (face.textureId < 0 || face.textureId >= (int)textures.size()) {
+			face.hidden = true;
+			continue;
+		}
+		const Texture &texture = textures[face.textureId];
+		face.hidden = _priv::hiddenSurface(texture.name, texture.surfaceFlags);
+	}
+
+	core::Buffer<BspEdge> edges;
+	core::Buffer<int32_t> surfEdges;
+	if (!loadUFOAlienInvasionEdges(stream, header, edges, surfEdges)) {
+		Log::error("Failed to load edges");
+		return false;
+	}
+	core::Buffer<BspVertex> vertices;
+	if (!loadUFOAlienInvasionVertices(stream, header, vertices)) {
+		Log::error("Failed to load vertices");
+		return false;
+	}
+	core::Buffer<Model> models;
+	if (!loadUFOAlienInvasionModels(stream, header, models)) {
+		Log::error("Failed to load models");
+		return false;
+	}
+
+	const core::String &baseName = core::string::extractFilename(filename);
+	bool any = false;
+	for (int i = 0; i < (int)models.size(); ++i) {
+		const Model &model = models[i];
+		if (model.faceId < 0 || model.faceCount <= 0 || model.faceId + model.faceCount > (int)faces.size()) {
+			continue;
+		}
+		core::Buffer<Face> modelFaces;
+		modelFaces.reserve(model.faceCount);
+		for (int f = model.faceId; f < model.faceId + model.faceCount; ++f) {
+			modelFaces.push_back(faces[f]);
+		}
+		const core::String modelName =
+			i == 0 ? baseName : core::String::format("%s*%i", baseName.c_str(), i);
+		if (voxelize(textures, modelFaces, edges, surfEdges, vertices, sceneGraph, modelName, meshMaterialArray,
+					 progress)) {
+			any = true;
+		}
+	}
+	if (!any) {
+		Log::error("Failed to voxelize %s", filename.c_str());
+		return false;
+	}
+	sceneGraph.updateTransforms();
+	return true;
+}
+
+bool QuakeBSPFormat::loadBsp(const core::String &filename, io::SeekableReadStream &stream, const io::ArchivePtr &archive,
+							 scenegraph::SceneGraph &sceneGraph, core::IProgress *progress) {
 	static const uint32_t q1Version = FourCC('\x1d', '\0', '\0', '\0');
 	static const uint32_t bspMagic = FourCC('I', 'B', 'S', 'P');
 
 	BspHeader header;
-	wrap(stream->readUInt32(header.magic))
+	wrap(stream.readUInt32(header.magic))
 	if (header.magic == q1Version) {
 		header.version = 29;
 	} else {
-		wrap(stream->readUInt32(header.version))
+		wrap(stream.readUInt32(header.version))
 	}
-	for (int i = 0; i < lengthof(header.lumps); ++i) {
-		wrap(stream->readUInt32(header.lumps[i].offset))
-		wrap(stream->readUInt32(header.lumps[i].len))
+	int lumpCount = lengthof(header.lumps);
+	if (header.magic == bspMagic && header.version == 38) {
+		lumpCount = 19;
+	}
+	for (int i = 0; i < lumpCount; ++i) {
+		wrap(stream.readUInt32(header.lumps[i].offset))
+		wrap(stream.readUInt32(header.lumps[i].len))
 	}
 
 	if (header.version == 79 && header.magic == bspMagic) {
-		return loadUFOAlienInvasionBsp(filename, *stream, sceneGraph, header, ctx.progress);
+		return loadUFOAlienInvasionBsp(filename, stream, sceneGraph, header, progress);
 	}
 	if (header.magic == q1Version) {
-		return loadQuake1Bsp(filename, *stream, sceneGraph, header, ctx.progress);
+		return loadQuake1Bsp(filename, stream, sceneGraph, header, progress);
+	}
+	if (header.version == 38 && header.magic == bspMagic) {
+		return loadQuake2Bsp(filename, stream, archive, sceneGraph, header, progress);
 	}
 
 	uint8_t buf[4];
@@ -1417,6 +1601,16 @@ bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::Arch
 	Log::error("Unsupported bsp file with magic %c%c%c%c and version %i", buf[0], buf[1], buf[2], buf[3],
 			   header.version);
 	return false;
+}
+
+bool QuakeBSPFormat::voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive,
+									scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
+	if (!stream) {
+		Log::error("Could not load file %s", filename.c_str());
+		return false;
+	}
+	return loadBsp(filename, *stream, archive, sceneGraph, ctx.progress);
 }
 
 #undef wrap

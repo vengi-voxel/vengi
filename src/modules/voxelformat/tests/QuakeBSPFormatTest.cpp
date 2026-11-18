@@ -199,6 +199,134 @@ void writeSolidCubeBsp(io::BufferedReadWriteStream &stream) {
 	}
 }
 
+void writePadded(io::BufferedReadWriteStream &stream, const char *text, int len) {
+	int n = 0;
+	while (text[n] != '\0') {
+		++n;
+	}
+	for (int i = 0; i < len; ++i) {
+		stream.writeUInt8(i < n ? (uint8_t)text[i] : 0);
+	}
+}
+
+void writeCubeVertices(io::BufferedReadWriteStream &stream) {
+	const float v[8][3] = {{0, 0, 0}, {32, 0, 0}, {32, 32, 0}, {0, 32, 0},
+						   {0, 0, 32}, {32, 0, 32}, {32, 32, 32}, {0, 32, 32}};
+	for (int i = 0; i < 8; ++i) {
+		for (int k = 0; k < 3; ++k) {
+			stream.writeFloat(v[i][k]);
+		}
+	}
+}
+
+void writeQuake2CubeBsp(io::BufferedReadWriteStream &stream) {
+	struct Lump {
+		uint32_t offset = 0;
+		uint32_t len = 0;
+	};
+	Lump lumps[19];
+	for (int i = 0; i < 8 + 19 * 8; ++i) {
+		stream.writeUInt8(0);
+	}
+	auto finish = [&](int lump, int64_t start) {
+		lumps[lump].offset = (uint32_t)start;
+		lumps[lump].len = (uint32_t)(stream.pos() - start);
+	};
+	const int quads[6][4] = {{1, 2, 6, 5}, {3, 7, 6, 2}, {4, 5, 6, 7}, {0, 4, 7, 3}, {0, 1, 5, 4}, {0, 3, 2, 1}};
+
+	{
+		const int64_t start = stream.pos();
+		writeCubeVertices(stream);
+		finish(2, start);
+	}
+	{
+		const int64_t start = stream.pos();
+		auto writeTexinfo = [&](const char *name, int flags) {
+			for (int i = 0; i < 8; ++i) {
+				stream.writeFloat(0.0f);
+			}
+			stream.writeInt32(flags);
+			stream.writeInt32(0);
+			writePadded(stream, name, 32);
+			stream.writeInt32(-1);
+		};
+		writeTexinfo("wall", 0);
+		writeTexinfo("clip", 0x80);
+		finish(5, start);
+	}
+	{
+		const int64_t start = stream.pos();
+		for (int i = 0; i < 7; ++i) {
+			stream.writeUInt16(0);
+			stream.writeInt16(0);
+			stream.writeInt32(i < 6 ? i * 4 : 0);
+			stream.writeInt16(4);
+			stream.writeInt16(i < 6 ? 0 : 1);
+			for (int s = 0; s < 4; ++s) {
+				stream.writeUInt8(0);
+			}
+			stream.writeInt32(-1);
+		}
+		finish(6, start);
+	}
+	{
+		const int64_t edgeStart = stream.pos();
+		stream.writeInt16(0);
+		stream.writeInt16(0);
+		for (int i = 0; i < 6; ++i) {
+			for (int k = 0; k < 4; ++k) {
+				stream.writeInt16((int16_t)quads[i][k]);
+				stream.writeInt16((int16_t)quads[i][(k + 1) % 4]);
+			}
+		}
+		finish(11, edgeStart);
+		const int64_t surfStart = stream.pos();
+		for (int i = 1; i <= 24; ++i) {
+			stream.writeInt32(i);
+		}
+		finish(12, surfStart);
+	}
+	{
+		const int64_t start = stream.pos();
+		auto writeModel = [&](int first, int count) {
+			for (int i = 0; i < 9; ++i) {
+				stream.writeFloat(0.0f);
+			}
+			stream.writeInt32(0);
+			stream.writeInt32(first);
+			stream.writeInt32(count);
+		};
+		writeModel(0, 6);
+		writeModel(6, 1);
+		finish(13, start);
+	}
+
+	stream.seek(0);
+	stream.writeUInt8('I');
+	stream.writeUInt8('B');
+	stream.writeUInt8('S');
+	stream.writeUInt8('P');
+	stream.writeUInt32(38);
+	for (int i = 0; i < 19; ++i) {
+		stream.writeUInt32(lumps[i].offset);
+		stream.writeUInt32(lumps[i].len);
+	}
+}
+
+void expectHollowCube(const scenegraph::SceneGraph &sceneGraph) {
+	ASSERT_EQ(1u, sceneGraph.size());
+	const scenegraph::SceneGraphNode &node = *sceneGraph.beginModel();
+	const voxel::RawVolume *volume = node.volume();
+	ASSERT_NE(nullptr, volume);
+	const glm::ivec3 origin(glm::round(node.transform(0).localTranslation()));
+	auto at = [&](int x, int y, int z) {
+		return volume->voxel(x - origin.x, y - origin.y, z - origin.z);
+	};
+	// Axis-aligned faces land on the positive side of each plane.
+	EXPECT_FALSE(voxel::isAir(at(32, 16, 16).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(at(16, 16, 16).getMaterial()));
+}
+
 } // namespace
 
 class QuakeBSPFormatTest : public AbstractFormatTest {};
@@ -232,6 +360,20 @@ TEST_F(QuakeBSPFormatTest, testQuake1SolidShell) {
 	EXPECT_FALSE(voxel::isAir(at(0, 16, 16).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(at(29, 16, 16).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(at(16, 16, 16).getMaterial()));
+}
+
+TEST_F(QuakeBSPFormatTest, testQuake2Cube) {
+	util::ScopedVarChange scale(cfg::VoxformatScale, "1");
+	util::ScopedVarChange fill(cfg::VoxformatFillHollow, "false");
+	io::BufferedReadWriteStream bytes;
+	writeQuake2CubeBsp(bytes);
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	ASSERT_TRUE(archive->add("cube.bsp", bytes.getBuffer(), (size_t)bytes.size()));
+
+	QuakeBSPFormat format;
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_TRUE(format.load("cube.bsp", archive, sceneGraph, testLoadCtx));
+	expectHollowCube(sceneGraph);
 }
 
 } // namespace voxelformat

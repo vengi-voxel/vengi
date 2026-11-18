@@ -139,8 +139,15 @@ private:
 
 	int32_t validateLump(const BspLump &lump, size_t elementSize) const;
 
+	bool loadBsp(const core::String &filename, io::SeekableReadStream &stream, const io::ArchivePtr &archive,
+				 scenegraph::SceneGraph &sceneGraph, core::IProgress *progress);
 	bool loadQuake1Bsp(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					   const BspHeader &header, core::IProgress *progress);
+	bool loadQuake2Bsp(const core::String &filename, io::SeekableReadStream &stream, const io::ArchivePtr &archive,
+					   scenegraph::SceneGraph &sceneGraph, const BspHeader &header, core::IProgress *progress);
+	bool loadQuake2Textures(const core::String &filename, io::SeekableReadStream &stream, const io::ArchivePtr &archive,
+							const BspHeader &header, core::DynamicArray<Texture> &textures,
+							MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray);
 	bool loadQuake1Textures(const core::String &filename, io::SeekableReadStream &stream, const BspHeader &header,
 							core::DynamicArray<Texture> &textures, MeshMaterialMap &meshMaterials, MeshMaterialArray &meshMaterialArray);
 	bool loadQuake1Faces(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<Face> &faces,
@@ -201,6 +208,11 @@ public:
 
 	static const io::FormatDescription &formatQuake1() {
 		static io::FormatDescription f{"Quake 1", "", {"bsp"}, {"\x1d"}, VOX_FORMAT_FLAG_MESH};
+		return f;
+	}
+
+	static const io::FormatDescription &formatQuake2() {
+		static io::FormatDescription f{"Quake 2", "", {"bsp"}, {"IBSP"}, VOX_FORMAT_FLAG_MESH};
 		return f;
 	}
 };
