@@ -1856,4 +1856,22 @@ TEST_F(SceneGraphTest, testRemoveUnusedColors) {
 	EXPECT_EQ(color::RGBA(0, 0, 255), node.palette().color(1));
 }
 
+TEST_F(SceneGraphTest, testPointWorldMatrix) {
+	SceneGraph sceneGraph;
+	SceneGraphNode node(SceneGraphNodeType::Point);
+	SceneGraphTransform transform;
+	transform.setLocalTranslation(glm::vec3(4.0f, 5.0f, 6.0f));
+	node.setTransform(0, transform);
+	const int id = sceneGraph.emplace(core::move(node));
+	ASSERT_NE(InvalidNodeId, id);
+	sceneGraph.updateTransforms();
+	const glm::mat4 world = sceneGraph.worldMatrix(sceneGraph.node(id), 0);
+	EXPECT_NEAR(world[3][0], 4.0f, 0.001f);
+	EXPECT_NEAR(world[3][1], 5.0f, 0.001f);
+	EXPECT_NEAR(world[3][2], 6.0f, 0.001f);
+	const voxel::Region region = sceneGraph.sceneRegion(sceneGraph.node(id), 0);
+	EXPECT_EQ(glm::ivec3(4, 5, 6), region.getLowerCorner());
+	EXPECT_EQ(region.getLowerCorner(), region.getUpperCorner());
+}
+
 } // namespace scenegraph

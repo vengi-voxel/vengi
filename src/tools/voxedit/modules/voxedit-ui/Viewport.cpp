@@ -890,6 +890,9 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 		}
 	} else if (_transformMementoLocked) {
 		unlock(node, keyFrameIdx);
+		if (!node.isModelNode()) {
+			return;
+		}
 		const voxel::Region &region = node.region();
 		const voxel::Region newRegion(region.getLowerCorner(),
 									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
@@ -903,6 +906,13 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 bool Viewport::wantGizmo() const {
 	if (isSceneMode()) {
 		return true;
+	}
+	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+	if (sceneGraph.hasNode(sceneGraph.activeNode())) {
+		const scenegraph::SceneGraphNode &node = sceneGraph.node(sceneGraph.activeNode());
+		if (node.isPointNode() || node.isCameraNode()) {
+			return true;
+		}
 	}
 	if (_modelGizmo->boolVal()) {
 		return true;
@@ -1063,7 +1073,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	}
 	const bool sceneMode = isSceneMode();
 	scenegraph::SceneGraphNode &node = sceneGraph.node(activeNode);
-	if (!sceneMode && !node.isModelNode()) {
+	const bool transformNode = node.isPointNode() || node.isCameraNode();
+	if (!sceneMode && !node.isModelNode() && !transformNode) {
 		reset();
 		return false;
 	}
@@ -1085,8 +1096,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	if (!manipulated) {
 		return false;
 	}
-	if (sceneMode) {
-		if (_pivotMode->boolVal()) {
+	if (sceneMode || transformNode) {
+		if (_pivotMode->boolVal() && node.isModelNode()) {
 			manipulatePivot(node, deltaMatrix);
 		} else {
 			manipulateNodeTransform(sceneGraph, node, keyFrameIdx, worldMatrix);

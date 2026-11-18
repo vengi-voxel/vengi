@@ -3610,4 +3610,20 @@ TEST_F(SceneManagerTest, testExtrudeGizmoClickDoesNotChangeFace) {
 		<< "Clicking the extrude gizmo must not pick a new face";
 }
 
+TEST_F(SceneManagerTest, testNewPointBecomesActive) {
+	ASSERT_TRUE(_sceneMgr->newScene(true, "point", voxel::Region(0, 1)));
+	scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
+	point.setName("marker");
+	scenegraph::SceneGraphTransform transform;
+	transform.setLocalTranslation(glm::vec3(3.0f, 4.0f, 5.0f));
+	point.setTransform(0, transform);
+	const int pointId = _sceneMgr->moveNodeToSceneGraph(point, _sceneMgr->sceneGraph().root().id());
+	ASSERT_NE(InvalidNodeId, pointId);
+	EXPECT_EQ(pointId, _sceneMgr->activeNode());
+	const glm::mat4 world = _sceneMgr->sceneGraph().worldMatrix(_sceneMgr->sceneGraph().node(pointId), 0);
+	EXPECT_NEAR(world[3][0], 3.0f, 0.001f);
+	EXPECT_NEAR(world[3][1], 4.0f, 0.001f);
+	EXPECT_NEAR(world[3][2], 5.0f, 0.001f);
+}
+
 } // namespace voxedit

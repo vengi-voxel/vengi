@@ -459,11 +459,16 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 
 glm::mat4 SceneGraph::worldMatrix(const scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
 	glm::mat4 mat(1.0f);
-	if (applyTransforms && node.isAnyModelNode()) {
+	if (!applyTransforms) {
+		return mat;
+	}
+	if (node.isAnyModelNode()) {
 		const voxel::Region &region = resolveRegion(node);
 		core_assert(region.isValid());
 		const scenegraph::FrameTransform &transform = transformForFrame(node, frameIdx);
 		mat = transform.calculateWorldMatrix(node.pivot(), region.getDimensionsInVoxels());
+	} else if (node.isPointNode() || node.isCameraNode()) {
+		mat = transformForFrame(node, frameIdx).worldMatrix();
 	}
 	return mat;
 }
@@ -832,6 +837,9 @@ voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, FrameIndex fra
 		return sceneRegion(frameIdx, false);
 	} else if (node.isAnyModelNode()) {
 		return toRegion(sceneOBB(node, frameIdx));
+	} else if (node.isPointNode() || node.isCameraNode()) {
+		const glm::ivec3 p(glm::floor(transformForFrame(node, frameIdx).worldTranslation()));
+		return voxel::Region(p, p);
 	}
 	return voxel::Region::InvalidRegion;
 }

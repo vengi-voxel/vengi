@@ -3447,6 +3447,9 @@ void SceneManager::onNewNodeAdded(int newNodeId, bool isChildren) {
 			if (!isChildren) {
 				nodeActivate(newNodeId);
 			}
+		} else if (!isChildren && (type == scenegraph::SceneGraphNodeType::Point ||
+								   type == scenegraph::SceneGraphNodeType::Camera)) {
+			nodeActivate(newNodeId);
 		}
 	}
 }
