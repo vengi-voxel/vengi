@@ -312,8 +312,6 @@ public:
 	}
 };
 
-// Benchmark key voxelutil algorithms on 256^3 with full thread pool:
-// content={1:shell, 3:dense, 4:scattered}, forceDense={0:sparse, 1:dense}
 BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, cyclicVolumeMoveMT)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region(-128, 127));
 	if (!volume.valid() || (state.range(0) && volume.voxels() == nullptr)) {
@@ -325,10 +323,8 @@ BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, cyclicVolumeMoveMT)(benchmark::St
 		volume.setVoxel(-128, -128, -128, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		volume.setVoxel(127, 127, 127, voxel::createVoxel(voxel::VoxelType::Generic, 3));
-	} else if (content == 2) {
-		fillBenchmarkVolume(volume, 2);
-	} else if (content == 3) {
-		fillBenchmarkVolume(volume, 3);
+	} else {
+		fillBenchmarkVolume(volume, content);
 	}
 	for (auto _ : state) {
 		if (!volume.move({1, 0, 0}) || !volume.move({-1, 0, 0})) {
@@ -340,6 +336,7 @@ BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, cyclicVolumeMoveMT)(benchmark::St
 	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
 }
 
+// content={1:shell, 3:dense, 4:scattered}, forceDense={0:sparse, 1:dense}
 BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilMerge256)(benchmark::State &state) {
 	const int content = (int)state.range(0);
 	const bool forceDense = state.range(1) != 0;
@@ -426,6 +423,7 @@ BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilInPlaceRecolor256)(bench
 	state.counters["bytes"] = (double)vol.allocatedBytes();
 }
 
+// cyclicVolumeMoveMT takes storage first, then content (1: three voxels, 3: dense).
 BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, cyclicVolumeMoveMT)->ArgsProduct({{0, 1}, {1, 3}})->UseRealTime()->Unit(benchmark::kMillisecond);
 BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, VoxelUtilMerge256)->ArgsProduct({{1, 3, 4}, {0, 1}})->UseRealTime()->Unit(benchmark::kMillisecond);
 BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, VoxelUtilCountParallel256)->ArgsProduct({{1, 3, 4}, {0, 1}})->UseRealTime()->Unit(benchmark::kMillisecond);
