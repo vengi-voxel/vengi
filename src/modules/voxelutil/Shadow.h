@@ -10,9 +10,12 @@
 #include "core/collection/Queue.h"
 #include "palette/Palette.h"
 #include "voxel/Connectivity.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/VolumeData.h"
+#include "voxel/VolumeTileDispatch.h"
 #include "voxel/Voxel.h"
+#include <type_traits>
 
 namespace voxelutil {
 
@@ -95,6 +98,27 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 	propagateSunlight(volume, lightQueue, lightVolume, lightStep);
 
 	Log::debug("Applying shadows to voxels based on propagated light");
+	if constexpr (std::is_same_v<VOLUME, voxel::RawVolume>) {
+		if (volume.isSparse()) {
+			voxel::forEachOccupiedVoxelParallel(volume, volume.region(), [&](int x, int y, int z, voxel::Voxel &voxel) {
+				uint8_t maxLight = 0u;
+				for (const glm::ivec3 &dir : voxel::arrayPathfinderCorners) {
+					const glm::ivec3 neighborPos(x + dir.x, y + dir.y, z + dir.z);
+					if (voxel::isAir(volume.voxel(neighborPos).getMaterial())) {
+						maxLight = core_max(maxLight, lightVolume.value(neighborPos));
+					}
+				}
+				if (maxLight == MAX_SHADOW || maxLight == 0) {
+					return;
+				}
+				const float shadowFactor = (float)maxLight / (float)MAX_SHADOW;
+				color::RGBA color = color::darker(palette.color(voxel.getColor()), shadowFactor);
+				const int palIdx = palette.getClosestMatch(color, voxel.getColor(), color::Distance::HSB);
+				voxel = voxel::createVoxel(palette, palIdx);
+			});
+			return;
+		}
+	}
 	auto fn = [&volume, &lightVolume, &palette] (int start, int end) {
 		typename VOLUME::Sampler sampler(&volume);
 		const voxel::Region &region = volume.region();

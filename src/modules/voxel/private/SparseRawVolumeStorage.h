@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Trace.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "voxel/SparseChunk.h"
@@ -75,9 +76,6 @@ public:
 	/** Thread-safe batch row write of a single voxel value along +X. */
 	void setVoxelsRow(int lx, int ly, int lz, int count, const Voxel &value);
 
-	/** Thread-safe batch row copy from a contiguous source buffer along +X. */
-	void copyRowFrom(int lx, int ly, int lz, int count, const Voxel *src, bool overwrite);
-
 	/** Lock-free read of a contiguous X-major box [localMins, localMins + size) into target. */
 	void readRegion(const glm::ivec3 &localMins, const glm::ivec3 &size, Voxel *target) const;
 
@@ -132,6 +130,11 @@ public:
 		SparseChunk::PreparedBrick brick;
 	};
 
+	struct OccupiedBrickInfo {
+		glm::ivec3 localOrigin{0};
+		SparseChunk::Brick *brick = nullptr;
+	};
+
 	/** O(1) check if any brick (or non-zero default) exists in [localMins, localMaxs]. */
 	bool hasOccupiedVoxelsInBox(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs) const;
 
@@ -153,6 +156,18 @@ public:
 	 */
 	void adoptPreparedBricks(core::DynamicArray<PreparedChunkBrick> &prepared);
 
+	/**
+	 * @brief Collect all live bricks intersecting [localMins, localMaxs] for lock-free parallel read or
+	 * in-place value mutation.
+	 */
+	void collectOccupiedBricks(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs,
+							   core::DynamicArray<OccupiedBrickInfo> &out) const;
+
+	/** Bump generation counter after in-place or batch modifications. */
+	void notifyModified() {
+		bumpGeneration();
+	}
+
 	static inline uint32_t voxelBits(const Voxel &v) {
 		uint32_t bits = 0u;
 		memcpy(&bits, &v, sizeof(bits));
@@ -162,7 +177,7 @@ public:
 private:
 	struct ChunkSlot {
 		core::AtomicPtr<SparseChunk> chunk{nullptr};
-		mutable core::Lock lock;
+		mutable core_trace_mutex(core::Lock, lock, "SparseRawVolumeStorageChunk");
 	};
 
 	glm::ivec3 _dimensions{0};

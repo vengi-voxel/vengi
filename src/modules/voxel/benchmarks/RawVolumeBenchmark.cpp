@@ -12,6 +12,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/VolumeSamplerUtil.h"
+#include "voxel/VolumeTileDispatch.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
@@ -352,7 +353,7 @@ BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilMerge256)(benchmark::Sta
 		if (forceDense) {
 			(void)dst.voxels();
 		}
-		const int merged = voxelutil::mergeVolumes(&dst, &src, dst.region(), src.region());
+		int merged = voxelutil::mergeVolumes(&dst, &src, dst.region(), src.region());
 		benchmark::DoNotOptimize(merged);
 	}
 	state.counters["src_bytes"] = (double)src.allocatedBytes();
@@ -402,7 +403,7 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, VoxelUtilVisitSolidZYX256)(benchmark::Sta
 	fillBenchmarkVolume(vol, content);
 	for (auto _ : state) {
 		int sum = 0;
-		voxelutil::visitVolume(vol, [&](int, int, int, const voxel::Voxel &v) { sum += v.getColor(); });
+		voxelutil::visitVolume(vol, [&](int, int, int, const voxel::Voxel &voxel) { sum += voxel.getColor(); });
 		benchmark::DoNotOptimize(sum);
 	}
 	state.counters["bytes"] = (double)vol.allocatedBytes();
@@ -416,27 +417,9 @@ BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilInPlaceRecolor256)(bench
 		(void)vol.voxels();
 	}
 	fillBenchmarkVolume(vol, content);
-	const voxel::Region &reg = vol.region();
 	for (auto _ : state) {
-		app::for_parallel(reg.getLowerZ(), reg.getUpperZ() + 1, [&](int start, int end) {
-			voxel::RawVolume::Sampler sampler(&vol);
-			sampler.setPosition(reg.getLowerX(), reg.getLowerY(), start);
-			for (int z = start; z < end; ++z) {
-				voxel::RawVolume::Sampler sampler2 = sampler;
-				for (int y = reg.getLowerY(); y <= reg.getUpperY(); ++y) {
-					voxel::RawVolume::Sampler sampler3 = sampler2;
-					for (int x = reg.getLowerX(); x <= reg.getUpperX(); ++x) {
-						voxel::Voxel v = sampler3.voxel();
-						if (!voxel::isAir(v.getMaterial())) {
-							v.setColor((uint8_t)(v.getColor() ^ 1u));
-							sampler3.setVoxel(v);
-						}
-						sampler3.movePositiveX();
-					}
-					sampler2.movePositiveY();
-				}
-				sampler.movePositiveZ();
-			}
+		voxel::forEachOccupiedVoxelParallel(vol, vol.region(), [](int, int, int, voxel::Voxel &v) {
+			v.setColor((uint8_t)(v.getColor() ^ 1u));
 		});
 		benchmark::DoNotOptimize(vol.allocatedBytes());
 	}

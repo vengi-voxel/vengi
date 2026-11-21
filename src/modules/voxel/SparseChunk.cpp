@@ -343,27 +343,6 @@ SparseChunk::PreparedBrick SparseChunk::prepareBrick(int bx, int by, int bz, con
 	return pb;
 }
 
-void SparseChunk::clearBrick(int bx, int by, int bz) {
-	if (_cells == nullptr) {
-		return;
-	}
-	uint16_t &cellRef = _cells[brickCellIndex(bx, by, bz)];
-	if (cellRef == 0u) {
-		return;
-	}
-	const int i = (int)cellRef - 1;
-	Brick *b = poolBrick(i);
-	_voxelCount -= b->count;
-	if (b->voxels != nullptr && b->voxels != b->inlineVoxels) {
-		delete[] b->voxels;
-	}
-	b->voxels = nullptr;
-	b->count = _freeBrick;
-	_freeBrick = i;
-	_densePayloads[i] = nullptr;
-	cellRef = 0u;
-}
-
 void SparseChunk::adoptPreparedBrick(PreparedBrick &prepared) {
 	if (prepared.count <= 0) {
 		if (_cells != nullptr && _cells[prepared.cell] != 0u) {

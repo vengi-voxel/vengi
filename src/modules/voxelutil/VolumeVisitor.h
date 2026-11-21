@@ -18,6 +18,7 @@
 #include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "voxel/SparseChunk.h"
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/Voxel.h"
 #include <type_traits>
@@ -875,9 +876,172 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 	return cnt;
 }
 
+template<class Visitor, typename Condition>
+static int visitSparseRawVolumeZYX(const voxel::RawVolume &volume, const voxel::Region &region, Visitor &&visitor,
+								   Condition &condition) {
+	voxel::Region r = region;
+	if (!r.cropTo(volume.region())) {
+		return 0;
+	}
+	if (!volume.hasOccupiedVoxelsInRegion(r)) {
+		return 0;
+	}
+	int cnt = 0;
+	const int32_t xMin = r.getLowerX();
+	const int32_t xMax = r.getUpperX();
+	const int32_t yMin = r.getLowerY();
+	const int32_t yMax = r.getUpperY();
+	const int32_t zMin = r.getLowerZ();
+	const int32_t zMax = r.getUpperZ();
+	const glm::ivec3 &volLower = volume.region().getLowerCorner();
+	constexpr int BrickSide = voxel::SparseChunk::BrickSide;
+	constexpr int BrickMask = BrickSide - 1;
+
+	voxel::RawVolume::Sampler sampler(volume);
+
+	for (int32_t z = zMin; z <= zMax;) {
+		const int32_t localZBand = (int32_t)((int64_t)z - (int64_t)volLower.z);
+		const int32_t zBandEnd = core_min(zMax, z + (BrickMask - (localZBand & BrickMask)));
+		if (!volume.hasOccupiedVoxelsInRegion(voxel::Region(xMin, yMin, z, xMax, yMax, zBandEnd))) {
+			z = zBandEnd + 1;
+			continue;
+		}
+		for (; z <= zBandEnd; ++z) {
+			const int32_t localZ = (int32_t)((int64_t)z - (int64_t)volLower.z);
+			const int bsz = localZ & BrickMask;
+			for (int32_t y = yMin; y <= yMax; ++y) {
+				const int32_t localY = (int32_t)((int64_t)y - (int64_t)volLower.y);
+				const int bsy = localY & BrickMask;
+				for (int32_t x = xMin; x <= xMax;) {
+					const int32_t localX = (int32_t)((int64_t)x - (int64_t)volLower.x);
+					const int bsx = localX & BrickMask;
+					const int32_t xBandEnd = core_min(xMax, x + (BrickMask - bsx));
+					const voxel::SparseChunk::Brick *b = volume.sparseBrickAt(localX, localY, localZ);
+					if (b == nullptr) {
+						x = xBandEnd + 1;
+						continue;
+					}
+					const uint64_t sliceWord = b->mask[bsz];
+					const uint8_t rowMask = (uint8_t)(sliceWord >> (bsy << 3));
+					const int run = xBandEnd - x + 1;
+					const uint8_t fullRunMask = (uint8_t)((1u << run) - 1u);
+					const uint8_t spanBits = (uint8_t)((rowMask >> bsx) & fullRunMask);
+					if (spanBits == 0u) {
+						x = xBandEnd + 1;
+						continue;
+					}
+					bool broke = false;
+					if constexpr (std::is_same_v<Condition, VisitSolid>) {
+						if (b->dense()) {
+							const voxel::Voxel *row = &b->voxels[(bsz << 6) | (bsy << 3) | bsx];
+							if (spanBits == fullRunMask) {
+								for (int i = 0; i < run; ++i) {
+									const voxel::Voxel &voxel = row[i];
+									if (voxel::isAir(voxel.getMaterial())) {
+										continue;
+									}
+									if constexpr (std::is_same_v<decltype(visitor(x + i, y, z, voxel)), bool>) {
+										const bool breakInnerLoop = visitor(x + i, y, z, voxel);
+										++cnt;
+										if (breakInnerLoop) {
+											broke = true;
+											break;
+										}
+									} else {
+										visitor(x + i, y, z, voxel);
+										++cnt;
+									}
+								}
+							} else {
+								uint32_t bits = spanBits;
+								while (bits != 0u) {
+									const int bit = voxel::SparseChunk::ctz64(bits);
+									bits &= bits - 1u;
+									const voxel::Voxel &voxel = row[bit];
+									if (voxel::isAir(voxel.getMaterial())) {
+										continue;
+									}
+									if constexpr (std::is_same_v<decltype(visitor(x + bit, y, z, voxel)), bool>) {
+										const bool breakInnerLoop = visitor(x + bit, y, z, voxel);
+										++cnt;
+										if (breakInnerLoop) {
+											broke = true;
+											break;
+										}
+									} else {
+										visitor(x + bit, y, z, voxel);
+										++cnt;
+									}
+								}
+							}
+						} else {
+							const int firstBitPos = (bsy << 3) | bsx;
+							int packedIdx =
+								b->prefix[bsz] +
+								voxel::SparseChunk::popcount64(sliceWord & (((uint64_t)1u << firstBitPos) - 1u));
+							uint32_t bits = spanBits;
+							while (bits != 0u) {
+								const int bit = voxel::SparseChunk::ctz64(bits);
+								bits &= bits - 1u;
+								const voxel::Voxel &voxel = b->voxels[packedIdx++];
+								if (voxel::isAir(voxel.getMaterial())) {
+									continue;
+								}
+								if constexpr (std::is_same_v<decltype(visitor(x + bit, y, z, voxel)), bool>) {
+									const bool breakInnerLoop = visitor(x + bit, y, z, voxel);
+									++cnt;
+									if (breakInnerLoop) {
+										broke = true;
+										break;
+									}
+								} else {
+									visitor(x + bit, y, z, voxel);
+									++cnt;
+								}
+							}
+						}
+					} else {
+						uint32_t bits = spanBits;
+						while (bits != 0u) {
+							const int bit = voxel::SparseChunk::ctz64(bits);
+							bits &= bits - 1u;
+							const int32_t wx = x + bit;
+							sampler.setPosition(wx, y, z);
+							if (condition(sampler)) {
+								const voxel::Voxel &voxel = sampler.voxel();
+								if constexpr (std::is_same_v<decltype(visitor(wx, y, z, voxel)), bool>) {
+									const bool breakInnerLoop = visitor(wx, y, z, voxel);
+									++cnt;
+									if (breakInnerLoop) {
+										broke = true;
+										break;
+									}
+								} else {
+									visitor(wx, y, z, voxel);
+									++cnt;
+								}
+							}
+						}
+					}
+					if (broke) {
+						break;
+					}
+					x = xBandEnd + 1;
+				}
+			}
+		}
+	}
+	return cnt;
+}
+
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
 int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor = Visitor(),
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+	if constexpr (std::is_same_v<std::decay_t<Volume>, voxel::RawVolume> && ConditionSkipsAir<Condition>::value) {
+		if (volume.isSparseAirDefault() && xOff == 1 && yOff == 1 && zOff == 1 && order == VisitorOrder::ZYX) {
+			return visitSparseRawVolumeZYX(volume, region, visitor, condition);
+		}
+	}
 	return voxel::withVolumeSampler(volume, [&](auto &sampler) {
 		return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
 	});
@@ -1003,6 +1167,102 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 						Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
 	core_trace_scoped(VisitVolumeParallel);
 	core::AtomicInt cnt(0);
+
+	if constexpr (std::is_same_v<std::decay_t<Volume>, voxel::RawVolume> && ConditionSkipsAir<Condition>::value &&
+				  !std::is_same_v<decltype(visitor(0, 0, 0, voxel::Voxel())), bool>) {
+		if (volume.isSparseAirDefault()) {
+			voxel::Region r = region;
+			if (!r.cropTo(volume.region())) {
+				return 0;
+			}
+			core::DynamicArray<voxel::RawVolume::OccupiedBrickSpan> bricks;
+			volume.collectOccupiedSparseBricks(r, bricks);
+			if (bricks.empty()) {
+				return 0;
+			}
+			const int rMinX = r.getLowerX();
+			const int rMaxX = r.getUpperX();
+			const int rMinY = r.getLowerY();
+			const int rMaxY = r.getUpperY();
+			const int rMinZ = r.getLowerZ();
+			const int rMaxZ = r.getUpperZ();
+			core::ParallelProgress progress((int)bricks.size());
+			app::for_parallel(0, (int)bricks.size(), [&](int start, int end) {
+				int localCnt = 0;
+				voxel::RawVolume::Sampler sampler(volume);
+				for (int i = start; i < end; ++i) {
+					const voxel::RawVolume::OccupiedBrickSpan &span = bricks[i];
+					const voxel::SparseChunk::Brick *b = span.brick;
+					const int ox = span.worldOrigin.x;
+					const int oy = span.worldOrigin.y;
+					const int oz = span.worldOrigin.z;
+					const bool fullInside = (ox >= rMinX && ox + 7 <= rMaxX && oy >= rMinY && oy + 7 <= rMaxY &&
+											 oz >= rMinZ && oz + 7 <= rMaxZ);
+					if constexpr (std::is_same_v<Condition, VisitSolid>) {
+						if (b->count == voxel::SparseChunk::BrickVoxels && fullInside) {
+							const voxel::Voxel *voxels = b->voxels;
+							for (int lz = 0; lz < voxel::SparseChunk::BrickSide; ++lz) {
+								const int wz = oz + lz;
+								for (int ly = 0; ly < voxel::SparseChunk::BrickSide; ++ly) {
+									const int wy = oy + ly;
+									const voxel::Voxel *row = voxels + ((lz << 6) | (ly << 3));
+									for (int lx = 0; lx < voxel::SparseChunk::BrickSide; ++lx) {
+										if (!voxel::isAir(row[lx].getMaterial())) {
+											visitor(ox + lx, wy, wz, row[lx]);
+											++localCnt;
+										}
+									}
+								}
+							}
+							continue;
+						}
+					}
+					const bool dense = b->dense();
+					int packed = 0;
+					for (int w = 0; w < voxel::SparseChunk::BrickMaskWords; ++w) {
+						const int wz = oz + w;
+						uint64_t bits = b->mask[w];
+						if (bits == 0u) {
+							continue;
+						}
+						if (wz < rMinZ || wz > rMaxZ) {
+							if (!dense) {
+								packed += voxel::SparseChunk::popcount64(bits);
+							}
+							continue;
+						}
+						while (bits != 0u) {
+							const int bit = voxel::SparseChunk::ctz64(bits);
+							bits &= bits - 1u;
+							const voxel::Voxel &v = dense ? b->voxels[(w << 6) | bit] : b->voxels[packed++];
+							const int wx = ox + (bit & 7);
+							const int wy = oy + (bit >> 3);
+							if (!fullInside && (wx < rMinX || wx > rMaxX || wy < rMinY || wy > rMaxY)) {
+								continue;
+							}
+							if constexpr (std::is_same_v<Condition, VisitSolid>) {
+								if (!voxel::isAir(v.getMaterial())) {
+									visitor(wx, wy, wz, v);
+									++localCnt;
+								}
+							} else {
+								sampler.setPosition(wx, wy, wz);
+								if (condition(sampler)) {
+									visitor(wx, wy, wz, v);
+									++localCnt;
+								}
+							}
+						}
+					}
+				}
+				if (localCnt > 0) {
+					cnt.increment(localCnt);
+				}
+				progress.add(end - start);
+			});
+			return cnt;
+		}
+	}
 
 	switch (order) {
 	case VisitorOrder::XYZ:

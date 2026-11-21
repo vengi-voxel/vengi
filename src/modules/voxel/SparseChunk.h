@@ -368,14 +368,9 @@ public:
 									  const uint64_t (&mask)[BrickMaskWords], int count);
 
 	/**
-	 * @brief Adopt a PreparedBrick via pointer transfer (zero memcpy). Releases existing brick if count == 0.
+	 * @brief Adopt a PreparedBrick, transferring heap payloads and copying inline payloads.
 	 */
 	void adoptPreparedBrick(PreparedBrick &prepared);
-
-	/**
-	 * @brief Release a brick at chunk-local coordinates (bx, by, bz) if present.
-	 */
-	void clearBrick(int bx, int by, int bz);
 
 	/**
 	 * @brief Deep-copy this chunk including its brick pool and cell directory.
@@ -389,6 +384,10 @@ public:
 
 	inline int size() const {
 		return _voxelCount;
+	}
+
+	inline int brickPoolUsed() const {
+		return _poolUsed;
 	}
 
 	inline bool empty() const {

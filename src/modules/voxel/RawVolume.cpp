@@ -817,9 +817,10 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 	const int byMax = (int)(tgtYStart + yCount - 1) >> SparseChunk::BrickShift;
 	const int bzMax = (int)(tgtZStart + zCount - 1) >> SparseChunk::BrickShift;
 	const uint32_t defaultBits = SparseRawVolumeStorage::voxelBits(_storage->defaultVoxel());
-	const bool srcSparseAir = src.isSparseAirDefault();
+	const bool sameAirDefault =
+		src.isSparseAirDefault() && SparseRawVolumeStorage::voxelBits(src._storage->defaultVoxel()) == defaultBits;
 
-	core::Lock mergeLock;
+	core_trace_mutex(core::Lock, mergeLock, "RawVolumeCopyMerge");
 	core::DynamicArray<SparseRawVolumeStorage::PreparedChunkBrick> allPrepared;
 
 	app::for_parallel(bzMin, bzMax + 1, [&](int bzStart, int bzEnd) {
@@ -847,8 +848,8 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 					const int syLen = cy1 - cy0 + 1;
 					const int szLen = cz1 - cz0 + 1;
 
-					// O(1) skip when source tile is empty and destination brick does not exist
-					if (srcSparseAir && _storage->defaultIsZero() &&
+					// An absent source and destination brick already hold the same value.
+					if (sameAirDefault &&
 						!src._storage->hasOccupiedVoxelsInBox(glm::ivec3(sx0, sy0, sz0),
 															  glm::ivec3(sx0 + sxLen - 1, sy0 + syLen - 1, sz0 + szLen - 1)) &&
 						!_storage->hasOccupiedVoxelsInBox(glm::ivec3(localX, localY, localZ),
@@ -1115,6 +1116,37 @@ void RawVolume::adoptPreparedSparseBricks(core::DynamicArray<PreparedTileBrick> 
 	}
 	prepared.clear();
 	_storage->adoptPreparedBricks(converted);
+}
+
+void RawVolume::collectOccupiedSparseBricks(const Region &region, core::DynamicArray<OccupiedBrickSpan> &out) const {
+	out.clear();
+	if (_storage == nullptr || !intersects(_region, region)) {
+		return;
+	}
+	Region r = region;
+	r.cropTo(_region);
+	const glm::ivec3 &lower = _region.getLowerCorner();
+	const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)lower.x),
+						   (int)((int64_t)r.getLowerY() - (int64_t)lower.y),
+						   (int)((int64_t)r.getLowerZ() - (int64_t)lower.z));
+	const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)lower.x),
+						   (int)((int64_t)r.getUpperY() - (int64_t)lower.y),
+						   (int)((int64_t)r.getUpperZ() - (int64_t)lower.z));
+	core::DynamicArray<SparseRawVolumeStorage::OccupiedBrickInfo> infos;
+	_storage->collectOccupiedBricks(lMins, lMaxs, infos);
+	out.reserve(infos.size());
+	for (const SparseRawVolumeStorage::OccupiedBrickInfo &info : infos) {
+		out.push_back(OccupiedBrickSpan{glm::ivec3((int32_t)((int64_t)lower.x + info.localOrigin.x),
+												   (int32_t)((int64_t)lower.y + info.localOrigin.y),
+												   (int32_t)((int64_t)lower.z + info.localOrigin.z)),
+										info.brick});
+	}
+}
+
+void RawVolume::notifySparseModified() {
+	if (_storage != nullptr) {
+		_storage->notifyModified();
+	}
 }
 
 const uint32_t *RawVolume::sparseGenerationPtr() const {

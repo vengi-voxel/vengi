@@ -7,6 +7,7 @@
 #include "app/ForParallel.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
+#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "voxel/RawVolume.h"
@@ -44,7 +45,6 @@ private:
 	// Sparse mode fields
 	const RawVolume *_sparseVol = nullptr;
 	glm::ivec3 _localBrickOrigin{0};
-	Voxel _defaultVoxel{};
 	uint32_t _defaultBits = 0u;
 	bool _seeded = false;
 	bool _modified = false;
@@ -70,90 +70,11 @@ public:
 	ParallelTileWriter(const Region &tileRegion, const RawVolume *sparseVol, const glm::ivec3 &volLower,
 					   const glm::ivec3 &localBrickOrigin, const Voxel &defaultVoxel)
 		: _tileRegion(tileRegion), _volLower(volLower), _sparseVol(sparseVol), _localBrickOrigin(localBrickOrigin),
-		  _defaultVoxel(defaultVoxel), _defaultBits(priv::tileVoxelBits(defaultVoxel)) {
+		  _defaultBits(priv::tileVoxelBits(defaultVoxel)) {
 	}
 
 	CORE_FORCE_INLINE const Region &region() const {
 		return _tileRegion;
-	}
-
-	CORE_FORCE_INLINE bool isContiguous() const {
-		return _denseData != nullptr;
-	}
-
-	CORE_FORCE_INLINE const glm::ivec3 &localBrickOrigin() const {
-		return _localBrickOrigin;
-	}
-
-	/**
-	 * @brief Fast path for merging an aligned full 8x8x8 air-default source brick into a sparse air-default target.
-	 * @return number of voxels changed (same semantics as Voxel::operator=).
-	 */
-	int mergeAlignedSparseBrick(const SparseChunk::Brick *srcBrick) {
-		core_assert(_denseData == nullptr);
-		if (srcBrick == nullptr || srcBrick->count == 0) {
-			return 0;
-		}
-		const bool srcDense = srcBrick->dense();
-		// Ultra-fast path when destination brick is currently empty: overwrite into fresh tile directly
-		if (!_seeded &&
-			_sparseVol->sparseBrickAt(_localBrickOrigin.x, _localBrickOrigin.y, _localBrickOrigin.z) == nullptr) {
-			_seeded = true;
-			_modified = true;
-			_count = srcBrick->count;
-			for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
-				_mask[w] = srcBrick->mask[w];
-			}
-			if (srcDense) {
-				memcpy((void *)_tile, (const void *)srcBrick->voxels, sizeof(_tile));
-			} else {
-				core_memset((void *)_tile, 0, sizeof(_tile));
-				int packed = 0;
-				for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
-					uint64_t bits = srcBrick->mask[w];
-					while (bits != 0u) {
-						const int bit = SparseChunk::ctz64(bits);
-						bits &= bits - 1u;
-						_tile[(w << 6) | bit].overwrite(srcBrick->voxels[packed++]);
-					}
-				}
-			}
-			return _count;
-		}
-
-		ensureSeeded();
-		int changed = 0;
-		int packed = 0;
-		for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
-			uint64_t bits = srcBrick->mask[w];
-			while (bits != 0u) {
-				const int bit = SparseChunk::ctz64(bits);
-				bits &= bits - 1u;
-				const int idx = (w << 6) | bit;
-				const Voxel &sv = srcDense ? srcBrick->voxels[idx] : srcBrick->voxels[packed++];
-				Voxel merged;
-				merged.overwrite(_tile[idx]);
-				merged = sv;
-				const uint32_t newBits = priv::tileVoxelBits(merged);
-				if (newBits == priv::tileVoxelBits(_tile[idx])) {
-					continue;
-				}
-				_tile[idx].overwrite(merged);
-				const uint64_t bitMask = (uint64_t)1u << bit;
-				const bool wasSet = (_mask[w] & bitMask) != 0u;
-				const bool nowSet = (newBits != _defaultBits);
-				if (nowSet && !wasSet) {
-					_mask[w] |= bitMask;
-					++_count;
-				} else if (!nowSet && wasSet) {
-					_mask[w] &= ~bitMask;
-					--_count;
-				}
-				_modified = true;
-				++changed;
-			}
-		}
-		return changed;
 	}
 
 	/** Write voxel with Voxel::operator= normal-merge semantics; returns true if voxel changed. */
@@ -291,11 +212,11 @@ inline void forEachTileWriteParallel(RawVolume &dst, const Region &writeRegion, 
 	const int bzMax = lz1 >> SparseChunk::BrickShift;
 	const Voxel defaultVoxel = dst.sparseDefaultVoxel();
 
-	core::Lock mergeLock;
+	core_trace_mutex(core::Lock, mergeLock, "VolumeTileDispatchMerge");
 	core::DynamicArray<RawVolume::PreparedTileBrick> allPrepared;
 
 	app::for_parallel(bzMin, bzMax + 1, [&](int bzStart, int bzEnd) {
-		core::DynamicArray<RawVolume::PreparedTileBrick> localPrepared;
+		core::DynamicArray<RawVolume::PreparedTileBrick, 256u> localPrepared;
 		for (int bz = bzStart; bz < bzEnd; ++bz) {
 			const int localZ = bz << SparseChunk::BrickShift;
 			const int wz0 = (int)((int64_t)volLower.z + core_max(localZ, lz0));
@@ -327,6 +248,139 @@ inline void forEachTileWriteParallel(RawVolume &dst, const Region &writeRegion, 
 		}
 	});
 	dst.adoptPreparedSparseBricks(allPrepared);
+}
+
+/**
+ * @brief Lock-free parallel in-place mutation of all non-air voxels in @p region.
+ *
+ * Callback signature: @c void fn(int x, int y, int z, Voxel &voxel)
+ * Requirements: @p fn must NOT change occupancy (must keep non-air voxels non-air, e.g. recoloring/shading/flags).
+ */
+template<typename VoxelFunc>
+inline void forEachOccupiedVoxelParallel(RawVolume &vol, const Region &region, VoxelFunc &&fn) {
+	if (!vol.valid() || !region.isValid()) {
+		return;
+	}
+	Region r = region;
+	if (!r.cropTo(vol.region())) {
+		return;
+	}
+	const glm::ivec3 &volLower = vol.region().getLowerCorner();
+	if (vol.isContiguous()) {
+		Voxel *data = vol.linearVoxels();
+		const int64_t w = vol.width();
+		const int64_t stride = vol.region().stride();
+		const int zCount = r.getDepthInVoxels();
+		const int yCount = r.getHeightInVoxels();
+		const int xCount = r.getWidthInVoxels();
+		const int64_t xOff = (int64_t)r.getLowerX() - (int64_t)volLower.x;
+		const int64_t yOff = (int64_t)r.getLowerY() - (int64_t)volLower.y;
+		const int64_t zOff = (int64_t)r.getLowerZ() - (int64_t)volLower.z;
+		app::for_parallel(0, zCount, [&](int start, int end) {
+			for (int z = start; z < end; ++z) {
+				const int wz = r.getLowerZ() + z;
+				const int64_t zBase = (zOff + z) * stride + xOff;
+				for (int y = 0; y < yCount; ++y) {
+					const int wy = r.getLowerY() + y;
+					Voxel *row = data + zBase + (yOff + y) * w;
+					for (int x = 0; x < xCount; ++x) {
+						if (!isAir(row[x].getMaterial())) {
+							fn(r.getLowerX() + x, wy, wz, row[x]);
+						}
+					}
+				}
+			}
+		});
+		return;
+	}
+
+	if (vol.isSparseAirDefault()) {
+		core::DynamicArray<RawVolume::OccupiedBrickSpan> bricks;
+		vol.collectOccupiedSparseBricks(r, bricks);
+		if (bricks.empty()) {
+			return;
+		}
+		const int rMinX = r.getLowerX();
+		const int rMaxX = r.getUpperX();
+		const int rMinY = r.getLowerY();
+		const int rMaxY = r.getUpperY();
+		const int rMinZ = r.getLowerZ();
+		const int rMaxZ = r.getUpperZ();
+		app::for_parallel(0, (int)bricks.size(), [&](int start, int end) {
+			for (int i = start; i < end; ++i) {
+				const RawVolume::OccupiedBrickSpan &span = bricks[i];
+				SparseChunk::Brick *b = span.brick;
+				const int ox = span.worldOrigin.x;
+				const int oy = span.worldOrigin.y;
+				const int oz = span.worldOrigin.z;
+				const bool fullInside = (ox >= rMinX && ox + 7 <= rMaxX && oy >= rMinY && oy + 7 <= rMaxY &&
+										 oz >= rMinZ && oz + 7 <= rMaxZ);
+				if (b->count == SparseChunk::BrickVoxels && fullInside) {
+					Voxel *voxels = b->voxels;
+					for (int lz = 0; lz < SparseChunk::BrickSide; ++lz) {
+						const int wz = oz + lz;
+						for (int ly = 0; ly < SparseChunk::BrickSide; ++ly) {
+							const int wy = oy + ly;
+							Voxel *row = voxels + ((lz << 6) | (ly << 3));
+							for (int lx = 0; lx < SparseChunk::BrickSide; ++lx) {
+								if (!isAir(row[lx].getMaterial())) {
+									fn(ox + lx, wy, wz, row[lx]);
+								}
+							}
+						}
+					}
+					continue;
+				}
+				const bool dense = b->dense();
+				int packed = 0;
+				for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
+					const int wz = oz + w;
+					uint64_t bits = b->mask[w];
+					if (bits == 0u) {
+						continue;
+					}
+					if (wz < rMinZ || wz > rMaxZ) {
+						if (!dense) {
+							packed += SparseChunk::popcount64(bits);
+						}
+						continue;
+					}
+					while (bits != 0u) {
+						const int bit = SparseChunk::ctz64(bits);
+						bits &= bits - 1u;
+						Voxel &v = dense ? b->voxels[(w << 6) | bit] : b->voxels[packed++];
+						const int wx = ox + (bit & 7);
+						const int wy = oy + (bit >> 3);
+						if ((fullInside || (wx >= rMinX && wx <= rMaxX && wy >= rMinY && wy <= rMaxY)) &&
+							!isAir(v.getMaterial())) {
+							fn(wx, wy, wz, v);
+						}
+					}
+				}
+			}
+		});
+		vol.notifySparseModified();
+		return;
+	}
+
+	// Non-air default sparse fallback: safe tile-based parallel write
+	forEachTileWriteParallel(vol, r, [&](ParallelTileWriter &tile) {
+		const Region &tr = tile.region();
+		for (int z = tr.getLowerZ(); z <= tr.getUpperZ(); ++z) {
+			for (int y = tr.getLowerY(); y <= tr.getUpperY(); ++y) {
+				for (int x = tr.getLowerX(); x <= tr.getUpperX(); ++x) {
+					Voxel v = vol.voxel(x, y, z);
+					if (!isAir(v.getMaterial())) {
+						Voxel copy = v;
+						fn(x, y, z, copy);
+						if (!(copy == v)) {
+							tile.setVoxelOverwrite(x, y, z, copy);
+						}
+					}
+				}
+			}
+		}
+	});
 }
 
 } // namespace voxel

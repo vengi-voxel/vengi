@@ -35,32 +35,12 @@ int mergeVolumes(Volume1 *destination, const Volume2 *source, const voxel::Regio
 			const glm::ivec3 offset = destReg.getLowerCorner() - sourceReg.getLowerCorner();
 			const voxel::Region targetReg(destReg.getLowerCorner(),
 										  destReg.getLowerCorner() + sourceReg.getDimensionsInVoxels() - 1);
-			const bool dstAirDefault = destination->isSparseAirDefault();
 			voxel::forEachTileWriteParallel(*destination, targetReg, [&](voxel::ParallelTileWriter &tile) {
 				const voxel::Region &tr = tile.region();
 				const voxel::Region srcTile(tr.getLowerCorner() - offset, tr.getUpperCorner() - offset);
 				if constexpr (std::is_same_v<Volume2, voxel::RawVolume> && ConditionSkipsAir<MergeCondition>::value) {
-					if (source->isSparseAirDefault()) {
-						if (!source->hasOccupiedVoxelsInRegion(srcTile)) {
-							return;
-						}
-						if constexpr (std::is_same_v<MergeCondition, VisitSolid>) {
-							if (dstAirDefault && source->region().containsRegion(srcTile) &&
-								srcTile.getWidthInVoxels() == voxel::SparseChunk::BrickSide &&
-								srcTile.getHeightInVoxels() == voxel::SparseChunk::BrickSide &&
-								srcTile.getDepthInVoxels() == voxel::SparseChunk::BrickSide) {
-								const glm::ivec3 srcLocal = srcTile.getLowerCorner() - source->region().getLowerCorner();
-								if (((srcLocal.x | srcLocal.y | srcLocal.z) & (voxel::SparseChunk::BrickSide - 1)) ==
-									0) {
-									const int localCnt = tile.mergeAlignedSparseBrick(
-										source->sparseBrickAt(srcLocal.x, srcLocal.y, srcLocal.z));
-									if (localCnt > 0) {
-										cnt.increment(localCnt);
-									}
-									return;
-								}
-							}
-						}
+					if (source->isSparseAirDefault() && !source->hasOccupiedVoxelsInRegion(srcTile)) {
+						return;
 					}
 				}
 				int localCnt = 0;

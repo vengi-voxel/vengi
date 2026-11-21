@@ -202,41 +202,6 @@ void SparseRawVolumeStorage::setVoxelsRow(int lx, int ly, int lz, int count, con
 	}
 }
 
-void SparseRawVolumeStorage::copyRowFrom(int lx, int ly, int lz, int count, const Voxel *src, bool overwrite) {
-	if (count <= 0 || src == nullptr) {
-		return;
-	}
-	const int cy = ly >> ChunkShift;
-	const int cz = lz >> ChunkShift;
-	const int cly = ly & ChunkMask;
-	const int clz = lz & ChunkMask;
-	const int endX = lx + count;
-	int x = lx;
-	const Voxel *srcPtr = src;
-	while (x < endX) {
-		const int cx = x >> ChunkShift;
-		const int chunkEndX = (cx + 1) << ChunkShift;
-		const int segEnd = endX < chunkEndX ? endX : chunkEndX;
-		const int clx = x & ChunkMask;
-		const int segCount = segEnd - x;
-		ChunkSlot &slot = _slots[chunkIndex(cx, cy, cz)];
-		core::ScopedLock scoped(slot.lock);
-		SparseChunk *chunk = slot.chunk.load();
-		// Fast skip when target chunk is absent and source row is all zero (default air)
-		if (chunk == nullptr && _defaultIsZero &&
-			core::memchr_not(srcPtr, 0, (size_t)segCount * sizeof(Voxel)) == nullptr) {
-			srcPtr += segCount;
-			x = segEnd;
-			continue;
-		}
-		for (int i = 0; i < segCount; ++i) {
-			setVoxelLocked(slot, clx + i, cly, clz, srcPtr[i], overwrite);
-		}
-		srcPtr += segCount;
-		x = segEnd;
-	}
-}
-
 void SparseRawVolumeStorage::readRegion(const glm::ivec3 &localMins, const glm::ivec3 &size, Voxel *target) const {
 	if (target == nullptr || size.x <= 0 || size.y <= 0 || size.z <= 0) {
 		return;
@@ -1070,6 +1035,61 @@ const SparseChunk::Brick *SparseRawVolumeStorage::brickAt(int lx, int ly, int lz
 	return chunk != nullptr ? chunk->brick(lx & ChunkMask, ly & ChunkMask, lz & ChunkMask) : nullptr;
 }
 
+void SparseRawVolumeStorage::collectOccupiedBricks(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs,
+												   core::DynamicArray<OccupiedBrickInfo> &out) const {
+	out.clear();
+	if (localMins.x > localMaxs.x || localMins.y > localMaxs.y || localMins.z > localMaxs.z) {
+		return;
+	}
+	const int cxMin = localMins.x >> ChunkShift;
+	const int cyMin = localMins.y >> ChunkShift;
+	const int czMin = localMins.z >> ChunkShift;
+	const int cxMax = localMaxs.x >> ChunkShift;
+	const int cyMax = localMaxs.y >> ChunkShift;
+	const int czMax = localMaxs.z >> ChunkShift;
+	size_t reserveCount = 0u;
+	for (int cz = czMin; cz <= czMax; ++cz) {
+		for (int cy = cyMin; cy <= cyMax; ++cy) {
+			for (int cx = cxMin; cx <= cxMax; ++cx) {
+				const SparseChunk *chunk = _slots[chunkIndex(cx, cy, cz)].chunk.load();
+				if (chunk != nullptr && !chunk->empty()) {
+					reserveCount += (size_t)chunk->brickPoolUsed();
+				}
+			}
+		}
+	}
+	if (reserveCount == 0u) {
+		return;
+	}
+	out.reserve(reserveCount);
+	for (int cz = czMin; cz <= czMax; ++cz) {
+		const int zBase = cz << ChunkShift;
+		const int lz0 = core_max(localMins.z - zBase, 0);
+		const int lz1 = core_min(localMaxs.z - zBase, ChunkMask);
+		for (int cy = cyMin; cy <= cyMax; ++cy) {
+			const int yBase = cy << ChunkShift;
+			const int ly0 = core_max(localMins.y - yBase, 0);
+			const int ly1 = core_min(localMaxs.y - yBase, ChunkMask);
+			for (int cx = cxMin; cx <= cxMax; ++cx) {
+				SparseChunk *chunk = _slots[chunkIndex(cx, cy, cz)].chunk.load();
+				if (chunk == nullptr || chunk->empty()) {
+					continue;
+				}
+				const int xBase = cx << ChunkShift;
+				const int lx0 = core_max(localMins.x - xBase, 0);
+				const int lx1 = core_min(localMaxs.x - xBase, ChunkMask);
+				chunk->visitBricksMutable([&](int bx, int by, int bz, SparseChunk::Brick &b) {
+					if (bx + BrickMask < lx0 || bx > lx1 || by + BrickMask < ly0 || by > ly1 || bz + BrickMask < lz0 ||
+						bz > lz1) {
+						return;
+					}
+					out.push_back(OccupiedBrickInfo{glm::ivec3(xBase + bx, yBase + by, zBase + bz), &b});
+				});
+			}
+		}
+	}
+}
+
 bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 	const int w = _dimensions.x;
 	const int h = _dimensions.y;
@@ -1136,7 +1156,7 @@ bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 		const int brickXCount = (w + BrickSide - 1) >> BrickShift;
 		const uint32_t defaultBits = voxelBits(_default);
 
-		core::Lock mergeLock;
+		core_trace_mutex(core::Lock, mergeLock, "SparseRawVolumeStorageShiftMerge");
 		core::DynamicArray<PreparedChunkBrick> allPrepared;
 
 		app::for_parallel(0, brickZCount, [&](int bzStart, int bzEnd) {

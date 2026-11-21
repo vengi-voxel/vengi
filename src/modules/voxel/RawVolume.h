@@ -192,6 +192,14 @@ public:
 	}
 
 	/**
+	 * @brief Reference to a live brick inside a sparse RawVolume (for lock-free parallel read or in-place modify).
+	 */
+	struct OccupiedBrickSpan {
+		glm::ivec3 worldOrigin{0};
+		SparseChunk::Brick *brick = nullptr;
+	};
+
+	/**
 	 * @brief Pre-packed or dense brick produced by a worker thread for pointer-transfer adoption.
 	 */
 	struct PreparedTileBrick {
@@ -206,7 +214,7 @@ public:
 	/** True when backed by SparseChunk storage and default voxel material is Air. */
 	bool isSparseAirDefault() const;
 	Voxel sparseDefaultVoxel() const;
-	/** O(1) brick/chunk occupancy test for skipping empty source tiles. */
+	/** Conservative test for stored voxels in sparse bricks intersecting the region. */
 	bool hasOccupiedVoxelsInRegion(const Region &region) const;
 	/** Lock-free lookup of the brick covering volume-local coordinate (localX, localY, localZ), or nullptr. */
 	const SparseChunk::Brick *sparseBrickAt(int localX, int localY, int localZ) const;
@@ -214,6 +222,8 @@ public:
 							 uint64_t (&outMask)[SparseChunk::BrickMaskWords], int &outCount) const;
 	size_t sparseChunkIndex(const glm::ivec3 &localBrickOrigin) const;
 	void adoptPreparedSparseBricks(core::DynamicArray<PreparedTileBrick> &prepared);
+	void collectOccupiedSparseBricks(const Region &region, core::DynamicArray<OccupiedBrickSpan> &out) const;
+	void notifySparseModified();
 
 	const uint32_t *sparseGenerationPtr() const;
 

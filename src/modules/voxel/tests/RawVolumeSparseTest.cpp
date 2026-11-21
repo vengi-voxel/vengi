@@ -374,4 +374,125 @@ TEST_F(RawVolumeSparseTest, ParallelTileDispatchMergeMoveAndCopyMatchDense) {
 	EXPECT_TRUE(sparseCopy.isSparse());
 }
 
+TEST_F(RawVolumeSparseTest, SolidMergeSkipsAirWithRetainedNormals) {
+	RawVolume::setChunkedStorageThreshold(8);
+	const Region region(0, 7);
+	RawVolume src(region);
+	RawVolume dst(region);
+	ASSERT_TRUE(src.isSparse());
+	ASSERT_TRUE(dst.isSparse());
+
+	const Voxel solid = createVoxel(VoxelType::Generic, 5, 12);
+	ASSERT_TRUE(src.setVoxel(0, 0, 0, solid));
+	ASSERT_TRUE(src.setVoxel(0, 0, 0, Voxel()));
+	ASSERT_EQ(12, src.voxel(0, 0, 0).getNormal());
+	ASSERT_TRUE(dst.setVoxel(0, 0, 0, solid));
+	ASSERT_TRUE(src.setVoxel(1, 0, 0, solid));
+
+	EXPECT_EQ(1, voxelutil::mergeVolumes(&dst, &src, region, region));
+	EXPECT_EQ(solid, dst.voxel(0, 0, 0));
+	EXPECT_EQ(solid, dst.voxel(1, 0, 0));
+}
+
+TEST_F(RawVolumeSparseTest, PartialCopyPreservesSparseDefaultAirMetadata) {
+	RawVolume::setChunkedStorageThreshold(8);
+	RawVolume src(Region(0, 7));
+	RawVolume dst(Region(0, 7));
+	ASSERT_TRUE(src.isSparse());
+	ASSERT_TRUE(dst.isSparse());
+
+	const Voxel taggedAir = createVoxel(VoxelType::Air, 0, 0, FlagOutline);
+	src.fill(taggedAir);
+	ASSERT_TRUE(dst.copyInto(src, Region(0, 1)));
+	EXPECT_EQ(taggedAir, dst.voxel(0, 0, 0));
+	EXPECT_EQ(taggedAir, dst.voxel(1, 1, 1));
+	EXPECT_EQ(Voxel(), dst.voxel(2, 2, 2));
+}
+
+TEST_F(RawVolumeSparseTest, OccupancyGuidedVisitorAndInPlaceParallelMatchDense) {
+	RawVolume::setChunkedStorageThreshold(16);
+	RawVolume sparse(Region(-16, -16, -16, 47, 47, 47));
+	RawVolume::setChunkedStorageThreshold(256);
+	RawVolume dense(Region(-16, -16, -16, 47, 47, 47));
+	ASSERT_TRUE(sparse.isSparse());
+	ASSERT_TRUE(dense.isContiguous());
+
+	// Mix of packed bricks (shell) and a dense 12x12x12 cube spanning brick boundaries
+	for (int z = -10; z <= 30; ++z) {
+		for (int y = -10; y <= 30; ++y) {
+			for (int x = -10; x <= 30; ++x) {
+				const bool onShell = (x == -10 || x == 30 || y == -10 || y == 30 || z == -10 || z == 30);
+				const bool inCube = (x >= -2 && x < 10 && y >= -2 && y < 10 && z >= -2 && z < 10);
+				if (onShell || inCube) {
+					const Voxel v = createVoxel(VoxelType::Generic, (uint8_t)(((x + y * 3 + z * 7) & 0x3F) + 1));
+					sparse.setVoxel(x, y, z, v);
+					dense.setVoxel(x, y, z, v);
+				}
+			}
+		}
+	}
+
+	// 1. Full region countVoxels & ZYX visitVolume exact order match
+	EXPECT_EQ(voxelutil::countVoxels(sparse), voxelutil::countVoxels(dense));
+	core::DynamicArray<glm::ivec3> sparseOrder;
+	core::DynamicArray<glm::ivec3> denseOrder;
+	voxelutil::visitVolume(sparse, [&](int x, int y, int z, const Voxel &) { sparseOrder.push_back({x, y, z}); });
+	voxelutil::visitVolume(dense, [&](int x, int y, int z, const Voxel &) { denseOrder.push_back({x, y, z}); });
+	ASSERT_EQ(sparseOrder.size(), denseOrder.size());
+	for (size_t i = 0; i < sparseOrder.size(); ++i) {
+		ASSERT_EQ(sparseOrder[i], denseOrder[i]) << "full ZYX mismatch at index " << i;
+	}
+
+	// 2. Clipped sub-region (cuts bricks on all 6 faces): ZYX, VisitVoxelColor, VisitVisible, countVoxels, parallel sum
+	const Region sub(-5, -3, -7, 25, 19, 27);
+	sparseOrder.clear();
+	denseOrder.clear();
+	voxelutil::visitVolume(sparse, sub, [&](int x, int y, int z, const Voxel &) { sparseOrder.push_back({x, y, z}); });
+	voxelutil::visitVolume(dense, sub, [&](int x, int y, int z, const Voxel &) { denseOrder.push_back({x, y, z}); });
+	ASSERT_EQ(sparseOrder.size(), denseOrder.size());
+	for (size_t i = 0; i < sparseOrder.size(); ++i) {
+		ASSERT_EQ(sparseOrder[i], denseOrder[i]) << "sub-region ZYX mismatch at index " << i;
+	}
+	EXPECT_EQ(voxelutil::visitVolumeParallel(sparse, sub, voxelutil::EmptyVisitor(), voxelutil::VisitSolid()),
+			  voxelutil::visitVolumeParallel(dense, sub, voxelutil::EmptyVisitor(), voxelutil::VisitSolid()));
+	EXPECT_EQ(voxelutil::visitVolumeParallel(sparse, sub, voxelutil::EmptyVisitor(), voxelutil::VisitVoxelColor(5)),
+			  voxelutil::visitVolumeParallel(dense, sub, voxelutil::EmptyVisitor(), voxelutil::VisitVoxelColor(5)));
+	EXPECT_EQ(voxelutil::visitVolumeParallel(sparse, sub, voxelutil::EmptyVisitor(), voxelutil::VisitVisible()),
+			  voxelutil::visitVolumeParallel(dense, sub, voxelutil::EmptyVisitor(), voxelutil::VisitVisible()));
+
+	// 3. Bool-returning early-break visitor in ZYX order
+	sparseOrder.clear();
+	denseOrder.clear();
+	voxelutil::visitVolume(sparse, sub, [&](int x, int y, int z, const Voxel &) {
+		sparseOrder.push_back({x, y, z});
+		return true;
+	});
+	voxelutil::visitVolume(dense, sub, [&](int x, int y, int z, const Voxel &) {
+		denseOrder.push_back({x, y, z});
+		return true;
+	});
+	ASSERT_EQ(sparseOrder.size(), denseOrder.size());
+	for (size_t i = 0; i < sparseOrder.size(); ++i) {
+		ASSERT_EQ(sparseOrder[i], denseOrder[i]) << "early-break ZYX mismatch at index " << i;
+	}
+
+	// 4. forEachOccupiedVoxelParallel on clipped sub-region and full region
+	voxel::forEachOccupiedVoxelParallel(sparse, sub, [](int, int, int, Voxel &v) {
+		v.setColor((uint8_t)((v.getColor() + 3u) & 0xFFu));
+	});
+	voxel::forEachOccupiedVoxelParallel(dense, sub, [](int, int, int, Voxel &v) {
+		v.setColor((uint8_t)((v.getColor() + 3u) & 0xFFu));
+	});
+	EXPECT_TRUE(sparse.equals(dense));
+
+	voxel::forEachOccupiedVoxelParallel(sparse, sparse.region(), [](int, int, int, Voxel &v) {
+		v.setColor((uint8_t)(v.getColor() ^ 1u));
+	});
+	voxel::forEachOccupiedVoxelParallel(dense, dense.region(), [](int, int, int, Voxel &v) {
+		v.setColor((uint8_t)(v.getColor() ^ 1u));
+	});
+	EXPECT_TRUE(sparse.equals(dense));
+	EXPECT_TRUE(sparse.isSparse());
+}
+
 } // namespace voxel
