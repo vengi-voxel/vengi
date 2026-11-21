@@ -34,6 +34,24 @@ TEST_F(MementoChunkTest, SerializesWithoutMaterializingSource) {
 	EXPECT_EQ(voxel::Voxel(), restored.voxel(pos + 1));
 }
 
+TEST_F(MementoChunkTest, RestoresOnlyRequestedRegionFromLargerSnapshot) {
+	const voxel::Region bounds(-20, 19);
+	voxel::RawVolume source(bounds);
+	const voxel::Voxel value(voxel::VoxelType::Generic, 17, 8, voxel::FlagOutline, 3);
+	source.setVoxel(10, -7, 14, value);
+	const MementoData data = MementoData::fromVolume(&source, bounds);
+
+	voxel::RawVolume restored(bounds);
+	const voxel::Voxel original(voxel::VoxelType::Generic, 25);
+	restored.fill(original);
+	const voxel::Region requested(9, -8, 13, 11, -6, 15);
+	ASSERT_TRUE(MementoData::toVolume(&restored, data, requested));
+	EXPECT_EQ(value, restored.voxel(10, -7, 14));
+	EXPECT_EQ(voxel::Voxel(), restored.voxel(9, -8, 13));
+	EXPECT_EQ(original, restored.voxel(8, -8, 13));
+	EXPECT_EQ(original, restored.voxel(11, -6, 16));
+}
+
 TEST_F(MementoChunkTest, AccessorPreservesCroppedAndOutsideUndoRegions) {
 	voxel::RawVolume source(voxel::Region(-40, 216));
 	const voxel::Voxel value(voxel::VoxelType::Generic, 17, 8, voxel::FlagOutline, 3);

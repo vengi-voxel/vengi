@@ -12,12 +12,12 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/LZ4ReadStream.h"
 #include "io/LZ4WriteStream.h"
-#include "io/MemoryReadStream.h"
 #include "palette/NormalPalette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -26,6 +26,7 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
+#include <limits.h>
 
 namespace memento {
 
@@ -298,85 +299,70 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	return {outStream.release(), size, volume->region(), volume->region()};
 }
 
-bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData, const voxel::Region &region) {
-	if (mementoData._buffer == nullptr) {
-		return false;
-	}
-	core_assert_always(volume != nullptr);
-	if (volume == nullptr) {
-		return false;
-	}
-	if (!voxel::intersects(mementoData.dataRegion(), region)) {
+static bool readVolumeRegion(io::LZ4FrameReader &reader, const voxel::Region &dataRegion, voxel::RawVolume &restored) {
+	const voxel::Region &region = restored.region();
+	const size_t volumeBytes = voxel::RawVolume::size(dataRegion);
+	const int width = region.getWidthInVoxels();
+	const size_t rowBytes = (size_t)width * sizeof(voxel::Voxel);
+	if (volumeBytes == 0 || rowBytes > INT_MAX) {
 		return false;
 	}
 
-	const voxel::Region &dataRegion = mementoData.dataRegion();
-	io::MemoryReadStream dataStream(mementoData._buffer, mementoData._compressedSize);
-	io::LZ4ReadStream stream(dataStream, (int)mementoData._compressedSize);
-	voxel::Region copyRegion = region;
-	copyRegion.cropTo(dataRegion);
-	if (!copyRegion.cropTo(volume->region())) {
-		return false;
+	const size_t srcWidth = dataRegion.getWidthInVoxels();
+	const size_t srcStride = dataRegion.stride();
+	const size_t xOffset = (int64_t)region.getLowerX() - dataRegion.getLowerX();
+	const size_t yOffset = (int64_t)region.getLowerY() - dataRegion.getLowerY();
+	const size_t zOffset = (int64_t)region.getLowerZ() - dataRegion.getLowerZ();
+	voxel::Voxel *linear = restored.linearVoxels();
+	uint8_t extra;
+	if (linear != nullptr && region == dataRegion && volumeBytes <= INT_MAX) {
+		return reader.read(linear, volumeBytes) == (int)volumeBytes && reader.read(&extra, sizeof(extra)) == 0;
 	}
-	if (volume->isSparse()) {
-		const int w = dataRegion.getWidthInVoxels();
-		const int h = dataRegion.getHeightInVoxels();
-		const int d = dataRegion.getDepthInVoxels();
-		const size_t sliceBytes = (size_t)w * (size_t)h * sizeof(voxel::Voxel);
-		voxel::Voxel *sliceBuf = (voxel::Voxel *)core_malloc(sliceBytes);
-		if (sliceBuf == nullptr) {
-			Log::error("Failed to allocate memento slice buffer");
-			return false;
-		}
-		const int minZ = copyRegion.getLowerZ() - dataRegion.getLowerZ();
-		const int maxZ = copyRegion.getUpperZ() - dataRegion.getLowerZ();
-		const int minY = copyRegion.getLowerY() - dataRegion.getLowerY();
-		const int maxY = copyRegion.getUpperY() - dataRegion.getLowerY();
-		const int minX = copyRegion.getLowerX() - dataRegion.getLowerX();
-		const int maxX = copyRegion.getUpperX() - dataRegion.getLowerX();
-		bool ok = true;
-		for (int z = 0; z <= maxZ && z < d; ++z) {
-			if (stream.read(sliceBuf, sliceBytes) == -1) {
-				ok = false;
-				break;
+	core::Buffer<voxel::Voxel> scratch;
+	if (linear == nullptr) {
+		scratch.resize(width);
+	}
+	size_t pos = 0;
+	for (int z = 0; z < region.getDepthInVoxels(); ++z) {
+		for (int y = 0; y < region.getHeightInVoxels(); ++y) {
+			const size_t offset = ((zOffset + z) * srcStride + (yOffset + y) * srcWidth + xOffset) *
+								  sizeof(voxel::Voxel);
+			voxel::Voxel *row = linear != nullptr ? linear : scratch.data();
+			if (!reader.skip(offset - pos) || reader.read(row, rowBytes) != (int)rowBytes) {
+				return false;
 			}
-			if (z < minZ) {
-				continue;
-			}
-			const int worldZ = dataRegion.getLowerZ() + z;
-			for (int y = minY; y <= maxY; ++y) {
-				const int worldY = dataRegion.getLowerY() + y;
-				const voxel::Voxel *row = sliceBuf + (size_t)y * (size_t)w + (size_t)minX;
-				for (int x = minX; x <= maxX; ++x) {
-					volume->setVoxelOverwrite(dataRegion.getLowerX() + x, worldY, worldZ, row[x - minX]);
+			pos = offset + rowBytes;
+			if (linear != nullptr) {
+				linear += width;
+			} else {
+				for (int x = 0; x < width; ++x) {
+					restored.setVoxelOverwrite(region.getLowerX() + x, region.getLowerY() + y, region.getLowerZ() + z,
+											   row[x]);
 				}
 			}
 		}
-		core_free(sliceBuf);
-		if (!ok) {
-			Log::error("Failed to decompress memento volume data");
-			return false;
-		}
-		return true;
 	}
-	const size_t uncompressedBufferSize = (size_t)dataRegion.voxels() * sizeof(voxel::Voxel);
-	uint8_t *uncompressedBuf = (uint8_t *)core_malloc(uncompressedBufferSize);
-	if (stream.read(uncompressedBuf, uncompressedBufferSize) == -1) {
-		core_free(uncompressedBuf);
+	return reader.skip(volumeBytes - pos) && reader.read(&extra, sizeof(extra)) == 0;
+}
+
+bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoData, const voxel::Region &region) {
+	if (mementoData._buffer == nullptr || volume == nullptr || !volume->valid()) {
+		return false;
+	}
+	const voxel::Region &dataRegion = mementoData.dataRegion();
+	voxel::Region copyRegion = region;
+	if (!copyRegion.cropTo(dataRegion) || !copyRegion.cropTo(volume->region())) {
+		return false;
+	}
+
+	// Stage only the affected region so corrupt frames cannot partially change the destination.
+	voxel::RawVolume restored(copyRegion);
+	io::LZ4FrameReader reader(mementoData._buffer, mementoData._compressedSize);
+	if (!restored.valid() || !readVolumeRegion(reader, dataRegion, restored)) {
 		Log::error("Failed to decompress memento volume data");
 		return false;
 	}
-	// don't pass const voxel::Voxel here - would create a memory leak - see the RawVolume ctors
-	core::ScopedPtr<voxel::RawVolume> v(
-		voxel::RawVolume::createRaw((voxel::Voxel *)uncompressedBuf, dataRegion));
-	if (!v) {
-		return false;
-	}
-	if (!volume->copyInto(*v, copyRegion)) {
-		Log::error("Failed to copy memento volume region into target volume");
-		return false;
-	}
-	return true;
+	return volume->copyInto(restored);
 }
 
 MementoHandler::MementoHandler() {

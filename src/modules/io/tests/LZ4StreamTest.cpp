@@ -47,6 +47,28 @@ TEST_F(LZ4StreamTest, testRoundTripLarge) {
 	ASSERT_TRUE(decoder.eos());
 }
 
+TEST_F(LZ4StreamTest, testFrameReaderSkipsAndChecksFrameEnd) {
+	core::String payload(128 * 1024, 'A');
+	payload[80 * 1024] = 'B';
+	BufferedReadWriteStream compressed;
+	LZ4WriteStream encoder(compressed);
+	ASSERT_EQ((int)payload.size(), encoder.write(payload.c_str(), payload.size()));
+	ASSERT_TRUE(encoder.flush());
+
+	LZ4FrameReader decoder(compressed.getBuffer(), compressed.size());
+	ASSERT_TRUE(decoder.skip(80 * 1024));
+	char value = '\0';
+	ASSERT_EQ(1, decoder.read(&value, sizeof(value)));
+	EXPECT_EQ('B', value);
+	ASSERT_TRUE(decoder.skip(payload.size() - 80 * 1024 - 1));
+	EXPECT_EQ(0, decoder.read(&value, sizeof(value)));
+	EXPECT_TRUE(decoder.eos());
+
+	ASSERT_GT(compressed.size(), 1);
+	LZ4FrameReader truncated(compressed.getBuffer(), compressed.size() - 1);
+	EXPECT_TRUE(!truncated.skip(payload.size()) || truncated.read(&value, sizeof(value)) < 0);
+}
+
 TEST_F(LZ4StreamTest, testEmptyFlush) {
 	BufferedReadWriteStream compressed;
 	{
