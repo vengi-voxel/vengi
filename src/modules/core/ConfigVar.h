@@ -12,6 +12,7 @@ constexpr const char *ClientDebugSeverity = "cl_debugseverity";
 constexpr const char *ClientMultiSampleSamples = "cl_multisamplesamples";
 constexpr const char *ClientMultiSampleBuffers = "cl_multisamplebuffers";
 constexpr const char *ClientShadowMapSize = "cl_shadowmapsize";
+constexpr const char *RenderBackend = "r_renderer";
 constexpr const char *ClientOpenGLVersion = "cl_openglversion";
 constexpr const char *ClientRenderUI = "cl_renderui";
 constexpr const char *ClientWindowDisplay = "cl_display";

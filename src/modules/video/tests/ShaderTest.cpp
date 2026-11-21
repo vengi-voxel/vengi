@@ -17,9 +17,9 @@ class ShaderTest : public app::AbstractTest {};
 class IndirectComputeTest : public AbstractGLTest {};
 
 TEST_F(IndirectComputeTest, testDispatchOffsetAndEmptyQueue) {
-#ifdef USE_VK_RENDERER
-	GTEST_SKIP() << "Vulkan has no runtime GLSL compiler for ad-hoc compute shaders";
-#endif
+	if (isVulkanRenderer()) {
+		GTEST_SKIP() << "Vulkan has no runtime GLSL compiler for ad-hoc compute shaders";
+	}
 	if (!hasFeature(Feature::ComputeShaders)) {
 		GTEST_SKIP() << "Compute shaders required";
 	}

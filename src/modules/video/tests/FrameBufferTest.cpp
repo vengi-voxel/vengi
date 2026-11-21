@@ -42,9 +42,9 @@ TEST_F(FrameBufferTest, testBlitColorAttachmentDoesNotCopyColor0OntoColor1) {
 	if (IsSkipped()) {
 		return;
 	}
-#ifdef USE_VK_RENDERER
-	GTEST_SKIP() << "Vulkan FBO blit/readback still needs an active frame path in this test harness";
-#endif
+	if (isVulkanRenderer()) {
+		GTEST_SKIP() << "Vulkan FBO blit/readback still needs an active frame path in this test harness";
+	}
 	const glm::ivec2 size(8, 8);
 	FrameBuffer src;
 	FrameBuffer dst;
@@ -76,9 +76,9 @@ TEST_F(FrameBufferTest, testColorFlagBlitLeavesColor1Unchanged) {
 	if (IsSkipped()) {
 		return;
 	}
-#ifdef USE_VK_RENDERER
-	GTEST_SKIP() << "Vulkan FBO blit/readback still needs an active frame path in this test harness";
-#endif
+	if (isVulkanRenderer()) {
+		GTEST_SKIP() << "Vulkan FBO blit/readback still needs an active frame path in this test harness";
+	}
 	const glm::ivec2 size(8, 8);
 	FrameBuffer src;
 	FrameBuffer dst;

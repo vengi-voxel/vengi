@@ -134,11 +134,7 @@ bool Shader::essl = true;
 #else
 bool Shader::essl = false;
 #endif
-#ifdef USE_VK_RENDERER
-bool Shader::vulkan = true;
-#else
 bool Shader::vulkan = false;
-#endif
 int Shader::glslVersion = 430;
 
 core::String Shader::stripUnsupportedEssl(const core::String &src) {

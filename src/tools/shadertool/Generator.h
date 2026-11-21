@@ -12,6 +12,7 @@
 namespace shadertool {
 
 struct SPIRVData {
+	bool vulkan = false;
 	core::DynamicArray<uint32_t> vertex;
 	core::DynamicArray<uint32_t> fragment;
 	core::DynamicArray<uint32_t> geometry;

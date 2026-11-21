@@ -22,7 +22,8 @@ set(SRCS
 	OpenFileMode.h
 	PenAxis.h
 	Renderer.cpp Renderer.h
-	RendererInterface.h
+	RendererInterface.cpp RendererInterface.h
+	RendererBackend.h RendererBackendMethods.inl
 	RenderStats.cpp RenderStats.h
 	DeferredDestroy.cpp DeferredDestroy.h
 	UploadRing.cpp UploadRing.h
@@ -54,42 +55,48 @@ set(SRCS
 	EventHandler.cpp EventHandler.h
 	IEventObserver.h
 )
-# Select renderer backend. Pass -DVIDEO_RENDERER=VK on the cmake command line to use Vulkan.
-if(NOT VIDEO_RENDERER)
-	set(VIDEO_RENDERER "GL")
+# Native builds with glslangValidator can embed Vulkan shaders alongside GLSL.
+if (NOT DEFINED CACHE{VIDEO_RENDERER})
+	if (GLSLANG_EXECUTABLE AND NOT CMAKE_CROSSCOMPILING AND NOT USE_OPENGLES)
+		set(VIDEO_RENDERER "BOTH")
+	else()
+		set(VIDEO_RENDERER "GL")
+	endif()
 endif()
-set(VIDEO_RENDERER "${VIDEO_RENDERER}" CACHE STRING "Select renderer backend (GL or VK)" FORCE)
-set_property(CACHE VIDEO_RENDERER PROPERTY STRINGS GL VK)
-if(NOT VIDEO_RENDERER STREQUAL "GL" AND NOT VIDEO_RENDERER STREQUAL "VK")
-	message(FATAL_ERROR "VIDEO_RENDERER must be one of: GL, VK (got '${VIDEO_RENDERER}')")
+set(VIDEO_RENDERER "${VIDEO_RENDERER}" CACHE STRING "Build renderer backends (GL, VK or BOTH)" FORCE)
+set_property(CACHE VIDEO_RENDERER PROPERTY STRINGS GL VK BOTH)
+if (NOT VIDEO_RENDERER MATCHES "^(GL|VK|BOTH)$")
+	message(FATAL_ERROR "VIDEO_RENDERER must be GL, VK or BOTH (got '${VIDEO_RENDERER}')")
 endif()
-set(RENDERER ${VIDEO_RENDERER})
-list(APPEND SRCS ${${RENDERER}_SRCS})
 
-set(LIB video)
-engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES image)
-if (RENDERER STREQUAL "GL")
-	set(OpenGL_GL_PREFERENCE GLVND)
-	find_package(OpenGL)
-	if (APPLE)
-		target_link_libraries(${LIB} PRIVATE "-framework OpenGL -framework CoreFoundation")
-	elseif (ANDROID)
-		target_link_libraries(${LIB} PUBLIC GLESv3 EGL)
-	endif()
-	set(USE_GL_RENDERER ON CACHE BOOL "Use opengl renderer" FORCE)
-	set(USE_VK_RENDERER OFF CACHE BOOL "Use vulkan renderer" FORCE)
-elseif (RENDERER STREQUAL "VK")
-	# flextVk loads libvulkan at runtime via SDL_LoadObject (same as flextGL
-	# for OpenGL). Do not link Vulkan::Vulkan / libvulkan.
-	if (APPLE)
-		target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation")
-	endif()
-	set(USE_VK_RENDERER ON CACHE BOOL "Use vulkan renderer" FORCE)
-	set(USE_GL_RENDERER OFF CACHE BOOL "Use opengl renderer" FORCE)
-	set(USE_SPIRV ON CACHE BOOL "Enable SPIR-V shader compilation (required for Vulkan)" FORCE)
+set(USE_GL_RENDERER OFF CACHE BOOL "Build OpenGL renderer" FORCE)
+set(USE_VK_RENDERER OFF CACHE BOOL "Build Vulkan renderer" FORCE)
+if (VIDEO_RENDERER STREQUAL "GL" OR VIDEO_RENDERER STREQUAL "BOTH")
+	list(APPEND SRCS ${GL_SRCS})
+	set(USE_GL_RENDERER ON CACHE BOOL "Build OpenGL renderer" FORCE)
+endif()
+if (VIDEO_RENDERER STREQUAL "VK" OR VIDEO_RENDERER STREQUAL "BOTH")
 	if (NOT GLSLANG_EXECUTABLE)
 		message(FATAL_ERROR "Vulkan renderer requires glslangValidator for SPIR-V shader compilation")
 	endif()
+	list(APPEND SRCS ${VK_SRCS})
+	set(USE_VK_RENDERER ON CACHE BOOL "Build Vulkan renderer" FORCE)
+	set(USE_SPIRV ON CACHE BOOL "Enable SPIR-V shader compilation (required for Vulkan)" FORCE)
+endif()
+
+set(LIB video)
+engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES image)
+if (USE_GL_RENDERER)
+	set(OpenGL_GL_PREFERENCE GLVND)
+	find_package(OpenGL)
+	if (APPLE)
+		target_link_libraries(${LIB} PRIVATE "-framework OpenGL")
+	elseif (ANDROID)
+		target_link_libraries(${LIB} PUBLIC GLESv3 EGL)
+	endif()
+endif()
+if (APPLE)
+	target_link_libraries(${LIB} PRIVATE "-framework CoreFoundation")
 endif()
 set_target_properties(${LIB} PROPERTIES UNITY_BUILD OFF)
 

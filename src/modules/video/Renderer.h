@@ -122,13 +122,8 @@ struct RenderState {
 	inline bool supports(video::Feature feature) const {
 		return features[core::enumVal(feature)];
 	}
-#ifdef USE_VK_RENDERER
-	bool clipOriginLowerLeft = false;
-	bool clipDepthZeroToOne = true;
-#else
 	bool clipOriginLowerLeft = true;
 	bool clipDepthZeroToOne = false;
-#endif
 };
 
 RenderState &renderState();

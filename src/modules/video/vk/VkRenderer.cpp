@@ -4,6 +4,8 @@
  * Some great tips here: https://developer.nvidia.com/opengl-vulkan
  */
 
+#include "video/RendererBackend.h"
+
 #include "VkRenderer.h"
 #include "core/Log.h"
 #include "core/Common.h"
@@ -2753,14 +2755,14 @@ static inline _priv::VkState &vkstate() {
 	return s;
 }
 
-RendererState &rendererState() {
+RendererState &_priv::VkRenderer::rendererState() {
 	return (RendererState &)vkstate();
 }
 
-void setup() {
+void _priv::VkRenderer::setup() {
 }
 
-RendererContext createContext(SDL_Window *window) {
+RendererContext _priv::VkRenderer::createContext(SDL_Window *window) {
 	_priv::VkState &s = vkstate();
 	s.window = window;
 	s.validationEnabled = false;
@@ -2992,7 +2994,7 @@ RendererContext createContext(SDL_Window *window) {
 
 static void destroyTextureGpu(_priv::VkState &s, _priv::VkState::TextureHandle &h);
 
-void destroyContext(RendererContext &context) {
+void _priv::VkRenderer::destroyContext(RendererContext &context) {
 	_priv::VkState &s = vkstate();
 	uploadRingShutdown();
 
@@ -3337,7 +3339,7 @@ void destroyContext(RendererContext &context) {
 	context = nullptr;
 }
 
-bool init(int windowWidth, int windowHeight, float scaleFactor) {
+bool _priv::VkRenderer::init(int windowWidth, int windowHeight, float scaleFactor) {
 	_priv::VkState &s = vkstate();
 	s.windowWidth = windowWidth;
 	s.windowHeight = windowHeight;
@@ -4111,7 +4113,7 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	return true;
 }
 
-void activateContext(SDL_Window *window, RendererContext &context) {
+void _priv::VkRenderer::activateContext(SDL_Window *window, RendererContext &context) {
 }
 
 namespace _priv {
@@ -4257,7 +4259,7 @@ static bool beginFboRenderPass(VkState &s, VkState::FramebufferHandle &fb,
 
 } // namespace _priv
 
-void syncPendingState() {
+void _priv::VkRenderer::syncPendingState() {
 	_priv::VkState &s = vkstate();
 	if (s.device == VK_NULL_HANDLE || s.swapchain == VK_NULL_HANDLE) {
 		return;
@@ -4286,7 +4288,7 @@ void syncPendingState() {
 	_priv::beginVulkanFrame(s);
 }
 
-void endFrame(SDL_Window *window) {
+void _priv::VkRenderer::endFrame(SDL_Window *window) {
 	_priv::VkState &s = vkstate();
 	if (!s.frameAcquired) {
 		return;
@@ -4371,7 +4373,7 @@ void endFrame(SDL_Window *window) {
 	s.frameAcquired = false;
 }
 
-void waitDeviceIdle() {
+void _priv::VkRenderer::waitDeviceIdle() {
 	_priv::VkState &s = vkstate();
 	if (s.device == VK_NULL_HANDLE) {
 		return;
@@ -4405,7 +4407,7 @@ struct CompletionFence {
 };
 } // namespace
 
-Fence createFence() {
+Fence _priv::VkRenderer::createFence() {
 	_priv::VkState &s = vkstate();
 	CompletionFence *f = (CompletionFence *)core_malloc(sizeof(CompletionFence));
 	if (f == nullptr) {
@@ -4422,7 +4424,7 @@ Fence createFence() {
 	return (Fence)f;
 }
 
-bool fenceSignaled(Fence fence) {
+bool _priv::VkRenderer::fenceSignaled(Fence fence) {
 	if (fence == nullptr) {
 		return true;
 	}
@@ -4434,27 +4436,27 @@ bool fenceSignaled(Fence fence) {
 	return s.frameCompletedEpoch[f->frameSlot] >= f->epoch;
 }
 
-void deleteFence(Fence &fence) {
+void _priv::VkRenderer::deleteFence(Fence &fence) {
 	if (fence != nullptr) {
 		core_free(fence);
 		fence = nullptr;
 	}
 }
 
-bool checkError(bool triggerAssert) {
+bool _priv::VkRenderer::checkError(bool triggerAssert) {
 	// Vulkan errors are reported via VkResult at each API call.
 	// This stub exists for API compatibility with the OpenGL backend.
 	return false;
 }
 
-void readBuffer(GBufferTextureType textureType) {
+void _priv::VkRenderer::readBuffer(GBufferTextureType textureType) {
 }
 
-float lineWidth(float width) {
+float _priv::VkRenderer::lineWidth(float width) {
 	return 1.0f;
 }
 
-void clear(ClearFlag flag) {
+void _priv::VkRenderer::clear(ClearFlag flag) {
 	_priv::VkState &s = vkstate();
 	if (s.device == VK_NULL_HANDLE) {
 		return;
@@ -4565,7 +4567,7 @@ void clear(ClearFlag flag) {
 	vkCmdClearAttachments(cmd, attCount, atts, 1, &rect);
 }
 
-bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
+bool _priv::VkRenderer::bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	_priv::VkState &s = vkstate();
 	const int u = core::enumVal(unit);
 	if (u < 0 || u >= (int)lengthof(s.boundTextures)) {
@@ -4575,7 +4577,7 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	return true;
 }
 
-bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
+bool _priv::VkRenderer::readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
 	(void)unit;
 	_priv::VkState &s = vkstate();
 	if (pixels == nullptr) {
@@ -5774,7 +5776,7 @@ static void destroyFramebufferGpu(VkState &s, VkState::FramebufferHandle &h) {
 
 } // namespace _priv
 
-bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
+bool _priv::VkRenderer::readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
 	_priv::VkState &s = vkstate();
 	if (s.device == VK_NULL_HANDLE || s.swapchain == VK_NULL_HANDLE || pixels == nullptr) {
 		return false;
@@ -6043,7 +6045,7 @@ bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
 	return true;
 }
 
-bool bindVertexArray(Id handle) {
+bool _priv::VkRenderer::bindVertexArray(Id handle) {
 	if (rendererState().vertexArrayHandle == handle) {
 		return true;
 	}
@@ -6051,7 +6053,7 @@ bool bindVertexArray(Id handle) {
 	return true;
 }
 
-bool bindBuffer(BufferType type, Id handle) {
+bool _priv::VkRenderer::bindBuffer(BufferType type, Id handle) {
 	rendererState().bufferHandle[core::enumVal(type)] = handle;
 	// Mirror GL VAO semantics: while a VAO is bound, an IndexBuffer binding
 	// is associated with that VAO so subsequent draws know which index buffer
@@ -6066,17 +6068,17 @@ bool bindBuffer(BufferType type, Id handle) {
 	return true;
 }
 
-bool unbindBuffer(BufferType type) {
+bool _priv::VkRenderer::unbindBuffer(BufferType type) {
 	return bindBuffer(type, InvalidId);
 }
 
-bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
+bool _priv::VkRenderer::bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	const uint64_t key = (static_cast<uint64_t>(core::enumVal(type)) << 32) | index;
 	rendererState().bufferBaseBindings.put(key, handle);
 	return true;
 }
 
-void genBuffers(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::genBuffers(uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
@@ -6098,7 +6100,7 @@ void genBuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void deleteBuffers(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::deleteBuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -6136,7 +6138,7 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void genVertexArrays(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::genVertexArrays(uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
@@ -6160,7 +6162,7 @@ void genVertexArrays(uint8_t amount, Id *ids) {
 	}
 }
 
-void deleteShader(Id &id) {
+void _priv::VkRenderer::deleteShader(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
@@ -6176,7 +6178,7 @@ void deleteShader(Id &id) {
 	id = InvalidId;
 }
 
-Id genShader(ShaderType type) {
+Id _priv::VkRenderer::genShader(ShaderType type) {
 	_priv::VkState &s = vkstate();
 	if (!_priv::ensureShaderCapacity(s)) {
 		Log::error("Failed to allocate shader handle registry");
@@ -6189,7 +6191,7 @@ Id genShader(ShaderType type) {
 	return h.id;
 }
 
-void deleteProgram(Id &id) {
+void _priv::VkRenderer::deleteProgram(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
@@ -6240,7 +6242,7 @@ void deleteProgram(Id &id) {
 	id = InvalidId;
 }
 
-Id genProgram() {
+Id _priv::VkRenderer::genProgram() {
 	_priv::VkState &s = vkstate();
 	if (!_priv::ensureProgramCapacity(s)) {
 		Log::error("Failed to allocate program handle registry");
@@ -6252,7 +6254,7 @@ Id genProgram() {
 	return h.id;
 }
 
-void deleteVertexArrays(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::deleteVertexArrays(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -6276,7 +6278,7 @@ void deleteVertexArrays(uint8_t amount, Id *ids) {
 	}
 }
 
-void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
+void _priv::VkRenderer::genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
@@ -6328,7 +6330,7 @@ static void destroyTextureGpu(_priv::VkState &s, _priv::VkState::TextureHandle &
 	h.layout = VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
-void deleteTextures(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::deleteTextures(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -6350,7 +6352,7 @@ void deleteTextures(uint8_t amount, Id *ids) {
 	}
 }
 
-void genFramebuffers(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::genFramebuffers(uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
 	for (uint8_t i = 0; i < amount; ++i) {
@@ -6366,7 +6368,7 @@ void genFramebuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void deleteFramebuffers(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::deleteFramebuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -6393,7 +6395,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void genRenderbuffers(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::genRenderbuffers(uint8_t amount, Id *ids) {
 	// Allocate as texture handles so FBO depth attachments can use findTextureHandle().
 	statsResourceCreate(amount);
 	_priv::VkState &s = vkstate();
@@ -6411,12 +6413,12 @@ void genRenderbuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void deleteRenderbuffers(uint8_t amount, Id *ids) {
+void _priv::VkRenderer::deleteRenderbuffers(uint8_t amount, Id *ids) {
 	deleteTextures(amount, ids);
 }
 
 
-void configureAttribute(const Attribute &a) {
+void _priv::VkRenderer::configureAttribute(const Attribute &a) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::VaoHandle *vao = _priv::findVaoHandle(s, rendererState().vertexArrayHandle);
 	if (vao == nullptr) {
@@ -6442,7 +6444,7 @@ void configureAttribute(const Attribute &a) {
 	}
 }
 
-Id bindFramebuffer(Id handle, FrameBufferMode mode) {
+Id _priv::VkRenderer::bindFramebuffer(Id handle, FrameBufferMode mode) {
 	_priv::VkState &s = vkstate();
 	s.drawBufferMask = 0xFFu;
 	const Id previous = s.currentFramebuffer;
@@ -6509,7 +6511,7 @@ static void cmdBlitImageBarrier(VkCommandBuffer cmd, VkImage image, VkImageLayou
 	vkCmdPipelineBarrier(cmd, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &bar);
 }
 
-void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
+void _priv::VkRenderer::blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
 	_priv::VkState &s = vkstate();
 	if (s.device == VK_NULL_HANDLE || width <= 0 || height <= 0) {
 		return;
@@ -6692,7 +6694,7 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 	}
 }
 
-void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int width, int height) {
+void _priv::VkRenderer::blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int width, int height) {
 	_priv::VkState &s = vkstate();
 	if (s.device == VK_NULL_HANDLE || width <= 0 || height <= 0) {
 		return;
@@ -6819,7 +6821,7 @@ void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int
 	}
 }
 
-void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
+void _priv::VkRenderer::drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
 	_priv::VkState &s = vkstate();
 	uint8_t mask = 0u;
 	if (attachments != nullptr) {
@@ -6834,7 +6836,7 @@ void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
 	s.drawBufferMask = mask;
 }
 
-bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) {
+bool _priv::VkRenderer::setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::TextureHandle *th = _priv::findTextureHandle(s, rbo);
 	if (th == nullptr || w <= 0 || h <= 0) {
@@ -6862,11 +6864,11 @@ bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) 
 	return th->image != VK_NULL_HANDLE;
 }
 
-Id bindRenderbuffer(Id handle) {
+Id _priv::VkRenderer::bindRenderbuffer(Id handle) {
 	return InvalidId;
 }
 
-void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, size_t size) {
+void _priv::VkRenderer::bufferData(Id handle, BufferType type, BufferMode mode, const void *data, size_t size) {
 	if (size <= 0u) {
 		return;
 	}
@@ -6912,7 +6914,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 	statsUploadScopeEnd();
 }
 
-void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
+void _priv::VkRenderer::bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
 	if (size == 0u) {
 		return;
 	}
@@ -6944,7 +6946,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data
 	statsUploadScopeEnd();
 }
 
-bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags) {
+bool _priv::VkRenderer::bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags) {
 	if (handle == InvalidId || size == 0u) {
 		return false;
 	}
@@ -6972,7 +6974,7 @@ bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag fl
 	return _priv::ensureBufferAlloc(s, *h, size);
 }
 
-bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size) {
+bool _priv::VkRenderer::copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size) {
 	if (readBuffer == InvalidId || writeBuffer == InvalidId || size == 0u) {
 		return false;
 	}
@@ -7105,7 +7107,7 @@ bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intpt
 	return true;
 }
 
-const glm::vec4 &framebufferUV() {
+const glm::vec4 &_priv::VkRenderer::framebufferUV() {
 	if (renderState().clipOriginLowerLeft) {
 		static const glm::vec4 uvFlipped(0.0f, 1.0f, 1.0f, 0.0f);
 		return uvFlipped;
@@ -7114,7 +7116,7 @@ const glm::vec4 &framebufferUV() {
 	return uv;
 }
 
-bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear) {
+bool _priv::VkRenderer::bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear) {
 	_priv::VkState &s = vkstate();
 	if (fbo == InvalidId || texture == InvalidId) {
 		return false;
@@ -7203,7 +7205,7 @@ bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachm
 	return true;
 }
 
-bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
+bool _priv::VkRenderer::setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::FramebufferHandle *fb = _priv::findFramebufferHandle(s, fbo);
@@ -7252,7 +7254,7 @@ bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(Fr
 	return true;
 }
 
-void setupTexture(Id texture, const TextureConfig &config) {
+void _priv::VkRenderer::setupTexture(Id texture, const TextureConfig &config) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::TextureHandle *h = _priv::findTextureHandle(s, texture);
 	if (h == nullptr) {
@@ -7292,7 +7294,7 @@ static VkSamplerAddressMode textureWrapToVk(TextureWrap w) {
 	}
 }
 
-void uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
+void _priv::VkRenderer::uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
 	statsUploadScopeBegin();
 	_priv::VkState &s = vkstate();
 	_priv::VkState::TextureHandle *h = _priv::findTextureHandle(s, texture);
@@ -8402,7 +8404,7 @@ static VkCommandBuffer prepareDrawState(VkState &s, VkPrimitiveTopology topology
 
 } // namespace _priv
 
-void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
+void _priv::VkRenderer::drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
 	_priv::VkState &s = vkstate();
 	VkCommandBuffer cmd = _priv::prepareDrawState(s, _priv::primitiveTopologyFor(mode));
 	if (cmd == VK_NULL_HANDLE) {
@@ -8420,7 +8422,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	statsDrawCall();
 }
 
-void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t instances, void *offset) {
+void _priv::VkRenderer::drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t instances, void *offset) {
 	if (instances == 0u || numIndices == 0u) {
 		return;
 	}
@@ -8441,7 +8443,7 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 	statsDrawCall();
 }
 
-void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
+void _priv::VkRenderer::multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
 	if (drawCount <= 0) {
 		return;
 	}
@@ -8491,7 +8493,7 @@ void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indire
 	statsDrawCall();
 }
 
-void drawArrays(Primitive mode, size_t count) {
+void _priv::VkRenderer::drawArrays(Primitive mode, size_t count) {
 	_priv::VkState &s = vkstate();
 	VkCommandBuffer cmd = _priv::prepareDrawState(s, _priv::primitiveTopologyFor(mode));
 	if (cmd == VK_NULL_HANDLE) {
@@ -8501,7 +8503,7 @@ void drawArrays(Primitive mode, size_t count) {
 	statsDrawCall();
 }
 
-void enableDebug(DebugSeverity severity) {
+void _priv::VkRenderer::enableDebug(DebugSeverity severity) {
 	_priv::VkState &s = vkstate();
 	s.debugSeverity = severity;
 	if (severity == DebugSeverity::None) {
@@ -8556,7 +8558,7 @@ bool compileShaderSpirv(Id id, ShaderType shaderType, const uint8_t *spirv, size
 	return true;
 }
 
-bool compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name) {
+bool _priv::VkRenderer::compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::ShaderHandle *h = _priv::findShaderHandle(s, id);
 	if (h == nullptr) {
@@ -8580,11 +8582,11 @@ bool compileShader(Id id, ShaderType shaderType, const core::String &source, con
 	return true;
 }
 
-bool loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t spirvSize, const core::String &name) {
+bool _priv::VkRenderer::loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t spirvSize, const core::String &name) {
 	return compileShaderSpirv(id, shaderType, spirv, spirvSize, name);
 }
 
-void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count) {
+void _priv::VkRenderer::registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::ProgramHandle *prog = _priv::findProgramHandle(s, program);
 	if (prog == nullptr) {
@@ -8599,7 +8601,7 @@ void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, i
 	_priv::invalidateProgramPipelines(s, *prog, true);
 }
 
-void setProgramPushConstantSize(Id program, uint32_t size) {
+void _priv::VkRenderer::setProgramPushConstantSize(Id program, uint32_t size) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::ProgramHandle *prog = _priv::findProgramHandle(s, program);
 	if (prog == nullptr) {
@@ -8615,7 +8617,7 @@ void setProgramPushConstantSize(Id program, uint32_t size) {
 	_priv::invalidateProgramPipelines(s, *prog, false);
 }
 
-void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count) {
+void _priv::VkRenderer::setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::BufferHandle *bh = _priv::findBufferHandle(s, buffer);
 	if (bh == nullptr || fields == nullptr || count <= 0) {
@@ -8648,7 +8650,7 @@ void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *field
 	bh->stableRingBuffer = VK_NULL_HANDLE;
 }
 
-bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
+bool _priv::VkRenderer::linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::ProgramHandle *prog = _priv::findProgramHandle(s, program);
 	if (prog == nullptr) {
@@ -8699,7 +8701,7 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name)
 	return true;
 }
 
-bool linkComputeShader(Id program, Id comp, const core::String &name) {
+bool _priv::VkRenderer::linkComputeShader(Id program, Id comp, const core::String &name) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::ProgramHandle *prog = _priv::findProgramHandle(s, program);
 	if (prog == nullptr) {
@@ -8717,7 +8719,7 @@ bool linkComputeShader(Id program, Id comp, const core::String &name) {
 	return true;
 }
 
-bool bindImage(Id handle, AccessMode mode, ImageFormat format) {
+bool _priv::VkRenderer::bindImage(Id handle, AccessMode mode, ImageFormat format) {
 	if (rendererState().imageHandle == handle && rendererState().imageFormat == format &&
 		rendererState().imageAccessMode == mode) {
 		return false;
@@ -8739,7 +8741,7 @@ static void transitionStorageImage(VkCommandBuffer cmd, _priv::VkState::TextureH
 	th->layout = newLayout;
 }
 
-void waitShader(MemoryBarrierType wait) {
+void _priv::VkRenderer::waitShader(MemoryBarrierType wait) {
 	if (wait == MemoryBarrierType::None) {
 		return;
 	}
@@ -8761,7 +8763,7 @@ void waitShader(MemoryBarrierType wait) {
 	th->hasContent = true;
 }
 
-bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
+bool _priv::VkRenderer::runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
 	if (workGroups.x == 0u || workGroups.y == 0u || workGroups.z == 0u) {
 		return false;
 	}
@@ -8856,46 +8858,46 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 	return true;
 }
 
-bool runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait) {
+bool _priv::VkRenderer::runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait) {
 	return false;
 }
 
-void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
+void _priv::VkRenderer::setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 }
 
-void flush() {
+void _priv::VkRenderer::flush() {
 }
 
-void finish() {
+void _priv::VkRenderer::finish() {
 }
 
-Id createTimerQuery() {
+Id _priv::VkRenderer::createTimerQuery() {
 	return InvalidId;
 }
 
-void deleteTimerQuery(Id &query) {
+void _priv::VkRenderer::deleteTimerQuery(Id &query) {
 	query = InvalidId;
 }
 
-void beginTimerQuery(Id query) {
+void _priv::VkRenderer::beginTimerQuery(Id query) {
 }
 
-void endTimerQuery() {
+void _priv::VkRenderer::endTimerQuery() {
 }
 
-bool timerQueryAvailable(Id query) {
+bool _priv::VkRenderer::timerQueryAvailable(Id query) {
 	return false;
 }
 
-uint64_t timerQueryResult(Id query) {
+uint64_t _priv::VkRenderer::timerQueryResult(Id query) {
 	return 0;
 }
 
-void traceVideoBegin(const char *name) {
+void _priv::VkRenderer::traceVideoBegin(const char *name) {
 	core::traceBegin(name);
 }
 
-void traceVideoEnd() {
+void _priv::VkRenderer::traceVideoEnd() {
 	core::traceEnd();
 }
 
@@ -8926,7 +8928,7 @@ static bool ensureHostShadow(_priv::VkState::BufferHandle &h) {
 	return true;
 }
 
-void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode, MapBufferFlag flags) {
+void *_priv::VkRenderer::mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode, MapBufferFlag flags) {
 	(void)flags;
 	_priv::VkState &s = vkstate();
 	_priv::VkState::BufferHandle *h = _priv::findBufferHandle(s, handle);
@@ -8962,7 +8964,7 @@ void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length,
 	return h->data + offset;
 }
 
-void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
+void *_priv::VkRenderer::mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	_priv::VkState &s = vkstate();
 	_priv::VkState::BufferHandle *h = _priv::findBufferHandle(s, handle);
 	if (h == nullptr) {
@@ -8992,7 +8994,7 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	return h->data;
 }
 
-bool unmapBuffer(Id handle, BufferType type) {
+bool _priv::VkRenderer::unmapBuffer(Id handle, BufferType type) {
 	// Buffers are persistently mapped; nothing to do. HOST_COHERENT memory means
 	// writes through @c mapped are visible to the device without explicit flushes.
 	(void)handle;
@@ -9182,7 +9184,7 @@ static void destroyTempBuffer(VkState &s, VkBuffer &buf, VkDeviceMemory &mem, vo
 
 } // namespace _priv
 
-Id createAABBAccelerationStructure(const AccelerationStructureAABB *aabbs, uint32_t count) {
+Id _priv::VkRenderer::createAABBAccelerationStructure(const AccelerationStructureAABB *aabbs, uint32_t count) {
 	static_assert(sizeof(AccelerationStructureAABB) == sizeof(VkAabbPositionsKHR),
 				  "AccelerationStructureAABB must match VkAabbPositionsKHR");
 	_priv::VkState &s = vkstate();
@@ -9448,7 +9450,7 @@ Id createAABBAccelerationStructure(const AccelerationStructureAABB *aabbs, uint3
 	return h->id;
 }
 
-void deleteAccelerationStructure(Id &handle) {
+void _priv::VkRenderer::deleteAccelerationStructure(Id &handle) {
 	if (handle == InvalidId) {
 		return;
 	}
@@ -9480,7 +9482,7 @@ void deleteAccelerationStructure(Id &handle) {
 	handle = InvalidId;
 }
 
-bool bindAccelerationStructure(Id handle, uint32_t binding) {
+bool _priv::VkRenderer::bindAccelerationStructure(Id handle, uint32_t binding) {
 	if (binding >= 16u) {
 		return false;
 	}

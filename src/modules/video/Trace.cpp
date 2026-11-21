@@ -4,6 +4,7 @@
 
 #include "video/Trace.h"
 #include "core/Log.h"
+#include "video/RendererInterface.h"
 
 namespace video {
 
@@ -26,6 +27,9 @@ void traceVideoFrameEnd() {
 
 void traceVideoInit() {
 #if defined(TRACY_ENABLE) && defined(USE_GL_RENDERER)
+	if (isVulkanRenderer()) {
+		return;
+	}
 	TracyGpuContext;
 	if (tracy::GetGpuCtx().ptr == nullptr) {
 		Log::warn("TracyGpuContext failed; GPU zones disabled");

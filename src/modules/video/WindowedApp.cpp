@@ -29,9 +29,6 @@
 #include <SDL3/SDL_video.h>
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
-#ifdef USE_VK_RENDERER
-#include <SDL3/SDL_vulkan.h>
-#endif
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
@@ -565,14 +562,8 @@ app::AppState WindowedApp::onInit() {
 	// 	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
 	// #endif
 
-	int flags = SDL_WINDOW_RESIZABLE;
-#ifdef USE_GL_RENDERER
-	flags |= SDL_WINDOW_OPENGL;
-#elif USE_VK_RENDERER
-	flags |= SDL_WINDOW_VULKAN;
-#else
-#error "renderer not supported"
-#endif
+	const bool vulkan = video::isVulkanRenderer();
+	int flags = SDL_WINDOW_RESIZABLE | (vulkan ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL);
 	if (!_showWindow) {
 		flags |= SDL_WINDOW_HIDDEN;
 	}
@@ -603,21 +594,15 @@ app::AppState WindowedApp::onInit() {
 	const int width = core_max(_windowWidth, displayBounds.w);
 	const int height = core_max(_windowHeight, displayBounds.h);
 	_window = createWindow(width, height, displayIndex, flags);
-	if (!_window) {
-		Log::warn("Failed to get multisampled window - retrying without multisampling");
-#ifdef USE_GL_RENDERER
+	if (!_window && !vulkan) {
+		Log::warn("Failed to create the OpenGL window, retrying without multisampling");
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-#elif USE_VK_RENDERER
-		// TODO: VULKAN
-#else
-#error "renderer not supported"
-#endif
 		_window = createWindow(width, height, displayIndex, flags);
-		if (!_window) {
-			sdlCheckError();
-			return app::AppState::InitFailure;
-		}
+	}
+	if (!_window) {
+		sdlCheckError();
+		return app::AppState::InitFailure;
 	}
 
 	if (_fullScreenApplication) {
@@ -655,7 +640,9 @@ app::AppState WindowedApp::onInit() {
 	Log::debug("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
 
 	const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
-	video::init(_windowDimension.x, _windowDimension.y, scaleFactor);
+	if (!video::init(_windowDimension.x, _windowDimension.y, scaleFactor)) {
+		return app::AppState::InitFailure;
+	}
 	video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
 	_keyboardLayout = video::detectKeyboardLayout();
 

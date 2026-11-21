@@ -1028,38 +1028,40 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 	core::String spirvSetup;
 	if (hasSpirv) {
 		spirvSetup += "#ifdef USE_SPIRV\n";
-		spirvSetup += "\tdo {\n";
+		spirvSetup += spirvData.vulkan ? "\tif (video::isVulkanRenderer()) {\n"
+										: "\tif (!video::isVulkanRenderer()) {\n";
+		spirvSetup += "\t\tdo {\n";
 		if (!compSpirv.empty()) {
-			spirvSetup += "\t\tif (!loadSPIRV(\"";
+			spirvSetup += "\t\t\tif (!loadSPIRV(\"";
 			spirvSetup += shaderDirectory + shaderStruct.filename;
 			spirvSetup += "\", (const uint8_t*)priv";
 			spirvSetup += filename;
 			spirvSetup += "::ComputeShaderSPIRV, sizeof(priv";
 			spirvSetup += filename;
 			spirvSetup += "::ComputeShaderSPIRV), video::ShaderType::Compute)) {\n";
-			spirvSetup += "\t\t\tbreak;\n";
-			spirvSetup += "\t\t}\n";
+			spirvSetup += "\t\t\t\tbreak;\n";
+			spirvSetup += "\t\t\t}\n";
 		} else {
-			spirvSetup += "\t\tif (!loadSPIRV(\"";
+			spirvSetup += "\t\t\tif (!loadSPIRV(\"";
 			spirvSetup += shaderDirectory + shaderStruct.filename;
 			spirvSetup += "\", (const uint8_t*)priv";
 			spirvSetup += filename;
 			spirvSetup += "::VertexShaderSPIRV, sizeof(priv";
 			spirvSetup += filename;
 			spirvSetup += "::VertexShaderSPIRV), video::ShaderType::Vertex)) {\n";
-			spirvSetup += "\t\t\tbreak;\n";
-			spirvSetup += "\t\t}\n";
-			spirvSetup += "\t\tif (!loadSPIRV(\"";
+			spirvSetup += "\t\t\t\tbreak;\n";
+			spirvSetup += "\t\t\t}\n";
+			spirvSetup += "\t\t\tif (!loadSPIRV(\"";
 			spirvSetup += shaderDirectory + shaderStruct.filename;
 			spirvSetup += "\", (const uint8_t*)priv";
 			spirvSetup += filename;
 			spirvSetup += "::FragmentShaderSPIRV, sizeof(priv";
 			spirvSetup += filename;
 			spirvSetup += "::FragmentShaderSPIRV), video::ShaderType::Fragment)) {\n";
-			spirvSetup += "\t\t\tbreak;\n";
-			spirvSetup += "\t\t}\n";
+			spirvSetup += "\t\t\t\tbreak;\n";
+			spirvSetup += "\t\t\t}\n";
 			if (!geomSpirv.empty()) {
-				spirvSetup += "\t\tloadSPIRV(\"";
+				spirvSetup += "\t\t\tloadSPIRV(\"";
 				spirvSetup += shaderDirectory + shaderStruct.filename;
 				spirvSetup += "\", (const uint8_t*)priv";
 				spirvSetup += filename;
@@ -1068,16 +1070,17 @@ bool generateSrc(const core::String& templateHeader, const core::String& templat
 				spirvSetup += "::GeometryShaderSPIRV), video::ShaderType::Geometry);\n";
 			}
 		}
-		spirvSetup += "\t\t_name = \"";
+		spirvSetup += "\t\t\t_name = \"";
 		spirvSetup += shaderDirectory + shaderStruct.filename;
 		spirvSetup += "\";\n";
-		spirvSetup += "\t\tif (init()) {\n";
-		spirvSetup += "\t\t\treturn true;\n";
+		spirvSetup += "\t\t\tif (init()) {\n";
+		spirvSetup += "\t\t\t\treturn true;\n";
+		spirvSetup += "\t\t\t}\n";
+		spirvSetup += "\t\t} while (false);\n";
+		spirvSetup += "\t\t// SPIR-V failed, reset and fall back to GLSL\n";
+		spirvSetup += "\t\tfor (auto& s : _shader) {\n";
+		spirvSetup += "\t\t\tvideo::deleteShader(s);\n";
 		spirvSetup += "\t\t}\n";
-		spirvSetup += "\t} while (false);\n";
-		spirvSetup += "\t// SPIR-V failed, reset and fall back to GLSL\n";
-		spirvSetup += "\tfor (auto& s : _shader) {\n";
-		spirvSetup += "\t\tvideo::deleteShader(s);\n";
 		spirvSetup += "\t}\n";
 		spirvSetup += "#endif\n";
 	}

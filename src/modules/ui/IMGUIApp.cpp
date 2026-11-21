@@ -32,10 +32,11 @@
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
 #include "core/Var.h"
-#ifndef USE_VK_RENDERER
+#ifdef USE_GL_RENDERER
 #include "dearimgui/backends/imgui_impl_opengl3.h"
 #include "video/gl/flextGL.h"
-#else
+#endif
+#ifdef USE_VK_RENDERER
 #include "dearimgui/backends/imgui_impl_vulkan.h"
 #endif
 #include "dearimgui/implot.h"
@@ -398,48 +399,53 @@ app::AppState IMGUIApp::onInit() {
 	_uiFontSize->markClean();
 	_languageVar->markClean();
 
-#ifdef USE_VK_RENDERER
-	_imguiBackendInitialized = ImGui_ImplSDL3_InitForVulkan(_window);
-#else
-	_imguiBackendInitialized = ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext);
-	ImGui_ImplOpenGL3_Init(nullptr);
-	// The backend defaults to lower-left, while vengi can use upper-left clip coordinates.
-	ImGui_ImplOpenGL3_SetClipOrigin(video::clipOriginLowerLeft() ? GL_LOWER_LEFT : GL_UPPER_LEFT);
-#endif
-
-#ifdef USE_VK_RENDERER
-	if (_imguiBackendInitialized) {
-		auto procAddr = [](const char *functionName, void *userData) -> PFN_vkVoidFunction {
-			(void)userData;
-			return (PFN_vkVoidFunction)video::getVulkanInstanceProcAddr(functionName);
-		};
-		if (!ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, procAddr, nullptr)) {
-			Log::error("Failed to load ImGui Vulkan functions");
-			_imguiBackendInitialized = false;
+#ifdef USE_GL_RENDERER
+	if (!video::isVulkanRenderer() && ImGui_ImplSDL3_InitForOpenGL(_window, _rendererContext)) {
+		_imguiBackendInitialized = ImGui_ImplOpenGL3_Init(nullptr);
+		if (_imguiBackendInitialized) {
+			ImGui_ImplOpenGL3_SetClipOrigin(video::clipOriginLowerLeft() ? GL_LOWER_LEFT : GL_UPPER_LEFT);
+		} else {
+			ImGui_ImplSDL3_Shutdown();
 		}
 	}
-	if (_imguiBackendInitialized) {
-		ImGui_ImplVulkan_InitInfo initInfo = {};
-		initInfo.ApiVersion = VK_API_VERSION_1_1;
-		initInfo.Instance = (VkInstance)video::getVulkanInstance();
-		initInfo.PhysicalDevice = (VkPhysicalDevice)video::getVulkanPhysicalDevice();
-		initInfo.Device = (VkDevice)video::getVulkanDevice();
-		initInfo.QueueFamily = video::getVulkanDeviceQueueFamily();
-		initInfo.Queue = (VkQueue)video::getVulkanDeviceQueue();
-		initInfo.DescriptorPool = (VkDescriptorPool)video::getVulkanDescriptorPool();
-		initInfo.PipelineInfoMain.RenderPass = (VkRenderPass)video::getVulkanRenderPass();
-		initInfo.PipelineInfoMain.Subpass = 1;
-		initInfo.MinImageCount = video::getVulkanMinImageCount();
-		initInfo.ImageCount = video::getVulkanImageCount();
-		initInfo.MinAllocationSize = 1024 * 1024;
-		initInfo.CheckVkResultFn = [](VkResult err) {
-			if (err != VK_SUCCESS) {
-				Log::error("ImGui Vulkan error: %d", (int)err);
-			}
+#endif
+#ifdef USE_VK_RENDERER
+	if (video::isVulkanRenderer() && ImGui_ImplSDL3_InitForVulkan(_window)) {
+		auto procAddr = [](const char *functionName, void *) -> PFN_vkVoidFunction {
+			return (PFN_vkVoidFunction)video::getVulkanInstanceProcAddr(functionName);
 		};
-		_imguiBackendInitialized = ImGui_ImplVulkan_Init(&initInfo);
+		if (ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, procAddr, nullptr)) {
+			ImGui_ImplVulkan_InitInfo initInfo = {};
+			initInfo.ApiVersion = VK_API_VERSION_1_1;
+			initInfo.Instance = (VkInstance)video::getVulkanInstance();
+			initInfo.PhysicalDevice = (VkPhysicalDevice)video::getVulkanPhysicalDevice();
+			initInfo.Device = (VkDevice)video::getVulkanDevice();
+			initInfo.QueueFamily = video::getVulkanDeviceQueueFamily();
+			initInfo.Queue = (VkQueue)video::getVulkanDeviceQueue();
+			initInfo.DescriptorPool = (VkDescriptorPool)video::getVulkanDescriptorPool();
+			initInfo.PipelineInfoMain.RenderPass = (VkRenderPass)video::getVulkanRenderPass();
+			initInfo.PipelineInfoMain.Subpass = 1;
+			initInfo.MinImageCount = video::getVulkanMinImageCount();
+			initInfo.ImageCount = video::getVulkanImageCount();
+			initInfo.MinAllocationSize = 1024 * 1024;
+			initInfo.CheckVkResultFn = [](VkResult err) {
+				if (err != VK_SUCCESS) {
+					Log::error("ImGui Vulkan error: %d", (int)err);
+				}
+			};
+			_imguiBackendInitialized = ImGui_ImplVulkan_Init(&initInfo);
+		} else {
+			Log::error("Failed to load ImGui Vulkan functions");
+		}
+		if (!_imguiBackendInitialized) {
+			ImGui_ImplSDL3_Shutdown();
+		}
 	}
 #endif
+	if (!_imguiBackendInitialized) {
+		Log::error("Failed to initialize the ImGui renderer backend");
+		return app::AppState::InitFailure;
+	}
 
 	ImGui::GetIO().ConfigColorEditFlags = ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_InputRGB | ImGuiColorEditFlags_PickerHueBar;
 
@@ -923,9 +929,14 @@ app::AppState IMGUIApp::onRunning() {
 	}
 
 #ifdef USE_VK_RENDERER
-	ImGui_ImplVulkan_NewFrame();
-#else
-	ImGui_ImplOpenGL3_NewFrame();
+	if (video::isVulkanRenderer()) {
+		ImGui_ImplVulkan_NewFrame();
+	}
+#endif
+#ifdef USE_GL_RENDERER
+	if (!video::isVulkanRenderer()) {
+		ImGui_ImplOpenGL3_NewFrame();
+	}
 #endif
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
@@ -1017,27 +1028,35 @@ app::AppState IMGUIApp::onRunning() {
 	ImGui::Render();
 
 #ifdef USE_VK_RENDERER
-	video::nextSubpass();
-	VkCommandBuffer cmd = (VkCommandBuffer)video::getVulkanCommandBuffer();
-	if (cmd != VK_NULL_HANDLE) {
-		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+	if (video::isVulkanRenderer()) {
+		video::nextSubpass();
+		VkCommandBuffer cmd = (VkCommandBuffer)video::getVulkanCommandBuffer();
+		if (cmd != VK_NULL_HANDLE) {
+			ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+		}
 	}
-#else
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
+#ifdef USE_GL_RENDERER
+	if (!video::isVulkanRenderer()) {
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
 #endif
 
 	// Update and Render additional Platform Windows
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		ImGui::UpdatePlatformWindows();
-#ifndef USE_VK_RENDERER
-		// SDL creates secondary GL contexts with the default lower-left clip origin.
-		// Clip control is context state, even when the contexts share GL resources.
-		ImGui_ImplOpenGL3_SetClipOrigin(GL_LOWER_LEFT);
+#ifdef USE_GL_RENDERER
+		if (!video::isVulkanRenderer()) {
+			// SDL creates secondary GL contexts with the default lower-left clip origin.
+			ImGui_ImplOpenGL3_SetClipOrigin(GL_LOWER_LEFT);
+		}
 #endif
 		ImGui::RenderPlatformWindowsDefault();
 		video::activateContext(_window, _rendererContext);
-#ifndef USE_VK_RENDERER
-		ImGui_ImplOpenGL3_SetClipOrigin(video::clipOriginLowerLeft() ? GL_LOWER_LEFT : GL_UPPER_LEFT);
+#ifdef USE_GL_RENDERER
+		if (!video::isVulkanRenderer()) {
+			ImGui_ImplOpenGL3_SetClipOrigin(video::clipOriginLowerLeft() ? GL_LOWER_LEFT : GL_UPPER_LEFT);
+		}
 #endif
 	}
 
@@ -1166,9 +1185,14 @@ app::AppState IMGUIApp::onCleanup() {
 #endif
 	if (_imguiBackendInitialized) {
 #ifdef USE_VK_RENDERER
-		ImGui_ImplVulkan_Shutdown();
-#else
-		ImGui_ImplOpenGL3_Shutdown();
+		if (video::isVulkanRenderer()) {
+			ImGui_ImplVulkan_Shutdown();
+		}
+#endif
+#ifdef USE_GL_RENDERER
+		if (!video::isVulkanRenderer()) {
+			ImGui_ImplOpenGL3_Shutdown();
+		}
 #endif
 		ImGui_ImplSDL3_Shutdown();
 		_imguiBackendInitialized = false;

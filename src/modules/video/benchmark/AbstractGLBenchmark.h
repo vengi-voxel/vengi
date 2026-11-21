@@ -27,7 +27,9 @@ protected:
 			return true;
 		video::setup();
 		video::construct();
-		_window = SDL_CreateWindow("GPU benchmark", 640, 480, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+		const SDL_WindowFlags flags = SDL_WINDOW_HIDDEN |
+									  (video::isVulkanRenderer() ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL);
+		_window = SDL_CreateWindow("GPU benchmark", 640, 480, flags);
 		if (_window)
 			_context = video::createContext(_window);
 		_ready = _context && video::init(640, 480, 1.0f);

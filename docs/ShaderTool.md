@@ -124,7 +124,16 @@ The generated struct uses `[1]` as a placeholder, and you allocate the actual si
 
 ## SPIR-V / Vulkan
 
-When `USE_SPIRV` is on, shadertool runs `glslangValidator` and embeds SPIR-V in the generated shader C++.
+Desktop builds with `glslangValidator` include both backends by default. Select the renderer at startup with the read-only `r_renderer` CVar.
+
+```sh
+vengi-voxedit -set r_renderer vulkan
+vengi-voxedit -set r_renderer opengl
+```
+
+OpenGL is the default in a dual-backend build. For an existing CMake build directory, configure with `-DVIDEO_RENDERER=BOTH` to enable both. `GL` and `VK` still build a single backend.
+
+When `USE_SPIRV` is on, shadertool runs `glslangValidator` and embeds SPIR-V in the generated shader C++. The generated shader loads that binary only with the matching renderer. A dual-backend build embeds Vulkan SPIR-V and uses GLSL for OpenGL.
 
 For `--spirv-env vulkan*` it sets `video::Shader::vulkan` before `getSource()`. That skips GL_ARB extension preambles and defines `CLIPDEPTHZ0TO1` and `CLIPORIGINUPPERLEFT` so baked SPIR-V matches the runtime clip-control flags (`Camera` / `Shadow` ZO projections, upper-left origin). Vertex clip Z is **not** remapped in shadertool; the CPU projection matrices already use the [0, 1] depth range.
 

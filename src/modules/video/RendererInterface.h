@@ -40,6 +40,9 @@ class TextureConfig;
  */
 void setup();
 
+/** Returns whether the active renderer uses Vulkan. */
+bool isVulkanRenderer();
+
 /**
  * Flags used with mapBufferRange to request specific mapping behavior. These
  * are backend-agnostic hints; the GL backend maps them to the corresponding

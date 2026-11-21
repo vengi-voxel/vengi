@@ -3,6 +3,7 @@
  */
 
 #include "Renderer.h"
+#include "RendererBackend.h"
 #include "RenderStats.h"
 #include "DeferredDestroy.h"
 #include "UploadRing.h"
@@ -45,6 +46,7 @@ static core::VarPtr featureVars[core::enumVal(Feature::Max)];
 static RenderState s;
 
 void construct() {
+	_priv::registerRendererVar();
 	for (int i = 0; i < core::enumVal(Feature::Max); ++i) {
 		if (featuresArray[i].var == nullptr) {
 			continue;

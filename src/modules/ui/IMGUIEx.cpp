@@ -876,8 +876,11 @@ void Headline(const char *label) {
 }
 
 // use with e.g. ImGui::InvisibleButton to get the item rect mins and maxs
-#ifdef USE_VK_RENDERER
 ImTextureID toImTextureID(video::Id handle) {
+#ifdef USE_VK_RENDERER
+	if (!video::isVulkanRenderer()) {
+		return (ImTextureID)(intptr_t)handle;
+	}
 	if (handle == video::InvalidId) {
 		return ImTextureID_Invalid;
 	}
@@ -896,12 +899,10 @@ ImTextureID toImTextureID(video::Id handle) {
 	}
 	video::setVulkanImGuiDescriptorSet(handle, set);
 	return (ImTextureID)(intptr_t)set;
-}
 #else
-ImTextureID toImTextureID(video::Id handle) {
 	return (ImTextureID)(intptr_t)handle;
-}
 #endif
+}
 
 void AddImage(video::Id handle, const glm::vec2 &uv0, const glm::vec2 &uv1) {
 	const ImTextureID tex = toImTextureID(handle);

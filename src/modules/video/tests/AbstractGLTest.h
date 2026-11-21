@@ -98,11 +98,9 @@ public:
 		SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "test");
 		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 640);
 		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);
-#ifdef USE_VK_RENDERER
-		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-#else
-		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
-#endif
+		const SDL_WindowFlags flags = SDL_WINDOW_HIDDEN |
+									  (video::isVulkanRenderer() ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL);
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
 		_window = SDL_CreateWindowWithProperties(props);
 		SDL_DestroyProperties(props);
 

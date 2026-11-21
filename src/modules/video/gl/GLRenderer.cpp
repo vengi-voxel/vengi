@@ -4,6 +4,8 @@
  * Some great tips here: https://developer.nvidia.com/opengl-vulkan
  */
 
+#include "video/RendererBackend.h"
+
 #include "GLTypes.h"
 #include "core/ArrayLength.h"
 #include "core/Assert.h"
@@ -738,7 +740,7 @@ static inline _priv::GLState &glState() {
 	return s;
 }
 
-RendererState &rendererState() {
+RendererState &_priv::GLRenderer::rendererState() {
 	return (RendererState &)glState();
 }
 
@@ -774,7 +776,7 @@ static void validate(Id handle) {
 #endif
 }
 
-bool checkError(bool triggerAssert) {
+bool _priv::GLRenderer::checkError(bool triggerAssert) {
 #ifdef DEBUG
 	if (glGetError == nullptr) {
 		return false;
@@ -820,14 +822,14 @@ bool checkError(bool triggerAssert) {
 }
 
 // TODO: RENDERER: use FrameBufferConfig
-void readBuffer(GBufferTextureType textureType) {
+void _priv::GLRenderer::readBuffer(GBufferTextureType textureType) {
 	video_trace_scoped(ReadBuffer);
 	core_assert(glReadBuffer != nullptr);
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + textureType);
 	checkError();
 }
 
-float lineWidth(float width) {
+float _priv::GLRenderer::lineWidth(float width) {
 	RendererState &rs = rendererState();
 	// line width > 1.0 is deprecated in core profile context
 	if (glState().glVersion.isAtLeast(3, 2)) {
@@ -1069,7 +1071,7 @@ static void syncState() {
 	}
 }
 
-void syncPendingState() {
+void _priv::GLRenderer::syncPendingState() {
 	syncState();
 }
 
@@ -1087,7 +1089,7 @@ static GLbitfield getBitField(ClearFlag flag) {
 	return glValue;
 }
 
-void clear(ClearFlag flag) {
+void _priv::GLRenderer::clear(ClearFlag flag) {
 	video_trace_scoped(Clear);
 	const GLbitfield glValue = getBitField(flag);
 	if (glValue == 0) {
@@ -1104,7 +1106,7 @@ void clear(ClearFlag flag) {
 	checkError();
 }
 
-bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
+bool _priv::GLRenderer::bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	core_assert(TextureUnit::Max != unit);
 	core_assert(TextureType::Max != type);
 	bool changed = rendererState().pendingTextureHandle[core::enumVal(unit)] != handle;
@@ -1119,7 +1121,7 @@ bool bindTexture(TextureUnit unit, TextureType type, Id handle) {
 	return changed;
 }
 
-bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
+bool _priv::GLRenderer::readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id handle, int w, int h, uint8_t **pixels) {
 	video_trace_scoped(ReadTexture);
 	if (type == TextureType::Texture2DMultisample || type == TextureType::Texture2DMultisampleArray) {
 		Log::error("readTexture: cannot read a multisample texture; resolve to a non-MSAA target first");
@@ -1201,7 +1203,7 @@ bool readTexture(TextureUnit unit, TextureType type, TextureFormat format, Id ha
 	return true;
 }
 
-bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
+bool _priv::GLRenderer::readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
 	video_trace_scoped(ReadFramebuffer);
 	const int pitch = w * 4;
 	*pixels = (uint8_t *)core_malloc(h * pitch);
@@ -1217,7 +1219,7 @@ bool readFramebuffer(int x, int y, int w, int h, uint8_t **pixels) {
 	return true;
 }
 
-bool bindVertexArray(Id handle) {
+bool _priv::GLRenderer::bindVertexArray(Id handle) {
 	if (rendererState().vertexArrayHandle == handle) {
 		statsStateChangeSkipped();
 		return false;
@@ -1229,7 +1231,7 @@ bool bindVertexArray(Id handle) {
 	return true;
 }
 
-void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
+void *_priv::GLRenderer::mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	video_trace_scoped(MapBuffer);
 	const int modeIndex = core::enumVal(mode);
 	const GLenum glMode = _priv::AccessModes[modeIndex];
@@ -1258,7 +1260,7 @@ void *mapBuffer(Id handle, BufferType type, AccessMode mode) {
 	return data;
 }
 
-void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode, MapBufferFlag flags) {
+void *_priv::GLRenderer::mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length, AccessMode mode, MapBufferFlag flags) {
 	video_trace_scoped(MapBufferRange);
 	if (length == 0 || handle == InvalidId) {
 		return nullptr;
@@ -1337,7 +1339,7 @@ void *mapBufferRange(Id handle, BufferType type, intptr_t offset, size_t length,
 	return ptr;
 }
 
-bool unmapBuffer(Id handle, BufferType type) {
+bool _priv::GLRenderer::unmapBuffer(Id handle, BufferType type) {
 	video_trace_scoped(UnmapBuffer);
 	if (handle == InvalidId) {
 		return false;
@@ -1374,7 +1376,7 @@ bool unmapBuffer(Id handle, BufferType type) {
 	return true;
 }
 
-bool bindBuffer(BufferType type, Id handle) {
+bool _priv::GLRenderer::bindBuffer(BufferType type, Id handle) {
 	video_trace_scoped(BindBuffer);
 	const int typeIndex = core::enumVal(type);
 	if (rendererState().bufferHandle[typeIndex] == handle) {
@@ -1390,7 +1392,7 @@ bool bindBuffer(BufferType type, Id handle) {
 	return true;
 }
 
-bool unbindBuffer(BufferType type) {
+bool _priv::GLRenderer::unbindBuffer(BufferType type) {
 	const int typeIndex = core::enumVal(type);
 	if (rendererState().bufferHandle[typeIndex] == InvalidId) {
 		return false;
@@ -1403,7 +1405,7 @@ bool unbindBuffer(BufferType type) {
 	return true;
 }
 
-bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
+bool _priv::GLRenderer::bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	video_trace_scoped(BindBufferBase);
 	const int typeIndex = core::enumVal(type);
 	// Cache key: combine type and index to track per-binding-point state
@@ -1425,7 +1427,7 @@ bool bindBufferBase(BufferType type, Id handle, uint32_t index) {
 	return true;
 }
 
-void genBuffers(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::genBuffers(uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -1439,7 +1441,7 @@ void genBuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void deleteBuffers(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::deleteBuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -1460,7 +1462,7 @@ void deleteBuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void genVertexArrays(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::genVertexArrays(uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -1473,7 +1475,7 @@ void genVertexArrays(uint8_t amount, Id *ids) {
 	checkError();
 }
 
-void deleteShader(Id &id) {
+void _priv::GLRenderer::deleteShader(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
@@ -1487,7 +1489,7 @@ void deleteShader(Id &id) {
 	id = InvalidId;
 }
 
-Id genShader(ShaderType type) {
+Id _priv::GLRenderer::genShader(ShaderType type) {
 	if (glCreateShader == nullptr) {
 		return InvalidId;
 	}
@@ -1498,7 +1500,7 @@ Id genShader(ShaderType type) {
 	return id;
 }
 
-void deleteProgram(Id &id) {
+void _priv::GLRenderer::deleteProgram(Id &id) {
 	if (id == InvalidId) {
 		return;
 	}
@@ -1518,7 +1520,7 @@ void deleteProgram(Id &id) {
 	id = InvalidId;
 }
 
-Id genProgram() {
+Id _priv::GLRenderer::genProgram() {
 	checkError();
 	core_assert(glCreateProgram != nullptr);
 	Id id = (Id)glCreateProgram();
@@ -1527,7 +1529,7 @@ Id genProgram() {
 	return id;
 }
 
-void deleteVertexArrays(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::deleteVertexArrays(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -1547,7 +1549,7 @@ void deleteVertexArrays(uint8_t amount, Id *ids) {
 	}
 }
 
-void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
+void _priv::GLRenderer::genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -1565,7 +1567,7 @@ void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 	}
 }
 
-void deleteTextures(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::deleteTextures(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -1590,7 +1592,7 @@ void deleteTextures(uint8_t amount, Id *ids) {
 	}
 }
 
-void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count) {
+void _priv::GLRenderer::registerShaderBindings(Id program, const ShaderResourceBinding *bindings, int count) {
 	if (program == InvalidId || bindings == nullptr || count <= 0) {
 		return;
 	}
@@ -1632,18 +1634,18 @@ void registerShaderBindings(Id program, const ShaderResourceBinding *bindings, i
 	useProgram(previousProgram);
 }
 
-void setProgramPushConstantSize(Id program, uint32_t size) {
+void _priv::GLRenderer::setProgramPushConstantSize(Id program, uint32_t size) {
 	(void)program;
 	(void)size;
 }
 
-void setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count) {
+void _priv::GLRenderer::setUniformBufferPushOverlay(Id buffer, const UniformPushOverlayField *fields, int count) {
 	(void)buffer;
 	(void)fields;
 	(void)count;
 }
 
-void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
+void _priv::GLRenderer::setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 #if 0
 	// TODO: this is throwing a lot of GL_INVALID_VALUE errors
 	if (handle == InvalidId || name.empty()) {
@@ -1663,7 +1665,7 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name) {
 #endif
 }
 
-void genFramebuffers(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::genFramebuffers(uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -1676,7 +1678,7 @@ void genFramebuffers(uint8_t amount, Id *ids) {
 	checkError();
 }
 
-void deleteFramebuffers(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::deleteFramebuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -1696,7 +1698,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 	}
 }
 
-void genRenderbuffers(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::genRenderbuffers(uint8_t amount, Id *ids) {
 	statsResourceCreate(amount);
 	static_assert(sizeof(Id) == sizeof(GLuint), "Unexpected sizes");
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -1709,7 +1711,7 @@ void genRenderbuffers(uint8_t amount, Id *ids) {
 	checkError();
 }
 
-void deleteRenderbuffers(uint8_t amount, Id *ids) {
+void _priv::GLRenderer::deleteRenderbuffers(uint8_t amount, Id *ids) {
 	if (amount == 0) {
 		return;
 	}
@@ -1730,7 +1732,7 @@ void deleteRenderbuffers(uint8_t amount, Id *ids) {
 
 #define GL_OFFSET_CAST(i) ((void*)(i))
 
-void configureAttribute(const Attribute &a) {
+void _priv::GLRenderer::configureAttribute(const Attribute &a) {
 	video_trace_scoped(ConfigureVertexAttribute);
 	// The program doesn't need to be bound yet - VAO state is independent
 	// But we should have a program pending to ensure the attributes make sense
@@ -1757,14 +1759,14 @@ void configureAttribute(const Attribute &a) {
 
 #undef GL_OFFSET_CAST
 
-void flush() {
+void _priv::GLRenderer::flush() {
 	video_trace_scoped(Flush);
 	core_assert(glFlush != nullptr);
 	glFlush();
 	checkError();
 }
 
-void finish() {
+void _priv::GLRenderer::finish() {
 	video_trace_scoped(Finish);
 	core_assert(glFinish != nullptr);
 	glFinish();
@@ -1772,7 +1774,7 @@ void finish() {
 }
 
 
-Id createTimerQuery() {
+Id _priv::GLRenderer::createTimerQuery() {
 #if USE_OPENGLES
 	return InvalidId;
 #else
@@ -1795,7 +1797,7 @@ Id createTimerQuery() {
 #endif
 }
 
-void deleteTimerQuery(Id &query) {
+void _priv::GLRenderer::deleteTimerQuery(Id &query) {
 	if (query == InvalidId) {
 		return;
 	}
@@ -1804,19 +1806,19 @@ void deleteTimerQuery(Id &query) {
 	query = InvalidId;
 }
 
-void beginTimerQuery(Id query) {
+void _priv::GLRenderer::beginTimerQuery(Id query) {
 	core_assert(query != InvalidId);
 	syncState();
 	glBeginQuery(GL_TIME_ELAPSED, query);
 	checkError();
 }
 
-void endTimerQuery() {
+void _priv::GLRenderer::endTimerQuery() {
 	glEndQuery(GL_TIME_ELAPSED);
 	checkError();
 }
 
-bool timerQueryAvailable(Id query) {
+bool _priv::GLRenderer::timerQueryAvailable(Id query) {
 #if USE_OPENGLES
 	return false;
 #else
@@ -1830,7 +1832,7 @@ bool timerQueryAvailable(Id query) {
 #endif
 }
 
-uint64_t timerQueryResult(Id query) {
+uint64_t _priv::GLRenderer::timerQueryResult(Id query) {
 	core_assert(query != InvalidId);
 	GLuint64 elapsed = 0;
 	glGetQueryObjectui64v(query, GL_QUERY_RESULT, &elapsed);
@@ -1881,7 +1883,7 @@ static void blitFramebufferColorAttachment(Id handle, Id target, GLenum glAttach
 	video::bindFramebuffer(prev, FrameBufferMode::Default);
 }
 
-void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int width, int height) {
+void _priv::GLRenderer::blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int width, int height) {
 	const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachment)];
 	if (glAttachment < GL_COLOR_ATTACHMENT0 || glAttachment > GL_COLOR_ATTACHMENT15) {
 		return;
@@ -1889,7 +1891,7 @@ void blitFramebuffer(Id handle, Id target, FrameBufferAttachment attachment, int
 	blitFramebufferColorAttachment(handle, target, glAttachment, width, height);
 }
 
-void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
+void _priv::GLRenderer::blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height) {
 	if (flag == ClearFlag::Color && handle != InvalidId && target != InvalidId) {
 		blitFramebuffer(handle, target, FrameBufferAttachment::Color0, width, height);
 		return;
@@ -1916,7 +1918,7 @@ void blitFramebuffer(Id handle, Id target, ClearFlag flag, int width, int height
 	}
 }
 
-void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
+void _priv::GLRenderer::drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
 	syncState();
 	GLenum buffers[core::enumVal(FrameBufferAttachment::Max)] = {};
 	uint8_t count = 0;
@@ -1949,7 +1951,7 @@ void drawBuffers(uint8_t n, const FrameBufferAttachment *attachments) {
 	checkError();
 }
 
-Id bindFramebuffer(Id handle, FrameBufferMode mode) {
+Id _priv::GLRenderer::bindFramebuffer(Id handle, FrameBufferMode mode) {
 	const Id old = rendererState().framebufferHandle;
 #if SANITY_CHECKS_GL
 	GLint _oldFramebuffer;
@@ -1971,7 +1973,7 @@ Id bindFramebuffer(Id handle, FrameBufferMode mode) {
 	return old;
 }
 
-bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) {
+bool _priv::GLRenderer::setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) {
 	video_trace_scoped(SetupRenderBuffer);
 
 	if (useFeature(Feature::DirectStateAccess)) {
@@ -2001,7 +2003,7 @@ bool setupRenderBuffer(Id rbo, TextureFormat format, int w, int h, int samples) 
 	return true;
 }
 
-Id bindRenderbuffer(Id handle) {
+Id _priv::GLRenderer::bindRenderbuffer(Id handle) {
 	if (rendererState().renderBufferHandle == handle) {
 		return handle;
 	}
@@ -2016,7 +2018,7 @@ Id bindRenderbuffer(Id handle) {
 	return prev;
 }
 
-void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, size_t size) {
+void _priv::GLRenderer::bufferData(Id handle, BufferType type, BufferMode mode, const void *data, size_t size) {
 	video_trace_scoped(BufferData);
 	if (size <= 0) {
 		return;
@@ -2059,7 +2061,7 @@ void bufferData(Id handle, BufferType type, BufferMode mode, const void *data, s
 	statsUploadScopeEnd();
 }
 
-void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
+void _priv::GLRenderer::bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data, size_t size) {
 	video_trace_scoped(BufferSubData);
 	if (size == 0) {
 		return;
@@ -2090,7 +2092,7 @@ void bufferSubData(Id handle, BufferType type, intptr_t offset, const void *data
 	statsUploadScopeEnd();
 }
 
-bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags) {
+bool _priv::GLRenderer::bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag flags) {
 	if (!hasFeature(Feature::BufferStorage) || handle == InvalidId || size == 0u) {
 		return false;
 	}
@@ -2130,7 +2132,7 @@ bool bufferStorage(Id handle, BufferType type, size_t size, BufferStorageFlag fl
 	return ok;
 }
 
-bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size) {
+bool _priv::GLRenderer::copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size) {
 	if (readBuffer == InvalidId || writeBuffer == InvalidId || size == 0u) {
 		return false;
 	}
@@ -2156,7 +2158,7 @@ bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intpt
 }
 
 // FBO color sampling: lower-left clip stores rows bottom-up; upper-left matches Vulkan.
-const glm::vec4 &framebufferUV() {
+const glm::vec4 &_priv::GLRenderer::framebufferUV() {
 	if (renderState().clipOriginLowerLeft) {
 		static const glm::vec4 uv(0.0f, 1.0f, 1.0f, 0.0f);
 		return uv;
@@ -2165,7 +2167,7 @@ const glm::vec4 &framebufferUV() {
 	return uv;
 }
 
-bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
+bool _priv::GLRenderer::setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(FrameBufferAttachment::Max)],
 					  const RenderBufferPtr (&bufferAttachments)[core::enumVal(FrameBufferAttachment::Max)]) {
 	video_trace_scoped(SetupFramebuffer);
 	core::Buffer<GLenum> attachments;
@@ -2291,7 +2293,7 @@ bool setupFramebuffer(Id fbo, const TexturePtr (&colorTextures)[core::enumVal(Fr
 	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
-bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
+bool _priv::GLRenderer::bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool shouldClear) {
 	video_trace_scoped(BindFrameBufferAttachment);
 	const GLenum glAttachment = _priv::FrameBufferAttachments[core::enumVal(attachment)];
 
@@ -2334,7 +2336,7 @@ bool bindFrameBufferAttachment(Id fbo, Id texture, FrameBufferAttachment attachm
 	return status == GL_FRAMEBUFFER_COMPLETE;
 }
 
-void setupTexture(Id texture, const TextureConfig &config) {
+void _priv::GLRenderer::setupTexture(Id texture, const TextureConfig &config) {
 	video_trace_scoped(SetupTexture);
 	const GLenum glType = _priv::TextureTypes[core::enumVal(config.type())];
 	const bool multisampleTex = config.type() == TextureType::Texture2DMultisample ||
@@ -2491,7 +2493,7 @@ void setupTexture(Id texture, const TextureConfig &config) {
 	checkError();
 }
 
-void uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
+void _priv::GLRenderer::uploadTexture(Id texture, int width, int height, const uint8_t *data, int index, const TextureConfig &cfg) {
 	video_trace_scoped(UploadTexture);
 	statsUploadScopeBegin();
 	const int samples = cfg.samples();
@@ -2619,7 +2621,7 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 	statsUploadScopeEnd();
 }
 
-void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
+void _priv::GLRenderer::drawElements(Primitive mode, size_t numIndices, DataType type, void *offset) {
 	video_trace_scoped(DrawElements);
 	if (numIndices <= 0) {
 		return;
@@ -2635,7 +2637,7 @@ void drawElements(Primitive mode, size_t numIndices, DataType type, void *offset
 	checkError();
 }
 
-void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t instances, void *offset) {
+void _priv::GLRenderer::drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, size_t instances, void *offset) {
 	if (numIndices == 0 || instances == 0) return;
 	core_assert(hasFeature(Feature::InstancedArrays) && glDrawElementsInstanced != nullptr);
 	video_trace_scoped(DrawElementsInstanced);
@@ -2648,7 +2650,7 @@ void drawElementsInstanced(Primitive mode, size_t numIndices, DataType type, siz
 	checkError();
 }
 
-void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
+void _priv::GLRenderer::multiDrawElementsIndirect(Primitive mode, DataType type, const void *indirect, int drawCount, int stride) {
 	if (drawCount <= 0) {
 		return;
 	}
@@ -2668,7 +2670,7 @@ void multiDrawElementsIndirect(Primitive mode, DataType type, const void *indire
 	checkError();
 }
 
-void drawArrays(Primitive mode, size_t count) {
+void _priv::GLRenderer::drawArrays(Primitive mode, size_t count) {
 	if (count == 0u) {
 		return;
 	}
@@ -2682,7 +2684,7 @@ void drawArrays(Primitive mode, size_t count) {
 	checkError();
 }
 
-void enableDebug(DebugSeverity severity) {
+void _priv::GLRenderer::enableDebug(DebugSeverity severity) {
 	if (severity == DebugSeverity::None) {
 		return;
 	}
@@ -2713,7 +2715,7 @@ void enableDebug(DebugSeverity severity) {
 	Log::info("enable opengl debug messages");
 }
 
-bool compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name) {
+bool _priv::GLRenderer::compileShader(Id id, ShaderType shaderType, const core::String &source, const core::String &name) {
 	video_trace_scoped(CompileShader);
 	if (id == InvalidId) {
 		return false;
@@ -2783,7 +2785,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String &source, con
 	return false;
 }
 
-bool loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t spirvSize, const core::String &name) {
+bool _priv::GLRenderer::loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t spirvSize, const core::String &name) {
 	video_trace_scoped(LoadShaderSPIRV);
 	(void)shaderType;
 	if (id == InvalidId) {
@@ -2823,7 +2825,7 @@ bool loadShaderSPIRV(Id id, ShaderType shaderType, const uint8_t *spirv, size_t 
 	return false;
 }
 
-bool linkComputeShader(Id program, Id comp, const core::String &name) {
+bool _priv::GLRenderer::linkComputeShader(Id program, Id comp, const core::String &name) {
 	video_trace_scoped(LinkComputeShader);
 	const GLuint lid = (GLuint)program;
 	core_assert(glAttachShader != nullptr);
@@ -2866,7 +2868,7 @@ bool linkComputeShader(Id program, Id comp, const core::String &name) {
 	return true;
 }
 
-bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
+bool _priv::GLRenderer::bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	if (rendererState().imageHandle == textureHandle && rendererState().imageFormat == format &&
 		rendererState().imageAccessMode == mode) {
 		statsStateChangeSkipped();
@@ -2889,7 +2891,7 @@ bool bindImage(Id textureHandle, AccessMode mode, ImageFormat format) {
 	return true;
 }
 
-void waitShader(MemoryBarrierType wait) {
+void _priv::GLRenderer::waitShader(MemoryBarrierType wait) {
 	video_trace_scoped(WaitShader);
 	if (wait == MemoryBarrierType::None || glMemoryBarrier == nullptr) {
 		return;
@@ -2900,7 +2902,7 @@ void waitShader(MemoryBarrierType wait) {
 	video::checkError();
 }
 
-bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
+bool _priv::GLRenderer::runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
 	video_trace_scoped(RunShader);
 	if (workGroups.x <= 0 || workGroups.y <= 0 || workGroups.z <= 0) {
 		return false;
@@ -2926,7 +2928,7 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 	return true;
 }
 
-bool runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait) {
+bool _priv::GLRenderer::runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait) {
 	video_trace_scoped(RunShaderIndirect);
 	if (buffer == InvalidId || offset % sizeof(uint32_t) != 0u || glDispatchComputeIndirect == nullptr) {
 		return false;
@@ -2944,7 +2946,7 @@ bool runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType w
 	return true;
 }
 
-bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
+bool _priv::GLRenderer::linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name) {
 	video_trace_scoped(LinkShader);
 	const GLuint lid = (GLuint)program;
 	core_assert(glAttachShader != nullptr);
@@ -3000,36 +3002,36 @@ bool linkShader(Id program, Id vert, Id frag, Id geom, const core::String &name)
 	return true;
 }
 
-void destroyContext(RendererContext &context) {
+void _priv::GLRenderer::destroyContext(RendererContext &context) {
 	deferredDestroyFlushAll();
 	uploadRingShutdown();
 	SDL_GL_DestroyContext((SDL_GLContext)context);
 }
 
-RendererContext createContext(SDL_Window *window) {
+RendererContext _priv::GLRenderer::createContext(SDL_Window *window) {
 	core_assert(window != nullptr);
 	Log::debug("Trying to create an opengl context");
 	return (RendererContext)SDL_GL_CreateContext(window);
 }
 
-void activateContext(SDL_Window *window, RendererContext &context) {
+void _priv::GLRenderer::activateContext(SDL_Window *window, RendererContext &context) {
 	SDL_GL_MakeCurrent(window, (SDL_GLContext)context);
 }
 
-void endFrame(SDL_Window *window) {
+void _priv::GLRenderer::endFrame(SDL_Window *window) {
 	SDL_GL_SwapWindow(window);
 }
 
-void waitDeviceIdle() {
+void _priv::GLRenderer::waitDeviceIdle() {
 	core_assert(glFinish != nullptr);
 	glFinish();
 }
 
-Fence createFence() {
+Fence _priv::GLRenderer::createFence() {
 	if (!glFenceSync || !glClientWaitSync || !glDeleteSync) return nullptr;
 	return (Fence)glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 }
-bool fenceSignaled(Fence fence) {
+bool _priv::GLRenderer::fenceSignaled(Fence fence) {
 	if (!fence) return true;
 	const GLenum result = glClientWaitSync((GLsync)fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
 	if (result == GL_WAIT_FAILED) {
@@ -3039,12 +3041,12 @@ bool fenceSignaled(Fence fence) {
 	}
 	return result != GL_TIMEOUT_EXPIRED;
 }
-void deleteFence(Fence &fence) {
+void _priv::GLRenderer::deleteFence(Fence &fence) {
 	if (fence) glDeleteSync((GLsync)fence);
 	fence = nullptr;
 }
 
-void setup() {
+void _priv::GLRenderer::setup() {
 	SDL_ClearError();
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -3124,7 +3126,7 @@ static void handleVSync() {
 	}
 }
 
-bool init(int windowWidth, int windowHeight, float scaleFactor) {
+bool _priv::GLRenderer::init(int windowWidth, int windowHeight, float scaleFactor) {
 	glState() = _priv::GLState{};
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &glState().glVersion.majorVersion);
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &glState().glVersion.minorVersion);
@@ -3259,30 +3261,30 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 	return true;
 }
 
-void traceVideoBegin(const char *name) {
+void _priv::GLRenderer::traceVideoBegin(const char *name) {
 	if (glPushDebugGroup == nullptr)
 		return;
 	// glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, name);
 	// checkError();
 }
 
-void traceVideoEnd() {
+void _priv::GLRenderer::traceVideoEnd() {
 	if (glPopDebugGroup == nullptr)
 		return;
 	// glPopDebugGroup();
 }
 
-Id createAABBAccelerationStructure(const AccelerationStructureAABB *aabbs, uint32_t count) {
+Id _priv::GLRenderer::createAABBAccelerationStructure(const AccelerationStructureAABB *aabbs, uint32_t count) {
 	(void)aabbs;
 	(void)count;
 	return InvalidId;
 }
 
-void deleteAccelerationStructure(Id &handle) {
+void _priv::GLRenderer::deleteAccelerationStructure(Id &handle) {
 	handle = InvalidId;
 }
 
-bool bindAccelerationStructure(Id handle, uint32_t binding) {
+bool _priv::GLRenderer::bindAccelerationStructure(Id handle, uint32_t binding) {
 	(void)handle;
 	(void)binding;
 	return false;

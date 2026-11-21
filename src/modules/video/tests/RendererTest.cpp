@@ -3,6 +3,8 @@
  */
 
 #include "app/tests/AbstractTest.h"
+#include "core/ConfigVar.h"
+#include "video/Shader.h"
 #include "video/Renderer.h"
 #include "video/TextureConfig.h"
 #include "video/Buffer.h"
@@ -40,6 +42,19 @@ TEST_F(RendererTest, testVulkanSlabReusesAlignedRanges) {
 	EXPECT_EQ(0u, reuse.offset);
 }
 #endif
+
+TEST_F(RendererStreamingTest, SelectsReadOnlyBackendAtStartup) {
+	const core::VarPtr renderer = core::getVar(cfg::RenderBackend);
+	ASSERT_TRUE(renderer);
+	EXPECT_TRUE(renderer->isReadOnly());
+
+#if defined(USE_GL_RENDERER) && defined(USE_VK_RENDERER)
+	EXPECT_EQ(renderer->strVal() == "vulkan", isVulkanRenderer());
+#endif
+	EXPECT_EQ(isVulkanRenderer(), (SDL_GetWindowFlags(_window) & SDL_WINDOW_VULKAN) != 0);
+	EXPECT_EQ(isVulkanRenderer(), Shader::vulkan);
+	EXPECT_FALSE(renderer->setVal(isVulkanRenderer() ? "opengl" : "vulkan"));
+}
 
 TEST_F(RendererStreamingTest, testDynamicUploadsPreserveContentsWhenResizingAndOrphaning) {
 	Buffer buffer;

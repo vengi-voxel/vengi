@@ -38,12 +38,8 @@ protected:
 		}
 		video::setup();
 		video::construct();
-		SDL_WindowFlags flags = SDL_WINDOW_HIDDEN;
-#if USE_GL_RENDERER
-		flags |= SDL_WINDOW_OPENGL;
-#elif USE_VK_RENDERER
-		flags |= SDL_WINDOW_VULKAN;
-#endif
+		const SDL_WindowFlags flags = SDL_WINDOW_HIDDEN |
+									  (video::isVulkanRenderer() ? SDL_WINDOW_VULKAN : SDL_WINDOW_OPENGL);
 		_window = SDL_CreateWindow("pathtracer benchmark", 128, 128, flags);
 		if (_window == nullptr) {
 			return false;

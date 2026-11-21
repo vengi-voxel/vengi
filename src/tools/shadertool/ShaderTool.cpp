@@ -340,9 +340,8 @@ app::AppState ShaderTool::onRunning() {
 			_spirvVaryingLocations.clear();
 			_spirvNextVaryingLocation = 0;
 			const bool savedVulkan = video::Shader::vulkan;
-			if (core::string::startsWith(_spirvEnv, "vulkan")) {
-				video::Shader::vulkan = true;
-			}
+			spirvData.vulkan = core::string::startsWith(_spirvEnv, "vulkan");
+			video::Shader::vulkan = spirvData.vulkan;
 			const core::String& computeSource = shader.getSource(video::ShaderType::Compute, computeBuffer.first, true);
 			if (!compileSPIRV(computeSource, ".comp", spirvData.compute)) {
 				Log::warn("SPIR-V compilation failed for compute shader %s, continuing without SPIR-V", _shaderfile.c_str());
@@ -423,9 +422,8 @@ app::AppState ShaderTool::onRunning() {
 		_spirvVaryingLocations.clear();
 		_spirvNextVaryingLocation = 0;
 		const bool savedVulkan = video::Shader::vulkan;
-		if (core::string::startsWith(_spirvEnv, "vulkan")) {
-			video::Shader::vulkan = true;
-		}
+		spirvData.vulkan = core::string::startsWith(_spirvEnv, "vulkan");
+		video::Shader::vulkan = spirvData.vulkan;
 		const core::String& vertSource = shader.getSource(video::ShaderType::Vertex, vertexBuffer.first, true);
 		const core::String& fragSource = shader.getSource(video::ShaderType::Fragment, fragmentBuffer.first, true);
 		bool spirvOk = true;
