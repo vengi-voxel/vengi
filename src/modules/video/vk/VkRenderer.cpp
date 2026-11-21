@@ -24,8 +24,7 @@
 #include <SDL3/SDL_vulkan.h>
 
 // flextVk is generated from a 1.0 profile that does not include validation-layer
-// pNext structs. Define the Khronos types locally so we can enable GPU-AV, sync
-// validation and best practices without regenerating the loader.
+// pNext structs used by synchronization validation and best practices.
 #ifndef VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT
 #define VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT ((VkStructureType)1000247000)
 #endif
@@ -86,17 +85,8 @@ typedef struct VkValidationFeaturesEXT {
 #ifndef VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2
 #define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 ((VkStructureType)1000059000)
 #endif
-#ifndef VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES
-#define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES ((VkStructureType)1000207000)
-#endif
-#ifndef VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES
-#define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES ((VkStructureType)1000211000)
-#endif
 #ifndef VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES
 #define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES ((VkStructureType)1000257000)
-#endif
-#ifndef VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES
-#define VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES ((VkStructureType)1000177000)
 #endif
 
 #ifndef VK_PHYSICAL_DEVICE_FEATURES_2_STRUCT
@@ -106,18 +96,6 @@ typedef struct VkPhysicalDeviceFeatures2 {
 	void *pNext;
 	VkPhysicalDeviceFeatures features;
 } VkPhysicalDeviceFeatures2;
-typedef struct VkPhysicalDeviceTimelineSemaphoreFeatures {
-	VkStructureType sType;
-	void *pNext;
-	VkBool32 timelineSemaphore;
-} VkPhysicalDeviceTimelineSemaphoreFeatures;
-typedef struct VkPhysicalDeviceVulkanMemoryModelFeatures {
-	VkStructureType sType;
-	void *pNext;
-	VkBool32 vulkanMemoryModel;
-	VkBool32 vulkanMemoryModelDeviceScope;
-	VkBool32 vulkanMemoryModelAvailabilityVisibilityChains;
-} VkPhysicalDeviceVulkanMemoryModelFeatures;
 typedef struct VkPhysicalDeviceBufferDeviceAddressFeatures {
 	VkStructureType sType;
 	void *pNext;
@@ -125,13 +103,6 @@ typedef struct VkPhysicalDeviceBufferDeviceAddressFeatures {
 	VkBool32 bufferDeviceAddressCaptureReplay;
 	VkBool32 bufferDeviceAddressMultiDevice;
 } VkPhysicalDeviceBufferDeviceAddressFeatures;
-typedef struct VkPhysicalDevice8BitStorageFeatures {
-	VkStructureType sType;
-	void *pNext;
-	VkBool32 storageBuffer8BitAccess;
-	VkBool32 uniformAndStorageBuffer8BitAccess;
-	VkBool32 storagePushConstant8;
-} VkPhysicalDevice8BitStorageFeatures;
 typedef void(VKAPI_PTR *PFN_vkGetPhysicalDeviceFeatures2)(VkPhysicalDevice physicalDevice,
 														  VkPhysicalDeviceFeatures2 *pFeatures);
 #endif
@@ -487,7 +458,6 @@ struct VkState : public RendererState {
 		ShaderType type = ShaderType::Vertex;
 		bool alive = false;
 		VkShaderModule module = VK_NULL_HANDLE;
-		core::String source;
 	};
 	struct ProgramHandle {
 		Id id = InvalidId;
@@ -3500,8 +3470,6 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 
 		VkPhysicalDeviceProperties props;
 		vkGetPhysicalDeviceProperties(candidate, &props);
-		VkPhysicalDeviceFeatures unusedFeatures;
-		vkGetPhysicalDeviceFeatures(candidate, &unusedFeatures);
 
 		int score = 0;
 		switch (props.deviceType) {
@@ -6312,7 +6280,6 @@ void deleteShader(Id &id) {
 			vkDestroyShaderModule(s.device, h->module, nullptr);
 			h->module = VK_NULL_HANDLE;
 		}
-		h->source.clear();
 		h->alive = false;
 	}
 	id = InvalidId;
@@ -8291,15 +8258,6 @@ static bool bindDescriptorsForDraw(VkState &s, VkState::ProgramHandle &prog, Id 
 	return true;
 }
 
-// Used by runShader (compute). Binds descriptors immediately; return value unused.
-static VkDescriptorSet acquireDescriptorSet(VkState &s, VkState::ProgramHandle &prog) {
-	VkCommandBuffer cmd = s.frameCommandBuffers[s.currentFrame];
-	if (!bindDescriptorsForDraw(s, prog, prog.id, cmd, VK_PIPELINE_BIND_POINT_COMPUTE)) {
-		return VK_NULL_HANDLE;
-	}
-	return (VkDescriptorSet)(uintptr_t)1; // non-null success sentinel for callers
-}
-
 static void releasePendingDescriptorSets(VkState &s, uint32_t frame) {
 	if (s.pendingFreeSetCount[frame] == 0u) {
 		return;
@@ -8719,13 +8677,7 @@ bool compileShader(Id id, ShaderType shaderType, const core::String &source, con
 		Log::error("Empty shader source for %s", name.c_str());
 		return false;
 	}
-	h->source = source;
-
-	// GLSL fallback path. Without a runtime GLSL -> SPIR-V compiler linked in, we
-	// cannot produce a VkShaderModule here. If compileShaderSpirv() was called first
-	// the module is already in place. Otherwise the caller (linkShader) will fail to
-	// create a VkPipeline and fall back to the non-draw stub path. This is only hit
-	// when shadertool's glslangValidator step did not produce a .spv for this stage.
+	// Vulkan requires the module built by compileShaderSpirv().
 	if (h->module == VK_NULL_HANDLE) {
 		Log::error(
 			"Shader %s has no VkShaderModule (no SPIR-V was embedded); Vulkan cannot compile GLSL at runtime",
@@ -8984,19 +8936,18 @@ bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait)
 						   VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
 
 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, prog->computePipeline);
-	if (prog->descriptorSetLayout != VK_NULL_HANDLE) {
-		if (_priv::acquireDescriptorSet(s, *prog) == VK_NULL_HANDLE) {
-			Log::error("runShader: failed to bind compute descriptors for %s", prog->name.c_str());
-			if (resumeFbo && savedFbo != InvalidId) {
-				_priv::VkState::FramebufferHandle *fb = _priv::findFramebufferHandle(s, savedFbo);
-				if (fb != nullptr) {
-					_priv::beginFboRenderPass(s, *fb, _priv::FboBeginClear::Auto);
-				}
-			} else {
-				_priv::resumeMainRenderPass(s);
+	if (prog->descriptorSetLayout != VK_NULL_HANDLE &&
+		!_priv::bindDescriptorsForDraw(s, *prog, program, cmd, VK_PIPELINE_BIND_POINT_COMPUTE)) {
+		Log::error("runShader: failed to bind compute descriptors for %s", prog->name.c_str());
+		if (resumeFbo && savedFbo != InvalidId) {
+			_priv::VkState::FramebufferHandle *fb = _priv::findFramebufferHandle(s, savedFbo);
+			if (fb != nullptr) {
+				_priv::beginFboRenderPass(s, *fb, _priv::FboBeginClear::Auto);
 			}
-			return false;
+		} else {
+			_priv::resumeMainRenderPass(s);
 		}
+		return false;
 	}
 	vkCmdDispatch(cmd, workGroups.x, workGroups.y, workGroups.z);
 	waitShader(wait);
