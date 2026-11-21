@@ -8,12 +8,38 @@
 #include "video/Buffer.h"
 #include "video/UploadRing.h"
 #include "video/tests/AbstractGLTest.h"
+#ifdef USE_VK_RENDERER
+#include "video/vk/VkMemoryRanges.h"
+#endif
 
 namespace video {
 
 class RendererTest : public app::AbstractTest {};
 
 class RendererStreamingTest : public AbstractGLTest {};
+
+#ifdef USE_VK_RENDERER
+TEST_F(RendererTest, testVulkanSlabReusesAlignedRanges) {
+	_priv::VkMemoryRanges ranges;
+	ranges.reset(1024);
+	_priv::VkMemoryRange first, second, third, reuse;
+	ASSERT_TRUE(ranges.allocate(100, 1, first));
+	ASSERT_TRUE(ranges.allocate(256, 256, second));
+	EXPECT_EQ(256u, second.offset);
+	ASSERT_TRUE(ranges.allocate(512, 512, third));
+	EXPECT_FALSE(ranges.allocate(256, 1, reuse));
+
+	ranges.release(second);
+	ASSERT_TRUE(ranges.allocate(400, 16, reuse));
+	EXPECT_EQ(112u, reuse.offset);
+	ranges.release(first);
+	ranges.release(third);
+	ranges.release(reuse);
+	EXPECT_TRUE(ranges.allFree(1024));
+	ASSERT_TRUE(ranges.allocate(1024, 256, reuse));
+	EXPECT_EQ(0u, reuse.offset);
+}
+#endif
 
 TEST_F(RendererStreamingTest, testDynamicUploadsPreserveContentsWhenResizingAndOrphaning) {
 	Buffer buffer;

@@ -1,7 +1,7 @@
 set(VK_SRCS
 	vk/flextVk.c vk/flextVk.h
 	vk/VkRenderer.cpp vk/VkRenderer.h
-	vk/VkMapping.h
+	vk/VkMapping.h vk/VkMemoryRanges.h
 	vk/VKTypes.h
 )
 set(GL_SRCS

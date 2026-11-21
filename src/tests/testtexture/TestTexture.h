@@ -12,6 +12,7 @@ class TestTexture: public TestApp {
 private:
 	using Super = TestApp;
 	video::TexturePtr _texture;
+	image::ImagePtr _reupload;
 	render::TextureRenderer _renderer;
 
 	void doRender() override;

@@ -21,6 +21,7 @@
 #include "video/TextureConfig.h"
 #include "video/Types.h"
 #include "video/vk/VkMapping.h"
+#include "video/vk/VkMemoryRanges.h"
 #include <SDL3/SDL_vulkan.h>
 
 // flextVk is generated from a 1.0 profile that does not include validation-layer
@@ -527,7 +528,7 @@ struct VkState : public RendererState {
 		VkDeviceSize capacity = 0u; // allocation size (may be larger than size)
 		VkBufferUsageFlags usage = 0u;
 		void *mapped = nullptr; // persistently mapped pointer (HOST_VISIBLE|HOST_COHERENT)
-		bool slabMemory = false;
+		VkMemoryRange slabRange;
 		// When true, ensureBufferAlloc prefers HOST_VISIBLE memory even for mesh buffers
 		// (needed for persistent upload-ring mappings).
 		bool hostVisiblePreferred = false;
@@ -571,7 +572,7 @@ struct VkState : public RendererState {
 		// FBO color attachments before they are first rendered into.
 		bool hasContent = false;
 		bool storageBit = false;
-		bool slabMemory = false;
+		VkMemoryRange slabRange;
 	};
 	struct FramebufferHandle {
 		Id id = InvalidId;
@@ -638,21 +639,17 @@ struct VkState : public RendererState {
 	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 	VkCommandPool frameCommandPools[MAX_FRAMES_IN_FLIGHT] = {};
 
-	// Sub-allocate small images/buffers from these. Allocations larger than
-	// MEMORY_SLAB_SIZE (typical viewport RGBA16F / shadow arrays) use dedicated
-	// VkDeviceMemory on the handle so they can be freed on destroy.
-	static const VkDeviceSize MEMORY_SLAB_SIZE = 64u * 1024u * 1024u;
+	// Keep optimal images separate from buffers so they never share a granularity page.
+	static constexpr VkDeviceSize MEMORY_SLAB_SIZE = 64u * 1024u * 1024u;
 	struct MemorySlab {
 		VkDeviceMemory memory = VK_NULL_HANDLE;
-		VkDeviceSize capacity = 0;
-		VkDeviceSize used = 0;
 		uint32_t memoryTypeIndex = UINT32_MAX;
 		VkMemoryPropertyFlags properties = 0;
+		bool image = false;
 		void *mapped = nullptr;
+		VkMemoryRanges ranges;
 	};
-	MemorySlab *memorySlabs = nullptr;
-	uint32_t memorySlabCount = 0u;
-	uint32_t memorySlabCapacity = 0u;
+	core::DynamicArray<MemorySlab> memorySlabs;
 
 	// Swapchain
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
@@ -747,11 +744,12 @@ struct VkState : public RendererState {
 		VkBuffer buffer = VK_NULL_HANDLE;
 		VkDeviceMemory memory = VK_NULL_HANDLE;
 		void *mapped = nullptr;
-		bool freeMemory = false;
+		VkMemoryRange slabRange;
 	};
 	PendingBufferDestroy *pendingBufferDestroys = nullptr;
 	uint32_t pendingBufferDestroyCount = 0u;
 	uint32_t pendingBufferDestroyCapacity = 0u;
+	core::DynamicArray<TextureHandle> pendingTextureDestroys;
 	// Per-frame rings of uniform data snapshotted at each draw. Without this, all
 	// draws in a command buffer read the last CPU write to each shared UBO.
 	// Chunks grow if a frame needs more than UNIFORM_RING_CHUNK_SIZE.
@@ -1241,12 +1239,7 @@ static bool hasInstanceLayer(const char *layerName) {
 static void destroyBufferAlloc(VkState &s, VkState::BufferHandle &h);
 static bool dedicatedAlloc(VkState &s, VkDeviceSize size, uint32_t memoryTypeBits, VkMemoryPropertyFlags properties,
 						   VkDeviceMemory *outMemory, void **outMapped, VkMemoryPropertyFlags preferred = 0);
-static bool slabAlloc(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
-					  VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-					  void **outMapped, VkMemoryPropertyFlags preferred = 0);
-static bool allocGpuMemory(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
-						   VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-						   void **outMapped, bool *outSlab, VkMemoryPropertyFlags preferred = 0);
+static void releasePendingResourceDestroys(VkState &s);
 static void destroyMemorySlabs(VkState &s);
 
 // Destroy swapchain images/views and sync objects, but keep the swapchain handle itself
@@ -1970,7 +1963,6 @@ static void destroyUniformRingChunk(VkState &s, VkState::UniformRingChunk &chunk
 	tmp.buffer = chunk.buffer;
 	tmp.memory = chunk.memory;
 	tmp.mapped = chunk.mapped;
-	tmp.slabMemory = false;
 	tmp.capacity = chunk.capacity;
 	destroyBufferAlloc(s, tmp);
 	chunk = VkState::UniformRingChunk{};
@@ -2998,6 +2990,8 @@ RendererContext createContext(SDL_Window *window) {
 	return (RendererContext)&s;
 }
 
+static void destroyTextureGpu(_priv::VkState &s, _priv::VkState::TextureHandle &h);
+
 void destroyContext(RendererContext &context) {
 	_priv::VkState &s = vkstate();
 	uploadRingShutdown();
@@ -3023,23 +3017,7 @@ void destroyContext(RendererContext &context) {
 
 	_priv::destroySwapchainResources(s, true);
 	_priv::destroyUniformRingBuffer(s);
-	// Flush buffers queued by destroyUniformRingBuffer / handle teardown.
-	if (s.device != VK_NULL_HANDLE) {
-		vkDeviceWaitIdle(s.device);
-		for (uint32_t i = 0; i < s.pendingBufferDestroyCount; ++i) {
-			const _priv::VkState::PendingBufferDestroy &p = s.pendingBufferDestroys[i];
-			if (p.mapped != nullptr && p.memory != VK_NULL_HANDLE && p.freeMemory) {
-				vkUnmapMemory(s.device, p.memory);
-			}
-			if (p.buffer != VK_NULL_HANDLE) {
-				vkDestroyBuffer(s.device, p.buffer, nullptr);
-			}
-			if (p.freeMemory && p.memory != VK_NULL_HANDLE) {
-				vkFreeMemory(s.device, p.memory, nullptr);
-			}
-		}
-		s.pendingBufferDestroyCount = 0u;
-	}
+	_priv::releasePendingResourceDestroys(s);
 
 	if (s.device != VK_NULL_HANDLE) {
 		if (s.shaderHandles != nullptr) {
@@ -3084,28 +3062,7 @@ void destroyContext(RendererContext &context) {
 				if (!h.alive) {
 					continue;
 				}
-				// Free imgui descriptor sets before samplers/images they reference.
-				if (h.imguiSet != VK_NULL_HANDLE && s.descriptorPool != VK_NULL_HANDLE) {
-					vkFreeDescriptorSets(s.device, s.descriptorPool, 1, &h.imguiSet);
-					h.imguiSet = VK_NULL_HANDLE;
-				}
-				if (h.sampler != VK_NULL_HANDLE) {
-					vkDestroySampler(s.device, h.sampler, nullptr);
-				}
-				if (h.view != VK_NULL_HANDLE) {
-					vkDestroyImageView(s.device, h.view, nullptr);
-				}
-				if (h.image != VK_NULL_HANDLE) {
-					vkDestroyImage(s.device, h.image, nullptr);
-				}
-				if (h.memory != VK_NULL_HANDLE && !h.slabMemory) {
-					vkFreeMemory(s.device, h.memory, nullptr);
-				}
-				h.sampler = VK_NULL_HANDLE;
-				h.view = VK_NULL_HANDLE;
-				h.image = VK_NULL_HANDLE;
-				h.memory = VK_NULL_HANDLE;
-				h.slabMemory = false;
+				destroyTextureGpu(s, h);
 				h.alive = false;
 			}
 		}
@@ -3121,7 +3078,10 @@ void destroyContext(RendererContext &context) {
 			vkDestroyImage(s.device, s.placeholderImage, nullptr);
 			s.placeholderImage = VK_NULL_HANDLE;
 		}
-		s.placeholderImageMemory = VK_NULL_HANDLE;
+		if (s.placeholderImageMemory != VK_NULL_HANDLE) {
+			vkFreeMemory(s.device, s.placeholderImageMemory, nullptr);
+			s.placeholderImageMemory = VK_NULL_HANDLE;
+		}
 		if (s.placeholderDepthArraySampler != VK_NULL_HANDLE) {
 			vkDestroySampler(s.device, s.placeholderDepthArraySampler, nullptr);
 			s.placeholderDepthArraySampler = VK_NULL_HANDLE;
@@ -3134,7 +3094,10 @@ void destroyContext(RendererContext &context) {
 			vkDestroyImage(s.device, s.placeholderDepthArrayImage, nullptr);
 			s.placeholderDepthArrayImage = VK_NULL_HANDLE;
 		}
-		s.placeholderDepthArrayMemory = VK_NULL_HANDLE;
+		if (s.placeholderDepthArrayMemory != VK_NULL_HANDLE) {
+			vkFreeMemory(s.device, s.placeholderDepthArrayMemory, nullptr);
+			s.placeholderDepthArrayMemory = VK_NULL_HANDLE;
+		}
 		for (uint32_t i = 0; i < s.pendingFboDestroyCount; ++i) {
 			const _priv::VkState::PendingFboDestroy &p = s.pendingFboDestroys[i];
 			if (p.framebuffer != VK_NULL_HANDLE) {
@@ -3160,19 +3123,7 @@ void destroyContext(RendererContext &context) {
 			}
 		}
 		s.pendingFboDestroyCount = 0u;
-		for (uint32_t i = 0; i < s.pendingBufferDestroyCount; ++i) {
-			const _priv::VkState::PendingBufferDestroy &p = s.pendingBufferDestroys[i];
-			if (p.mapped != nullptr && p.memory != VK_NULL_HANDLE && p.freeMemory) {
-				vkUnmapMemory(s.device, p.memory);
-			}
-			if (p.buffer != VK_NULL_HANDLE) {
-				vkDestroyBuffer(s.device, p.buffer, nullptr);
-			}
-			if (p.freeMemory && p.memory != VK_NULL_HANDLE) {
-				vkFreeMemory(s.device, p.memory, nullptr);
-			}
-		}
-		s.pendingBufferDestroyCount = 0u;
+		_priv::releasePendingResourceDestroys(s);
 		if (s.framebufferHandles != nullptr) {
 			for (uint32_t i = 0; i < s.framebufferHandleCount; ++i) {
 				_priv::VkState::FramebufferHandle &h = s.framebufferHandles[i];
@@ -3248,6 +3199,7 @@ void destroyContext(RendererContext &context) {
 		s.pendingBufferDestroys = nullptr;
 	}
 	s.pendingBufferDestroyCapacity = 0u;
+	s.pendingTextureDestroys.release();
 	for (uint32_t f = 0; f < _priv::MAX_FRAMES_IN_FLIGHT; ++f) {
 		if (s.pendingFreeSets[f] != nullptr) {
 			core_free(s.pendingFreeSets[f]);
@@ -3869,13 +3821,12 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		}
 		VkMemoryRequirements mr;
 		vkGetImageMemoryRequirements(s.device, s.placeholderImage, &mr);
-		VkDeviceSize phOffset = 0;
-		if (!_priv::slabAlloc(s, mr.size, mr.alignment, mr.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-							  &s.placeholderImageMemory, &phOffset, nullptr)) {
+		if (!_priv::dedicatedAlloc(s, mr.size, mr.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+								   &s.placeholderImageMemory, nullptr) ||
+			vkBindImageMemory(s.device, s.placeholderImage, s.placeholderImageMemory, 0) != VK_SUCCESS) {
 			Log::error("Failed to allocate placeholder image memory");
 			return false;
 		}
-		vkBindImageMemory(s.device, s.placeholderImage, s.placeholderImageMemory, phOffset);
 
 		// Transition layout to SHADER_READ_ONLY_OPTIMAL via a one-shot command
 		// buffer. The image content is left undefined; samplers will return
@@ -4003,13 +3954,12 @@ bool init(int windowWidth, int windowHeight, float scaleFactor) {
 		}
 		VkMemoryRequirements dmr;
 		vkGetImageMemoryRequirements(s.device, s.placeholderDepthArrayImage, &dmr);
-		VkDeviceSize dOffset = 0;
-		if (!_priv::slabAlloc(s, dmr.size, dmr.alignment, dmr.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-							  &s.placeholderDepthArrayMemory, &dOffset, nullptr)) {
+		if (!_priv::dedicatedAlloc(s, dmr.size, dmr.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+								   &s.placeholderDepthArrayMemory, nullptr) ||
+			vkBindImageMemory(s.device, s.placeholderDepthArrayImage, s.placeholderDepthArrayMemory, 0) != VK_SUCCESS) {
 			Log::error("Failed to allocate placeholder depth array memory");
 			return false;
 		}
-		vkBindImageMemory(s.device, s.placeholderDepthArrayImage, s.placeholderDepthArrayMemory, dOffset);
 
 		VkCommandBufferAllocateInfo pcbai{};
 		pcbai.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -4169,7 +4119,6 @@ namespace _priv {
 // Forward decls for helpers defined further down in this file.
 static void releasePendingDescriptorSets(VkState &s, uint32_t frame);
 static void releasePendingFboDestroys(VkState &s);
-static void releasePendingBufferDestroys(VkState &s);
 static void resetUniformRingFrame(VkState &s, uint32_t frame);
 
 // Record-time: acquire the next swapchain image and start the main render pass so that
@@ -4218,7 +4167,7 @@ static bool beginVulkanFrame(VkState &s) {
 	// vkResetFences: waitAllInFlightFrames waits every fence, including the current slot
 	// which is still signaled here but unsignaled immediately after reset.
 	releasePendingFboDestroys(s);
-	releasePendingBufferDestroys(s);
+	releasePendingResourceDestroys(s);
 
 	// Only reset the fence after we've successfully acquired, otherwise we'd deadlock
 	// the next wait on a frame we never submitted.
@@ -4863,142 +4812,99 @@ static bool dedicatedAlloc(VkState &s, VkDeviceSize size, uint32_t memoryTypeBit
 	return false;
 }
 
-static bool ensureSlabCapacity(VkState &s) {
-	if (s.memorySlabCount < s.memorySlabCapacity) {
-		return true;
+static void freeMemorySlab(VkState &s, const VkState::MemorySlab &slab) {
+	if (slab.mapped != nullptr) {
+		vkUnmapMemory(s.device, slab.memory);
 	}
-	const uint32_t oldCapacity = s.memorySlabCapacity;
-	const uint32_t newCapacity = oldCapacity == 0u ? 32u : oldCapacity * 2u;
-	VkState::MemorySlab *neu = new VkState::MemorySlab[newCapacity];
-	if (neu == nullptr) {
-		return false;
-	}
-	if (s.memorySlabs != nullptr) {
-		for (uint32_t i = 0; i < oldCapacity; ++i) {
-			neu[i] = s.memorySlabs[i];
-		}
-		delete[] s.memorySlabs;
-	}
-	s.memorySlabs = neu;
-	s.memorySlabCapacity = newCapacity;
-	return true;
+	vkFreeMemory(s.device, slab.memory, nullptr);
 }
 
-static bool slabAlloc(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
-					  VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-					  void **outMapped, VkMemoryPropertyFlags preferred) {
-	if (s.device == VK_NULL_HANDLE || size == 0u || outMemory == nullptr || outOffset == nullptr) {
-		return false;
+static bool allocGpuMemory(VkState &s, const VkMemoryRequirements &req, VkMemoryPropertyFlags properties,
+						   bool image, VkDeviceMemory &memory, VkMemoryRange &range, void **outMapped = nullptr,
+						   VkMemoryPropertyFlags preferred = 0) {
+	range = {};
+	if (req.size > VkState::MEMORY_SLAB_SIZE) {
+		return dedicatedAlloc(s, req.size, req.memoryTypeBits, properties, &memory, outMapped, preferred);
 	}
-	if (alignment < 256u) {
-		alignment = 256u;
-	}
-	if (size + alignment > VkState::MEMORY_SLAB_SIZE) {
-		return false;
-	}
-	// Prefer ReBAR when requested; if that heap cannot fit another 64MiB slab,
-	// fall back to host-visible sysram so mesh uploads keep working.
-	const VkMemoryPropertyFlags prefs[2] = {preferred, 0};
+
+	const VkMemoryPropertyFlags prefs[] = {preferred, 0};
 	const uint32_t passes = preferred != 0u ? 2u : 1u;
 	for (uint32_t pass = 0; pass < passes; ++pass) {
-		const int32_t memType = findMemoryType(s.physicalDevice, memoryTypeBits, properties, prefs[pass]);
-		if (memType < 0) {
+		const int32_t type = findMemoryType(s.physicalDevice, req.memoryTypeBits, properties, prefs[pass]);
+		if (type < 0) {
 			continue;
 		}
-		for (uint32_t i = 0; i < s.memorySlabCount; ++i) {
-			VkState::MemorySlab &slab = s.memorySlabs[i];
-			if (slab.memoryTypeIndex != (uint32_t)memType || slab.memory == VK_NULL_HANDLE) {
-				continue;
-			}
-			const VkDeviceSize aligned = (slab.used + alignment - 1u) & ~(alignment - 1u);
-			if (aligned + size <= slab.capacity) {
-				*outMemory = slab.memory;
-				*outOffset = aligned;
+		for (VkState::MemorySlab &slab : s.memorySlabs) {
+			if (slab.memoryTypeIndex == (uint32_t)type && slab.properties == properties && slab.image == image &&
+				slab.ranges.allocate(req.size, req.alignment, range)) {
+				memory = slab.memory;
 				if (outMapped != nullptr) {
-					*outMapped = (slab.mapped != nullptr) ? ((uint8_t *)slab.mapped + aligned) : nullptr;
+					*outMapped = slab.mapped != nullptr ? (uint8_t *)slab.mapped + range.offset : nullptr;
 				}
-				slab.used = aligned + size;
 				return true;
 			}
 		}
-		if (!ensureSlabCapacity(s)) {
-			Log::error("Vulkan memory slab grow failed");
-			return false;
-		}
-		VkMemoryAllocateInfo ai{};
-		ai.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		ai.allocationSize = VkState::MEMORY_SLAB_SIZE;
-		ai.memoryTypeIndex = (uint32_t)memType;
-		VkState::MemorySlab &slab = s.memorySlabs[s.memorySlabCount];
-		if (vkAllocateMemory(s.device, &ai, nullptr, &slab.memory) != VK_SUCCESS) {
-			slab.memory = VK_NULL_HANDLE;
-			Log::debug("Vulkan memory slab alloc failed for memoryType %d (pass %u)", memType, pass);
+
+		VkMemoryAllocateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		info.allocationSize = VkState::MEMORY_SLAB_SIZE;
+		info.memoryTypeIndex = (uint32_t)type;
+		VkState::MemorySlab slab;
+		if (vkAllocateMemory(s.device, &info, nullptr, &slab.memory) != VK_SUCCESS) {
 			continue;
 		}
-		slab.capacity = VkState::MEMORY_SLAB_SIZE;
-		slab.used = 0;
-		slab.memoryTypeIndex = (uint32_t)memType;
-		slab.properties = properties;
-		slab.mapped = nullptr;
-		if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) {
-			if (vkMapMemory(s.device, slab.memory, 0, VK_WHOLE_SIZE, 0, &slab.mapped) != VK_SUCCESS) {
-				Log::error("Failed to map memory slab");
-				vkFreeMemory(s.device, slab.memory, nullptr);
-				slab.memory = VK_NULL_HANDLE;
-				continue;
-			}
+		if ((properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0 &&
+			vkMapMemory(s.device, slab.memory, 0, VK_WHOLE_SIZE, 0, &slab.mapped) != VK_SUCCESS) {
+			vkFreeMemory(s.device, slab.memory, nullptr);
+			continue;
 		}
-		++s.memorySlabCount;
-		*outMemory = slab.memory;
-		*outOffset = 0;
+		slab.memoryTypeIndex = (uint32_t)type;
+		slab.properties = properties;
+		slab.image = image;
+		slab.ranges.reset(VkState::MEMORY_SLAB_SIZE);
+		const bool allocated = slab.ranges.allocate(req.size, req.alignment, range);
+		core_assert_always(allocated);
+		memory = slab.memory;
 		if (outMapped != nullptr) {
 			*outMapped = slab.mapped;
 		}
-		slab.used = size;
+		s.memorySlabs.push_back(core::move(slab));
 		return true;
 	}
-	Log::error("Failed to allocate %llu byte memory slab", (unsigned long long)VkState::MEMORY_SLAB_SIZE);
-	return false;
+	// A heap may still have space for the resource when it cannot fit another slab.
+	return dedicatedAlloc(s, req.size, req.memoryTypeBits, properties, &memory, outMapped, preferred);
 }
 
-static bool allocGpuMemory(VkState &s, VkDeviceSize size, VkDeviceSize alignment, uint32_t memoryTypeBits,
-						   VkMemoryPropertyFlags properties, VkDeviceMemory *outMemory, VkDeviceSize *outOffset,
-						   void **outMapped, bool *outSlab, VkMemoryPropertyFlags preferred) {
-	if (size + (alignment > 256u ? alignment : 256u) > VkState::MEMORY_SLAB_SIZE) {
-		if (outSlab != nullptr) {
-			*outSlab = false;
-		}
-		if (outOffset != nullptr) {
-			*outOffset = 0;
-		}
-		return dedicatedAlloc(s, size, memoryTypeBits, properties, outMemory, outMapped, preferred);
+static void freeGpuMemory(VkState &s, VkDeviceMemory memory, const VkMemoryRange &range, void *mapped = nullptr) {
+	if (memory == VK_NULL_HANDLE) {
+		return;
 	}
-	if (outSlab != nullptr) {
-		*outSlab = true;
+	if (range.size == 0) {
+		if (mapped != nullptr) {
+			vkUnmapMemory(s.device, memory);
+		}
+		vkFreeMemory(s.device, memory, nullptr);
+		return;
 	}
-	return slabAlloc(s, size, alignment, memoryTypeBits, properties, outMemory, outOffset, outMapped, preferred);
+	for (size_t i = 0; i < s.memorySlabs.size(); ++i) {
+		VkState::MemorySlab &slab = s.memorySlabs[i];
+		if (slab.memory == memory) {
+			slab.ranges.release(range);
+			if (slab.ranges.allFree(VkState::MEMORY_SLAB_SIZE)) {
+				freeMemorySlab(s, slab);
+				s.memorySlabs.erase(i);
+			}
+			return;
+		}
+	}
+	core_assert(false);
 }
 
 static void destroyMemorySlabs(VkState &s) {
-	if (s.device != VK_NULL_HANDLE) {
-		for (uint32_t i = 0; i < s.memorySlabCount; ++i) {
-			VkState::MemorySlab &slab = s.memorySlabs[i];
-			if (slab.mapped != nullptr && slab.memory != VK_NULL_HANDLE) {
-				vkUnmapMemory(s.device, slab.memory);
-				slab.mapped = nullptr;
-			}
-			if (slab.memory != VK_NULL_HANDLE) {
-				vkFreeMemory(s.device, slab.memory, nullptr);
-				slab.memory = VK_NULL_HANDLE;
-			}
-			slab.capacity = 0;
-			slab.used = 0;
-		}
+	for (const VkState::MemorySlab &slab : s.memorySlabs) {
+		freeMemorySlab(s, slab);
 	}
-	delete[] s.memorySlabs;
-	s.memorySlabs = nullptr;
-	s.memorySlabCount = 0u;
-	s.memorySlabCapacity = 0u;
+	s.memorySlabs.release();
 }
 
 static VkBufferUsageFlags bufferUsageFor(BufferType type) {
@@ -5037,7 +4943,7 @@ static bool bufferUseDeviceLocal(BufferType type) {
 static void destroyBufferAlloc(VkState &s, VkState::BufferHandle &h) {
 	if (h.buffer == VK_NULL_HANDLE && h.memory == VK_NULL_HANDLE && h.mapped == nullptr) {
 		h.capacity = 0u;
-		h.slabMemory = false;
+		h.slabRange = {};
 		h.usage = 0u;
 		return;
 	}
@@ -5059,11 +4965,11 @@ static void destroyBufferAlloc(VkState &s, VkState::BufferHandle &h) {
 	p.buffer = h.buffer;
 	p.memory = h.memory;
 	p.mapped = h.mapped;
-	p.freeMemory = h.memory != VK_NULL_HANDLE && !h.slabMemory;
+	p.slabRange = h.slabRange;
 	h.buffer = VK_NULL_HANDLE;
 	h.memory = VK_NULL_HANDLE;
 	h.mapped = nullptr;
-	h.slabMemory = false;
+	h.slabRange = {};
 	h.capacity = 0u;
 	h.usage = 0u;
 }
@@ -5101,42 +5007,27 @@ static bool ensureBufferAlloc(VkState &s, VkState::BufferHandle &h, size_t size)
 
 	VkMemoryRequirements req;
 	vkGetBufferMemoryRequirements(s.device, h.buffer, &req);
-	VkDeviceSize offset = 0;
-	void *mapped = nullptr;
-	bool slab = true;
 	const bool deviceLocal = bufferUseDeviceLocal(h.type) && !h.hostVisiblePreferred;
-	if (deviceLocal) {
-		if (!allocGpuMemory(s, req.size, req.alignment, req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-							&h.memory, &offset, nullptr, &slab, 0)) {
-			Log::error("No device-local memory for buffer (size=%zu)", size);
-			vkDestroyBuffer(s.device, h.buffer, nullptr);
-			h.buffer = VK_NULL_HANDLE;
-			return false;
-		}
-		mapped = nullptr;
-	} else if (!allocGpuMemory(s, req.size, req.alignment, req.memoryTypeBits,
-							   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &h.memory,
-							   &offset, &mapped, &slab, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
-		Log::error("No host-visible memory for buffer (size=%zu)", size);
+	const VkMemoryPropertyFlags properties = deviceLocal
+		? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		: VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	const VkMemoryPropertyFlags preferred = deviceLocal ? 0u : (VkMemoryPropertyFlags)VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	if (!allocGpuMemory(s, req, properties, false, h.memory, h.slabRange, &h.mapped, preferred)) {
+		Log::error("No memory for buffer (size=%zu)", size);
 		vkDestroyBuffer(s.device, h.buffer, nullptr);
 		h.buffer = VK_NULL_HANDLE;
 		return false;
 	}
-	if (vkBindBufferMemory(s.device, h.buffer, h.memory, offset) != VK_SUCCESS) {
+	if (vkBindBufferMemory(s.device, h.buffer, h.memory, h.slabRange.offset) != VK_SUCCESS) {
 		Log::error("vkBindBufferMemory failed");
 		vkDestroyBuffer(s.device, h.buffer, nullptr);
+		freeGpuMemory(s, h.memory, h.slabRange, h.mapped);
 		h.buffer = VK_NULL_HANDLE;
-		if (!slab && h.memory != VK_NULL_HANDLE) {
-			if (mapped != nullptr) {
-				vkUnmapMemory(s.device, h.memory);
-			}
-			vkFreeMemory(s.device, h.memory, nullptr);
-		}
 		h.memory = VK_NULL_HANDLE;
+		h.mapped = nullptr;
+		h.slabRange = {};
 		return false;
 	}
-	h.mapped = mapped;
-	h.slabMemory = slab;
 	h.capacity = req.size;
 	return true;
 }
@@ -5250,7 +5141,7 @@ static bool uploadBufferRegion(VkState &s, VkState::BufferHandle &h, size_t offs
 		pend.buffer = staging;
 		pend.memory = stagingMem;
 		pend.mapped = stagingPtr;
-		pend.freeMemory = true;
+		pend.slabRange = {};
 		return true;
 	}
 
@@ -5366,7 +5257,7 @@ static void queuePendingFboDestroy(VkState &s, VkState::FramebufferHandle &fb) {
 }
 
 static void releasePendingFboDestroys(VkState &s) {
-	if (s.pendingFboDestroyCount == 0u || s.device == VK_NULL_HANDLE) {
+	if (s.frameAcquired || s.pendingFboDestroyCount == 0u || s.device == VK_NULL_HANDLE) {
 		return;
 	}
 	waitAllInFlightFrames(s);
@@ -5397,24 +5288,24 @@ static void releasePendingFboDestroys(VkState &s) {
 	s.pendingFboDestroyCount = 0u;
 }
 
-static void releasePendingBufferDestroys(VkState &s) {
-	if (s.pendingBufferDestroyCount == 0u || s.device == VK_NULL_HANDLE) {
+static void releasePendingResourceDestroys(VkState &s) {
+	if (s.frameAcquired || s.device == VK_NULL_HANDLE ||
+		(s.pendingBufferDestroyCount == 0u && s.pendingTextureDestroys.empty())) {
 		return;
 	}
 	waitAllInFlightFrames(s);
 	for (uint32_t i = 0; i < s.pendingBufferDestroyCount; ++i) {
 		const VkState::PendingBufferDestroy &p = s.pendingBufferDestroys[i];
-		if (p.mapped != nullptr && p.memory != VK_NULL_HANDLE && p.freeMemory) {
-			vkUnmapMemory(s.device, p.memory);
-		}
 		if (p.buffer != VK_NULL_HANDLE) {
 			vkDestroyBuffer(s.device, p.buffer, nullptr);
 		}
-		if (p.freeMemory && p.memory != VK_NULL_HANDLE) {
-			vkFreeMemory(s.device, p.memory, nullptr);
-		}
+		freeGpuMemory(s, p.memory, p.slabRange, p.mapped);
 	}
 	s.pendingBufferDestroyCount = 0u;
+	for (VkState::TextureHandle &texture : s.pendingTextureDestroys) {
+		destroyTextureGpu(s, texture);
+	}
+	s.pendingTextureDestroys.clear();
 }
 
 static void queuePendingFramebufferAndView(VkState &s, VkFramebuffer framebuffer, VkImageView extraView) {
@@ -6406,27 +6297,32 @@ void genTextures(const TextureConfig &cfg, uint8_t amount, Id *ids) {
 }
 
 static void destroyTextureGpu(_priv::VkState &s, _priv::VkState::TextureHandle &h) {
-	if (h.imguiSet != VK_NULL_HANDLE && s.descriptorPool != VK_NULL_HANDLE) {
-		vkFreeDescriptorSets(s.device, s.descriptorPool, 1, &h.imguiSet);
-		h.imguiSet = VK_NULL_HANDLE;
+	if (h.image != VK_NULL_HANDLE || h.view != VK_NULL_HANDLE) {
+		s.descCacheSet = VK_NULL_HANDLE;
 	}
-	if (h.sampler != VK_NULL_HANDLE) {
-		vkDestroySampler(s.device, h.sampler, nullptr);
-		h.sampler = VK_NULL_HANDLE;
+	if (s.frameAcquired) {
+		s.pendingTextureDestroys.push_back(h);
+	} else {
+		if (h.imguiSet != VK_NULL_HANDLE && s.descriptorPool != VK_NULL_HANDLE) {
+			vkFreeDescriptorSets(s.device, s.descriptorPool, 1, &h.imguiSet);
+		}
+		if (h.sampler != VK_NULL_HANDLE) {
+			vkDestroySampler(s.device, h.sampler, nullptr);
+		}
+		if (h.view != VK_NULL_HANDLE) {
+			vkDestroyImageView(s.device, h.view, nullptr);
+		}
+		if (h.image != VK_NULL_HANDLE) {
+			vkDestroyImage(s.device, h.image, nullptr);
+		}
+		_priv::freeGpuMemory(s, h.memory, h.slabRange);
 	}
-	if (h.view != VK_NULL_HANDLE) {
-		vkDestroyImageView(s.device, h.view, nullptr);
-		h.view = VK_NULL_HANDLE;
-	}
-	if (h.image != VK_NULL_HANDLE) {
-		vkDestroyImage(s.device, h.image, nullptr);
-		h.image = VK_NULL_HANDLE;
-	}
-	if (h.memory != VK_NULL_HANDLE && !h.slabMemory) {
-		vkFreeMemory(s.device, h.memory, nullptr);
-	}
+	h.imguiSet = VK_NULL_HANDLE;
+	h.sampler = VK_NULL_HANDLE;
+	h.view = VK_NULL_HANDLE;
+	h.image = VK_NULL_HANDLE;
 	h.memory = VK_NULL_HANDLE;
-	h.slabMemory = false;
+	h.slabRange = {};
 	h.storageBit = false;
 	h.hasContent = false;
 	h.layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -6490,7 +6386,7 @@ void deleteFramebuffers(uint8_t amount, Id *ids) {
 				vkQueueWaitIdle(s.graphicsQueue);
 			}
 			_priv::releasePendingFboDestroys(s);
-			_priv::releasePendingBufferDestroys(s);
+			_priv::releasePendingResourceDestroys(s);
 			h->alive = false;
 		}
 		ids[i] = InvalidId;
@@ -7427,9 +7323,10 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 		}
 	}
 
-	// Destroy any previous GPU backing (re-upload path).
 	if (h->image != VK_NULL_HANDLE || h->view != VK_NULL_HANDLE || h->sampler != VK_NULL_HANDLE) {
-		vkQueueWaitIdle(s.graphicsQueue);
+		if (!s.frameAcquired) {
+			_priv::waitAllInFlightFrames(s);
+		}
 		destroyTextureGpu(s, *h);
 	}
 
@@ -7489,17 +7386,13 @@ void uploadTexture(Id texture, int width, int height, const uint8_t *data, int i
 
 	VkMemoryRequirements mr;
 	vkGetImageMemoryRequirements(s.device, h->image, &mr);
-	VkDeviceSize imgOffset = 0;
-	bool slab = true;
-	if (!_priv::allocGpuMemory(s, mr.size, mr.alignment, mr.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-							   &h->memory, &imgOffset, nullptr, &slab)) {
+	if (!_priv::allocGpuMemory(s, mr, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true, h->memory, h->slabRange)) {
 		Log::error("uploadTexture: image memory alloc failed (%dx%d)", width, height);
 		destroyTextureGpu(s, *h);
 		statsUploadScopeEnd();
 		return;
 	}
-	h->slabMemory = slab;
-	if (vkBindImageMemory(s.device, h->image, h->memory, imgOffset) != VK_SUCCESS) {
+	if (vkBindImageMemory(s.device, h->image, h->memory, h->slabRange.offset) != VK_SUCCESS) {
 		Log::error("uploadTexture: vkBindImageMemory failed");
 		destroyTextureGpu(s, *h);
 		statsUploadScopeEnd();
