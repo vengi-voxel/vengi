@@ -12,6 +12,7 @@
 #include "util/VarUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "core/ScopedPtr.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"
 #include "voxelformat/private/minecraft/NamedBinaryTag.h"
@@ -131,6 +132,32 @@ TEST_F(MCRFormatTest, testExtractInvisibleVolume) {
 	scenegraph::SceneGraphNode node = MCRFormat::createInvisibleNode(new voxel::RawVolume(region), pal);
 	EXPECT_EQ(MCRFormat::InvisibleNodeName, node.name());
 	EXPECT_FALSE(node.visible());
+}
+
+TEST_F(MCRFormatTest, testExtractedVoxelsClearTerrainMetadataInBothStorageModes) {
+	const int threshold = voxel::RawVolume::chunkedStorageThreshold();
+	for (const bool sparse : {false, true}) {
+		voxel::RawVolume::setChunkedStorageThreshold(sparse ? 8 : 256);
+		voxel::RawVolume terrain(voxel::Region(0, 15));
+		voxel::RawVolume::setChunkedStorageThreshold(threshold);
+		ASSERT_EQ(sparse, terrain.isSparse());
+
+		const voxel::Voxel waterVoxel(voxel::VoxelType::Transparent, 22, 7, 0, 4);
+		const voxel::Voxel invisibleVoxel(voxel::VoxelType::Generic, 38, 9, voxel::FlagOutline, 2);
+		terrain.setVoxel(1, 1, 1, waterVoxel);
+		terrain.setVoxel(9, 9, 9, invisibleVoxel);
+
+		voxel::RawVolume::setChunkedStorageThreshold(sparse ? 8 : 256);
+		core::ScopedPtr<voxel::RawVolume> water(MCRFormat::extractWaterVolume(&terrain));
+		core::ScopedPtr<voxel::RawVolume> invisible(MCRFormat::extractInvisibleVolume(&terrain));
+		voxel::RawVolume::setChunkedStorageThreshold(threshold);
+		ASSERT_TRUE(water);
+		ASSERT_TRUE(invisible);
+		EXPECT_EQ(voxel::Voxel(), terrain.voxel(1, 1, 1));
+		EXPECT_EQ(voxel::Voxel(), terrain.voxel(9, 9, 9));
+		EXPECT_EQ(waterVoxel, water->voxel(1, 1, 1));
+		EXPECT_EQ(voxel::Voxel(voxel::VoxelType::Generic, 38, 9, 0, 2), invisible->voxel(9, 9, 9));
+	}
 }
 
 TEST_F(MCRFormatTest, testLoad110) {

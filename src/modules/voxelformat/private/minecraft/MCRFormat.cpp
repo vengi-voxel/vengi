@@ -23,6 +23,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeTileDispatch.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeMerger.h"
@@ -59,50 +60,63 @@ core::String blockStateFromCompound(const priv::NamedBinaryTag &block) {
 
 constexpr float MinecraftWaterAlpha = 0.5f;
 
-voxel::RawVolume *MCRFormat::extractWaterVolume(voxel::RawVolume *terrain) {
-	if (terrain == nullptr) {
+template<typename Extract>
+static voxel::RawVolume *extractVoxels(voxel::RawVolume *terrain, Extract extract) {
+	if (terrain == nullptr || !terrain->valid()) {
 		return nullptr;
 	}
-	const voxel::Region region = terrain->region();
-	voxel::RawVolume *water = new voxel::RawVolume(region);
-	core::AtomicInt hasWater{0};
-	app::for_parallel(region.getLowerY(), region.getUpperY() + 1, [terrain, water, &region, &hasWater](int start, int end) {
-		voxel::RawVolume::Sampler terrainSampler(terrain);
-		voxel::RawVolume::Sampler waterSampler(water);
-		terrainSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
-		waterSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
-		for (int y = start; y < end; ++y) {
-			voxel::RawVolume::Sampler terrain2 = terrainSampler;
-			voxel::RawVolume::Sampler water2 = waterSampler;
-			for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-				voxel::RawVolume::Sampler terrain3 = terrain2;
-				voxel::RawVolume::Sampler water3 = water2;
-				for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-					const voxel::Voxel voxel = terrain3.voxel();
-					if (voxel::isTransparent(voxel.getMaterial())) {
-						water3.setVoxel(voxel);
-						terrain3.setVoxel(voxel::Voxel());
-						hasWater.increment();
-					}
-					terrain3.movePositiveX();
-					water3.movePositiveX();
+
+	const voxel::Region &region = terrain->region();
+	core::ScopedPtr<voxel::RawVolume> extracted(new voxel::RawVolume(region));
+	const bool sparse = terrain->isSparse();
+	const bool skipEmpty = terrain->isSparseAirDefault() &&
+						   voxel::isAir(extract(terrain->sparseDefaultVoxel()).getMaterial());
+	core::AtomicBool found(false);
+	voxel::forEachTileWriteParallel(*extracted, region, [&](voxel::ParallelTileWriter &tile) {
+		if (skipEmpty && !terrain->hasOccupiedVoxelsInRegion(tile.region())) {
+			return;
+		}
+		bool tileFound = false;
+		voxelutil::visitVolume(
+			*terrain, tile.region(),
+			[&](int x, int y, int z, const voxel::Voxel &src) {
+				const voxel::Voxel value = extract(src);
+				if (voxel::isAir(value.getMaterial())) {
+					return;
 				}
-				terrain2.movePositiveZ();
-				water2.movePositiveZ();
-			}
-			terrainSampler.movePositiveY();
-			waterSampler.movePositiveY();
+				tile.setVoxelOverwrite(x, y, z, value);
+				if (!sparse) {
+					terrain->setVoxelOverwrite(x, y, z, voxel::Voxel());
+				}
+				tileFound = true;
+			},
+			voxelutil::VisitAll());
+		if (tileFound) {
+			found = true;
 		}
 	});
-	if ((int)hasWater == 0) {
-		delete water;
+	if (!found) {
 		return nullptr;
 	}
-	if (voxel::RawVolume *cropped = voxelutil::cropVolume(water)) {
-		delete water;
+
+	if (sparse) {
+		// Finish reading the terrain before adopting any changes to its bricks.
+		voxel::forEachTileWriteParallel(*terrain, region, [&](voxel::ParallelTileWriter &tile) {
+			voxelutil::visitVolume(*extracted, tile.region(), [&](int x, int y, int z, const voxel::Voxel &) {
+				tile.setVoxelOverwrite(x, y, z, voxel::Voxel());
+			});
+		});
+	}
+	if (voxel::RawVolume *cropped = voxelutil::cropVolume(extracted)) {
 		return cropped;
 	}
-	return water;
+	return extracted.release();
+}
+
+voxel::RawVolume *MCRFormat::extractWaterVolume(voxel::RawVolume *terrain) {
+	return extractVoxels(terrain, [](const voxel::Voxel &v) {
+		return voxel::isTransparent(v.getMaterial()) ? v : voxel::Voxel();
+	});
 }
 
 void MCRFormat::applyWaterTransparency(palette::Palette &palette, const voxel::RawVolume *water) {
@@ -140,51 +154,12 @@ scenegraph::SceneGraphNode MCRFormat::createWaterNode(voxel::RawVolume *water, c
 }
 
 voxel::RawVolume *MCRFormat::extractInvisibleVolume(voxel::RawVolume *terrain) {
-	if (terrain == nullptr) {
-		return nullptr;
-	}
-	const voxel::Region region = terrain->region();
-	voxel::RawVolume *invisible = new voxel::RawVolume(region);
-	core::AtomicInt hasInvisible{0};
-	app::for_parallel(region.getLowerY(), region.getUpperY() + 1,
-					  [terrain, invisible, &region, &hasInvisible](int start, int end) {
-						  voxel::RawVolume::Sampler terrainSampler(terrain);
-						  voxel::RawVolume::Sampler invisibleSampler(invisible);
-						  terrainSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
-						  invisibleSampler.setPosition(region.getLowerX(), start, region.getLowerZ());
-						  for (int y = start; y < end; ++y) {
-							  voxel::RawVolume::Sampler terrain2 = terrainSampler;
-							  voxel::RawVolume::Sampler invisible2 = invisibleSampler;
-							  for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-								  voxel::RawVolume::Sampler terrain3 = terrain2;
-								  voxel::RawVolume::Sampler invisible3 = invisible2;
-								  for (int x = region.getLowerX(); x <= region.getUpperX(); ++x) {
-									  const voxel::Voxel voxel = terrain3.voxel();
-									  if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
-										  invisible3.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, voxel.getColor(),
-																				 voxel.getNormal(), 0u, voxel.getBoneIdx()));
-										  terrain3.setVoxel(voxel::Voxel());
-										  hasInvisible.increment();
-									  }
-									  terrain3.movePositiveX();
-									  invisible3.movePositiveX();
-								  }
-								  terrain2.movePositiveZ();
-								  invisible2.movePositiveZ();
-							  }
-							  terrainSampler.movePositiveY();
-							  invisibleSampler.movePositiveY();
-						  }
-					  });
-	if ((int)hasInvisible == 0) {
-		delete invisible;
-		return nullptr;
-	}
-	if (voxel::RawVolume *cropped = voxelutil::cropVolume(invisible)) {
-		delete invisible;
-		return cropped;
-	}
-	return invisible;
+	return extractVoxels(terrain, [](const voxel::Voxel &v) {
+		if ((v.getFlags() & voxel::FlagOutline) == 0) {
+			return voxel::Voxel();
+		}
+		return voxel::createVoxel(voxel::VoxelType::Generic, v.getColor(), v.getNormal(), 0u, v.getBoneIdx());
+	});
 }
 
 scenegraph::SceneGraphNode MCRFormat::createInvisibleNode(voxel::RawVolume *volume, const palette::Palette &palette) {

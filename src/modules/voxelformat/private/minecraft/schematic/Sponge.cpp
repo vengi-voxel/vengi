@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeTileDispatch.h"
 
 namespace voxelformat {
 namespace sponge {
@@ -299,42 +300,36 @@ static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::Scene
 
 	const voxel::Region region(0, 0, 0, width - 1, height - 1, depth - 1);
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
-	auto fn = [volume, depth, height, width, blocks, paletteEntry, &mcpal, &waterPal, &invisiblePal,
-			   &palette](int start, int end) {
-		voxel::RawVolume::Sampler sampler(volume);
-		sampler.setPosition(0, 0, start);
-		for (int z = start; z < end; ++z) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int y = 0; y < height; ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
+	const core::Buffer<int8_t> &blockBytes = *blocks.byteArray();
+	voxel::forEachTileWriteParallel(*volume, region, [&](voxel::ParallelTileWriter &tile) {
+		const voxel::Region &tr = tile.region();
+		for (int z = tr.getLowerZ(); z <= tr.getUpperZ(); ++z) {
+			for (int y = tr.getLowerY(); y <= tr.getUpperY(); ++y) {
 				const int64_t stride = ((int64_t)y * depth + z) * width;
-				for (int x = 0; x < width; ++x) {
-					const int64_t idx = stride + x;
-					const uint8_t palIdx = (*blocks.byteArray())[idx];
-					if (palIdx != 0u) {
-						uint8_t currentPalIdx;
-						if (paletteEntry == 0 || palIdx > (uint8_t)paletteEntry) {
-							currentPalIdx = palIdx;
-						} else {
-							currentPalIdx = (uint8_t)mcpal[palIdx];
-						}
-						const bool water = paletteEntry == 0
-											   ? schematic::schematicLegacyBlockIsWater((int)palIdx)
-											   : schematic::schematicPaletteEntryIsWater(waterPal, (int)palIdx);
-						const bool invisible =
-							paletteEntry == 0
-								? false
-								: schematic::schematicPaletteEntryIsInvisible(invisiblePal, (int)palIdx);
-						sampler3.setVoxel(schematic::createSchematicVoxel(palette, currentPalIdx, water, invisible));
+				for (int x = tr.getLowerX(); x <= tr.getUpperX(); ++x) {
+					const uint8_t palIdx = (uint8_t)blockBytes[stride + x];
+					if (palIdx == 0u) {
+						continue;
 					}
-					sampler3.movePositiveX();
+					uint8_t currentPalIdx;
+					if (paletteEntry == 0 || palIdx > (uint8_t)paletteEntry) {
+						currentPalIdx = palIdx;
+					} else {
+						currentPalIdx = (uint8_t)mcpal[palIdx];
+					}
+					const bool water = paletteEntry == 0
+										   ? schematic::schematicLegacyBlockIsWater((int)palIdx)
+										   : schematic::schematicPaletteEntryIsWater(waterPal, (int)palIdx);
+					const bool invisible =
+						paletteEntry == 0
+							? false
+							: schematic::schematicPaletteEntryIsInvisible(invisiblePal, (int)palIdx);
+					tile.setVoxelOverwrite(x, y, z,
+										   schematic::createSchematicVoxel(palette, currentPalIdx, water, invisible));
 				}
-				sampler2.movePositiveY();
 			}
-			sampler.movePositiveZ();
 		}
-	};
-	app::for_parallel(0, depth, fn);
+	});
 
 	const int32_t x = schematic.get("x").int32();
 	const int32_t y = schematic.get("y").int32();

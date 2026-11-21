@@ -328,7 +328,7 @@ bool TrenchblocksFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, co
 		const int tile = (p.y >= 256 ? 0 : 2) + p.x / 256;
 		data[tile][p.x % 256 + (p.y % 256) * 256 + p.z * 256 * 256] = index;
 	};
-	voxelutil::visitVolume(*volume, bounds, [&](int x, int y, int z, const voxel::Voxel &voxel) {
+	voxelutil::visitVolumeParallel(*volume, bounds, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		put(glm::ivec3(maxs.x - x, z - mins.z, y - mins.y), remap[voxel.getColor()]);
 	});
 	for (const Stamp &stamp : stamps) {

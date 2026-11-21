@@ -140,26 +140,46 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	const int64_t zStride = region.stride();
 	const glm::ivec3 &lower = region.getLowerCorner();
 	app::for_parallel(0, w, [&](int start, int end) {
+		if (voxels != nullptr) {
+			for (int x = start; x < end; ++x) {
+				uint8_t *p = columns.bytes + (int64_t)x * colCap;
+				const uint8_t *begin = p;
+				for (int y = 0; y < h; ++y) {
+					const int64_t row = (int64_t)x + (int64_t)y * w;
+					for (int z = 0; z < d; ++z) {
+						const voxel::Voxel &voxel = voxels[row + (int64_t)z * zStride];
+						if (isAir(voxel.getMaterial())) {
+							*p++ = 1;
+							continue;
+						}
+						*p++ = 0;
+						*p++ = voxel.getColor() == replaceIndex ? (uint8_t)replacement : voxel.getColor();
+						*p++ = voxel.getNormal();
+						*p++ = voxel.getBoneIdx();
+					}
+				}
+				columns.lens[x] = (int64_t)(p - begin);
+			}
+			return;
+		}
+		voxel::RawVolume::Sampler sampler(*v);
 		for (int x = start; x < end; ++x) {
 			uint8_t *p = columns.bytes + (int64_t)x * colCap;
 			const uint8_t *begin = p;
 			for (int y = 0; y < h; ++y) {
-				const int64_t row = (int64_t)x + (int64_t)y * w;
+				sampler.setPosition(lower.x + x, lower.y + y, lower.z);
 				for (int z = 0; z < d; ++z) {
-					const voxel::Voxel &voxel =
-						voxels != nullptr ? voxels[row + (int64_t)z * zStride] : v->voxel(lower.x + x, lower.y + y, lower.z + z);
+					const voxel::Voxel &voxel = sampler.voxel();
 					if (isAir(voxel.getMaterial())) {
 						*p++ = 1;
+						sampler.movePositiveZ();
 						continue;
 					}
 					*p++ = 0;
-					if (voxel.getColor() == replaceIndex) {
-						*p++ = (uint8_t)replacement;
-					} else {
-						*p++ = voxel.getColor();
-					}
+					*p++ = voxel.getColor() == replaceIndex ? (uint8_t)replacement : voxel.getColor();
 					*p++ = voxel.getNormal();
 					*p++ = voxel.getBoneIdx();
+					sampler.movePositiveZ();
 				}
 			}
 			columns.lens[x] = (int64_t)(p - begin);

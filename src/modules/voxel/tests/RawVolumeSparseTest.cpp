@@ -347,6 +347,23 @@ TEST_F(RawVolumeSparseTest, ParallelTileDispatchMergeMoveAndCopyMatchDense) {
 	EXPECT_TRUE(sparseDst.equals(denseDst));
 	EXPECT_TRUE(sparseDst.isSparse());
 
+	// 1b. mergeVolumes with palette remapping
+	palette::Palette srcPal;
+	palette::Palette dstPal;
+	srcPal.nippon();
+	dstPal.minecraft();
+	RawVolume::setChunkedStorageThreshold(16);
+	RawVolume sparseRemapped(Region(-16, -16, -16, 47, 47, 47));
+	RawVolume::setChunkedStorageThreshold(256);
+	RawVolume denseRemapped(Region(-16, -16, -16, 47, 47, 47));
+	const int sparsePalMerged =
+		voxelutil::mergeVolumes(&sparseRemapped, dstPal, &sparseSrc, srcPal, sparseRemapped.region(), sparseSrc.region());
+	const int densePalMerged =
+		voxelutil::mergeVolumes(&denseRemapped, dstPal, &denseSrc, srcPal, denseRemapped.region(), denseSrc.region());
+	EXPECT_EQ(sparsePalMerged, densePalMerged);
+	EXPECT_TRUE(sparseRemapped.equals(denseRemapped));
+	EXPECT_TRUE(sparseRemapped.isSparse());
+
 	// 2. moveVolume with non-brick-aligned offset
 	RawVolume::setChunkedStorageThreshold(16);
 	RawVolume sparseMoved(Region(-16, -16, -16, 47, 47, 47));
