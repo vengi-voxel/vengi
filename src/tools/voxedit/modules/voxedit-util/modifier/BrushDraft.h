@@ -14,9 +14,6 @@ class BrushDraft {
 public:
 	virtual ~BrushDraft() = default;
 	virtual bool active() const = 0;
-	virtual uint64_t revision() const {
-		return 0;
-	}
 	virtual bool enabled() const {
 		return true;
 	}
@@ -62,9 +59,6 @@ public:
 	}
 	bool active() const override {
 		return _session.active();
-	}
-	uint64_t revision() const override {
-		return _session.revision();
 	}
 	bool valid(const scenegraph::SceneGraph &scene) const override {
 		return _session.valid(scene);

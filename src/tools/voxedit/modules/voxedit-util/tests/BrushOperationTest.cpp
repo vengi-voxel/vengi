@@ -53,6 +53,33 @@ TEST_F(BrushOperationTest, testTransformDraftDoesNotChangeCommittedScene) {
 	EXPECT_EQ(states, _sceneMgr->mementoHandler().stateSize());
 }
 
+TEST_F(BrushOperationTest, testRenderRevisionChangesAcrossDrafts) {
+	prepare();
+	Modifier &modifier = _sceneMgr->modifier();
+	modifier.setTool("transform");
+	TransformParameters transform;
+	transform.translation.x = 2;
+	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", transform).changed());
+	const uint64_t transformRevision = modifier.renderRevision();
+	EXPECT_NE(0u, transformRevision);
+	const uint64_t sceneHash = _sceneMgr->calculateHash();
+
+	modifier.cancelDraft();
+	EXPECT_EQ(0u, modifier.renderRevision());
+	modifier.setTool("extrude");
+	ExtrudeParameters extrude;
+	extrude.face = voxel::FaceNames::PositiveX;
+	extrude.depth = 1;
+	ASSERT_TRUE(modifier.updateParameters<ExtrudeBrush>("extrude", extrude).changed());
+	EXPECT_EQ(sceneHash, _sceneMgr->calculateHash());
+	EXPECT_NE(transformRevision, modifier.renderRevision());
+
+	const uint64_t extrudeRevision = modifier.renderRevision();
+	extrude.depth = 2;
+	ASSERT_TRUE(modifier.updateParameters<ExtrudeBrush>("extrude", extrude).changed());
+	EXPECT_NE(extrudeRevision, modifier.renderRevision());
+}
+
 TEST_F(BrushOperationTest, testTransformApplyUndoRedo) {
 	scenegraph::SceneGraphNode &node = prepare();
 	const core::UUID uuid = node.uuid();

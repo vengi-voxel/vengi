@@ -90,6 +90,7 @@ protected:
 
 	BrushRegistry _registry;
 	uint64_t _operationEpoch = 1;
+	uint64_t _renderRevision = 0;
 	int _handleViewport = -1;
 	uint32_t _capturedHandle = 0;
 	BrushContext _brushContext;

@@ -133,6 +133,7 @@ BrushApplyResult Modifier::parametersChanged() {
 		return result;
 	}
 	if (const auto *view = draft->view()) {
+		++_renderRevision;
 		for (auto entry : view->nodes()) {
 			const auto &node = entry->value;
 			if (node.isModelNode()) {
@@ -209,10 +210,7 @@ const scenegraph::SceneGraph &Modifier::renderSceneGraph() {
 }
 
 uint64_t Modifier::renderRevision() const {
-	if (const BrushDraft *draft = _registry.activeDraft()) {
-		return draft->revision();
-	}
-	return 0;
+	return hasDraft() ? _renderRevision : 0;
 }
 
 void Modifier::brushHandles(core::DynamicArray<BrushGizmoState> &output) {

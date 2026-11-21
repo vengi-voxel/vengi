@@ -69,14 +69,10 @@ private:
 	core::ScopedPtr<scenegraph::SceneGraph> _view;
 	typename Operation::Parameters _parameters;
 	voxel::Region _constraint = voxel::Region::InvalidRegion;
-	uint64_t _revision = 0;
 
 public:
 	bool active() const {
 		return !_targets.empty();
-	}
-	uint64_t revision() const {
-		return _revision;
 	}
 	const typename Operation::Parameters &parameters() const {
 		return _parameters;
@@ -100,7 +96,6 @@ template<class Operation>
 void DraftEditSession<Operation>::clear() {
 	_view = nullptr;
 	_targets.clear();
-	++_revision;
 }
 
 template<class Operation>
@@ -235,7 +230,6 @@ BrushApplyResult DraftEditSession<Operation>::update(const typename Operation::P
 			voxelutil::VisitAll());
 		priv::accumulate(result.dirtyRegion, target->dirty);
 	}
-	++_revision;
 	result.status = result.changed() ? BrushApplyStatus::Changed : BrushApplyStatus::Unchanged;
 	return result;
 }
