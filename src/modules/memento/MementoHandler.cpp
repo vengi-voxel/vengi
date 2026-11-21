@@ -12,7 +12,6 @@
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
-#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"
@@ -318,7 +317,7 @@ static bool readVolumeRegion(io::LZ4FrameReader &reader, const voxel::Region &da
 	if (linear != nullptr && region == dataRegion && volumeBytes <= INT_MAX) {
 		return reader.read(linear, volumeBytes) == (int)volumeBytes && reader.read(&extra, sizeof(extra)) == 0;
 	}
-	core::Buffer<voxel::Voxel> scratch;
+	core::DynamicArray<voxel::Voxel> scratch;
 	if (linear == nullptr) {
 		scratch.resize(width);
 	}
