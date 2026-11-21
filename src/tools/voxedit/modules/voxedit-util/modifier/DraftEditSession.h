@@ -167,8 +167,7 @@ bool DraftEditSession<Operation>::valid(const scenegraph::SceneGraph &scene, boo
 		if (!node || node->palette().hash() != target->paletteHash ||
 			node->normalPalette().hash() != target->normalPaletteHash || node->volume() != target->identity ||
 			node->region() != target->original->region() ||
-			(checkContent &&
-			 memcmp(node->volume()->data(), target->original->data(), voxel::RawVolume::size(node->region())) != 0)) {
+			(checkContent && !node->volume()->equals(*target->original.get()))) {
 			return false;
 		}
 	}

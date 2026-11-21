@@ -93,30 +93,37 @@ public:
 				return false;
 			}
 			// Preserve the FlagOutline (selection) flag when modifying voxels
-			const voxel::Voxel previousVoxel = *_currentVoxel;
-			const uint8_t existingFlags = _currentVoxel->getFlags();
+			const voxel::Voxel previousVoxel = this->voxel();
+			const uint8_t existingFlags = previousVoxel.getFlags();
+			voxel::Voxel updatedVoxel;
+			updatedVoxel.overwrite(previousVoxel);
 			if (_volume->_erase) {
 				if (!_volume->_normalPaint) {
-					*_currentVoxel = {};
+					updatedVoxel = voxel::Voxel();
 				}
-				_currentVoxel->setNormal(NO_NORMAL);
+				updatedVoxel.setNormal(NO_NORMAL);
 			} else {
 				if (_volume->_normalPaint) {
-					_currentVoxel->setNormal(voxel.getNormal());
+					updatedVoxel.setNormal(voxel.getNormal());
 				} else {
 					// Empty cells must not pass a previous voxel's normal to new geometry.
-					if (voxel::isAir(_currentVoxel->getMaterial())) {
-						_currentVoxel->setNormal(NO_NORMAL);
+					if (voxel::isAir(updatedVoxel.getMaterial())) {
+						updatedVoxel.setNormal(NO_NORMAL);
 					}
-					*_currentVoxel = voxel;
+					updatedVoxel = voxel;
 				}
 			}
 			// Restore FlagOutline from original solid voxel
 			if (existingFlags & voxel::FlagOutline) {
-				_currentVoxel->setFlags(existingFlags);
+				updatedVoxel.setFlags(existingFlags);
 			}
-			if (*_currentVoxel == previousVoxel) {
+			if (updatedVoxel == previousVoxel) {
 				return false;
+			}
+			if (core_likely(_currentVoxel != nullptr)) {
+				_currentVoxel->overwrite(updatedVoxel);
+			} else {
+				writeCurrentSparse(updatedVoxel, true);
 			}
 			_volume->addToDirtyRegion(glm::ivec3(_posInVolume));
 			return true;

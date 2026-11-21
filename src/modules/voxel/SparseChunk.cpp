@@ -72,8 +72,8 @@ void SparseChunk::clear() {
 	for (Brick *block : _blocks) {
 		delete[] block;
 	}
-	_blocks.clear();
-	_densePayloads.clear();
+	_blocks.release();
+	_densePayloads.release();
 	_poolUsed = 0;
 	_freeBrick = -1;
 	delete[] _cells;
@@ -301,6 +301,60 @@ bool SparseChunk::calculateBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 		}
 	}
 	return found;
+}
+
+SparseChunk *SparseChunk::clone() const {
+	SparseChunk *copy = new SparseChunk(_denseBricks);
+	if (_cells == nullptr || _voxelCount == 0) {
+		return copy;
+	}
+	copy->_cells = new uint16_t[Bricks]();
+	copy->_voxelCount = _voxelCount;
+	for (int i = 0; i < _poolUsed; ++i) {
+		const Brick *src = poolBrick(i);
+		if (src->voxels == nullptr || src->count == 0) {
+			continue;
+		}
+		if (copy->_poolUsed == (int)copy->_blocks.size() * PoolBlockBricks) {
+			copy->_blocks.push_back(new Brick[PoolBlockBricks]);
+		}
+		const int dstIdx = copy->_poolUsed++;
+		Brick *dst = copy->poolBrick(dstIdx);
+		for (int w = 0; w < BrickMaskWords; ++w) {
+			dst->mask[w] = src->mask[w];
+			dst->prefix[w] = src->prefix[w];
+		}
+		dst->count = src->count;
+		dst->capacity = src->capacity;
+		dst->cell = src->cell;
+		if (src->voxels == src->inlineVoxels) {
+			dst->voxels = dst->inlineVoxels;
+			memcpy((void *)dst->inlineVoxels, (const void *)src->inlineVoxels, sizeof(src->inlineVoxels));
+			copy->_densePayloads.push_back(nullptr);
+		} else {
+			dst->voxels = new Voxel[src->capacity];
+			memcpy((void *)dst->voxels, (const void *)src->voxels, (size_t)src->capacity * sizeof(Voxel));
+			copy->_densePayloads.push_back(src->dense() ? dst->voxels : nullptr);
+		}
+		copy->_cells[dst->cell] = (uint16_t)(dstIdx + 1);
+	}
+	return copy;
+}
+
+size_t SparseChunk::allocatedBytes() const {
+	size_t total = 0u;
+	if (_cells != nullptr) {
+		total += (size_t)Bricks * sizeof(uint16_t);
+	}
+	total += _blocks.size() * (size_t)PoolBlockBricks * sizeof(Brick);
+	total += _densePayloads.capacity() * sizeof(const Voxel *);
+	for (int i = 0; i < _poolUsed; ++i) {
+		const Brick *b = poolBrick(i);
+		if (b->voxels != nullptr && b->voxels != b->inlineVoxels) {
+			total += (size_t)b->capacity * sizeof(Voxel);
+		}
+	}
+	return total;
 }
 
 } // namespace voxel

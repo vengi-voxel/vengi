@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/ForParallel.h"
+#include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelSampling.h"
 #include <float.h>
@@ -34,6 +35,38 @@ inline bool setVoxels(Volume &volume, int x, int y, int z, int nx, int nz, const
 			typename Volume::Sampler samplerZ(sampler);
 			for (int ny = 0; ny < amount; ++ny) {
 				typename Volume::Sampler samplerY(samplerZ);
+				for (int j = 0; j < nx; ++j) {
+					samplerY.setVoxel(voxels[ny]);
+					samplerY.movePositiveX();
+				}
+				samplerZ.movePositiveY();
+			}
+			sampler.movePositiveZ();
+		}
+	});
+	return true;
+}
+
+template<>
+inline bool setVoxels<RawVolume>(RawVolume &volume, int x, int y, int z, int nx, int nz, const Voxel *voxels,
+								 int amount) {
+	if (volume.isSparse()) {
+		app::for_parallel(0, nz, [nx, amount, &volume, voxels, x, y, z](int start, int end) {
+			for (int k = start; k < end; ++k) {
+				for (int ny = 0; ny < amount; ++ny) {
+					volume.setVoxelsRow(x, y + ny, z + k, nx, voxels[ny]);
+				}
+			}
+		});
+		return true;
+	}
+	app::for_parallel(0, nz, [nx, amount, &volume, voxels, x, y, z](int start, int end) {
+		RawVolume::DenseSampler sampler(volume);
+		sampler.setPosition(x, y, z + start);
+		for (int k = start; k < end; ++k) {
+			RawVolume::DenseSampler samplerZ(sampler);
+			for (int ny = 0; ny < amount; ++ny) {
+				RawVolume::DenseSampler samplerY(samplerZ);
 				for (int j = 0; j < nx; ++j) {
 					samplerY.setVoxel(voxels[ny]);
 					samplerY.movePositiveX();

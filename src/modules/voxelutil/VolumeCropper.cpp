@@ -13,10 +13,13 @@ namespace voxelutil {
 
 [[nodiscard]] CORE_NO_SANITIZE_ADDRESS bool computeSolidBounds(const voxel::RawVolume *volume, glm::ivec3 &mins,
 															   glm::ivec3 &maxs) {
-	if (volume == nullptr) {
+	if (volume == nullptr || !volume->valid()) {
 		return false;
 	}
 	core_trace_scoped(ComputeSolidBounds);
+	if (volume->isSparse()) {
+		return volume->computeSolidBounds(mins, maxs);
+	}
 
 	const voxel::Region &region = volume->region();
 	const int width = region.getWidthInVoxels();
@@ -24,7 +27,7 @@ namespace voxelutil {
 	const int depth = region.getDepthInVoxels();
 	const int64_t yStride = width;
 	const int64_t zStride = (int64_t)width * height;
-	const voxel::Voxel *data = volume->voxels();
+	const voxel::Voxel *data = volume->linearVoxels();
 	const size_t lineSize = sizeof(voxel::Voxel) * width;
 
 	int minZ = depth;

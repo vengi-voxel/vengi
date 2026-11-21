@@ -202,10 +202,23 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 		return;
 	}
 
-	// Direct volume access with precomputed strides
-	const Voxel *volData = volume->voxels();
-	const Region &volRegion = volume->region();
-	const int64_t volW = volume->width();
+	// Direct volume access with precomputed strides; for sparse volumes read a local padded snapshot
+	// instead of materializing the full volume.
+	const Voxel *volData = volume->linearVoxels();
+	Region volRegion = volume->region();
+	core::DynamicArray<Voxel> snapshot;
+	if (volData == nullptr) {
+		Region padded(rx - 1, ry - 1, rz - 1, rx + rw, ry + rh, rz + rd);
+		padded.cropTo(volRegion);
+		if (!padded.isValid()) {
+			return;
+		}
+		snapshot.resize((size_t)padded.voxels());
+		volume->readRegion(padded, snapshot.data());
+		volData = snapshot.data();
+		volRegion = padded;
+	}
+	const int64_t volW = volRegion.getWidthInVoxels();
 	const int64_t volStride = volRegion.stride();
 
 	const int64_t dimStrides[3] = {1, volW, volStride};

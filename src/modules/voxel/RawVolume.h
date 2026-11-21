@@ -5,28 +5,63 @@
 #pragma once
 
 #include "Region.h"
+#include "SparseChunk.h"
+#include "VolumeSampler.h"
 #include "Voxel.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
-#include "VolumeSampler.h"
 #include <glm/ext/vector_int3.hpp>
 
 namespace voxel {
 
+class SparseRawVolumeStorage;
+
 /**
- * Simple volume implementation which stores data in a single large 3D array.
+ * @brief Bounded voxel volume with contiguous array storage for small volumes and SparseChunk-backed storage
+ * for large volumes.
+ *
+ * Regions below the configured voxel-count threshold use a contiguous flat Voxel array. Larger regions use a
+ * fixed 3D directory of lazily allocated 256^3 @c SparseChunk instances (each subdividing into 32^3 bricks of
+ * 8^3 voxels that stay packed for up to 64 voxels and promote to dense 512-voxel bricks above that).
  */
 class RawVolume {
 private:
 	friend class RawVolumeView;
+	template<typename Volume, bool DenseOnly>
+	friend class VolumeSampler;
+
 public:
 	class Sampler : public VolumeSampler<RawVolume> {
 	private:
 		using Super = VolumeSampler<RawVolume>;
+
 	public:
 		VOLUMESAMPLERUSING;
 
 		CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(const Voxel &voxel) {
+			if (_currentPositionInvalid) {
+				return false;
+			}
+			if (core_likely(_currentVoxel != nullptr)) {
+				*_currentVoxel = voxel;
+				return true;
+			}
+			writeCurrentSparse(voxel, false);
+			return true;
+		}
+	};
+
+	/**
+	 * Dense traversal for a full contiguous volume. Requires isContiguous().
+	 * Prefer withVolumeSampler() to select this path without materializing sparse chunks.
+	 */
+	class DenseSampler : public VolumeSampler<RawVolume, true> {
+		using Super = VolumeSampler<RawVolume, true>;
+
+	public:
+		using Super::VolumeSampler;
+
+		CORE_FORCE_INLINE bool setVoxel(const Voxel &voxel) {
 			if (_currentPositionInvalid) {
 				return false;
 			}
@@ -47,11 +82,19 @@ public:
 	RawVolume(const RawVolume &copy, const Region &region, bool *onlyAir = nullptr);
 	RawVolume(const RawVolume &copy, const core::Buffer<Region> &regions);
 
+	/**
+	 * @brief Set the cubic side length at which new volumes use SparseChunk storage. Must be positive.
+	 * Existing volumes keep their storage.
+	 */
+	static void setChunkedStorageThreshold(int sideLength);
+	static int chunkedStorageThreshold();
+
 	bool copyInto(const RawVolume &src);
 	bool copyInto(const RawVolume &src, const voxel::Region &region);
 
 	/**
 	 * @brief Calculate the amount of bytes a volume with the given region would consume
+	 * @return Zero if the region is invalid or its byte count cannot fit in size_t.
 	 */
 	static size_t size(const Region &region);
 
@@ -61,15 +104,22 @@ public:
 	bool isEmpty(const Region &region) const;
 
 	/**
+	 * @brief Compares region and raw voxel payload without materializing sparse storage
+	 */
+	bool equals(const RawVolume &other) const;
+
+	/**
+	 * @brief Compute bounds of all non-air voxels without materializing sparse storage
+	 */
+	bool computeSolidBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const;
+
+	/**
+	 * @brief Read a sub-region into a tightly packed X-major buffer without materializing sparse storage
+	 */
+	void readRegion(const Region &region, Voxel *target) const;
+
+	/**
 	 * @brief Find the nearest non-air voxel behind a plane rectangle.
-	 *
-	 * The plane is perpendicular to @c axis at @c slice (the slice itself is excluded).
-	 * @c minA/@c maxA and @c minB/@c maxB are inclusive coordinates on
-	 * @c math::getPlaneAxisA(axis) and @c math::getPlaneAxisB(axis) (X-Y-Z order:
-	 * X then Y for a Z plane, X then Z for a Y plane, Y then Z for an X plane).
-	 * @c out must hold (maxA-minA+1)*(maxB-minB+1) voxels, row-major
-	 * with A varying fastest. Existing non-air entries are left unchanged so the
-	 * caller can prefill the slice.
 	 */
 	void fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, int minB, int maxB, Voxel *out) const;
 
@@ -89,114 +139,78 @@ public:
 	 */
 	Voxel *copyVoxels() const;
 
-	/**
-	 * The border value is returned whenever an attempt is made to read a voxel which
-	 * is outside the extents of the volume.
-	 * @return The value used for voxels outside of the volume
-	 */
 	const Voxel &borderValue() const;
 
-	/**
-	 * @return A Region representing the extent of the volume.
-	 */
 	const Region &region() const;
 
-	/**
-	 * @return A Region representing the extent of the volume.
-	 */
 	Region &region() {
 		return _region;
 	}
 
-	/**
-	 * @return The width of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g.
-	 * 0 to 63 then the width is 64.
-	 * @sa height(), getDepth()
-	 */
+	inline const Region &volumeRegion() const {
+		return _region;
+	}
+
 	int32_t width() const;
-	/**
-	 * @return The height of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g.
-	 * 0 to 63 then the height is 64.
-	 * @sa width(), getDepth()
-	 */
 	int32_t height() const;
-	/**
-	 * @return The depth of the volume in voxels. Note that this value is inclusive, so that if the valid range is e.g.
-	 * 0 to 63 then the depth is 64.
-	 * @sa width(), height()
-	 */
 	int32_t depth() const;
 
-	/**
-	 * the vector that describes the mins value of an aabb where a voxel is set in this volume
-	 * deleting a voxel afterwards might lead to invalid results
-	 */
 	glm::ivec3 mins() const;
-	/**
-	 * the vector that describes the maxs value of an aabb where a voxel is set in this volume
-	 * deleting a voxel afterwards might lead to invalid results
-	 */
 	glm::ivec3 maxs() const;
 
-	/**
-	 * Gets a voxel at the position given by <tt>x,y,z</tt> coordinates
-	 */
 	const Voxel &voxel(int32_t x, int32_t y, int32_t z) const;
-	/**
-	 * @brief This version of the function is provided so that the wrap mode does not need
-	 * to be specified as a template parameter, as it may be confusing to some users.
-	 * @param pos The 3D position of the voxel
-	 * @return The voxel value
-	 */
 	CORE_NO_SANITIZE_ADDRESS inline const Voxel &voxel(const glm::ivec3 &pos) const;
 
-	/**
-	 * Sets the value used for voxels which are outside the volume
-	 */
 	void setBorderValue(const Voxel &voxel);
-	/**
-	 * Sets the voxel at the position given by <tt>x,y,z</tt> coordinates
-	 */
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel);
-	/**
-	 * Sets the voxel at the position given by a 3D vector
-	 */
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int64_t idx, const Voxel &voxel);
+	CORE_NO_SANITIZE_ADDRESS bool setVoxelOverwrite(int32_t x, int32_t y, int32_t z, const Voxel &voxel);
+
+	/** Batch write of a single voxel value along +X starting at (x, y, z). */
+	void setVoxelsRow(int32_t x, int32_t y, int32_t z, int32_t count, const Voxel &voxel);
 
 	void clear();
 	void fill(const voxel::Voxel &voxel);
 
-	// TODO: we should not rely on this data to be a linear array.
-	//       We might add chunks to the RawVolume to reduce the memory
-	//       usage for big volumes that are empty - and in that case
-	//       the data is no longer linear.
+	/**
+	 * Obtain contiguous storage, materializing sparse chunks if needed.
+	 */
 	inline const uint8_t *data() const {
 		return (const uint8_t *)voxels();
 	}
 
-	inline Voxel *voxels() const {
+	Voxel *voxels() const;
+
+	/** Existing contiguous buffer, or nullptr for sparse storage; does not materialize. */
+	inline Voxel *linearVoxels() const {
 		return _data;
 	}
 
-	/** Allocated voxel payload in bytes, excluding allocator overhead. */
+	inline bool isContiguous() const {
+		return _storage == nullptr && _data != nullptr;
+	}
+
+	inline bool isSparse() const {
+		return _storage != nullptr;
+	}
+
+	const uint32_t *sparseGenerationPtr() const;
+
+	void sampleSparseAt(int lx, int ly, int lz, const SparseChunk *&outChunk, const SparseChunk::Brick *&outBrick,
+						const Voxel *&outRow, bool &outWholeBrick, glm::ivec3 &outLower, glm::ivec3 &outUpper,
+						Voxel &outFallbackVoxel, uint32_t &outGen) const;
+
+	/** Allocated payload and directory bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;
 
 	/** True if the volume has allocated storage. */
 	bool valid() const;
 
-	/**
-	 * @brief Shift the region of the volume by the given coordinates
-	 */
 	void translate(const glm::ivec3 &t) {
 		_region.shift(t.x, t.y, t.z);
 	}
 
-	/**
-	 * @brief Move voxels in the volumes but doesn't cut of voxels, but moves them in from the other side again.
-	 * @param[in] t The translation vector that might not be bigger than the volume size
-	 * @return @c false if the move wasn't possible because @c t was invalid, @c true otherwise
-	 */
 	bool move(const glm::ivec3 &t);
 
 	void removeFlags(const Region &region, uint8_t flags);
@@ -206,7 +220,7 @@ public:
 	Region regionForFlag(uint8_t flag) const;
 
 private:
-	void initialise(const Region &region);
+	void initialise(const Region &region, bool forceDense = false);
 
 	/** The size of the volume */
 	Region _region;
@@ -214,8 +228,11 @@ private:
 	/** The border value */
 	Voxel _borderVoxel;
 
-	/** The voxel data */
-	Voxel *_data;
+	/** The voxel data (contiguous mode) */
+	mutable Voxel *_data = nullptr;
+
+	/** SparseChunk-backed storage (large volume mode) */
+	mutable SparseRawVolumeStorage *_storage = nullptr;
 };
 
 inline const Region &RawVolume::region() const {

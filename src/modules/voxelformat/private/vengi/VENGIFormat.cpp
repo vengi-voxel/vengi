@@ -98,7 +98,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 		return true;
 	}
 	const voxel::RawVolume *v = node.volume();
-	if (v == nullptr || v->voxels() == nullptr) {
+	if (v == nullptr || !v->valid()) {
 		Log::error("Model node has no volume");
 		return false;
 	}
@@ -136,8 +136,9 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 		Log::error("Failed to allocate voxel save buffers");
 		return false;
 	}
-	const voxel::Voxel *voxels = v->voxels();
+	const voxel::Voxel *voxels = v->linearVoxels();
 	const int64_t zStride = region.stride();
+	const glm::ivec3 &lower = region.getLowerCorner();
 	app::for_parallel(0, w, [&](int start, int end) {
 		for (int x = start; x < end; ++x) {
 			uint8_t *p = columns.bytes + (int64_t)x * colCap;
@@ -145,7 +146,8 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 			for (int y = 0; y < h; ++y) {
 				const int64_t row = (int64_t)x + (int64_t)y * w;
 				for (int z = 0; z < d; ++z) {
-					const voxel::Voxel &voxel = voxels[row + (int64_t)z * zStride];
+					const voxel::Voxel &voxel =
+						voxels != nullptr ? voxels[row + (int64_t)z * zStride] : v->voxel(lower.x + x, lower.y + y, lower.z + z);
 					if (isAir(voxel.getMaterial())) {
 						*p++ = 1;
 						continue;
@@ -376,7 +378,8 @@ struct PointerVoxelReader {
 template<typename Reader>
 static bool loadVoxels(Reader &reader, voxel::RawVolume &volume, const palette::Palette &palette, uint32_t version) {
 	const voxel::Region &region = volume.region();
-	voxel::Voxel *data = volume.voxels();
+	voxel::Voxel *data = volume.linearVoxels();
+	const glm::ivec3 &lower = region.getLowerCorner();
 	const int32_t w = region.getWidthInVoxels();
 	const int32_t h = region.getHeightInVoxels();
 	const int32_t d = region.getDepthInVoxels();
@@ -405,7 +408,12 @@ static bool loadVoxels(Reader &reader, voxel::RawVolume &volume, const palette::
 				} else if (!reader.u8(color)) {
 					return false;
 				}
-				data[row + (int64_t)z * zStride].overwrite(voxel::createVoxel(palette, color, normal, 0u, bone));
+				const voxel::Voxel vox = voxel::createVoxel(palette, color, normal, 0u, bone);
+				if (data != nullptr) {
+					data[row + (int64_t)z * zStride].overwrite(vox);
+				} else {
+					volume.setVoxelOverwrite(lower.x + x, lower.y + y, lower.z + z, vox);
+				}
 			}
 		}
 	}
@@ -424,7 +432,7 @@ bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::S
 	Log::debug("Load region of %i:%i:%i %i:%i:%i", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
-	if (v->voxels() == nullptr) {
+	if (!v->valid()) {
 		delete v;
 		Log::error("Failed to allocate volume");
 		return false;

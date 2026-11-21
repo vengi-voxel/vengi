@@ -32,7 +32,11 @@ public:
 				_volume->setVoxel(into, voxel);
 				return true;
 			}
-			*_currentVoxel = voxel;
+			if (core_likely(_currentVoxel != nullptr)) {
+				*_currentVoxel = voxel;
+			} else {
+				writeCurrentSparse(voxel, false);
+			}
 			return true;
 		}
 	};
@@ -43,6 +47,34 @@ public:
 
 	inline Voxel *voxels() const {
 		return _volume->voxels();
+	}
+
+	inline Voxel *linearVoxels() const {
+		return _volume->linearVoxels();
+	}
+
+	inline const Region &volumeRegion() const {
+		return _volume->volumeRegion();
+	}
+
+	inline const Voxel &borderValue() const {
+		return _volume->borderValue();
+	}
+
+	inline const uint32_t *sparseGenerationPtr() const {
+		return _volume->sparseGenerationPtr();
+	}
+
+	inline void sampleSparseAt(int lx, int ly, int lz, const SparseChunk *&outChunk,
+							   const SparseChunk::Brick *&outBrick, const Voxel *&outRow, bool &outWholeBrick,
+							   glm::ivec3 &outLower, glm::ivec3 &outUpper, Voxel &outFallbackVoxel,
+							   uint32_t &outGen) const {
+		_volume->sampleSparseAt(lx, ly, lz, outChunk, outBrick, outRow, outWholeBrick, outLower, outUpper,
+								outFallbackVoxel, outGen);
+	}
+
+	inline bool setVoxelOverwrite(int32_t x, int32_t y, int32_t z, const Voxel &voxel) {
+		return _volume->setVoxelOverwrite(x, y, z, voxel);
 	}
 
 	inline int width() const {

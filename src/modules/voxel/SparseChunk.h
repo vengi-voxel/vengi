@@ -210,6 +210,51 @@ public:
 	}
 
 	/**
+	 * @brief Store a voxel using full field replacement (overwrite) instead of Voxel::operator=
+	 * @return @c true if no voxel was stored at this position before
+	 */
+	inline bool setVoxelOverwrite(Brick *b, int idx, const Voxel &voxel) {
+		const uint64_t bit = (uint64_t)1u << (idx & 63);
+		uint64_t &word = b->mask[idx >> 6];
+		if (word & bit) {
+			b->voxels[b->dense() ? idx : packedIndex(b, idx)].overwrite(voxel);
+			return false;
+		}
+		if (!b->dense()) {
+			return insertPacked(b, idx, voxel);
+		}
+		b->voxels[idx].overwrite(voxel);
+		word |= bit;
+		++b->count;
+		++_voxelCount;
+		return true;
+	}
+
+	/**
+	 * @return Pointer to the stored voxel if present (occupancy bit set), or @c nullptr otherwise.
+	 */
+	CORE_FORCE_INLINE const Voxel *findVoxel(int x, int y, int z) const {
+		if (_cells == nullptr) {
+			return nullptr;
+		}
+		const int i = _cells[brickCellIndex(x, y, z)] - 1;
+		if (i < 0) {
+			return nullptr;
+		}
+		const Brick *b = poolBrick(i);
+		const int idx = voxelIndex(x, y, z);
+		const uint64_t word = b->mask[idx >> 6];
+		const uint64_t bit = (uint64_t)1u << (idx & 63);
+		if ((word & bit) == 0u) {
+			return nullptr;
+		}
+		if (b->dense()) {
+			return b->voxels + idx;
+		}
+		return b->voxels + b->prefix[idx >> 6] + popcount64(word & (bit - 1u));
+	}
+
+	/**
 	 * @return The stored voxel or @c EmptyVoxel
 	 * @note References into packed bricks are invalidated by modifications of the brick
 	 */
@@ -298,6 +343,16 @@ public:
 
 	void clear();
 
+	/**
+	 * @brief Deep-copy this chunk including its brick pool and cell directory.
+	 */
+	SparseChunk *clone() const;
+
+	/**
+	 * @brief Allocated bytes for cell table, brick pool blocks, dense pointer table and brick voxel arrays.
+	 */
+	size_t allocatedBytes() const;
+
 	inline int size() const {
 		return _voxelCount;
 	}
@@ -311,6 +366,37 @@ public:
 	 * @return @c false if the chunk doesn't contain any voxel
 	 */
 	bool calculateBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const;
+
+	/**
+	 * @brief Visit every live brick in the chunk with its local origin (bx, by, bz) and brick reference.
+	 */
+	template<class FUNC>
+	void visitBricks(FUNC &&func) const {
+		for (int i = 0; i < _poolUsed; ++i) {
+			const Brick *b = poolBrick(i);
+			if (b->voxels == nullptr || b->count == 0) {
+				continue;
+			}
+			const int bx = (b->cell & (BricksPerAxis - 1)) << BrickShift;
+			const int by = ((b->cell >> BricksPerAxisShift) & (BricksPerAxis - 1)) << BrickShift;
+			const int bz = (b->cell >> (2 * BricksPerAxisShift)) << BrickShift;
+			func(bx, by, bz, *b);
+		}
+	}
+
+	template<class FUNC>
+	void visitBricksMutable(FUNC &&func) {
+		for (int i = 0; i < _poolUsed; ++i) {
+			Brick *b = poolBrick(i);
+			if (b->voxels == nullptr || b->count == 0) {
+				continue;
+			}
+			const int bx = (b->cell & (BricksPerAxis - 1)) << BrickShift;
+			const int by = ((b->cell >> BricksPerAxisShift) & (BricksPerAxis - 1)) << BrickShift;
+			const int bz = (b->cell >> (2 * BricksPerAxisShift)) << BrickShift;
+			func(bx, by, bz, *b);
+		}
+	}
 
 	/**
 	 * @brief Visit all stored voxels - brick by brick in allocation order, inside a brick in index order
@@ -338,6 +424,18 @@ public:
 				}
 			}
 		}
+	}
+
+	/**
+	 * @brief Return a mutable pointer to an occupied voxel inside a brick, or nullptr if not present.
+	 */
+	static inline Voxel *mutableVoxelIfPresent(Brick *b, int idx) {
+		const uint64_t word = b->mask[idx >> 6];
+		const uint64_t bit = (uint64_t)1u << (idx & 63);
+		if ((word & bit) == 0u) {
+			return nullptr;
+		}
+		return b->dense() ? (b->voxels + idx) : (b->voxels + b->prefix[idx >> 6] + popcount64(word & (bit - 1u)));
 	}
 };
 

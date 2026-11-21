@@ -18,6 +18,7 @@
 #include "math/Axis.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/Voxel.h"
 #include <stdint.h>
 
@@ -859,8 +860,9 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
 int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor = Visitor(),
 				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
-	typename Volume::Sampler sampler(volume);
-	return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
+	return voxel::withVolumeSampler(volume, [&](auto &sampler) {
+		return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
+	});
 }
 
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>

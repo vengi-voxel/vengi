@@ -219,6 +219,35 @@ MementoData &MementoData::operator=(const MementoData &o) noexcept {
 	return *this;
 }
 
+static bool writeVolumeToStream(const voxel::RawVolume &volume, const voxel::Region &region, io::WriteStream &stream) {
+	const voxel::Voxel *linear = volume.linearVoxels();
+	if (linear != nullptr && volume.region() == region) {
+		const int64_t allVoxels = region.voxels();
+		return stream.write(linear, (size_t)allVoxels * sizeof(voxel::Voxel)) != -1;
+	}
+	const int w = region.getWidthInVoxels();
+	const int h = region.getHeightInVoxels();
+	const int d = region.getDepthInVoxels();
+	const size_t sliceVoxels = (size_t)w * (size_t)h;
+	const size_t sliceBytes = sliceVoxels * sizeof(voxel::Voxel);
+	voxel::Voxel *sliceBuf = (voxel::Voxel *)core_malloc(sliceBytes);
+	if (sliceBuf == nullptr) {
+		return false;
+	}
+	bool ok = true;
+	for (int z = 0; z < d; ++z) {
+		const voxel::Region sliceReg(region.getLowerX(), region.getLowerY(), region.getLowerZ() + z,
+									 region.getUpperX(), region.getUpperY(), region.getLowerZ() + z);
+		volume.readRegion(sliceReg, sliceBuf);
+		if (stream.write(sliceBuf, sliceBytes) == -1) {
+			ok = false;
+			break;
+		}
+	}
+	core_free(sliceBuf);
+	return ok;
+}
+
 MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel::Region &region) {
 	core_trace_scoped(MementoDataFromVolume);
 	if (volume == nullptr) {
@@ -226,33 +255,41 @@ MementoData MementoData::fromVolume(const voxel::RawVolume *volume, const voxel:
 	}
 	// Preserve the requested region. If it's invalid, fall back to the full volume region.
 	if (region.isValid()) {
-		// Use the RawVolume copy-with-region constructor which will handle regions
-		// that extend outside the source by filling with air or cropping as needed.
-		voxel::RawVolume v(*volume, region);
-		const int64_t actualVoxels = v.region().voxels();
-		io::BufferedReadWriteStream outStream(actualVoxels * (int64_t)sizeof(voxel::Voxel));
+		voxel::Region actualRegion = region;
+		const bool overlaps = voxel::intersects(volume->region(), region);
+		if (overlaps && !volume->region().containsRegion(actualRegion)) {
+			actualRegion.cropTo(volume->region());
+		}
+		const int64_t actualVoxels = actualRegion.voxels();
+		const int64_t rawBytes = actualVoxels * (int64_t)sizeof(voxel::Voxel);
+		const int64_t initCap = rawBytes < (64 * 1024) ? rawBytes : (64 * 1024);
+		io::BufferedReadWriteStream outStream(initCap);
 		io::LZ4WriteStream stream(outStream);
-		if (stream.write(v.data(), actualVoxels * sizeof(voxel::Voxel)) == -1) {
+		bool ok = false;
+		if (!overlaps) {
+			voxel::RawVolume empty(actualRegion);
+			ok = writeVolumeToStream(empty, actualRegion, stream);
+		} else {
+			ok = writeVolumeToStream(*volume, actualRegion, stream);
+		}
+		if (!ok) {
 			Log::error("Failed to compress memento volume data");
 			return MementoData();
 		}
 		stream.flush();
 		const size_t size = (size_t)outStream.size();
-		const voxel::Region actualRegion = v.region();
 		MementoData data(outStream.release(), size, actualRegion, volume->region());
-		// If the actual region was cropped from the requested region, store
-		// the originally requested region as modified region. This is needed
-		// for resize operations where the volume region changed and the undo
-		// must restore data across the full extent of the change.
 		if (actualRegion != region) {
 			data._modifiedRegion = region;
 		}
 		return data;
 	}
 	const int64_t allVoxels = volume->region().voxels();
-	io::BufferedReadWriteStream outStream(allVoxels * (int64_t)sizeof(voxel::Voxel));
+	const int64_t rawBytes = allVoxels * (int64_t)sizeof(voxel::Voxel);
+	const int64_t initCap = rawBytes < (64 * 1024) ? rawBytes : (64 * 1024);
+	io::BufferedReadWriteStream outStream(initCap);
 	io::LZ4WriteStream stream(outStream);
-	if (stream.write(volume->data(), allVoxels * sizeof(voxel::Voxel)) == -1) {
+	if (!writeVolumeToStream(*volume, volume->region(), stream)) {
 		Log::error("Failed to compress memento volume data");
 		return MementoData();
 	}
@@ -274,9 +311,55 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	}
 
 	const voxel::Region &dataRegion = mementoData.dataRegion();
-	const size_t uncompressedBufferSize = (size_t)dataRegion.voxels() * sizeof(voxel::Voxel);
 	io::MemoryReadStream dataStream(mementoData._buffer, mementoData._compressedSize);
 	io::LZ4ReadStream stream(dataStream, (int)mementoData._compressedSize);
+	voxel::Region copyRegion = region;
+	copyRegion.cropTo(dataRegion);
+	if (!copyRegion.cropTo(volume->region())) {
+		return false;
+	}
+	if (volume->isSparse()) {
+		const int w = dataRegion.getWidthInVoxels();
+		const int h = dataRegion.getHeightInVoxels();
+		const int d = dataRegion.getDepthInVoxels();
+		const size_t sliceBytes = (size_t)w * (size_t)h * sizeof(voxel::Voxel);
+		voxel::Voxel *sliceBuf = (voxel::Voxel *)core_malloc(sliceBytes);
+		if (sliceBuf == nullptr) {
+			Log::error("Failed to allocate memento slice buffer");
+			return false;
+		}
+		const int minZ = copyRegion.getLowerZ() - dataRegion.getLowerZ();
+		const int maxZ = copyRegion.getUpperZ() - dataRegion.getLowerZ();
+		const int minY = copyRegion.getLowerY() - dataRegion.getLowerY();
+		const int maxY = copyRegion.getUpperY() - dataRegion.getLowerY();
+		const int minX = copyRegion.getLowerX() - dataRegion.getLowerX();
+		const int maxX = copyRegion.getUpperX() - dataRegion.getLowerX();
+		bool ok = true;
+		for (int z = 0; z <= maxZ && z < d; ++z) {
+			if (stream.read(sliceBuf, sliceBytes) == -1) {
+				ok = false;
+				break;
+			}
+			if (z < minZ) {
+				continue;
+			}
+			const int worldZ = dataRegion.getLowerZ() + z;
+			for (int y = minY; y <= maxY; ++y) {
+				const int worldY = dataRegion.getLowerY() + y;
+				const voxel::Voxel *row = sliceBuf + (size_t)y * (size_t)w + (size_t)minX;
+				for (int x = minX; x <= maxX; ++x) {
+					volume->setVoxelOverwrite(dataRegion.getLowerX() + x, worldY, worldZ, row[x - minX]);
+				}
+			}
+		}
+		core_free(sliceBuf);
+		if (!ok) {
+			Log::error("Failed to decompress memento volume data");
+			return false;
+		}
+		return true;
+	}
+	const size_t uncompressedBufferSize = (size_t)dataRegion.voxels() * sizeof(voxel::Voxel);
 	uint8_t *uncompressedBuf = (uint8_t *)core_malloc(uncompressedBufferSize);
 	if (stream.read(uncompressedBuf, uncompressedBufferSize) == -1) {
 		core_free(uncompressedBuf);
@@ -289,12 +372,6 @@ bool MementoData::toVolume(voxel::RawVolume *volume, const MementoData &mementoD
 	if (!v) {
 		return false;
 	}
-	// Crop the region to the data region to handle partial overlaps.
-	// This is important for mirror operations where the modified region spans
-	// both sides of the mirror plane but previous states may only cover a
-	// partial region.
-	voxel::Region copyRegion = region;
-	copyRegion.cropTo(dataRegion);
 	if (!volume->copyInto(*v, copyRegion)) {
 		Log::error("Failed to copy memento volume region into target volume");
 		return false;

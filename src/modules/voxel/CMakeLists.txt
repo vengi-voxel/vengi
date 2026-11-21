@@ -4,6 +4,7 @@ set(SRCS
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
 	private/BinaryGreedyMesher.h private/BinaryGreedyMesher.cpp
+	private/SparseRawVolumeStorage.h private/SparseRawVolumeStorage.cpp
 	private/TextureSurfaceExtractor.h private/TextureSurfaceExtractor.cpp
 
 	external/stb_rect_pack.h
@@ -32,6 +33,7 @@ set(SRCS
 	SparseVolumeUtil.h
 	VolumeData.h
 	VolumeSampler.h
+	VolumeSamplerDispatch.h
 	VolumeSamplerUtil.h
 	VolumeCompression.h VolumeCompression.cpp
 	VoxelVertex.h
@@ -53,6 +55,7 @@ set(TEST_SRCS
 	tests/ModificationRecorderTest.cpp
 	tests/MortonTest.cpp
 	tests/RawVolumeTest.cpp
+	tests/RawVolumeSparseTest.cpp
 	tests/RawVolumeViewTest.cpp
 	tests/RegionTest.cpp
 	tests/ConcurrentSparseVolumeTest.cpp
@@ -67,7 +70,7 @@ set(TEST_SRCS
 
 gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
 gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
-gtest_suite_deps(tests-${LIB} ${LIB} voxelformat test-app)
+gtest_suite_deps(tests-${LIB} ${LIB} voxelutil voxelformat test-app)
 gtest_suite_end(tests-${LIB})
 
 if (USE_BENCHMARKS)
@@ -83,5 +86,5 @@ if (USE_BENCHMARKS)
 		benchmarks/VolumeSamplerBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
-	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB} voxelformat)
+	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB} voxelutil voxelformat)
 endif()
