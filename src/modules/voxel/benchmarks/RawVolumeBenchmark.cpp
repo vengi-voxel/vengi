@@ -2,14 +2,20 @@
  * @file
  */
 
+#include "app/ForParallel.h"
 #include "app/benchmark/AbstractBenchmark.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Vector.h"
+#include "core/concurrent/Atomic.h"
+#include "core/concurrent/Concurrency.h"
 #include "math/Axis.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeMover.h"
+#include "voxelutil/VolumeVisitor.h"
 
 class RawVolumeBenchmark : public app::AbstractBenchmark {
 protected:
@@ -298,6 +304,151 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, Large512MemoryAndBounds)(benchmark::State
 }
 
 BENCHMARK_REGISTER_F(RawVolumeBenchmark, Large512MemoryAndBounds)->Arg(0)->Arg(1)->Arg(2)->Arg(4)->Unit(benchmark::kMicrosecond);
+
+class ParallelRawVolumeBenchmark : public app::AbstractBenchmark {
+public:
+	ParallelRawVolumeBenchmark() : app::AbstractBenchmark(core::cpus()) {
+	}
+};
+
+// Benchmark key voxelutil algorithms on 256^3 with full thread pool:
+// content={1:shell, 3:dense, 4:scattered}, forceDense={0:sparse, 1:dense}
+BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, cyclicVolumeMoveMT)(benchmark::State &state) {
+	voxel::RawVolume volume(voxel::Region(-128, 127));
+	if (!volume.valid() || (state.range(0) && volume.voxels() == nullptr)) {
+		state.SkipWithError("Could not allocate volume");
+		return;
+	}
+	const int content = (int)state.range(1);
+	if (content == 1) {
+		volume.setVoxel(-128, -128, -128, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+		volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
+		volume.setVoxel(127, 127, 127, voxel::createVoxel(voxel::VoxelType::Generic, 3));
+	} else if (content == 2) {
+		fillBenchmarkVolume(volume, 2);
+	} else if (content == 3) {
+		fillBenchmarkVolume(volume, 3);
+	}
+	for (auto _ : state) {
+		if (!volume.move({1, 0, 0}) || !volume.move({-1, 0, 0})) {
+			state.SkipWithError("Could not shift volume");
+			break;
+		}
+		benchmark::DoNotOptimize(volume.linearVoxels());
+	}
+	state.counters["allocated_bytes"] = (double)volume.allocatedBytes();
+}
+
+BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilMerge256)(benchmark::State &state) {
+	const int content = (int)state.range(0);
+	const bool forceDense = state.range(1) != 0;
+	voxel::RawVolume src(voxel::Region(-128, 127));
+	if (forceDense) {
+		(void)src.voxels();
+	}
+	fillBenchmarkVolume(src, content);
+	for (auto _ : state) {
+		voxel::RawVolume dst(voxel::Region(-128, 127));
+		if (forceDense) {
+			(void)dst.voxels();
+		}
+		const int merged = voxelutil::mergeVolumes(&dst, &src, dst.region(), src.region());
+		benchmark::DoNotOptimize(merged);
+	}
+	state.counters["src_bytes"] = (double)src.allocatedBytes();
+}
+
+BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilCountParallel256)(benchmark::State &state) {
+	const int content = (int)state.range(0);
+	const bool forceDense = state.range(1) != 0;
+	voxel::RawVolume vol(voxel::Region(-128, 127));
+	if (forceDense) {
+		(void)vol.voxels();
+	}
+	fillBenchmarkVolume(vol, content);
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(voxelutil::countVoxels(vol));
+	}
+	state.counters["bytes"] = (double)vol.allocatedBytes();
+}
+
+BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilVisitParallelSum256)(benchmark::State &state) {
+	const int content = (int)state.range(0);
+	const bool forceDense = state.range(1) != 0;
+	voxel::RawVolume vol(voxel::Region(-128, 127));
+	if (forceDense) {
+		(void)vol.voxels();
+	}
+	fillBenchmarkVolume(vol, content);
+	for (auto _ : state) {
+		core::AtomicInt sum(0);
+		voxelutil::visitVolumeParallel(vol, [&](int, int, int, const voxel::Voxel &v) {
+			if ((v.getColor() & 63u) == 0u) {
+				sum.increment(1);
+			}
+		});
+		benchmark::DoNotOptimize((int)sum);
+	}
+	state.counters["bytes"] = (double)vol.allocatedBytes();
+}
+
+BENCHMARK_DEFINE_F(RawVolumeBenchmark, VoxelUtilVisitSolidZYX256)(benchmark::State &state) {
+	const int content = (int)state.range(0);
+	const bool forceDense = state.range(1) != 0;
+	voxel::RawVolume vol(voxel::Region(-128, 127));
+	if (forceDense) {
+		(void)vol.voxels();
+	}
+	fillBenchmarkVolume(vol, content);
+	for (auto _ : state) {
+		int sum = 0;
+		voxelutil::visitVolume(vol, [&](int, int, int, const voxel::Voxel &v) { sum += v.getColor(); });
+		benchmark::DoNotOptimize(sum);
+	}
+	state.counters["bytes"] = (double)vol.allocatedBytes();
+}
+
+BENCHMARK_DEFINE_F(ParallelRawVolumeBenchmark, VoxelUtilInPlaceRecolor256)(benchmark::State &state) {
+	const int content = (int)state.range(0);
+	const bool forceDense = state.range(1) != 0;
+	voxel::RawVolume vol(voxel::Region(-128, 127));
+	if (forceDense) {
+		(void)vol.voxels();
+	}
+	fillBenchmarkVolume(vol, content);
+	const voxel::Region &reg = vol.region();
+	for (auto _ : state) {
+		app::for_parallel(reg.getLowerZ(), reg.getUpperZ() + 1, [&](int start, int end) {
+			voxel::RawVolume::Sampler sampler(&vol);
+			sampler.setPosition(reg.getLowerX(), reg.getLowerY(), start);
+			for (int z = start; z < end; ++z) {
+				voxel::RawVolume::Sampler sampler2 = sampler;
+				for (int y = reg.getLowerY(); y <= reg.getUpperY(); ++y) {
+					voxel::RawVolume::Sampler sampler3 = sampler2;
+					for (int x = reg.getLowerX(); x <= reg.getUpperX(); ++x) {
+						voxel::Voxel v = sampler3.voxel();
+						if (!voxel::isAir(v.getMaterial())) {
+							v.setColor((uint8_t)(v.getColor() ^ 1u));
+							sampler3.setVoxel(v);
+						}
+						sampler3.movePositiveX();
+					}
+					sampler2.movePositiveY();
+				}
+				sampler.movePositiveZ();
+			}
+		});
+		benchmark::DoNotOptimize(vol.allocatedBytes());
+	}
+	state.counters["bytes"] = (double)vol.allocatedBytes();
+}
+
+BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, cyclicVolumeMoveMT)->ArgsProduct({{0, 1}, {1, 3}})->UseRealTime()->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, VoxelUtilMerge256)->ArgsProduct({{1, 3, 4}, {0, 1}})->UseRealTime()->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, VoxelUtilCountParallel256)->ArgsProduct({{1, 3, 4}, {0, 1}})->UseRealTime()->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, VoxelUtilVisitParallelSum256)->ArgsProduct({{1, 3, 4}, {0, 1}})->UseRealTime()->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(RawVolumeBenchmark, VoxelUtilVisitSolidZYX256)->ArgsProduct({{1, 3, 4}, {0, 1}})->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(ParallelRawVolumeBenchmark, VoxelUtilInPlaceRecolor256)->ArgsProduct({{1, 3, 4}, {0, 1}})->UseRealTime()->Unit(benchmark::kMillisecond);
 
 class SharedVolumeBenchmark : public app::AbstractBenchmark {
 protected:

@@ -303,6 +303,129 @@ bool SparseChunk::calculateBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 	return found;
 }
 
+SparseChunk::PreparedBrick SparseChunk::prepareBrick(int bx, int by, int bz, const Voxel (&tile)[BrickVoxels],
+													 const uint64_t (&mask)[BrickMaskWords], int count) {
+	PreparedBrick pb;
+	pb.cell = (uint16_t)brickCellIndex(bx, by, bz);
+	pb.count = count;
+	if (count <= 0) {
+		return pb;
+	}
+	for (int w = 0; w < BrickMaskWords; ++w) {
+		pb.mask[w] = mask[w];
+	}
+	if (count > PackedMaxVoxels) {
+		pb.capacity = BrickVoxels;
+		pb.heapVoxels = new Voxel[BrickVoxels];
+		memcpy((void *)pb.heapVoxels, (const void *)tile, (size_t)BrickVoxels * sizeof(Voxel));
+		return pb;
+	}
+	uint16_t cap = InlineVoxels;
+	while ((int)cap < count && cap < PackedMaxVoxels) {
+		cap = (uint16_t)(cap * 4u < (uint16_t)PackedMaxVoxels ? cap * 4u : (uint16_t)PackedMaxVoxels);
+	}
+	pb.capacity = cap;
+	Voxel *dst = pb.inlineVoxels;
+	if (cap > InlineVoxels) {
+		pb.heapVoxels = new Voxel[cap];
+		dst = pb.heapVoxels;
+	}
+	int packed = 0;
+	for (int w = 0; w < BrickMaskWords; ++w) {
+		pb.prefix[w] = (uint8_t)packed;
+		uint64_t bits = mask[w];
+		while (bits != 0u) {
+			const int bit = ctz64(bits);
+			bits &= bits - 1u;
+			dst[packed++].overwrite(tile[(w << 6) | bit]);
+		}
+	}
+	return pb;
+}
+
+void SparseChunk::clearBrick(int bx, int by, int bz) {
+	if (_cells == nullptr) {
+		return;
+	}
+	uint16_t &cellRef = _cells[brickCellIndex(bx, by, bz)];
+	if (cellRef == 0u) {
+		return;
+	}
+	const int i = (int)cellRef - 1;
+	Brick *b = poolBrick(i);
+	_voxelCount -= b->count;
+	if (b->voxels != nullptr && b->voxels != b->inlineVoxels) {
+		delete[] b->voxels;
+	}
+	b->voxels = nullptr;
+	b->count = _freeBrick;
+	_freeBrick = i;
+	_densePayloads[i] = nullptr;
+	cellRef = 0u;
+}
+
+void SparseChunk::adoptPreparedBrick(PreparedBrick &prepared) {
+	if (prepared.count <= 0) {
+		if (_cells != nullptr && _cells[prepared.cell] != 0u) {
+			const int i = (int)_cells[prepared.cell] - 1;
+			Brick *b = poolBrick(i);
+			_voxelCount -= b->count;
+			if (b->voxels != nullptr && b->voxels != b->inlineVoxels) {
+				delete[] b->voxels;
+			}
+			b->voxels = nullptr;
+			b->count = _freeBrick;
+			_freeBrick = i;
+			_densePayloads[i] = nullptr;
+			_cells[prepared.cell] = 0u;
+		}
+		prepared.destroy();
+		return;
+	}
+	if (_cells == nullptr) {
+		_cells = new uint16_t[Bricks]();
+	}
+	int i = (int)_cells[prepared.cell] - 1;
+	Brick *b = nullptr;
+	if (i >= 0) {
+		b = poolBrick(i);
+		_voxelCount -= b->count;
+		if (b->voxels != nullptr && b->voxels != b->inlineVoxels) {
+			delete[] b->voxels;
+		}
+	} else {
+		if (_freeBrick >= 0) {
+			i = _freeBrick;
+			_freeBrick = poolBrick(i)->count;
+		} else {
+			if (_poolUsed == (int)_blocks.size() * PoolBlockBricks) {
+				_blocks.push_back(new Brick[PoolBlockBricks]);
+			}
+			i = _poolUsed++;
+			_densePayloads.push_back(nullptr);
+		}
+		b = poolBrick(i);
+		_cells[prepared.cell] = (uint16_t)(i + 1);
+	}
+	for (int w = 0; w < BrickMaskWords; ++w) {
+		b->mask[w] = prepared.mask[w];
+		b->prefix[w] = prepared.prefix[w];
+	}
+	b->count = prepared.count;
+	b->capacity = prepared.capacity;
+	b->cell = prepared.cell;
+	if (prepared.heapVoxels != nullptr) {
+		b->voxels = prepared.heapVoxels;
+		prepared.heapVoxels = nullptr;
+	} else {
+		b->voxels = b->inlineVoxels;
+		memcpy((void *)b->inlineVoxels, (const void *)prepared.inlineVoxels, sizeof(b->inlineVoxels));
+	}
+	_densePayloads[i] = b->dense() ? b->voxels : nullptr;
+	_voxelCount += b->count;
+	prepared.count = 0;
+}
+
 SparseChunk *SparseChunk::clone() const {
 	SparseChunk *copy = new SparseChunk(_denseBricks);
 	if (_cells == nullptr || _voxelCount == 0) {

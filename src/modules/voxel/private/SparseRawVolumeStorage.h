@@ -127,6 +127,32 @@ public:
 	/** Allocated directory and SparseChunk bytes, excluding allocator overhead. */
 	size_t allocatedBytes() const;
 
+	struct PreparedChunkBrick {
+		size_t chunkIndex = 0u;
+		SparseChunk::PreparedBrick brick;
+	};
+
+	/** O(1) check if any brick (or non-zero default) exists in [localMins, localMaxs]. */
+	bool hasOccupiedVoxelsInBox(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs) const;
+
+	/** Lock-free lookup of the brick covering volume-local coordinate (lx, ly, lz), or nullptr. */
+	const SparseChunk::Brick *brickAt(int lx, int ly, int lz) const;
+
+	/** Lock-free read of an 8-aligned brick into a 512-voxel staging tile and mask (relative to _default). */
+	bool readBrickTile(int lx, int ly, int lz, Voxel (&outTile)[SparseChunk::BrickVoxels],
+					   uint64_t (&outMask)[SparseChunk::BrickMaskWords], int &outCount) const;
+
+	/** Compute the chunk directory index for a volume-local coordinate. */
+	inline size_t chunkIndexAt(int lx, int ly, int lz) const {
+		return chunkIndexForLocal(lx, ly, lz);
+	}
+
+	/**
+	 * @brief Adopt pre-built bricks from worker threads via O(1) pointer transfer (exclusive access).
+	 * Empty bricks (count == 0) release existing bricks; empty chunks are cleared.
+	 */
+	void adoptPreparedBricks(core::DynamicArray<PreparedChunkBrick> &prepared);
+
 	static inline uint32_t voxelBits(const Voxel &v) {
 		uint32_t bits = 0u;
 		memcpy(&bits, &v, sizeof(bits));

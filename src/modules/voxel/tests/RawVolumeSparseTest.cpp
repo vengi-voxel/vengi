@@ -10,7 +10,10 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/VolumeSamplerUtil.h"
+#include "voxel/VolumeTileDispatch.h"
 #include "voxelutil/VolumeCropper.h"
+#include "voxelutil/VolumeMerger.h"
+#include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <limits.h>
 
@@ -302,6 +305,73 @@ TEST_F(RawVolumeSparseTest, CoordinateLimitsAndConcurrentWritesReads) {
 		th.join();
 	}
 	EXPECT_EQ((int)mismatches, 0);
+}
+
+TEST_F(RawVolumeSparseTest, ParallelTileDispatchMergeMoveAndCopyMatchDense) {
+	RawVolume::setChunkedStorageThreshold(16);
+	RawVolume sparseSrc(Region(-16, -16, -16, 47, 47, 47));
+	RawVolume sparseDst(Region(-16, -16, -16, 47, 47, 47));
+	RawVolume::setChunkedStorageThreshold(256);
+	RawVolume denseSrc(Region(-16, -16, -16, 47, 47, 47));
+	RawVolume denseDst(Region(-16, -16, -16, 47, 47, 47));
+	ASSERT_TRUE(sparseSrc.isSparse());
+	ASSERT_TRUE(sparseDst.isSparse());
+	ASSERT_TRUE(denseSrc.isContiguous());
+	ASSERT_TRUE(denseDst.isContiguous());
+
+	// Populate a mix of packed bricks (hollow shell) and a dense 10x10x10 cube
+	for (int z = -10; z <= 30; ++z) {
+		for (int y = -10; y <= 30; ++y) {
+			for (int x = -10; x <= 30; ++x) {
+				const bool onShell = (x == -10 || x == 30 || y == -10 || y == 30 || z == -10 || z == 30);
+				const bool inCube = (x >= 0 && x < 10 && y >= 0 && y < 10 && z >= 0 && z < 10);
+				if (onShell || inCube) {
+					const Voxel v = createVoxel(VoxelType::Generic, (uint8_t)(((x + y * 3 + z * 7) & 0x7F) + 1));
+					sparseSrc.setVoxel(x, y, z, v);
+					denseSrc.setVoxel(x, y, z, v);
+				}
+			}
+		}
+	}
+	// Pre-seed destination with a few voxels outside and inside the source to exercise both empty and non-empty tiles
+	const Voxel pre = createVoxel(VoxelType::Generic, 250);
+	sparseDst.setVoxel(-15, -15, -15, pre);
+	denseDst.setVoxel(-15, -15, -15, pre);
+	sparseDst.setVoxel(2, 2, 2, pre);
+	denseDst.setVoxel(2, 2, 2, pre);
+
+	// 1. mergeVolumes (aligned sparse-to-sparse fast path + non-empty target merge)
+	const int sparseMerged = voxelutil::mergeVolumes(&sparseDst, &sparseSrc, sparseDst.region(), sparseSrc.region());
+	const int denseMerged = voxelutil::mergeVolumes(&denseDst, &denseSrc, denseDst.region(), denseSrc.region());
+	EXPECT_EQ(sparseMerged, denseMerged);
+	EXPECT_TRUE(sparseDst.equals(denseDst));
+	EXPECT_TRUE(sparseDst.isSparse());
+
+	// 2. moveVolume with non-brick-aligned offset
+	RawVolume::setChunkedStorageThreshold(16);
+	RawVolume sparseMoved(Region(-16, -16, -16, 47, 47, 47));
+	RawVolume::setChunkedStorageThreshold(256);
+	RawVolume denseMoved(Region(-16, -16, -16, 47, 47, 47));
+	voxelutil::moveVolume(&sparseMoved, &sparseSrc, glm::ivec3(5, 3, 7));
+	voxelutil::moveVolume(&denseMoved, &denseSrc, glm::ivec3(5, 3, 7));
+	EXPECT_TRUE(sparseMoved.equals(denseMoved));
+	EXPECT_TRUE(sparseMoved.isSparse());
+
+	// 3. Large cyclic move (>4096 voxels -> exercises parallel brick-span move path)
+	ASSERT_TRUE(sparseDst.move({7, -5, 13}));
+	ASSERT_TRUE(denseDst.move({7, -5, 13}));
+	EXPECT_TRUE(sparseDst.equals(denseDst));
+	EXPECT_TRUE(sparseDst.isSparse());
+
+	// 4. Parallel sparse copyInto
+	RawVolume::setChunkedStorageThreshold(16);
+	RawVolume sparseCopy(Region(-16, -16, -16, 47, 47, 47));
+	ASSERT_TRUE(sparseCopy.copyInto(sparseDst, Region(-12, -12, -12, 35, 35, 35)));
+	RawVolume::setChunkedStorageThreshold(256);
+	RawVolume denseCopy(Region(-16, -16, -16, 47, 47, 47));
+	ASSERT_TRUE(denseCopy.copyInto(denseDst, Region(-12, -12, -12, 35, 35, 35)));
+	EXPECT_TRUE(sparseCopy.equals(denseCopy));
+	EXPECT_TRUE(sparseCopy.isSparse());
 }
 
 } // namespace voxel

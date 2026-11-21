@@ -9,11 +9,14 @@
 #include "core/concurrent/Atomic.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include "voxel/VolumeSamplerDispatch.h"
+#include "voxel/VolumeTileDispatch.h"
 #include "palette/Palette.h"
 #include "core/Trace.h"
 #include "core/Assert.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include <type_traits>
 
 namespace voxelutil {
 
@@ -27,6 +30,68 @@ int mergeVolumes(Volume1 *destination, const Volume2 *source, const voxel::Regio
 				 const voxel::Region &sourceReg, MergeCondition mergeCondition = MergeCondition()) {
 	core_trace_scoped(MergeRawVolumes);
 	core::AtomicInt cnt = 0;
+	if constexpr (std::is_same_v<Volume1, voxel::RawVolume>) {
+		if (destination->isSparse()) {
+			const glm::ivec3 offset = destReg.getLowerCorner() - sourceReg.getLowerCorner();
+			const voxel::Region targetReg(destReg.getLowerCorner(),
+										  destReg.getLowerCorner() + sourceReg.getDimensionsInVoxels() - 1);
+			const bool dstAirDefault = destination->isSparseAirDefault();
+			voxel::forEachTileWriteParallel(*destination, targetReg, [&](voxel::ParallelTileWriter &tile) {
+				const voxel::Region &tr = tile.region();
+				const voxel::Region srcTile(tr.getLowerCorner() - offset, tr.getUpperCorner() - offset);
+				if constexpr (std::is_same_v<Volume2, voxel::RawVolume> && ConditionSkipsAir<MergeCondition>::value) {
+					if (source->isSparseAirDefault()) {
+						if (!source->hasOccupiedVoxelsInRegion(srcTile)) {
+							return;
+						}
+						if constexpr (std::is_same_v<MergeCondition, VisitSolid>) {
+							if (dstAirDefault && source->region().containsRegion(srcTile) &&
+								srcTile.getWidthInVoxels() == voxel::SparseChunk::BrickSide &&
+								srcTile.getHeightInVoxels() == voxel::SparseChunk::BrickSide &&
+								srcTile.getDepthInVoxels() == voxel::SparseChunk::BrickSide) {
+								const glm::ivec3 srcLocal = srcTile.getLowerCorner() - source->region().getLowerCorner();
+								if (((srcLocal.x | srcLocal.y | srcLocal.z) & (voxel::SparseChunk::BrickSide - 1)) ==
+									0) {
+									const int localCnt = tile.mergeAlignedSparseBrick(
+										source->sparseBrickAt(srcLocal.x, srcLocal.y, srcLocal.z));
+									if (localCnt > 0) {
+										cnt.increment(localCnt);
+									}
+									return;
+								}
+							}
+						}
+					}
+				}
+				int localCnt = 0;
+				voxel::withVolumeSampler(*source, [&](auto &srcSampler) {
+					srcSampler.setPosition(srcTile.getLowerCorner());
+					for (int32_t z = srcTile.getLowerZ(); z <= srcTile.getUpperZ(); ++z) {
+						const int32_t dz = z + offset.z;
+						auto srcSamplerY = srcSampler;
+						for (int32_t y = srcTile.getLowerY(); y <= srcTile.getUpperY(); ++y) {
+							const int32_t dy = y + offset.y;
+							auto srcSamplerX = srcSamplerY;
+							for (int32_t x = srcTile.getLowerX(); x <= srcTile.getUpperX(); ++x) {
+								if (mergeCondition(srcSamplerX)) {
+									if (tile.setVoxel(x + offset.x, dy, dz, srcSamplerX.voxel())) {
+										++localCnt;
+									}
+								}
+								srcSamplerX.movePositiveX();
+							}
+							srcSamplerY.movePositiveY();
+						}
+						srcSampler.movePositiveZ();
+					}
+				});
+				if (localCnt > 0) {
+					cnt.increment(localCnt);
+				}
+			});
+			return cnt;
+		}
+	}
 	app::for_parallel(sourceReg.getLowerZ(), sourceReg.getUpperZ() + 1, [&source, &destination, sourceReg, destReg, &cnt, &mergeCondition] (int start, int end)	{
 		typename Volume2::Sampler sourceSampler(source);
 		typename Volume1::Sampler destSampler(destination);

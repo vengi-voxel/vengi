@@ -3,6 +3,7 @@
  */
 
 #include "SparseRawVolumeStorage.h"
+#include "app/ForParallel.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
@@ -939,6 +940,136 @@ bool SparseRawVolumeStorage::equalsDense(const Voxel *denseData) const {
 	return true;
 }
 
+bool SparseRawVolumeStorage::hasOccupiedVoxelsInBox(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs) const {
+	if (localMins.x > localMaxs.x || localMins.y > localMaxs.y || localMins.z > localMaxs.z) {
+		return false;
+	}
+	if (!isAir(_default.getMaterial())) {
+		return true;
+	}
+	const int cxMin = localMins.x >> ChunkShift;
+	const int cyMin = localMins.y >> ChunkShift;
+	const int czMin = localMins.z >> ChunkShift;
+	const int cxMax = localMaxs.x >> ChunkShift;
+	const int cyMax = localMaxs.y >> ChunkShift;
+	const int czMax = localMaxs.z >> ChunkShift;
+	for (int cz = czMin; cz <= czMax; ++cz) {
+		const int zBase = cz << ChunkShift;
+		const int lz0 = core_max(localMins.z - zBase, 0);
+		const int lz1 = core_min(localMaxs.z - zBase, ChunkMask);
+		for (int cy = cyMin; cy <= cyMax; ++cy) {
+			const int yBase = cy << ChunkShift;
+			const int ly0 = core_max(localMins.y - yBase, 0);
+			const int ly1 = core_min(localMaxs.y - yBase, ChunkMask);
+			for (int cx = cxMin; cx <= cxMax; ++cx) {
+				const SparseChunk *chunk = _slots[chunkIndex(cx, cy, cz)].chunk.load();
+				if (chunk == nullptr || chunk->empty()) {
+					continue;
+				}
+				const int xBase = cx << ChunkShift;
+				const int lx0 = core_max(localMins.x - xBase, 0);
+				const int lx1 = core_min(localMaxs.x - xBase, ChunkMask);
+				// Single-brick fast path (most common for 8x8x8 tile hints)
+				if ((lx0 >> BrickShift) == (lx1 >> BrickShift) && (ly0 >> BrickShift) == (ly1 >> BrickShift) &&
+					(lz0 >> BrickShift) == (lz1 >> BrickShift)) {
+					const SparseChunk::Brick *b = chunk->brick(lx0, ly0, lz0);
+					if (b != nullptr && b->count > 0) {
+						return true;
+					}
+					continue;
+				}
+				for (int bz = lz0 & ~BrickMask; bz <= lz1; bz += BrickSide) {
+					for (int by = ly0 & ~BrickMask; by <= ly1; by += BrickSide) {
+						for (int bx = lx0 & ~BrickMask; bx <= lx1; bx += BrickSide) {
+							const SparseChunk::Brick *b = chunk->brick(bx, by, bz);
+							if (b != nullptr && b->count > 0) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool SparseRawVolumeStorage::readBrickTile(int lx, int ly, int lz, Voxel (&outTile)[SparseChunk::BrickVoxels],
+										   uint64_t (&outMask)[SparseChunk::BrickMaskWords], int &outCount) const {
+	core_assert((lx & BrickMask) == 0 && (ly & BrickMask) == 0 && (lz & BrickMask) == 0);
+	const SparseChunk *chunk = _slots[chunkIndexForLocal(lx, ly, lz)].chunk.load();
+	const SparseChunk::Brick *b =
+		chunk != nullptr ? chunk->brick(lx & ChunkMask, ly & ChunkMask, lz & ChunkMask) : nullptr;
+	if (b == nullptr || b->count == 0) {
+		if (_defaultIsZero) {
+			core_memset((void *)outTile, 0, sizeof(outTile));
+		} else {
+			core_memset4((void *)outTile, voxelBits(_default), SparseChunk::BrickVoxels);
+		}
+		for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
+			outMask[w] = 0u;
+		}
+		outCount = 0;
+		return false;
+	}
+	outCount = b->count;
+	for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
+		outMask[w] = b->mask[w];
+	}
+	if (b->dense() && _defaultIsZero) {
+		memcpy((void *)outTile, (const void *)b->voxels, sizeof(outTile));
+		return true;
+	}
+	if (_defaultIsZero) {
+		core_memset((void *)outTile, 0, sizeof(outTile));
+	} else {
+		core_memset4((void *)outTile, voxelBits(_default), SparseChunk::BrickVoxels);
+	}
+	const bool dense = b->dense();
+	int packed = 0;
+	for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
+		uint64_t bits = b->mask[w];
+		while (bits != 0u) {
+			const int bit = SparseChunk::ctz64(bits);
+			bits &= bits - 1u;
+			const int idx = (w << 6) | bit;
+			outTile[idx].overwrite(dense ? b->voxels[idx] : b->voxels[packed++]);
+		}
+	}
+	return true;
+}
+
+void SparseRawVolumeStorage::adoptPreparedBricks(core::DynamicArray<PreparedChunkBrick> &prepared) {
+	if (prepared.empty()) {
+		return;
+	}
+	for (PreparedChunkBrick &item : prepared) {
+		ChunkSlot &slot = _slots[item.chunkIndex];
+		SparseChunk *chunk = slot.chunk.load();
+		if (item.brick.count <= 0) {
+			if (chunk != nullptr) {
+				chunk->adoptPreparedBrick(item.brick);
+				releaseChunkIfEmptyLocked(slot, chunk);
+			} else {
+				item.brick.destroy();
+			}
+			continue;
+		}
+		if (chunk == nullptr) {
+			chunk = new SparseChunk(false);
+			slot.chunk = chunk;
+		}
+		chunk->adoptPreparedBrick(item.brick);
+	}
+	prepared.clear();
+	bumpGeneration();
+}
+
+const SparseChunk::Brick *SparseRawVolumeStorage::brickAt(int lx, int ly, int lz) const {
+	const SparseChunk *chunk = _slots[chunkIndexForLocal(lx, ly, lz)].chunk.load();
+	return chunk != nullptr ? chunk->brick(lx & ChunkMask, ly & ChunkMask, lz & ChunkMask) : nullptr;
+}
+
 bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 	const int w = _dimensions.x;
 	const int h = _dimensions.y;
@@ -950,6 +1081,17 @@ bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 	if (t.x == 0 && t.y == 0 && t.z == 0) {
 		return true;
 	}
+	int64_t totalVoxels = 0;
+	for (size_t i = 0u; i < _directorySize; ++i) {
+		const SparseChunk *chunk = _slots[i].chunk.load();
+		if (chunk != nullptr) {
+			totalVoxels += chunk->size();
+		}
+	}
+	if (totalVoxels == 0) {
+		return true;
+	}
+
 	SparseRawVolumeStorage shifted(_dimensions);
 	if (!shifted.valid()) {
 		return false;
@@ -957,33 +1099,161 @@ bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 	shifted._default.overwrite(_default);
 	shifted._defaultIsZero = _defaultIsZero;
 
-	for (int cz = 0; cz < _chunkCounts.z; ++cz) {
-		const int zBase = cz << ChunkShift;
-		for (int cy = 0; cy < _chunkCounts.y; ++cy) {
-			const int yBase = cy << ChunkShift;
-			for (int cx = 0; cx < _chunkCounts.x; ++cx) {
-				const SparseChunk *chunk = _slots[chunkIndex(cx, cy, cz)].chunk.load();
-				if (chunk == nullptr || chunk->empty()) {
-					continue;
+	// Fast O(occupied) path for very sparse volumes
+	if (totalVoxels <= 4096) {
+		for (int cz = 0; cz < _chunkCounts.z; ++cz) {
+			const int zBase = cz << ChunkShift;
+			for (int cy = 0; cy < _chunkCounts.y; ++cy) {
+				const int yBase = cy << ChunkShift;
+				for (int cx = 0; cx < _chunkCounts.x; ++cx) {
+					const SparseChunk *chunk = _slots[chunkIndex(cx, cy, cz)].chunk.load();
+					if (chunk == nullptr || chunk->empty()) {
+						continue;
+					}
+					const int xBase = cx << ChunkShift;
+					chunk->visit([&](int vx, int vy, int vz, const Voxel &v) {
+						int nx = xBase + vx - t.x;
+						if (nx < 0) {
+							nx += w;
+						}
+						int ny = yBase + vy - t.y;
+						if (ny < 0) {
+							ny += h;
+						}
+						int nz = zBase + vz - t.z;
+						if (nz < 0) {
+							nz += d;
+						}
+						shifted.setVoxelOverwrite(nx, ny, nz, v);
+					});
 				}
-				const int xBase = cx << ChunkShift;
-				chunk->visit([&](int vx, int vy, int vz, const Voxel &v) {
-					int nx = xBase + vx - t.x;
-					if (nx < 0) {
-						nx += w;
-					}
-					int ny = yBase + vy - t.y;
-					if (ny < 0) {
-						ny += h;
-					}
-					int nz = zBase + vz - t.z;
-					if (nz < 0) {
-						nz += d;
-					}
-					shifted.setVoxelOverwrite(nx, ny, nz, v);
-				});
 			}
 		}
+	} else {
+		// Parallel 8x8x8 stack-tile shift + lock-free prepareBrick + pointer-transfer merge
+		const int brickZCount = (d + BrickSide - 1) >> BrickShift;
+		const int brickYCount = (h + BrickSide - 1) >> BrickShift;
+		const int brickXCount = (w + BrickSide - 1) >> BrickShift;
+		const uint32_t defaultBits = voxelBits(_default);
+
+		core::Lock mergeLock;
+		core::DynamicArray<PreparedChunkBrick> allPrepared;
+
+		app::for_parallel(0, brickZCount, [&](int bzStart, int bzEnd) {
+			core::DynamicArray<PreparedChunkBrick> localPrepared;
+			Voxel tile[SparseChunk::BrickVoxels];
+			uint64_t mask[SparseChunk::BrickMaskWords];
+			for (int bz = bzStart; bz < bzEnd; ++bz) {
+				const int dz0 = bz << BrickShift;
+				const int dzLen = core_min(BrickSide, d - dz0);
+				for (int by = 0; by < brickYCount; ++by) {
+					const int dy0 = by << BrickShift;
+					const int dyLen = core_min(BrickSide, h - dy0);
+					for (int bx = 0; bx < brickXCount; ++bx) {
+						const int dx0 = bx << BrickShift;
+						const int dxLen = core_min(BrickSide, w - dx0);
+						int count = 0;
+						bool tileCleared = false;
+						for (int k = 0; k < SparseChunk::BrickMaskWords; ++k) {
+							mask[k] = 0u;
+						}
+						for (int lz = 0; lz < dzLen; ++lz) {
+							int sz = dz0 + lz + t.z;
+							if (sz >= d) {
+								sz -= d;
+							}
+							const int bsz = sz & BrickMask;
+							uint64_t sliceMask = 0u;
+							for (int ly = 0; ly < dyLen; ++ly) {
+								int sy = dy0 + ly + t.y;
+								if (sy >= h) {
+									sy -= h;
+								}
+								const int bsy = sy & BrickMask;
+								const int dstRowBase = (lz << 6) | (ly << 3);
+								for (int lx = 0; lx < dxLen;) {
+									int sx = dx0 + lx + t.x;
+									if (sx >= w) {
+										sx -= w;
+									}
+									const int bsx = sx & BrickMask;
+									const int run = core_min(dxLen - lx, core_min(w - sx, BrickSide - bsx));
+									const SparseChunk::Brick *srcBrick = brickAt(sx, sy, sz);
+									if (srcBrick == nullptr) {
+										lx += run;
+										continue;
+									}
+									const uint64_t sliceWord = srcBrick->mask[bsz];
+									const uint8_t rowMask = (uint8_t)(sliceWord >> (bsy << 3));
+									const uint8_t fullRunMask = (uint8_t)((1u << run) - 1u);
+									const uint8_t spanBits = (uint8_t)((rowMask >> bsx) & fullRunMask);
+									if (spanBits == 0u) {
+										lx += run;
+										continue;
+									}
+									if (!tileCleared) {
+										if (_defaultIsZero) {
+											core_memset((void *)tile, 0, sizeof(tile));
+										} else {
+											core_memset4((void *)tile, defaultBits, SparseChunk::BrickVoxels);
+										}
+										tileCleared = true;
+									}
+									if (srcBrick->dense()) {
+										const Voxel *srcRow = &srcBrick->voxels[(bsz << 6) | (bsy << 3) | bsx];
+										if (spanBits == fullRunMask) {
+											memcpy((void *)&tile[dstRowBase + lx], (const void *)srcRow,
+												   (size_t)run * sizeof(Voxel));
+											sliceMask |= (uint64_t)fullRunMask << ((ly << 3) | lx);
+											count += run;
+										} else {
+											uint32_t bits = spanBits;
+											while (bits != 0u) {
+												const int b = SparseChunk::ctz64(bits);
+												bits &= bits - 1u;
+												tile[dstRowBase + lx + b].overwrite(srcRow[b]);
+												sliceMask |= (uint64_t)1u << ((ly << 3) | (lx + b));
+												++count;
+											}
+										}
+									} else {
+										const int firstBitPos = (bsy << 3) | bsx;
+										int packedIdx =
+											srcBrick->prefix[bsz] +
+											SparseChunk::popcount64(sliceWord & (((uint64_t)1u << firstBitPos) - 1u));
+										uint32_t bits = spanBits;
+										while (bits != 0u) {
+											const int b = SparseChunk::ctz64(bits);
+											bits &= bits - 1u;
+											tile[dstRowBase + lx + b].overwrite(srcBrick->voxels[packedIdx++]);
+											sliceMask |= (uint64_t)1u << ((ly << 3) | (lx + b));
+											++count;
+										}
+									}
+									lx += run;
+								}
+							}
+							mask[lz] = sliceMask;
+						}
+						if (count > 0) {
+							PreparedChunkBrick item;
+							item.chunkIndex = shifted.chunkIndexForLocal(dx0, dy0, dz0);
+							item.brick = SparseChunk::prepareBrick(dx0 & ChunkMask, dy0 & ChunkMask, dz0 & ChunkMask,
+																   tile, mask, count);
+							localPrepared.push_back(item);
+						}
+					}
+				}
+			}
+			if (!localPrepared.empty()) {
+				core::ScopedLock scoped(mergeLock);
+				allPrepared.reserve(allPrepared.size() + localPrepared.size());
+				for (const PreparedChunkBrick &item : localPrepared) {
+					allPrepared.push_back(item);
+				}
+			}
+		});
+		shifted.adoptPreparedBricks(allPrepared);
 	}
 
 	// Swap chunk pointers into our slots

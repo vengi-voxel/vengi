@@ -20,6 +20,7 @@
 #include "voxel/Region.h"
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/Voxel.h"
+#include <type_traits>
 #include <stdint.h>
 
 namespace voxelutil {
@@ -219,6 +220,23 @@ struct VisitVoxelFuzzyColor {
 		return color::getDistance(c1, c2, color::Distance::Approximation) < _threshold;
 	}
 };
+
+template<typename Condition>
+struct ConditionSkipsAir : std::false_type {};
+template<>
+struct ConditionSkipsAir<VisitSolid> : std::true_type {};
+template<>
+struct ConditionSkipsAir<VisitSolidFlag> : std::true_type {};
+template<>
+struct ConditionSkipsAir<VisitSolidOutline> : std::true_type {};
+template<>
+struct ConditionSkipsAir<VisitVisible> : std::true_type {};
+template<>
+struct ConditionSkipsAir<VisitInvisible> : std::true_type {};
+template<>
+struct ConditionSkipsAir<VisitVoxelColor> : std::true_type {};
+template<>
+struct ConditionSkipsAir<VisitVoxelFuzzyColor> : std::true_type {};
 
 /**
  * @note Visitor

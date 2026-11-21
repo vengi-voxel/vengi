@@ -72,6 +72,43 @@ public:
 		}
 	};
 
+	/**
+	 * @brief Lock-free pre-packed or dense brick ready for O(1) pointer adoption into a SparseChunk.
+	 */
+	struct PreparedBrick {
+		uint64_t mask[BrickMaskWords]{};
+		Voxel *heapVoxels = nullptr;
+		int count = 0;
+		uint16_t capacity = 0u;
+		uint16_t cell = 0u;
+		uint8_t prefix[BrickMaskWords]{};
+		Voxel inlineVoxels[InlineVoxels]{};
+
+		inline void destroy() {
+			delete[] heapVoxels;
+			heapVoxels = nullptr;
+			count = 0;
+			capacity = 0u;
+		}
+	};
+
+	static inline int ctz64(uint64_t v) {
+#ifdef _MSC_VER
+		unsigned long pos;
+		_BitScanForward64(&pos, v);
+		return (int)pos;
+#else
+		return __builtin_ctzll(v);
+#endif
+	}
+
+	// the build doesn't enable the popcnt instruction - the builtin would be a library call
+	static inline int popcount64(uint64_t v) {
+		v = v - ((v >> 1) & 0x5555555555555555ull);
+		v = (v & 0x3333333333333333ull) + ((v >> 2) & 0x3333333333333333ull);
+		return (int)((((v + (v >> 4)) & 0x0F0F0F0F0F0F0F0Full) * 0x0101010101010101ull) >> 56);
+	}
+
 	/** returned for positions in packed bricks that don't have a voxel */
 	static constexpr Voxel EmptyVoxel{};
 
@@ -87,25 +124,6 @@ private:
 	int _freeBrick = -1;
 	int _voxelCount = 0;
 	const bool _denseBricks;
-
-	static inline int ctz64(uint64_t v) {
-		// TODO: what about special v == 0 handling?
-#ifdef _MSC_VER
-		unsigned long pos;
-		_BitScanForward64(&pos, v);
-		return (int)pos;
-#else
-		return __builtin_ctzll(v);
-#endif
-	}
-
-	// the build doesn't enable the popcnt instruction - the builtin would be a library call
-	static inline int popcount64(uint64_t v) {
-		v = v - ((v >> 1) & 0x5555555555555555ull);
-		v = (v & 0x3333333333333333ull) + ((v >> 2) & 0x3333333333333333ull);
-		v = (v + (v >> 4)) & 0x0F0F0F0F0F0F0F0Full;
-		return (int)((v * 0x0101010101010101ull) >> 56);
-	}
 
 	/** number of occupied voxels before @c idx in a packed brick */
 	static inline int packedIndex(const Brick *b, int idx) {
@@ -342,6 +360,22 @@ public:
 	void readRegion(const glm::ivec3 &mins, const glm::ivec3 &size, Voxel *target) const;
 
 	void clear();
+
+	/**
+	 * @brief Lock-free builder that packs or copies an 8^3 staging tile into a PreparedBrick.
+	 */
+	static PreparedBrick prepareBrick(int bx, int by, int bz, const Voxel (&tile)[BrickVoxels],
+									  const uint64_t (&mask)[BrickMaskWords], int count);
+
+	/**
+	 * @brief Adopt a PreparedBrick via pointer transfer (zero memcpy). Releases existing brick if count == 0.
+	 */
+	void adoptPreparedBrick(PreparedBrick &prepared);
+
+	/**
+	 * @brief Release a brick at chunk-local coordinates (bx, by, bz) if present.
+	 */
+	void clearBrick(int bx, int by, int bz);
 
 	/**
 	 * @brief Deep-copy this chunk including its brick pool and cell directory.

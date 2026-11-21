@@ -35,6 +35,7 @@ set(SRCS
 	VolumeSampler.h
 	VolumeSamplerDispatch.h
 	VolumeSamplerUtil.h
+	VolumeTileDispatch.h
 	VolumeCompression.h VolumeCompression.cpp
 	VoxelVertex.h
 	Voxel.h Voxel.cpp
