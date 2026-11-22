@@ -19,8 +19,10 @@
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxelrender/ImageGenerator.h"
 #include "voxelrender/RenderContext.h"
 #include "voxelrender/RenderUtil.h"
+#include "voxelformat/FormatThumbnail.h"
 #include "image/Image.h"
 
 namespace voxelrender {
@@ -515,6 +517,70 @@ TEST_F(SceneGraphRendererTest, testNewOpaqueSceneDropsPreviousTransparencyMesh) 
 	EXPECT_GT(_renderer.indexCount(opaqueUuid, voxel::MeshType_Opaque), 0u);
 
 	renderContext.shutdown();
+}
+
+TEST_F(SceneGraphRendererTest, testVolumeThumbnailNotDarkenedByDefault) {
+	core::getVar(cfg::ClientShadowMap)->setVal(true);
+	core::getVar(cfg::ClientDebugShadow)->setVal(false);
+	core::getVar(cfg::ClientDebugShadowMapCascade)->setVal(false);
+
+	scenegraph::SceneGraph scene;
+	scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model);
+	model.createVolume(voxel::Region(0, 0, 0, 7, 7, 7));
+	palette::Palette palette;
+	palette.setColor(1, color::RGBA(200, 160, 100, 255));
+	model.setPalette(palette);
+	for (int z = 0; z < 8; ++z) {
+		for (int y = 0; y < 8; ++y) {
+			for (int x = 0; x < 8; ++x) {
+				model.volume()->setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
+			}
+		}
+	}
+	ASSERT_NE(InvalidNodeId, scene.emplace(core::move(model)));
+	scene.updateTransforms();
+
+	auto avgBrightness = [](const image::ImagePtr &img) {
+		double sum = 0.0;
+		int count = 0;
+		for (int y = 0; y < img->height(); ++y) {
+			for (int x = 0; x < img->width(); ++x) {
+				const color::RGBA c = img->colorAt(x, y);
+				if (c.r > 0 || c.g > 0 || c.b > 0) {
+					sum += (double)c.r + (double)c.g + (double)c.b;
+					++count;
+				}
+			}
+		}
+		return count > 0 ? sum / (double)(count * 3) : 0.0;
+	};
+
+	// Default ThumbnailContext disables shadow map darkening even when cl_shadowmap is true.
+	voxelformat::ThumbnailContext defaultCtx;
+	defaultCtx.outputSize = glm::ivec2(64, 64);
+	const image::ImagePtr defaultImg = volumeThumbnail(scene, defaultCtx);
+	ASSERT_TRUE(defaultImg);
+	const double defaultBright = avgBrightness(defaultImg);
+	EXPECT_GT(defaultBright, 120.0);
+
+	// With shadow enabled, sun angle must take effect after SceneGraphRenderer::init().
+	// Default free camera looks from (-X, +Y, -Z), so azimuth 225 lights the camera-facing
+	// faces while azimuth 45 puts them in shadow.
+	voxelformat::ThumbnailContext frontLitCtx = defaultCtx;
+	frontLitCtx.shadow = true;
+	frontLitCtx.sunElevation = 45.0f;
+	frontLitCtx.sunAzimuth = 225.0f;
+	const image::ImagePtr frontLitImg = volumeThumbnail(scene, frontLitCtx);
+	ASSERT_TRUE(frontLitImg);
+
+	voxelformat::ThumbnailContext backLitCtx = defaultCtx;
+	backLitCtx.shadow = true;
+	backLitCtx.sunElevation = 45.0f;
+	backLitCtx.sunAzimuth = 45.0f;
+	const image::ImagePtr backLitImg = volumeThumbnail(scene, backLitCtx);
+	ASSERT_TRUE(backLitImg);
+
+	EXPECT_GT(avgBrightness(frontLitImg), avgBrightness(backLitImg) + 30.0);
 }
 
 } // namespace voxelrender

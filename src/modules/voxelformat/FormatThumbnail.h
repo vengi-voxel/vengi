@@ -40,6 +40,8 @@ struct ThumbnailContext {
 	bool useSceneCamera = false;
 	/** Use @c worldPosition in the camera for rendering the thumbnail */
 	bool useWorldPosition = false;
+	/** Render shadow map for the thumbnail */
+	bool shadow = false;
 };
 
 /**

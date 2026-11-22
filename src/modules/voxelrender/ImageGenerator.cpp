@@ -81,7 +81,7 @@ static image::ImagePtr volumeThumbnail(const voxel::MeshStatePtr &meshState, Ren
 	camera.update(ctx.deltaFrameSeconds);
 
 	renderContext.beginFrame();
-	volumeRenderer.render(meshState, renderContext, camera, true, true);
+	volumeRenderer.render(meshState, renderContext, camera, ctx.shadow, true);
 	renderContext.resolveMultisampling();
 	renderContext.applyBloom();
 	renderContext.frameBuffer.unbind();
@@ -98,7 +98,6 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.onlyModels = true;
-	sceneGraphRenderer.setSunAngle(glm::vec3(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
 	const voxel::MeshStatePtr meshState = core::make_shared<voxel::MeshState>();
 	meshState->construct();
 	meshState->init();
@@ -106,6 +105,7 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
+	sceneGraphRenderer.setSunAngle(glm::vec3(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
 
 	const image::ImagePtr &image = volumeThumbnail(meshState, renderContext, sceneGraphRenderer, ctx);
 	sceneGraphRenderer.shutdown();
@@ -132,6 +132,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
+	sceneGraphRenderer.setSunAngle(glm::vec3(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
 
 	const core::String ext = core::string::extractExtension(imageFile);
 	const core::String baseFilePath = core::string::stripExtension(imageFile);

@@ -4,9 +4,12 @@
 
 #include "Thumbnailer.h"
 #include "Shared.h"
+#include "app/I18N.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
+#include "core/Var.h"
 #include "engine-git.h"
 #include "image/Image.h"
 #include "io/Archive.h"
@@ -38,6 +41,13 @@ void Thumbnailer::printUsageHeader() const {
 
 app::AppState Thumbnailer::onConstruct() {
 	app::AppState state = Super::onConstruct();
+
+	const core::VarDef clientShadowMap(cfg::ClientShadowMap, false, N_("Shadow map"), _("Activate shadow map"));
+	const core::VarPtr &shadowMap = core::Var::registerVar(clientShadowMap);
+	if ((shadowMap->getFlags() & (core::CV_FROMCOMMANDLINE | core::CV_FROMENV | core::CV_FROMFILE)) == 0u) {
+		shadowMap->setVal(false);
+		shadowMap->markClean();
+	}
 
 	voxelformat::FormatConfig::init();
 	voxelpathtracer::PathTracerConfig::init();
@@ -175,6 +185,7 @@ app::AppState Thumbnailer::onRunning() {
 	if (hasArg("--sunazimuth")) {
 		ctx.sunAzimuth = core::string::toFloat(getArgVal("--sunazimuth"));
 	}
+	ctx.shadow = core::getVar(cfg::ClientShadowMap)->boolVal();
 
 	const bool pathTracer = hasArg("--pathtracer");
 	voxelpathtracer::PathTracerQuality quality = voxelpathtracer::PathTracerQuality::Default;
