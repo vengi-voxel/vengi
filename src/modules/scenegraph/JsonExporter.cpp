@@ -12,12 +12,14 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/gtc/quaternion.hpp>
+#include <inttypes.h>
 
 namespace scenegraph {
 
 NodeStats NodeStats::operator+(const NodeStats &other) const {
 	NodeStats result;
 	result.voxels = voxels + other.voxels;
+	result.volumeBytes = volumeBytes + other.volumeBytes;
 	result.vertices = vertices + other.vertices;
 	result.indices = indices + other.indices;
 	return result;
@@ -25,6 +27,7 @@ NodeStats NodeStats::operator+(const NodeStats &other) const {
 
 NodeStats &NodeStats::operator+=(const NodeStats &other) {
 	voxels += other.voxels;
+	volumeBytes += other.volumeBytes;
 	vertices += other.vertices;
 	indices += other.indices;
 	return *this;
@@ -101,8 +104,10 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 			stream.writeStringFormat(false, "},");
 			if (v) {
 				stats.voxels = voxelutil::countVoxels(*v);
+				stats.volumeBytes = (uint64_t)v->allocatedBytes();
 			}
 			stream.writeStringFormat(false, "\"voxels\":%i", stats.voxels);
+			stream.writeStringFormat(false, ",\"bytes\":%" PRIu64, stats.volumeBytes);
 			stream.writeStringFormat(false, "}");
 		} else if (type == scenegraph::SceneGraphNodeType::Camera) {
 			const scenegraph::SceneGraphNodeCamera &cameraNode = scenegraph::toCameraNode(node);
@@ -254,6 +259,7 @@ void sceneGraphNodeStatsJson(const NodeStats &stats, io::WriteStream &stream, ui
 	bool first = true;
 	if (flags & JSONEXPORTER_NODEDETAILS) {
 		stream.writeStringFormat(false, "\"voxel_count\":%i", stats.voxels);
+		stream.writeStringFormat(false, ",\"volume_bytes\":%" PRIu64, stats.volumeBytes);
 		first = false;
 	}
 	if (flags & JSONEXPORTER_MESHDETAILS) {

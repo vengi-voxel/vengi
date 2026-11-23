@@ -5,6 +5,7 @@
 #pragma once
 
 #include "io/Stream.h"
+#include <inttypes.h>
 
 namespace scenegraph {
 
@@ -23,6 +24,7 @@ enum JsonExporterFlags : uint32_t {
 
 struct NodeStats {
 	int voxels = 0;
+	uint64_t volumeBytes = 0;
 	int vertices = 0;
 	int indices = 0;
 
