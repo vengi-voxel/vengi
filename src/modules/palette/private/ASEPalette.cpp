@@ -10,6 +10,7 @@
 #include "core/StringUtil.h"
 #include "core/Unicode.h"
 #include "core/collection/Buffer.h"
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -47,7 +48,7 @@ bool ASEPalette::parseColorBlock(io::SeekableReadStream &stream, color::RGBA &rg
 	core::String colorModeStr((const char *)buf, 4);
 	Log::debug("ASEPalette: color mode %s", colorModeStr.c_str());
 
-	glm::vec4 color(0.0f);
+	math::Vec4f color(0.0f);
 	if (mode.colorMode == FourCC('C', 'M', 'Y', 'K')) {
 		stream.readFloatBE(color[0]);
 		stream.readFloatBE(color[1]);
@@ -191,7 +192,7 @@ bool ASEPalette::save(const palette::ColorPalette &palette, const core::String &
 		const core::String &name = palette.colorName(i);
 
 		const int aseNameLen = core::unicode::charLengthUtf16(name.c_str());
-		const glm::vec4 scaled = color::fromRGBA(color);
+		const math::Vec4f scaled = color::fromRGBA(color);
 
 		// Block Length: NameLen(2) + Name(aseNameLen*2) + Mode(4) + Values(12) + Type(2)
 		const uint32_t blockLen = 2 + (aseNameLen * 2) + 4 + 12 + 2;

@@ -22,28 +22,20 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Set.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/common.hpp>
-#include <glm/gtx/hash.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/vec4.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4x3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
-namespace glm {
-::std::ostream &operator<<(::std::ostream &os, const mat4x4 &matrix) {
+namespace math {
+::std::ostream &operator<<(::std::ostream &os, const Mat4x3f &matrix) {
 	os << to_string(matrix);
 	return os;
 }
-::std::ostream &operator<<(::std::ostream &os, const mat3x3 &matrix) {
-	os << to_string(matrix);
-	return os;
-}
-::std::ostream &operator<<(::std::ostream &os, const mat4x3 &matrix) {
-	os << to_string(matrix);
-	return os;
-}
-} // namespace glm
+} // namespace math
 
 
 namespace palette {
@@ -74,7 +66,7 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 	os << os.iword(indent) << "Node: " << nodeId << "(parent " << sceneGraph.parentId(node) << ")" << "\n";
 	os << os.iword(indent) << "  |- name: " << node.name().c_str() << "\n";
 	os << os.iword(indent) << "  |- type: " << scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)] << "\n";
-	const glm::vec3 &pivot = node.pivot();
+	const math::Vec3f &pivot = node.pivot();
 	os << os.iword(indent) << "  |- pivot " << pivot.x << ":" << pivot.y << ":" << pivot.z << "\n";
 	if (type == scenegraph::SceneGraphNodeType::Model) {
 		const voxel::RawVolume *v = node.volume();
@@ -103,24 +95,24 @@ static void dumpNode_r(::std::ostream &os, const scenegraph::SceneGraph &sceneGr
 		   << "\n";
 		os << os.iword(indent) << "    |- transform" << "\n";
 		const scenegraph::SceneGraphTransform &transform = kf.transform();
-		const glm::vec3 &tr = transform.worldTranslation();
+		const math::Vec3f &tr = transform.worldTranslation();
 		os << os.iword(indent) << "      |- translation " << tr.x << ":" << tr.y << ":" << tr.z << "\n";
-		const glm::vec3 &ltr = transform.localTranslation();
+		const math::Vec3f &ltr = transform.localTranslation();
 		os << os.iword(indent) << "      |- local translation " << ltr.x << ":" << ltr.y << ":" << ltr.z << "\n";
-		const glm::quat &rt = transform.worldOrientation();
-		const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
+		const math::Quatf &rt = transform.worldOrientation();
+		const math::Vec3f &rtEuler = math::degrees(math::eulerAngles(rt));
 		os << os.iword(indent) << "      |- orientation :%f" << rt.x << ":" << rt.y << ":" << rt.z << ":" << rt.w
 		   << "\n";
 		os << os.iword(indent) << "        |- euler " << rtEuler.x << ":" << rtEuler.y << ":" << rtEuler.z << "\n";
-		const glm::quat &lrt = transform.localOrientation();
-		const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
+		const math::Quatf &lrt = transform.localOrientation();
+		const math::Vec3f &lrtEuler = math::degrees(math::eulerAngles(lrt));
 		os << os.iword(indent) << "      |- local orientation :%f" << lrt.x << ":" << lrt.y << ":" << lrt.z << ":"
 		   << lrt.w << "\n";
 		os << os.iword(indent) << "        |- euler " << lrtEuler.x << ":" << lrtEuler.y << ":" << lrtEuler.z
 		   << "\n";
-		const glm::vec3 &sc = transform.worldScale();
+		const math::Vec3f &sc = transform.worldScale();
 		os << os.iword(indent) << "      |- scale " << sc.x << ":" << sc.y << ":" << sc.z << "\n";
-		const glm::vec3 &lsc = transform.localScale();
+		const math::Vec3f &lsc = transform.localScale();
 		os << os.iword(indent) << "      |- local scale " << lsc.x << ":" << lsc.y << ":" << lsc.z << "\n";
 	}
 	os << os.iword(indent) << "  |- children: " << node.children().size() << "\n";
@@ -204,7 +196,7 @@ void orderPaletteComparator(const palette::Palette &pal1, const palette::Palette
 }
 
 void partialPaletteComparator(const palette::Palette &pal1, const palette::Palette &pal2, voxel::ValidateFlags flags, float maxDelta) {
-	const int n = glm::min(pal1.colorCount(), pal2.colorCount());
+	const int n = math::min(pal1.colorCount(), pal2.colorCount());
 	for (int i = 0; i < n; ++i) {
 		const color::RGBA &c1 = pal1.color(i);
 		const color::RGBA &c2 = pal2.color(i);
@@ -239,13 +231,13 @@ void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1,
 			ASSERT_FALSE(t1.dirty()) << "Key frame " << i << " is not yet updated";
 			ASSERT_FALSE(t2.dirty()) << "Key frame " << i << " is not yet updated";
 			if ((flags & ValidateFlags::Translation) == ValidateFlags::Translation) {
-				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.worldTranslation(), t2.worldTranslation(), 0.00001f))) << "World translation failed for frame " << i << " with " << t1.worldTranslation() << " vs " << t2.worldTranslation();
-				ASSERT_TRUE(glm::all(glm::epsilonEqual(t1.localTranslation(), t2.localTranslation(), 0.00001f))) << "Local translation failed for frame " << i << " with " << t1.worldTranslation() << " vs " << t2.worldTranslation();
+				ASSERT_TRUE(math::all(math::epsilonEqual(t1.worldTranslation(), t2.worldTranslation(), 0.00001f))) << "World translation failed for frame " << i << " with " << t1.worldTranslation() << " vs " << t2.worldTranslation();
+				ASSERT_TRUE(math::all(math::epsilonEqual(t1.localTranslation(), t2.localTranslation(), 0.00001f))) << "Local translation failed for frame " << i << " with " << t1.worldTranslation() << " vs " << t2.worldTranslation();
 			}
 			for (int n = 0; n < 4; ++n) {
 				for (int m = 0; m < 4; ++m) {
-					ASSERT_TRUE(glm::epsilonEqual(t1.worldMatrix()[n][m], t2.worldMatrix()[n][m], 0.00001f)) << "Matrix failed for frame " << i << " at " << n << ":" << m;
-					ASSERT_TRUE(glm::epsilonEqual(t1.localMatrix()[n][m], t2.localMatrix()[n][m], 0.00001f)) << "Matrix failed for frame " << i << " at " << n << ":" << m;
+					ASSERT_TRUE(math::epsilonEqual(t1.worldMatrix()[n][m], t2.worldMatrix()[n][m], 0.00001f)) << "Matrix failed for frame " << i << " at " << n << ":" << m;
+					ASSERT_TRUE(math::epsilonEqual(t1.localMatrix()[n][m], t2.localMatrix()[n][m], 0.00001f)) << "Matrix failed for frame " << i << " at " << n << ":" << m;
 				}
 			}
 			if ((flags & ValidateFlags::Scale) == ValidateFlags::Scale) {
@@ -396,8 +388,8 @@ static bool materialEquals(const palette::Material &a, const palette::Material &
 		if (ignoreMask & (1 << (i + 1))) {
 			continue;
 		}
-		if (!glm::epsilonEqual(a.value((palette::MaterialProperty)(i + 1)), b.value((palette::MaterialProperty)(i + 1)),
-							   glm::epsilon<float>())) {
+		if (!math::epsilonEqual(a.value((palette::MaterialProperty)(i + 1)), b.value((palette::MaterialProperty)(i + 1)),
+							   math::epsilonf)) {
 			return false;
 		}
 	}
@@ -458,26 +450,26 @@ void visitOccupiedWorld(const scenegraph::SceneGraph &sceneGraph, Fn &&fn) {
 		if (node.volume() == nullptr) {
 			continue;
 		}
-		const glm::mat4 worldMat = sceneGraph.worldMatrix(node, 0);
+		const math::Mat4f worldMat = sceneGraph.worldMatrix(node, 0);
 		voxelutil::visitVolume(*node.volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (voxel::isAir(voxel.getMaterial())) {
 				return;
 			}
-			fn(glm::vec3(worldMat * glm::vec4((float)x, (float)y, (float)z, 1.0f)));
+			fn(math::Vec3f(worldMat * math::Vec4f((float)x, (float)y, (float)z, 1.0f)));
 		});
 	}
 }
 } // namespace
 
-bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins, glm::vec3 &maxs) {
+bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, math::Vec3f &mins, math::Vec3f &maxs) {
 	bool first = true;
-	visitOccupiedWorld(sceneGraph, [&](const glm::vec3 &world) {
+	visitOccupiedWorld(sceneGraph, [&](const math::Vec3f &world) {
 		if (first) {
 			mins = maxs = world;
 			first = false;
 		} else {
-			mins = glm::min(mins, world);
-			maxs = glm::max(maxs, world);
+			mins = math::min(mins, world);
+			maxs = math::max(maxs, world);
 		}
 	});
 	return !first;
@@ -485,10 +477,10 @@ bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins
 
 void occupiedWorldComparator(const scenegraph::SceneGraph &src, const scenegraph::SceneGraph &dst, bool dstMayBeSubset,
 							 float aabbDelta) {
-	glm::vec3 srcMins(0.0f);
-	glm::vec3 srcMaxs(0.0f);
-	glm::vec3 dstMins(0.0f);
-	glm::vec3 dstMaxs(0.0f);
+	math::Vec3f srcMins(0.0f);
+	math::Vec3f srcMaxs(0.0f);
+	math::Vec3f dstMins(0.0f);
+	math::Vec3f dstMaxs(0.0f);
 	ASSERT_TRUE(occupiedWorldAABB(src, srcMins, srcMaxs));
 	ASSERT_TRUE(occupiedWorldAABB(dst, dstMins, dstMaxs));
 	EXPECT_NEAR(srcMins.x, dstMins.x, aabbDelta);
@@ -498,19 +490,19 @@ void occupiedWorldComparator(const scenegraph::SceneGraph &src, const scenegraph
 	EXPECT_NEAR(srcMaxs.y, dstMaxs.y, aabbDelta);
 	EXPECT_NEAR(srcMaxs.z, dstMaxs.z, aabbDelta);
 
-	core::DynamicArray<glm::ivec3> srcWorld;
-	core::DynamicArray<glm::ivec3> dstWorld;
-	visitOccupiedWorld(src, [&](const glm::vec3 &world) { srcWorld.push_back(glm::ivec3(glm::round(world))); });
-	visitOccupiedWorld(dst, [&](const glm::vec3 &world) { dstWorld.push_back(glm::ivec3(glm::round(world))); });
+	core::DynamicArray<math::Vec3i> srcWorld;
+	core::DynamicArray<math::Vec3i> dstWorld;
+	visitOccupiedWorld(src, [&](const math::Vec3f &world) { srcWorld.push_back(math::Vec3i(math::round(world))); });
+	visitOccupiedWorld(dst, [&](const math::Vec3f &world) { dstWorld.push_back(math::Vec3i(math::round(world))); });
 	ASSERT_FALSE(srcWorld.empty());
 	ASSERT_FALSE(dstWorld.empty());
 
-	core::Set<glm::ivec3, 1031, glm::hash<glm::ivec3>> srcSet((int)srcWorld.size());
-	for (const glm::ivec3 &p : srcWorld) {
+	core::Set<math::Vec3i, 1031, math::Vec3iHash> srcSet((int)srcWorld.size());
+	for (const math::Vec3i &p : srcWorld) {
 		srcSet.insert(p);
 	}
 	int missingInSrc = 0;
-	for (const glm::ivec3 &p : dstWorld) {
+	for (const math::Vec3i &p : dstWorld) {
 		if (!srcSet.has(p)) {
 			++missingInSrc;
 			if (missingInSrc <= 8) {
@@ -521,12 +513,12 @@ void occupiedWorldComparator(const scenegraph::SceneGraph &src, const scenegraph
 	}
 	EXPECT_EQ(0, missingInSrc) << "Destination has occupied world cells that are empty in the source";
 	if (!dstMayBeSubset) {
-		core::Set<glm::ivec3, 1031, glm::hash<glm::ivec3>> dstSet((int)dstWorld.size());
-		for (const glm::ivec3 &p : dstWorld) {
+		core::Set<math::Vec3i, 1031, math::Vec3iHash> dstSet((int)dstWorld.size());
+		for (const math::Vec3i &p : dstWorld) {
 			dstSet.insert(p);
 		}
 		int missingInDst = 0;
-		for (const glm::ivec3 &p : srcWorld) {
+		for (const math::Vec3i &p : srcWorld) {
 			if (!dstSet.has(p)) {
 				++missingInDst;
 				if (missingInDst <= 8) {

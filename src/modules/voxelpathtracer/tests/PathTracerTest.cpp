@@ -18,6 +18,8 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelpathtracer/PathTracerState.h"
 #include "voxelrender/RenderUtil.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace {
 
@@ -50,12 +52,12 @@ void configureDarkParams(voxelpathtracer::PathTracerParams &params, int resoluti
 	params.sunIntensity = 0.0f;
 	params.skyIntensity = 0.0f;
 	params.background = voxelpathtracer::PathTracerBackgroundSolid;
-	params.backgroundColor = glm::vec3(0.0f);
+	params.backgroundColor = math::Vec3f(0.0f);
 }
 
 video::Camera frontCamera(const voxel::Region &region, int size, float farPlane) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(size, size));
+	camera.setSize(math::Vec2i(size, size));
 	voxelrender::configureCamera(camera, region, voxelrender::SceneCameraMode::Front, farPlane);
 	camera.update(0.0);
 	return camera;
@@ -354,7 +356,7 @@ TEST_F(PathTracerTest, testApplyCameraResetsAccumulation) {
 	ASSERT_TRUE(loadHmec(_testApp->filesystem(), sceneGraph)) << "Could not load hmec.vxl";
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(64));
+	camera.setSize(math::Vec2i(64));
 	voxelrender::configureCamera(camera, sceneGraph.sceneRegion(), voxelrender::SceneCameraMode::Free, 500.0f);
 	camera.update(0.0);
 
@@ -371,7 +373,7 @@ TEST_F(PathTracerTest, testApplyCameraResetsAccumulation) {
 	pathTracer.applyCamera(&camera);
 	EXPECT_EQ(currentSample, pathTracer.state().currentSample);
 
-	camera.rotate(0.4f, glm::vec3(0.0f, 1.0f, 0.0f));
+	camera.rotate(0.4f, math::Vec3f(0.0f, 1.0f, 0.0f));
 	camera.update(0.0);
 	pathTracer.applyCamera(&camera);
 	EXPECT_EQ(0, pathTracer.state().currentSample);
@@ -429,7 +431,7 @@ TEST_F(PathTracerTest, testGpuDisplayTextureSupportsExportAndResize) {
 	params.samples = 1;
 	params.floorEnabled = false;
 	params.background = voxelpathtracer::PathTracerBackgroundSolid;
-	params.backgroundColor = glm::vec3(1.0f, 0.0f, 0.0f);
+	params.backgroundColor = math::Vec3f(1.0f, 0.0f, 0.0f);
 	params.vignette = 0.0f;
 	EXPECT_FALSE(pathTracer.texture());
 	ASSERT_TRUE(pathTracer.start(sceneGraph));
@@ -477,7 +479,7 @@ TEST_F(PathTracerTest, testHardwareRayQueryMatchesSoftwareDDA) {
 	sceneGraph.updateTransforms();
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(64, 64));
+	camera.setSize(math::Vec2i(64, 64));
 	voxelrender::configureCamera(camera, sceneGraph.sceneRegion(), voxelrender::SceneCameraMode::Free, 200.0f);
 	camera.update(0.0);
 
@@ -521,9 +523,9 @@ TEST_F(PathTracerTest, testHardwareRayQueryMatchesSoftwareDDA) {
 			if (a.r > 10 || a.g > 10 || a.b > 10) {
 				++nonZeroPixels;
 			}
-			const int dr = glm::abs((int)a.r - (int)b.r);
-			const int dg = glm::abs((int)a.g - (int)b.g);
-			const int db = glm::abs((int)a.b - (int)b.b);
+			const int dr = math::abs((int)a.r - (int)b.r);
+			const int dg = math::abs((int)a.g - (int)b.g);
+			const int db = math::abs((int)a.b - (int)b.b);
 			const int maxCh = core_max(dr, core_max(dg, db));
 			totalDiff += (double)(dr + dg + db) / 3.0;
 			if (maxCh > 12) {

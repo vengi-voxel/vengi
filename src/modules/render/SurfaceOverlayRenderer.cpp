@@ -8,10 +8,13 @@
 #include "video/ScopedBlendMode.h"
 #include "video/ScopedState.h"
 #include "video/Shader.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace render {
 
-bool SurfaceOverlayRenderer::resize(const glm::ivec2 &size) {
+bool SurfaceOverlayRenderer::resize(const math::Vec2i &size) {
 	if (_surfaces.handle() != video::InvalidId && _sceneDepth.handle() != video::InvalidId &&
 		_surfaces.dimension() == size && _sceneDepth.dimension() == size) {
 		return true;
@@ -28,7 +31,7 @@ bool SurfaceOverlayRenderer::resize(const glm::ivec2 &size) {
 	return _surfaces.init(cfg);
 }
 
-bool SurfaceOverlayRenderer::begin(const glm::ivec2 &size) {
+bool SurfaceOverlayRenderer::begin(const math::Vec2i &size) {
 	if (size.x <= 0 || size.y <= 0) {
 		return false;
 	}
@@ -45,7 +48,7 @@ bool SurfaceOverlayRenderer::begin(const glm::ivec2 &size) {
 			return false;
 		}
 		_position = _quad.createFullscreenQuad();
-		if (_position == -1 || !_quad.addAttribute(_shader.getPosAttribute(_position, &glm::vec2::x))) {
+		if (_position == -1 || !_quad.addAttribute(_shader.getPosAttribute(_position, &math::Vec2f::x))) {
 			shutdown();
 			return false;
 		}
@@ -58,14 +61,14 @@ bool SurfaceOverlayRenderer::begin(const glm::ivec2 &size) {
 	const video::ScopedState scissor(video::State::Scissor, false);
 	const video::ScopedState depthMask(video::State::DepthMask, true);
 	video::blitFramebuffer(target, _sceneDepth.handle(), video::ClearFlag::Depth, size.x, size.y);
-	const glm::vec4 previousColor = video::currentClearColor();
-	video::clearColor(glm::vec4(0.0f));
+	const math::Vec4f previousColor = video::currentClearColor();
+	video::clearColor(math::Vec4f(0.0f));
 	_surfaces.bind(true);
 	video::clearColor(previousColor);
 	return true;
 }
 
-void SurfaceOverlayRenderer::end(const glm::vec4 &tint) {
+void SurfaceOverlayRenderer::end(const math::Vec4f &tint) {
 	_surfaces.unbind();
 	const video::FrameBufferAttachment color0[] = {video::FrameBufferAttachment::Color0};
 	video::drawBuffers(1, color0);

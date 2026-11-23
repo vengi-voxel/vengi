@@ -6,6 +6,8 @@
 #include "AbstractFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "voxelformat/tests/TestHelper.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -58,15 +60,15 @@ TEST_F(SLABSharedTest, testRGBScaledColor) {
 }
 
 TEST_F(SLABSharedTest, testBakedNormalizedPivot) {
-	const glm::ivec3 dims(8, 8, 8);
-	EXPECT_VEC_NEAR(glm::vec3(0.0f), priv::bakedNormalizedPivot(glm::vec3(0.0f), glm::vec3(0.0f), dims), 0.0001f);
-	EXPECT_VEC_NEAR(glm::vec3(0.5f, 0.0f, 0.5f),
-					priv::bakedNormalizedPivot(glm::vec3(0.5f), glm::vec3(0.0f, 4.0f, 0.0f), dims), 0.0001f);
-	EXPECT_VEC_NEAR(glm::vec3(0.5f, 0.0f, 0.5f),
-					priv::bakedNormalizedPivot(glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f), dims), 0.0001f);
-	const glm::vec3 translation(4.0f, 8.0f, -2.0f);
-	EXPECT_VEC_NEAR(-translation / glm::vec3(dims),
-					priv::bakedNormalizedPivot(glm::vec3(0.0f), translation, dims), 0.0001f);
+	const math::Vec3i dims(8, 8, 8);
+	EXPECT_VEC_NEAR(math::Vec3f(0.0f), priv::bakedNormalizedPivot(math::Vec3f(0.0f), math::Vec3f(0.0f), dims), 0.0001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5f, 0.0f, 0.5f),
+					priv::bakedNormalizedPivot(math::Vec3f(0.5f), math::Vec3f(0.0f, 4.0f, 0.0f), dims), 0.0001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5f, 0.0f, 0.5f),
+					priv::bakedNormalizedPivot(math::Vec3f(0.0f), math::Vec3f(-4.0f, 0.0f, -4.0f), dims), 0.0001f);
+	const math::Vec3f translation(4.0f, 8.0f, -2.0f);
+	EXPECT_VEC_NEAR(-translation / math::Vec3f(dims),
+					priv::bakedNormalizedPivot(math::Vec3f(0.0f), translation, dims), 0.0001f);
 }
 
 } // namespace voxelformat

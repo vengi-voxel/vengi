@@ -16,6 +16,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -200,9 +201,9 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	const int32_t width = region.getWidthInVoxels();
 	const int32_t height = region.getHeightInVoxels();
 	const int32_t depth = region.getDepthInVoxels();
-	const glm::ivec3 mins = region.getLowerCorner();
-	const glm::ivec3 maxs = region.getUpperCorner();
-	const glm::ivec3 &offset = -mins;
+	const math::Vec3i mins = region.getLowerCorner();
+	const math::Vec3i maxs = region.getUpperCorner();
+	const math::Vec3i &offset = -mins;
 	const float scale = 1.0f;
 
 	const int binvoxVersion = core::getVar(cfg::VoxformatBinvoxVersion)->intVal();
@@ -217,7 +218,7 @@ bool BinVoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	uint8_t value = 0u;
 	uint32_t voxels = 0u;
 	const int64_t maxIndex = (int64_t)width * height * depth;
-	glm::ivec3 pos = mins;
+	math::Vec3i pos = mins;
 	const uint8_t emptyColorReplacement = node->palette().findReplacement(0);
 	Log::debug("found replacement for %s at index %u: %s at index %u",
 			   color::print(node->palette().color(0)).c_str(), 0,

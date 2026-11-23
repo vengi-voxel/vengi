@@ -6,7 +6,7 @@
 
 #include "../NamedBinaryTag.h"
 #include "core/collection/Buffer.h"
-#include <glm/fwd.hpp>
+#include "math/Vec3i.h"
 
 namespace palette {
 class Palette;
@@ -23,7 +23,7 @@ using SchematicPalette = core::Buffer<int>;
 using SchematicWaterPalette = core::Buffer<uint8_t>;
 using SchematicInvisiblePalette = core::Buffer<uint8_t>;
 
-glm::ivec3 parsePosList(const priv::NamedBinaryTag &compound, const core::String &key);
+math::Vec3i parsePosList(const priv::NamedBinaryTag &compound, const core::String &key);
 void setSchematicPaletteEntry(SchematicPalette &colors, SchematicWaterPalette &water, SchematicInvisiblePalette &invisible,
 							  int idx, const core::String &blockName);
 bool schematicPaletteEntryIsWater(const SchematicWaterPalette &water, int paletteIdx);

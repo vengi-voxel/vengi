@@ -14,6 +14,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -41,12 +42,12 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 	}
 	uint8_t version;
 	wrap(stream->readUInt8(version))
-	glm::ivec3 mins;
+	math::Vec3i mins;
 	wrap(stream->readInt32BE(mins.x))
 	wrap(stream->readInt32BE(mins.y))
 	wrap(stream->readInt32BE(mins.z))
 
-	glm::ivec3 maxs;
+	math::Vec3i maxs;
 	wrap(stream->readInt32BE(maxs.x))
 	wrap(stream->readInt32BE(maxs.y))
 	wrap(stream->readInt32BE(maxs.z))
@@ -58,13 +59,13 @@ bool SMTPLFormat::loadGroupsPalette(const core::String &filename, const io::Arch
 
 	Log::debug("Number of blocks: %i", numBlocks);
 
-	const glm::ivec3 size = maxs - mins;
+	const math::Vec3i size = maxs - mins;
 	if (size.x > 2048 || size.y > 2048 || size.z > 2048) {
 		Log::error("Volume exceeds the max allowed size: %i:%i:%i", size.x, size.y, size.z);
 		return false;
 	}
 
-	const voxel::Region region(glm::ivec3(0), size - 1);
+	const voxel::Region region(math::Vec3i(0), size - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region: %i:%i:%i", size.x, size.y, size.z);
 		return false;
@@ -212,7 +213,7 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 
 	const voxel::Region &region = node->region();
 	voxel::RawVolume::Sampler sampler(node->volume());
-	const glm::ivec3 &lower = region.getLowerCorner();
+	const math::Vec3i &lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
@@ -220,7 +221,7 @@ bool SMTPLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 
 	uint8_t version = 3;
 	wrapBool(stream->writeUInt8(version))
-	glm::ivec3 mins{0};
+	math::Vec3i mins{0};
 	wrapBool(stream->writeInt32BE(mins.x))
 	wrapBool(stream->writeInt32BE(mins.y))
 	wrapBool(stream->writeInt32BE(mins.z))

@@ -18,6 +18,11 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include <gtest/gtest.h>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Axes.h"
+#include "math/Scalar.h"
 
 namespace voxelrender {
 
@@ -40,9 +45,9 @@ protected:
 		core::Var::registerVar(core::VarDef(cfg::ClientCameraMaxZoom, 1000.0f, "", ""));
 	}
 
-	bool isInsideSolid(const glm::vec3 &worldPos, const voxel::RawVolume *volume) const {
+	bool isInsideSolid(const math::Vec3f &worldPos, const voxel::RawVolume *volume) const {
 		const voxel::Region &region = volume->region();
-		const glm::ivec3 voxelPos = glm::floor(worldPos);
+		const math::Vec3i voxelPos = math::floor(worldPos);
 		if (!region.containsPoint(voxelPos)) {
 			return false;
 		}
@@ -50,8 +55,8 @@ protected:
 		return !voxel::isAir(vox.getMaterial());
 	}
 
-	glm::vec3 attemptMovement(const char *command, const voxel::RawVolume *volume, CameraMovementExt &m,
-							  video::Camera &camera, scenegraph::SceneGraph &sceneGraph, const glm::vec3 &startPos) {
+	math::Vec3f attemptMovement(const char *command, const voxel::RawVolume *volume, CameraMovementExt &m,
+							  video::Camera &camera, scenegraph::SceneGraph &sceneGraph, const math::Vec3f &startPos) {
 		camera.setWorldPosition(startPos);
 		camera.update(0.0);
 		m.updateBodyPosition(camera);
@@ -64,7 +69,7 @@ protected:
 			m.update(nowSeconds, &camera, sceneGraph, frameIdx);
 			camera.update(0.0);
 		}
-		const glm::vec3 pos = camera.worldPosition();
+		const math::Vec3f pos = camera.worldPosition();
 		EXPECT_FALSE(isInsideSolid(pos, volume)) << "Camera ended inside solid voxels for command '" << command << "' "
 												 << pos.x << "," << pos.y << "," << pos.z;
 		return pos;
@@ -124,7 +129,7 @@ TEST_F(CameraMovementTest, testClippingPreventsEnteringSolidVolume) {
 	camera.setRotationType(video::CameraRotationType::Eye);
 	camera.setSize({800, 600});
 
-	const glm::vec3 volumeCenter = region.calcCenterf();
+	const math::Vec3f volumeCenter = region.calcCenterf();
 	const float planeY = volumeCenter.y;
 
 	const float positiveFaceX = region.getUpperX() + 1.0f;
@@ -134,28 +139,28 @@ TEST_F(CameraMovementTest, testClippingPreventsEnteringSolidVolume) {
 	const float clearance = 0.499999999f;
 	const float tolerance = 0.002f;
 
-	const glm::vec3 left = attemptMovement("move_left", volume, m, camera, sceneGraph,
-										   glm::vec3(positiveFaceX + 2.0f, planeY, volumeCenter.z));
+	const math::Vec3f left = attemptMovement("move_left", volume, m, camera, sceneGraph,
+										   math::Vec3f(positiveFaceX + 2.0f, planeY, volumeCenter.z));
 	EXPECT_GE(left.x, positiveFaceX + tolerance);
-	EXPECT_GE(glm::abs(left.x - positiveFaceX), clearance - tolerance);
+	EXPECT_GE(math::abs(left.x - positiveFaceX), clearance - tolerance);
 	EXPECT_LE(left.x, positiveFaceX + 2.0f);
 
-	const glm::vec3 right = attemptMovement("move_right", volume, m, camera, sceneGraph,
-											glm::vec3(negativeFaceX - 2.0f, planeY, volumeCenter.z));
+	const math::Vec3f right = attemptMovement("move_right", volume, m, camera, sceneGraph,
+											math::Vec3f(negativeFaceX - 2.0f, planeY, volumeCenter.z));
 	// EXPECT_LE(right.x, negativeFaceX - tolerance);
-	EXPECT_GE(glm::abs(right.x - negativeFaceX), clearance - tolerance);
+	EXPECT_GE(math::abs(right.x - negativeFaceX), clearance - tolerance);
 	EXPECT_GE(right.x, negativeFaceX - 2.0f);
 
-	const glm::vec3 forward = attemptMovement("move_forward", volume, m, camera, sceneGraph,
-											  glm::vec3(volumeCenter.x, planeY, positiveFaceZ + 2.0f));
+	const math::Vec3f forward = attemptMovement("move_forward", volume, m, camera, sceneGraph,
+											  math::Vec3f(volumeCenter.x, planeY, positiveFaceZ + 2.0f));
 	// EXPECT_GE(forward.z, positiveFaceZ + tolerance);
-	EXPECT_GE(glm::abs(forward.z - positiveFaceZ), clearance - tolerance);
+	EXPECT_GE(math::abs(forward.z - positiveFaceZ), clearance - tolerance);
 	EXPECT_LE(forward.z, positiveFaceZ + 2.0f);
 
-	const glm::vec3 backward = attemptMovement("move_backward", volume, m, camera, sceneGraph,
-											   glm::vec3(volumeCenter.x, planeY, negativeFaceZ - 2.0f));
+	const math::Vec3f backward = attemptMovement("move_backward", volume, m, camera, sceneGraph,
+											   math::Vec3f(volumeCenter.x, planeY, negativeFaceZ - 2.0f));
 	// EXPECT_LE(backward.z, negativeFaceZ - tolerance);
-	EXPECT_GE(glm::abs(backward.z - negativeFaceZ), clearance - tolerance);
+	EXPECT_GE(math::abs(backward.z - negativeFaceZ), clearance - tolerance);
 	EXPECT_GE(backward.z, negativeFaceZ - 2.0f);
 
 	m.shutdown();
@@ -174,8 +179,8 @@ TEST_F(CameraMovementTest, testOrthogonalRotationAllowsPitch) {
 	m.rotate(camera, 20.0f, 20.0f);
 	camera.update(0.0);
 
-	EXPECT_GT(glm::length(camera.forward() - glm::forward()), 0.01f);
-	EXPECT_GT(glm::abs(camera.horizontalYaw()), 0.1f);
+	EXPECT_GT(math::length(camera.forward() - math::forward()), 0.01f);
+	EXPECT_GT(math::abs(camera.horizontalYaw()), 0.1f);
 }
 
 TEST_F(CameraMovementTest, testIsometricRotationKeepsPitch) {
@@ -187,14 +192,14 @@ TEST_F(CameraMovementTest, testIsometricRotationKeepsPitch) {
 	camera.setSize({800, 600});
 	camera.setAngles(video::Camera::IsometricPitch, 0.0f, 0.0f);
 	camera.update(0.0);
-	const glm::vec3 initialForward = camera.forward();
+	const math::Vec3f initialForward = camera.forward();
 
 	m.rotate(camera, 20.0f, 20.0f);
 	camera.update(0.0);
 
 	EXPECT_NEAR(initialForward.y, camera.forward().y, 0.02f);
-	EXPECT_GT(glm::abs(camera.horizontalYaw()), 0.1f);
-	EXPECT_GT(glm::length(camera.forward() - initialForward), 0.01f);
+	EXPECT_GT(math::abs(camera.horizontalYaw()), 0.1f);
+	EXPECT_GT(math::length(camera.forward() - initialForward), 0.01f);
 }
 
 TEST_F(CameraMovementTest, navigationMovementMatchesScreenPixelsAtEqualFraming) {
@@ -212,20 +217,20 @@ TEST_F(CameraMovementTest, navigationMovementMatchesScreenPixelsAtEqualFraming) 
 					ASSERT_TRUE(m.init());
 					video::Camera camera;
 					camera.setSize({1000, 800});
-					camera.setTarget(glm::vec3(0));
+					camera.setTarget(math::Vec3f(0));
 					camera.setWorldPosition({0, 0, distance});
 					camera.setTargetDistance(distance);
 					camera.setMode(mode);
 					if (camera.isOrthographic()) {
-						const float zoom = 2 * distance * glm::tan(glm::radians(45.0f) / 2) / (800 * camera.worldUnitsPerPixel());
-						camera.zoom(glm::log(zoom) / 0.1f);
+						const float zoom = 2 * distance * math::tan(math::radians(45.0f) / 2) / (800 * camera.worldUnitsPerPixel());
+						camera.zoom(math::log(zoom) / 0.1f);
 					}
 					camera.setRotationType(rotation);
 					camera.update(0);
 					const float wupp = camera.worldUnitsPerPixel();
-					const glm::vec3 beforePos = camera.worldPosition();
-					const glm::vec3 landmark = camera.target() + camera.right() * 10.0f;
-					const glm::ivec2 before = camera.worldToScreen(landmark);
+					const math::Vec3f beforePos = camera.worldPosition();
+					const math::Vec3f landmark = camera.target() + camera.right() * 10.0f;
+					const math::Vec2i before = camera.worldToScreen(landmark);
 					scenegraph::SceneGraph graph;
 					m.update(0, &camera, graph, 0);
 					{
@@ -237,11 +242,11 @@ TEST_F(CameraMovementTest, navigationMovementMatchesScreenPixelsAtEqualFraming) 
 					}
 					const core::String btn(button);
 					if (btn == "move_left" || btn == "move_right") {
-						const glm::ivec2 after = camera.worldToScreen(landmark);
+						const math::Vec2i after = camera.worldToScreen(landmark);
 						const float expected = btn == "move_left" ? 60.0f : -60.0f;
 						EXPECT_NEAR(after.x - before.x, expected, 1);
 					} else {
-						EXPECT_NEAR(glm::distance(beforePos, camera.worldPosition()), 60.0f * wupp, 0.05f);
+						EXPECT_NEAR(math::distance(beforePos, camera.worldPosition()), 60.0f * wupp, 0.05f);
 					}
 					EXPECT_NEAR(camera.targetDistance(), distance, 0.01f);
 					m.shutdown();
@@ -263,7 +268,7 @@ TEST_F(CameraMovementTest, editorForwardKeepsConstantWorldSpeedAndDistance) {
 		ASSERT_TRUE(m.init());
 		video::Camera camera;
 		camera.setSize({1000, 800});
-		camera.setTarget(glm::vec3(0));
+		camera.setTarget(math::Vec3f(0));
 		camera.setWorldPosition({0, 0, 200});
 		camera.setTargetDistance(200);
 		camera.setRotationType(rotation);
@@ -276,11 +281,11 @@ TEST_F(CameraMovementTest, editorForwardKeepsConstantWorldSpeedAndDistance) {
 		float secondHalf = 0.0f;
 		{
 			command::ScopedButtonCommand pressed("move_forward", 10, 0);
-			glm::vec3 prev = camera.worldPosition();
+			math::Vec3f prev = camera.worldPosition();
 			for (int frame = 1; frame <= 120; ++frame) {
 				m.update(frame / 60.0, &camera, graph, 0);
 				camera.update(0);
-				const float step = glm::distance(prev, camera.worldPosition());
+				const float step = math::distance(prev, camera.worldPosition());
 				if (frame <= 60) {
 					firstHalf += step;
 				} else {
@@ -309,11 +314,11 @@ TEST_F(CameraMovementTest, wheelZoomHasEqualRelativeResponse) {
 			camera.setMode(mode);
 			camera.setRotationType(rotation);
 			camera.update(0);
-			const glm::ivec2 before = camera.worldToScreen({10, 0, 0});
+			const math::Vec2i before = camera.worldToScreen({10, 0, 0});
 			m.zoom(camera, -1);
 			camera.update(0);
-			const glm::ivec2 after = camera.worldToScreen({10, 0, 0});
-			EXPECT_NEAR(glm::abs(after.x - 500), glm::abs(before.x - 500) * glm::exp(0.1f), 1.1f);
+			const math::Vec2i after = camera.worldToScreen({10, 0, 0});
+			EXPECT_NEAR(math::abs(after.x - 500), math::abs(before.x - 500) * math::exp(0.1f), 1.1f);
 		}
 	}
 }
@@ -325,19 +330,19 @@ TEST_F(CameraMovementTest, perspectiveWheelKeepsMovingPastTarget) {
 		util::ScopedVarChange clipping(cfg::GameModeClipping, "false");
 		video::Camera camera;
 		camera.setSize({1000, 800});
-		camera.setTarget(glm::vec3(0));
+		camera.setTarget(math::Vec3f(0));
 		camera.setWorldPosition({0, 0, 100});
 		camera.setTargetDistance(100);
 		camera.setRotationType(rotation);
 		camera.update(0);
-		const glm::vec3 forward = camera.forward();
+		const math::Vec3f forward = camera.forward();
 		const float wupp = camera.worldUnitsPerPixel();
 		float firstStep = 0.0f;
 		for (int step = 0; step < 200; ++step) {
-			const glm::vec3 before = camera.worldPosition();
+			const math::Vec3f before = camera.worldPosition();
 			m.zoom(camera, -1);
 			camera.update(0);
-			const float distance = glm::dot(camera.worldPosition() - before, forward);
+			const float distance = math::dot(camera.worldPosition() - before, forward);
 			if (step == 0) {
 				firstStep = distance;
 				ASSERT_GT(firstStep, 0.0f);
@@ -347,17 +352,17 @@ TEST_F(CameraMovementTest, perspectiveWheelKeepsMovingPastTarget) {
 		EXPECT_LT(camera.worldPosition().z, 0.0f);
 		EXPECT_NEAR(camera.targetDistance(), 100.0f, 0.001f);
 		EXPECT_NEAR(camera.worldUnitsPerPixel(), wupp, 0.0001f);
-		EXPECT_LT(glm::distance(camera.forward(), forward), 0.001f);
-		const glm::vec3 before = camera.worldPosition();
+		EXPECT_LT(math::distance(camera.forward(), forward), 0.001f);
+		const math::Vec3f before = camera.worldPosition();
 		m.zoom(camera, 1);
 		camera.update(0);
-		EXPECT_NEAR(glm::dot(before - camera.worldPosition(), forward), 100.0f * (glm::exp(0.1f) - 1.0f), 0.001f);
+		EXPECT_NEAR(math::dot(before - camera.worldPosition(), forward), 100.0f * (math::exp(0.1f) - 1.0f), 0.001f);
 		EXPECT_NEAR(camera.targetDistance(), 100.0f, 0.001f);
-		const glm::vec3 after = camera.worldPosition();
+		const math::Vec3f after = camera.worldPosition();
 		util::ScopedVarChange enableClipping(cfg::GameModeClipping, "true");
 		m.zoom(camera, -1);
 		camera.update(0);
-		EXPECT_FLOAT_EQ(glm::distance(camera.worldPosition(), after), 0.0f);
+		EXPECT_FLOAT_EQ(math::distance(camera.worldPosition(), after), 0.0f);
 	}
 }
 
@@ -373,13 +378,13 @@ TEST_F(CameraMovementTest, navigationSpeedScalesResponseAndIgnoresSprint) {
 			util::ScopedVarChange multiplier(cfg::GameModeSprintMultiplier, "3");
 			video::Camera camera;
 			camera.setSize({1000, 800});
-			camera.setTarget(glm::vec3(0));
+			camera.setTarget(math::Vec3f(0));
 			camera.setWorldPosition({0, 0, 100});
 			camera.setTargetDistance(100);
 			camera.update(0);
 			scenegraph::SceneGraph graph;
 			m.update(0, &camera, graph, 0);
-			const glm::vec3 before = camera.worldPosition();
+			const math::Vec3f before = camera.worldPosition();
 			const float beforeDistance = camera.targetDistance();
 			{
 				command::ScopedButtonCommand pressed(button, 10, 0);
@@ -391,7 +396,7 @@ TEST_F(CameraMovementTest, navigationSpeedScalesResponseAndIgnoresSprint) {
 				}
 			}
 			camera.update(0);
-			responses[run] = glm::distance(before, camera.worldPosition());
+			responses[run] = math::distance(before, camera.worldPosition());
 			EXPECT_NEAR(camera.targetDistance(), beforeDistance, 0.01f);
 			m.shutdown();
 		}
@@ -443,7 +448,7 @@ TEST_F(CameraMovementTest, editorAndGameMovementSpeedsAreIndependent) {
 					advance();
 				}
 			}
-			response[run] = glm::abs(camera.worldPosition().x - before);
+			response[run] = math::abs(camera.worldPosition().x - before);
 			m.shutdown();
 		}
 		ASSERT_GT(response[0], 0.0f);

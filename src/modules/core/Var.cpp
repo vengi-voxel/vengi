@@ -5,13 +5,12 @@
 #include "Var.h"
 #include "core/Assert.h"
 #include "core/Common.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/Trace.h"
 #include "core/concurrent/Lock.h"
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/epsilon.hpp>
+#include "math/Scalar.h"
 
 namespace core {
 
@@ -161,7 +160,7 @@ bool Var::setVal(int value) {
 }
 
 bool Var::setVal(float value) {
-	if (glm::epsilonEqual(floatVal(), value, glm::epsilon<float>())) {
+	if (math::epsilonEqual(floatVal(), value, math::epsilonf)) {
 		return true;
 	}
 	return setVal(core::String::format("%f", value));

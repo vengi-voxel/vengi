@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include <glm/fwd.hpp>
-#include <glm/mat4x4.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 class Region;
@@ -15,26 +16,26 @@ namespace scenegraph {
 
 class FrameTransform {
 private:
-	mutable glm::vec3 _scale;
+	mutable math::Vec3f _scale;
 	mutable bool _scaleCalculated = false;
-	glm::mat4 _matrix{1.0f};
+	math::Mat4f _matrix = math::Mat4f::identity();
 
 	void resetCache() {
 		_scaleCalculated = false;
 	}
 
 public:
-	void setWorldMatrix(const glm::mat4 &m);
+	void setWorldMatrix(const math::Mat4f &m);
 	/**
 	 * @brief World matrix without pivot offset
 	 * @sa calculateWorldMatrix()
 	 */
-	const glm::mat4 &worldMatrix() const;
+	math::Mat4f worldMatrix() const;
 	/**
 	 * @brief World translation without pivot offset
 	 */
-	glm::vec3 worldTranslation() const;
-	const glm::vec3 &worldScale() const;
+	math::Vec3f worldTranslation() const;
+	const math::Vec3f &worldScale() const;
 
 	/**
 	 * @brief Check if this is an identity transform
@@ -45,11 +46,11 @@ public:
 	 * @brief World matrix with pivot offset
 	 * @sa worldMatrix()
 	 */
-	glm::mat4 calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const;
+	math::Mat4f calculateWorldMatrix(const math::Vec3f &normalizedPivot, const math::Vec3f &dimensions) const;
 
-	void decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const;
+	void decompose(math::Vec3f &scale, math::Quatf &orientation, math::Vec3f &translation) const;
 };
 
-glm::vec3 calculateExtents(const glm::vec3 &dimensions);
+math::Vec3f calculateExtents(const math::Vec3f &dimensions);
 
 } // namespace scenegraph

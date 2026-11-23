@@ -10,6 +10,7 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -21,7 +22,7 @@ const voxel::Voxel visited(voxel::VoxelType::Air, 1, visitedFlag);
 
 } // namespace priv
 
-static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object, const glm::ivec3 &position, voxel::Connectivity connectivity) {
+static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object, const math::Vec3i &position, voxel::Connectivity connectivity) {
 	if (!volume.region().containsPoint(position)) {
 		return;
 	}
@@ -40,21 +41,21 @@ static void processNeighbours(voxel::RawVolume &volume, voxel::RawVolume &object
 	switch (connectivity) {
 	case voxel::Connectivity::TwentySixConnected:
 		for (int i = 0; i < lengthof(voxel::arrayPathfinderCorners); ++i) {
-			const glm::ivec3 p = position + voxel::arrayPathfinderCorners[i];
+			const math::Vec3i p = position + voxel::arrayPathfinderCorners[i];
 			processNeighbours(volume, object, p, connectivity);
 		}
 		/* fallthrough */
 
 	case voxel::Connectivity::EighteenConnected:
 		for (int i = 0; i < lengthof(voxel::arrayPathfinderEdges); ++i) {
-			const glm::ivec3 p = position + voxel::arrayPathfinderEdges[i];
+			const math::Vec3i p = position + voxel::arrayPathfinderEdges[i];
 			processNeighbours(volume, object, p, connectivity);
 		}
 		/* fallthrough */
 
 	case voxel::Connectivity::SixConnected:
 		for (int i = 0; i < lengthof(voxel::arrayPathfinderFaces); ++i) {
-			const glm::ivec3 p = position + voxel::arrayPathfinderFaces[i];
+			const math::Vec3i p = position + voxel::arrayPathfinderFaces[i];
 			processNeighbours(volume, object, p, connectivity);
 		}
 		break;
@@ -72,7 +73,7 @@ core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *volume, Vi
 		if (voxel.getFlags() == priv::visitedFlag) {
 			return;
 		}
-		const glm::ivec3 position(x, y, z);
+		const math::Vec3i position(x, y, z);
 		if (voxel::isAir(voxel.getMaterial())) {
 			copy.setVoxel(position, priv::visited);
 			return;
@@ -90,18 +91,18 @@ core::Buffer<voxel::RawVolume *> splitObjects(const voxel::RawVolume *volume, Vi
 	return rawVolumes;
 }
 
-core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, const glm::ivec3 &maxSize,
+core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, const math::Vec3i &maxSize,
 											 bool createEmpty) {
 	const voxel::Region &region = volume->region();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
 
 	core::Buffer<voxel::RawVolume *> rawVolumes;
 
-	const glm::ivec3 clampedSize = glm::max(maxSize, glm::ivec3(1));
-	const glm::ivec3 step = glm::min(region.getDimensionsInVoxels(), clampedSize);
+	const math::Vec3i clampedSize = math::max(maxSize, math::Vec3i(1));
+	const math::Vec3i step = math::min(region.getDimensionsInVoxels(), clampedSize);
 	Log::debug("split region: %s", region.toString().c_str());
-	const glm::ivec3 steps = (region.getDimensionsInVoxels() + (step - 1)) / step;
+	const math::Vec3i steps = (region.getDimensionsInVoxels() + (step - 1)) / step;
 	rawVolumes.resize(steps.x * steps.y * steps.z);
 	auto fn = [step, maxs, volume, clampedSize, mins, createEmpty, steps, &rawVolumes](int start, int end) {
 		for (int i = start; i < end; ++i) {
@@ -109,8 +110,8 @@ core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume, con
 			const int y = mins.y + i * step.y;
 			for (int z = mins.z; z <= maxs.z; z += step.z) {
 				for (int x = mins.x; x <= maxs.x; x += step.x) {
-					const glm::ivec3 innerMins(x, y, z);
-					const glm::ivec3 innerMaxs = glm::min(maxs, innerMins + clampedSize - 1);
+					const math::Vec3i innerMins(x, y, z);
+					const math::Vec3i innerMaxs = math::min(maxs, innerMins + clampedSize - 1);
 					const voxel::Region innerRegion(innerMins, innerMaxs);
 					bool onlyAir = true;
 					voxel::RawVolume *copy = new voxel::RawVolume(*volume, innerRegion, createEmpty ? nullptr : &onlyAir);

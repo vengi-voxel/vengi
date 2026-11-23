@@ -7,13 +7,14 @@
 #include "core/UUID.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphNodeType.h"
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
 #include "util/BinaryPList.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -168,13 +169,13 @@ private:
 		core::String t_pa;					   // pivotAlign
 		core::String t_pf;					   // pivotFace
 		core::String t_po;					   // pivotOffset
-		glm::vec3 t_p{0.0f};				   // position (VoxelMax Z-up)
-		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // SceneKit axis-angle: xyz = axis, w = radians
-		glm::vec3 t_s{1.0f};				   // scale
-		glm::vec3 ind{0.0f};				   // index
-		glm::vec3 e_c{0.0f};				   // extent center
-		glm::vec3 e_ma{0.0f};				   // extent max
-		glm::vec3 e_mi{0.0f};				   // extent min
+		math::Vec3f t_p{0.0f};				   // position (VoxelMax Z-up)
+		math::Vec4f t_r{0.0f, 0.0f, 0.0f, 0.0f}; // SceneKit axis-angle: xyz = axis, w = radians
+		math::Vec3f t_s{1.0f};				   // scale
+		math::Vec3f ind{0.0f};				   // index
+		math::Vec3f e_c{0.0f};				   // extent center
+		math::Vec3f e_ma{0.0f};				   // extent max
+		math::Vec3f e_mi{0.0f};				   // extent min
 		bool s = true;						   // selected
 		bool h = false;						   // hidden
 	};
@@ -217,7 +218,7 @@ private:
 		float lda = 0.0f;				 // anglesLightsDepth
 		float lha = 1.8209133148193359f; // anglesLightsHeight
 		float lwa = 0.25f;				 // anglesLightsWidth
-		glm::vec3 o{0.0f};				 // origin
+		math::Vec3f o{0.0f};				 // origin
 		float px = 0.0f;				 // positionX
 		float py = 0.0f;				 // positionY
 		float z = 512.0f;				 // zoom
@@ -230,12 +231,12 @@ private:
 		core::UUID id;
 		core::String name;
 		core::UUID pid;					   // parent id
-		glm::vec3 t_p{0.0f};				   // position (VoxelMax Z-up)
-		glm::vec4 t_r{0.0f, 0.0f, 0.0f, 0.0f}; // SceneKit axis-angle: xyz = axis, w = radians
-		glm::vec3 t_s{1.0f};				   // scale
-		glm::vec3 e_c{0.0f};				   // extent center
-		glm::vec3 e_ma{0.0f};				   // extent max
-		glm::vec3 e_mi{0.0f};				   // extent min
+		math::Vec3f t_p{0.0f};				   // position (VoxelMax Z-up)
+		math::Vec4f t_r{0.0f, 0.0f, 0.0f, 0.0f}; // SceneKit axis-angle: xyz = axis, w = radians
+		math::Vec3f t_s{1.0f};				   // scale
+		math::Vec3f e_c{0.0f};				   // extent center
+		math::Vec3f e_ma{0.0f};				   // extent max
+		math::Vec3f e_mi{0.0f};				   // extent min
 		bool s = true;						   // selected
 		bool h = false;						   // hidden
 	};
@@ -272,12 +273,12 @@ private:
 
 	bool onlyOnePalette() const override { return false; }
 	int emptyPaletteIndex() const override { return -1; }
-	glm::ivec3 maxSize() const override { return glm::ivec3(512); }
+	math::Vec3i maxSize() const override { return math::Vec3i(512); }
 
-	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
-							 const glm::vec3 &t_s) const;
-	void applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
-							 const glm::vec3 &t_s, const glm::vec3 &volumeMins) const;
+	void applySceneTransform(scenegraph::SceneGraphNode &node, const math::Vec3f &t_p, const math::Vec4f &t_r,
+							 const math::Vec3f &t_s) const;
+	void applySceneTransform(scenegraph::SceneGraphNode &node, const math::Vec3f &t_p, const math::Vec4f &t_r,
+							 const math::Vec3f &t_s, const math::Vec3f &volumeMins) const;
 	void applySceneMetadata(scenegraph::SceneGraph &sceneGraph, const VMaxScene &scene) const;
 	void addSceneCamera(scenegraph::SceneGraph &sceneGraph, const VMaxCamera &cam) const;
 	void reparentByParentUUID(scenegraph::SceneGraph &sceneGraph) const;

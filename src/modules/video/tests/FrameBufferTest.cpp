@@ -9,6 +9,8 @@
 #include "video/Renderer.h"
 #include "video/TextureConfig.h"
 #include "video/tests/AbstractGLTest.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
 
 namespace video {
 
@@ -21,7 +23,7 @@ static void restoreColorDrawBuffers(FrameBuffer &fb) {
 	bindFramebuffer(prev);
 }
 
-static void fillAttachment(FrameBuffer &fb, FrameBufferAttachment attachment, const glm::vec4 &color) {
+static void fillAttachment(FrameBuffer &fb, FrameBufferAttachment attachment, const math::Vec4f &color) {
 	fb.bind(false);
 	drawBuffers(1, &attachment);
 	clearColor(color);
@@ -30,7 +32,7 @@ static void fillAttachment(FrameBuffer &fb, FrameBufferAttachment attachment, co
 	fb.unbind();
 }
 
-static FrameBufferConfig twoColorConfig(const glm::ivec2 &size) {
+static FrameBufferConfig twoColorConfig(const math::Vec2i &size) {
 	FrameBufferConfig cfg;
 	cfg.dimension(size);
 	cfg.addTextureAttachment(createDefaultTextureConfig(), FrameBufferAttachment::Color0);
@@ -45,16 +47,16 @@ TEST_F(FrameBufferTest, testBlitColorAttachmentDoesNotCopyColor0OntoColor1) {
 	if (isVulkanRenderer()) {
 		GTEST_SKIP() << "Vulkan FBO blit/readback still needs an active frame path in this test harness";
 	}
-	const glm::ivec2 size(8, 8);
+	const math::Vec2i size(8, 8);
 	FrameBuffer src;
 	FrameBuffer dst;
 	ASSERT_TRUE(src.init(twoColorConfig(size)));
 	ASSERT_TRUE(dst.init(twoColorConfig(size)));
 
-	fillAttachment(src, FrameBufferAttachment::Color0, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	fillAttachment(src, FrameBufferAttachment::Color1, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-	fillAttachment(dst, FrameBufferAttachment::Color0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	fillAttachment(dst, FrameBufferAttachment::Color1, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+	fillAttachment(src, FrameBufferAttachment::Color0, math::Vec4f(1.0f, 0.0f, 0.0f, 1.0f));
+	fillAttachment(src, FrameBufferAttachment::Color1, math::Vec4f(0.0f, 1.0f, 0.0f, 1.0f));
+	fillAttachment(dst, FrameBufferAttachment::Color0, math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f));
+	fillAttachment(dst, FrameBufferAttachment::Color1, math::Vec4f(0.0f, 0.0f, 1.0f, 1.0f));
 
 	blitFramebuffer(src.handle(), dst.handle(), FrameBufferAttachment::Color0, size.x, size.y);
 	blitFramebuffer(src.handle(), dst.handle(), FrameBufferAttachment::Color1, size.x, size.y);
@@ -79,16 +81,16 @@ TEST_F(FrameBufferTest, testColorFlagBlitLeavesColor1Unchanged) {
 	if (isVulkanRenderer()) {
 		GTEST_SKIP() << "Vulkan FBO blit/readback still needs an active frame path in this test harness";
 	}
-	const glm::ivec2 size(8, 8);
+	const math::Vec2i size(8, 8);
 	FrameBuffer src;
 	FrameBuffer dst;
 	ASSERT_TRUE(src.init(twoColorConfig(size)));
 	ASSERT_TRUE(dst.init(twoColorConfig(size)));
 
-	fillAttachment(src, FrameBufferAttachment::Color0, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	fillAttachment(src, FrameBufferAttachment::Color1, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-	fillAttachment(dst, FrameBufferAttachment::Color0, glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	fillAttachment(dst, FrameBufferAttachment::Color1, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+	fillAttachment(src, FrameBufferAttachment::Color0, math::Vec4f(1.0f, 0.0f, 0.0f, 1.0f));
+	fillAttachment(src, FrameBufferAttachment::Color1, math::Vec4f(0.0f, 1.0f, 0.0f, 1.0f));
+	fillAttachment(dst, FrameBufferAttachment::Color0, math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f));
+	fillAttachment(dst, FrameBufferAttachment::Color1, math::Vec4f(0.0f, 0.0f, 1.0f, 1.0f));
 
 	blitFramebuffer(src.handle(), dst.handle(), ClearFlag::Color, size.x, size.y);
 	restoreColorDrawBuffers(dst);

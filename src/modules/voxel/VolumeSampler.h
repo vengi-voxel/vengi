@@ -12,6 +12,8 @@
 #include "voxel/Voxel.h"
 #include "voxel/VoxelSampling.h"
 #include <stdint.h>
+#include "math/AlignedVec4i.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -77,7 +79,7 @@ private:
 	}
 
 	CORE_FORCE_INLINE void refreshSparseAtCurrent() {
-		const glm::ivec3 &volLower = _volume->volumeRegion().getLowerCorner();
+		const math::Vec3i &volLower = _volume->volumeRegion().getLowerCorner();
 		_localPos.x = (int)((int64_t)_posInVolume.x - (int64_t)volLower.x);
 		_localPos.y = (int)((int64_t)_posInVolume.y - (int64_t)volLower.y);
 		_localPos.z = (int)((int64_t)_posInVolume.z - (int64_t)volLower.z);
@@ -142,8 +144,8 @@ public:
 		return _region;
 	}
 
-	CORE_FORCE_INLINE const glm::ivec3 &position() const {
-		return *(const glm::ivec3 *)&_posInVolume.x;
+	CORE_FORCE_INLINE const math::Vec3i &position() const {
+		return *(const math::Vec3i *)&_posInVolume.x;
 	}
 
 	CORE_FORCE_INLINE const Voxel &voxel() const {
@@ -170,7 +172,7 @@ public:
 		return !_currentPositionInvalid;
 	}
 
-	CORE_FORCE_INLINE bool setPosition(const glm::ivec3 &v3dNewPos) {
+	CORE_FORCE_INLINE bool setPosition(const math::Vec3i &v3dNewPos) {
 		return setPosition(v3dNewPos.x, v3dNewPos.y, v3dNewPos.z);
 	}
 
@@ -287,7 +289,7 @@ public:
 
 		if (currentPositionValid()) {
 			if constexpr (DenseOnly) {
-				const glm::ivec3 &volLower = _volume->volumeRegion().getLowerCorner();
+				const math::Vec3i &volLower = _volume->volumeRegion().getLowerCorner();
 				const int64_t lx = (int64_t)xPos - (int64_t)volLower.x;
 				const int64_t ly = (int64_t)yPos - (int64_t)volLower.y;
 				const int64_t lz = (int64_t)zPos - (int64_t)volLower.z;
@@ -295,7 +297,7 @@ public:
 				return true;
 			} else {
 				if (core_likely(!_isSparse)) {
-					const glm::ivec3 &volLower = _volume->volumeRegion().getLowerCorner();
+					const math::Vec3i &volLower = _volume->volumeRegion().getLowerCorner();
 					const int64_t lx = (int64_t)xPos - (int64_t)volLower.x;
 					const int64_t ly = (int64_t)yPos - (int64_t)volLower.y;
 					const int64_t lz = (int64_t)zPos - (int64_t)volLower.z;
@@ -596,7 +598,7 @@ protected:
 	voxel::Region _region;
 
 	// The current position in the volume
-	glm::aligned_ivec4 _posInVolume{0, 0, 0, 0};
+	math::AlignedVec4i _posInVolume{0, 0, 0, 0};
 
 	/** Direct dense pointer (nullptr when sparse or out-of-bounds) */
 	Voxel *_currentVoxel = nullptr;
@@ -614,9 +616,9 @@ protected:
 	bool _sparseWholeBrick = false;
 	uint32_t _sparseGen = 0u;
 	const core::AtomicInt *_sparseGenPtr = nullptr;
-	glm::ivec3 _localPos{0};
-	glm::ivec3 _sparseLower{0};
-	glm::ivec3 _sparseUpper{0};
+	math::Vec3i _localPos{0};
+	math::Vec3i _sparseLower{0};
+	math::Vec3i _sparseUpper{0};
 	const SparseChunk *_sparseChunk = nullptr;
 	const SparseChunk::Brick *_sparseBrick = nullptr;
 	const Voxel *_sparseRow = nullptr;

@@ -5,10 +5,9 @@
 #pragma once
 
 #include "Types.h"
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
 #include "TextureConfig.h"
 #include "core/collection/Map.h"
+#include "math/Vec2i.h"
 
 namespace video {
 
@@ -23,7 +22,7 @@ class FrameBufferConfig {
 public:
 	using ColorTextureMap = core::Map<FrameBufferAttachment, TextureConfig, 4, EnumClassHash>;
 private:
-	glm::ivec2 _dimension;
+	math::Vec2i _dimension;
 	ColorTextureMap _colorTextures;
 	int _samples = 0;
 	TextureFormat _colorTextureFormat = TextureFormat::RGBA;
@@ -34,8 +33,8 @@ private:
 	bool _depthBuffer = false;
 	bool _stencilBuffer = false;
 public:
-	FrameBufferConfig& dimension(const glm::ivec2& dimension);
-	const glm::ivec2& dimension() const;
+	FrameBufferConfig& dimension(const math::Vec2i& dimension);
+	const math::Vec2i& dimension() const;
 
 	/**
 	 * @brief Configure a default color attachment if no other was given
@@ -96,7 +95,7 @@ inline int FrameBufferConfig::samples() const {
 	return _samples;
 }
 
-inline const glm::ivec2& FrameBufferConfig::dimension() const {
+inline const math::Vec2i& FrameBufferConfig::dimension() const {
 	return _dimension;
 }
 
@@ -132,6 +131,6 @@ inline const FrameBufferConfig::ColorTextureMap& FrameBufferConfig::textureAttac
 	return _colorTextures;
 }
 
-extern FrameBufferConfig defaultDepthBufferConfig(const glm::ivec2& dimension, int maxDepthBuffers);
+extern FrameBufferConfig defaultDepthBufferConfig(const math::Vec2i& dimension, int maxDepthBuffers);
 
 }

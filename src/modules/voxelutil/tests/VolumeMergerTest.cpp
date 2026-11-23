@@ -5,6 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -18,7 +19,7 @@ TEST_F(VolumeMergerTest, testMergeDifferentSize) {
 
 	const voxel::Region region(0, 10);
 	voxel::RawVolume bigVolume(voxel::Region(0, 10));
-	const glm::ivec3 mergedPos = glm::ivec3(5);
+	const math::Vec3i mergedPos = math::Vec3i(5);
 	const voxel::Region& srcRegion = smallVolume.region();
 	const voxel::Region destRegion(mergedPos, mergedPos + srcRegion.getUpperCorner());
 	EXPECT_EQ(1, voxelutil::mergeVolumes(&bigVolume, &smallVolume, destRegion, srcRegion))
@@ -33,7 +34,7 @@ TEST_F(VolumeMergerTest, testMergeDifferentSize) {
 	for (int32_t z = lowerZ; z <= upperZ; ++z) {
 		for (int32_t y = lowerY; y <= upperY; ++y) {
 			for (int32_t x = lowerX; x <= upperX; ++x) {
-				const glm::ivec3 pos(x, y, z);
+				const math::Vec3i pos(x, y, z);
 				if (pos == mergedPos) {
 					EXPECT_TRUE(bigVolume.voxel(pos).isSame(vox));
 				} else {
@@ -70,8 +71,8 @@ TEST_F(VolumeMergerTest, testMergeAndCropSparseSections) {
 
 	voxel::RawVolume *merged = voxelutil::mergeAndCrop(volumes);
 	ASSERT_NE(nullptr, merged);
-	EXPECT_EQ(glm::ivec3(1, 1, 1), merged->region().getLowerCorner());
-	EXPECT_EQ(glm::ivec3(2, 34, 2), merged->region().getUpperCorner());
+	EXPECT_EQ(math::Vec3i(1, 1, 1), merged->region().getLowerCorner());
+	EXPECT_EQ(math::Vec3i(2, 34, 2), merged->region().getUpperCorner());
 	EXPECT_TRUE(merged->voxel(1, 1, 1).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(merged->voxel(2, 34, 2).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 	delete merged;

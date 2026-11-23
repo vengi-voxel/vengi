@@ -9,6 +9,8 @@
 #include "io/Archive.h"
 #include "io/CachingArchive.h"
 #include "voxelformat/private/mesh/Mesh.h"
+#include "math/Mat3f.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -45,8 +47,8 @@ using ColorMap = core::Map<int, color::RGBA, 64>;
 
 struct SubFileRef {
 	int colorCode;
-	glm::vec3 pos;
-	glm::mat3 transform;
+	math::Vec3f pos;
+	math::Mat3f transform = math::Mat3f::identity();
 	core::String filename;
 };
 

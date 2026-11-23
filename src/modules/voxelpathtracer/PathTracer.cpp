@@ -13,7 +13,6 @@
 #include "VoxelpathtracerShaderConstants.h"
 #include "color/ColorUtil.h"
 #include "core/Common.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/collection/Buffer.h"
@@ -25,8 +24,15 @@
 #include "video/Shader.h"
 #include "voxel/Region.h"
 #include "voxelrender/RenderUtil.h"
-#include <glm/gtc/matrix_inverse.hpp>
-#include <glm/vec4.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2u.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 
 namespace voxelpathtracer {
 
@@ -64,8 +70,8 @@ static_assert((int)palette::MaterialType::Emit == shader::VoxelpathtracerShaderC
 static_assert((int)palette::MaterialType::Blend == shader::VoxelpathtracerShaderConstants::getMaterialBlend());
 static_assert((int)palette::MaterialType::Media == shader::VoxelpathtracerShaderConstants::getMaterialMedia());
 
-static glm::vec3 sunDirection(const PathTracerParams &params) {
-	return voxelrender::sunDirectionFromAngle(glm::vec3(params.sunElevation, params.sunAzimuth, 0.0f));
+static math::Vec3f sunDirection(const PathTracerParams &params) {
+	return voxelrender::sunDirectionFromAngle(math::Vec3f(params.sunElevation, params.sunAzimuth, 0.0f));
 }
 
 static constexpr int MaterialRows = shader::VoxelpathtracerShaderConstants::getMaterialRows();
@@ -122,8 +128,8 @@ bool PathTracer::initGpu() {
 	}
 	_bufferIndex = _vbo.createFullscreenQuad();
 	_texIndex = _vbo.createFullscreenTextureBufferForFramebuffer();
-	core_assert_always(_vbo.addAttribute(traceShader.getPosAttribute(_bufferIndex, &glm::vec2::x)));
-	core_assert_always(_vbo.addAttribute(traceShader.getTexcoordAttribute(_texIndex, &glm::vec2::x)));
+	core_assert_always(_vbo.addAttribute(traceShader.getPosAttribute(_bufferIndex, &math::Vec2f::x)));
+	core_assert_always(_vbo.addAttribute(traceShader.getTexcoordAttribute(_texIndex, &math::Vec2f::x)));
 	core_memset(&_paramsUniforms, 0, sizeof(_paramsUniforms));
 	core_memset(&_displayUniforms, 0, sizeof(_displayUniforms));
 	shader::VoxelpathtracerBloomData::FilterData filter{};
@@ -189,7 +195,7 @@ void PathTracer::shutdownGpu() {
 }
 
 int PathTracer::outputResolution() const {
-	const float scale = glm::clamp(_state.params.renderScale, 0.25f, 1.0f);
+	const float scale = math::clamp(_state.params.renderScale, 0.25f, 1.0f);
 	return core_max(1, (int)((float)core_max(1, _state.params.resolution) * scale + 0.5f));
 }
 
@@ -240,7 +246,7 @@ bool PathTracer::ensureTargets(int resolution) {
 		_accum[1].shutdown();
 		hdrCfg.format(hdrFormats[i]);
 		video::FrameBufferConfig accumCfg;
-		accumCfg.dimension(glm::ivec2(resolution, resolution));
+		accumCfg.dimension(math::Vec2i(resolution, resolution));
 		accumCfg.addTextureAttachment(hdrCfg, video::FrameBufferAttachment::Color0);
 		if (_accum[0].init(accumCfg) && _accum[1].init(accumCfg)) {
 			accumOk = true;
@@ -256,7 +262,7 @@ bool PathTracer::ensureTargets(int resolution) {
 	}
 
 	video::FrameBufferConfig displayCfg;
-	displayCfg.dimension(glm::ivec2(resolution, resolution));
+	displayCfg.dimension(math::Vec2i(resolution, resolution));
 	displayCfg.colorTexture(true);
 	displayCfg.colorTextureFormat(video::TextureFormat::RGBA);
 	if (!_displayFbo.init(displayCfg)) {
@@ -273,15 +279,15 @@ void PathTracer::setupTraceCamera(const scenegraph::SceneGraph &sceneGraph, cons
 	if (camera != nullptr) {
 		_traceCamera = *camera;
 	} else {
-		_traceCamera.setSize(glm::ivec2(outputResolution()));
+		_traceCamera.setSize(math::Vec2i(outputResolution()));
 		_traceCamera.setMode(video::CameraMode::Perspective);
 		_traceCamera.setType(video::CameraType::Free);
 		const voxel::Region &sceneRegion = sceneGraph.sceneRegion();
-		const glm::vec3 dim = glm::vec3(sceneRegion.getDimensionsInVoxels());
-		const float farPlane = glm::max(32.0f, glm::length(dim) * 4.0f);
+		const math::Vec3f dim = math::Vec3f(sceneRegion.getDimensionsInVoxels());
+		const float farPlane = math::max(32.0f, math::length(dim) * 4.0f);
 		voxelrender::configureCamera(_traceCamera, sceneRegion, voxelrender::SceneCameraMode::Free, farPlane);
 	}
-	_traceCamera.setSize(glm::ivec2(outputResolution()));
+	_traceCamera.setSize(math::Vec2i(outputResolution()));
 	_traceCamera.update(0.0);
 }
 
@@ -318,8 +324,8 @@ bool PathTracer::createEmptyGpuScene() {
 	GpuMaterial emptyMat;
 	core_memset(&emptyMat, 0, sizeof(emptyMat));
 	_materialTex->upload(MaterialRows, 1, (const uint8_t *)&emptyMat);
-	_volumeMin = glm::ivec3(0);
-	_volumeSize = glm::ivec3(1);
+	_volumeMin = math::Vec3i(0);
+	_volumeSize = math::Vec3i(1);
 	uploadEmitLights(nullptr, 0);
 	return true;
 }
@@ -396,11 +402,11 @@ bool PathTracer::uploadSparseVolume(const SparseGpuVolume &volume, size_t materi
 		aabbs.resize((size_t)volume.brickCount);
 		const int coordsWidth = 1024;
 		const int coordsHeight = (volume.brickCount + coordsWidth - 1) / coordsWidth;
-		core::Buffer<glm::vec4> brickCoordTexels;
+		core::Buffer<math::Vec4f> brickCoordTexels;
 		brickCoordTexels.resize((size_t)coordsWidth * (size_t)coordsHeight);
-		core_memset(brickCoordTexels.data(), 0, brickCoordTexels.size() * sizeof(glm::vec4));
+		core_memset(brickCoordTexels.data(), 0, brickCoordTexels.size() * sizeof(math::Vec4f));
 		for (int i = 0; i < volume.brickCount; ++i) {
-			const glm::ivec3 &c = volume.brickCoords[i];
+			const math::Vec3i &c = volume.brickCoords[i];
 			video::AccelerationStructureAABB &box = aabbs[i];
 			box.minX = (float)(c.x * brickSize);
 			box.minY = (float)(c.y * brickSize);
@@ -408,7 +414,7 @@ bool PathTracer::uploadSparseVolume(const SparseGpuVolume &volume, size_t materi
 			box.maxX = (float)((c.x + 1) * brickSize);
 			box.maxY = (float)((c.y + 1) * brickSize);
 			box.maxZ = (float)((c.z + 1) * brickSize);
-			brickCoordTexels[i] = glm::vec4((float)c.x, (float)c.y, (float)c.z, 0.0f);
+			brickCoordTexels[i] = math::Vec4f((float)c.x, (float)c.y, (float)c.z, 0.0f);
 		}
 		_accelStruct = video::createAABBAccelerationStructure(aabbs.data(), (uint32_t)aabbs.size());
 		if (_accelStruct != video::InvalidId) {
@@ -514,17 +520,17 @@ bool PathTracer::createScene(const scenegraph::SceneGraph &sceneGraph, const vid
 void PathTracer::tracePass(int samples) {
 	core_trace_scoped(PathTracerTracePass);
 	const PathTracerParams &params = _state.params;
-	const glm::mat4 invViewProj = glm::inverse(_traceCamera.viewProjectionMatrix());
-	const float elevScale = glm::clamp((_state.params.sunElevation + 6.0f) / 12.0f, 0.1f, 1.0f);
-	const glm::vec3 sunColor = color::srgbToLinear(params.sunColor) * (params.sunIntensity * elevScale);
-	const float sunCosAngle = glm::cos(glm::radians(glm::max(params.sunSoftness, 0.05f)));
+	const math::Mat4f invViewProj = math::inverse(_traceCamera.viewProjectionMatrix());
+	const float elevScale = math::clamp((_state.params.sunElevation + 6.0f) / 12.0f, 0.1f, 1.0f);
+	const math::Vec3f sunColor = color::srgbToLinear(params.sunColor) * (params.sunIntensity * elevScale);
+	const float sunCosAngle = math::cos(math::radians(math::max(params.sunSoftness, 0.05f)));
 
 	_paramsUniforms.invviewproj = invViewProj;
 	for (int sample = 0; sample < samples; ++sample) {
-		const glm::uvec2 point = cameraSobolPoint((uint32_t)(_state.currentSample + sample));
+		const math::Vec2u point = cameraSobolPoint((uint32_t)(_state.currentSample + sample));
 		const uint32_t seedHash = sampleSeedHash((uint32_t)(_state.currentSample + sample));
 		// Split the integer hash into two exactly representable 16-bit float values.
-		_paramsUniforms.camerasamples[sample] = glm::vec4((float)(point.x >> 8u), (float)(point.y >> 8u),
+		_paramsUniforms.camerasamples[sample] = math::Vec4f((float)(point.x >> 8u), (float)(point.y >> 8u),
 														  (float)(seedHash & 0xffffu), (float)(seedHash >> 16u));
 	}
 	_paramsUniforms.camerapos = _traceCamera.eye();
@@ -538,12 +544,12 @@ void PathTracer::tracePass(int samples) {
 	_paramsUniforms.floorcolor = color::srgbToLinear(params.floorColor);
 	const float skyPower = buildSkyDistribution(_paramsUniforms.skytop, _paramsUniforms.skyhorizon,
 												_paramsUniforms.floorcolor * 0.25f, _paramsUniforms.skybands);
-	const float sunPower = glm::dot(sunColor, glm::vec3(0.2126f, 0.7152f, 0.0722f));
+	const float sunPower = math::dot(sunColor, math::Vec3f(0.2126f, 0.7152f, 0.0722f));
 	_paramsUniforms.skySamplingProbability = skyPower > 0.0f ? skyPower / (skyPower + sunPower) : 0.0f;
 	_paramsUniforms.inverseEmitterLuminance = _emitterLuminance > 0.0f ? 1.0f / _emitterLuminance : 0.0f;
 	_paramsUniforms.bgcolor = color::srgbToLinear(params.backgroundColor);
 	_paramsUniforms.fogcolor = color::srgbToLinear(params.fogColor);
-	_paramsUniforms.resolution = glm::vec2((float)_targetResolution, (float)_targetResolution);
+	_paramsUniforms.resolution = math::Vec2f((float)_targetResolution, (float)_targetResolution);
 	_paramsUniforms.suncosangle = sunCosAngle;
 	_paramsUniforms.floory = _floorY;
 	_paramsUniforms.fogdensity = params.fogDensity;
@@ -556,8 +562,8 @@ void PathTracer::tracePass(int samples) {
 	_paramsUniforms.floorenabled = params.floorEnabled ? 1 : 0;
 	_paramsUniforms.bgmode = params.background;
 	_paramsUniforms.bounces = params.bounces;
-	_paramsUniforms.edgeradius = glm::clamp(params.voxelEdge, 0.0f, 1.0f);
-	_paramsUniforms.atmosphere = glm::max(params.atmosphere, 0.0f);
+	_paramsUniforms.edgeradius = math::clamp(params.voxelEdge, 0.0f, 1.0f);
+	_paramsUniforms.atmosphere = math::max(params.atmosphere, 0.0f);
 	_paramsUniforms.lightcount = _lightCount;
 	_paramsUniforms.volumemin = _volumeMin;
 	_paramsUniforms.volumesize = _volumeSize;
@@ -603,7 +609,7 @@ void PathTracer::tracePass(int samples) {
 bool PathTracer::bloomPass(float exposure) {
 	if (_bloomFbo.handle() == video::InvalidId) {
 		video::FrameBufferConfig config;
-		config.dimension(glm::ivec2(_targetResolution));
+		config.dimension(math::Vec2i(_targetResolution));
 		config.colorTexture(true);
 		config.colorTextureFormat(video::TextureFormat::RGBA32F);
 		if (!_bloomFbo.init(config)) {
@@ -619,7 +625,7 @@ bool PathTracer::bloomPass(float exposure) {
 	FullscreenPassState passState;
 	core_assert_always(video::bindTexture(shader.getBoundTextureTexUnit(), _accum[1 - _writeAccum].texture()));
 	shader::VoxelpathtracerBloomData::FilterData filter{};
-	filter.resolution = glm::vec2((float)_targetResolution);
+	filter.resolution = math::Vec2f((float)_targetResolution);
 	filter.exposure = exposure;
 	core_assert_always(_bloomUbo.update(filter));
 	core_assert_always(shader.setFilter(_bloomUbo.getFilterUniformBuffer()));
@@ -632,14 +638,14 @@ void PathTracer::displayPass() {
 	core_trace_scoped(PathTracerDisplayPass);
 	shader::VoxelpathtracerDisplayData::DisplayData nextDisplay{};
 	const PathTracerParams &params = _state.params;
-	nextDisplay.screensize = glm::vec2((float)_targetResolution, (float)_targetResolution);
+	nextDisplay.screensize = math::Vec2f((float)_targetResolution, (float)_targetResolution);
 	nextDisplay.exposure = params.exposure;
 	nextDisplay.contrast = params.contrast;
 	nextDisplay.saturation = params.saturation;
 	nextDisplay.vignette = params.vignette;
 	nextDisplay.tonemapmode = params.toneMapping;
 	nextDisplay.checkerboard = params.background == PathTracerBackgroundTransparent ? 1 : 0;
-	nextDisplay.bloomstrength = glm::clamp(params.bloom, 0.0f, 2.0f);
+	nextDisplay.bloomstrength = math::clamp(params.bloom, 0.0f, 2.0f);
 	if (!_displayDirty && nextDisplay.screensize == _displayUniforms.screensize &&
 		nextDisplay.exposure == _displayUniforms.exposure && nextDisplay.contrast == _displayUniforms.contrast &&
 		nextDisplay.saturation == _displayUniforms.saturation && nextDisplay.vignette == _displayUniforms.vignette &&
@@ -678,7 +684,7 @@ void PathTracer::resetAccumulation() {
 }
 
 bool PathTracer::cameraPoseChanged(const video::Camera &camera) const {
-	if (!glm::equal(camera.viewProjectionMatrix(), _traceCamera.viewProjectionMatrix())) {
+	if (!math::equal(camera.viewProjectionMatrix(), _traceCamera.viewProjectionMatrix())) {
 		return true;
 	}
 	return camera.isOrthographic() != _traceCamera.isOrthographic();
@@ -690,7 +696,7 @@ void PathTracer::applyCamera(const video::Camera *camera) {
 	}
 	video::Camera cam = *camera;
 	const int resolution = outputResolution();
-	cam.setSize(glm::ivec2(resolution));
+	cam.setSize(math::Vec2i(resolution));
 	cam.update(0.0);
 	const bool changed = cameraPoseChanged(cam);
 	_traceCamera = cam;

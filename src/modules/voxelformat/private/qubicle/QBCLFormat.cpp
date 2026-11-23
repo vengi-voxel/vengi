@@ -26,7 +26,11 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/Vec3u.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -147,10 +151,10 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 							const scenegraph::SceneGraphNode &node) const {
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 	const scenegraph::SceneGraphTransform &transform = node.transform(0);
-	const glm::vec3 translation = transform.localTranslation() - node.pivot() * glm::vec3(region.getDimensionsInVoxels()) + glm::vec3(region.getLowerCorner());
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-	const glm::ivec3 size = region.getDimensionsInVoxels();
+	const math::Vec3f translation = transform.localTranslation() - node.pivot() * math::Vec3f(region.getDimensionsInVoxels()) + math::Vec3f(region.getLowerCorner());
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
+	const math::Vec3i size = region.getDimensionsInVoxels();
 
 	wrapSave(outStream.writeUInt32(1)) // unknown
 	wrapSave(outStream.writePascalStringUInt32LE(node.name()))
@@ -166,7 +170,7 @@ bool QBCLFormat::saveMatrix(io::SeekableWriteStream &outStream, const scenegraph
 	wrapSave(outStream.writeInt32(translation.y))
 	wrapSave(outStream.writeInt32(translation.z))
 
-	const glm::vec3 &normalizedPivot = node.pivot();
+	const math::Vec3f &normalizedPivot = node.pivot();
 	wrapSave(outStream.writeFloat(/* TODO: VOXELFORMAT: mins.x +*/ normalizedPivot.x * size.x))
 	wrapSave(outStream.writeFloat(/* TODO: VOXELFORMAT: mins.y +*/ normalizedPivot.y * size.y))
 	wrapSave(outStream.writeFloat(/* TODO: VOXELFORMAT: mins.z +*/ normalizedPivot.z * size.z))
@@ -312,7 +316,7 @@ bool QBCLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	wrapSave(stream->writeUInt32(qbcl::VERSION))
 	bool imageAdded = false;
 	ThumbnailContext ctx;
-	ctx.outputSize = glm::ivec2(128);
+	ctx.outputSize = math::Vec2i(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
 	if (image && image->isLoaded()) {
 		const int size = image->width() * image->height() * image->components();
@@ -376,18 +380,18 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	scenegraph::SceneGraphTransform transform;
 	Log::debug("Matrix name: %s", name.c_str());
 
-	glm::uvec3 size;
+	math::Vec3u size;
 	wrap(stream.readUInt32(size.x));
 	wrap(stream.readUInt32(size.y));
 	wrap(stream.readUInt32(size.z));
 
-	glm::ivec3 translation;
+	math::Vec3i translation;
 	wrap(stream.readInt32(translation.x));
 	wrap(stream.readInt32(translation.y));
 	wrap(stream.readInt32(translation.z));
 	transform.setLocalTranslation(translation);
 
-	glm::vec3 pivot;
+	math::Vec3f pivot;
 	wrap(stream.readFloat(pivot.x));
 	wrap(stream.readFloat(pivot.y));
 	wrap(stream.readFloat(pivot.z));
@@ -403,16 +407,16 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
+	if (math::any(math::greaterThan(size, math::Vec3u(MaxRegionSize)))) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::lessThan(size, glm::uvec3(1)))) {
+	if (math::any(math::lessThan(size, math::Vec3u(1)))) {
 		Log::warn("Size of matrix results in empty space");
 		return false;
 	}
 
-	const voxel::Region &region = voxel::Region::fromSize(size);
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i((int)size.x, (int)size.y, (int)size.z));
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -523,9 +527,9 @@ bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	// the pivot is given in voxel coordinates
-	node.setPivot(pivot / glm::vec3(size));
+	node.setPivot(pivot / math::Vec3f(size));
 	// Vengi stores translation at the pivot; QBCL stores the grid origin.
-	transform.setLocalTranslation(glm::vec3(translation) + pivot);
+	transform.setLocalTranslation(math::Vec3f(translation) + pivot);
 	node.setTransform(keyFrameIdx, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
 	return id != InvalidNodeId;

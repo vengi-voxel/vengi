@@ -12,6 +12,7 @@
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxelutil/Picking.h"
+#include "math/Mat4f.h"
 
 namespace voxedit {
 
@@ -45,7 +46,7 @@ public:
 		return *_result;
 	}
 
-	bool testMouseRayTrace(bool force, const glm::mat4 &invModel) {
+	bool testMouseRayTrace(bool force, const math::Mat4f &invModel) {
 		return mouseRayTrace(force, invModel);
 	}
 

@@ -6,6 +6,7 @@
 
 #include "voxel/Connectivity.h"
 #include "voxel/Region.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -21,8 +22,8 @@ inline int visitInside(const voxel::Region &region, bool shell, INSIDE &&inside,
 		return 0;
 	}
 	int visited = 0;
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
@@ -31,8 +32,11 @@ inline int visitInside(const voxel::Region &region, bool shell, INSIDE &&inside,
 				}
 				if (shell) {
 					bool onShell = false;
-					for (const glm::ivec3 &off : voxel::arrayPathfinderFaces) {
-						if (!inside(x + off.x, y + off.y, z + off.z)) {
+					for (const math::Vec3i &off : voxel::arrayPathfinderFaces) {
+						const int nx = x + off.x;
+						const int ny = y + off.y;
+						const int nz = z + off.z;
+						if (!region.containsPoint(nx, ny, nz) || !inside(nx, ny, nz)) {
 							onShell = true;
 							break;
 						}

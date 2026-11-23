@@ -6,6 +6,8 @@
 
 #include "Plane.h"
 #include <stdint.h>
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 namespace math {
 
@@ -32,43 +34,43 @@ enum class FrustumResult {
 class Frustum {
 private:
 	Plane _planes[FRUSTUM_PLANES_MAX];
-	glm::vec3 _frustumVertices[FRUSTUM_VERTICES_MAX];
+	math::Vec3f _frustumVertices[FRUSTUM_VERTICES_MAX];
 
 	Plane& plane(FrustumPlanes frustumPlane);
 public:
 	Frustum() {
 		for (int i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-			_frustumVertices[i] = glm::vec3(0.0f);
+			_frustumVertices[i] = math::Vec3f(0.0f);
 		}
 	}
 
-	Frustum(const glm::vec3& mins, const glm::vec3& maxs);
+	Frustum(const math::Vec3f& mins, const math::Vec3f& maxs);
 
-	void update(const glm::mat4& mat, const glm::vec3& mins, const glm::vec3& maxs);
+	void update(const math::Mat4f& mat, const math::Vec3f& mins, const math::Vec3f& maxs);
 
-	FrustumResult test(const glm::vec3& position) const;
+	FrustumResult test(const math::Vec3f& position) const;
 
-	FrustumResult test(const glm::vec3& mins, const glm::vec3& maxs) const;
+	FrustumResult test(const math::Vec3f& mins, const math::Vec3f& maxs) const;
 
-	void transform(const glm::mat4& mat);
+	void transform(const math::Mat4f& mat);
 
-	bool isVisible(const glm::vec3& mins, const glm::vec3& maxs) const;
+	bool isVisible(const math::Vec3f& mins, const math::Vec3f& maxs) const;
 
-	bool isVisible(const glm::vec3& pos) const;
+	bool isVisible(const math::Vec3f& pos) const;
 
-	bool isVisible(const glm::vec3& center, float radius) const;
+	bool isVisible(const math::Vec3f& center, float radius) const;
 
-	void split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX], bool depthZeroToOne = false) const;
+	void split(const math::Mat4f& transform, math::Vec3f out[FRUSTUM_VERTICES_MAX], bool depthZeroToOne = false) const;
 
-	void updateVertices(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne = false);
+	void updateVertices(const math::Mat4f& view, const math::Mat4f& projection, bool depthZeroToOne = false);
 
-	void updatePlanes(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne = false);
+	void updatePlanes(const math::Mat4f& view, const math::Mat4f& projection, bool depthZeroToOne = false);
 
-	void update(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne = false);
+	void update(const math::Mat4f& view, const math::Mat4f& projection, bool depthZeroToOne = false);
 
 	AABB<float> aabb() const;
 
-	void corners(glm::vec3 out[FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
+	void corners(math::Vec3f out[FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
 
 	const Plane& plane(FrustumPlanes frustumPlane) const;
 
@@ -83,7 +85,7 @@ public:
 	 * @return @c true if the given target can be seen from the given eye position in that
 	 * particular orientation, @c false otherwise.
 	 */
-	static bool isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView);
+	static bool isVisible(const math::Vec3f& eye, float orientation, const math::Vec3f& target, float fieldOfView);
 };
 
 inline Plane& Frustum::plane(FrustumPlanes frustumPlane) {
@@ -94,7 +96,7 @@ inline const Plane& Frustum::plane(FrustumPlanes frustumPlane) const {
 	return _planes[(int)frustumPlane];
 }
 
-inline void Frustum::update(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne) {
+inline void Frustum::update(const math::Mat4f& view, const math::Mat4f& projection, bool depthZeroToOne) {
 	updatePlanes(view, projection, depthZeroToOne);
 	updateVertices(view, projection, depthZeroToOne);
 }

@@ -10,6 +10,7 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -40,13 +41,13 @@ scenegraph::SceneGraphNode *authoringNode(ToolContext &ctx, const json::Json &ar
 	return node;
 }
 
-bool parseCell(const json::Json &value, glm::ivec3 &out, const char *what, core::String &error) {
+bool parseCell(const json::Json &value, math::Vec3i &out, const char *what, core::String &error) {
 	if (value.isArray() && value.size() >= 3) {
-		out = glm::ivec3(value.get(0).intVal(), value.get(1).intVal(), value.get(2).intVal());
+		out = math::Vec3i(value.get(0).intVal(), value.get(1).intVal(), value.get(2).intVal());
 		return true;
 	}
 	if (value.isObject() && value.contains("x") && value.contains("y") && value.contains("z")) {
-		out = glm::ivec3(value.intVal("x", 0), value.intVal("y", 0), value.intVal("z", 0));
+		out = math::Vec3i(value.intVal("x", 0), value.intVal("y", 0), value.intVal("z", 0));
 		return true;
 	}
 	error = core::String::format("%s must be [x, y, z]", what);
@@ -164,7 +165,7 @@ bool resolveAuthoringColor(ToolContext &ctx, scenegraph::SceneGraphNode &node, c
 	return true;
 }
 
-static int writeOne(voxedit::ModifierVolumeWrapper &wrapper, const voxel::RawVolume &volume, const glm::ivec3 &pos,
+static int writeOne(voxedit::ModifierVolumeWrapper &wrapper, const voxel::RawVolume &volume, const math::Vec3i &pos,
 					const voxel::Voxel &next) {
 	if (!volume.region().containsPoint(pos)) {
 		return -1;
@@ -235,7 +236,7 @@ bool collectSolids(const voxel::RawVolume &volume, core::DynamicArray<SolidVoxel
 			return;
 		}
 		SolidVoxel solid;
-		solid.pos = glm::ivec3(x, y, z);
+		solid.pos = math::Vec3i(x, y, z);
 		solid.voxel = voxel;
 		out.push_back(solid);
 	}, voxelutil::VisitSolid());
@@ -246,7 +247,7 @@ bool collectSolids(const voxel::RawVolume &volume, core::DynamicArray<SolidVoxel
 	return true;
 }
 
-int axisComponent(const glm::ivec3 &pos, math::Axis axis) {
+int axisComponent(const math::Vec3i &pos, math::Axis axis) {
 	if (axis == math::Axis::X) {
 		return pos.x;
 	}
@@ -256,7 +257,7 @@ int axisComponent(const glm::ivec3 &pos, math::Axis axis) {
 	return pos.z;
 }
 
-void setAxisComponent(glm::ivec3 &pos, math::Axis axis, int value) {
+void setAxisComponent(math::Vec3i &pos, math::Axis axis, int value) {
 	if (axis == math::Axis::X) {
 		pos.x = value;
 	} else if (axis == math::Axis::Y) {

@@ -10,6 +10,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -358,7 +359,7 @@ TEST_F(SculptBrushTest, testExtendPlaneFlatSurface) {
 	ASSERT_TRUE(brush.planeFitted());
 
 	// Second click: paint at x=5, z=0 to extend the flat surface
-	ctx.cursorPosition = glm::ivec3(5, 0, 0);
+	ctx.cursorPosition = math::Vec3i(5, 0, 0);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeSculpt(brush, node, ctx);
 	brush.endBrush(ctx);
@@ -404,7 +405,7 @@ TEST_F(SculptBrushTest, testExtendPlaneSlopedSurface) {
 	ASSERT_TRUE(brush.planeFitted());
 
 	// Paint at x=4, z=0 - should place voxel at y=4 (following slope y=x)
-	ctx.cursorPosition = glm::ivec3(4, 4, 0);
+	ctx.cursorPosition = math::Vec3i(4, 4, 0);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeSculpt(brush, node, ctx);
 	brush.endBrush(ctx);
@@ -453,7 +454,7 @@ TEST_F(SculptBrushTest, testExtendPlaneRemoveAbove) {
 	ASSERT_TRUE(brush.planeFitted());
 
 	// Paint at (3,0,0) - extends plane AND removes above
-	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	ctx.cursorPosition = math::Vec3i(3, 0, 0);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeSculpt(brush, node, ctx);
 	brush.endBrush(ctx);
@@ -517,7 +518,7 @@ TEST_F(SculptBrushTest, testExtendPlaneRemoveOnly) {
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(0, 0, 0).getMaterial())) << "The plane surface itself must NOT be removed";
 
 	// Paint over air at the plane height where extend would normally place a voxel.
-	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	ctx.cursorPosition = math::Vec3i(3, 0, 0);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeSculpt(brush, node, ctx);
 	brush.endBrush(ctx);
@@ -596,7 +597,7 @@ TEST_F(SculptBrushTest, testExtendPlaneExtendOnly) {
 	ASSERT_TRUE(brush.planeFitted());
 
 	// Paint adjacent to existing surface - should place
-	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	ctx.cursorPosition = math::Vec3i(3, 0, 0);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeSculpt(brush, node, ctx);
 	brush.endBrush(ctx);
@@ -605,7 +606,7 @@ TEST_F(SculptBrushTest, testExtendPlaneExtendOnly) {
 		<< "Adjacent column should be placed in extend-only mode";
 
 	// Paint far from existing surface - should NOT place
-	ctx.cursorPosition = glm::ivec3(8, 0, 0);
+	ctx.cursorPosition = math::Vec3i(8, 0, 0);
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeSculpt(brush, node, ctx);
 	brush.endBrush(ctx);

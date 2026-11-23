@@ -13,6 +13,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/Config.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -138,7 +139,7 @@ static bool canAllocatePreviewRegion(const voxel::Region &region, int maxSuggest
 	if (!region.isValid()) {
 		return false;
 	}
-	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
+	const math::Vec3i &dimensions = region.getDimensionsInVoxels();
 	if (dimensions.x <= 0 || dimensions.y <= 0 || dimensions.z <= 0) {
 		return false;
 	}
@@ -199,10 +200,10 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 								  _brushPreview.outlinePreviewPoints);
 		const voxel::Region radiusRegion(brushContext.cursorPosition - previewRadius,
 										 brushContext.cursorPosition + previewRadius);
-		glm::ivec3 minsMirror = radiusRegion.getLowerCorner();
-		glm::ivec3 maxsMirror = radiusRegion.getUpperCorner();
+		math::Vec3i minsMirror = radiusRegion.getLowerCorner();
+		math::Vec3i maxsMirror = radiusRegion.getUpperCorner();
 		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
-			const glm::ivec3 mirrorCenter = (minsMirror + maxsMirror) / 2;
+			const math::Vec3i mirrorCenter = (minsMirror + maxsMirror) / 2;
 			buildSurfaceRadiusOutline(activeVolume, mirrorCenter, brushContext.cursorFace, previewRadius,
 									  _brushPreview.outlineMirrorPreviewPoints);
 		}
@@ -217,7 +218,7 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 	}
 	if (modifier.sliceRegion().isValid()) {
 		previewContext.cursorPosition =
-			glm::clamp(previewContext.cursorPosition, modifier.sliceRegion().getLowerCorner(),
+			math::clamp(previewContext.cursorPosition, modifier.sliceRegion().getLowerCorner(),
 					   modifier.sliceRegion().getUpperCorner());
 	}
 	voxel::Region region = brush->previewRegion(previewContext, activeVolume);
@@ -268,8 +269,8 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			}
 		};
 	if (!simplePreview && canAllocatePreviewRegion(region, maxPreviewExtent)) {
-		glm::ivec3 minsMirror = region.getLowerCorner();
-		glm::ivec3 maxsMirror = region.getUpperCorner();
+		math::Vec3i minsMirror = region.getLowerCorner();
+		math::Vec3i maxsMirror = region.getUpperCorner();
 		if (brush->getMirrorBox(minsMirror, maxsMirror)) {
 			generate(_previewMirrorVolume, voxel::Region(minsMirror, maxsMirror));
 		}
@@ -304,8 +305,8 @@ void PreviewManager::updateBrushVolumePreview(Modifier &modifier, palette::Palet
 			} else {
 				_brushPreview.simplePreviewColor = activePalette.color(brushContext.cursorVoxel.getColor());
 			}
-			glm::ivec3 minsMirror = region.getLowerCorner();
-			glm::ivec3 maxsMirror = region.getUpperCorner();
+			math::Vec3i minsMirror = region.getLowerCorner();
+			math::Vec3i maxsMirror = region.getUpperCorner();
 			if (brush->getMirrorBox(minsMirror, maxsMirror)) {
 				_brushPreview.simpleMirrorPreviewRegion = voxel::Region(minsMirror, maxsMirror);
 			}

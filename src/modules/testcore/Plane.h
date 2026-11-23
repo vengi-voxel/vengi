@@ -10,6 +10,9 @@
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
 #include "core/IComponent.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 namespace video {
 class Video;
@@ -29,7 +32,7 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 	bool _planeMeshes[render::ShapeRenderer::MAX_MESHES] { false };
 public:
-	void render(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
+	void render(const video::Camera& camera, const math::Mat4f& model = math::Mat4f(1.0f)) const;
 
 	void shutdown() override;
 
@@ -42,9 +45,9 @@ public:
 	 * @param[in] tesselation The amount of splits on the plane that should be made
 	 * @param[in] color The color of the plane.
 	 */
-	bool plane(const glm::vec3& position, int tesselation = 0, const glm::vec4& color = color::White());
+	bool plane(const math::Vec3f& position, int tesselation = 0, const math::Vec4f& color = color::White());
 
-	bool plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color = color::White());
+	bool plane(const math::Vec3f& position, const math::Plane& plane, const math::Vec4f& color = color::White());
 };
 
 }

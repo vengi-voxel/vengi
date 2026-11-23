@@ -7,7 +7,6 @@
 #include "SunAngleSettings.h"
 #include "app/Async.h"
 #include "core/ArrayLength.h"
-#include "core/GLM.h"
 #include "core/ProgressScope.h"
 #include "core/SharedPtr.h"
 #include "io/FileStream.h"
@@ -31,11 +30,13 @@
 #include "voxelpathtracer/PathTracerState.h"
 #include "VoxelpathtracerShaderConstants.h"
 #include "voxelrender/RenderUtil.h"
-#include <glm/gtc/type_ptr.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/matrix_decompose.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/QuatOps.h"
 
 namespace voxedit {
 
@@ -54,11 +55,11 @@ void RenderPanel::applySceneSun() {
 	if (!_sunAngle) {
 		return;
 	}
-	glm::vec3 sunAngle(35.0f, 135.0f, 0.0f);
+	math::Vec3f sunAngle(35.0f, 135.0f, 0.0f);
 	_sunAngle->vec3Val(&sunAngle[0]);
 	voxelpathtracer::PathTracerState &state = _pathTracer.state();
 	voxelpathtracer::PathTracerParams &params = state.params;
-	if (glm::abs(params.sunElevation - sunAngle.x) > 0.01f || glm::abs(params.sunAzimuth - sunAngle.y) > 0.01f) {
+	if (math::abs(params.sunElevation - sunAngle.x) > 0.01f || math::abs(params.sunAzimuth - sunAngle.y) > 0.01f) {
 		params.sunElevation = sunAngle.x;
 		params.sunAzimuth = sunAngle.y;
 		voxelpathtracer::PathTracerConfig::saveParams(params);
@@ -78,7 +79,7 @@ void RenderPanel::renderSettings(const scenegraph::SceneGraph &sceneGraph) {
 		_pathTracer.resetAccumulation();
 	const float sunIntensity = state.sunIntensity;
 	const float sunSoftness = state.sunSoftness;
-	const glm::vec3 sunColor = state.sunColor;
+	const math::Vec3f sunColor = state.sunColor;
 	int changed = 0;
 
 	const float itemWidth = ImGui::GetFontSize() * 10.0f;
@@ -235,8 +236,8 @@ void RenderPanel::renderCameraManipulator(video::Camera &camera, float headerSiz
 	const ImU32 backgroundColor = 0;
 	const float length = camera.targetDistance();
 
-	glm::mat4 viewMatrix = camera.viewMatrix();
-	float *viewPtr = glm::value_ptr(viewMatrix);
+	math::Mat4f viewMatrix = camera.viewMatrix();
+	float *viewPtr = math::value_ptr(viewMatrix);
 
 	ImGuizmo::PushID("pathtracer");
 	ImGuizmo::SetDrawlist();
@@ -245,21 +246,21 @@ void RenderPanel::renderCameraManipulator(video::Camera &camera, float headerSiz
 	if (sceneMode) {
 		ImGuizmo::ViewManipulate(viewPtr, length, position, size, backgroundColor);
 	} else {
-		const float *projPtr = glm::value_ptr(camera.projectionMatrix());
+		const float *projPtr = math::value_ptr(camera.projectionMatrix());
 		const ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)0;
-		glm::mat4 transformMatrix = glm::mat4(1.0f);
-		float *matrixPtr = glm::value_ptr(transformMatrix);
+		math::Mat4f transformMatrix = math::Mat4f(1.0f);
+		float *matrixPtr = math::value_ptr(transformMatrix);
 		const ImGuizmo::MODE mode = ImGuizmo::MODE::LOCAL;
 		ImGuizmo::ViewManipulate(viewPtr, projPtr, operation, mode, matrixPtr, length, position, size, backgroundColor);
 	}
 	ImGuizmo::PopID();
 	if (viewMatrix != camera.viewMatrix()) {
-		glm::vec3 scale;
-		glm::vec3 translation;
-		glm::quat orientation;
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
+		math::Vec3f scale;
+		math::Vec3f translation;
+		math::Quatf orientation;
+		math::Vec3f skew;
+		math::Vec4f perspective;
+		math::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
 		camera.setOrientation(orientation);
 		camera.update(0.0);
 	}
@@ -280,11 +281,11 @@ void RenderPanel::ensureTraceCamera(const scenegraph::SceneGraph &sceneGraph) {
 		region = voxel::Region(0, 0, 0, 31, 31, 31);
 	}
 	if (_camera.size().x <= 0 || _camera.size().y <= 0) {
-		_camera.setSize(glm::ivec2(512, 512));
+		_camera.setSize(math::Vec2i(512, 512));
 	}
 	_camera.setMode(video::CameraMode::Perspective);
-	const glm::vec3 dim = glm::vec3(region.getDimensionsInVoxels());
-	const float farPlane = glm::max(32.0f, glm::length(dim) * 4.0f);
+	const math::Vec3f dim = math::Vec3f(region.getDimensionsInVoxels());
+	const float farPlane = math::max(32.0f, math::length(dim) * 4.0f);
 	voxelrender::configureCamera(_camera, region, voxelrender::SceneCameraMode::Free, farPlane);
 }
 
@@ -437,7 +438,7 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 	const float headerSize = cursorPos.y;
 	const ImVec2 contentSize = ImGui::GetContentRegionAvail();
 	if (contentSize.x > 0.0f && contentSize.y > 0.0f) {
-		_camera.setSize(glm::ivec2((int)contentSize.x, (int)contentSize.y));
+		_camera.setSize(math::Vec2i((int)contentSize.x, (int)contentSize.y));
 	}
 	if (_camera.size().x > 0 && _camera.size().y > 0) {
 		_camera.update(0.0);
@@ -454,9 +455,9 @@ void RenderPanel::update(const char *id, const scenegraph::SceneGraph &sceneGrap
 	_pathTracer.update(&_currentSample);
 	const video::TexturePtr texture = _pathTracer.texture();
 	if (texture && texture->isLoaded() && contentSize.x > 0.0f && contentSize.y > 0.0f) {
-		const glm::vec4 &uv = video::framebufferUV();
+		const math::Vec4f &uv = video::framebufferUV();
 		ImGui::SetCursorPos(cursorPos);
-		ImGui::Image(texture->handle(), contentSize, glm::vec2(uv.x, uv.y), glm::vec2(uv.z, uv.w));
+		ImGui::Image(texture->handle(), contentSize, math::Vec2f(uv.x, uv.y), math::Vec2f(uv.z, uv.w));
 	}
 
 	renderCameraManipulator(_camera, headerSize, true);

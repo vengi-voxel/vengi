@@ -11,7 +11,7 @@
 #include "voxedit-ui/ViewMode.h"
 #include "voxedit-util/Config.h"
 #include "voxel/Region.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -21,8 +21,8 @@ namespace voxedit {
 struct ModelNodeSettings {
 	core::String name;
 	core::Optional<palette::Palette> palette;
-	glm::ivec3 position;
-	glm::ivec3 size;
+	math::Vec3i position;
+	math::Vec3i size;
 	int parent = 0;
 
 	ModelNodeSettings() {
@@ -30,11 +30,11 @@ struct ModelNodeSettings {
 	}
 
 	inline void reset() {
-		position = glm::ivec3(0);
+		position = math::Vec3i(0);
 		if (core::getVar(cfg::VoxEditViewMode)->intVal() == (int)ViewMode::AceOfSpades) {
-			size = glm::ivec3(512, 64, 512);
+			size = math::Vec3i(512, 64, 512);
 		} else {
-			size = glm::ivec3(32);
+			size = math::Vec3i(32);
 		}
 		parent = 0;
 	}

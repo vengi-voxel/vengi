@@ -10,6 +10,8 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -40,7 +42,7 @@ TEST_F(TransformBrushTest, testMovePositiveX) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Move);
-	brush.setMoveOffset(glm::ivec3(2, 0, 0));
+	brush.setMoveOffset(math::Vec3i(2, 0, 0));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -74,14 +76,14 @@ TEST_F(TransformBrushTest, testMoveReversible) {
 	ctx.targetVolumeRegion = volume.region();
 
 	// Move to +3
-	brush.setMoveOffset(glm::ivec3(3, 0, 0));
+	brush.setMoveOffset(math::Vec3i(3, 0, 0));
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
 	brush.endBrush(ctx);
 	EXPECT_TRUE(voxel::isBlocked(volume.voxel(3, 0, 0).getMaterial()));
 
 	// Move back to 0 (same snapshot, different offset)
-	brush.setMoveOffset(glm::ivec3(0, 0, 0));
+	brush.setMoveOffset(math::Vec3i(0, 0, 0));
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
 	brush.endBrush(ctx);
@@ -108,7 +110,7 @@ TEST_F(TransformBrushTest, testScaleUp) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Scale);
-	brush.setScale(glm::vec3(2.0f, 2.0f, 1.0f));
+	brush.setScale(math::Vec3f(2.0f, 2.0f, 1.0f));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -141,7 +143,7 @@ TEST_F(TransformBrushTest, testRotate90) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Rotate);
-	brush.setRotationDegrees(glm::vec3(0.0f, 0.0f, 90.0f));
+	brush.setRotationDegrees(math::Vec3f(0.0f, 0.0f, 90.0f));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -185,7 +187,7 @@ TEST_F(TransformBrushTest, testCommitOnModeSwitch) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Move);
-	brush.setMoveOffset(glm::ivec3(3, 0, 0));
+	brush.setMoveOffset(math::Vec3i(3, 0, 0));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -204,7 +206,7 @@ TEST_F(TransformBrushTest, testCommitOnModeSwitch) {
 		<< "Original position should remain empty after mode switch";
 
 	// Now execute scale from the new position (3,0,0)
-	brush.setScale(glm::vec3(1.0f));
+	brush.setScale(math::Vec3f(1.0f));
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	executeTransform(brush, node, ctx);
 	brush.endBrush(ctx);
@@ -225,7 +227,7 @@ TEST_F(TransformBrushTest, testSnapshotCapturedForEvaluation) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Move);
-	brush.setMoveOffset(glm::ivec3(1, 0, 0));
+	brush.setMoveOffset(math::Vec3i(1, 0, 0));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -264,7 +266,7 @@ TEST_F(TransformBrushTest, testOnActivatedResetsState) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Move);
-	brush.setMoveOffset(glm::ivec3(3, 0, 0));
+	brush.setMoveOffset(math::Vec3i(3, 0, 0));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -276,7 +278,7 @@ TEST_F(TransformBrushTest, testOnActivatedResetsState) {
 
 	brush.onActivated();
 	EXPECT_FALSE(brush.hasSnapshot()) << "Snapshot should be cleared by onActivated";
-	EXPECT_EQ(brush.moveOffset(), glm::ivec3(0)) << "Move offset should be reset";
+	EXPECT_EQ(brush.moveOffset(), math::Vec3i(0)) << "Move offset should be reset";
 
 	brush.shutdown();
 }
@@ -299,7 +301,7 @@ TEST_F(TransformBrushTest, testMovePreservesSurfaceVoxels) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Move);
-	brush.setMoveOffset(glm::ivec3(5, 0, 0));
+	brush.setMoveOffset(math::Vec3i(5, 0, 0));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -348,7 +350,7 @@ TEST_F(TransformBrushTest, testMoveDoesNotAffectNonSelectedVoxels) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Move);
-	brush.setMoveOffset(glm::ivec3(5, 0, 0));
+	brush.setMoveOffset(math::Vec3i(5, 0, 0));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
@@ -391,7 +393,7 @@ TEST_F(TransformBrushTest, testShearPreservesAllVoxels) {
 	TransformBrush brush;
 	ASSERT_TRUE(brush.init());
 	brush.setTransformMode(TransformMode::Shear);
-	brush.setShearOffset(glm::ivec3(4, 0, 0));
+	brush.setShearOffset(math::Vec3i(4, 0, 0));
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();

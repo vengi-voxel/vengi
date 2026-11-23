@@ -72,10 +72,10 @@
 #include "core/TraceScoped.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/geometric.hpp>
-#include <glm/vector_relational.hpp>
 #include <limits>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelutil {
 
@@ -89,12 +89,12 @@ struct RaycastHit {
 	voxel::FaceNames face = voxel::FaceNames::Max;
 	float fract = 0.0f; ///< The fraction [0..1] of the ray that was traveled - 0.0 means that we were starting inside a
 						///< solid voxel - 1.0 means, that we hit nothing
-	glm::vec3 point{0.0f};
+	math::Vec3f point{0.0f};
 };
 
-RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &hitPos,
+RaycastHit raycastFaceDetection(const math::Vec3f &rayOrigin, const math::Vec3f &rayDirection, const math::Vec3f &hitPos,
 								float offsetMins = -0.5f, float offsetMaxs = 0.5f);
-RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &hitPos, float offsetMins = -0.5f,
+RaycastHit raycastFaceDetection(const math::Vec3f &rayOrigin, const math::Vec3f &hitPos, float offsetMins = -0.5f,
 								float offsetMaxs = 0.5f);
 
 /**
@@ -104,7 +104,7 @@ struct RaycastResult {
 	float length = 0.0f; ///< The length the ray traveled before being interrupted or completing
 	float fract = 0.0f; ///< The fraction [0..1] of the ray that was traveled - 0.0 means that we were starting inside a
 						///< solid voxel - 1.0 means, that we hit nothing
-	glm::ivec3 normal{0, 0, 0}; ///< The normal of the intersecting face (axis-aligned, volume/voxel space)
+	math::Vec3i normal{0, 0, 0}; ///< The normal of the intersecting face (axis-aligned, volume/voxel space)
 
 	enum Type : uint8_t {
 		Completed,	///< If the ray passed through the volume without being interrupted
@@ -115,11 +115,11 @@ struct RaycastResult {
 	bool isCompleted() const;
 	bool isInterrupted() const;
 	static RaycastResult completed(float length);
-	static RaycastResult interrupted(float length, float fract, const glm::ivec3 &normal);
+	static RaycastResult interrupted(float length, float fract, const math::Vec3i &normal);
 	// this just moves the point slightly away from the collided plane along its normal (e.g., to prevent z-fighting or
 	// embedding).
-	glm::vec3 adjustPoint(const glm::vec3 &point, float offset = 0.5f) const;
-	glm::vec3 projectOnPlane(const glm::vec3 &v) const;
+	math::Vec3f adjustPoint(const math::Vec3f &point, float offset = 0.5f) const;
+	math::Vec3f projectOnPlane(const math::Vec3f &v) const;
 };
 
 /**
@@ -130,8 +130,8 @@ struct RaycastResult {
  * @param[out] entryNormal Optional face normal of the AABB face that produced tEnter when entering from outside
  * @return false if the segment misses the box
  */
-bool clipRaySegmentToAABB(const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &mins, const glm::vec3 &maxs,
-						  float &tEnter, float &tExit, glm::ivec3 *entryNormal = nullptr);
+bool clipRaySegmentToAABB(const math::Vec3f &start, const math::Vec3f &end, const math::Vec3f &mins, const math::Vec3f &maxs,
+						  float &tEnter, float &tExit, math::Vec3i *entryNormal = nullptr);
 
 /**
  * Cast a ray through a volume by specifying the start and end positions
@@ -154,30 +154,30 @@ bool clipRaySegmentToAABB(const glm::vec3 &start, const glm::vec3 &end, const gl
  * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename Callback, class Volume>
-RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, const glm::vec3 &end, Callback &&callback) {
+RaycastResult raycastWithEndpoints(Volume *volData, const math::Vec3f &start, const math::Vec3f &end, Callback &&callback) {
 	core_trace_scoped(raycastWithEndpoints);
 	typename Volume::Sampler sampler(volData);
 
 	// Keep the original ray for length/fract reporting.
-	const glm::vec3 v3dStart = start + RaycastOffset;
-	const glm::vec3 v3dEnd = end + RaycastOffset;
-	const float rayLength = glm::length(v3dEnd - v3dStart);
+	const math::Vec3f v3dStart = start + RaycastOffset;
+	const math::Vec3f v3dEnd = end + RaycastOffset;
+	const float rayLength = math::length(v3dEnd - v3dStart);
 
 	// Geometric AABB of the voxel region: voxel [L,U] occupies [L, U+1].
 	const voxel::Region &region = volData->region();
-	const glm::vec3 boxMins = region.getLowerCornerf();
-	const glm::vec3 boxMaxs = region.getUpperCornerf() + 1.0f;
+	const math::Vec3f boxMins = region.getLowerCornerf();
+	const math::Vec3f boxMaxs = region.getUpperCornerf() + 1.0f;
 
 	float tEnter = 0.0f;
 	float tExit = 1.0f;
-	glm::ivec3 entryNormal{0, 0, 0};
+	math::Vec3i entryNormal{0, 0, 0};
 	const bool startInside =
-		glm::all(glm::greaterThanEqual(v3dStart, boxMins)) && glm::all(glm::lessThanEqual(v3dStart, boxMaxs));
+		math::all(math::greaterThanEqual(v3dStart, boxMins)) && math::all(math::lessThanEqual(v3dStart, boxMaxs));
 	const bool endInside =
-		glm::all(glm::greaterThanEqual(v3dEnd, boxMins)) && glm::all(glm::lessThanEqual(v3dEnd, boxMaxs));
+		math::all(math::greaterThanEqual(v3dEnd, boxMins)) && math::all(math::lessThanEqual(v3dEnd, boxMaxs));
 
-	glm::vec3 walkStart = v3dStart;
-	glm::vec3 walkEnd = v3dEnd;
+	math::Vec3f walkStart = v3dStart;
+	math::Vec3f walkEnd = v3dEnd;
 	if (!(startInside && endInside)) {
 		if (!clipRaySegmentToAABB(v3dStart, v3dEnd, boxMins, boxMaxs, tEnter, tExit, &entryNormal)) {
 			return RaycastResult::completed(rayLength);
@@ -185,7 +185,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 
 		// Walk a half-voxel past the exit so the first exterior cell is visited. That
 		// preserves exit detection used by cursor picking (firstInvalidPosition).
-		const float pastExit = rayLength > glm::epsilon<float>() ? (0.5f / rayLength) : 0.0f;
+		const float pastExit = rayLength > math::epsilonf ? (0.5f / rayLength) : 0.0f;
 		const float tWalkEnd = core_min(1.0f, tExit + pastExit);
 		walkStart = v3dStart + (v3dEnd - v3dStart) * tEnter;
 		walkEnd = v3dStart + (v3dEnd - v3dStart) * tWalkEnd;
@@ -198,7 +198,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 	const float y2 = walkEnd.y;
 	const float z2 = walkEnd.z;
 
-	const glm::ivec3 floorEnd(glm::floor(walkEnd));
+	const math::Vec3i floorEnd(math::floor(walkEnd));
 	const int iend = floorEnd.x;
 	const int jend = floorEnd.y;
 	const int kend = floorEnd.z;
@@ -207,9 +207,9 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
 	const int dk = ((z1 < z2) ? 1 : ((z1 > z2) ? -1 : 0));
 
-	const glm::vec3 dist = glm::abs(walkEnd - walkStart);
-	const glm::vec3 floorStart(glm::floor(walkStart));
-	const glm::vec3 maxs = floorStart + 1.0f;
+	const math::Vec3f dist = math::abs(walkEnd - walkStart);
+	const math::Vec3f floorStart(math::floor(walkStart));
+	const math::Vec3f maxs = floorStart + 1.0f;
 
 	// Amanatides & Woo: a zero direction component must never be selected as the
 	// next step. Using 1/epsilon here previously made axis-aligned rays break
@@ -228,10 +228,10 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 	sampler.setPosition(i, j, k);
 
 	// Solid-start detection must use the original ray origin, not the clipped walk start.
-	const glm::ivec3 floorOrigStart(glm::floor(v3dStart));
+	const math::Vec3i floorOrigStart(math::floor(v3dStart));
 
 	// If we entered from outside, initialize the face normal from the AABB entry face.
-	glm::ivec3 lastNormal = (tEnter > 0.0f) ? entryNormal : glm::ivec3{0, 0, 0};
+	math::Vec3i lastNormal = (tEnter > 0.0f) ? entryNormal : math::Vec3i{0, 0, 0};
 	for (;;) {
 		if (!callback(sampler)) {
 			if (i == floorOrigStart.x && j == floorOrigStart.y && k == floorOrigStart.z) {
@@ -247,7 +247,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 					continue;
 				}
 				const float face = (float)sampler.position()[axis] + (lastNormal[axis] > 0 ? 1.0f : 0.0f);
-				fract = glm::clamp((face - start[axis]) / (end[axis] - start[axis]), 0.0f, 1.0f);
+				fract = math::clamp((face - start[axis]) / (end[axis] - start[axis]), 0.0f, 1.0f);
 				break;
 			}
 			return RaycastResult::interrupted(rayLength * fract, fract, lastNormal);
@@ -261,7 +261,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 			i += di;
 
 			// we stepped along the x-axis; set normal accordingly
-			lastNormal = glm::ivec3(-di, 0, 0);
+			lastNormal = math::Vec3i(-di, 0, 0);
 
 			if (di == 1) {
 				sampler.movePositiveX();
@@ -282,7 +282,7 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 			}
 
 			// we stepped along the y-axis; set normal accordingly
-			lastNormal = glm::ivec3(0, -dj, 0);
+			lastNormal = math::Vec3i(0, -dj, 0);
 		} else {
 			if (k == kend) {
 				break;
@@ -297,11 +297,11 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
 			}
 
 			// we stepped along the z-axis; set normal accordingly
-			lastNormal = glm::ivec3(0, 0, -dk);
+			lastNormal = math::Vec3i(0, 0, -dk);
 		}
 	}
 
-	float length = glm::distance(v3dStart, glm::vec3(i + RaycastOffset, j + RaycastOffset, k + RaycastOffset));
+	float length = math::distance(v3dStart, math::Vec3f(i + RaycastOffset, j + RaycastOffset, k + RaycastOffset));
 	return RaycastResult::completed(length);
 }
 
@@ -330,9 +330,9 @@ RaycastResult raycastWithEndpoints(Volume *volData, const glm::vec3 &start, cons
  * @return A RaycastResults designating whether the ray hit anything or not
  */
 template<typename Callback, class Volume>
-RaycastResult raycastWithDirection(Volume *volData, const glm::vec3 &v3dStart, const glm::vec3 &v3dDirectionAndLength,
+RaycastResult raycastWithDirection(Volume *volData, const math::Vec3f &v3dStart, const math::Vec3f &v3dDirectionAndLength,
 								   Callback &&callback) {
-	const glm::vec3 v3dEnd = v3dStart + v3dDirectionAndLength;
+	const math::Vec3f v3dEnd = v3dStart + v3dDirectionAndLength;
 	return raycastWithEndpoints<Callback, Volume>(volData, v3dStart, v3dEnd, core::forward<Callback>(callback));
 }
 

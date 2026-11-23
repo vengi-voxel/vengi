@@ -9,9 +9,9 @@
 #include "video/Buffer.h"
 #include "core/Function.h"
 #include "core/collection/Array.h"
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace video {
 class Camera;
@@ -40,41 +40,44 @@ struct ShadowParameters {
  */
 class Shadow {
 public:
-	using Cascades = core::Array<glm::mat4, shader::VoxelShaderConstants::getMaxDepthBuffers()>;
+	using Cascades = core::Array<math::Mat4f, shader::VoxelShaderConstants::getMaxDepthBuffers()>;
 	using Distances = core::Array<float, shader::VoxelShaderConstants::getMaxDepthBuffers()>;
 private:
-	glm::vec3 _sunDirection;
-	glm::mat4 _lightView;
+	math::Vec3f _sunDirection{};
+	math::Mat4f _lightView = math::Mat4f::identity();
 	Cascades _cascades;
 	Distances _distances;
 	video::FrameBuffer _depthBuffer;
 	ShadowParameters _parameters;
 
 public:
+	Shadow() {
+		_cascades.fill(math::Mat4f::identity());
+	}
 	~Shadow();
 
 	bool init(const ShadowParameters& parameters);
 	void shutdown();
 
-	typedef core::Function<bool(int, const glm::mat4& viewProjection)> funcRender;
+	typedef core::Function<bool(int, const math::Mat4f& viewProjection)> funcRender;
 
-	void update(const video::Camera& camera, bool active, const glm::vec3& sceneMins = glm::vec3(0.0f),
-				const glm::vec3& sceneMaxs = glm::vec3(0.0f));
+	void update(const video::Camera& camera, bool active, const math::Vec3f& sceneMins = math::Vec3f(0.0f),
+				const math::Vec3f& sceneMaxs = math::Vec3f(0.0f));
 
 	bool bind(video::TextureUnit unit);
 
 	void render(const funcRender& renderCallback, bool clearDepthBuffer = true);
 
-	void setPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up);
-	void setLightViewMatrix(const glm::mat4& lightView);
+	void setPosition(const math::Vec3f& eye, const math::Vec3f& center, const math::Vec3f& up);
+	void setLightViewMatrix(const math::Mat4f& lightView);
 
 	video::FrameBuffer& depthBuffer();
 
 	const Cascades& cascades() const;
 	const Distances& distances() const;
-	const glm::vec3& sunDirection() const;
-	const glm::ivec2& dimension() const;
-	glm::vec3 sunPosition() const;
+	const math::Vec3f& sunDirection() const;
+	const math::Vec2i& dimension() const;
+	math::Vec3f sunPosition() const;
 };
 
 inline video::FrameBuffer& Shadow::depthBuffer() {
@@ -89,7 +92,7 @@ inline const Shadow::Distances& Shadow::distances() const {
 	return _distances;
 }
 
-inline const glm::vec3& Shadow::sunDirection() const {
+inline const math::Vec3f& Shadow::sunDirection() const {
 	return _sunDirection;
 }
 

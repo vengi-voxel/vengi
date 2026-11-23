@@ -13,7 +13,7 @@
 #include "ui/Panel.h"
 #include "ui/dearimgui/imgui.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 class SceneGraphNode;
@@ -39,7 +39,7 @@ private:
 	const uint32_t _yellowColor;
 	const uint32_t _darkRedColor;
 	core::VarPtr _renderNormals;
-	glm::vec3 _targetNormal{0.0f, 1.0f, 0.0f};
+	math::Vec3f _targetNormal{0.0f, 1.0f, 0.0f};
 	bool _targetValid = true;
 	bool _hasCopiedNormal = false;
 	bool _normalChangePending = false;
@@ -56,7 +56,7 @@ private:
 	bool applyNormal(scenegraph::SceneGraphNode &node);
 	void finishNormalEdit();
 	uint8_t currentSceneNormal() const;
-	void setTargetNormal(const glm::vec3 &normal);
+	void setTargetNormal(const math::Vec3f &normal);
 	void drawNormalVisualization(const palette::NormalPalette &normalPalette);
 
 public:

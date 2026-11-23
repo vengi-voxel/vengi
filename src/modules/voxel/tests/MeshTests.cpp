@@ -11,14 +11,16 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
 class MeshTest : public AbstractVoxelTest {
 protected:
-	static void addColoredQuad(Mesh &mesh, const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2,
-							   const glm::vec3 &p3, uint8_t colorIndex) {
-		auto addVertex = [&](const glm::vec3 &pos) {
+	static void addColoredQuad(Mesh &mesh, const math::Vec3f &p0, const math::Vec3f &p1, const math::Vec3f &p2,
+							   const math::Vec3f &p3, uint8_t colorIndex) {
+		auto addVertex = [&](const math::Vec3f &pos) {
 			VoxelVertex vertex;
 			vertex.position = pos;
 			vertex.colorIndex = colorIndex;
@@ -81,7 +83,7 @@ TEST_F(MeshTest, DISABLED_testSort) {
 	mesh.addTriangle(0, 3, 6);
 	mesh.addTriangle(0, 6, 4);
 
-	EXPECT_TRUE(mesh.sort(glm::vec3(100.0f, 100.0f, 100.0f)));
+	EXPECT_TRUE(mesh.sort(math::Vec3f(100.0f, 100.0f, 100.0f)));
 }
 
 // https://github.com/vengi-voxel/vengi/issues/833
@@ -118,7 +120,7 @@ TEST_F(MeshTest, testOptimizeReducesIndices) {
 	for (int z = 0; z <= gridSize; ++z) {
 		for (int x = 0; x <= gridSize; ++x) {
 			VoxelVertex vertex;
-			vertex.position = glm::vec3((float)x, 0.0f, (float)z);
+			vertex.position = math::Vec3f((float)x, 0.0f, (float)z);
 			vertex.colorIndex = color;
 			vertex.ambientOcclusion = 3;
 			vertex.normalIndex = 0;
@@ -155,7 +157,7 @@ TEST_F(MeshTest, testOptimizeWithoutSimplificationKeepsIndexCount) {
 
 	ChunkMesh chunkMesh;
 	SurfaceExtractionContext ctx =
-		buildCubicContext(&volume, region, chunkMesh, glm::ivec3(0), true, true, false, true);
+		buildCubicContext(&volume, region, chunkMesh, math::Vec3i(0), true, true, false, true);
 	extractSurface(ctx);
 
 	const Mesh &mesh = chunkMesh.mesh[0];

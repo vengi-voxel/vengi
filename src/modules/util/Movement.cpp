@@ -4,14 +4,8 @@
 
 #include "Movement.h"
 #include "command/Command.h"
-#include "core/GLM.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtc/constants.hpp>
-#include <glm/gtx/functions.hpp>
-#include <glm/gtx/norm.hpp>
-#include <glm/mat4x4.hpp>
+#include "math/Vec3f.h"
+#include "math/Axes.h"
 
 namespace util {
 
@@ -53,24 +47,24 @@ void Movement::update(double nowSeconds) {
 	updateDelta(nowSeconds);
 }
 
-glm::vec3 Movement::calculateDelta(double speed) const {
-	glm::vec3 delta(0.0f);
+math::Vec3f Movement::calculateDelta(double speed) const {
+	math::Vec3f delta(0.0f);
 	if (left()) {
-		delta += (glm::left() * (float)speed);
+		delta += (math::left() * (float)speed);
 	} else if (right()) {
-		delta += (glm::right() * (float)speed);
+		delta += (math::right() * (float)speed);
 	}
 	if (forward()) {
-		delta += (glm::forward() * (float)speed);
+		delta += (math::forward() * (float)speed);
 	} else if (backward()) {
-		delta += (glm::backward() * (float)speed);
+		delta += (math::backward() * (float)speed);
 	}
 	return delta;
 }
 
-glm::vec3 Movement::moveDelta(double speed) const {
+math::Vec3f Movement::moveDelta(double speed) const {
 	if (_deltaSeconds <= 0.0) {
-		return glm::zero<glm::vec3>();
+		return math::Vec3f(0.0f);
 	}
 	return calculateDelta(speed * _deltaSeconds);
 }

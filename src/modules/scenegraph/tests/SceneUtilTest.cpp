@@ -8,6 +8,9 @@
 #include "math/tests/TestMathHelper.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "math/Mat3f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
@@ -15,7 +18,7 @@ class SceneUtilTest : public app::AbstractTest {};
 
 TEST_F(SceneUtilTest, testCalcAdjacentRegionPositiveX) {
 	const voxel::Region source(0, 0, 0, 3, 5, 7);
-	const glm::ivec3 dims(4, 6, 8);
+	const math::Vec3i dims(4, 6, 8);
 	const voxel::Region adjacent = calcAdjacentRegion(source, voxel::FaceNames::PositiveX, dims);
 	EXPECT_EQ(4, adjacent.getLowerX());
 	EXPECT_EQ(0, adjacent.getLowerY());
@@ -27,7 +30,7 @@ TEST_F(SceneUtilTest, testCalcAdjacentRegionPositiveX) {
 
 TEST_F(SceneUtilTest, testCalcAdjacentRegionNegativeZ) {
 	const voxel::Region source(10, 10, 10, 11, 11, 11);
-	const glm::ivec3 dims(2, 2, 2);
+	const math::Vec3i dims(2, 2, 2);
 	const voxel::Region adjacent = calcAdjacentRegion(source, voxel::FaceNames::NegativeZ, dims);
 	EXPECT_EQ(10, adjacent.getLowerX());
 	EXPECT_EQ(10, adjacent.getLowerY());
@@ -38,8 +41,8 @@ TEST_F(SceneUtilTest, testCalcAdjacentRegionNegativeZ) {
 }
 
 TEST_F(SceneUtilTest, testTraceObbFacePositiveY) {
-	const math::OBBF obb(glm::vec3(0.0f), glm::vec3(2.0f, 3.0f, 4.0f), glm::mat3(1.0f));
-	const math::Ray ray(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+	const math::OBBF obb(math::Vec3f(0.0f), math::Vec3f(2.0f, 3.0f, 4.0f), math::Mat3f(1.0f));
+	const math::Ray ray(math::Vec3f(0.0f, 10.0f, 0.0f), math::Vec3f(0.0f, -1.0f, 0.0f));
 	const ObbFaceHit hit = traceObbFace(obb, ray);
 	ASSERT_NE(voxel::FaceNames::Max, hit.face);
 	EXPECT_EQ(voxel::FaceNames::PositiveY, hit.face);
@@ -47,21 +50,21 @@ TEST_F(SceneUtilTest, testTraceObbFacePositiveY) {
 }
 
 TEST_F(SceneUtilTest, testCalcAdjacentObbPositiveXRotated) {
-	const glm::mat3 rotMat(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-	const math::OBBF source(glm::vec3(0.0f), glm::vec3(2.0f, 2.0f, 2.0f), rotMat);
-	const glm::vec3 newExtents(2.0f, 2.0f, 2.0f);
+	const math::Mat3f rotMat(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f);
+	const math::OBBF source(math::Vec3f(0.0f), math::Vec3f(2.0f, 2.0f, 2.0f), rotMat);
+	const math::Vec3f newExtents(2.0f, 2.0f, 2.0f);
 	const math::OBBF adjacent = calcAdjacentObb(source, voxel::FaceNames::PositiveX, newExtents);
-	const glm::vec3 expectedOrigin = source.origin() + rotMat * glm::vec3(4.0f, 0.0f, 0.0f);
+	const math::Vec3f expectedOrigin = source.origin() + rotMat * math::Vec3f(4.0f, 0.0f, 0.0f);
 	EXPECT_VEC_NEAR(expectedOrigin, adjacent.origin(), 0.0001f);
 	EXPECT_VEC_NEAR(newExtents, adjacent.extents(), 0.0001f);
-	EXPECT_VEC_NEAR(rotMat[0], glm::mat3(adjacent.rotation())[0], 0.0001f);
-	EXPECT_VEC_NEAR(rotMat[1], glm::mat3(adjacent.rotation())[1], 0.0001f);
-	EXPECT_VEC_NEAR(rotMat[2], glm::mat3(adjacent.rotation())[2], 0.0001f);
+	EXPECT_VEC_NEAR(rotMat[0], math::Mat3f(adjacent.rotation())[0], 0.0001f);
+	EXPECT_VEC_NEAR(rotMat[1], math::Mat3f(adjacent.rotation())[1], 0.0001f);
+	EXPECT_VEC_NEAR(rotMat[2], math::Mat3f(adjacent.rotation())[2], 0.0001f);
 }
 
 TEST_F(SceneUtilTest, testAdjacentPreviewAabbSharesFourCorners) {
 	const voxel::Region source(2, 4, 6, 5, 7, 9);
-	const glm::ivec3 dims = source.getDimensionsInVoxels();
+	const math::Vec3i dims = source.getDimensionsInVoxels();
 	const math::AABB<float> sourceAabb = toAABB(source);
 	const voxel::FaceNames faces[] = {voxel::FaceNames::PositiveX, voxel::FaceNames::NegativeX,
 									  voxel::FaceNames::PositiveY, voxel::FaceNames::NegativeY,

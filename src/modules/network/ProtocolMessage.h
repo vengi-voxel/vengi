@@ -12,8 +12,10 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/Region.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
-#include <glm/gtc/type_ptr.hpp>
 
 namespace network {
 
@@ -348,7 +350,7 @@ protected:
 					return false;
 				}
 				keyFrame.interpolation = (scenegraph::InterpolationType)interpolationValue;
-				glm::mat4 matrix;
+				math::Mat4f matrix;
 				if (!deserializeMat4x4(in, matrix)) {
 					return false;
 				}
@@ -363,8 +365,8 @@ protected:
 	bool serializeRegion(const voxel::Region &region) {
 		ScopedProtocolMessageSerialization s(this, "Region");
 		core_assert_always(region.isValid());
-		const glm::ivec3 &mins = region.getLowerCorner();
-		const glm::ivec3 &maxs = region.getUpperCorner();
+		const math::Vec3i &mins = region.getLowerCorner();
+		const math::Vec3i &maxs = region.getUpperCorner();
 		if (!writeInt32(mins.x) || !writeInt32(mins.y) || !writeInt32(mins.z) || !writeInt32(maxs.x) ||
 			!writeInt32(maxs.y) || !writeInt32(maxs.z)) {
 			Log::error("Failed to serialize region");
@@ -375,7 +377,7 @@ protected:
 
 	static bool deserializeRegion(MessageStream &in, voxel::Region &region) {
 		ScopedProtocolStreamDeserialization s(in, "Region");
-		glm::ivec3 mins{0}, maxs{0};
+		math::Vec3i mins{0}, maxs{0};
 		if (in.readInt32(mins.x) == -1 || in.readInt32(mins.y) == -1 || in.readInt32(mins.z) == -1 ||
 			in.readInt32(maxs.x) == -1 || in.readInt32(maxs.y) == -1 || in.readInt32(maxs.z) == -1) {
 			Log::error("Failed to deserialize region");
@@ -387,9 +389,9 @@ protected:
 		return true;
 	}
 
-	bool serializeMat4x4(const glm::mat4 &matrix) {
+	bool serializeMat4x4(const math::Mat4f &matrix) {
 		ScopedProtocolMessageSerialization s(this, "Mat4x4");
-		const float *matrixPtr = glm::value_ptr(matrix);
+		const float *matrixPtr = math::value_ptr(matrix);
 		for (int i = 0; i < 16; ++i) {
 			if (!writeFloat(matrixPtr[i])) {
 				Log::error("Failed to serialize mat4x4");
@@ -399,20 +401,20 @@ protected:
 		return true;
 	}
 
-	static bool deserializeMat4x4(MessageStream &in, glm::mat4 &matrix) {
+	static bool deserializeMat4x4(MessageStream &in, math::Mat4f &matrix) {
 		ScopedProtocolStreamDeserialization s(in, "Mat4x4");
-		float *matrixPtr = glm::value_ptr(matrix);
+		float *matrixPtr = math::value_ptr(matrix);
 		for (int i = 0; i < 16; ++i) {
 			if (in.readFloat(matrixPtr[i]) == -1) {
 				Log::error("Failed to deserialize mat4x4");
-				matrix = glm::mat4(1.0f);
+				matrix = math::Mat4f(1.0f);
 				return false;
 			}
 		}
 		return true;
 	}
 
-	bool serializeVec3(const glm::vec3 &vec) {
+	bool serializeVec3(const math::Vec3f &vec) {
 		ScopedProtocolMessageSerialization s(this, "Vec3");
 		if (!writeFloat(vec.x) || !writeFloat(vec.y) || !writeFloat(vec.z)) {
 			Log::error("Failed to serialize vec3");
@@ -421,11 +423,11 @@ protected:
 		return true;
 	}
 
-	static bool deserializeVec3(MessageStream &in, glm::vec3 &vec) {
+	static bool deserializeVec3(MessageStream &in, math::Vec3f &vec) {
 		ScopedProtocolStreamDeserialization s(in, "Vec3");
 		if (in.readFloat(vec.x) == -1 || in.readFloat(vec.y) == -1 || in.readFloat(vec.z) == -1) {
 			Log::error("Failed to deserialize vec3");
-			vec = glm::vec3(0.0f);
+			vec = math::Vec3f(0.0f);
 			return false;
 		}
 		return true;

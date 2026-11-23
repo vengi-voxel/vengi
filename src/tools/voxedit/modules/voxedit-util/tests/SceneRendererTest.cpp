@@ -10,6 +10,8 @@
 #include "voxedit-util/modifier/ModifierRenderer.h"
 #include "voxel/Region.h"
 #include "voxelrender/RenderContext.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace voxedit {
 
@@ -121,7 +123,7 @@ TEST_F(SceneRendererTest, testClearBeforeRenderReleasesBorrowedSceneDataWithoutA
 		scenegraph::SceneGraphNode model(scenegraph::SceneGraphNodeType::Model, uuid);
 		model.createVolume(region);
 		model.palette().nippon();
-		const glm::vec3 normal[] = {glm::vec3(0, 1, 0)};
+		const math::Vec3f normal[] = {math::Vec3f(0, 1, 0)};
 		model.normalPalette().loadNormalMap(normal, lengthof(normal));
 		const int id = scene.emplace(core::move(model));
 		scene.setActiveNode(id);
@@ -129,14 +131,14 @@ TEST_F(SceneRendererTest, testClearBeforeRenderReleasesBorrowedSceneDataWithoutA
 	};
 	addModel();
 	voxelrender::RenderContext context;
-	ASSERT_TRUE(context.init(glm::ivec2(64)));
+	ASSERT_TRUE(context.init(math::Vec2i(64)));
 	context.sceneGraph = &scene;
 	video::Camera camera;
-	camera.setSize(glm::ivec2(64));
+	camera.setSize(math::Vec2i(64));
 	camera.setNearPlane(0.1f);
 	camera.setFarPlane(100);
-	camera.setWorldPosition(glm::vec3(16, 16, 16));
-	camera.lookAt(glm::vec3(4));
+	camera.setWorldPosition(math::Vec3f(16, 16, 16));
+	camera.lookAt(math::Vec3f(4));
 	camera.update(0);
 	context.beginFrame();
 	_sceneRenderer.renderScene(context, camera);

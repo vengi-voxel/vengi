@@ -21,6 +21,9 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "TestUtil.h"
+#include "math/Quatf.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -35,8 +38,8 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		IM_CHECK(node != nullptr);
 		voxel::RawVolume *volume = node->volume();
 		const core::UUID uuid = node->uuid();
-		const glm::ivec3 position = node->region().getCenter();
-		const voxel::Region selection(position - glm::ivec3(2), position + glm::ivec3(2));
+		const math::Vec3i position = node->region().getCenter();
+		const voxel::Region selection(position - math::Vec3i(2), position + math::Vec3i(2));
 		voxel::Voxel selected = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		selected.setOutline();
 		voxelutil::visitVolume(
@@ -47,7 +50,7 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.setBrushType(BrushType::Transform);
 		TransformParameters parameters;
-		parameters.translation = glm::ivec3(8, 0, 0);
+		parameters.translation = math::Vec3i(8, 0, 0);
 		IM_CHECK(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
 		ctx->Yield(5);
 		IM_CHECK(viewport->_renderContext.sceneGraph == &modifier.renderSceneGraph());
@@ -643,9 +646,9 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 
 		// set transform at frame 0 with a known position
 		scenegraph::SceneGraphTransform transform0;
-		transform0.setWorldTranslation(glm::vec3(0.0f, 0.0f, 0.0f));
-		transform0.setWorldOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
-		transform0.setWorldScale(glm::vec3(1.0f));
+		transform0.setWorldTranslation(math::Vec3f(0.0f, 0.0f, 0.0f));
+		transform0.setWorldOrientation(math::Quatf(1.0f, 0.0f, 0.0f, 0.0f));
+		transform0.setWorldScale(math::Vec3f(1.0f));
 		camNode.setTransform(0, transform0);
 
 		const int camNodeId = _sceneMgr->moveNodeToSceneGraph(camNode, sceneGraph.root().id());
@@ -657,9 +660,9 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		const scenegraph::KeyFrameIndex kfIdx = camRef.addKeyFrame(10);
 		IM_CHECK(kfIdx != InvalidKeyFrame);
 		scenegraph::SceneGraphTransform transform10;
-		transform10.setWorldTranslation(glm::vec3(100.0f, 0.0f, 0.0f));
-		transform10.setWorldOrientation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
-		transform10.setWorldScale(glm::vec3(1.0f));
+		transform10.setWorldTranslation(math::Vec3f(100.0f, 0.0f, 0.0f));
+		transform10.setWorldOrientation(math::Quatf(1.0f, 0.0f, 0.0f, 0.0f));
+		transform10.setWorldScale(math::Vec3f(1.0f));
 		camRef.setTransform(kfIdx, transform10);
 
 		// activate the camera node so activeCameraNode() returns it
@@ -671,15 +674,15 @@ void Viewport::registerUITests(ImGuiTestEngine *engine, const char *) {
 		// set frame to 0 and let the viewport update
 		_sceneMgr->setCurrentFrame(0);
 		ctx->Yield(3);
-		const glm::vec3 posAtFrame0 = _camera.worldPosition();
+		const math::Vec3f posAtFrame0 = _camera.worldPosition();
 
 		// change to frame 10 (manual scrub)
 		_sceneMgr->setCurrentFrame(10);
 		ctx->Yield(3);
-		const glm::vec3 posAtFrame10 = _camera.worldPosition();
+		const math::Vec3f posAtFrame10 = _camera.worldPosition();
 
 		// the camera should have moved
-		IM_CHECK(glm::distance(posAtFrame0, posAtFrame10) > 1.0f);
+		IM_CHECK(math::distance(posAtFrame0, posAtFrame10) > 1.0f);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "drag palette color to viewport")->TestFunc = [=](ImGuiTestContext *ctx) {

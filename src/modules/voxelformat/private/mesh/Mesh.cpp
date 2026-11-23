@@ -3,8 +3,8 @@
  */
 
 #include "Mesh.h"
-#include <glm/common.hpp>
 #include <limits>
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -20,7 +20,7 @@ void Mesh::reserveAdditionalTris(size_t numTris) {
 }
 
 void Mesh::addTriangle(const voxelformat::MeshTri &tri) {
-	const glm::vec3 &normal = tri.normal();
+	const math::Vec3f &normal = tri.normal();
 	MeshVertex vertex0;
 	vertex0.pos = tri.vertex0();
 	vertex0.uv = tri.uv0();
@@ -47,16 +47,16 @@ void Mesh::addTriangle(const voxelformat::MeshTri &tri) {
 	vertices.emplace_back(vertex2);
 }
 
-bool Mesh::calculateAABB(glm::vec3 &mins, glm::vec3 &maxs) const {
+bool Mesh::calculateAABB(math::Vec3f &mins, math::Vec3f &maxs) const {
 	if (vertices.empty()) {
-		mins = maxs = glm::vec3(0.0f);
+		mins = maxs = math::Vec3f(0.0f);
 		return false;
 	}
-	mins = glm::vec3(std::numeric_limits<float>::max());
-	maxs = glm::vec3(std::numeric_limits<float>::lowest());
+	mins = math::Vec3f(std::numeric_limits<float>::max());
+	maxs = math::Vec3f(std::numeric_limits<float>::lowest());
 	for (const MeshVertex &v : vertices) {
-		mins = glm::min(mins, v.pos);
-		maxs = glm::max(maxs, v.pos);
+		mins = math::min(mins, v.pos);
+		maxs = math::max(maxs, v.pos);
 	}
 	return true;
 }

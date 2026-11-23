@@ -5,16 +5,16 @@
 #include "VolumeRotator.h"
 #include "app/ForParallel.h"
 #include "math/Axis.h"
-#include "math/Math.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/euler_angles.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 
 namespace voxelutil {
 
@@ -26,25 +26,25 @@ namespace voxelutil {
  *
  * Uses inverse transformation (backward mapping) with trilinear sampling to avoid holes.
  */
-voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::mat4 &mat,
-							   const glm::vec3 &normalizedPivot, voxel::VoxelSampling sampling) {
-	const glm::mat4 &invMat = glm::inverse(mat);
+voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const math::Mat4f &mat,
+							   const math::Vec3f &normalizedPivot, voxel::VoxelSampling sampling) {
+	const math::Mat4f &invMat = math::inverse(mat);
 	const voxel::Region srcRegion = srcVolume->region();
 
-	const glm::vec3 pivot(normalizedPivot * glm::vec3(srcRegion.getDimensionsInVoxels()));
+	const math::Vec3f pivot(normalizedPivot * math::Vec3f(srcRegion.getDimensionsInVoxels()));
 	const voxel::Region &destRegion = srcRegion.rotate(mat, pivot);
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 
 	// Backward mapping: iterate over destination and sample from source
-	const glm::ivec3 &destMins = destRegion.getLowerCorner();
-	const glm::ivec3 &destMaxs = destRegion.getUpperCorner();
+	const math::Vec3i &destMins = destRegion.getLowerCorner();
+	const math::Vec3i &destMaxs = destRegion.getUpperCorner();
 
 	auto func = [&](int start, int end) {
 		for (int32_t z = start; z < end; ++z) {
 			for (int32_t y = destMins.y; y <= destMaxs.y; ++y) {
 				for (int32_t x = destMins.x; x <= destMaxs.x; ++x) {
 					// Transform destination coordinate back to source space using inverse transformation
-					const glm::vec3 srcPos = math::transform(invMat, glm::vec3(x, y, z), pivot);
+					const math::Vec3f srcPos = math::transform(invMat, math::Vec3f(x, y, z), pivot);
 					// Sample from source volume using generic trilinear interpolation via sampler
 					voxel::RawVolume::Sampler srcSampler(srcVolume);
 					const voxel::Voxel voxel = voxel::sampleVoxel(srcSampler, sampling, srcPos);
@@ -60,19 +60,19 @@ voxel::RawVolume *rotateVolume(const voxel::RawVolume *srcVolume, const glm::mat
 	return destVolume;
 }
 
-voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *srcVolume, const glm::ivec3 &angles,
-									  const glm::vec3 &normalizedPivot, voxel::VoxelSampling sampling) {
-	const float pitch = glm::radians((float)angles.x);
-	const float yaw = glm::radians((float)angles.y);
-	const float roll = glm::radians((float)angles.z);
-	const glm::mat4 &mat = glm::eulerAngleXYZ(pitch, yaw, roll);
+voxel::RawVolume *rotateVolumeDegrees(const voxel::RawVolume *srcVolume, const math::Vec3i &angles,
+									  const math::Vec3f &normalizedPivot, voxel::VoxelSampling sampling) {
+	const float pitch = math::radians((float)angles.x);
+	const float yaw = math::radians((float)angles.y);
+	const float roll = math::radians((float)angles.z);
+	const math::Mat4f &mat = math::eulerAngleXYZ(pitch, yaw, roll);
 	return rotateVolume(srcVolume, mat, normalizedPivot, sampling);
 }
 
 voxel::RawVolume *rotateAxis(const voxel::RawVolume *srcVolume, math::Axis axis) {
 	const voxel::Region &srcRegion = srcVolume->region();
-	const glm::ivec3 srcMins = srcRegion.getLowerCorner();
-	const glm::ivec3 srcMaxs = srcRegion.getUpperCorner();
+	const math::Vec3i srcMins = srcRegion.getLowerCorner();
+	const math::Vec3i srcMaxs = srcRegion.getUpperCorner();
 	if (axis == math::Axis::X) {
 		const voxel::Region destRegion(srcMins.x, srcMins.z, srcMins.y, srcMaxs.x, srcMaxs.z, srcMaxs.y);
 		voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
@@ -103,8 +103,8 @@ voxel::RawVolume *mirrorAxis(const voxel::RawVolume *source, math::Axis axis) {
 	voxel::RawVolume *destination = new voxel::RawVolume(source);
 
 	const voxel::Region &srcRegion = source->region();
-	const glm::ivec3 &mins = srcRegion.getLowerCorner();
-	const glm::ivec3 &maxs = srcRegion.getUpperCorner();
+	const math::Vec3i &mins = srcRegion.getLowerCorner();
+	const math::Vec3i &maxs = srcRegion.getUpperCorner();
 
 	if (axis == math::Axis::X) {
 		app::for_parallel(mins.z, maxs.z + 1, [&source, &destination, mins, maxs] (int start, int end) {

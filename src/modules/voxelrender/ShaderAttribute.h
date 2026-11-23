@@ -7,6 +7,7 @@
 #include "video/Types.h"
 #include "video/Renderer.h"
 #include "voxel/VoxelVertex.h"
+#include "math/Vec3f.h"
 
 namespace voxelrender {
 
@@ -25,9 +26,9 @@ inline video::Attribute getNormalVertexAttribute(uint32_t bufferIndex, uint32_t 
 	video::Attribute attrib;
 	attrib.bufferIndex = (int32_t)bufferIndex;
 	attrib.location = (int32_t)attributeLocation;
-	attrib.stride = sizeof(glm::vec3);
+	attrib.stride = sizeof(math::Vec3f);
 	attrib.size = components;
-	attrib.type = video::mapType<glm::vec3::value_type>();
+	attrib.type = video::mapType<math::Vec3f::value_type>();
 	attrib.offset = 0;
 	return attrib;
 }

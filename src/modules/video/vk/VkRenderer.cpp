@@ -27,6 +27,9 @@
 // Use the Vulkan declarations from flextVk with SDL's surface API.
 #define NO_SDL_VULKAN_TYPEDEFS
 #include <SDL3/SDL_vulkan.h>
+#include "math/Vec4f.h"
+#include "math/Vec3u.h"
+#include "math/Conversions.h"
 #undef NO_SDL_VULKAN_TYPEDEFS
 
 // flextVk is generated from a 1.0 profile that does not include validation-layer
@@ -817,7 +820,7 @@ struct VkState : public RendererState {
 	VkRenderPass currentRenderPass = VK_NULL_HANDLE;
 	uint32_t currentColorAttachmentCount = 0u;
 	bool currentRenderPassHasDepth = false;
-	glm::vec4 fboPassClearColor{0.0f};
+	math::Vec4f fboPassClearColor{0.0f};
 	uint8_t drawBufferMask = 0xFFu;
 	// Per-texture-unit currently bound texture. Picked up by acquireDescriptorSet
 	// to wire combined image samplers in shaders to actual VkImages.
@@ -4216,7 +4219,7 @@ static bool beginVulkanFrame(VkState &s) {
 	s.descCacheViewport[2] = -1;
 	s.descCacheScissor[2] = -1;
 
-	const glm::vec4 &cc = rendererState().pendingClearColor;
+	const math::Vec4f &cc = rendererState().pendingClearColor;
 	VkClearValue clearValues[2];
 	clearValues[0].color.float32[0] = cc.r;
 	clearValues[0].color.float32[1] = cc.g;
@@ -4517,7 +4520,7 @@ void _priv::VkRenderer::clear(ClearFlag flag) {
 		}
 	}
 	VkCommandBuffer cmd = s.frameCommandBuffers[s.currentFrame];
-	const glm::vec4 &cc = rendererState().pendingClearColor;
+	const math::Vec4f &cc = rendererState().pendingClearColor;
 	VkClearAttachment atts[9];
 	uint32_t attCount = 0u;
 	uint32_t colorCount = s.currentColorAttachmentCount;
@@ -5678,7 +5681,7 @@ static bool beginFboRenderPass(VkState &s, VkState::FramebufferHandle &fb, FboBe
 		return false;
 	}
 	VkCommandBuffer cmd = s.frameCommandBuffers[s.currentFrame];
-	const glm::vec4 &cc = rendererState().pendingClearColor;
+	const math::Vec4f &cc = rendererState().pendingClearColor;
 	VkClearValue clears[9]{};
 	for (uint32_t i = 0; i < fb.colorCount; ++i) {
 		clears[i].color.float32[0] = cc.r;
@@ -7110,12 +7113,12 @@ bool _priv::VkRenderer::copyBufferSubData(Id readBuffer, intptr_t readOffset, Id
 	return true;
 }
 
-const glm::vec4 &_priv::VkRenderer::framebufferUV() {
+const math::Vec4f &_priv::VkRenderer::framebufferUV() {
 	if (renderState().clipOriginLowerLeft) {
-		static const glm::vec4 uvFlipped(0.0f, 1.0f, 1.0f, 0.0f);
+		static const math::Vec4f uvFlipped(0.0f, 1.0f, 1.0f, 0.0f);
 		return uvFlipped;
 	}
-	static const glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
+	static const math::Vec4f uv(0.0f, 0.0f, 1.0f, 1.0f);
 	return uv;
 }
 
@@ -8766,7 +8769,7 @@ void _priv::VkRenderer::waitShader(MemoryBarrierType wait) {
 	th->hasContent = true;
 }
 
-bool _priv::VkRenderer::runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
+bool _priv::VkRenderer::runShader(Id program, const math::Vec3u &workGroups, MemoryBarrierType wait) {
 	if (workGroups.x == 0u || workGroups.y == 0u || workGroups.z == 0u) {
 		return false;
 	}

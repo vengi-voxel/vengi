@@ -1,10 +1,10 @@
+#include "math/Vec3i.h"
 /**
  * @file
  */
 
 #pragma once
 
-#include <glm/vec3.hpp>
 
 namespace voxel {
 
@@ -18,16 +18,16 @@ enum Connectivity {
 	TwentySixConnected
 };
 
-static const glm::ivec3 arrayPathfinderFaces[6] = {glm::ivec3(0, 0, -1), glm::ivec3(0, 0, +1), glm::ivec3(0, -1, 0),
-												   glm::ivec3(0, +1, 0), glm::ivec3(-1, 0, 0), glm::ivec3(+1, 0, 0)};
+static const math::Vec3i arrayPathfinderFaces[6] = {math::Vec3i(0, 0, -1), math::Vec3i(0, 0, +1), math::Vec3i(0, -1, 0),
+												   math::Vec3i(0, +1, 0), math::Vec3i(-1, 0, 0), math::Vec3i(+1, 0, 0)};
 
-static const glm::ivec3 arrayPathfinderEdges[12] = {
-	glm::ivec3(0, -1, -1), glm::ivec3(0, -1, +1), glm::ivec3(0, +1, -1), glm::ivec3(0, +1, +1),
-	glm::ivec3(-1, 0, -1), glm::ivec3(-1, 0, +1), glm::ivec3(+1, 0, -1), glm::ivec3(+1, 0, +1),
-	glm::ivec3(-1, -1, 0), glm::ivec3(-1, +1, 0), glm::ivec3(+1, -1, 0), glm::ivec3(+1, +1, 0)};
+static const math::Vec3i arrayPathfinderEdges[12] = {
+	math::Vec3i(0, -1, -1), math::Vec3i(0, -1, +1), math::Vec3i(0, +1, -1), math::Vec3i(0, +1, +1),
+	math::Vec3i(-1, 0, -1), math::Vec3i(-1, 0, +1), math::Vec3i(+1, 0, -1), math::Vec3i(+1, 0, +1),
+	math::Vec3i(-1, -1, 0), math::Vec3i(-1, +1, 0), math::Vec3i(+1, -1, 0), math::Vec3i(+1, +1, 0)};
 
-static const glm::ivec3 arrayPathfinderCorners[8] = {
-	glm::ivec3(-1, -1, -1), glm::ivec3(-1, -1, +1), glm::ivec3(-1, +1, -1), glm::ivec3(-1, +1, +1),
-	glm::ivec3(+1, -1, -1), glm::ivec3(+1, -1, +1), glm::ivec3(+1, +1, -1), glm::ivec3(+1, +1, +1)};
+static const math::Vec3i arrayPathfinderCorners[8] = {
+	math::Vec3i(-1, -1, -1), math::Vec3i(-1, -1, +1), math::Vec3i(-1, +1, -1), math::Vec3i(-1, +1, +1),
+	math::Vec3i(+1, -1, -1), math::Vec3i(+1, -1, +1), math::Vec3i(+1, +1, -1), math::Vec3i(+1, +1, +1)};
 
 } // namespace voxel

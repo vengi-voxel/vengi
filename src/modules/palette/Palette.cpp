@@ -32,9 +32,7 @@
 #include "private/PaletteFormat.h"
 
 #include <float.h>
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/gtc/constants.hpp>
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -116,12 +114,12 @@ void Palette::fill() {
 }
 
 int Palette::changeSize(int delta) {
-	_colorCount = glm::clamp(_colorCount + delta, 0, PaletteMaxColors);
+	_colorCount = math::clamp(_colorCount + delta, 0, PaletteMaxColors);
 	return _colorCount;
 }
 
 void Palette::setSize(int cnt) {
-	_colorCount = glm::clamp(cnt, 0, PaletteMaxColors);
+	_colorCount = math::clamp(cnt, 0, PaletteMaxColors);
 }
 
 uint64_t Palette::hash() const {
@@ -138,7 +136,7 @@ void Palette::markDirty() {
 	_hashDirty = true;
 }
 
-glm::vec4 Palette::color4(uint8_t i) const {
+math::Vec4f Palette::color4(uint8_t i) const {
 	return color::fromRGBA(color(i));
 }
 
@@ -363,7 +361,7 @@ bool Palette::tryAdd(color::RGBA rgba, bool skipSimilar, uint8_t *index, bool re
 	static constexpr float MaxHSBThreshold = 0.00014f;
 	if (skipSimilar) {
 		for (int i = 0; i < _colorCount; ++i) {
-			if (abs(_colors[i].a - rgba.a) > 10) {
+			if (math::abs(_colors[i].a - rgba.a) > 10) {
 				continue;
 			}
 			const float dist = color::getDistance(_colors[i], rgba, color::Distance::HSB);
@@ -561,9 +559,9 @@ void Palette::whiteBalance() {
 	// Apply the white balance by scaling each color's channels
 	for (int i = 0; i < _colorCount; ++i) {
 		color::RGBA &color = _colors[i];
-		color.r = static_cast<uint8_t>(glm::clamp(color.r * scaleR, 0.0, 255.0));
-		color.g = static_cast<uint8_t>(glm::clamp(color.g * scaleG, 0.0, 255.0));
-		color.b = static_cast<uint8_t>(glm::clamp(color.b * scaleB, 0.0, 255.0));
+		color.r = static_cast<uint8_t>(math::clamp(color.r * scaleR, 0.0, 255.0));
+		color.g = static_cast<uint8_t>(math::clamp(color.g * scaleG, 0.0, 255.0));
+		color.b = static_cast<uint8_t>(math::clamp(color.b * scaleB, 0.0, 255.0));
 	}
 	markDirty();
 	markSave();
@@ -626,10 +624,10 @@ void Palette::constrastStretching() {
 }
 
 void Palette::changeIntensity(float scale) {
-	const float f = glm::abs(scale) + 1.0f;
+	const float f = math::abs(scale) + 1.0f;
 	for (int i = 0; i < _colorCount; ++i) {
-		const glm::vec4 &color = color::fromRGBA(_colors[i]);
-		const glm::vec4 &newColor = scale < 0.0f ? color::darker(color, f) : color::brighter(color, f);
+		const math::Vec4f &color = color::fromRGBA(_colors[i]);
+		const math::Vec4f &newColor = scale < 0.0f ? color::darker(color, f) : color::brighter(color, f);
 		_colors[i] = color::getRGBA(newColor);
 	}
 	markDirty();
@@ -1169,35 +1167,35 @@ void Palette::setEmit(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected emit factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialEmit, glm::clamp(factor, 0.0f, 1.0f));
+	setMaterialValue(paletteColorIdx, MaterialEmit, math::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setMetal(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected metal factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialMetal, glm::clamp(factor, 0.0f, 1.0f));
+	setMaterialValue(paletteColorIdx, MaterialMetal, math::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setRoughness(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected roughness factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialRoughness, glm::clamp(factor, 0.0f, 1.0f));
+	setMaterialValue(paletteColorIdx, MaterialRoughness, math::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setSpecular(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected specular factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialSpecular, glm::clamp(factor, 0.0f, 1.0f));
+	setMaterialValue(paletteColorIdx, MaterialSpecular, math::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setIndexOfRefraction(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 3.0f) {
 		Log::warn("Unexpected ior value %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialIndexOfRefraction, glm::clamp(factor, 0.0f, 3.0f));
+	setMaterialValue(paletteColorIdx, MaterialIndexOfRefraction, math::clamp(factor, 0.0f, 3.0f));
 }
 
 void Palette::setAttenuation(uint8_t paletteColorIdx, float factor) {
@@ -1212,7 +1210,7 @@ void Palette::setAlpha(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected alpha factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	_colors[paletteColorIdx].a = (uint8_t)(((float)_colors[paletteColorIdx].a * glm::clamp(factor, 0.0f, 1.0f)) + 0.5f);
+	_colors[paletteColorIdx].a = (uint8_t)(((float)_colors[paletteColorIdx].a * math::clamp(factor, 0.0f, 1.0f)) + 0.5f);
 	markDirty();
 }
 
@@ -1228,7 +1226,7 @@ void Palette::setPhase(uint8_t paletteColorIdx, float factor) {
 	if (factor < 0.0f || factor > 1.0f) {
 		Log::warn("Unexpected glossiness factor %f for palette color %i", factor, paletteColorIdx);
 	}
-	setMaterialValue(paletteColorIdx, MaterialPhase, glm::clamp(factor, 0.0f, 1.0f));
+	setMaterialValue(paletteColorIdx, MaterialPhase, math::clamp(factor, 0.0f, 1.0f));
 }
 
 void Palette::setMedia(uint8_t paletteColorIdx, float factor) {
@@ -1239,9 +1237,9 @@ void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 	setMaterialValue(paletteColorIdx, MaterialLowDynamicRange, factor);
 }
 
-void Palette::toVec4f(glm::highp_vec4 *materialColors, glm::highp_vec4 *emitColors) const {
-	core_memset(materialColors, 0, sizeof(glm::highp_vec4) * PaletteMaxColors);
-	core_memset(emitColors, 0, sizeof(glm::highp_vec4) * PaletteMaxColors);
+void Palette::toVec4f(math::Vec4f *materialColors, math::Vec4f *emitColors) const {
+	core_memset(materialColors, 0, sizeof(math::Vec4f) * PaletteMaxColors);
+	core_memset(emitColors, 0, sizeof(math::Vec4f) * PaletteMaxColors);
 	constexpr float scale = 1.0f / 255.0f;
 	constexpr uint32_t emitBit = 1u << MaterialEmit;
 	for (int i = 0; i < _colorCount; ++i) {
@@ -1250,10 +1248,10 @@ void Palette::toVec4f(glm::highp_vec4 *materialColors, glm::highp_vec4 *emitColo
 		const float g = (float)rgba.g * scale;
 		const float b = (float)rgba.b * scale;
 		const float a = (float)rgba.a * scale;
-		materialColors[i] = glm::highp_vec4(r, g, b, a);
+		materialColors[i] = math::Vec4f(r, g, b, a);
 		if (_materials[i].mask & emitBit) {
 			const float emit = _materials[i].emit;
-			emitColors[i] = glm::highp_vec4(r * emit, g * emit, b * emit, a * emit);
+			emitColors[i] = math::Vec4f(r * emit, g * emit, b * emit, a * emit);
 		}
 	}
 }

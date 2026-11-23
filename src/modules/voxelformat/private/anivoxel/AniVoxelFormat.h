@@ -8,7 +8,7 @@
 #include "core/collection/DynamicMap.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "voxelformat/Format.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -31,8 +31,8 @@ protected:
 		int32_t parentId = -1;
 		core::String name;
 		float length = 0.0f;
-		glm::vec3 offset{0.0f};
-		glm::vec3 rotation{0.0f};
+		math::Vec3f offset{0.0f};
+		math::Vec3f rotation{0.0f};
 		color::RGBA color;
 		color::RGBA assignmentColor;
 		int sceneGraphNodeId = -1;

@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -36,8 +37,8 @@ TEST_F(SnapshotHelperTest, testCaptureSnapshot) {
 
 	ASSERT_TRUE(helper.hasSnapshot());
 	EXPECT_EQ(3u, helper.snapshotVoxelCount());
-	EXPECT_EQ(glm::ivec3(0, 0, 0), helper.snapshotRegion().getLowerCorner());
-	EXPECT_EQ(glm::ivec3(2, 0, 0), helper.snapshotRegion().getUpperCorner());
+	EXPECT_EQ(math::Vec3i(0, 0, 0), helper.snapshotRegion().getLowerCorner());
+	EXPECT_EQ(math::Vec3i(2, 0, 0), helper.snapshotRegion().getUpperCorner());
 	EXPECT_EQ(volume.region().getLowerCorner(), helper.capturedVolumeLower());
 }
 
@@ -76,7 +77,7 @@ TEST_F(SnapshotHelperTest, testWriteVoxelSavesToHistory) {
 
 	// Write a new voxel at an existing position
 	voxel::Voxel newVoxel = selectedVoxel(5);
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), newVoxel);
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), newVoxel);
 
 	// History should have the original voxel
 	EXPECT_FALSE(helper.historyEmpty());
@@ -92,7 +93,7 @@ TEST_F(SnapshotHelperTest, testWriteVoxelOutOfBounds) {
 
 	SnapshotHelper helper;
 	// Writing out of bounds should not crash
-	helper.writeVoxel(wrapper, glm::ivec3(100, 100, 100), selectedVoxel());
+	helper.writeVoxel(wrapper, math::Vec3i(100, 100, 100), selectedVoxel());
 	EXPECT_TRUE(helper.historyEmpty());
 }
 
@@ -109,8 +110,8 @@ TEST_F(SnapshotHelperTest, testRevertChanges) {
 	helper.captureSnapshot(&volume, volume.region());
 
 	// Overwrite voxels
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(10));
-	helper.writeVoxel(wrapper, glm::ivec3(1, 0, 0), selectedVoxel(20));
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), selectedVoxel(10));
+	helper.writeVoxel(wrapper, math::Vec3i(1, 0, 0), selectedVoxel(20));
 
 	EXPECT_EQ(10, volume.voxel(0, 0, 0).getColor());
 	EXPECT_EQ(20, volume.voxel(1, 0, 0).getColor());
@@ -135,7 +136,7 @@ TEST_F(SnapshotHelperTest, testRestoreHistory) {
 	helper.captureSnapshot(&volume, volume.region());
 
 	// Write new voxel
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(10));
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), selectedVoxel(10));
 	EXPECT_EQ(10, volume.voxel(0, 0, 0).getColor());
 
 	// Restore history (like evaluate() does between frames)
@@ -153,14 +154,14 @@ TEST_F(SnapshotHelperTest, testAdjustForRegionShift) {
 	helper.captureSnapshot(&volume, volume.region());
 
 	ASSERT_TRUE(helper.hasSnapshot());
-	EXPECT_EQ(glm::ivec3(0, 0, 0), helper.snapshotRegion().getLowerCorner());
+	EXPECT_EQ(math::Vec3i(0, 0, 0), helper.snapshotRegion().getLowerCorner());
 
 	// Shift by (3, 0, 0)
-	const glm::ivec3 delta(3, 0, 0);
+	const math::Vec3i delta(3, 0, 0);
 	helper.adjustForRegionShift(delta);
 
-	EXPECT_EQ(glm::ivec3(3, 0, 0), helper.snapshotRegion().getLowerCorner());
-	EXPECT_EQ(glm::ivec3(4, 0, 0), helper.snapshotRegion().getUpperCorner());
+	EXPECT_EQ(math::Vec3i(3, 0, 0), helper.snapshotRegion().getLowerCorner());
+	EXPECT_EQ(math::Vec3i(4, 0, 0), helper.snapshotRegion().getUpperCorner());
 	EXPECT_EQ(volume.region().getLowerCorner() + delta, helper.capturedVolumeLower());
 
 	// Verify snapshot data was shifted
@@ -182,11 +183,11 @@ TEST_F(SnapshotHelperTest, testAdjustForRegionShiftWithHistory) {
 	helper.captureSnapshot(&volume, volume.region());
 
 	// Create history entry by writing
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(10));
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), selectedVoxel(10));
 	EXPECT_FALSE(helper.historyEmpty());
 
 	// Shift
-	const glm::ivec3 delta(2, 0, 0);
+	const math::Vec3i delta(2, 0, 0);
 	helper.adjustForRegionShift(delta);
 
 	// History should also be shifted
@@ -203,7 +204,7 @@ TEST_F(SnapshotHelperTest, testClear) {
 
 	SnapshotHelper helper;
 	helper.captureSnapshot(&volume, volume.region());
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(10));
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), selectedVoxel(10));
 
 	ASSERT_TRUE(helper.hasSnapshot());
 	ASSERT_FALSE(helper.historyEmpty());
@@ -227,8 +228,8 @@ TEST_F(SnapshotHelperTest, testSaveToHistoryDeduplicates) {
 	helper.captureSnapshot(&volume, volume.region());
 
 	// Write twice to same position
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(10));
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(20));
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), selectedVoxel(10));
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), selectedVoxel(20));
 
 	// History should still have the original value (color 1)
 	EXPECT_EQ(20, volume.voxel(0, 0, 0).getColor());
@@ -251,7 +252,7 @@ TEST_F(SnapshotHelperTest, testWriteVoxelToAirPosition) {
 	helper.captureSnapshot(&volume, volume.region());
 
 	// Write to air position - history should track the air voxel
-	helper.writeVoxel(wrapper, glm::ivec3(0, 0, 0), selectedVoxel(5));
+	helper.writeVoxel(wrapper, math::Vec3i(0, 0, 0), selectedVoxel(5));
 	EXPECT_EQ(5, volume.voxel(0, 0, 0).getColor());
 
 	// Revert should restore air

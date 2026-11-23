@@ -9,7 +9,6 @@
 #include <list>
 #include <algorithm>
 #include <limits>
-#include <glm/vec2.hpp>
 #include "Rect.h"
 #include "core/DirtyState.h"
 
@@ -87,8 +86,8 @@ private:
 			}
 
 			const auto& rect = getRect();
-			const glm::tvec2<TYPE>& rectSize = rect.size();
-			const glm::tvec2<TYPE> one((TYPE)1);
+			const typename Vec2Of<TYPE>::Type& rectSize = rect.size();
+			const typename Vec2Of<TYPE>::Type one((TYPE)1);
 			if (rectSize.x <= one.x && rectSize.y <= one.y) {
 				return;
 			}

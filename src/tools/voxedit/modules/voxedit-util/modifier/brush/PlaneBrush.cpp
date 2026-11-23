@@ -11,6 +11,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelutil/VoxelUtil.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -45,25 +47,25 @@ int PlaneBrush::calculateThickness(const BrushContext &ctx) const {
 void PlaneBrush::reset() {
 	Super::reset();
 	_hitVoxel = voxel::Voxel();
-	_initialPlanePos = glm::ivec3(0);
+	_initialPlanePos = math::Vec3i(0);
 }
 
-bool PlaneBrush::projectCursor(const math::Ray &ray, glm::ivec3 &position) const {
+bool PlaneBrush::projectCursor(const math::Ray &ray, math::Vec3i &position) const {
 	const math::Axis axis = voxel::faceToAxis(_boxGesture.face());
 	if (!_boxGesture.active() || axis == math::Axis::None) {
 		return false;
 	}
 	position = _initialPlanePos;
 	const int idx = math::getIndexForAxis(axis);
-	const glm::vec3 direction = glm::normalize(ray.direction);
+	const math::Vec3f direction = math::normalize(ray.direction);
 	const float denominator = 1.0f - direction[idx] * direction[idx];
 	if (denominator > 0.0001f) {
 		// Closest point on the extrusion axis to the mouse ray. Picking the
 		// source surface again would keep the height fixed throughout the drag.
-		const glm::vec3 anchor = glm::vec3(_initialPlanePos) + 0.5f;
-		const glm::vec3 offset = ray.origin - anchor;
-		const float distance = (offset[idx] - direction[idx] * glm::dot(offset, direction)) / denominator;
-		position[idx] = (int)glm::floor(anchor[idx] + distance);
+		const math::Vec3f anchor = math::Vec3f(_initialPlanePos) + 0.5f;
+		const math::Vec3f offset = ray.origin - anchor;
+		const float distance = (offset[idx] - direction[idx] * math::dot(offset, direction)) / denominator;
+		position[idx] = (int)math::floor(anchor[idx] + distance);
 	}
 	return true;
 }

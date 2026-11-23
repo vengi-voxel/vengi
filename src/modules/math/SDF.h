@@ -1,32 +1,32 @@
 /**
- * @file
- * @brief Signed distance functions based on the mathematical formulations from https://iquilezles.org/articles/distfunctions/
- */
+* @file
+* @brief Signed distance functions based on the mathematical formulations from https://iquilezles.org/articles/distfunctions/
+*/
 
 #pragma once
 
-#include <glm/fwd.hpp>
+#include "math/Vec3f.h"
 
 namespace math {
 namespace sdf {
 
 // Goxel-compatible SDFs (used by the gox format loader)
-float goxSphere(const glm::vec3 &p, const glm::vec3 &s);
-float goxCube(const glm::vec3 &p, const glm::vec3 &s);
-float goxCylinder(const glm::vec3 &p, const glm::vec3 &s);
+float goxSphere(const math::Vec3f &p, const math::Vec3f &s);
+float goxCube(const math::Vec3f &p, const math::Vec3f &s);
+float goxCylinder(const math::Vec3f &p, const math::Vec3f &s);
 
-float sphere(const glm::vec3 &p, float r);
-float box(const glm::vec3 &p, const glm::vec3 &b);
-float roundBox(const glm::vec3 &p, const glm::vec3 &b, float r);
-float boxFrame(const glm::vec3 &p, const glm::vec3 &b, float e);
-float torus(const glm::vec3 &p, float majorRadius, float minorRadius);
-float capsule(const glm::vec3 &p, const glm::vec3 &a, const glm::vec3 &b, float r);
-float cone(const glm::vec3 &p, float angle, float h);
-float roundCone(const glm::vec3 &p, float r1, float r2, float h);
-float plane(const glm::vec3 &p, const glm::vec3 &n, float h);
-float octahedron(const glm::vec3 &p, float s);
-float pyramid(const glm::vec3 &p, float h);
-float ellipsoid(const glm::vec3 &p, const glm::vec3 &r);
+float sphere(const math::Vec3f &p, float r);
+float box(const math::Vec3f &p, const math::Vec3f &b);
+float roundBox(const math::Vec3f &p, const math::Vec3f &b, float r);
+float boxFrame(const math::Vec3f &p, const math::Vec3f &b, float e);
+float torus(const math::Vec3f &p, float majorRadius, float minorRadius);
+float capsule(const math::Vec3f &p, const math::Vec3f &a, const math::Vec3f &b, float r);
+float cone(const math::Vec3f &p, float angle, float h);
+float roundCone(const math::Vec3f &p, float r1, float r2, float h);
+float plane(const math::Vec3f &p, const math::Vec3f &n, float h);
+float octahedron(const math::Vec3f &p, float s);
+float pyramid(const math::Vec3f &p, float h);
+float ellipsoid(const math::Vec3f &p, const math::Vec3f &r);
 
 } // namespace sdf
 } // namespace math

@@ -17,6 +17,7 @@
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 class RawVolumeBenchmark : public app::AbstractBenchmark {
 protected:
@@ -169,7 +170,7 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, FillBehindPlane)(benchmark::State &state)
 	for (auto _ : state) {
 		for (int b = 0; b < side; ++b) {
 			for (int a = 0; a < side; ++a) {
-				glm::ivec3 pos(0);
+				math::Vec3i pos(0);
 				pos[dAxis] = slice;
 				pos[aAxis] = a;
 				pos[bAxis] = b;
@@ -296,7 +297,7 @@ BENCHMARK_DEFINE_F(RawVolumeBenchmark, Large512MemoryAndBounds)(benchmark::State
 	voxel::RawVolume volume(voxel::Region(-256, 255));
 	fillBenchmarkVolume(volume, content);
 	for (auto _ : state) {
-		glm::ivec3 mins, maxs;
+		math::Vec3i mins, maxs;
 		benchmark::DoNotOptimize(voxelutil::computeSolidBounds(&volume, mins, maxs));
 		benchmark::DoNotOptimize(mins);
 		benchmark::DoNotOptimize(maxs);

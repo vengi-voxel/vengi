@@ -64,6 +64,16 @@
 #include "voxelutil/VolumeSelect.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include "math/Quatf.h"
+#include "math/Mat3f.h"
+#include "math/Vec4i.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Conversions.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
 
 #define GENERATOR_LUA_SANTITY 1
 
@@ -278,19 +288,22 @@ static T* luaVoxel_globalData(lua_State *L, const core::String& prefix) {
 	return data;
 }
 
-template<int N, class T>
-static glm::vec<N, T> luaVoxel_getvec(lua_State *s, int idx) {
-	glm::vec<N, T> val;
-	if (clua_isvec<decltype(val)>(s, idx)) {
-		val = clua_tovec<decltype(val)>(s, idx);
+template<class V>
+static V luaVoxel_getvec(lua_State *s, int idx) {
+	V val(0);
+	if (clua_isvec<V>(s, idx)) {
+		val = clua_tovec<V>(s, idx);
 	} else {
-		val[0] = (T)luaL_checknumber(s, idx);
-		if constexpr (N > 1)
-			val[1] = (T)luaL_optnumber(s, idx + 1, val[0]);
-		if constexpr (N > 2)
-			val[2] = (T)luaL_optnumber(s, idx + 2, val[1]);
-		if constexpr (N > 3)
-			val[3] = (T)luaL_optnumber(s, idx + 3, val[2]);
+		val[0] = (typename V::value_type)luaL_checknumber(s, idx);
+		if (V::length() > 1) {
+			val[1] = (typename V::value_type)luaL_optnumber(s, idx + 1, val[0]);
+		}
+		if (V::length() > 2) {
+			val[2] = (typename V::value_type)luaL_optnumber(s, idx + 2, val[1]);
+		}
+		if (V::length() > 3) {
+			val[3] = (typename V::value_type)luaL_optnumber(s, idx + 3, val[2]);
+		}
 	}
 	return val;
 }
@@ -472,7 +485,7 @@ static int luaVoxel_volumewrapper_translate(lua_State* s) {
 	const int x = (int)luaL_checkinteger(s, 2);
 	const int y = (int)luaL_optinteger(s, 3, 0);
 	const int z = (int)luaL_optinteger(s, 4, 0);
-	volume->volume()->translate(glm::ivec3(x, y, z));
+	volume->volume()->translate(math::Vec3i(x, y, z));
 	return 0;
 }
 
@@ -499,7 +512,7 @@ static int luaVoxel_volumewrapper_move(lua_State* s) {
 
 	voxel::RawVolume* newVolume = new voxel::RawVolume(volume->region());
 	voxel::RawVolumeMoveWrapper wrapper(newVolume);
-	glm::ivec3 offsets(x, y, z);
+	math::Vec3i offsets(x, y, z);
 	voxelutil::moveVolume(&wrapper, volume, offsets);
 	volume->setVolume(newVolume);
 	return 0;
@@ -526,7 +539,7 @@ static int luaVoxel_volumewrapper_resize(lua_State *s) {
 	const int h = (int)luaL_optinteger(s, 3, 0);
 	const int d = (int)luaL_optinteger(s, 4, 0);
 	const bool extendMins = (int)clua_optboolean(s, 5, false);
-	voxel::RawVolume *v = voxelutil::resize(volume->volume(), glm::ivec3(w, h, d), extendMins);
+	voxel::RawVolume *v = voxelutil::resize(volume->volume(), math::Vec3i(w, h, d), extendMins);
 	if (v == nullptr) {
 		return clua_error(s, "Failed to resize the volume");
 	}
@@ -679,7 +692,7 @@ static int luaVoxel_volumewrapper_text(lua_State *s) {
 		clua_error(s, "Could not initialize font %s", ttffont);
 	}
 	const char **str = &text;
-	glm::ivec3 pos(x, y, z);
+	math::Vec3i pos(x, y, z);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	for (int c = core::unicode::next(str); c != -1; c = core::unicode::next(str)) {
 		pos.x += font.renderCharacter(c, size, thickness, pos, *volume, voxel);
@@ -769,7 +782,7 @@ static int luaVoxel_volumewrapper_visitslopesurface(lua_State *s) {
 	const int maxDeviation = (int)luaL_checkinteger(s, 6);
 	const int sampleDistance = (int)luaL_checkinteger(s, 7);
 	luaL_checktype(s, 8, LUA_TFUNCTION);
-	const glm::ivec3 position(x, y, z);
+	const math::Vec3i position(x, y, z);
 	const voxel::RawVolumeWrapper &wrapper = static_cast<const voxel::RawVolumeWrapper &>(*volume);
 	int cnt = voxelutil::visitSlopeSurface(wrapper, position, face, maxDeviation, sampleDistance,
 		[s](int vx, int vy, int vz, const voxel::Voxel &) {
@@ -790,7 +803,7 @@ static int luaVoxel_volumewrapper_lassocontains(lua_State *s) {
 	const int pv = (int)luaL_checkinteger(s, 4);
 	const int uAxis = (int)luaL_checkinteger(s, 5);
 	const int vAxis = (int)luaL_checkinteger(s, 6);
-	core::DynamicArray<glm::ivec3> path;
+	core::DynamicArray<math::Vec3i> path;
 	const int len = (int)lua_rawlen(s, 2);
 	path.reserve(len);
 	for (int i = 1; i <= len; ++i) {
@@ -805,7 +818,7 @@ static int luaVoxel_volumewrapper_lassocontains(lua_State *s) {
 		const int pz = (int)lua_tointeger(s, -1);
 		lua_pop(s, 1);
 		lua_pop(s, 1);
-		path.push_back(glm::ivec3(px, py, pz));
+		path.push_back(math::Vec3i(px, py, pz));
 	}
 	lua_pushboolean(s, voxelutil::lassoContains(path, pu, pv, uAxis, vAxis) ? 1 : 0);
 	return 1;
@@ -821,8 +834,8 @@ static void luaVoxel_facePlaneAxes(voxel::FaceNames face, int &uAxis, int &vAxis
 
 static int luaVoxel_volumewrapper_linedrapesurface(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3 a((int)luaL_checkinteger(s, 2), (int)luaL_checkinteger(s, 3), (int)luaL_checkinteger(s, 4));
-	const glm::ivec3 b((int)luaL_checkinteger(s, 5), (int)luaL_checkinteger(s, 6), (int)luaL_checkinteger(s, 7));
+	const math::Vec3i a((int)luaL_checkinteger(s, 2), (int)luaL_checkinteger(s, 3), (int)luaL_checkinteger(s, 4));
+	const math::Vec3i b((int)luaL_checkinteger(s, 5), (int)luaL_checkinteger(s, 6), (int)luaL_checkinteger(s, 7));
 	const voxel::FaceNames face = luaVoxel_getFace(s, 8);
 	const int width = (int)luaL_checkinteger(s, 9);
 	luaL_checktype(s, 10, LUA_TFUNCTION);
@@ -846,8 +859,8 @@ static int luaVoxel_volumewrapper_linedrapesurface(lua_State *s) {
 
 static int luaVoxel_volumewrapper_linemarksolid(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3 a((int)luaL_checkinteger(s, 2), (int)luaL_checkinteger(s, 3), (int)luaL_checkinteger(s, 4));
-	const glm::ivec3 b((int)luaL_checkinteger(s, 5), (int)luaL_checkinteger(s, 6), (int)luaL_checkinteger(s, 7));
+	const math::Vec3i a((int)luaL_checkinteger(s, 2), (int)luaL_checkinteger(s, 3), (int)luaL_checkinteger(s, 4));
+	const math::Vec3i b((int)luaL_checkinteger(s, 5), (int)luaL_checkinteger(s, 6), (int)luaL_checkinteger(s, 7));
 	const int width = (int)luaL_checkinteger(s, 8);
 	luaL_checktype(s, 9, LUA_TFUNCTION);
 	const voxel::Region &region = volume->region();
@@ -929,7 +942,7 @@ static int luaVoxel_volumewrapper_istouching(lua_State *s) {
 	} else if (SDL_strcmp(connectivityStr, "26") == 0) {
 		connectivity = voxel::Connectivity::TwentySixConnected;
 	}
-	lua_pushboolean(s, voxelutil::isTouching(*volume->volume(), glm::ivec3(x, y, z), connectivity) ? 1 : 0);
+	lua_pushboolean(s, voxelutil::isTouching(*volume->volume(), math::Vec3i(x, y, z), connectivity) ? 1 : 0);
 	return 1;
 }
 
@@ -995,12 +1008,12 @@ static int luaVoxel_volumewrapper_pathfinder(lua_State *s) {
 	const float hBias = (float)luaL_optnumber(s, 9, 4.0);
 	const int maxNodes = (int)luaL_optinteger(s, 10, 10000);
 
-	const glm::ivec3 start(startX, startY, startZ);
-	const glm::ivec3 end(endX, endY, endZ);
+	const math::Vec3i start(startX, startY, startZ);
+	const math::Vec3i end(endX, endY, endZ);
 
-	core::List<glm::ivec3> listResult(4096);
+	core::List<math::Vec3i> listResult(4096);
 	const voxel::RawVolume *vol = volume->volume();
-	auto func = [connectivity](const voxel::RawVolume *v, const glm::ivec3 &pos) {
+	auto func = [connectivity](const voxel::RawVolume *v, const math::Vec3i &pos) {
 		if (!v->region().containsPoint(pos)) {
 			return false;
 		}
@@ -1019,7 +1032,7 @@ static int luaVoxel_volumewrapper_pathfinder(lua_State *s) {
 
 	int idx = 1;
 	lua_createtable(s, (int)listResult.size(), 0);
-	for (const glm::ivec3 &p : listResult) {
+	for (const math::Vec3i &p : listResult) {
 		lua_pushinteger(s, idx++);
 		lua_createtable(s, 0, 3);
 		lua_pushinteger(s, p.x);
@@ -1041,7 +1054,7 @@ static int luaVoxel_volumewrapper_erasePlane(lua_State *s) {
 	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
 	const voxel::Voxel groundVoxel = luaVoxel_getVoxel(s, 6);
 	const int thickness = (int)luaL_optinteger(s, 7, 1);
-	const int count = voxelutil::erasePlane(*volume, glm::ivec3(x, y, z), face, groundVoxel, thickness);
+	const int count = voxelutil::erasePlane(*volume, math::Vec3i(x, y, z), face, groundVoxel, thickness);
 	lua_pushinteger(s, count);
 	return 1;
 }
@@ -1055,7 +1068,7 @@ static int luaVoxel_volumewrapper_extrudePlane(lua_State *s) {
 	const voxel::Voxel groundVoxel = luaVoxel_getVoxel(s, 6);
 	const voxel::Voxel newPlaneVoxel = luaVoxel_getVoxel(s, 7);
 	const int thickness = (int)luaL_optinteger(s, 8, 1);
-	const int count = voxelutil::extrudePlane(*volume, glm::ivec3(x, y, z), face, groundVoxel, newPlaneVoxel, thickness);
+	const int count = voxelutil::extrudePlane(*volume, math::Vec3i(x, y, z), face, groundVoxel, newPlaneVoxel, thickness);
 	lua_pushinteger(s, count);
 	return 1;
 }
@@ -1068,7 +1081,7 @@ static int luaVoxel_volumewrapper_overridePlane(lua_State *s) {
 	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
 	const voxel::Voxel replaceVoxel = luaVoxel_getVoxel(s, 6);
 	const int thickness = (int)luaL_optinteger(s, 7, 1);
-	const int count = voxelutil::overridePlane(*volume, glm::ivec3(x, y, z), face, replaceVoxel, thickness);
+	const int count = voxelutil::overridePlane(*volume, math::Vec3i(x, y, z), face, replaceVoxel, thickness);
 	lua_pushinteger(s, count);
 	return 1;
 }
@@ -1081,7 +1094,7 @@ static int luaVoxel_volumewrapper_paintPlane(lua_State *s) {
 	const voxel::FaceNames face = luaVoxel_getFace(s, 5);
 	const voxel::Voxel searchVoxel = luaVoxel_getVoxel(s, 6);
 	const voxel::Voxel replaceVoxel = luaVoxel_getVoxel(s, 7);
-	const int count = voxelutil::paintPlane(*volume, glm::ivec3(x, y, z), face, searchVoxel, replaceVoxel);
+	const int count = voxelutil::paintPlane(*volume, math::Vec3i(x, y, z), face, searchVoxel, replaceVoxel);
 	lua_pushinteger(s, count);
 	return 1;
 }
@@ -1102,7 +1115,7 @@ static int luaVoxel_volumewrapper_rotateVolumeDegrees(lua_State *s) {
 	const float px = (float)luaL_optnumber(s, 5, 0.5);
 	const float py = (float)luaL_optnumber(s, 6, 0.5);
 	const float pz = (float)luaL_optnumber(s, 7, 0.5);
-	voxel::RawVolume *v = voxelutil::rotateVolumeDegrees(volume->volume(), glm::ivec3(angx, angy, angz), glm::vec3(px, py, pz));
+	voxel::RawVolume *v = voxelutil::rotateVolumeDegrees(volume->volume(), math::Vec3i(angx, angy, angz), math::Vec3f(px, py, pz));
 	if (v == nullptr) {
 		return clua_error(s, "Failed to rotate volume");
 	}
@@ -1125,12 +1138,12 @@ static int luaVoxel_volumewrapper_scaleUp(lua_State *s) {
 static int luaVoxel_volumewrapper_scaleDown(lua_State *s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
 	const voxel::Region &srcRegion = volume->region();
-	const glm::ivec3 &srcDims = srcRegion.getDimensionsInVoxels();
-	const glm::ivec3 destDims = srcDims / 2;
+	const math::Vec3i &srcDims = srcRegion.getDimensionsInVoxels();
+	const math::Vec3i destDims = srcDims / 2;
 	if (destDims.x <= 0 || destDims.y <= 0 || destDims.z <= 0) {
 		return clua_error(s, "Volume too small to scale down");
 	}
-	const voxel::Region destRegion(glm::ivec3(0), destDims - 1);
+	const voxel::Region destRegion(math::Vec3i(0), destDims - 1);
 	voxel::RawVolume *destVolume = new voxel::RawVolume(destRegion);
 	voxelutil::scaleDown(*volume->volume(), volume->node()->palette(), srcRegion, *destVolume, destRegion);
 	volume->setVolume(destVolume);
@@ -1146,7 +1159,7 @@ static int luaVoxel_volumewrapper_scaleVolume(lua_State *s) {
 	const float px = (float)luaL_optnumber(s, 5, 0.0);
 	const float py = (float)luaL_optnumber(s, 6, 0.0);
 	const float pz = (float)luaL_optnumber(s, 7, 0.0);
-	voxel::RawVolume *v = voxelutil::scaleVolume(volume->volume(), glm::vec3(sx, sy, sz), glm::vec3(px, py, pz));
+	voxel::RawVolume *v = voxelutil::scaleVolume(volume->volume(), math::Vec3f(sx, sy, sz), math::Vec3f(px, py, pz));
 	if (v == nullptr) {
 		return clua_error(s, "Failed to scale volume");
 	}
@@ -1172,7 +1185,7 @@ static int luaVoxel_volumewrapper_fillPlane(lua_State *s) {
 	const int y = (int)luaL_checkinteger(s, 5);
 	const int z = (int)luaL_checkinteger(s, 6);
 	const voxel::FaceNames face = luaVoxel_getFace(s, 7);
-	const int count = voxelutil::fillPlane(*volume, image, searchedVoxel, glm::ivec3(x, y, z), face);
+	const int count = voxelutil::fillPlane(*volume, image, searchedVoxel, math::Vec3i(x, y, z), face);
 	lua_pushinteger(s, count);
 	return 1;
 }
@@ -1469,7 +1482,7 @@ static int luaVoxel_sparsevolume_tostring(lua_State *s) {
 
 static int luaVoxel_shape_cylinder(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::vec3& centerBottom = clua_tovec<glm::vec3>(s, 2);
+	const math::Vec3f& centerBottom = clua_tovec<math::Vec3f>(s, 2);
 	const math::Axis axis = luaVoxel_getAxis(s, 3);
 	const int radius = (int)luaL_checkinteger(s, 4);
 	const int height = (int)luaL_checkinteger(s, 5);
@@ -1480,20 +1493,20 @@ static int luaVoxel_shape_cylinder(lua_State* s) {
 
 static int luaVoxel_shape_torus(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& center = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& center = clua_tovec<math::Vec3i>(s, 2);
 	const math::Axis axis = luaVoxel_getAxis(s, 3);
 	const int width = (int)luaL_checkinteger(s, 4);
 	const int height = (int)luaL_checkinteger(s, 5);
 	const int depth = (int)luaL_checkinteger(s, 6);
 	const int minorRadius = (int)luaL_optinteger(s, 7, 0);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 8);
-	shape::createTorus(*volume, center, axis, glm::ivec3(width, height, depth), minorRadius, voxel);
+	shape::createTorus(*volume, center, axis, math::Vec3i(width, height, depth), minorRadius, voxel);
 	return 0;
 }
 
 static int luaVoxel_shape_ellipse(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& centerBottom = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& centerBottom = clua_tovec<math::Vec3i>(s, 2);
 	const math::Axis axis = luaVoxel_getAxis(s, 3);
 	const int width = (int)luaL_checkinteger(s, 4);
 	const int height = (int)luaL_checkinteger(s, 5);
@@ -1505,7 +1518,7 @@ static int luaVoxel_shape_ellipse(lua_State* s) {
 
 static int luaVoxel_shape_dome(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& centerBottom = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& centerBottom = clua_tovec<math::Vec3i>(s, 2);
 	const math::Axis axis = luaVoxel_getAxis(s, 3);
 	const bool negative = (int)clua_optboolean(s, 4, false);
 	const int width = (int)luaL_checkinteger(s, 5);
@@ -1518,7 +1531,7 @@ static int luaVoxel_shape_dome(lua_State* s) {
 
 static int luaVoxel_shape_cube(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& position = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& position = clua_tovec<math::Vec3i>(s, 2);
 	const int width = (int)luaL_checkinteger(s, 3);
 	const int height = (int)luaL_checkinteger(s, 4);
 	const int depth = (int)luaL_checkinteger(s, 5);
@@ -1529,7 +1542,7 @@ static int luaVoxel_shape_cube(lua_State* s) {
 
 static int luaVoxel_shape_cone(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& centerBottom = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& centerBottom = clua_tovec<math::Vec3i>(s, 2);
 	const math::Axis axis = luaVoxel_getAxis(s, 3);
 	const bool negative = (int)clua_optboolean(s, 4, false);
 	const int width = (int)luaL_checkinteger(s, 5);
@@ -1542,7 +1555,7 @@ static int luaVoxel_shape_cone(lua_State* s) {
 
 static int luaVoxel_shape_circle(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::vec3& centerBottom = clua_tovec<glm::vec3>(s, 2);
+	const math::Vec3f& centerBottom = clua_tovec<math::Vec3f>(s, 2);
 	const math::Axis axis = luaVoxel_getAxis(s, 3);
 	const int width = (int)luaL_checkinteger(s, 4);
 	const int height = (int)luaL_checkinteger(s, 5);
@@ -1552,8 +1565,8 @@ static int luaVoxel_shape_circle(lua_State* s) {
 	const double radiusX = width / 2.0;
 	const double radiusZ = depth / 2.0;
 	const int axisIdx = math::getIndexForAxis(axis);
-	glm::ivec3 circleCenter = centerBottom;
-	glm::ivec3 offset{0};
+	math::Vec3i circleCenter = centerBottom;
+	math::Vec3i offset{0};
 	offset[axisIdx] = 1;
 	for (int i = 0; i < height; ++i) {
 		shape::createEllipseOutline(*volume, circleCenter, axis, width, depth, radiusX, radiusZ, thickness, voxel);
@@ -1564,8 +1577,8 @@ static int luaVoxel_shape_circle(lua_State* s) {
 
 static int luaVoxel_shape_line(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
-	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
+	const math::Vec3i& start = clua_tovec<math::Vec3i>(s, 2);
+	const math::Vec3i& end = clua_tovec<math::Vec3i>(s, 3);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 4);
 	const int thickness = (int)luaL_optinteger(s, 5, 1);
 	shape::createLine(*volume, start, end, voxel, thickness);
@@ -1574,8 +1587,8 @@ static int luaVoxel_shape_line(lua_State* s) {
 
 static int luaVoxel_shape_stippledline(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
-	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
+	const math::Vec3i& start = clua_tovec<math::Vec3i>(s, 2);
+	const math::Vec3i& end = clua_tovec<math::Vec3i>(s, 3);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 4);
 	const char *pattern = luaL_optstring(s, 5, "1");
 	const bool skipFirst = (int)clua_optboolean(s, 6, false);
@@ -1587,12 +1600,12 @@ static int luaVoxel_shape_stippledline(lua_State* s) {
 
 static int luaVoxel_shape_bezier(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
-	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
-	const glm::ivec3& control = clua_tovec<glm::ivec3>(s, 4);
+	const math::Vec3i& start = clua_tovec<math::Vec3i>(s, 2);
+	const math::Vec3i& end = clua_tovec<math::Vec3i>(s, 3);
+	const math::Vec3i& control = clua_tovec<math::Vec3i>(s, 4);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
 	const int thickness = (int)luaL_optinteger(s, 6, 1);
-	shape::createBezierFunc(*volume, start, end, control, voxel, [&] (LuaRawVolumeWrapper& vol, const glm::ivec3& last, const glm::ivec3& pos, const voxel::Voxel& v) {
+	shape::createBezierFunc(*volume, start, end, control, voxel, [&] (LuaRawVolumeWrapper& vol, const math::Vec3i& last, const math::Vec3i& pos, const voxel::Voxel& v) {
 		shape::createLine(vol, pos, last, v, thickness);
 	});
 	return 0;
@@ -1600,9 +1613,9 @@ static int luaVoxel_shape_bezier(lua_State* s) {
 
 static int luaVoxel_shape_beziersegment(lua_State* s) {
 	LuaRawVolumeWrapper *volume = luaVoxel_tovolumewrapper(s, 1);
-	const glm::ivec3& start = clua_tovec<glm::ivec3>(s, 2);
-	const glm::ivec3& end = clua_tovec<glm::ivec3>(s, 3);
-	const glm::ivec3& control = clua_tovec<glm::ivec3>(s, 4);
+	const math::Vec3i& start = clua_tovec<math::Vec3i>(s, 2);
+	const math::Vec3i& end = clua_tovec<math::Vec3i>(s, 3);
+	const math::Vec3i& control = clua_tovec<math::Vec3i>(s, 4);
 	const voxel::Voxel voxel = luaVoxel_getVoxel(s, 5);
 	const char *pattern = luaL_optstring(s, 6, "1");
 	const LuaStipplePattern stipplePattern(pattern);
@@ -1713,7 +1726,7 @@ static int luaVoxel_palette_colors(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	lua_createtable(s, palette->colorCount(), 0);
 	for (int i = 0; i < palette->colorCount(); ++i) {
-		const glm::vec4& c = color::fromRGBA(palette->color(i));
+		const math::Vec4f& c = color::fromRGBA(palette->color(i));
 		lua_pushinteger(s, i + 1);
 		clua_push(s, c);
 		lua_settable(s, -3);
@@ -1761,7 +1774,7 @@ static int luaVoxel_palette_rgba(lua_State* s) {
 static int luaVoxel_palette_color(lua_State* s) {
 	const palette::Palette *palette = luaVoxel_toPalette(s, 1);
 	const uint8_t color = luaL_checkinteger(s, 2);
-	const glm::vec4& rgba = color::fromRGBA(palette->color(color));
+	const math::Vec4f& rgba = color::fromRGBA(palette->color(color));
 	return clua_push(s, rgba);
 }
 
@@ -2115,21 +2128,21 @@ static int luaVoxel_normalpalette_size(lua_State* s) {
 static int luaVoxel_normalpalette_normal(lua_State* s) {
 	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
 	const uint8_t idx = luaL_checkinteger(s, 2);
-	const glm::vec3 n = pal->normal3f(idx);
+	const math::Vec3f n = pal->normal3f(idx);
 	return clua_push(s, n);
 }
 
 static int luaVoxel_normalpalette_setnormal(lua_State* s) {
 	palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
 	const uint8_t idx = luaL_checkinteger(s, 2);
-	const glm::vec3 &n = luaVoxel_getvec<3, float>(s, 3);
+	const math::Vec3f &n = luaVoxel_getvec<math::Vec3f>(s, 3);
 	pal->setNormal(idx, n);
 	return 0;
 }
 
 static int luaVoxel_normalpalette_closestmatch(lua_State* s) {
 	const palette::NormalPalette *pal = luaVoxel_toNormalPalette(s, 1);
-	const glm::vec3 &n = luaVoxel_getvec<3, float>(s, 2);
+	const math::Vec3f &n = luaVoxel_getvec<math::Vec3f>(s, 2);
 	const int match = pal->getClosestMatch(n);
 	if (match == palette::PaletteNormalNotFound) {
 		return clua_error(s, "No matching normal found");
@@ -2234,7 +2247,7 @@ static int luaVoxel_region_center(lua_State* s) {
 
 static int luaVoxel_region_isonborder(lua_State* s) {
 	const voxel::Region* region = luaVoxel_toregion(s, 1);
-	const glm::ivec3& pos = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& pos = clua_tovec<math::Vec3i>(s, 2);
 	lua_pushboolean(s, region->isOnBorder(pos));
 	return 1;
 }
@@ -2273,54 +2286,54 @@ static int luaVoxel_region_contains(lua_State* s) {
 
 static int luaVoxel_region_setmins(lua_State* s) {
 	voxel::Region* region = luaVoxel_toregion(s, 1);
-	const glm::ivec3& mins = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& mins = clua_tovec<math::Vec3i>(s, 2);
 	region->setLowerCorner(mins);
 	return 0;
 }
 
 static int luaVoxel_region_setmaxs(lua_State* s) {
 	voxel::Region* region = luaVoxel_toregion(s, 1);
-	const glm::ivec3& maxs = clua_tovec<glm::ivec3>(s, 2);
+	const math::Vec3i& maxs = clua_tovec<math::Vec3i>(s, 2);
 	region->setUpperCorner(maxs);
 	return 0;
 }
 
 static int luaVoxel_region_tostring(lua_State *s) {
 	const voxel::Region* region = luaVoxel_toregion(s, 1);
-	const glm::ivec3& mins = region->getLowerCorner();
-	const glm::ivec3& maxs = region->getUpperCorner();
+	const math::Vec3i& mins = region->getLowerCorner();
+	const math::Vec3i& maxs = region->getUpperCorner();
 	lua_pushfstring(s, "region: [%d:%d:%d]/[%d:%d:%d]", mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	return 1;
 }
 
-static glm::vec2 to_vec2(lua_State*s, int &n) {
-	if (clua_isvec<glm::vec2>(s, n)) {
-		return clua_tovec<glm::vec2>(s, n);
+static math::Vec2f to_vec2(lua_State*s, int &n) {
+	if (clua_isvec<math::Vec2f>(s, n)) {
+		return clua_tovec<math::Vec2f>(s, n);
 	}
 	const float x = (float)lua_tonumber(s, n++);
 	const float y = (float)luaL_optnumber(s, n++, x);
-	return glm::vec2(x, y);
+	return math::Vec2f(x, y);
 }
 
-static glm::vec3 to_vec3(lua_State*s, int &n) {
-	if (clua_isvec<glm::vec3>(s, n)) {
-		return clua_tovec<glm::vec3>(s, n);
+static math::Vec3f to_vec3(lua_State*s, int &n) {
+	if (clua_isvec<math::Vec3f>(s, n)) {
+		return clua_tovec<math::Vec3f>(s, n);
 	}
 	const float x = (float)lua_tonumber(s, n++);
 	const float y = (float)luaL_optnumber(s, n++, x);
 	const float z = (float)luaL_optnumber(s, n++, y);
-	return glm::vec3(x, y, z);
+	return math::Vec3f(x, y, z);
 }
 
-static glm::vec4 to_vec4(lua_State*s, int &n) {
-	if (clua_isvec<glm::vec4>(s, n)) {
-		return clua_tovec<glm::vec4>(s, n);
+static math::Vec4f to_vec4(lua_State*s, int &n) {
+	if (clua_isvec<math::Vec4f>(s, n)) {
+		return clua_tovec<math::Vec4f>(s, n);
 	}
 	const float x = (float)lua_tonumber(s, n++);
 	const float y = (float)luaL_optnumber(s, n++, x);
 	const float z = (float)luaL_optnumber(s, n++, y);
 	const float w = (float)luaL_optnumber(s, n++, z);
-	return glm::vec4(x, y, z, w);
+	return math::Vec4f(x, y, z, w);
 }
 
 static int luaVoxel_noise_simplex2(lua_State* s) {
@@ -2375,7 +2388,7 @@ static noise::Noise *luaVoxel_globalnoise(lua_State* s) {
 static int luaVoxel_noise_voronoi(lua_State* s) {
 	noise::Noise* noise = luaVoxel_globalnoise(s);
 	int n = 1;
-	const glm::vec3 v = to_vec3(s, n);
+	const math::Vec3f v = to_vec3(s, n);
 	const float frequency = (float)luaL_optnumber(s, n + 1, 1.0f);
 	const int seed = (int)luaL_optinteger(s, n + 2, 0);
 	bool enableDistance = clua_optboolean(s, n + 3, true);
@@ -2386,7 +2399,7 @@ static int luaVoxel_noise_voronoi(lua_State* s) {
 static int luaVoxel_noise_swissturbulence(lua_State* s) {
 	noise::Noise* noise = luaVoxel_globalnoise(s);
 	int n = 1;
-	const glm::vec2 v = to_vec2(s, n);
+	const math::Vec2f v = to_vec2(s, n);
 	const float offset = (float)luaL_optnumber(s, n + 1, 1.0f);
 	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
 	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
@@ -2398,7 +2411,7 @@ static int luaVoxel_noise_swissturbulence(lua_State* s) {
 
 static int luaVoxel_noise_ridgedMF2(lua_State* s) {
 	int n = 1;
-	const glm::vec2 v = to_vec2(s, n);
+	const math::Vec2f v = to_vec2(s, n);
 	const float ridgeOffset = (float)luaL_optnumber(s, n + 1, 1.0f);
 	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
 	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
@@ -2409,7 +2422,7 @@ static int luaVoxel_noise_ridgedMF2(lua_State* s) {
 
 static int luaVoxel_noise_ridgedMF3(lua_State* s) {
 	int n = 1;
-	const glm::vec3 v = to_vec3(s, n);
+	const math::Vec3f v = to_vec3(s, n);
 	const float ridgeOffset = (float)luaL_optnumber(s, n + 1, 1.0f);
 	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
 	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
@@ -2420,7 +2433,7 @@ static int luaVoxel_noise_ridgedMF3(lua_State* s) {
 
 static int luaVoxel_noise_ridgedMF4(lua_State* s) {
 	int n = 1;
-	const glm::vec4 v = to_vec4(s, n);
+	const math::Vec4f v = to_vec4(s, n);
 	const float ridgeOffset = (float)luaL_optnumber(s, n + 1, 1.0f);
 	const uint8_t octaves = luaL_optinteger(s, n + 2, 4);
 	const float lacunarity = (float)luaL_optnumber(s, n + 3, 2.0f);
@@ -2460,13 +2473,13 @@ static int luaVoxel_lsystem_generate(lua_State *s) {
 
 	voxelgenerator::lsystem::LSystemConfig config;
 	config.axiom = axiom;
-	config.angle = glm::radians(angle);
+	config.angle = math::radians(angle);
 	config.length = length;
 	config.width = width;
 	config.widthIncrement = widthIncrement;
 	config.iterations = iterations;
 	config.leafRadius = leafRadius;
-	config.position = glm::ivec3(posX, posY, posZ);
+	config.position = math::Vec3i(posX, posY, posZ);
 	if (!lua_isnoneornil(s, 14)) {
 		luaL_checktype(s, 14, LUA_TTABLE);
 		lua_getfield(s, 14, "lengthScale");
@@ -2476,7 +2489,7 @@ static int luaVoxel_lsystem_generate(lua_State *s) {
 		config.minLength = (float)luaL_optnumber(s, -1, config.minLength);
 		lua_pop(s, 1);
 		lua_getfield(s, 14, "angleVariation");
-		config.angleVariation = glm::radians((float)luaL_optnumber(s, -1, 0.0));
+		config.angleVariation = math::radians((float)luaL_optnumber(s, -1, 0.0));
 		lua_pop(s, 1);
 		lua_getfield(s, 14, "seed");
 		config.seed = (int)luaL_optinteger(s, -1, config.seed);
@@ -2517,7 +2530,7 @@ static int luaVoxel_lsystem_templates(lua_State *s) {
 		lua_pushstring(s, t.config.axiom.c_str());
 		lua_setfield(s, -2, "axiom");
 
-		lua_pushnumber(s, glm::degrees(t.config.angle));
+		lua_pushnumber(s, math::degrees(t.config.angle));
 		lua_setfield(s, -2, "angle");
 
 		lua_pushnumber(s, t.config.length);
@@ -2541,7 +2554,7 @@ static int luaVoxel_lsystem_templates(lua_State *s) {
 		lua_pushnumber(s, t.config.minLength);
 		lua_setfield(s, -2, "minLength");
 
-		lua_pushnumber(s, glm::degrees(t.config.angleVariation));
+		lua_pushnumber(s, math::degrees(t.config.angleVariation));
 		lua_setfield(s, -2, "angleVariation");
 
 		lua_pushinteger(s, t.config.seed);
@@ -2865,7 +2878,7 @@ static int luaVoxel_sculpt_reskin(lua_State *s) {
 
 	const voxel::Region &skinRegion = skinVolume->volume()->region();
 	// Auto-detect depth axis from thinnest dimension
-	const glm::ivec3 skinExtents = skinRegion.getUpperCorner() - skinRegion.getLowerCorner() + 1;
+	const math::Vec3i skinExtents = skinRegion.getUpperCorner() - skinRegion.getLowerCorner() + 1;
 	if (skinExtents.x <= skinExtents.y && skinExtents.x <= skinExtents.z) {
 		config.skinFace = voxel::FaceNames::PositiveX;
 	} else if (skinExtents.z <= skinExtents.x && skinExtents.z <= skinExtents.y) {
@@ -3046,7 +3059,7 @@ static int luaVoxel_voxelfont_render(lua_State *s) {
 	const int color = (int)luaL_optinteger(s, 9, 0);
 	const int spacing = (int)luaL_optinteger(s, 10, 0);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, color);
-	glm::ivec3 pos(x, y, z);
+	math::Vec3i pos(x, y, z);
 	const char **str = &text;
 	for (int c = core::unicode::next(str); c != -1; c = core::unicode::next(str)) {
 		pos.x += font->renderCharacter(c, size, thickness, pos, *volume, voxel);
@@ -3510,7 +3523,7 @@ static void luaVoxel_keyframe_updatetransform(lua_State *s, LuaKeyFrame *keyFram
 
 static int luaVoxel_keyframe_setlocalscale(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
+	const math::Vec3f &val = luaVoxel_getvec<math::Vec3f>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setLocalScale(val);
 	luaVoxel_keyframe_updatetransform(s, keyFrame);
@@ -3526,7 +3539,7 @@ static int luaVoxel_keyframe_localorientation(lua_State *s) {
 
 static int luaVoxel_keyframe_setlocalorientation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	glm::quat val;
+	math::Quatf val;
 	if (clua_isquat(s, 2)) {
 		val = clua_toquat(s, 2);
 	} else {
@@ -3534,7 +3547,7 @@ static int luaVoxel_keyframe_setlocalorientation(lua_State *s) {
 		const float y = (float)luaL_checknumber(s, 3);
 		const float z = (float)luaL_checknumber(s, 4);
 		const float w = (float)luaL_checknumber(s, 5);
-		val = glm::quat::wxyz(w, x, y, z);
+		val = math::Quatf::wxyz(w, x, y, z);
 	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setLocalOrientation(val);
@@ -3551,7 +3564,7 @@ static int luaVoxel_keyframe_localtranslation(lua_State *s) {
 
 static int luaVoxel_keyframe_setlocaltranslation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
+	const math::Vec3f &val = luaVoxel_getvec<math::Vec3f>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setLocalTranslation(val);
 	luaVoxel_keyframe_updatetransform(s, keyFrame);
@@ -3567,7 +3580,7 @@ static int luaVoxel_keyframe_worldscale(lua_State *s) {
 
 static int luaVoxel_keyframe_setworldscale(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
+	const math::Vec3f &val = luaVoxel_getvec<math::Vec3f>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setWorldScale(val);
 	luaVoxel_keyframe_updatetransform(s, keyFrame);
@@ -3583,7 +3596,7 @@ static int luaVoxel_keyframe_worldorientation(lua_State *s) {
 
 static int luaVoxel_keyframe_setworldorientation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	glm::quat val;
+	math::Quatf val;
 	if (clua_isquat(s, 2)) {
 		val = clua_toquat(s, 2);
 	} else {
@@ -3591,7 +3604,7 @@ static int luaVoxel_keyframe_setworldorientation(lua_State *s) {
 		const float y = (float)luaL_checknumber(s, 3);
 		const float z = (float)luaL_checknumber(s, 4);
 		const float w = (float)luaL_checknumber(s, 5);
-		val = glm::quat::wxyz(w, x, y, z);
+		val = math::Quatf::wxyz(w, x, y, z);
 	}
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setWorldOrientation(val);
@@ -3608,7 +3621,7 @@ static int luaVoxel_keyframe_worldtranslation(lua_State *s) {
 
 static int luaVoxel_keyframe_setworldtranslation(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
-	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
+	const math::Vec3f &val = luaVoxel_getvec<math::Vec3f>(s, 2);
 	scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	kf.transform().setWorldTranslation(val);
 	luaVoxel_keyframe_updatetransform(s, keyFrame);
@@ -3625,12 +3638,12 @@ static int luaVoxel_keyframe_tostring(lua_State *s) {
 	LuaKeyFrame *keyFrame = luaVoxel_tokeyframe(s, 1);
 	const scenegraph::SceneGraphKeyFrame &kf = keyFrame->keyFrame();
 	const scenegraph::SceneGraphTransform &transform = kf.transform();
-	const glm::vec3 &localTranslation = transform.localTranslation();
-	const glm::quat &localOrientation = transform.localOrientation();
-	const glm::vec3 &localScale = transform.localScale();
-	const glm::vec3 &worldTranslation = transform.worldTranslation();
-	const glm::quat &worldOrientation = transform.worldOrientation();
-	const glm::vec3 &worldScale = transform.worldScale();
+	const math::Vec3f &localTranslation = transform.localTranslation();
+	const math::Quatf &localOrientation = transform.localOrientation();
+	const math::Vec3f &localScale = transform.localScale();
+	const math::Vec3f &worldTranslation = transform.worldTranslation();
+	const math::Quatf &worldOrientation = transform.worldOrientation();
+	const math::Vec3f &worldScale = transform.worldScale();
 	lua_pushfstring(s,
 					"keyframe: [frame: %d], [interpolation: %s], "
 					"[localTranslation: %f:%f:%f], [localOrientation: %f:%f:%f:%f], [localScale: %f:%f:%f]"
@@ -3681,18 +3694,18 @@ static int luaVoxel_scenegraphnode_hasnormalpalette(lua_State* s) {
 
 static int luaVoxel_scenegraphnode_setpivot(lua_State* s) {
 	LuaSceneGraphNode* node = luaVoxel_toscenegraphnode(s, 1);
-	const glm::vec3 &val = luaVoxel_getvec<3, float>(s, 2);
+	const math::Vec3f &val = luaVoxel_getvec<math::Vec3f>(s, 2);
 	const bool translate = clua_optboolean(s, 3, true);
-	const glm::vec3 oldPivot = node->node->pivot();
+	const math::Vec3f oldPivot = node->node->pivot();
 	if (node->node->setPivot(val)) {
 		if (translate) {
-			const glm::vec3 deltaPivot = val - oldPivot;
-			const glm::vec3 size = node->node->region().getDimensionsInVoxels();
-			const glm::vec3 dp = deltaPivot * size;
+			const math::Vec3f deltaPivot = val - oldPivot;
+			const math::Vec3f size = node->node->region().getDimensionsInVoxels();
+			const math::Vec3f dp = deltaPivot * size;
 			for (auto *keyFrames : node->node->allKeyFrames()) {
 				for (scenegraph::SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 					scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-					const glm::mat3 rs(transform.localMatrix());
+					const math::Mat3f rs(transform.localMatrix());
 					transform.setLocalTranslation(transform.localTranslation() + rs * dp);
 				}
 			}
@@ -3752,8 +3765,8 @@ static int luaVoxel_scenegraphnode_bounds(lua_State *s) {
 	scenegraph::SceneGraph &graph = *luaVoxel_scenegraph(s);
 	graph.updateTransforms();
 	bool found = false;
-	glm::vec3 mins(0);
-	glm::vec3 maxs(0);
+	math::Vec3f mins(0);
+	math::Vec3f maxs(0);
 	const auto accumulate = [&](const scenegraph::SceneGraphNode &part) {
 		if (!part.isAnyModelNode() || !graph.resolveVolume(part)) {
 			return;
@@ -3765,8 +3778,8 @@ static int luaVoxel_scenegraphnode_bounds(lua_State *s) {
 		if (!box.isValid()) {
 			return;
 		}
-		mins = found ? glm::min(mins, box.mins()) : box.mins();
-		maxs = found ? glm::max(maxs, box.maxs()) : box.maxs();
+		mins = found ? math::min(mins, box.mins()) : box.mins();
+		maxs = found ? math::max(maxs, box.maxs()) : box.maxs();
 		found = true;
 	};
 	accumulate(*node->node);
@@ -7688,10 +7701,10 @@ bool luaVoxel_pushargs(lua_State* s, const core::DynamicArray<core::String>& arg
 		}
 		case LUAParameterType::ColorIndex:
 		case LUAParameterType::Integer:
-			lua_pushinteger(s, glm::clamp(core::string::toInt(arg), (int)d.minValue, (int)d.maxValue));
+			lua_pushinteger(s, math::clamp(core::string::toInt(arg), (int)d.minValue, (int)d.maxValue));
 			break;
 		case LUAParameterType::Float:
-			lua_pushnumber(s, glm::clamp(core::string::toFloat(arg), (float)d.minValue, (float)d.maxValue));
+			lua_pushnumber(s, math::clamp(core::string::toFloat(arg), (float)d.minValue, (float)d.maxValue));
 			break;
 		case LUAParameterType::HexColor: {
 			uint8_t r, g, b, a;
@@ -8030,19 +8043,19 @@ bool LUAApi::apiJsonToStream(io::WriteStream &stream) const {
 				} else if (SDL_strcmp(name, "g_io") == 0) {
 					metaName = clua_metaio();
 				} else if (SDL_strcmp(name, "g_vec2") == 0) {
-					metaName = core::String::format("%s_global", clua_meta<glm::vec2>::name());
+					metaName = core::String::format("%s_global", clua_meta<math::Vec2f>::name());
 				} else if (SDL_strcmp(name, "g_vec3") == 0) {
-					metaName = core::String::format("%s_global", clua_meta<glm::vec3>::name());
+					metaName = core::String::format("%s_global", clua_meta<math::Vec3f>::name());
 				} else if (SDL_strcmp(name, "g_vec4") == 0) {
-					metaName = core::String::format("%s_global", clua_meta<glm::vec4>::name());
+					metaName = core::String::format("%s_global", clua_meta<math::Vec4f>::name());
 				} else if (SDL_strcmp(name, "g_ivec2") == 0) {
-					metaName = core::String::format("%s_global", clua_meta<glm::ivec2>::name());
+					metaName = core::String::format("%s_global", clua_meta<math::Vec2i>::name());
 				} else if (SDL_strcmp(name, "g_ivec3") == 0) {
-					metaName = core::String::format("%s_global", clua_meta<glm::ivec3>::name());
+					metaName = core::String::format("%s_global", clua_meta<math::Vec3i>::name());
 				} else if (SDL_strcmp(name, "g_ivec4") == 0) {
-					metaName = core::String::format("%s_global", clua_meta<glm::ivec4>::name());
+					metaName = core::String::format("%s_global", clua_meta<math::Vec4i>::name());
 				} else if (SDL_strcmp(name, "g_quat") == 0) {
-					metaName = core::String::format("%s_global", clua_meta<glm::quat>::name());
+					metaName = core::String::format("%s_global", clua_meta<math::Quatf>::name());
 				} else if (SDL_strcmp(name, "g_var") == 0) {
 					metaName = clua_metavar();
 				} else if (SDL_strcmp(name, "g_log") == 0) {

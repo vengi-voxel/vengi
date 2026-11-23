@@ -6,7 +6,7 @@
 
 #include "Types.h"
 #include "SamplerConfig.h"
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
 
 namespace video {
 
@@ -35,7 +35,7 @@ public:
 	TextureConfig &format(TextureFormat format);
 	TextureConfig &compareFunc(CompareFunc func);
 	TextureConfig &compareMode(TextureCompareMode mode);
-	TextureConfig &borderColor(const glm::vec4 &borderColor);
+	TextureConfig &borderColor(const math::Vec4f &borderColor);
 	TextureConfig &samples(int samples);
 	TextureConfig &maxAnisotropy(float aniso);
 	TextureConfig &lodBias(float bias);
@@ -67,7 +67,7 @@ public:
 	CompareFunc compareFunc() const;
 	TextureCompareMode compareMode() const;
 	bool useBorderColor() const;
-	const glm::vec4 &borderColor() const;
+	const math::Vec4f &borderColor() const;
 };
 
 inline const SamplerConfig& TextureConfig::samplerConfig() const {
@@ -134,7 +134,7 @@ inline bool TextureConfig::useBorderColor() const {
 	return _samplerConfig.useBorderColor;
 }
 
-inline const glm::vec4 &TextureConfig::borderColor() const {
+inline const math::Vec4f &TextureConfig::borderColor() const {
 	return _samplerConfig.borderColor;
 }
 

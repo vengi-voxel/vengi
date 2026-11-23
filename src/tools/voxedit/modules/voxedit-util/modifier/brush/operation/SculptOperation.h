@@ -6,7 +6,7 @@
 
 #include "voxedit-util/modifier/brush/SnapshotHelper.h"
 #include "core/ArrayLength.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/Optional.h"
 #include "core/SharedPtr.h"
 #include "core/String.h"
@@ -19,7 +19,7 @@
 #include "voxelutil/VolumeSculpt.h"
 
 #include <climits>
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -60,7 +60,7 @@ struct SculptParameters {
 	bool removeOnly = false;
 	int radius = 3;
 	voxel::Voxel voxel;
-	glm::ivec3 cursor{0};
+	math::Vec3i cursor{0};
 	voxelutil::ReskinConfig reskin;
 	core::SharedPtr<voxel::RawVolume> skin;
 	core::Optional<palette::Palette> skinPalette;
@@ -86,7 +86,7 @@ protected:
 	int _planeVAxis = 2;
 	int _planeHeightAxis = 1;
 	bool _planeFitted = false;
-	glm::ivec3 _lastPaintPos{INT_MIN};
+	math::Vec3i _lastPaintPos{INT_MIN};
 
 	// Original selected voxels captured at brush activation, stored as a flat array.
 	// Using DynamicVoxelArray instead of SparseVolume avoids O(N) hash insertions.
@@ -94,7 +94,7 @@ protected:
 	// Selection bounding box at capture time
 	voxel::Region _snapshotRegion;
 	// Volume region lower corner at snapshot capture time (to detect region shifts)
-	glm::ivec3 _capturedVolumeLower{0};
+	math::Vec3i _capturedVolumeLower{0};
 
 	// Per-evaluate bookkeeping: tracks positions written during a single evaluate()
 	// call so the previous state can be restored before re-applying.
@@ -114,10 +114,10 @@ protected:
 	void rebuildCachedBitVolume();
 	void rebuildCachedVoxelMap();
 	void captureSnapshot(const voxel::RawVolume *volume, const voxel::Region &region);
-	void adjustSnapshotForRegionShift(const glm::ivec3 &delta);
+	void adjustSnapshotForRegionShift(const math::Vec3i &delta);
 	void applySculpt(ModifierVolumeWrapper &wrapper);
-	void saveToHistory(voxel::RawVolume *volume, const glm::ivec3 &pos);
-	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &voxel);
+	void saveToHistory(voxel::RawVolume *volume, const math::Vec3i &pos);
+	void writeVoxel(ModifierVolumeWrapper &wrapper, const math::Vec3i &pos, const voxel::Voxel &voxel);
 	void fitPlaneFromSnapshot();
 	void paintExtendPlane(ModifierVolumeWrapper &wrapper);
 

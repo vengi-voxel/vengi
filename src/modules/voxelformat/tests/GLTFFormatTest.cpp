@@ -23,6 +23,7 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -382,7 +383,7 @@ TEST_F(GLTFFormatTest, testNodeProperties) {
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setName("prop-node");
-		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(0)));
+		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(math::Vec3i(0), math::Vec3i(0)));
 		volume->setVoxel(0, 0, 0, voxel::createVoxel(palette, 1));
 		node.setVolume(volume);
 		node.setPalette(palette);

@@ -6,24 +6,23 @@
 #include "video/Camera.h"
 #include "video/ScopedState.h"
 #include "color/Color.h"
-#include "core/GLM.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/Axes.h"
+#include "math/Scalar.h"
 
 namespace render {
 
 Axis::Axis(bool flipZ) : _flipZ(flipZ) {
-	setPosition(glm::vec3(0));
+	setPosition(math::Vec3f(0));
 }
 
 void Axis::render(const video::Camera& camera, uint32_t renderMask) {
 	video::ScopedState disableDepthTest(video::State::DepthTest, false);
 
-	const glm::mat4& t = glm::translate(_pos);
+	const math::Mat4f& t = math::translate(_pos);
 	_shapeRenderer.setLineWidth(_lineWidth);
-	const glm::mat4& model = glm::scale(t, _size);
+	const math::Mat4f& model = math::scale(t, _size);
 	if ((renderMask & AxisMask::RenderXAxis) != 0u) {
 		_shapeRenderer.render(_meshXIndex, camera, model);
 	}
@@ -33,13 +32,13 @@ void Axis::render(const video::Camera& camera, uint32_t renderMask) {
 	if ((renderMask & AxisMask::RenderZAxis) != 0u) {
 		_shapeRenderer.render(_meshZIndex, camera, model);
 	}
-	if (glm::abs(_size.x) > 1.0f && (renderMask & AxisMask::RenderXCone) != 0u) {
+	if (math::abs(_size.x) > 1.0f && (renderMask & AxisMask::RenderXCone) != 0u) {
 		_shapeRenderer.render(_coneXIndex, camera, t);
 	}
-	if (glm::abs(_size.y) > 1.0f && (renderMask & AxisMask::RenderYCone) != 0u) {
+	if (math::abs(_size.y) > 1.0f && (renderMask & AxisMask::RenderYCone) != 0u) {
 		_shapeRenderer.render(_coneYIndex, camera, t);
 	}
-	if (glm::abs(_size.z) > 1.0f && (renderMask & AxisMask::RenderZCone) != 0u) {
+	if (math::abs(_size.z) > 1.0f && (renderMask & AxisMask::RenderZCone) != 0u) {
 		_shapeRenderer.render(_coneZIndex, camera, t);
 	}
 }
@@ -56,8 +55,8 @@ void Axis::shutdown() {
 }
 
 void Axis::setSize(float x, float y, float z) {
-	const glm::vec3 oldSize = _size;
-	_size = glm::vec3(x, y, z);
+	const math::Vec3f oldSize = _size;
+	_size = math::Vec3f(x, y, z);
 	if (_meshXIndex != -1 && oldSize != _size) {
 		createCones();
 	}
@@ -69,17 +68,17 @@ bool Axis::init() {
 	}
 
 	_shapeBuilder.setColor(color::Red());
-	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::right());
+	_shapeBuilder.line(math::Vec3f(0.0f), math::right());
 	_meshXIndex = _shapeRenderer.create(_shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(color::Green());
-	_shapeBuilder.line(glm::zero<glm::vec3>(), glm::up());
+	_shapeBuilder.line(math::Vec3f(0.0f), math::up());
 	_meshYIndex = _shapeRenderer.create(_shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(color::Blue());
-	_shapeBuilder.line(glm::zero<glm::vec3>(), _flipZ ? glm::backward() : glm::forward());
+	_shapeBuilder.line(math::Vec3f(0.0f), _flipZ ? math::backward() : math::forward());
 	_meshZIndex = _shapeRenderer.create(_shapeBuilder);
 
 	createCones();
@@ -89,27 +88,27 @@ bool Axis::init() {
 void Axis::createCones() {
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(color::Red());
-	_shapeBuilder.setRotation(glm::rotate(glm::three_over_two_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f)));
-	_shapeBuilder.setPosition(glm::vec3(_pos.x + _size.x, _pos.y, _pos.z));
+	_shapeBuilder.setRotation(math::rotate(math::threeOverTwoPi, math::Vec3f(0.0f, 1.0f, 0.0f)));
+	_shapeBuilder.setPosition(math::Vec3f(_pos.x + _size.x, _pos.y, _pos.z));
 	_shapeBuilder.cone(0.3f, 1.0f);
 	_shapeRenderer.createOrUpdate(_coneXIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(color::Green());
-	_shapeBuilder.setRotation(glm::rotate(glm::half_pi<float>(), glm::vec3( 1.0f,  0.0f,  0.0f)));
-	_shapeBuilder.setPosition(glm::vec3(_pos.x, _pos.y + _size.y, _pos.z));
+	_shapeBuilder.setRotation(math::rotate(math::halfPi, math::Vec3f( 1.0f,  0.0f,  0.0f)));
+	_shapeBuilder.setPosition(math::Vec3f(_pos.x, _pos.y + _size.y, _pos.z));
 	_shapeBuilder.cone(0.3f, 1.0f);
 	_shapeRenderer.createOrUpdate(_coneYIndex, _shapeBuilder);
 
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(color::Blue());
-	_shapeBuilder.setRotation(glm::rotate(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f)));
-	_shapeBuilder.setPosition(glm::vec3(_pos.x, _pos.y, _pos.z + _size.z));
+	_shapeBuilder.setRotation(math::rotate(math::pi, math::Vec3f(0.0f, 1.0f, 0.0f)));
+	_shapeBuilder.setPosition(math::Vec3f(_pos.x, _pos.y, _pos.z + _size.z));
 	_shapeBuilder.cone(0.3f, 1.0f);
 	_shapeRenderer.createOrUpdate(_coneZIndex, _shapeBuilder);
 }
 
-void Axis::setPosition(const glm::vec3& pos) {
+void Axis::setPosition(const math::Vec3f& pos) {
 	_pos = pos;
 }
 

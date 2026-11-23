@@ -5,7 +5,7 @@
 #include "ScopedPolygonMode.h"
 #include "core/Common.h"
 #include "Renderer.h"
-#include <glm/vec2.hpp>
+#include "math/Vec2f.h"
 
 namespace video {
 
@@ -13,7 +13,7 @@ ScopedPolygonMode::ScopedPolygonMode(video::PolygonMode mode) :
 		_mode(mode), _oldMode(video::polygonMode(video::Face::FrontAndBack, mode)) {
 }
 
-ScopedPolygonMode::ScopedPolygonMode(video::PolygonMode mode, const glm::vec2& offset) :
+ScopedPolygonMode::ScopedPolygonMode(video::PolygonMode mode, const math::Vec2f& offset) :
 		ScopedPolygonMode(mode) {
 	_offset = true;
 	if (mode == video::PolygonMode::Points) {

@@ -6,7 +6,9 @@
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <glm/geometric.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxedit {
 
@@ -21,23 +23,23 @@ TEST_F(BrushRadiusPreviewTest, testFlatSurfaceOutline) {
 		}
 	}
 
-	core::Buffer<glm::vec3> points;
-	const glm::ivec3 center(10, 0, 10);
+	core::Buffer<math::Vec3f> points;
+	const math::Vec3i center(10, 0, 10);
 	buildSurfaceRadiusOutline(&volume, center, voxel::FaceNames::PositiveY, 4, points);
 	ASSERT_GE(points.size(), 8u);
 
-	for (const glm::vec3 &p : points) {
+	for (const math::Vec3f &p : points) {
 		EXPECT_NEAR(p.y, 1.01f, 0.02f) << "Outline should sit on top of the flat surface";
 		const float dx = p.x - 10.5f;
 		const float dz = p.z - 10.5f;
-		const float dist = glm::length(glm::vec2(dx, dz));
+		const float dist = math::length(math::Vec2f(dx, dz));
 		EXPECT_NEAR(dist, 4.5f, 1.25f) << "Outline samples should stay near the brush radius";
 	}
 }
 
 TEST_F(BrushRadiusPreviewTest, testNullVolume) {
-	core::Buffer<glm::vec3> points;
-	buildSurfaceRadiusOutline(nullptr, glm::ivec3(0), voxel::FaceNames::PositiveY, 3, points);
+	core::Buffer<math::Vec3f> points;
+	buildSurfaceRadiusOutline(nullptr, math::Vec3i(0), voxel::FaceNames::PositiveY, 3, points);
 	EXPECT_TRUE(points.empty());
 }
 

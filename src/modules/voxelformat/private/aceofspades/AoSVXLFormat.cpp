@@ -37,6 +37,9 @@ extern "C" {
 #pragma GCC diagnostic pop
 #endif
 }
+#include "math/Vec3d.h"
+#include "math/Vec3i.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -59,7 +62,7 @@ static inline uint8_t vxl_red(uint32_t c) {
 	return (c >> 16) & 0xFF;
 }
 
-static bool readVec3(io::SeekableReadStream *stream, glm::dvec3 &vec) {
+static bool readVec3(io::SeekableReadStream *stream, math::Vec3d &vec) {
 	if (stream->readDouble(vec.x) != 0) {
 		return false;
 	}
@@ -106,22 +109,22 @@ bool AoSVXLFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 		mapSize = width;
 		mapHeight = 256;
 
-		glm::dvec3 ipo;
+		math::Vec3d ipo;
 		if (!readVec3(stream, ipo)) {
 			Log::error("Failed to read ipo/camera position");
 			return false;
 		}
-		glm::dvec3 ist;
+		math::Vec3d ist;
 		if (!readVec3(stream, ist)) {
 			Log::error("Failed to read ist/unit right vector");
 			return false;
 		}
-		glm::dvec3 ihe;
+		math::Vec3d ihe;
 		if (!readVec3(stream, ihe)) {
 			Log::error("Failed to read ihe/unit down vector");
 			return false;
 		}
-		glm::dvec3 ifo;
+		math::Vec3d ifo;
 		if (!readVec3(stream, ifo)) {
 			Log::error("Failed to read ifo/unit forward vector");
 			return false;
@@ -312,22 +315,22 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 		mapSize = width;
 		mapHeight = 256;
 
-		glm::dvec3 ipo;
+		math::Vec3d ipo;
 		if (!readVec3(stream, ipo)) {
 			Log::error("Failed to read ipo/camera position");
 			return false;
 		}
-		glm::dvec3 ist;
+		math::Vec3d ist;
 		if (!readVec3(stream, ist)) {
 			Log::error("Failed to read ist/unit right vector");
 			return false;
 		}
-		glm::dvec3 ihe;
+		math::Vec3d ihe;
 		if (!readVec3(stream, ihe)) {
 			Log::error("Failed to read ihe/unit down vector");
 			return false;
 		}
-		glm::dvec3 ifo;
+		math::Vec3d ifo;
 		if (!readVec3(stream, ifo)) {
 			Log::error("Failed to read ifo/unit forward vector");
 			return false;
@@ -378,12 +381,12 @@ size_t AoSVXLFormat::loadPalette(const core::String &filename, const io::Archive
 	return createPalette(colors, palette);
 }
 
-glm::ivec3 AoSVXLFormat::cropSize() const {
+math::Vec3i AoSVXLFormat::cropSize() const {
 	// TODO: VOXELFORMAT: slab5 with voxelstein3d has 1024,256,1024
 	// libvxl packs Z into 8 bits. At map depth 256, a surface block at z=0 makes
 	// encode treat next_z=256 as pos_key(x+1,y,0) and abort. Keep one less Y so
 	// padded 256-deep maps never store solids at libvxl z=0.
-	return glm::ivec3(512, 255, 512);
+	return math::Vec3i(512, 255, 512);
 }
 
 bool AoSVXLFormat::singleVolume() const {
@@ -421,8 +424,8 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		return false;
 	}
 	const voxel::Region &region = sceneGraph.region();
-	glm::ivec3 size = region.getDimensionsInVoxels();
-	glm::ivec3 targetSize(512, size.y, 512);
+	math::Vec3i size = region.getDimensionsInVoxels();
+	math::Vec3i targetSize(512, size.y, 512);
 	if (targetSize.y <= 64) {
 		targetSize.y = 64;
 	} else if (targetSize.y <= 256) {
@@ -449,7 +452,7 @@ bool AoSVXLFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 	}
 	const palette::Palette &palette = node->palette();
 	const voxel::RawVolume *v = node->volume();
-	const glm::ivec3 mins = v->region().getLowerCorner();
+	const math::Vec3i mins = v->region().getLowerCorner();
 	// See cropSize(): at depth 256, skip libvxl z=0 only (bottom z=mapHeight-1 is fine).
 	auto func = [&map, &palette, mapHeight, mins](int x, int y, int z, const voxel::Voxel &voxel) {
 		const int libz = mapHeight - 1 - (y - mins.y);

@@ -29,6 +29,11 @@
 #include "voxel/Region.h"
 #include "image/ImageFwd.h"
 #include "memento/MementoHandler.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace command {
 class CommandArgs;
@@ -184,7 +189,7 @@ protected:
 
 	int _lastRaytraceX = -1;
 	int _lastRaytraceY = -1;
-	glm::mat4 _lastTraceInvModel{1.0f};
+	math::Mat4f _lastTraceInvModel{1.0f};
 
 	// model animation speed
 	double _frameAnimationSpeed = 0.0;
@@ -196,8 +201,8 @@ protected:
 	scenegraph::FrameIndex _currentFrameIdx = 0;
 
 	int _initialized = 0;
-	glm::ivec2 _mouseCursor{0};
-	glm::ivec2 _mouseCursorDelta{0};
+	math::Vec2i _mouseCursor{0};
+	math::Vec2i _mouseCursorDelta{0};
 	bool _mouseLookActive = false;
 	uint8_t _preMouselookRotationType = 0; // video::CameraRotationType::Target
 
@@ -255,29 +260,29 @@ protected:
 	int addModelAdjacent(int sourceNodeId, voxel::FaceNames face);
 	int mergeNodes(int nodeId1, int nodeId2);
 	bool nodeCopy(int nodeId);
-	bool nodePaste(int nodeId, const glm::ivec3 &pos);
+	bool nodePaste(int nodeId, const math::Vec3i &pos);
 	bool nodeGlobalCopy(int nodeId);
-	bool nodeGlobalPaste(int nodeId, const glm::ivec3 &pos);
+	bool nodeGlobalPaste(int nodeId, const math::Vec3i &pos);
 	bool splatMerge(int sourceNodeId);
 	bool nodeCalculateNormals(int nodeId, voxel::Connectivity connectivity, bool recalcAll = false,
 							  bool fillAndHollow = false);
 	bool nodePasteAsNewNode(int nodeId);
 	bool nodeCut(int nodeId);
-	bool nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale,
-							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeUpdateTransform(int nodeId, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(int nodeId, const math::Vec3f &angles, const math::Vec3f &scale,
+							 const math::Vec3f &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(int nodeId, const math::Mat4f &matrix, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeResetTransform(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameInterpolation(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
-	bool nodeUpdatePivot(int nodeId, const glm::vec3 &pivot);
-	bool nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift);
+	bool nodeUpdatePivot(int nodeId, const math::Vec3f &pivot);
+	bool nodeShiftAllKeyframes(int nodeId, const math::Vec3f &shift);
 	bool nodeRemoveKeyFrameByIndex(int nodeId, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(int nodeId);
 	bool nodeDuplicate(int nodeId, int *newNodeId = nullptr);
 	/** @brief Repeat a volume in a grid, including the source in the counts. */
-	bool nodeRepeat(int nodeId, const glm::ivec3 &counts);
-	bool selectionRepeat(const glm::ivec3 &counts);
+	bool nodeRepeat(int nodeId, const math::Vec3i &counts);
+	bool selectionRepeat(const math::Vec3i &counts);
 	bool nodeRemoveKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyFrame(int nodeId, scenegraph::FrameIndex frameIdx);
 	bool nodeMoveKeyFrame(int nodeId, scenegraph::FrameIndex fromFrameIdx, scenegraph::FrameIndex toFrameIdx);
@@ -305,17 +310,17 @@ protected:
 	bool nodeSetMaterialType(int nodeId, uint8_t palIdx, palette::MaterialType type);
 	bool nodeSetColor(int nodeId, uint8_t palIdx, const color::RGBA &color);
 	void nodeResize(int nodeId, const voxel::Region &region);
-	void nodeResize(int nodeId, const glm::ivec3 &size);
-	void nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize);
+	void nodeResize(int nodeId, const math::Vec3i &size);
+	void nodeRescaleContent(int nodeId, const math::Vec3i &targetSize);
 	void nodeBakeTransform(int nodeId);
 	void nodeUpdateVoxelType(int nodeId, uint8_t palIdx, voxel::VoxelType newType);
-	void nodeShift(int nodeId, const glm::ivec3 &m);
-	void nodeMoveVoxels(int nodeId, const glm::ivec3 &m);
+	void nodeShift(int nodeId, const math::Vec3i &m);
+	void nodeMoveVoxels(int nodeId, const math::Vec3i &m);
 	void nodeRemoveUnusedColors(int nodeId, bool reindexPalette = false);
 	void autosave();
-	void setReferencePosition(const glm::ivec3 &pos);
+	void setReferencePosition(const math::Vec3i &pos);
 	void updateDirtyRendererStates();
-	bool mouseRayTrace(bool force, const glm::mat4 &invModel);
+	bool mouseRayTrace(bool force, const math::Mat4f &invModel);
 	void updateCursor();
 	int traceScene(bool skipActiveNode = true);
 	void stepLSystem();
@@ -368,7 +373,7 @@ protected:
 	void nodeGroupSelectionGrow();
 	void nodeGroupRotate(math::Axis axis);
 	void nodeGroupFlip(math::Axis axis);
-	void nodeGroupResize(const glm::ivec3 &size);
+	void nodeGroupResize(const math::Vec3i &size);
 
 	int nodeColorToNewNode(int nodeId, const voxel::Voxel voxelColor);
 	int nodeColorToNewNode(const core::UUID &nodeUUID, const voxel::Voxel voxelColor);
@@ -414,28 +419,28 @@ protected:
 	 * the final position of the cursor
 	 * @param[in] force If @c true it will ignore the locked axes and still set the position
 	 */
-	void setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, bool force = false);
+	void setCursorPosition(math::Vec3i pos, voxel::FaceNames hitFace, bool force = false);
 
 	bool isValidReferenceNode(const scenegraph::SceneGraphNode &node) const;
 	/**
 	 * @brief When updating the pivot of a node, we want to keep it in its current position - but only modify the pivot
 	 * to achieve this, we componsate the pivot change by updating the local translation
 	 */
-	void nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
+	void nodeSetPivot(scenegraph::SceneGraphNode &node, const math::Vec3f &pivot);
 
 	void onNewNodeAdded(int newNodeId, bool isChildren = false);
 	bool nodeRemoveChildrenByType(scenegraph::SceneGraphNode &node, scenegraph::SceneGraphNodeType type);
 	bool nodeRename(scenegraph::SceneGraphNode &node, const core::String &name);
 	bool nodeRemove(scenegraph::SceneGraphNode &node, bool recursive);
-	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
+	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const math::Mat4f &matrix,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &angles, const glm::vec3 &scale,
-							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(scenegraph::SceneGraphNode &node, const math::Vec3f &angles, const math::Vec3f &scale,
+							 const math::Vec3f &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
 	bool nodeResetTransform(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameInterpolation(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
-	bool nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot);
+	bool nodeUpdatePivot(scenegraph::SceneGraphNode &node, const math::Vec3f &pivot);
 	bool nodeRemoveKeyFrameByIndex(scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeRemoveKeyFrame(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
 	bool nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx);
@@ -470,7 +475,7 @@ protected:
 						 float value);
 	bool nodeSetMaterialType(scenegraph::SceneGraphNode &node, uint8_t palIdx, palette::MaterialType type);
 	bool nodeSetColor(scenegraph::SceneGraphNode &node, uint8_t palIdx, const color::RGBA &color);
-	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift);
+	bool nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const math::Vec3f &shift);
 	void nodeKeyFramesChanged(scenegraph::SceneGraphNode &node);
 	voxel::Region selectionCalculateRegion(const scenegraph::SceneGraphNode &node) const;
 	voxel::ClipboardData nodeClipboardCopy(scenegraph::SceneGraphNode &node);
@@ -492,14 +497,14 @@ public:
 	 * @brief Update the cursor position used for tracing
 	 */
 	void setMousePos(int x, int y);
-	const glm::ivec2 &mousePos() const;
+	const math::Vec2i &mousePos() const;
 	void setMouseLook(bool active);
 	void setMouseDelta(int dx, int dy);
 
 	/**
 	 * @brief world matrix for the current active node
 	 */
-	glm::mat4 worldMatrix(scenegraph::FrameIndex frameIdx = 0, bool applyTransforms = true) const;
+	math::Mat4f worldMatrix(scenegraph::FrameIndex frameIdx = 0, bool applyTransforms = true) const;
 
 	const voxel::Region &sliceRegion() const;
 	void setSliceRegion(const voxel::Region &region);
@@ -529,13 +534,13 @@ public:
 	 * @brief The cursor position is in model space - it's a coordinate in the volume, not taking the transform into
 	 * account (but the region)
 	 */
-	const glm::ivec3 &cursorPosition() const;
+	const math::Vec3i &cursorPosition() const;
 
 	/**
 	 * @brief The reference position is in model space - it's a coordinate in the volume, not taking the transform into
 	 * account (but the region)
 	 */
-	const glm::ivec3 &referencePosition() const;
+	const math::Vec3i &referencePosition() const;
 
 	void modified(const core::UUID &nodeUUID, const voxel::Region &modifiedRegion,
 				  SceneModifiedFlags flags = SceneModifiedFlags::All, uint64_t renderRegionMillis = 0);
@@ -575,7 +580,7 @@ public:
 	 * @brief Add a new model node adjacent to the given node on the given face
 	 */
 	int addModelAdjacent(const core::UUID &sourceNodeUUID, voxel::FaceNames face);
-	int addPointChild(const core::String &name, const glm::ivec3 &position, const glm::quat &orientation,
+	int addPointChild(const core::String &name, const math::Vec3i &position, const math::Quatf &orientation,
 					  const core::UUID &uuid = core::UUID());
 
 	bool isAddNodeModeActive() const;
@@ -605,15 +610,15 @@ public:
 	bool splitVolumes();
 
 	bool nodeCopy(const core::UUID &nodeUUID);
-	bool nodePaste(const core::UUID &nodeUUID, const glm::ivec3& pos);
+	bool nodePaste(const core::UUID &nodeUUID, const math::Vec3i& pos);
 	bool nodeGlobalCopy(const core::UUID &nodeUUID);
-	bool nodeGlobalPaste(const core::UUID &nodeUUID, const glm::ivec3 &pos);
+	bool nodeGlobalPaste(const core::UUID &nodeUUID, const math::Vec3i &pos);
 
-	bool paste(const glm::ivec3 &pos);
-	bool globalPaste(const glm::ivec3 &pos);
+	bool paste(const math::Vec3i &pos);
+	bool globalPaste(const math::Vec3i &pos);
 	bool globalCopy();
 	bool globalCopyVisible();
-	bool globalPasteNode(const glm::ivec3 &pos);
+	bool globalPasteNode(const math::Vec3i &pos);
 
 	/**
 	 * @brief Splats (merges) a source node into all other intersecting nodes in the scene.
@@ -652,7 +657,7 @@ public:
 	void selectionSetBounds(const core::UUID &nodeUUID, const voxel::Region &region);
 	void selectionSetEllipse(const core::UUID &nodeUUID);
 	bool hasSelection(const core::UUID &nodeUUID) const;
-	bool isSelected(const core::UUID &nodeUUID, const glm::ivec3 &pos) const;
+	bool isSelected(const core::UUID &nodeUUID, const math::Vec3i &pos) const;
 	voxel::Region selectionCalculateRegion(const core::UUID &nodeUUID) const;
 
 	void lsystem(const voxelgenerator::lsystem::LSystemConfig &conf);
@@ -717,7 +722,7 @@ public:
 	const core::String &pendingSceneJobText(int index) const;
 
 	bool nodeResizeAsync(const core::UUID &nodeUUID, const voxel::Region &region);
-	bool nodeResizeAsync(const core::UUID &nodeUUID, const glm::ivec3 &size);
+	bool nodeResizeAsync(const core::UUID &nodeUUID, const math::Vec3i &size);
 	bool nodeColorToNewNodeAsync(const core::UUID &nodeUUID, const core::Buffer<uint8_t> &paletteIndices);
 
 	bool undo(int n = 1);
@@ -781,7 +786,7 @@ public:
 	 * @sa resetLastTrace()
 	 */
 	bool trace(bool sceneMode, bool force = false);
-	bool trace(bool sceneMode, bool force, const glm::mat4 &invModel);
+	bool trace(bool sceneMode, bool force, const math::Mat4f &invModel);
 	void resetLastTrace();
 
 	void startLocalServer(int port, const core::String &iface);
@@ -802,7 +807,7 @@ public:
 	float playbackSpeed() const;
 	void setPlaybackSpeed(float speed);
 
-	bool setGridResolution(const glm::ivec3 &resolution);
+	bool setGridResolution(const math::Vec3i &resolution);
 	bool setGridResolution(int resolution);
 
 	int activeNode() const;
@@ -849,10 +854,10 @@ public:
 	voxelrender::CameraMovement &cameraMovement();
 
 	void nodeGroupResetTransform(scenegraph::KeyFrameIndex keyFrameIdx);
-	bool nodeGroupUpdatePivot(const glm::vec3 &pivot);
+	bool nodeGroupUpdatePivot(const math::Vec3f &pivot);
 	void nodeGroupRemoveKeyFrame(scenegraph::FrameIndex frameIdx);
 	void nodeGroupAddKeyFrame(scenegraph::FrameIndex frameIdx);
-	bool nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+	bool nodeGroupUpdateTransform(const math::Vec3f &angles, const math::Vec3f &scale, const math::Vec3f &translation,
 								  scenegraph::FrameIndex frameIdx, bool local);
 	/**
 	 * @brief Shift the whole volume by the given voxel amount
@@ -871,17 +876,17 @@ public:
 	bool nodeCut(const core::UUID &nodeUUID);
 
 	void nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, const voxel::RawVolume &volume);
-	bool nodeUpdateTransform(const core::UUID &nodeUUID, const glm::vec3 &angles, const glm::vec3 &scale,
-							 const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
-	bool nodeUpdateTransform(const core::UUID &nodeUUID, const glm::mat4 &matrix, scenegraph::KeyFrameIndex keyFrameIdx,
+	bool nodeUpdateTransform(const core::UUID &nodeUUID, const math::Vec3f &angles, const math::Vec3f &scale,
+							 const math::Vec3f &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local);
+	bool nodeUpdateTransform(const core::UUID &nodeUUID, const math::Mat4f &matrix, scenegraph::KeyFrameIndex keyFrameIdx,
 							 bool local);
 	bool nodeResetTransform(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx);
 	bool nodeTransformMirror(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx, math::Axis axis);
 	bool nodeUpdateKeyFrameLongRotation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx, bool enabled);
 	bool nodeUpdateKeyFrameInterpolation(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx,
 										 scenegraph::InterpolationType interpolation);
-	bool nodeUpdatePivot(const core::UUID &nodeUUID, const glm::vec3 &pivot);
-	bool nodeShiftAllKeyframes(const core::UUID &nodeUUID, const glm::vec3 &shift);
+	bool nodeUpdatePivot(const core::UUID &nodeUUID, const math::Vec3f &pivot);
+	bool nodeShiftAllKeyframes(const core::UUID &nodeUUID, const math::Vec3f &shift);
 	bool nodeRemoveKeyFrameByIndex(const core::UUID &nodeUUID, scenegraph::KeyFrameIndex keyFrameIdx);
 	int nodeReference(const core::UUID &nodeUUID);
 	bool nodeDuplicate(const core::UUID &nodeUUID, core::UUID *newNodeUUID = nullptr);
@@ -952,8 +957,8 @@ public:
 	bool nodeSetMaterialType(const core::UUID &nodeUUID, uint8_t palIdx, palette::MaterialType type);
 	bool nodeSetColor(const core::UUID &nodeUUID, uint8_t palIdx, const color::RGBA &color);
 	void nodeResize(const core::UUID &nodeUUID, const voxel::Region &region);
-	void nodeResize(const core::UUID &nodeUUID, const glm::ivec3 &size);
-	void nodeRescaleContent(const core::UUID &nodeUUID, const glm::ivec3 &targetSize);
+	void nodeResize(const core::UUID &nodeUUID, const math::Vec3i &size);
+	void nodeRescaleContent(const core::UUID &nodeUUID, const math::Vec3i &targetSize);
 	void nodeBakeTransform(const core::UUID &nodeUUID);
 	/**
 	 * @brief If a type of a palette color changes its transparency state, we have to update the voxels
@@ -964,11 +969,11 @@ public:
 	/**
 	 * @brief Shift the whole volume by the given world coordinates
 	 */
-	void nodeShift(const core::UUID &nodeUUID, const glm::ivec3 &m);
+	void nodeShift(const core::UUID &nodeUUID, const math::Vec3i &m);
 	/**
 	 * @brief Move the voxels inside the volume regions
 	 */
-	void nodeMoveVoxels(const core::UUID &nodeUUID, const glm::ivec3 &m);
+	void nodeMoveVoxels(const core::UUID &nodeUUID, const math::Vec3i &m);
 	/**
 	 * @brief Remove unused colors from the palette of the given node
 	 *
@@ -1039,7 +1044,7 @@ inline bool SceneManager::lsystemRunning() const {
 	return _lsystemRunning;
 }
 
-inline const glm::ivec2 &SceneManager::mousePos() const {
+inline const math::Vec2i &SceneManager::mousePos() const {
 	return _mouseCursor;
 }
 

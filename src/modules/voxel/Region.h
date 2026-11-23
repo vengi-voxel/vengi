@@ -4,17 +4,13 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/fwd.hpp>
 #include "core/Common.h"
 #include "core/String.h"
 #include "core/collection/Buffer.h"
 #include <stdint.h>
-
-namespace glm {
-GLM_ALIGNED_TYPEDEF(ivec4, aligned_ivec4, 16);
-}
+#include "math/AlignedVec4i.h"
+#include "math/Vec3f.h"
+namespace math { struct Mat4f; }
 
 namespace voxel {
 
@@ -40,7 +36,7 @@ namespace voxel {
 class Region {
 public:
 	Region();
-	Region(const glm::ivec3& mins, const glm::ivec3& maxs);
+	Region(const math::Vec3i& mins, const math::Vec3i& maxs);
 	Region(int32_t minsx, int32_t minsy, int32_t minsz, int32_t maxsx, int32_t maxsy, int32_t maxsz);
 	Region(int mins, int maxs);
 
@@ -53,7 +49,7 @@ public:
 	uint64_t hash() const;
 
 	/** Moves the Region by the amount specified. */
-	Region& operator+=(const glm::ivec3& amount);
+	Region& operator+=(const math::Vec3i& amount);
 
 	/** Gets the 'x' position of the lower corner. */
 	int32_t getLowerX() const;
@@ -72,26 +68,26 @@ public:
 	 * @return The position of the center cell
 	 * @sa calcCenterf()
 	 */
-	glm::ivec3 getCenter() const;
+	math::Vec3i getCenter() const;
 	/**
 	 * @brief Calculate the voxel center coordinate
 	 * @sa getCenter()
 	 */
-	glm::vec3 calcCenterf() const;
-	glm::vec3 calcCellCenterf() const;
+	math::Vec3f calcCenterf() const;
+	math::Vec3f calcCellCenterf() const;
 
 	/** Gets the position of the lower corner. */
-	const glm::ivec3& getLowerCorner() const;
+	const math::Vec3i& getLowerCorner() const;
 	/** Gets the position of the upper corner. */
-	const glm::ivec3& getUpperCorner() const;
+	const math::Vec3i& getUpperCorner() const;
 
 	/** Gets the position of the lower corner. */
-	const glm::aligned_ivec4& getLowerCorner4() const;
+	const math::AlignedVec4i& getLowerCorner4() const;
 
-	glm::ivec3 getLowerCenter() const;
+	math::Vec3i getLowerCenter() const;
 
-	glm::vec3 getLowerCornerf() const;
-	glm::vec3 getUpperCornerf() const;
+	math::Vec3f getLowerCornerf() const;
+	math::Vec3f getUpperCornerf() const;
 
 	/** Gets the width of the region measured in voxels. */
 	int32_t getWidthInVoxels() const;
@@ -100,7 +96,7 @@ public:
 	/** Gets the depth of the region measured in voxels. */
 	int32_t getDepthInVoxels() const;
 	/** Gets the dimensions of the region measured in voxels. */
-	const glm::ivec3& getDimensionsInVoxels() const;
+	const math::Vec3i& getDimensionsInVoxels() const;
 
 	/** Gets the width of the region measured in cells. */
 	int32_t getWidthInCells() const;
@@ -109,21 +105,21 @@ public:
 	/** Gets the depth of the region measured in cells. */
 	int32_t getDepthInCells() const;
 	/** Gets the dimensions of the region measured in cells. */
-	const glm::ivec3& getDimensionsInCells() const;
+	const math::Vec3i& getDimensionsInCells() const;
 
-	glm::ivec3 moveInto(int32_t x, int32_t y, int32_t z) const;
+	math::Vec3i moveInto(int32_t x, int32_t y, int32_t z) const;
 
 	/** Sets the position of the lower corner. */
-	void setLowerCorner(const glm::ivec3& mins);
+	void setLowerCorner(const math::Vec3i& mins);
 	/** Sets the position of the upper corner. */
-	void setUpperCorner(const glm::ivec3& maxs);
+	void setUpperCorner(const math::Vec3i& maxs);
 
 	static voxel::Region fromSize(int size) {
-		return voxel::Region(glm::ivec3(0), glm::ivec3(size - 1));
+		return voxel::Region(math::Vec3i(0), math::Vec3i(size - 1));
 	}
 
-	static voxel::Region fromSize(const glm::ivec3 &size) {
-		return voxel::Region(glm::ivec3(0), size - 1);
+	static voxel::Region fromSize(const math::Vec3i &size) {
+		return voxel::Region(math::Vec3i(0), size - 1);
 	}
 
 	static core::Buffer<voxel::Region> subtract(const voxel::Region& a, const core::Buffer<voxel::Region>& b);
@@ -133,8 +129,8 @@ public:
 		return subtract(a, result);
 	}
 
-	glm::ivec3 fromIndex(int64_t idx) const {
-		return glm::ivec3(_mins.x + (int)(idx % getWidthInVoxels()),
+	math::Vec3i fromIndex(int64_t idx) const {
+		return math::Vec3i(_mins.x + (int)(idx % getWidthInVoxels()),
 						  _mins.y + (int)((idx / getWidthInVoxels()) % getHeightInVoxels()),
 						  _mins.z + (int)(idx / _stride));
 	}
@@ -142,7 +138,7 @@ public:
 	/**
 	 * @brief Calculates the linear index for the given coordinates within this region.
 	 */
-	inline int64_t index(const glm::ivec3 &pos) const {
+	inline int64_t index(const math::Vec3i &pos) const {
 		return index(pos.x, pos.y, pos.z);
 	}
 
@@ -156,7 +152,7 @@ public:
 	/**
 	 * @return true if the given point is exactly on the region border
 	 */
-	bool isOnBorder(const glm::ivec3& pos) const;
+	bool isOnBorder(const math::Vec3i& pos) const;
 	bool isOnBorderX(const int x) const;
 	bool isOnBorderY(const int y) const;
 	bool isOnBorderZ(const int z) const;
@@ -164,13 +160,13 @@ public:
 	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(float fX, float fY, float fZ) const;
 	/** Tests whether the given point is contained in this Region. */
-	bool containsPoint(const glm::vec3& pos) const;
+	bool containsPoint(const math::Vec3f& pos) const;
 
 	/** Tests whether the given point is contained in this Region. */
 	bool containsPoint(int32_t iX, int32_t iY, int32_t iZ) const;
 	/** Tests whether the given point is contained in this Region. */
-	bool containsPoint(const glm::ivec3& pos) const;
-	bool containsPoint(const glm::aligned_ivec4& pos) const;
+	bool containsPoint(const math::Vec3i& pos) const;
+	bool containsPoint(const math::AlignedVec4i& pos) const;
 	/** Tests whether the given position is contained in the 'x' range of this Region. */
 	bool containsPointInX(float pos) const;
 	/** Tests whether the given position is contained in the 'x' range of this Region. */
@@ -190,8 +186,8 @@ public:
 	/** Enlarges the Region so that it contains the specified position. */
 	void accumulate(int32_t iX, int32_t iY, int32_t iZ);
 	/** Enlarges the Region so that it contains the specified position. */
-	void accumulate(const glm::ivec3& v3dPos);
-	void accumulate(const glm::aligned_ivec4& v3dPos);
+	void accumulate(const math::Vec3i& v3dPos);
+	void accumulate(const math::AlignedVec4i& v3dPos);
 
 	/** Enlarges the Region so that it contains the specified Region. */
 	void accumulate(const Region& reg);
@@ -204,7 +200,7 @@ public:
 	/** Grows this region by the amounts specified. */
 	void grow(int32_t amountX, int32_t amountY, int32_t amountZ);
 	/** Grows this region by the amounts specified. */
-	void grow(const glm::ivec3& v3dAmount);
+	void grow(const math::Vec3i& v3dAmount);
 
 	/** Tests whether all components of the upper corner are at least
 	 * as great as the corresponding components of the lower corner. */
@@ -219,40 +215,40 @@ public:
 	/** Moves the Region by the amount specified. */
 	void shift(int32_t amountX, int32_t amountY, int32_t amountZ);
 	/** Moves the Region by the amount specified. */
-	void shift(const glm::ivec3& v3dAmount);
+	void shift(const math::Vec3i& v3dAmount);
 	/** Moves the lower corner of the Region by the amount specified. */
 	void shiftLowerCorner(int32_t x, int32_t y, int32_t z);
 	/** Moves the lower corner of the Region by the amount specified. */
-	void shiftLowerCorner(const glm::ivec3& v3dAmount);
+	void shiftLowerCorner(const math::Vec3i& v3dAmount);
 	/** Moves the upper corner of the Region by the amount specified. */
 	void shiftUpperCorner(int32_t x, int32_t y, int32_t z);
 	/** Moves the upper corner of the Region by the amount specified. */
-	void shiftUpperCorner(const glm::ivec3& v3dAmount);
+	void shiftUpperCorner(const math::Vec3i& v3dAmount);
 
 	/** Shrinks this region by the amount specified. */
 	void shrink(int32_t amount);
 	/** Shrinks this region by the amounts specified. */
 	void shrink(int32_t amountX, int32_t amountY, int32_t amountZ);
 	/** Shrinks this region by the amounts specified. */
-	void shrink(const glm::ivec3& v3dAmount);
-	Region rotate(const glm::mat4 &mat, const glm::vec3 &pivot) const;
-	Region transform(const glm::mat4 &mat) const;
-	void transformArvo(const glm::mat4 &worldMatrix, glm::vec3 &transformedMins, glm::vec3 &transformedMaxs) const;
+	void shrink(const math::Vec3i& v3dAmount);
+	Region rotate(const math::Mat4f &mat, const math::Vec3f &pivot) const;
+	Region transform(const math::Mat4f &mat) const;
+	void transformArvo(const math::Mat4f &worldMatrix, math::Vec3f &transformedMins, math::Vec3f &transformedMaxs) const;
 
 	core::String toString(bool center = false) const;
 
 private:
 	void update();
 
-	glm::aligned_ivec4 _mins;
-	glm::aligned_ivec4 _maxs;
-	glm::aligned_ivec4 _width;
-	glm::aligned_ivec4 _voxels;
-	glm::aligned_ivec4 _center;
+	math::AlignedVec4i _mins;
+	math::AlignedVec4i _maxs;
+	math::AlignedVec4i _width;
+	math::AlignedVec4i _voxels;
+	math::AlignedVec4i _center;
 	int64_t _stride;
 };
 
-inline const glm::aligned_ivec4& Region::getLowerCorner4() const {
+inline const math::AlignedVec4i& Region::getLowerCorner4() const {
 	return _mins;
 }
 

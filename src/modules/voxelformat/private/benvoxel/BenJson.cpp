@@ -15,6 +15,8 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "json/JSON.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -68,7 +70,7 @@ static bool loadMetadataJson(const json::Json &json, Metadata &metadata) {
 			const core::String name = it.key();
 			json::Json valueJson = *it;
 			if (valueJson.isArray() && valueJson.size() == 3) {
-				const glm::vec3 pointPos(valueJson.get(0).floatVal(), valueJson.get(2).floatVal(), valueJson.get(1).floatVal());
+				const math::Vec3f pointPos(valueJson.get(0).floatVal(), valueJson.get(2).floatVal(), valueJson.get(1).floatVal());
 				metadata.points.emplace_back(name, pointPos);
 			} else {
 				Log::error("Invalid format for vec3 property: %s", name.c_str());
@@ -248,7 +250,7 @@ bool saveJson(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream 
 
 		json::Json sizeArr = json::Json::array();
 		const voxel::Region &region = volume->region();
-		const glm::ivec3 &dim = region.getDimensionsInVoxels();
+		const math::Vec3i &dim = region.getDimensionsInVoxels();
 		sizeArr.push_back(dim.x);
 		sizeArr.push_back(dim.z);
 		sizeArr.push_back(dim.y);

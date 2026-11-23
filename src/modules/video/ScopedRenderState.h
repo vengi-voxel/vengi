@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "math/Math.h"
 #include "video/Types.h"
+#include "math/Vec4i.h"
 
 namespace video {
 
@@ -17,8 +17,8 @@ namespace video {
 class ScopedRenderState {
 private:
 	struct State {
-		glm::ivec4 _scissor;
-		glm::ivec4 _viewport;
+		math::Vec4i _scissor;
+		math::Vec4i _viewport;
 		Id _frameBuffer;
 		bool _blendEnabled;
 		BlendMode _blendSrc;

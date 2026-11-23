@@ -8,11 +8,12 @@
 #include "operation/TransformOperation.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
-#include "core/GLM.h"
 #include "ui/IconsLucide.h"
 #include "voxel/Voxel.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
-#include <glm/vec3.hpp>
 
 namespace voxedit {
 
@@ -84,17 +85,17 @@ public:
 	voxel::VoxelSampling voxelSampling() const;
 	void setVoxelSampling(voxel::VoxelSampling sampling);
 
-	const glm::ivec3 &moveOffset() const;
-	void setMoveOffset(const glm::ivec3 &offset);
+	const math::Vec3i &moveOffset() const;
+	void setMoveOffset(const math::Vec3i &offset);
 
-	const glm::ivec3 &shearOffset() const;
-	void setShearOffset(const glm::ivec3 &offset);
+	const math::Vec3i &shearOffset() const;
+	void setShearOffset(const math::Vec3i &offset);
 
-	const glm::vec3 &scale() const;
-	void setScale(const glm::vec3 &scale);
+	const math::Vec3f &scale() const;
+	void setScale(const math::Vec3f &scale);
 
-	const glm::vec3 &rotationDegrees() const;
-	void setRotationDegrees(const glm::vec3 &degrees);
+	const math::Vec3f &rotationDegrees() const;
+	void setRotationDegrees(const math::Vec3f &degrees);
 
 	bool hasSnapshot() const;
 	size_t snapshotVoxelCount() const;
@@ -103,7 +104,7 @@ public:
 	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
 	bool hasHandle(const BrushContext &ctx) const;
 	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
-	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &deltaMatrix,
 						 uint32_t operation) override;
 };
 
@@ -124,38 +125,38 @@ inline void TransformBrush::setVoxelSampling(voxel::VoxelSampling sampling) {
 	_parameters.sampling = sampling;
 }
 
-inline const glm::ivec3 &TransformBrush::moveOffset() const {
+inline const math::Vec3i &TransformBrush::moveOffset() const {
 	return _parameters.translation;
 }
 
-inline void TransformBrush::setMoveOffset(const glm::ivec3 &offset) {
+inline void TransformBrush::setMoveOffset(const math::Vec3i &offset) {
 	markSettingsChanged();
-	_parameters.translation = glm::clamp(offset, glm::ivec3(-MaxMoveOffset), glm::ivec3(MaxMoveOffset));
+	_parameters.translation = math::clamp(offset, math::Vec3i(-MaxMoveOffset), math::Vec3i(MaxMoveOffset));
 }
 
-inline const glm::ivec3 &TransformBrush::shearOffset() const {
+inline const math::Vec3i &TransformBrush::shearOffset() const {
 	return _parameters.shear;
 }
 
-inline void TransformBrush::setShearOffset(const glm::ivec3 &offset) {
+inline void TransformBrush::setShearOffset(const math::Vec3i &offset) {
 	markSettingsChanged();
-	_parameters.shear = glm::clamp(offset, glm::ivec3(-MaxShearOffset), glm::ivec3(MaxShearOffset));
+	_parameters.shear = math::clamp(offset, math::Vec3i(-MaxShearOffset), math::Vec3i(MaxShearOffset));
 }
 
-inline const glm::vec3 &TransformBrush::scale() const {
+inline const math::Vec3f &TransformBrush::scale() const {
 	return _parameters.scale;
 }
 
-inline void TransformBrush::setScale(const glm::vec3 &scale) {
+inline void TransformBrush::setScale(const math::Vec3f &scale) {
 	markSettingsChanged();
-	_parameters.scale = glm::max(scale, glm::vec3(0.01f));
+	_parameters.scale = math::max(scale, math::Vec3f(0.01f));
 }
 
-inline const glm::vec3 &TransformBrush::rotationDegrees() const {
+inline const math::Vec3f &TransformBrush::rotationDegrees() const {
 	return _parameters.rotationDegrees;
 }
 
-inline void TransformBrush::setRotationDegrees(const glm::vec3 &degrees) {
+inline void TransformBrush::setRotationDegrees(const math::Vec3f &degrees) {
 	markSettingsChanged();
 	_parameters.rotationDegrees = degrees;
 }

@@ -7,7 +7,8 @@
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "video/Renderer.h"
-#include <glm/common.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
 
 namespace video {
 
@@ -32,7 +33,7 @@ FrameBufferConfig& FrameBufferConfig::depthBufferFormat(TextureFormat format) {
 	return *this;
 }
 
-FrameBufferConfig& FrameBufferConfig::dimension(const glm::ivec2& dimension) {
+FrameBufferConfig& FrameBufferConfig::dimension(const math::Vec2i& dimension) {
 	if (dimension.x <= 0 || dimension.y <= 0) {
 		Log::error("Invalid dimension for framebuffer: w: %i, h: %i", dimension.x, dimension.y);
 	}
@@ -61,17 +62,17 @@ FrameBufferConfig& FrameBufferConfig::stencilBuffer(bool stencilBuffer) {
 }
 
 FrameBufferConfig& FrameBufferConfig::samples(int samples) {
-	_samples = glm::clamp(samples, 0, video::limiti(Limit::MaxSamples));
+	_samples = math::clamp(samples, 0, video::limiti(Limit::MaxSamples));
 	return *this;
 }
 
-FrameBufferConfig defaultDepthBufferConfig(const glm::ivec2& dimension, int maxDepthBuffers) {
+FrameBufferConfig defaultDepthBufferConfig(const math::Vec2i& dimension, int maxDepthBuffers) {
 	TextureConfig cfg;
 	cfg.format(TextureFormat::D32F).type(TextureType::Texture2DArray);
 	cfg.filter(TextureFilter::Nearest);
 	cfg.compareFunc(CompareFunc::Less).compareMode(TextureCompareMode::RefToTexture).layers(maxDepthBuffers);
 	// coordinates outside the depth buffer will result in no shadow
-	cfg.borderColor(glm::vec4(1.0f));
+	cfg.borderColor(math::Vec4f(1.0f));
 	cfg.wrap(TextureWrap::ClampToBorder);
 
 	FrameBufferConfig fboCfg;

@@ -6,8 +6,7 @@
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/epsilon.hpp>
+#include "math/Scalar.h"
 
 namespace palette {
 
@@ -74,7 +73,7 @@ bool Material::operator==(const Material &rhs) const {
 		return false;
 	}
 	for (int i = 0; i < (int)MaterialMax - 1; ++i) {
-		if (!glm::epsilonEqual(value(MaterialProperty(i)), rhs.value(MaterialProperty(i)), glm::epsilon<float>())) {
+		if (!math::epsilonEqual(value(MaterialProperty(i)), rhs.value(MaterialProperty(i)), math::epsilonf)) {
 			return false;
 		}
 	}

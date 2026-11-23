@@ -7,7 +7,6 @@
 #include "color/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/String.h"
@@ -19,7 +18,13 @@
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
-#include <glm/common.hpp>
+#include "math/U8Vec3.h"
+#include "math/Vec3u.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2u.h"
+#include "math/Vec2i.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -86,15 +91,15 @@ bool VXMFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 	wrapBool(stream->writeUInt32(FourCC('V', 'X', 'M', 'C')));
-	glm::vec3 pivot(0.5f, 0.0f, 0.5f);
+	math::Vec3f pivot(0.5f, 0.0f, 0.5f);
 
 	if (const scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode()) {
 		pivot = node->pivot();
 	}
 
 	const voxel::Region &region = sceneGraph.region();
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
 	const uint32_t depth = region.getDepthInVoxels();
@@ -307,8 +312,8 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	glm::vec3 normalizedPivot = glm::vec3{0.5f, 0.0f, 0.5f};
-	glm::uvec3 size(0);
+	math::Vec3f normalizedPivot = math::Vec3f{0.5f, 0.0f, 0.5f};
+	math::Vec3u size(0);
 	Log::debug("Found vxm%i", version);
 	if (version >= 6) {
 		wrap(stream->readUInt32(size.x));
@@ -382,10 +387,10 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		wrap(stream->readUInt32(lodLevels));
 	}
 	for (uint32_t lodLevel = 0u; lodLevel < lodLevels; ++lodLevel) {
-		glm::uvec2 textureDim;
+		math::Vec2u textureDim;
 		wrap(stream->readUInt32(textureDim.x));
 		wrap(stream->readUInt32(textureDim.y));
-		if (glm::any(glm::greaterThan(textureDim, glm::uvec2(2048)))) {
+		if (math::any(math::greaterThan(textureDim, math::Vec2u(2048)))) {
 			Log::warn("Size of texture exceeds the max allowed value");
 			return false;
 		}
@@ -429,7 +434,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 						}
 
 						struct TexColor {
-							glm::u8vec3h rgb;
+							math::U8Vec3 rgb;
 						};
 						static_assert(sizeof(TexColor) == 3, "Unexpected TexColor size");
 						stream->skip(sizeof(TexColor));
@@ -450,8 +455,8 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 				return false;
 			}
 			struct QuadVertex {
-				glm::vec3h pos;
-				glm::ivec2h uv;
+				math::Vec3f pos;
+				math::Vec2i uv;
 			};
 			static_assert(sizeof(QuadVertex) == 20, "Unexpected QuadVertex size");
 			stream->skip(quadAmount * 4 * sizeof(QuadVertex));
@@ -464,11 +469,11 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		wrap(stream->readUInt32(size.z));
 	}
 
-	if (glm::any(glm::greaterThan(size, glm::uvec3(MaxRegionSize)))) {
+	if (math::any(math::greaterThan(size, math::Vec3u(MaxRegionSize)))) {
 		Log::warn("Size of volume exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::lessThan(size, glm::uvec3(1)))) {
+	if (math::any(math::lessThan(size, math::Vec3u(1)))) {
 		Log::warn("Size of volume results in empty space");
 		return false;
 	}
@@ -513,7 +518,7 @@ bool VXMFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 	palette.setSize(materialAmount);
 
-	const voxel::Region &region = voxel::Region::fromSize(size);
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i((int)size.x, (int)size.y, (int)size.z));
 
 	uint8_t maxModels = 1;
 	if (version >= 12) {

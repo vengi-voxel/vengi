@@ -15,6 +15,8 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -203,7 +205,7 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 		Log::error("Failed to seek to texture coordinates");
 		return false;
 	}
-	core::Buffer<glm::vec2> uvs(surfHdr.numVerts);
+	core::Buffer<math::Vec2f> uvs(surfHdr.numVerts);
 	for (int32_t i = 0; i < surfHdr.numVerts; ++i) {
 		wrap(stream.readFloat(uvs[i].x))
 		wrap(stream.readFloat(uvs[i].y))
@@ -219,7 +221,7 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 		Log::error("Failed to seek to vertices");
 		return false;
 	}
-	core::Buffer<glm::vec3> vertices(surfHdr.numVerts);
+	core::Buffer<math::Vec3f> vertices(surfHdr.numVerts);
 	for (int32_t i = 0; i < surfHdr.numVerts; ++i) {
 		int16_t x, y, z;
 		int16_t encodedNormal;
@@ -228,7 +230,7 @@ bool MD3Format::loadSurface(const core::String &filename, const io::ArchivePtr &
 		wrap(stream.readInt16(z))
 		wrap(stream.readInt16(encodedNormal))
 		// MD3 Z-up -> Y-up coordinate swap
-		vertices[i] = glm::vec3((float)x * MD3_XYZ_SCALE, (float)z * MD3_XYZ_SCALE, (float)y * MD3_XYZ_SCALE);
+		vertices[i] = math::Vec3f((float)x * MD3_XYZ_SCALE, (float)z * MD3_XYZ_SCALE, (float)y * MD3_XYZ_SCALE);
 	}
 
 	// build mesh triangles
@@ -290,7 +292,7 @@ bool MD3Format::loadTags(io::SeekableReadStream &stream, int64_t startOffset, co
 			wrap(stream.readFloat(tag.axis[r][2]))
 		}
 		// MD3 Z-up -> Y-up: swap Y and Z
-		const glm::vec3 origin(tag.origin[0], tag.origin[2], tag.origin[1]);
+		const math::Vec3f origin(tag.origin[0], tag.origin[2], tag.origin[1]);
 		Log::debug("  Tag '%s' at (%f, %f, %f)", tag.name, origin.x, origin.y, origin.z);
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
 		node.setName(tag.name);

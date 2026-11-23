@@ -24,7 +24,13 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
@@ -518,7 +524,7 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodesWithTransforms) {
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setName("model2");
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(-1, 1, 1));
+		transform.setWorldTranslation(math::Vec3f(-1, 1, 1));
 		node.setTransform(0, transform);
 		EXPECT_GT(sceneGraph.emplace(core::move(node), 0), 0);
 	}
@@ -665,17 +671,17 @@ TEST_F(SceneGraphTest, testSceneOBB) {
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setUnownedVolume(&v);
 		node.localTranslate(-v.region().calcCenterf());
-		node.setPivot(glm::vec3(0.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
 		sceneGraph.updateTransforms();
 	}
 	const math::OBBF &obb = sceneGraph.sceneOBB(sceneGraph.node(1), 0);
-	const glm::vec3 &center = obb.origin();
+	const math::Vec3f &center = obb.origin();
 	EXPECT_FLOAT_EQ(0.0f, center.x);
 	EXPECT_FLOAT_EQ(0.0f, center.y);
 	EXPECT_FLOAT_EQ(0.0f, center.z);
 
-	const glm::vec3 &extents = obb.extents();
+	const math::Vec3f &extents = obb.extents();
 	EXPECT_FLOAT_EQ(1.0f, extents.x);
 	EXPECT_FLOAT_EQ(1.0f, extents.y);
 	EXPECT_FLOAT_EQ(1.0f, extents.z);
@@ -687,19 +693,19 @@ TEST_F(SceneGraphTest, DISABLED_testSceneOBBScale) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setUnownedVolume(&v);
-		node.localTranslate(glm::vec3(-3.0f));
+		node.localTranslate(math::Vec3f(-3.0f));
 		node.transform(0).setLocalScale({2.0f, 2.0f, 2.0f});
-		node.setPivot(glm::vec3(0.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
 		sceneGraph.updateTransforms();
 	}
 	const math::OBBF &obb = sceneGraph.sceneOBB(sceneGraph.node(1), 0);
-	const glm::vec3 &center = obb.origin();
+	const math::Vec3f &center = obb.origin();
 	EXPECT_FLOAT_EQ(0.0f, center.x);
 	EXPECT_FLOAT_EQ(0.0f, center.y);
 	EXPECT_FLOAT_EQ(0.0f, center.z);
 
-	const glm::vec3 &extents = obb.extents();
+	const math::Vec3f &extents = obb.extents();
 	EXPECT_FLOAT_EQ(2.0f, extents.x);
 	EXPECT_FLOAT_EQ(2.0f, extents.y);
 	EXPECT_FLOAT_EQ(2.0f, extents.z);
@@ -711,14 +717,14 @@ TEST_F(SceneGraphTest, testNodeSceneRegion_1) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setUnownedVolume(&v);
-		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
-		node.setPivot(glm::vec3(0.5f));
+		node.localTranslate(math::Vec3f(10.0f, 11.0f, 12.0f));
+		node.setPivot(math::Vec3f(0.5f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
 		sceneGraph.updateTransforms();
 	}
 	const voxel::Region &region = sceneGraph.sceneRegion(sceneGraph.node(1));
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
 	EXPECT_EQ(3, mins.x);
 	EXPECT_EQ(4, mins.y);
 	EXPECT_EQ(5, mins.z);
@@ -733,14 +739,14 @@ TEST_F(SceneGraphTest, testNodeSceneRegion_2) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setUnownedVolume(&v);
-		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
-		node.setPivot(glm::vec3(0.0f));
+		node.localTranslate(math::Vec3f(10.0f, 11.0f, 12.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		ASSERT_EQ(1, sceneGraph.emplace(core::move(node)));
 		sceneGraph.updateTransforms();
 	}
 	const voxel::Region &region = sceneGraph.sceneRegion(sceneGraph.node(1));
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
 	EXPECT_EQ(10, mins.x);
 	EXPECT_EQ(11, mins.y);
 	EXPECT_EQ(12, mins.z);
@@ -759,7 +765,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setVolume(v);
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(-10));
+		transform.setWorldTranslation(math::Vec3f(-10));
 		node.setTransform(0, transform);
 		sceneGraph.emplace(core::move(node));
 		// [-10, 0]
@@ -771,7 +777,7 @@ TEST_F(SceneGraphTest, testMergeWithTranslation) {
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v);
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(10));
+		transform.setWorldTranslation(math::Vec3f(10));
 		node.setTransform(0, transform);
 		sceneGraph.emplace(core::move(node));
 		// [11, 15]
@@ -799,9 +805,9 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setVolume(v);
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(-10));
+		transform.setWorldTranslation(math::Vec3f(-10));
 		node.setTransform(0, transform);
-		node.setPivot(glm::vec3(1.0f) / glm::vec3(v->region().getDimensionsInVoxels()));
+		node.setPivot(math::Vec3f(1.0f) / math::Vec3f(v->region().getDimensionsInVoxels()));
 		EXPECT_EQ(1, sceneGraph.emplace(core::move(node)));
 	}
 	{
@@ -813,9 +819,9 @@ TEST_F(SceneGraphTest, testMergeWithTranslationAndPivot) {
 		v->setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v);
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(10));
+		transform.setWorldTranslation(math::Vec3f(10));
 		node.setTransform(0, transform);
-		node.setPivot(glm::vec3(0.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		EXPECT_EQ(2, sceneGraph.emplace(core::move(node)));
 	}
 	sceneGraph.updateTransforms();
@@ -848,12 +854,12 @@ TEST_F(SceneGraphTest, testMergeWithTranslationPivotAndRotation) {
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		v->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		node.setVolume(v);
-		const glm::vec3 euler(45.0f, 0.0f, 0.0f);
+		const math::Vec3f euler(45.0f, 0.0f, 0.0f);
 		SceneGraphTransform transform;
-		transform.setWorldOrientation(glm::quat(euler));
-		transform.setWorldTranslation(glm::vec3(-10));
+		transform.setWorldOrientation(math::Quatf(euler));
+		transform.setWorldTranslation(math::Vec3f(-10));
 		node.setTransform(0, transform);
-		node.setPivot(glm::vec3(1.0f) / glm::vec3(v->region().getDimensionsInVoxels()));
+		node.setPivot(math::Vec3f(1.0f) / math::Vec3f(v->region().getDimensionsInVoxels()));
 		sceneGraph.emplace(core::move(node));
 	}
 	{
@@ -862,12 +868,12 @@ TEST_F(SceneGraphTest, testMergeWithTranslationPivotAndRotation) {
 		voxel::RawVolume *v = new voxel::RawVolume(voxel::Region(1, 5));
 		v->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 		node.setVolume(v);
-		const glm::vec3 euler(0.0f, 45.0f, 0.0f);
+		const math::Vec3f euler(0.0f, 45.0f, 0.0f);
 		SceneGraphTransform transform;
-		transform.setWorldOrientation(glm::quat(euler));
-		transform.setWorldTranslation(glm::vec3(10));
+		transform.setWorldOrientation(math::Quatf(euler));
+		transform.setWorldTranslation(math::Vec3f(10));
 		node.setTransform(0, transform);
-		node.setPivot(glm::vec3(0.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		sceneGraph.emplace(core::move(node));
 	}
 	sceneGraph.updateTransforms();
@@ -1016,8 +1022,8 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	{
 		SceneGraphNode &parentNode1 = sceneGraph.node(firstNodeId);
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(100.0f, 0.0, 0.0f));
-		transform.setWorldOrientation(glm::quat(glm::vec3(glm::radians(90.0f), 0.0f, 0.0f)));
+		transform.setWorldTranslation(math::Vec3f(100.0f, 0.0, 0.0f));
+		transform.setWorldOrientation(math::Quatf(math::Vec3f(math::radians(90.0f), 0.0f, 0.0f)));
 		EXPECT_EQ(1, parentNode1.addKeyFrame(20)) << "Expected to get key frame index 1";
 		parentNode1.keyFrame(1).setTransform(transform);
 		sceneGraph.updateTransforms();
@@ -1025,33 +1031,33 @@ TEST_F(SceneGraphTest, testKeyFrameTransformLerp) {
 	{
 		const SceneGraphNode &parentNode1 = sceneGraph.node(firstNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(parentNode1, 20);
-		glm::vec3 scale;
-		glm::quat orientation;
-		glm::vec3 translation;
+		math::Vec3f scale;
+		math::Quatf orientation;
+		math::Vec3f translation;
 		transform.decompose(scale, orientation, translation);
 		EXPECT_FLOAT_EQ(translation.x, 100.0f);
 		EXPECT_FLOAT_EQ(translation.x, 100.0f);
-		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(90.0f));
+		EXPECT_FLOAT_EQ(math::eulerAngles(orientation).x, math::radians(90.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 20);
-		glm::vec3 scale;
-		glm::quat orientation;
-		glm::vec3 translation;
+		math::Vec3f scale;
+		math::Quatf orientation;
+		math::Vec3f translation;
 		transform.decompose(scale, orientation, translation);
 		EXPECT_FLOAT_EQ(translation.x, 100.0f) << "The child node should also get the world translation of the parent";
-		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(90.0f));
+		EXPECT_FLOAT_EQ(math::eulerAngles(orientation).x, math::radians(90.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 10);
-		glm::vec3 scale;
-		glm::quat orientation;
-		glm::vec3 translation;
+		math::Vec3f scale;
+		math::Quatf orientation;
+		math::Vec3f translation;
 		transform.decompose(scale, orientation, translation);
 		EXPECT_FLOAT_EQ(translation.x, 50.0f) << "The child node should also get the world translation of the parent";
-		EXPECT_FLOAT_EQ(glm::eulerAngles(orientation).x, glm::radians(45.0f));
+		EXPECT_FLOAT_EQ(math::eulerAngles(orientation).x, math::radians(45.0f));
 	}
 }
 
@@ -1065,7 +1071,7 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation) {
 		node.setUnownedVolume(&v);
 		node.setName("Parent");
 		SceneGraphTransform transform;
-		transform.setWorldOrientation(glm::quat(glm::vec3(glm::radians(180.0f), 0.0f, 0.0f)));
+		transform.setWorldOrientation(math::Quatf(math::Vec3f(math::radians(180.0f), 0.0f, 0.0f)));
 		node.setTransform(0, transform);
 		firstNodeId = sceneGraph.emplace(core::move(node));
 	}
@@ -1079,20 +1085,20 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation) {
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 0);
-		glm::vec3 scale;
-		glm::quat orientation;
-		glm::vec3 translation;
+		math::Vec3f scale;
+		math::Quatf orientation;
+		math::Vec3f translation;
 		transform.decompose(scale, orientation, translation);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(180.0f));
+		EXPECT_FLOAT_EQ(math::abs(math::eulerAngles(orientation).x), math::radians(180.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 1);
-		glm::vec3 scale;
-		glm::quat orientation;
-		glm::vec3 translation;
+		math::Vec3f scale;
+		math::Quatf orientation;
+		math::Vec3f translation;
 		transform.decompose(scale, orientation, translation);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(180.0f));
+		EXPECT_FLOAT_EQ(math::abs(math::eulerAngles(orientation).x), math::radians(180.0f));
 	}
 }
 
@@ -1106,10 +1112,10 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation2) {
 		node.setUnownedVolume(&v);
 		node.setName("Parent");
 		SceneGraphTransform transform0;
-		transform0.setWorldOrientation(glm::quat(glm::vec3(glm::radians(-180.0f), 0.0f, 0.0f)));
+		transform0.setWorldOrientation(math::Quatf(math::Vec3f(math::radians(-180.0f), 0.0f, 0.0f)));
 		node.setTransform(0, transform0);
 		node.keyFrame(1).frameIdx = 40;
-		node.keyFrame(1).transform().setWorldOrientation(glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+		node.keyFrame(1).transform().setWorldOrientation(math::Quatf(math::Vec3f(0.0f, 0.0f, 0.0f)));
 		firstNodeId = sceneGraph.emplace(core::move(node));
 	}
 	{
@@ -1122,20 +1128,20 @@ TEST_F(SceneGraphTest, testKeyFrameTransformParentRotation2) {
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 0);
-		glm::vec3 scale;
-		glm::quat orientation;
-		glm::vec3 translation;
+		math::Vec3f scale;
+		math::Quatf orientation;
+		math::Vec3f translation;
 		transform.decompose(scale, orientation, translation);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(180.0f));
+		EXPECT_FLOAT_EQ(math::abs(math::eulerAngles(orientation).x), math::radians(180.0f));
 	}
 	{
 		const SceneGraphNode &childNode2 = sceneGraph.node(secondNodeId);
 		const FrameTransform &transform = sceneGraph.transformForFrame(childNode2, 20);
-		glm::vec3 scale;
-		glm::quat orientation;
-		glm::vec3 translation;
+		math::Vec3f scale;
+		math::Quatf orientation;
+		math::Vec3f translation;
 		transform.decompose(scale, orientation, translation);
-		EXPECT_FLOAT_EQ(glm::abs(glm::eulerAngles(orientation).x), glm::radians(90.0f));
+		EXPECT_FLOAT_EQ(math::abs(math::eulerAngles(orientation).x), math::radians(90.0f));
 	}
 }
 
@@ -1145,8 +1151,8 @@ TEST_F(SceneGraphTest, testSceneRegion) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setUnownedVolume(&v);
-		node.localTranslate(glm::vec3(10.0f, 11.0f, 12.0f));
-		node.setPivot(glm::vec3(0.0f));
+		node.localTranslate(math::Vec3f(10.0f, 11.0f, 12.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		sceneGraph.emplace(core::move(node));
 	}
 #if 0
@@ -1154,15 +1160,15 @@ TEST_F(SceneGraphTest, testSceneRegion) {
 	{
 		SceneGraphNode node(SceneGraphNodeType::Model);
 		node.setUnownedVolume(&v2);
-		node.translate(glm::vec3(1.0f, 1.0f, 2.0f));
-		node.setPivot(glm::vec3(0.0f));
+		node.translate(math::Vec3f(1.0f, 1.0f, 2.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		sceneGraph.emplace(core::move(node));
 	}
 #endif
 	sceneGraph.updateTransforms();
 	const voxel::Region sceneRegion = sceneGraph.sceneRegion();
-	const glm::ivec3 &mins = sceneRegion.getLowerCorner();
-	const glm::ivec3 &maxs = sceneRegion.getUpperCorner();
+	const math::Vec3i &mins = sceneRegion.getLowerCorner();
+	const math::Vec3i &maxs = sceneRegion.getUpperCorner();
 
 	EXPECT_EQ(7, mins.x);
 	EXPECT_EQ(8, mins.y);
@@ -1199,7 +1205,7 @@ TEST_F(SceneGraphTest, testChildRotationFlipping) {
 		node.setName("parent");
 		SceneGraphTransform transform;
 		// Rotate parent 90 degrees around Y
-		transform.setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+		transform.setLocalOrientation(math::angleAxis(math::radians(90.0f), math::Vec3f(0.0f, 1.0f, 0.0f)));
 		node.setTransform(0, transform);
 		parentId = sceneGraph.emplace(core::move(node));
 	}
@@ -1210,31 +1216,31 @@ TEST_F(SceneGraphTest, testChildRotationFlipping) {
 		node.createVolume(voxel::Region(0, 0));
 		SceneGraphTransform transform;
 		// Rotate child 90 degrees around X
-		transform.setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)));
+		transform.setLocalOrientation(math::angleAxis(math::radians(90.0f), math::Vec3f(1.0f, 0.0f, 0.0f)));
 		node.setTransform(0, transform);
 		childId = sceneGraph.emplace(core::move(node), parentId);
 	}
 
 	sceneGraph.updateTransforms();
-	const glm::mat4 worldMatrix = sceneGraph.worldMatrix(sceneGraph.node(childId), 0);
+	const math::Mat4f worldMatrix = sceneGraph.worldMatrix(sceneGraph.node(childId), 0);
 	// Expected: Parent Rotation * Child Rotation
 	// R_p = RotY(90)
 	// R_c = RotX(90)
 	// World = R_p * R_c
 
-	glm::quat qp = glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::quat qc = glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 expected = glm::mat4_cast(qp) * glm::mat4_cast(qc);
+	math::Quatf qp = math::angleAxis(math::radians(90.0f), math::Vec3f(0.0f, 1.0f, 0.0f));
+	math::Quatf qc = math::angleAxis(math::radians(90.0f), math::Vec3f(1.0f, 0.0f, 0.0f));
+	math::Mat4f expected = math::mat4_cast(qp) * math::mat4_cast(qc);
 
 	// Check if they match
 	// We can check basis vectors
-	glm::vec3 expectedRight = glm::vec3(expected[0]);
-	glm::vec3 expectedUp = glm::vec3(expected[1]);
-	glm::vec3 expectedForward = glm::vec3(expected[2]);
+	math::Vec3f expectedRight = math::Vec3f(expected[0]);
+	math::Vec3f expectedUp = math::Vec3f(expected[1]);
+	math::Vec3f expectedForward = math::Vec3f(expected[2]);
 
-	glm::vec3 actualRight = glm::vec3(worldMatrix[0]);
-	glm::vec3 actualUp = glm::vec3(worldMatrix[1]);
-	glm::vec3 actualForward = glm::vec3(worldMatrix[2]);
+	math::Vec3f actualRight = math::Vec3f(worldMatrix[0]);
+	math::Vec3f actualUp = math::Vec3f(worldMatrix[1]);
+	math::Vec3f actualForward = math::Vec3f(worldMatrix[2]);
 
 	EXPECT_NEAR(expectedRight.x, actualRight.x, 0.001f);
 	EXPECT_NEAR(expectedRight.y, actualRight.y, 0.001f);
@@ -1259,27 +1265,27 @@ TEST_F(SceneGraphTest, testTransformCacheInvalidation) {
 
 	// Initial transform
 	SceneGraphTransform parentTransform;
-	parentTransform.setTransforms(glm::vec3(10.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f),
-								  glm::vec3(1.0f), glm::vec3(10.0f, 0.0f, 0.0f),
-								  glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
+	parentTransform.setTransforms(math::Vec3f(10.0f, 0.0f, 0.0f), math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f),
+								  math::Vec3f(1.0f), math::Vec3f(10.0f, 0.0f, 0.0f),
+								  math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f), math::Vec3f(1.0f));
 	sceneGraph.node(parentId).setTransform(0, parentTransform);
 	sceneGraph.invalidateFrameTransformCache(parentId);
 
 	// Query child transform to populate cache
 	const FrameTransform &childTransform1 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
-	EXPECT_EQ(glm::vec3(10.0f, 0.0f, 0.0f), childTransform1.worldTranslation());
+	EXPECT_EQ(math::Vec3f(10.0f, 0.0f, 0.0f), childTransform1.worldTranslation());
 
 	// Change parent transform
 	SceneGraphTransform newParentTransform;
-	newParentTransform.setTransforms(glm::vec3(20.0f, 0.0f, 0.0f), glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f),
-									 glm::vec3(1.0f), glm::vec3(20.0f, 0.0f, 0.0f),
-									 glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
+	newParentTransform.setTransforms(math::Vec3f(20.0f, 0.0f, 0.0f), math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f),
+									 math::Vec3f(1.0f), math::Vec3f(20.0f, 0.0f, 0.0f),
+									 math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f), math::Vec3f(1.0f));
 	sceneGraph.node(parentId).setTransform(0, newParentTransform);
 	sceneGraph.invalidateFrameTransformCache(parentId);
 
 	// Query child transform again - should be updated
 	const FrameTransform &childTransform2 = sceneGraph.transformForFrame(sceneGraph.node(childId), 0);
-	EXPECT_EQ(glm::vec3(20.0f, 0.0f, 0.0f), childTransform2.worldTranslation())
+	EXPECT_EQ(math::Vec3f(20.0f, 0.0f, 0.0f), childTransform2.worldTranslation())
 		<< "Child transform should be updated after parent transform change";
 }
 
@@ -1288,14 +1294,14 @@ TEST_F(SceneGraphTest, testBuildFrameTransformsMatchesLazy) {
 	SceneGraphNode parent(SceneGraphNodeType::Model);
 	parent.createVolume(voxel::Region(0, 1));
 	SceneGraphTransform parentTransform;
-	parentTransform.setWorldTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
+	parentTransform.setWorldTranslation(math::Vec3f(10.0f, 0.0f, 0.0f));
 	parent.setTransform(0, parentTransform);
 	const int parentId = sceneGraph.emplace(core::move(parent));
 
 	SceneGraphNode child(SceneGraphNodeType::Model);
 	child.createVolume(voxel::Region(0, 1));
 	SceneGraphTransform childTransform;
-	childTransform.setWorldTranslation(glm::vec3(0.0f, 5.0f, 0.0f));
+	childTransform.setWorldTranslation(math::Vec3f(0.0f, 5.0f, 0.0f));
 	child.setTransform(0, childTransform);
 	const int childId = sceneGraph.emplace(core::move(child), parentId);
 	sceneGraph.updateTransforms();
@@ -1317,7 +1323,7 @@ TEST_F(SceneGraphTest, testBuildFrameTransformsStaticUsesKeyFrameWorld) {
 	SceneGraphNode model(SceneGraphNodeType::Model);
 	model.createVolume(voxel::Region(0, 1));
 	SceneGraphTransform transform;
-	transform.setWorldTranslation(glm::vec3(3.0f, 4.0f, 5.0f));
+	transform.setWorldTranslation(math::Vec3f(3.0f, 4.0f, 5.0f));
 	model.setTransform(0, transform);
 	const int nodeId = sceneGraph.emplace(core::move(model));
 	sceneGraph.updateTransforms();
@@ -1325,7 +1331,7 @@ TEST_F(SceneGraphTest, testBuildFrameTransformsStaticUsesKeyFrameWorld) {
 
 	sceneGraph.buildFrameTransforms(0);
 	const FrameTransform built = sceneGraph.transformForFrame(sceneGraph.node(nodeId), 0);
-	EXPECT_EQ(glm::vec3(3.0f, 4.0f, 5.0f), built.worldTranslation());
+	EXPECT_EQ(math::Vec3f(3.0f, 4.0f, 5.0f), built.worldTranslation());
 	EXPECT_EQ(sceneGraph.node(nodeId).transform(0).worldTranslation(), built.worldTranslation());
 }
 
@@ -1379,15 +1385,15 @@ TEST_F(SceneGraphTest, testWorldMatrixWithTranslation) {
 	node.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
 	node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	SceneGraphTransform transform;
-	transform.setWorldTranslation(glm::vec3(10.0f, 5.0f, 20.0f));
+	transform.setWorldTranslation(math::Vec3f(10.0f, 5.0f, 20.0f));
 	node.setTransform(0, transform);
 	const int nodeId = sceneGraph.emplace(core::move(node));
 	ASSERT_NE(InvalidNodeId, nodeId);
 	sceneGraph.updateTransforms();
 
-	const glm::mat4 &mat = sceneGraph.worldMatrix(sceneGraph.node(nodeId), 0);
-	EXPECT_NE(mat, glm::mat4(1.0f)) << "With translation, worldMatrix should differ from identity";
-	const glm::vec3 origin = glm::vec3(mat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	const math::Mat4f &mat = sceneGraph.worldMatrix(sceneGraph.node(nodeId), 0);
+	EXPECT_NE(mat, math::Mat4f(1.0f)) << "With translation, worldMatrix should differ from identity";
+	const math::Vec3f origin = math::Vec3f(mat * math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f));
 	EXPECT_FLOAT_EQ(10.0f, origin.x);
 	EXPECT_FLOAT_EQ(5.0f, origin.y);
 	EXPECT_FLOAT_EQ(20.0f, origin.z);
@@ -1422,14 +1428,14 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithTranslation) {
 		modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
 		modelNode.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(50.0f, 0.0f, 50.0f));
+		transform.setWorldTranslation(math::Vec3f(50.0f, 0.0f, 50.0f));
 		modelNode.setTransform(0, transform);
 		sceneGraph.emplace(core::move(modelNode));
 	}
 	sceneGraph.updateTransforms();
 
 	// Query at the translated world position - should find the node
-	const math::AABB<float> queryAABB(glm::vec3(48.0f, -2.0f, 48.0f), glm::vec3(55.0f, 5.0f, 55.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(48.0f, -2.0f, 48.0f), math::Vec3f(55.0f, 5.0f, 55.0f));
 	CollisionNodes nodesAtTranslated;
 	sceneGraph.getCollisionNodes(nodesAtTranslated, 0, queryAABB);
 	int validNodesAtTranslated = 0;
@@ -1443,8 +1449,8 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithTranslation) {
 	// Verify the worldToModel matrix correctly maps world positions to model space
 	for (const CollisionNode &cn : nodesAtTranslated) {
 		if (cn.volume) {
-			const glm::vec3 worldPos(51.0f, 1.0f, 51.0f);
-			const glm::vec3 modelPos = cn.calcModelSpace(worldPos);
+			const math::Vec3f worldPos(51.0f, 1.0f, 51.0f);
+			const math::Vec3f modelPos = cn.calcModelSpace(worldPos);
 			EXPECT_NEAR(1.0f, modelPos.x, 0.5f) << "World position should map to model space correctly";
 			EXPECT_NEAR(1.0f, modelPos.y, 0.5f);
 			EXPECT_NEAR(1.0f, modelPos.z, 0.5f);
@@ -1452,7 +1458,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithTranslation) {
 	}
 
 	// Query at the origin (where the model-space region is) - should NOT find the node
-	const math::AABB<float> originAABB(glm::vec3(-1.0f), glm::vec3(5.0f));
+	const math::AABB<float> originAABB(math::Vec3f(-1.0f), math::Vec3f(5.0f));
 	CollisionNodes nodesAtOrigin;
 	sceneGraph.getCollisionNodes(nodesAtOrigin, 0, originAABB);
 	int validNodesAtOrigin = 0;
@@ -1471,7 +1477,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithParentGroupTransform) {
 		SceneGraphNode groupNode(SceneGraphNodeType::Group);
 		groupNode.setName("group");
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(50.0f, 0.0f, 50.0f));
+		transform.setWorldTranslation(math::Vec3f(50.0f, 0.0f, 50.0f));
 		groupNode.setTransform(0, transform);
 		groupId = sceneGraph.emplace(core::move(groupNode));
 		ASSERT_NE(InvalidNodeId, groupId);
@@ -1493,7 +1499,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithParentGroupTransform) {
 	sceneGraph.updateTransforms();
 
 	// Query at the group's translated world position - should find the model
-	const math::AABB<float> queryAABB(glm::vec3(48.0f, -2.0f, 48.0f), glm::vec3(67.0f, 5.0f, 67.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(48.0f, -2.0f, 48.0f), math::Vec3f(67.0f, 5.0f, 67.0f));
 	CollisionNodes nodesAtTranslated;
 	sceneGraph.getCollisionNodes(nodesAtTranslated, 0, queryAABB);
 	int validNodes = 0;
@@ -1501,8 +1507,8 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithParentGroupTransform) {
 		if (cn.volume) {
 			++validNodes;
 			// Body at world (58, 1, 58) should map to model space (8, 1, 8)
-			const glm::vec3 worldPos(58.0f, 1.0f, 58.0f);
-			const glm::vec3 modelPos = cn.calcModelSpace(worldPos);
+			const math::Vec3f worldPos(58.0f, 1.0f, 58.0f);
+			const math::Vec3f modelPos = cn.calcModelSpace(worldPos);
 			EXPECT_NEAR(8.0f, modelPos.x, 0.5f) << "World pos should map to model space correctly with parent group transform";
 			EXPECT_NEAR(1.0f, modelPos.y, 0.5f);
 			EXPECT_NEAR(8.0f, modelPos.z, 0.5f);
@@ -1511,7 +1517,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithParentGroupTransform) {
 	EXPECT_EQ(1, validNodes) << "Model node should be found at the group's translated world position";
 
 	// Query at the origin (raw model-space region) - should NOT find the node
-	const math::AABB<float> originAABB(glm::vec3(-1.0f), glm::vec3(20.0f, 5.0f, 20.0f));
+	const math::AABB<float> originAABB(math::Vec3f(-1.0f), math::Vec3f(20.0f, 5.0f, 20.0f));
 	CollisionNodes nodesAtOrigin;
 	sceneGraph.getCollisionNodes(nodesAtOrigin, 0, originAABB);
 	int validAtOrigin = 0;
@@ -1530,7 +1536,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesGroupAndChildBothTransformed) {
 		SceneGraphNode groupNode(SceneGraphNodeType::Group);
 		groupNode.setName("group");
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(20.0f, 0.0f, 20.0f));
+		transform.setWorldTranslation(math::Vec3f(20.0f, 0.0f, 20.0f));
 		groupNode.setTransform(0, transform);
 		groupId = sceneGraph.emplace(core::move(groupNode));
 		ASSERT_NE(InvalidNodeId, groupId);
@@ -1547,7 +1553,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesGroupAndChildBothTransformed) {
 			}
 		}
 		SceneGraphTransform transform;
-		transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 10.0f));
+		transform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 10.0f));
 		modelNode.setTransform(0, transform);
 		const int modelId = sceneGraph.emplace(core::move(modelNode), groupId);
 		ASSERT_NE(InvalidNodeId, modelId);
@@ -1555,7 +1561,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesGroupAndChildBothTransformed) {
 	sceneGraph.updateTransforms();
 
 	// Model should be at world position group(20) + local(10) = (30, 0, 30)
-	const math::AABB<float> queryAABB(glm::vec3(28.0f, -2.0f, 28.0f), glm::vec3(40.0f, 5.0f, 40.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(28.0f, -2.0f, 28.0f), math::Vec3f(40.0f, 5.0f, 40.0f));
 	CollisionNodes nodes;
 	sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
 	int validNodes = 0;
@@ -1563,8 +1569,8 @@ TEST_F(SceneGraphTest, testGetCollisionNodesGroupAndChildBothTransformed) {
 		if (cn.volume) {
 			++validNodes;
 			// Body at world (34, 1, 34) should map to model space (4, 1, 4)
-			const glm::vec3 worldPos(34.0f, 1.0f, 34.0f);
-			const glm::vec3 modelPos = cn.calcModelSpace(worldPos);
+			const math::Vec3f worldPos(34.0f, 1.0f, 34.0f);
+			const math::Vec3f modelPos = cn.calcModelSpace(worldPos);
 			EXPECT_NEAR(4.0f, modelPos.x, 0.5f);
 			EXPECT_NEAR(1.0f, modelPos.y, 0.5f);
 			EXPECT_NEAR(4.0f, modelPos.z, 0.5f);
@@ -1589,9 +1595,9 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithRotation) {
 		}
 		SceneGraphTransform transform;
 		// Rotate 90 degrees around Y - this swaps X and Z extents
-		const glm::quat rot = glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+		const math::Quatf rot = math::angleAxis(math::halfPi, math::Vec3f(0.0f, 1.0f, 0.0f));
 		transform.setLocalOrientation(rot);
-		transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 10.0f));
+		transform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 10.0f));
 		modelNode.setTransform(0, transform);
 		const int modelId = sceneGraph.emplace(core::move(modelNode));
 		ASSERT_NE(InvalidNodeId, modelId);
@@ -1602,7 +1608,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithRotation) {
 	// and Z extent (0..3) becomes X extent. The rotated AABB should be roughly:
 	// X: ~(10-3, 10+0) = ~(7, 10), Z: ~(10-19, 10+0) = ~(-9, 10)
 	// Query in the rotated area that the old Region::transform would miss
-	const math::AABB<float> queryAABB(glm::vec3(5.0f, -2.0f, -5.0f), glm::vec3(15.0f, 5.0f, 15.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(5.0f, -2.0f, -5.0f), math::Vec3f(15.0f, 5.0f, 15.0f));
 	CollisionNodes nodes;
 	sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
 	int validNodes = 0;
@@ -1622,9 +1628,9 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithGroupRotation) {
 		groupNode.setName("rotated_group");
 		SceneGraphTransform transform;
 		// Rotate 90 degrees around Y at the group level
-		const glm::quat rot = glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+		const math::Quatf rot = math::angleAxis(math::halfPi, math::Vec3f(0.0f, 1.0f, 0.0f));
 		transform.setLocalOrientation(rot);
-		transform.setWorldTranslation(glm::vec3(0.0f));
+		transform.setWorldTranslation(math::Vec3f(0.0f));
 		groupNode.setTransform(0, transform);
 		groupId = sceneGraph.emplace(core::move(groupNode));
 		ASSERT_NE(InvalidNodeId, groupId);
@@ -1642,7 +1648,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithGroupRotation) {
 			}
 		}
 		SceneGraphTransform transform;
-		transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
+		transform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 0.0f));
 		modelNode.setTransform(0, transform);
 		const int modelId = sceneGraph.emplace(core::move(modelNode), groupId);
 		ASSERT_NE(InvalidNodeId, modelId);
@@ -1654,7 +1660,7 @@ TEST_F(SceneGraphTest, testGetCollisionNodesWithGroupRotation) {
 	// The volume extends (0..9, 0..1, 0..3) in model space, which after
 	// the group rotation maps Z extent into X and X extent into -Z.
 	// Query at the rotated world position
-	const math::AABB<float> queryAABB(glm::vec3(-5.0f, -2.0f, -25.0f), glm::vec3(10.0f, 5.0f, 0.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(-5.0f, -2.0f, -25.0f), math::Vec3f(10.0f, 5.0f, 0.0f));
 	CollisionNodes nodes;
 	sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
 	int validNodes = 0;
@@ -1860,17 +1866,17 @@ TEST_F(SceneGraphTest, testPointWorldMatrix) {
 	SceneGraph sceneGraph;
 	SceneGraphNode node(SceneGraphNodeType::Point);
 	SceneGraphTransform transform;
-	transform.setLocalTranslation(glm::vec3(4.0f, 5.0f, 6.0f));
+	transform.setLocalTranslation(math::Vec3f(4.0f, 5.0f, 6.0f));
 	node.setTransform(0, transform);
 	const int id = sceneGraph.emplace(core::move(node));
 	ASSERT_NE(InvalidNodeId, id);
 	sceneGraph.updateTransforms();
-	const glm::mat4 world = sceneGraph.worldMatrix(sceneGraph.node(id), 0);
+	const math::Mat4f world = sceneGraph.worldMatrix(sceneGraph.node(id), 0);
 	EXPECT_NEAR(world[3][0], 4.0f, 0.001f);
 	EXPECT_NEAR(world[3][1], 5.0f, 0.001f);
 	EXPECT_NEAR(world[3][2], 6.0f, 0.001f);
 	const voxel::Region region = sceneGraph.sceneRegion(sceneGraph.node(id), 0);
-	EXPECT_EQ(glm::ivec3(4, 5, 6), region.getLowerCorner());
+	EXPECT_EQ(math::Vec3i(4, 5, 6), region.getLowerCorner());
 	EXPECT_EQ(region.getLowerCorner(), region.getUpperCorner());
 }
 

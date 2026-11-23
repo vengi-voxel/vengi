@@ -41,8 +41,6 @@
 #include "json/JSON.h"
 #include <cmath>
 #include <float.h>
-#include <glm/gtc/color_space.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #define CGLTF_MALLOC(size) core_malloc(size)
 #define CGLTF_FREE(ptr) core_free(ptr)
@@ -53,6 +51,15 @@
 #pragma GCC diagnostic ignored "-Wformat-truncation"
 #endif
 #include "../../external/cgltf_write.h"
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
@@ -119,21 +126,21 @@ static bool writeGltfBuffer(const core::String &filename, const io::ArchivePtr &
 
 static const float GLTF_FPS = 24.0f;
 
-static void applyCgltfNodeTransform(const cgltf_node *node, scenegraph::SceneGraphNode &sgNode, const glm::vec3 &inputScale) {
+static void applyCgltfNodeTransform(const cgltf_node *node, scenegraph::SceneGraphNode &sgNode, const math::Vec3f &inputScale) {
 	scenegraph::SceneGraphTransform transform;
 	if (node->has_matrix) {
-		transform.setLocalMatrix(glm::make_mat4(node->matrix));
+		transform.setLocalMatrix(math::make_mat4(node->matrix));
 	} else {
 		if (node->has_translation) {
 			transform.setLocalTranslation(
-				glm::vec3(node->translation[0], node->translation[1], node->translation[2]));
+				math::Vec3f(node->translation[0], node->translation[1], node->translation[2]));
 		}
 		if (node->has_rotation) {
 			transform.setLocalOrientation(
-				glm::quat(node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]));
+				math::Quatf(node->rotation[3], node->rotation[0], node->rotation[1], node->rotation[2]));
 		}
 		if (node->has_scale) {
-			transform.setLocalScale(glm::vec3(node->scale[0], node->scale[1], node->scale[2]));
+			transform.setLocalScale(math::Vec3f(node->scale[0], node->scale[1], node->scale[2]));
 		}
 	}
 	transform.setLocalTranslation(transform.localTranslation() * inputScale);
@@ -143,10 +150,10 @@ static void applyCgltfNodeTransform(const cgltf_node *node, scenegraph::SceneGra
 // Prefer TRS over matrix so animation channels remain valid per the glTF 2.0 spec:
 // animated nodes must not use the matrix property.
 static void setGltfNodeTRS(cgltf_node &node, const scenegraph::SceneGraphTransform &transform) {
-	const glm::vec3 &t = transform.localTranslation();
-	const glm::quat &r = transform.localOrientation();
-	const glm::vec3 &s = transform.localScale();
-	if (t != glm::vec3(0.0f)) {
+	const math::Vec3f &t = transform.localTranslation();
+	const math::Quatf &r = transform.localOrientation();
+	const math::Vec3f &s = transform.localScale();
+	if (t != math::Vec3f(0.0f)) {
 		node.has_translation = true;
 		node.translation[0] = t.x;
 		node.translation[1] = t.y;
@@ -159,7 +166,7 @@ static void setGltfNodeTRS(cgltf_node &node, const scenegraph::SceneGraphTransfo
 		node.rotation[2] = r.z;
 		node.rotation[3] = r.w;
 	}
-	if (s != glm::vec3(1.0f)) {
+	if (s != math::Vec3f(1.0f)) {
 		node.has_scale = true;
 		node.scale[0] = s.x;
 		node.scale[1] = s.y;
@@ -193,11 +200,11 @@ static bool hasSceneSun(const scenegraph::SceneGraphNode &root) {
 		   props.hasKey(scenegraph::PropSunShadows);
 }
 
-static glm::vec3 sunDirection(const scenegraph::SceneGraphNode &node) {
-	const float elevation = glm::radians(node.propertyf(scenegraph::PropSunElevation));
-	const float azimuth = glm::radians(node.propertyf(scenegraph::PropSunAzimuth));
-	return glm::vec3(glm::cos(elevation) * glm::cos(azimuth), glm::sin(elevation),
-					 glm::cos(elevation) * glm::sin(azimuth));
+static math::Vec3f sunDirection(const scenegraph::SceneGraphNode &node) {
+	const float elevation = math::radians(node.propertyf(scenegraph::PropSunElevation));
+	const float azimuth = math::radians(node.propertyf(scenegraph::PropSunAzimuth));
+	return math::Vec3f(math::cos(elevation) * math::cos(azimuth), math::sin(elevation),
+					 math::cos(elevation) * math::sin(azimuth));
 }
 
 static void setSunLight(cgltf_light &light, const scenegraph::SceneGraphNode &node) {
@@ -208,8 +215,8 @@ static void setSunLight(cgltf_light &light, const scenegraph::SceneGraphNode &no
 		light.intensity = 1.0f;
 	}
 	const core::String &hex = node.property(scenegraph::PropSunColor);
-	const glm::vec3 srgb = hex.empty() ? glm::vec3(1.0f) : glm::vec3(color::fromRGBA(color::fromHex(hex.c_str())));
-	const glm::vec3 linear = color::srgbToLinear(srgb);
+	const math::Vec3f srgb = hex.empty() ? math::Vec3f(1.0f) : math::Vec3f(color::fromRGBA(color::fromHex(hex.c_str())));
+	const math::Vec3f linear = color::srgbToLinear(srgb);
 	for (int i = 0; i < 3; ++i) {
 		light.color[i] = linear[i];
 	}
@@ -231,33 +238,33 @@ static void loadDirectionalLight(const cgltf_node *node, scenegraph::SceneGraph 
 	sgNode.setProperty(PropGltfDirectionalLight, true);
 	sgNode.setProperty(PropGltfSceneSun, mainSun);
 	sgNode.setProperty(scenegraph::PropSunIntensity, node->light->intensity);
-	const glm::vec3 linear(node->light->color[0], node->light->color[1], node->light->color[2]);
-	const glm::vec3 srgb = glm::convertLinearToSRGB(glm::clamp(linear, 0.0f, 1.0f));
-	const color::RGBA rgb((uint8_t)glm::round(srgb.r * 255.0f), (uint8_t)glm::round(srgb.g * 255.0f),
-						  (uint8_t)glm::round(srgb.b * 255.0f), 255);
+	const math::Vec3f linear(node->light->color[0], node->light->color[1], node->light->color[2]);
+	const math::Vec3f srgb = color::linearToSrgb(math::clamp(linear, 0.0f, 1.0f));
+	const color::RGBA rgb((uint8_t)math::round(srgb.r * 255.0f), (uint8_t)math::round(srgb.g * 255.0f),
+						  (uint8_t)math::round(srgb.b * 255.0f), 255);
 	sgNode.setProperty(scenegraph::PropSunColor, rgb);
 	if (!mainSun) {
 		return;
 	}
-	glm::mat4 world;
-	cgltf_node_transform_world(node, glm::value_ptr(world));
-	const glm::vec3 direction = glm::vec3(world[2]);
-	const float length = glm::length(direction);
+	math::Mat4f world;
+	cgltf_node_transform_world(node, math::value_ptr(world));
+	const math::Vec3f direction = math::Vec3f(world[2]);
+	const float length = math::length(direction);
 	if (!std::isfinite(length) || length < 0.000001f) {
 		return;
 	}
 	scenegraph::SceneGraphNode &root = graph.node(graph.root().id());
 	root.setProperty(scenegraph::PropSunIntensity, node->light->intensity);
 	root.setProperty(scenegraph::PropSunColor, rgb);
-	root.setProperty(scenegraph::PropSunElevation, glm::degrees(glm::asin(glm::clamp(direction.y / length, -1.0f, 1.0f))));
-	float azimuth = glm::degrees(glm::atan(direction.z, direction.x));
+	root.setProperty(scenegraph::PropSunElevation, math::degrees(math::asin(math::clamp(direction.y / length, -1.0f, 1.0f))));
+	float azimuth = math::degrees(math::atan(direction.z, direction.x));
 	if (azimuth < -0.00001f) {
 		azimuth += 360.0f;
 	} else if (azimuth < 0.0f) {
 		azimuth = 0.0f;
 	}
 	// Azimuth is undefined at the poles; retain the stored heading when available.
-	if (glm::length(glm::vec2(direction.x, direction.z)) > length * 0.000001f ||
+	if (math::length(math::Vec2f(direction.x, direction.z)) > length * 0.000001f ||
 		root.property(scenegraph::PropSunAzimuth).empty()) {
 		root.setProperty(scenegraph::PropSunAzimuth, azimuth);
 	}
@@ -266,13 +273,13 @@ static void loadDirectionalLight(const cgltf_node *node, scenegraph::SceneGraph 
 static void loadCamera(const cgltf_camera &camera, scenegraph::SceneGraphNodeCamera &node) {
 	if (camera.type == cgltf_camera_type_orthographic) {
 		node.setOrthographic();
-		node.setWidth((int)glm::round(camera.data.orthographic.xmag * 2.0f));
-		node.setHeight((int)glm::round(camera.data.orthographic.ymag * 2.0f));
+		node.setWidth((int)math::round(camera.data.orthographic.xmag * 2.0f));
+		node.setHeight((int)math::round(camera.data.orthographic.ymag * 2.0f));
 		node.setNearPlane(camera.data.orthographic.znear);
 		node.setFarPlane(camera.data.orthographic.zfar);
 	} else {
 		node.setPerspective();
-		node.setFieldOfView((int)glm::round(glm::degrees(camera.data.perspective.yfov)));
+		node.setFieldOfView((int)math::round(math::degrees(camera.data.perspective.yfov)));
 		node.setAspectRatio(camera.data.perspective.has_aspect_ratio ? camera.data.perspective.aspect_ratio : 0.0f);
 		node.setNearPlane(camera.data.perspective.znear);
 		node.setFarPlane(camera.data.perspective.has_zfar ? camera.data.perspective.zfar : 0.0f);
@@ -290,7 +297,7 @@ static void saveCamera(const scenegraph::SceneGraphNodeCamera &node, cgltf_camer
 	} else {
 		camera.type = cgltf_camera_type_perspective;
 		const int fov = node.fieldOfView();
-		camera.data.perspective.yfov = glm::radians((float)(fov > 0 && fov < 180 ? fov : 60));
+		camera.data.perspective.yfov = math::radians((float)(fov > 0 && fov < 180 ? fov : 60));
 		camera.data.perspective.has_aspect_ratio = node.aspectRatio() > 0.0f;
 		camera.data.perspective.aspect_ratio = node.aspectRatio();
 		camera.data.perspective.znear = node.nearPlane() > 0.0f ? node.nearPlane() : 0.1f;
@@ -654,7 +661,7 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 						continue;
 					}
 					PointCloudVertex v;
-					v.position = glm::vec3(pos[0], pos[1], pos[2]);
+					v.position = math::Vec3f(pos[0], pos[1], pos[2]);
 					if (colAccessor) {
 						float col[4] = {1, 1, 1, 1};
 						cgltf_accessor_read_float(colAccessor, vi, col, 4);
@@ -757,15 +764,15 @@ int GLTFFormat::addNode_r(const cgltf_data *data, const cgltf_node *node, const 
 				if (dstIdx == unmapped) {
 					MeshVertex v;
 					const cgltf_float *pos = &positions[(size_t)srcIdx * 3u];
-					v.pos = glm::vec3(pos[0], pos[1], pos[2]);
+					v.pos = math::Vec3f(pos[0], pos[1], pos[2]);
 
 					if (!normals.empty() && (cgltf_size)srcIdx < normalAccessor->count) {
 						const cgltf_float *n = &normals[(size_t)srcIdx * 3u];
-						v.normal = glm::vec3(n[0], n[1], n[2]);
+						v.normal = math::Vec3f(n[0], n[1], n[2]);
 					}
 					if (!uvs.empty() && (cgltf_size)srcIdx < uvAccessor->count) {
 						const cgltf_float *uv = &uvs[(size_t)srcIdx * 2u];
-						v.uv = glm::vec2(uv[0], 1.0f - uv[1]);
+						v.uv = math::Vec2f(uv[0], 1.0f - uv[1]);
 					}
 					if (!colors.empty() && (cgltf_size)srcIdx < colAccessor->count) {
 						const cgltf_float *col = &colors[(size_t)srcIdx * colorComps];
@@ -866,7 +873,7 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 			Log::error("Invalid glTF skin joint count or inverse bind matrices");
 			return false;
 		}
-		core::Buffer<glm::mat4> inverseBind(skin.joints_count);
+		core::Buffer<math::Mat4f> inverseBind(skin.joints_count);
 		for (cgltf_size ji = 0; ji < skin.joints_count; ++ji) {
 			float components[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
 			if (skin.inverse_bind_matrices &&
@@ -874,15 +881,15 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 				return false;
 			}
 			for (int i = 0; i < lengthof(components); ++i) {
-				if (glm::isinf(components[i])) {
+				if (math::isinf(components[i])) {
 					return false;
 				}
 			}
-			inverseBind[ji] = glm::make_mat4(components);
-			const glm::mat4 &matrix = inverseBind[ji];
-			if (glm::abs(glm::determinant(glm::mat3(matrix))) < 1e-12f ||
-				glm::abs(matrix[0][3]) + glm::abs(matrix[1][3]) + glm::abs(matrix[2][3]) > .00001f ||
-				glm::abs(matrix[3][3] - 1) > .00001f) {
+			inverseBind[ji] = math::make_mat4(components);
+			const math::Mat4f &matrix = inverseBind[ji];
+			if (math::abs(math::determinant(math::Mat3f(matrix))) < 1e-12f ||
+				math::abs(matrix[0][3]) + math::abs(matrix[1][3]) + math::abs(matrix[2][3]) > .00001f ||
+				math::abs(matrix[3][3] - 1) > .00001f) {
 				return false;
 			}
 		}
@@ -933,7 +940,7 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 							return false;
 						}
 						for (int influence = 0; influence < lengthof(joints); ++influence) {
-							if (glm::isinf(values[influence]) || values[influence] < 0 ||
+							if (math::isinf(values[influence]) || values[influence] < 0 ||
 								joints[influence] >= skin.joints_count) {
 								return false;
 							}
@@ -941,7 +948,7 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 							total += values[influence];
 						}
 					}
-					if (glm::isinf(total) || total <= 0) {
+					if (math::isinf(total) || total <= 0) {
 						return false;
 					}
 					for (cgltf_size ji = 0; ji < skin.joints_count; ++ji) {
@@ -970,22 +977,22 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 				// Bake bind-pose joint units into the volume, then compensate on its
 				// model node. A cm skeleton with root scale .01 must not allocate a
 				// 100-times larger volume or display 100-times coarser voxels.
-				glm::mat4 jointWorld;
-				cgltf_node_transform_world(skin.joints[ji], glm::value_ptr(jointWorld));
-				glm::vec3 units;
+				math::Mat4f jointWorld;
+				cgltf_node_transform_world(skin.joints[ji], math::value_ptr(jointWorld));
+				math::Vec3f units;
 				for (int axis = 0; axis < 3; ++axis) {
-					units[axis] = glm::length(glm::vec3(jointWorld[axis]));
-					if (glm::isinf(units[axis]) || units[axis] < 1e-12f || glm::isinf(1.0f / units[axis])) {
+					units[axis] = math::length(math::Vec3f(jointWorld[axis]));
+					if (math::isinf(units[axis]) || units[axis] < 1e-12f || math::isinf(1.0f / units[axis])) {
 						return false;
 					}
 				}
-				glm::mat4 voxelBind = inverseBind[ji];
+				math::Mat4f voxelBind = inverseBind[ji];
 				for (int column = 0; column < 4; ++column) {
 					for (int row = 0; row < 3; ++row) {
 						voxelBind[column][row] *= units[row];
 					}
 				}
-				core::Buffer<glm::vec3> localPositions(positions->count), localNormals;
+				core::Buffer<math::Vec3f> localPositions(positions->count), localNormals;
 				const cgltf_accessor *normals = cgltf_find_accessor(&primitive, cgltf_attribute_type_normal, 0);
 				if (normals) {
 					if (normals->count != positions->count || normals->type != cgltf_type_vec3) {
@@ -993,19 +1000,19 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 					}
 					localNormals.resize(positions->count);
 				}
-				const glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(voxelBind)));
+				const math::Mat3f normalMatrix = math::transpose(math::inverse(math::Mat3f(voxelBind)));
 				for (cgltf_size vi = 0; vi < positions->count; ++vi) {
 					float position[3];
 					if (!cgltf_accessor_read_float(positions, vi, position, lengthof(position))) {
 						return false;
 					}
 					for (float value : position) {
-						if (glm::isinf(value)) {
+						if (math::isinf(value)) {
 							return false;
 						}
 					}
-					localPositions[vi] = glm::vec3(voxelBind * glm::vec4(position[0], position[1], position[2], 1));
-					if (glm::any(glm::isinf(localPositions[vi]))) {
+					localPositions[vi] = math::Vec3f(voxelBind * math::Vec4f(position[0], position[1], position[2], 1));
+					if (math::any(math::isinf(localPositions[vi]))) {
 						return false;
 					}
 					if (normals) {
@@ -1013,8 +1020,8 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 						if (!cgltf_accessor_read_float(normals, vi, normal, lengthof(normal))) {
 							return false;
 						}
-						const glm::vec3 transformed = normalMatrix * glm::vec3(normal[0], normal[1], normal[2]);
-						localNormals[vi] = glm::length(transformed) > 0 ? glm::normalize(transformed) : glm::vec3(0);
+						const math::Vec3f transformed = normalMatrix * math::Vec3f(normal[0], normal[1], normal[2]);
+						localNormals[vi] = math::length(transformed) > 0 ? math::normalize(transformed) : math::Vec3f(0);
 					}
 				}
 				// Reuse the ordinary material/UV/voxelization path with joint-local geometry.
@@ -1022,8 +1029,8 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 				cgltf_buffer_view views[3] = {};
 				cgltf_accessor accessors[3] = {};
 				void *bytes[] = {localPositions.data(), localNormals.data(), triangles[ji].data()};
-				const size_t sizes[] = {localPositions.size() * sizeof(glm::vec3),
-										localNormals.size() * sizeof(glm::vec3),
+				const size_t sizes[] = {localPositions.size() * sizeof(math::Vec3f),
+										localNormals.size() * sizeof(math::Vec3f),
 										triangles[ji].size() * sizeof(uint32_t)};
 				for (int i = 0; i < lengthof(buffers); ++i) {
 					buffers[i].data = bytes[i];
@@ -1034,7 +1041,7 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 					accessors[i].type = i == 2 ? cgltf_type_scalar : cgltf_type_vec3;
 					accessors[i].component_type = i == 2 ? cgltf_component_type_r_32u : cgltf_component_type_r_32f;
 					accessors[i].count = i == 2 ? triangles[ji].size() : positions->count;
-					accessors[i].stride = i == 2 ? sizeof(uint32_t) : sizeof(glm::vec3);
+					accessors[i].stride = i == 2 ? sizeof(uint32_t) : sizeof(math::Vec3f);
 				}
 				core::Buffer<cgltf_attribute> attributes(primitive.attributes_count);
 				for (cgltf_size ai = 0; ai < primitive.attributes_count; ++ai) {
@@ -1144,19 +1151,19 @@ void GLTFFormat::importAnimations(const cgltf_data *data, scenegraph::SceneGraph
 				case cgltf_animation_path_type_translation: {
 					float v[3] = {0};
 					cgltf_accessor_read_float(output, valueIndex, v, 3);
-					transform.setLocalTranslation(glm::vec3(v[0], v[1], v[2]) * sceneInputScale());
+					transform.setLocalTranslation(math::Vec3f(v[0], v[1], v[2]) * sceneInputScale());
 					break;
 				}
 				case cgltf_animation_path_type_rotation: {
 					float v[4] = {0, 0, 0, 1};
 					cgltf_accessor_read_float(output, valueIndex, v, 4);
-					transform.setLocalOrientation(glm::quat(v[3], v[0], v[1], v[2]));
+					transform.setLocalOrientation(math::Quatf(v[3], v[0], v[1], v[2]));
 					break;
 				}
 				case cgltf_animation_path_type_scale: {
 					float v[3] = {1, 1, 1};
 					cgltf_accessor_read_float(output, valueIndex, v, 3);
-					transform.setLocalScale(glm::vec3(v[0], v[1], v[2]));
+					transform.setLocalScale(math::Vec3f(v[0], v[1], v[2]));
 					break;
 				}
 				default:
@@ -1335,7 +1342,7 @@ bool GLTFFormat::voxelizeGroups(const core::String &filename, const io::ArchiveP
 
 bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 							const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-							const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+							const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords) {
 
 	if (quad) {
 		Log::warn("glTF format does not support quads - exporting as triangles");
@@ -1463,9 +1470,9 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 		float *vBuf = (float *)(buffer + info.vertexOffset);
 		const int stride = info.floatsPerVertex;
 		const voxel::UVArray &uvs = mesh->getUVVector();
-		const glm::vec3 pivotOffset = glm::vec3(mesh->getOffset()) - meshExt.pivot * meshExt.size;
+		const math::Vec3f pivotOffset = math::Vec3f(mesh->getOffset()) - meshExt.pivot * meshExt.size;
 		for (int j = 0; j < info.vertexCount; ++j) {
-			glm::vec3 pos = vertices[j].position;
+			math::Vec3f pos = vertices[j].position;
 			if (meshExt.applyTransform) {
 				pos += pivotOffset;
 			}
@@ -1475,7 +1482,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			vBuf[j * stride + off++] = pos.y;
 			vBuf[j * stride + off++] = pos.z;
 			if (withNormals) {
-				const glm::vec3 normal = glm::normalize(mesh->getNormalVector()[j] / scale);
+				const math::Vec3f normal = math::normalize(mesh->getNormalVector()[j] / scale);
 				const int normalOffset = j * stride + stride - 3;
 				vBuf[normalOffset] = normal.x;
 				vBuf[normalOffset + 1] = normal.y;
@@ -1493,7 +1500,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					vBuf[j * stride + off++] = uvs[j].x;
 					vBuf[j * stride + off++] = uvs[j].y;
 				} else {
-					const glm::vec2 uv = paletteUV(vertices[j].colorIndex);
+					const math::Vec2f uv = paletteUV(vertices[j].colorIndex);
 					vBuf[j * stride + off++] = uv.x;
 					vBuf[j * stride + off++] = uv.y;
 				}
@@ -1740,7 +1747,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 			cgltf_material &mat = gltfMaterials[matIdx];
 			const palette::Material &palMat = pal->material(c);
 			const color::RGBA rgba = pal->color(c);
-			const glm::vec4 fcolor = color::fromRGBA(rgba);
+			const math::Vec4f fcolor = color::fromRGBA(rgba);
 
 			mat.has_pbr_metallic_roughness = true;
 			mat.pbr_metallic_roughness.base_color_texture.texture = &gltfTextures[palTexIdx];
@@ -2166,25 +2173,25 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 				exportedSceneSun = true;
 				// Root sun angles are world directions. Undo the exported parent transform,
 				// including nonuniform scale, before constructing the light's local rotation.
-				glm::mat4 parentMatrix(1.0f);
+				math::Mat4f parentMatrix(1.0f);
 				int parent = sceneGraph.parentId(sgNode);
 				while (parent > 0) {
 					parentMatrix = sceneGraph.node(parent).transform(0).localMatrix() * parentMatrix;
 					parent = sceneGraph.parentId(sceneGraph.node(parent));
 				}
-				if (glm::abs(glm::determinant(glm::mat3(parentMatrix))) > 0.000001f) {
-					glm::vec3 localDirection = glm::inverse(glm::mat3(parentMatrix)) * sunDirection(sceneGraph.root());
+				if (math::abs(math::determinant(math::Mat3f(parentMatrix))) > 0.000001f) {
+					math::Vec3f localDirection = math::inverse(math::Mat3f(parentMatrix)) * sunDirection(sceneGraph.root());
 					if (sgNode.transform(0).localScale().z < 0.0f) {
 						localDirection = -localDirection;
 					}
-					const glm::vec3 currentDirection = glm::normalize(
-						glm::mat3(parentMatrix) * glm::vec3(sgNode.transform(0).localMatrix()[2]));
-					const bool directionChanged = glm::dot(currentDirection, sunDirection(sceneGraph.root())) < 0.999999f;
-					const float directionLength = glm::length(localDirection);
+					const math::Vec3f currentDirection = math::normalize(
+						math::Mat3f(parentMatrix) * math::Vec3f(sgNode.transform(0).localMatrix()[2]));
+					const bool directionChanged = math::dot(currentDirection, sunDirection(sceneGraph.root())) < 0.999999f;
+					const float directionLength = math::length(localDirection);
 					if (directionChanged && std::isfinite(directionLength) && directionLength > 0.000001f) {
-						const glm::quat rotation(glm::vec3(0.0f, 0.0f, 1.0f), localDirection / directionLength);
+						const math::Quatf rotation = math::rotation(math::Vec3f(0.0f, 0.0f, 1.0f), localDirection / directionLength);
 						nodes[gltfIdx].has_rotation = true;
-						core_memcpy(nodes[gltfIdx].rotation, glm::value_ptr(rotation), sizeof(nodes[gltfIdx].rotation));
+						core_memcpy(nodes[gltfIdx].rotation, math::value_ptr(rotation), sizeof(nodes[gltfIdx].rotation));
 					}
 				}
 			}
@@ -2279,13 +2286,13 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 	if (createSceneSun) {
 		cgltf_node &sun = nodes[totalNodes];
 		sun.name = (char *)"Sun";
-		glm::vec3 direction = sunDirection(sceneGraph.root());
+		math::Vec3f direction = sunDirection(sceneGraph.root());
 		if (!std::isfinite(direction.x) || !std::isfinite(direction.y) || !std::isfinite(direction.z)) {
-			direction = glm::vec3(0.0f, 1.0f, 0.0f);
+			direction = math::Vec3f(0.0f, 1.0f, 0.0f);
 		}
-		const glm::quat orientation(glm::vec3(0.0f, 0.0f, 1.0f), direction);
+		const math::Quatf orientation = math::rotation(math::Vec3f(0.0f, 0.0f, 1.0f), direction);
 		sun.has_rotation = true;
-		core_memcpy(sun.rotation, glm::value_ptr(orientation), sizeof(sun.rotation));
+		core_memcpy(sun.rotation, math::value_ptr(orientation), sizeof(sun.rotation));
 		setSunLight(lights[lightCount], sceneGraph.root());
 		sun.light = &lights[lightCount++];
 		sceneNodes[rootIdx++] = &sun;
@@ -2483,7 +2490,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					size_t transOffset = bufOffset;
 					float *transPtr = (float *)(animBuffer + bufOffset);
 					for (int k = 0; k < n; ++k) {
-						const glm::vec3 &t = kfs[k].transform().localTranslation();
+						const math::Vec3f &t = kfs[k].transform().localTranslation();
 						transPtr[k * 3 + 0] = t.x;
 						transPtr[k * 3 + 1] = t.y;
 						transPtr[k * 3 + 2] = t.z;
@@ -2494,7 +2501,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					size_t rotOffset = bufOffset;
 					float *rotPtr = (float *)(animBuffer + bufOffset);
 					for (int k = 0; k < n; ++k) {
-						const glm::quat &r = kfs[k].transform().localOrientation();
+						const math::Quatf &r = kfs[k].transform().localOrientation();
 						rotPtr[k * 4 + 0] = r.x;
 						rotPtr[k * 4 + 1] = r.y;
 						rotPtr[k * 4 + 2] = r.z;
@@ -2506,7 +2513,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 					size_t scaleOffset = bufOffset;
 					float *scalePtr = (float *)(animBuffer + bufOffset);
 					for (int k = 0; k < n; ++k) {
-						const glm::vec3 &s = kfs[k].transform().localScale();
+						const math::Vec3f &s = kfs[k].transform().localScale();
 						scalePtr[k * 3 + 0] = s.x;
 						scalePtr[k * 3 + 1] = s.y;
 						scalePtr[k * 3 + 2] = s.z;
@@ -2757,7 +2764,7 @@ bool GLTFFormat::saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const sce
 }
 
 bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const PointCloud &pointCloud,
-								const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
+								const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale,
 								bool withColor) const {
 	if (pointCloud.empty()) {
 		Log::error("Empty point cloud");
@@ -2771,7 +2778,7 @@ bool GLTFFormat::savePointCloud(const scenegraph::SceneGraph &sceneGraph, const 
 	float *vBuf = (float *)buffer;
 
 	for (int i = 0; i < vertexCount; ++i) {
-		const glm::vec3 pos = pointCloud[i].position * scale;
+		const math::Vec3f pos = pointCloud[i].position * scale;
 		vBuf[i * 7 + 0] = pos.x;
 		vBuf[i * 7 + 1] = pos.y;
 		vBuf[i * 7 + 2] = pos.z;

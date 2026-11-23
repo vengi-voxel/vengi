@@ -7,7 +7,7 @@
 #include "app/I18N.h"
 #include "color/Color.h"
 #include "command/CommandHandler.h"
-#include "math/Math.h"
+#include "math/Polar.h"
 #include "memento/MementoHandler.h"
 #include "palette/NormalPalette.h"
 #include "palette/PaletteFormatDescription.h"
@@ -20,7 +20,10 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxedit {
 
@@ -94,7 +97,7 @@ void NormalPalettePanel::addColor(ImVec2 &cursorPos, float startingPosX, float c
 		}
 		if (hovered) {
 			if (usableColor) {
-				const glm::vec3 direction = glm::normalize(normalPalette.normal3f(paletteColorIdx));
+				const math::Vec3f direction = math::normalize(normalPalette.normal3f(paletteColorIdx));
 				ImGui::SetTooltip(_("Normal %i: %.3f, %.3f, %.3f"), paletteColorIdx, direction.x, direction.y,
 								  direction.z);
 			} else {
@@ -131,10 +134,10 @@ void NormalPalettePanel::selectNormal(const palette::NormalPalette &palette, uin
 	_selectedIndex = index;
 	_targetValid = true;
 	if (index < palette.size() && palette.normal(index).a > 0) {
-		_targetNormal = glm::normalize(palette.normal3f(index));
+		_targetNormal = math::normalize(palette.normal3f(index));
 		_sceneMgr->modifier().setNormalColorIndex(index);
 	} else {
-		_targetNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+		_targetNormal = math::Vec3f(0.0f, 1.0f, 0.0f);
 	}
 }
 
@@ -298,7 +301,7 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 				_selectedIndex = core_min(core_max(_selectedIndex, 0), palette::NormalPaletteMaxNormals - 1);
 				const uint8_t brush = _sceneMgr->modifier().normalColorIndex();
 				if (brush >= normals.size() || normals.normal(brush).a == 0) {
-					const int match = normals.getClosestMatch(glm::vec3(0, 1, 0));
+					const int match = normals.getClosestMatch(math::Vec3f(0, 1, 0));
 					if (match != palette::PaletteNormalNotFound) {
 						_sceneMgr->modifier().setNormalColorIndex((uint8_t)match);
 					}
@@ -339,11 +342,11 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 
 			drawNormalVisualization(normals);
 
-			if (ImGui::InputFloat3(_("Normal"), glm::value_ptr(_targetNormal))) {
+			if (ImGui::InputFloat3(_("Normal"), math::value_ptr(_targetNormal))) {
 				setTargetNormal(_targetNormal);
 			}
 			float longitude, latitude;
-			math::vectorToPolar(_targetValid ? _targetNormal : glm::vec3(0.0f, 1.0f, 0.0f), longitude, latitude);
+			math::vectorToPolar(_targetValid ? _targetNormal : math::Vec3f(0.0f, 1.0f, 0.0f), longitude, latitude);
 			bool polarChanged = false;
 			polarChanged |= ImGui::SliderAngle(_("Longitude"), &longitude, -180, 179, "%.0f");
 			polarChanged |= ImGui::SliderAngle(_("Latitude"), &latitude, -90, 89, "%.0f");
@@ -354,35 +357,35 @@ void NormalPalettePanel::update(const char *id, command::CommandExecutionListene
 			ImGui::TextUnformatted(_("Flip"));
 			ImGui::PushID("##flipnormal");
 			if (ImGui::AxisButtonX()) {
-				setTargetNormal(glm::vec3(-_targetNormal.x, _targetNormal.y, _targetNormal.z));
+				setTargetNormal(math::Vec3f(-_targetNormal.x, _targetNormal.y, _targetNormal.z));
 			}
 			ImGui::SameLine();
 			if (ImGui::AxisButtonY()) {
-				setTargetNormal(glm::vec3(_targetNormal.x, -_targetNormal.y, _targetNormal.z));
+				setTargetNormal(math::Vec3f(_targetNormal.x, -_targetNormal.y, _targetNormal.z));
 			}
 			ImGui::SameLine();
 			if (ImGui::AxisButtonZ()) {
-				setTargetNormal(glm::vec3(_targetNormal.x, _targetNormal.y, -_targetNormal.z));
+				setTargetNormal(math::Vec3f(_targetNormal.x, _targetNormal.y, -_targetNormal.z));
 			}
 			ImGui::PopID();
 
 			ImGui::TextUnformatted(_("Rotate 90 deg"));
 			ImGui::PushID("##rotnormal");
 			if (ImGui::AxisButtonX()) {
-				setTargetNormal(glm::vec3(_targetNormal.x, _targetNormal.z, -_targetNormal.y));
+				setTargetNormal(math::Vec3f(_targetNormal.x, _targetNormal.z, -_targetNormal.y));
 			}
 			ImGui::SameLine();
 			if (ImGui::AxisButtonY()) {
-				setTargetNormal(glm::vec3(_targetNormal.z, _targetNormal.y, -_targetNormal.x));
+				setTargetNormal(math::Vec3f(_targetNormal.z, _targetNormal.y, -_targetNormal.x));
 			}
 			ImGui::SameLine();
 			if (ImGui::AxisButtonZ()) {
-				setTargetNormal(glm::vec3(_targetNormal.y, -_targetNormal.x, _targetNormal.z));
+				setTargetNormal(math::Vec3f(_targetNormal.y, -_targetNormal.x, _targetNormal.z));
 			}
 			ImGui::PopID();
 			ImGui::TextUnformatted(_("Direction"));
 			const char *axisNames[] = {"+X", "-X", "+Y", "-Y", "+Z", "-Z"};
-			const glm::vec3 axes[] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+			const math::Vec3f axes[] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 			for (int i = 0; i < 6; ++i) {
 				if (i > 0) {
 					ImGui::SameLine();
@@ -441,8 +444,8 @@ void NormalPalettePanel::drawNormalVisualization(const palette::NormalPalette &n
 	if (!_targetValid) {
 		return;
 	}
-	const glm::mat4 &viewMatrix = camera->viewMatrix();
-	const glm::vec3 viewNormal = glm::mat3(viewMatrix) * _targetNormal;
+	const math::Mat4f &viewMatrix = camera->viewMatrix();
+	const math::Vec3f viewNormal = math::Mat3f(viewMatrix) * _targetNormal;
 
 	const bool facing = viewNormal.z > 0.0f;
 	const ImVec2 center = facing ? centerFace : centerBack;
@@ -473,29 +476,29 @@ void NormalPalettePanel::drawNormalVisualization(const palette::NormalPalette &n
 		checkCircle(centerBack, false);
 
 		if (clicked) {
-			float z = glm::sqrt(core_max(0.0f, 1.0f - x * x - y * y));
+			float z = math::sqrt(core_max(0.0f, 1.0f - x * x - y * y));
 			if (!front) {
 				z = -z;
 			}
 			// Transform back to world space
 			// We need inverse view matrix (rotation only)
 			// Inverse of rotation matrix is transpose
-			const glm::mat3 invViewMatrix = glm::transpose(glm::mat3(viewMatrix));
-			const glm::vec3 newNormal = invViewMatrix * glm::vec3(x, y, z);
-			setTargetNormal(glm::normalize(newNormal));
+			const math::Mat3f invViewMatrix = math::transpose(math::Mat3f(viewMatrix));
+			const math::Vec3f newNormal = invViewMatrix * math::Vec3f(x, y, z);
+			setTargetNormal(math::normalize(newNormal));
 		}
 	}
 }
 
-void NormalPalettePanel::setTargetNormal(const glm::vec3 &normal) {
+void NormalPalettePanel::setTargetNormal(const math::Vec3f &normal) {
 	_targetNormal = normal;
-	const float lengthSquared = glm::dot(normal, normal);
-	_targetValid = !glm::any(glm::isnan(normal)) && !glm::any(glm::isinf(normal)) && !glm::isnan(lengthSquared) &&
-				   !glm::isinf(lengthSquared) && lengthSquared > 0.000001f;
+	const float lengthSquared = math::dot(normal, normal);
+	_targetValid = !math::any(math::isnan(normal)) && !math::any(math::isinf(normal)) && !math::isnan(lengthSquared) &&
+				   !math::isinf(lengthSquared) && lengthSquared > 0.000001f;
 	if (!_targetValid) {
 		return;
 	}
-	_targetNormal = glm::normalize(normal);
+	_targetNormal = math::normalize(normal);
 	if (_selectedIndex < 0 || _selectedIndex >= palette::NormalPaletteMaxNormals || _sceneMgr->isLocked()) {
 		return;
 	}

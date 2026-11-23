@@ -9,6 +9,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "palette/Palette.h"
 #include "SLABShared.h"
+#include "math/Vec3i.h"
 
 #define wrap(read)                                                                                                     \
 	if ((read) != 0) {                                                                                                 \
@@ -128,7 +129,7 @@ bool SLAB6VoxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 	const palette::Palette &palette = node->palette();
 	const uint8_t emptyColorIndex = (uint8_t)emptyPaletteIndex();
 
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 	wrapBool(stream->writeUInt32(dim.x))
 	wrapBool(stream->writeUInt32(dim.z))
 	wrapBool(stream->writeUInt32(dim.y))

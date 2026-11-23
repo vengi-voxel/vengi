@@ -6,10 +6,13 @@
 
 #include "Types.h"
 #include "math/Frustum.h"
-#include <glm/fwd.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
 
 namespace math {
 template<typename TYPE>
@@ -71,41 +74,41 @@ protected:
 	PolygonMode _polygonMode = PolygonMode::Solid;
 	CameraRotationType _rotationType = CameraRotationType::Eye;
 
-	glm::ivec2 _windowSize{0};
+	math::Vec2i _windowSize{0};
 	float _orthoZoom = 1.0f;
 	float _orthoDepth = 10000.0f; // total depth span
 	// the position of the camera in the world
-	glm::vec3 _worldPos{0.0f};
-	glm::quat _quat{0.0f, 0.0f, 0.0f, 0.0f};
+	math::Vec3f _worldPos{0.0f};
+	math::Quatf _quat = math::Quatf::identity();
 	uint32_t _dirty = DIRTY_ALL;
 
-	glm::mat4 _viewMatrix{1.0f};
-	glm::mat4 _invViewMatrix{1.0f};
-	glm::mat4 _projectionMatrix{1.0f};
-	glm::mat4 _invProjectionMatrix{1.0f};
-	glm::mat4 _viewProjectionMatrix{1.0f};
-	glm::mat4 _orientation{1.0f};
+	math::Mat4f _viewMatrix{1.0f};
+	math::Mat4f _invViewMatrix{1.0f};
+	math::Mat4f _projectionMatrix{1.0f};
+	math::Mat4f _invProjectionMatrix{1.0f};
+	math::Mat4f _viewProjectionMatrix{1.0f};
+	math::Mat4f _orientation{1.0f};
 
 	// rotation speed over time for all three axis
-	glm::vec3 _omega{0.0f};
+	math::Vec3f _omega{0.0f};
 
 	float _nearPlane = 0.1f;
 	float _farPlane = 500.0f;
 	// y and in degrees
 	float _fieldOfView = 45.0f;
 
-	glm::vec3 _target{0.0f};
+	math::Vec3f _target{0.0f};
 	float _distance = 100.0f;
 	bool _orthoAligned = false;
 	bool _lerp = false;
 	struct LerpTarget {
 		CameraRotationType rotationType;
-		glm::vec3 target;
-		glm::vec3 worldPos;
-		glm::quat quat;
-		glm::vec3 fromWorldPos;
-		glm::quat fromQuat;
-		glm::vec3 fromTarget;
+		math::Vec3f target;
+		math::Vec3f worldPos;
+		math::Quatf quat = math::Quatf::identity();
+		math::Vec3f fromWorldPos;
+		math::Quatf fromQuat = math::Quatf::identity();
+		math::Vec3f fromTarget;
 		double seconds;
 		float distance;
 		float fromDistance;
@@ -132,15 +135,15 @@ public:
 
 	Camera(CameraType type = CameraType::FirstPerson, CameraMode mode = CameraMode::Perspective);
 
-	const glm::ivec2 &size() const;
-	void setSize(const glm::ivec2 &windowSize);
+	const math::Vec2i &size() const;
+	void setSize(const math::Vec2i &windowSize);
 	int frameBufferHeight() const;
 
 	inline bool dirty() const {
 		return _dirty != 0u;
 	}
 
-	glm::vec3 eye() const;
+	math::Vec3f eye() const;
 
 	CameraType type() const;
 	void setType(CameraType type);
@@ -168,15 +171,15 @@ public:
 	float farPlane() const;
 	void setFarPlane(float farPlane);
 
-	glm::vec3 omega() const;
-	void setOmega(const glm::vec3 &omega);
+	math::Vec3f omega() const;
+	void setOmega(const math::Vec3f &omega);
 
 	/**
 	 * @return The rotation matrix of the direction the camera is facing to.
 	 */
-	const glm::mat4 &orientation() const;
-	const glm::quat &quaternion() const;
-	void setOrientation(const glm::quat &quat);
+	const math::Mat4f &orientation() const;
+	const math::Quatf &quaternion() const;
+	void setOrientation(const math::Quatf &quat);
 
 	float orthoZoom() const;
 	void setOrthoZoom(float zoom);
@@ -184,33 +187,33 @@ public:
 
 	void lerp(const Camera &target);
 
-	glm::vec3 forward() const;
-	glm::vec3 right() const;
-	glm::vec3 up() const;
+	math::Vec3f forward() const;
+	math::Vec3f right() const;
+	math::Vec3f up() const;
 
-	glm::vec3 direction() const;
+	math::Vec3f direction() const;
 
 	/**
 	 * @sa eye()
 	 * @note Does not include panning offset
 	 */
-	const glm::vec3 &worldPosition() const;
-	void setWorldPosition(const glm::vec3 &worldPos);
-	bool move(const glm::vec3 &delta);
+	const math::Vec3f &worldPosition() const;
+	void setWorldPosition(const math::Vec3f &worldPos);
+	bool move(const math::Vec3f &delta);
 
-	glm::mat4 orthogonalMatrix(float nplane, float fplane) const;
-	glm::mat4 perspectiveMatrix(float nplane, float fplane) const;
-	const glm::mat4 &inverseViewMatrix() const;
+	math::Mat4f orthogonalMatrix(float nplane, float fplane) const;
+	math::Mat4f perspectiveMatrix(float nplane, float fplane) const;
+	const math::Mat4f &inverseViewMatrix() const;
 	/**
 	 * from world space to camera space
 	 */
-	const glm::mat4 &viewMatrix() const;
+	const math::Mat4f &viewMatrix() const;
 	/**
 	 * camera space to screen space
 	 */
-	const glm::mat4 &projectionMatrix() const;
-	const glm::mat4 &inverseProjectionMatrix() const;
-	const glm::mat4 &viewProjectionMatrix() const;
+	const math::Mat4f &projectionMatrix() const;
+	const math::Mat4f &inverseProjectionMatrix() const;
+	const math::Mat4f &viewProjectionMatrix() const;
 
 	/**
 	 * @return the vertical field of view in degree
@@ -247,21 +250,21 @@ public:
 	float worldUnitsPerPixel() const;
 	void pan(int screenDeltaX, int screenDeltaY);
 
-	void rotate(float radians, const glm::vec3 &axis);
-	void rotate(const glm::quat &rotation);
-	void rotate(const glm::vec3 &radians);
+	void rotate(float radians, const math::Vec3f &axis);
+	void rotate(const math::Quatf &rotation);
+	void rotate(const math::Vec3f &radians);
 
-	bool lookAt(const glm::vec3 &position);
-	bool lookAt(const glm::vec3 &position, const glm::vec3 &upDirection);
+	bool lookAt(const math::Vec3f &position);
+	bool lookAt(const math::Vec3f &position, const math::Vec3f &upDirection);
 
 	/**
 	 * @brief Calculates the billboard vectors right and up relative to the camera.
 	 */
-	void billboard(glm::vec3 *right, glm::vec3 *up) const;
+	void billboard(math::Vec3f *right, math::Vec3f *up) const;
 
-	void setTarget(const glm::vec3 &target);
+	void setTarget(const math::Vec3f &target);
 	void setTargetDistance(float distance);
-	glm::vec3 target() const;
+	math::Vec3f target() const;
 	float targetDistance() const;
 
 	/**
@@ -271,27 +274,27 @@ public:
 	 */
 	void setAngles(float pitch, float yaw, float roll);
 
-	void slerp(const glm::quat &quat, float factor);
-	void slerp(const glm::vec3 &radians, float factor);
+	void slerp(const math::Quatf &quat, float factor);
+	void slerp(const math::Vec3f &radians, float factor);
 
 	/**
 	 * @param[in] pixelPos screen pixel position
 	 * @note Basically just a wrapper for @c screenRay() but for mouse coordinates
 	 * @return Ray instance with origin and direction
 	 */
-	math::Ray mouseRay(const glm::ivec2 &pixelPos) const;
+	math::Ray mouseRay(const math::Vec2i &pixelPos) const;
 	/**
 	 * @brief Map a top-left logical point in a viewport to a world ray.
 	 * Viewport origin/size and point must use the same units. Far edges are excluded.
 	 * Accounts for camera resolution (including high DPI). Leaves ray unchanged on failure.
 	 */
-	bool mouseRay(const glm::vec4 &view, const glm::vec2 &point, math::Ray &ray) const;
+	bool mouseRay(const math::Vec4f &view, const math::Vec2f &point, math::Ray &ray) const;
 
-	glm::ivec2 worldToScreen(const glm::vec3 &worldPos) const;
+	math::Vec2i worldToScreen(const math::Vec3f &worldPos) const;
 	/** Clip a world segment to the view volume before perspective division. */
-	bool worldSegmentToScreen(const glm::vec3 &from, const glm::vec3 &to, glm::ivec2 &screenFrom,
-							  glm::ivec2 &screenTo) const;
-	glm::ivec2 worldToScreen(const glm::mat4 &matrix, const glm::vec3 &worldPos) const;
+	bool worldSegmentToScreen(const math::Vec3f &from, const math::Vec3f &to, math::Vec2i &screenFrom,
+							  math::Vec2i &screenTo) const;
+	math::Vec2i worldToScreen(const math::Mat4f &matrix, const math::Vec3f &worldPos) const;
 
 	void update(double deltaFrameSeconds);
 
@@ -304,14 +307,14 @@ public:
 	/**
 	 * @brief Calculates the 8 vertices for a split frustum
 	 */
-	void splitFrustum(float nearPlane, float farPlane, glm::vec3 out[math::FRUSTUM_VERTICES_MAX]) const;
-	void frustumCorners(glm::vec3 out[math::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
+	void splitFrustum(float nearPlane, float farPlane, math::Vec3f out[math::FRUSTUM_VERTICES_MAX]) const;
+	void frustumCorners(math::Vec3f out[math::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const;
 	const math::Frustum &frustum() const;
-	bool isVisible(const glm::vec3 &position) const;
+	bool isVisible(const math::Vec3f &position) const;
 	bool isVisible(const math::AABB<float> &aabb) const;
-	bool isVisible(const glm::vec3 &mins, const glm::vec3 &maxs) const;
+	bool isVisible(const math::Vec3f &mins, const math::Vec3f &maxs) const;
 	math::AABB<float> aabb() const;
-	glm::vec4 sphereBoundingBox() const;
+	math::Vec4f sphereBoundingBox() const;
 
 	bool operator==(const Camera &other) const;
 	inline bool operator!=(const Camera &other) const {
@@ -319,11 +322,11 @@ public:
 	}
 };
 
-inline glm::vec3 Camera::eye() const {
+inline math::Vec3f Camera::eye() const {
 	return _invViewMatrix[3];
 }
 
-inline const glm::ivec2 &Camera::size() const {
+inline const math::Vec2i &Camera::size() const {
 	return _windowSize;
 }
 
@@ -399,31 +402,31 @@ inline float Camera::aspect() const {
 	return (float)_windowSize.y / (float)_windowSize.x;
 }
 
-inline const glm::mat4 &Camera::orientation() const {
+inline const math::Mat4f &Camera::orientation() const {
 	return _orientation;
 }
 
-inline const glm::quat &Camera::quaternion() const {
+inline const math::Quatf &Camera::quaternion() const {
 	return _quat;
 }
 
-inline const glm::mat4 &Camera::inverseViewMatrix() const {
+inline const math::Mat4f &Camera::inverseViewMatrix() const {
 	return _invViewMatrix;
 }
 
-inline const glm::mat4 &Camera::viewMatrix() const {
+inline const math::Mat4f &Camera::viewMatrix() const {
 	return _viewMatrix;
 }
 
-inline const glm::mat4 &Camera::projectionMatrix() const {
+inline const math::Mat4f &Camera::projectionMatrix() const {
 	return _projectionMatrix;
 }
 
-inline const glm::mat4 &Camera::inverseProjectionMatrix() const {
+inline const math::Mat4f &Camera::inverseProjectionMatrix() const {
 	return _invProjectionMatrix;
 }
 
-inline const glm::mat4 &Camera::viewProjectionMatrix() const {
+inline const math::Mat4f &Camera::viewProjectionMatrix() const {
 	return _viewProjectionMatrix;
 }
 
@@ -431,15 +434,15 @@ inline const math::Frustum &Camera::frustum() const {
 	return _frustum;
 }
 
-inline bool Camera::isVisible(const glm::vec3 &position) const {
+inline bool Camera::isVisible(const math::Vec3f &position) const {
 	return frustum().isVisible(position);
 }
 
-inline bool Camera::isVisible(const glm::vec3 &mins, const glm::vec3 &maxs) const {
+inline bool Camera::isVisible(const math::Vec3f &mins, const math::Vec3f &maxs) const {
 	return frustum().isVisible(mins, maxs);
 }
 
-inline void Camera::frustumCorners(glm::vec3 out[math::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
+inline void Camera::frustumCorners(math::Vec3f out[math::FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
 	frustum().corners(out, indices);
 }
 
@@ -452,23 +455,23 @@ inline void Camera::setFieldOfView(float angles) {
 	_fieldOfView = angles;
 }
 
-inline const glm::vec3 &Camera::worldPosition() const {
+inline const math::Vec3f &Camera::worldPosition() const {
 	return _worldPos;
 }
 
 inline void Camera::setTargetDistance(float distance) {
-	if (glm::abs(_distance - distance) < 0.0001f) {
+	if (math::abs(_distance - distance) < 0.0001f) {
 		return;
 	}
 	_dirty |= DIRTY_TARGET;
 	_distance = distance;
 }
 
-inline glm::vec3 Camera::omega() const {
+inline math::Vec3f Camera::omega() const {
 	return _omega;
 }
 
-inline glm::vec3 Camera::target() const {
+inline math::Vec3f Camera::target() const {
 	return _target;
 }
 
@@ -476,7 +479,7 @@ inline float Camera::targetDistance() const {
 	return _distance;
 }
 
-inline Camera uiCamera(const glm::ivec2 &windowSize) {
+inline Camera uiCamera(const math::Vec2i &windowSize) {
 	Camera camera(CameraType::UI, video::CameraMode::Orthogonal);
 	camera.setSize(windowSize);
 	camera.setNearPlane(-1.0f);
@@ -490,8 +493,8 @@ inline float Camera::orthoZoom() const {
 }
 
 inline void Camera::setOrthoZoom(float zoom) {
-	const float value = glm::max(zoom, 0.0001f);
-	if (glm::epsilonEqual(_orthoZoom, value, 0.0001f)) {
+	const float value = math::max(zoom, 0.0001f);
+	if (math::epsilonEqual(_orthoZoom, value, 0.0001f)) {
 		return;
 	}
 	_orthoZoom = value;

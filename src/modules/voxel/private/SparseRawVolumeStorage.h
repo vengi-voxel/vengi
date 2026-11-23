@@ -8,9 +8,9 @@
 #include "core/concurrent/Lock.h"
 #include "voxel/SparseChunk.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
 #include <stddef.h>
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -34,7 +34,7 @@ public:
 	static constexpr int BrickSide = SparseChunk::BrickSide;
 	static constexpr int BrickMask = BrickSide - 1;
 
-	explicit SparseRawVolumeStorage(const glm::ivec3 &dimensions);
+	explicit SparseRawVolumeStorage(const math::Vec3i &dimensions);
 	SparseRawVolumeStorage(const SparseRawVolumeStorage &other);
 	SparseRawVolumeStorage &operator=(const SparseRawVolumeStorage &) = delete;
 	~SparseRawVolumeStorage();
@@ -43,7 +43,7 @@ public:
 		return _slots != nullptr && _directorySize > 0u;
 	}
 
-	const glm::ivec3 &dimensions() const {
+	const math::Vec3i &dimensions() const {
 		return _dimensions;
 	}
 
@@ -72,7 +72,7 @@ public:
 	void setVoxelsRow(int lx, int ly, int lz, int count, const Voxel &value);
 
 	/** Lock-free read of a contiguous X-major box [localMins, localMins + size) into target. */
-	void readRegion(const glm::ivec3 &localMins, const glm::ivec3 &size, Voxel *target) const;
+	void readRegion(const math::Vec3i &localMins, const math::Vec3i &size, Voxel *target) const;
 
 	/** Lock-free full-volume copy into a contiguous X-major buffer. */
 	void copyTo(Voxel *destination) const;
@@ -81,19 +81,19 @@ public:
 	void fill(const Voxel &value);
 
 	/** True if every voxel in [localMins, localMaxs] has all 4 bytes equal to 0. */
-	bool isEmpty(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs) const;
+	bool isEmpty(const math::Vec3i &localMins, const math::Vec3i &localMaxs) const;
 
 	/** True if any voxel in [localMins, localMaxs] has any bit of @p flags set. */
-	bool hasFlags(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs, uint8_t flags) const;
+	bool hasFlags(const math::Vec3i &localMins, const math::Vec3i &localMaxs, uint8_t flags) const;
 
 	/** Compute local bounds of all voxels having any bit of @p flag set. */
-	bool regionForFlag(uint8_t flag, glm::ivec3 &outMins, glm::ivec3 &outMaxs) const;
+	bool regionForFlag(uint8_t flag, math::Vec3i &outMins, math::Vec3i &outMaxs) const;
 
 	/** Modify flags in [localMins, localMaxs]. operation: 0 = set, 1 = remove, 2 = toggle. */
-	void modifyFlags(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs, uint8_t flags, int operation);
+	void modifyFlags(const math::Vec3i &localMins, const math::Vec3i &localMaxs, uint8_t flags, int operation);
 
 	/** Compute local bounds of all non-air voxels without materializing. */
-	bool computeSolidBounds(glm::ivec3 &outMins, glm::ivec3 &outMaxs) const;
+	bool computeSolidBounds(math::Vec3i &outMins, math::Vec3i &outMaxs) const;
 
 	/** Compare two storages with identical dimensions without materializing. */
 	bool equals(const SparseRawVolumeStorage &other) const;
@@ -102,7 +102,7 @@ public:
 	bool equalsDense(const Voxel *denseData) const;
 
 	/** Cyclic left shift; requires exclusive access. */
-	bool move(const glm::ivec3 &shift);
+	bool move(const math::Vec3i &shift);
 
 	/**
 	 * @brief Borrow a brick or brick-row for fast sampler traversal (lock-free).
@@ -114,7 +114,7 @@ public:
 	 * - If @p outRow is nullptr (partially-filled packed brick row), the caller uses @p outFallbackVoxel.
 	 */
 	void sampleAt(int lx, int ly, int lz, const SparseChunk *&outChunk, const SparseChunk::Brick *&outBrick,
-				  const Voxel *&outRow, bool &outWholeBrick, glm::ivec3 &outLower, glm::ivec3 &outUpper,
+				  const Voxel *&outRow, bool &outWholeBrick, math::Vec3i &outLower, math::Vec3i &outUpper,
 				  Voxel &outFallbackVoxel, uint32_t &outGen) const;
 
 	/** Allocated directory and SparseChunk bytes, excluding allocator overhead. */
@@ -126,12 +126,12 @@ public:
 	};
 
 	struct OccupiedBrickInfo {
-		glm::ivec3 localOrigin{0};
+		math::Vec3i localOrigin{0};
 		SparseChunk::Brick *brick = nullptr;
 	};
 
 	/** O(1) check if any brick (or non-zero default) exists in [localMins, localMaxs]. */
-	bool hasOccupiedVoxelsInBox(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs) const;
+	bool hasOccupiedVoxelsInBox(const math::Vec3i &localMins, const math::Vec3i &localMaxs) const;
 
 	/** Lock-free lookup of the brick covering volume-local coordinate (lx, ly, lz), or nullptr. */
 	const SparseChunk::Brick *brickAt(int lx, int ly, int lz) const;
@@ -155,7 +155,7 @@ public:
 	 * @brief Collect all live bricks intersecting [localMins, localMaxs] for lock-free parallel read or
 	 * in-place value mutation.
 	 */
-	void collectOccupiedBricks(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs,
+	void collectOccupiedBricks(const math::Vec3i &localMins, const math::Vec3i &localMaxs,
 							   core::DynamicArray<OccupiedBrickInfo> &out) const;
 
 	/** Bump generation counter after in-place or batch modifications. */
@@ -175,8 +175,8 @@ private:
 		mutable core_trace_mutex(core::Lock, lock, "SparseRawVolumeStorageChunk");
 	};
 
-	glm::ivec3 _dimensions{0};
-	glm::ivec3 _chunkCounts{0};
+	math::Vec3i _dimensions{0};
+	math::Vec3i _chunkCounts{0};
 	size_t _directorySize = 0u;
 	ChunkSlot *_slots = nullptr;
 	Voxel _default{};

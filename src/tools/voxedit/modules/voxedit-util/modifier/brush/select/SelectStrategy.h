@@ -6,8 +6,8 @@
 
 #include "voxel/Face.h"
 #include "voxel/Region.h"
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -27,8 +27,8 @@ namespace select {
 struct AABBBrushState {
 	bool boxMode = false;
 	voxel::FaceNames aabbFace = voxel::FaceNames::Max;
-	glm::ivec3 aabbFirstPos{0};
-	glm::ivec3 cursorPosition{0};
+	math::Vec3i aabbFirstPos{0};
+	math::Vec3i cursorPosition{0};
 	int radius = 0;
 };
 
@@ -69,7 +69,7 @@ public:
 	virtual void describeHandle(const BrushContext &ctx, const AABBBrushState &state, BrushGizmoState &gizmoState) const {
 	}
 
-	virtual bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	virtual bool editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &deltaMatrix,
 								 uint32_t operation) {
 		return false;
 	}

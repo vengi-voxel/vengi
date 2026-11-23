@@ -13,6 +13,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace voxel {
 class RawVolume;
@@ -71,7 +72,7 @@ struct SceneJobRequest {
 	core::UUID nodeUUID;
 	core::String text;
 	voxel::Region region = voxel::Region::InvalidRegion;
-	glm::ivec3 size{0};
+	math::Vec3i size{0};
 	voxel::Voxel voxel;
 	bool overrideVoxels = false;
 	core::Buffer<uint8_t> paletteIndices;

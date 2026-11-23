@@ -6,8 +6,8 @@
 
 #include "command/ActionButton.h"
 #include "core/DeltaFrameSeconds.h"
-#include <glm/fwd.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
+#include "math/Axes.h"
 
 namespace util {
 
@@ -27,7 +27,7 @@ protected:
 	command::ActionButton _jump;
 	command::ActionButton _sprint;
 
-	glm::vec3 calculateDelta(double speed) const;
+	math::Vec3f calculateDelta(double speed) const;
 
 public:
 	virtual ~Movement() {
@@ -49,11 +49,11 @@ public:
 	bool moving() const;
 
 	/**
-	 * @brief Calculate the movement without rotation in @c glm::forward(), @c glm::up(), @c glm::right() direction
+	 * @brief Calculate the movement without rotation in @c math::forward(), @c math::up(), @c math::right() direction
 	 * @param speed The speed to move in the given direction
 	 * @note update() must have been called with proper delta milliseconds.
 	 */
-	glm::vec3 moveDelta(double speed) const;
+	math::Vec3f moveDelta(double speed) const;
 };
 
 inline bool Movement::moving() const {

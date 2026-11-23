@@ -36,7 +36,6 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/minecraft/MinecraftPaletteMap.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
-#include <glm/gtc/type_ptr.hpp>
 
 // generated models
 #include "aquarium.h"
@@ -73,6 +72,8 @@
 #include "twinsen_png.h"
 #include "undead.h"
 #include "undead_png.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -902,8 +903,8 @@ void MainWindow::popupNodeResize() {
 	const core::String &title = makeTitle(_("Resize node"), POPUP_TITLE_RESIZE_NODE);
 	if (ImGui::BeginPopupModal(title.c_str(), nullptr,
 							   ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings)) {
-		glm::ivec3 &mins = _sceneGraphPanel._resizeMins;
-		glm::ivec3 &maxs = _sceneGraphPanel._resizeMaxs;
+		math::Vec3i &mins = _sceneGraphPanel._resizeMins;
+		math::Vec3i &maxs = _sceneGraphPanel._resizeMaxs;
 
 		ImGui::TextUnformatted(_("Lower bound"));
 		ImGui::Separator();
@@ -918,9 +919,9 @@ void MainWindow::popupNodeResize() {
 		ImGui::InputAxisInt(math::Axis::Y, "##maxy", &maxs.y);
 		ImGui::InputAxisInt(math::Axis::Z, "##maxz", &maxs.z);
 
-		maxs = glm::max(maxs, mins);
+		maxs = math::max(maxs, mins);
 
-		const glm::ivec3 size = maxs - mins + 1;
+		const math::Vec3i size = maxs - mins + 1;
 		ImGui::NewLine();
 		ImGui::Text(_("Size: %ix%ix%i"), size.x, size.y, size.z);
 		ImGui::NewLine();
@@ -950,9 +951,9 @@ void MainWindow::popupNodeRescale() {
 			ImGui::EndPopup();
 			return;
 		}
-		const glm::ivec3 originalSize = node->region().getDimensionsInVoxels();
-		glm::ivec3 &targetSize = _sceneGraphPanel._rescaleTargetSize;
-		glm::vec3 &percent = _sceneGraphPanel._rescalePercent;
+		const math::Vec3i originalSize = node->region().getDimensionsInVoxels();
+		math::Vec3i &targetSize = _sceneGraphPanel._rescaleTargetSize;
+		math::Vec3f &percent = _sceneGraphPanel._rescalePercent;
 		bool &maintainAspectRatio = _sceneGraphPanel._rescaleMaintainAspectRatio;
 		bool &useVoxelSize = _sceneGraphPanel._rescaleUseVoxelSize;
 
@@ -971,15 +972,15 @@ void MainWindow::popupNodeRescale() {
 		if (useVoxelSize) {
 			ImGui::TextUnformatted(_("Target size"));
 			ImGui::Separator();
-			const glm::ivec3 prevTargetSize = targetSize;
+			const math::Vec3i prevTargetSize = targetSize;
 			bool changed = false;
 			changed |= ImGui::InputAxisInt(math::Axis::X, "##rsx", &targetSize.x);
 			changed |= ImGui::InputAxisInt(math::Axis::Y, "##rsy", &targetSize.y);
 			changed |= ImGui::InputAxisInt(math::Axis::Z, "##rsz", &targetSize.z);
-			targetSize = glm::clamp(targetSize, glm::ivec3(MinTargetSize), glm::ivec3(MaxTargetSize));
+			targetSize = math::clamp(targetSize, math::Vec3i(MinTargetSize), math::Vec3i(MaxTargetSize));
 
 			if (changed && maintainAspectRatio && originalSize.x > 0 && originalSize.y > 0 && originalSize.z > 0) {
-				const glm::ivec3 delta = targetSize - prevTargetSize;
+				const math::Vec3i delta = targetSize - prevTargetSize;
 				int changedAxis = -1;
 				for (int i = 0; i < 3; ++i) {
 					if (delta[i] != 0) {
@@ -991,7 +992,7 @@ void MainWindow::popupNodeRescale() {
 					const float ratio = (float)targetSize[changedAxis] / (float)originalSize[changedAxis];
 					for (int i = 0; i < 3; ++i) {
 						if (i != changedAxis) {
-							targetSize[i] = glm::max((int)glm::round((float)originalSize[i] * ratio), MinTargetSize);
+							targetSize[i] = math::max((int)math::round((float)originalSize[i] * ratio), MinTargetSize);
 						}
 					}
 				}
@@ -1004,15 +1005,15 @@ void MainWindow::popupNodeRescale() {
 				float uniform = percent.x;
 				ImGui::SetNextItemWidth(-1);
 				if (ImGui::SliderFloat("##uniform_pct", &uniform, MinPercent, MaxPercent, "%.1f%%")) {
-					percent = glm::vec3(uniform);
+					percent = math::Vec3f(uniform);
 					changed = true;
 				}
 			} else {
 				changed |= ImGui::AxisSliders(percent, MinPercent, MaxPercent, "%.1f%%");
 			}
 			if (changed) {
-				const glm::vec3 scale = percent / 100.0f;
-				targetSize = glm::max(glm::ivec3(glm::round(glm::vec3(originalSize) * scale)), glm::ivec3(MinTargetSize));
+				const math::Vec3f scale = percent / 100.0f;
+				targetSize = math::max(math::Vec3i(math::round(math::Vec3f(originalSize) * scale)), math::Vec3i(MinTargetSize));
 			}
 			ImGui::TextDisabled(_("Result: %i x %i x %i"), targetSize.x, targetSize.y, targetSize.z);
 		}
@@ -1247,7 +1248,7 @@ void MainWindow::update(double nowSeconds) {
 		if (ImGuiDockNode *leftDownNode = ImGui::DockBuilderGetNode(dockIdLeftDown)) {
 			const float parentHeight = leftDownNode->Size.y;
 			const float splitRatio = parentHeight > 0.0f
-										 ? glm::clamp(brushToolbarHeight / parentHeight, 0.18f, 0.45f)
+										 ? math::clamp(brushToolbarHeight / parentHeight, 0.18f, 0.45f)
 										 : 0.22f;
 			// Brush toolbar on top, settings + inspectors below (both visible, not tabbed together).
 			ImGui::DockBuilderSplitNode(dockIdLeftDown, ImGuiDir_Up, splitRatio, &dockIdBrushToolbar,

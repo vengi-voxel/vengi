@@ -31,10 +31,9 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/ext/scalar_integer.hpp>
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/ext/scalar_integer.hpp>
+#include "math/Vec3i.h"
+#include "math/Scalar.h"
+#include "math/Functions.h"
 
 namespace voxelgenerator {
 
@@ -180,7 +179,7 @@ public:
 };
 
 voxel::RawVolume *genland(GenlandSettings &settings) {
-	if (!glm::isPowerOfTwo(settings.size)) {
+	if (!math::isPowerOfTwo(settings.size)) {
 		Log::error("Size must be a power of two, got %d", settings.size);
 		return nullptr;
 	}
@@ -228,7 +227,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	}
 
 	const double freq = (1.0 / 64.0);
-	const double twoPi = 2.0 * glm::pi<double>();
+	const double twoPi = 2.0 * math::piD;
 	const bool wantRivers = settings.river && settings.numRivers >= 1 && settings.riverWidth != 0.0;
 	// TODO: PERF: FOR_PARALLEL
 	for (int z = 0; z < settings.size; z++) {
@@ -251,7 +250,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 				if (wantRivers) {
 					temp1 = sin((settings.offset[0] + x) * ((twoPi * (double)settings.numRivers) / (double)settings.size) +
 								river * settings.riverMeander +
-								(((1.0 - settings.riverPhase) * twoPi) + (1.5 * glm::pi<double>()))) *
+								(((1.0 - settings.riverPhase) * twoPi) + (1.5 * math::piD))) *
 								(0.5 + settings.riverWidth) +
 							(0.5 - settings.riverWidth);
 					if (temp1 > 1.0) {
@@ -317,7 +316,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			double temp3 = (nx * 0.5 + ny * 0.25 - nz) / sqrt(0.5 * 0.5 + 0.25 * 0.25 + 1.0 * 1.0);
 			temp3 *= 1.2;
 			// Clip to volume height; never wrap via uint8 storage.
-			tempBuffer.heights[k] = glm::clamp((int)samp[0], 0, settings.height);
+			tempBuffer.heights[k] = math::clamp((int)samp[0], 0, settings.height);
 			tempBuffer.buf[k].a = 255;
 			tempBuffer.buf[k].r = (uint8_t)core_min(core_max(gr * temp3, 0), 255 - maxa);
 			tempBuffer.buf[k].g = (uint8_t)core_min(core_max(gg * temp3, 0), 255 - maxa);
@@ -331,8 +330,8 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 	tempBuffer.clearShadow();
 	if (settings.shadow) {
 		Log::debug("Applying shadows");
-		const int shadowStrength = glm::clamp(settings.shadowFactor, 0, 255);
-		const int VSHL = glm::findMSB(settings.size);
+		const int shadowStrength = math::clamp(settings.shadowFactor, 0, 255);
+		const int VSHL = math::findMSB(settings.size);
 		for (int z = 0; z < settings.size; z++) {
 			for (int x = 0; x < settings.size; x++) {
 				const int k = z * settings.size + x;
@@ -387,7 +386,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 		voxel::RawVolume::Sampler sampler(*volume);
 		for (int vz = start; vz < end; ++vz) {
 			for (int vx = 0; vx < settings.size; ++vx, ++heightmap, ++heights) {
-				const int maxsy = glm::clamp(*heights, 0, settings.height);
+				const int maxsy = math::clamp(*heights, 0, settings.height);
 				if (maxsy < 0) {
 					continue;
 				}
@@ -403,7 +402,7 @@ voxel::RawVolume *genland(GenlandSettings &settings) {
 			}
 		}
 	});
-	// volume->translate(glm::ivec3(settings.offset[0], 0, settings.offset[1]));
+	// volume->translate(math::Vec3i(settings.offset[0], 0, settings.offset[1]));
 	return volume;
 }
 

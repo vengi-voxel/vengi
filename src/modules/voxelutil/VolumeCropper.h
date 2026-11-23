@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 class RawVolume;
@@ -16,8 +16,8 @@ namespace voxelutil {
 /**
  * @brief Creates a cropped volume by cutting off parts without voxels
  */
-[[nodiscard]] voxel::RawVolume *cropVolume(const voxel::RawVolume *volume, const glm::ivec3 &mins,
-										   const glm::ivec3 &maxs);
+[[nodiscard]] voxel::RawVolume *cropVolume(const voxel::RawVolume *volume, const math::Vec3i &mins,
+										   const math::Vec3i &maxs);
 
 /**
  * @brief Creates a cropped volume by cutting off parts without voxels
@@ -28,7 +28,7 @@ namespace voxelutil {
  * @brief Computes the tight axis-aligned bounds of non-air voxels in @p volume.
  * @return @c false if the volume contains no solid voxels.
  */
-[[nodiscard]] CORE_NO_SANITIZE_ADDRESS bool computeSolidBounds(const voxel::RawVolume *volume, glm::ivec3 &mins,
-															   glm::ivec3 &maxs);
+[[nodiscard]] CORE_NO_SANITIZE_ADDRESS bool computeSolidBounds(const voxel::RawVolume *volume, math::Vec3i &mins,
+															   math::Vec3i &maxs);
 
 } // namespace voxelutil

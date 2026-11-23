@@ -6,13 +6,14 @@
 #include "Authoring.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxedit-util/SceneManager.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
 static constexpr int MaxAxisVoxels = 512;
 
 static bool axisTooLarge(const voxel::Region &region) {
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 	return dim.x > MaxAxisVoxels || dim.y > MaxAxisVoxels || dim.z > MaxAxisVoxels;
 }
 
@@ -67,23 +68,23 @@ bool ResizeVolumeTool::execute(const json::Json &id, const json::Json &args, Too
 		if (!any) {
 			return ctx.result(id, "Nothing to fit - the model has no voxels", true);
 		}
-		const glm::ivec3 lo = fitted.getLowerCorner() - glm::ivec3(padding);
-		const glm::ivec3 hi = fitted.getUpperCorner() + glm::ivec3(padding);
+		const math::Vec3i lo = fitted.getLowerCorner() - math::Vec3i(padding);
+		const math::Vec3i hi = fitted.getUpperCorner() + math::Vec3i(padding);
 		target = voxel::Region(lo, hi);
 	} else if (args.contains("region")) {
 		if (!parseRegionArg(args.get("region"), target, error)) {
 			return ctx.result(id, error, true);
 		}
 	} else if (args.contains("size")) {
-		glm::ivec3 count(0);
+		math::Vec3i count(0);
 		if (!parseCell(args.get("size"), count, "size", error)) {
 			return ctx.result(id, error, true);
 		}
 		if (count.x < 1 || count.y < 1 || count.z < 1) {
 			return ctx.result(id, "size components must be >= 1", true);
 		}
-		const glm::ivec3 mins = oldRegion.getLowerCorner();
-		target = voxel::Region(mins, mins + count - glm::ivec3(1));
+		const math::Vec3i mins = oldRegion.getLowerCorner();
+		target = voxel::Region(mins, mins + count - math::Vec3i(1));
 	} else {
 		return ctx.result(id, "Pass size, region, or fit", true);
 	}

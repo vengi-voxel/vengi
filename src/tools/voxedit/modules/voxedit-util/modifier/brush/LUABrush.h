@@ -12,6 +12,7 @@
 #include "io/Stream.h"
 #include "noise/Noise.h"
 #include "voxelgenerator/LUAApi.h"
+#include "math/Mat4f.h"
 
 namespace voxedit {
 
@@ -110,7 +111,7 @@ public:
 	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
 	bool hasHandle(const BrushContext &ctx) const;
 	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
-	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &deltaMatrix,
 						 uint32_t operation) override;
 
 	/**

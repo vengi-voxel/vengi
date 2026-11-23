@@ -16,6 +16,10 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Voxel.h"
+#include "math/Quatf.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -35,13 +39,13 @@ namespace voxelformat {
 
 static const int TDStringLength = 4096;
 
-static bool readTransform(io::ReadStream &s, glm::vec3 &pos, glm::quat &rot) {
+static bool readTransform(io::ReadStream &s, math::Vec3f &pos, math::Quatf &rot) {
 	wrapBool(io::readVec3(s, pos))
 	wrapBool(io::readQuat(s, rot))
 	return true;
 }
 
-static void setTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &pos, const glm::quat &quat) {
+static void setTransform(scenegraph::SceneGraphNode &node, const math::Vec3f &pos, const math::Quatf &quat) {
 	// Teardown uses Y-up coordinate system (gravity = (0, -10, 0)), same as vengi.
 	// No coordinate system conversion is needed.
 	scenegraph::SceneGraphTransform transform;
@@ -209,14 +213,14 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		wrapBool(s.readString(TDStringLength, value, true))
 	}
 
-	glm::vec3 shadowVolume;
+	math::Vec3f shadowVolume;
 	wrapBool(io::readVec3(s, shadowVolume))
 
-	glm::vec3 gravity;
+	math::Vec3f gravity;
 	wrapBool(io::readVec3(s, gravity))
 
-	glm::vec3 spawnPos;
-	glm::quat spawnRot;
+	math::Vec3f spawnPos;
+	math::Quatf spawnRot;
 	wrapBool(readTransform(s, spawnPos, spawnRot))
 
 	uint32_t worldBody;
@@ -235,7 +239,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float brightness;
 	wrap(s.readFloat(brightness))
 
-	glm::vec4 color;
+	math::Vec4f color;
 	wrapBool(io::readVec4(s, color))
 
 	float saturation;
@@ -255,8 +259,8 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	}
 
 	for (uint32_t i = 0; i < playerCount; ++i) {
-		glm::vec3 playerPos;
-		glm::quat playerRot;
+		math::Vec3f playerPos;
+		math::Quatf playerRot;
 		wrapBool(readTransform(s, playerPos, playerRot))
 
 		float pitch;
@@ -265,13 +269,13 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		float yaw;
 		wrap(s.readFloat(yaw))
 
-		glm::quat orientation;
+		math::Quatf orientation;
 		wrapBool(io::readQuat(s, orientation))
 
-		glm::quat cameraOrientation;
+		math::Quatf cameraOrientation;
 		wrapBool(io::readQuat(s, cameraOrientation))
 
-		glm::vec3 velocity;
+		math::Vec3f velocity;
 		wrapBool(io::readVec3(s, velocity))
 
 		float health;
@@ -350,7 +354,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	wrapBool(s.readString(TDStringLength, skyBoxTexture, true))
 	Log::debug("Environment texture: %s", skyBoxTexture.c_str());
 
-	glm::vec4 skyBoxTint;
+	math::Vec4f skyBoxTint;
 	wrapBool(io::readVec4(s, skyBoxTint))
 
 	float skyBoxBrightness;
@@ -359,13 +363,13 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float skyBoxRot;
 	wrap(s.readFloat(skyBoxRot))
 
-	glm::vec3 sunTintBrightness;
+	math::Vec3f sunTintBrightness;
 	wrapBool(io::readVec3(s, sunTintBrightness))
 
-	glm::vec4 sunColorTint;
+	math::Vec4f sunColorTint;
 	wrapBool(io::readColor(s, sunColorTint))
 
-	glm::vec3 sunDir;
+	math::Vec3f sunDir;
 	wrapBool(io::readVec3(s, sunDir))
 
 	float sunBrightness;
@@ -385,7 +389,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 
 	/*bool autoDir =*/s.readBool();
 
-	glm::vec4 skyBoxConstant;
+	math::Vec4f skyBoxConstant;
 	wrapBool(io::readVec4(s, skyBoxConstant))
 
 	float skyBoxAmbient;
@@ -394,7 +398,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float skyBoxAmbientExponent;
 	wrap(s.readFloat(skyBoxAmbientExponent))
 
-	glm::vec2 envExposure;
+	math::Vec2f envExposure;
 	wrapBool(io::readVec2(s, envExposure))
 
 	float envBrightness;
@@ -403,10 +407,10 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	uint8_t type;
 	wrap(s.readUInt8(type))
 
-	glm::vec4 fogColor;
+	math::Vec4f fogColor;
 	wrapBool(io::readColor(s, fogColor))
 
-	glm::vec4 fogParameters;
+	math::Vec4f fogParameters;
 	wrapBool(io::readVec4(s, fogParameters))
 
 	float fogHeightOffset;
@@ -438,15 +442,15 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	float envFogScale;
 	wrap(s.readFloat(envFogScale))
 
-	glm::vec4 snowDir;
+	math::Vec4f snowDir;
 	wrapBool(io::readVec4(s, snowDir))
 
-	glm::vec2 snowAmount;
+	math::Vec2f snowAmount;
 	wrapBool(io::readVec2(s, snowAmount))
 
 	/* bool snowOnGround = */ s.readBool();
 
-	glm::vec3 envWind;
+	math::Vec3f envWind;
 	wrapBool(io::readVec3(s, envWind))
 
 	float envWaterHurt;
@@ -459,7 +463,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	uint32_t vertexCount;
 	wrap(s.readUInt32(vertexCount))
 	for (uint32_t i = 0; i < vertexCount; ++i) {
-		glm::vec2 vertex;
+		math::Vec2f vertex;
 		wrapBool(io::readVec2(s, vertex))
 	}
 	float boundaryPadLeft;
@@ -476,9 +480,9 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	uint32_t projectileCount;
 	wrap(s.readUInt32(projectileCount))
 	for (uint32_t i = 0; i < projectileCount; ++i) {
-		glm::vec3 origin;
+		math::Vec3f origin;
 		wrapBool(io::readVec3(s, origin))
-		glm::vec3 direction;
+		math::Vec3f direction;
 		wrapBool(io::readVec3(s, direction))
 		float dist;
 		wrap(s.readFloat(dist))
@@ -498,7 +502,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 	for (uint32_t i = 0; i < fireCount; ++i) {
 		uint32_t fireShape;
 		wrap(s.readUInt32(fireShape))
-		glm::vec3 firePos;
+		math::Vec3f firePos;
 		wrapBool(io::readVec3(s, firePos))
 		float fireMaxTime;
 		wrap(s.readFloat(fireMaxTime))
@@ -522,7 +526,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 		for (int j = 0; j < 256; j++) {
 			uint8_t mattype;
 			wrap(s.readUInt8(mattype))
-			glm::vec4 rgba;
+			math::Vec4f rgba;
 			wrapBool(io::readVec4(s, rgba))
 			palette.setColor(j, color::getRGBA(rgba));
 			float reflectivity;
@@ -553,8 +557,8 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 					flux = 2;
 				else if (emissive > 0.1f)
 					flux = 1;
-				float emission = emissive / glm::pow(10.0f, (float)(flux - 1));
-				material.emit = glm::clamp(emission, 0.0f, 1.0f);
+				float emission = emissive / math::pow(10.0f, (float)(flux - 1));
+				material.emit = math::clamp(emission, 0.0f, 1.0f);
 				material.flux = (float)flux;
 				material.setValue(palette::MaterialProperty::MaterialEmit, material.emit);
 				material.setValue(palette::MaterialProperty::MaterialFlux, material.flux);
@@ -562,7 +566,7 @@ bool TeardownFormat::loadGroups(const core::String &filename, const io::ArchiveP
 				// Metal material
 				material.type = palette::MaterialType::Metal;
 				material.roughness = 1.0f - shinyness;
-				material.specular = glm::clamp(1.0f + reflectivity, 0.0f, 1.0f);
+				material.specular = math::clamp(1.0f + reflectivity, 0.0f, 1.0f);
 				material.metal = metalness;
 				material.setValue(palette::MaterialProperty::MaterialRoughness, material.roughness);
 				material.setValue(palette::MaterialProperty::MaterialSpecular, material.specular);
@@ -613,8 +617,8 @@ bool TeardownFormat::readToolInfo(io::ReadStream &s) {
 	wrapBool(s.readString(TDStringLength, id, true))
 	core::String name;
 	wrapBool(s.readString(TDStringLength, name, true))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
 	float ammoPickupAmount;
 	wrap(s.readFloat(ammoPickupAmount))
@@ -628,12 +632,12 @@ bool TeardownFormat::readToolInfo(io::ReadStream &s) {
 bool TeardownFormat::readBody(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
-	glm::vec3 velocity;
+	math::Vec3f velocity;
 	wrapBool(io::readVec3(s, velocity))
-	glm::vec3 angularVelocity;
+	math::Vec3f angularVelocity;
 	wrapBool(io::readVec3(s, angularVelocity))
 	/*bool dynamic =*/s.readBool();
 	uint8_t active;
@@ -717,8 +721,8 @@ bool TeardownFormat::readVoxels(scenegraph::SceneGraphNode &node, io::ReadStream
 bool TeardownFormat::readShape(scenegraph::SceneGraph &sceneGraph, io::ReadStream &s, int parent, int &nodeId) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
 	uint16_t shapeFlags;
 	wrap(s.readUInt16(shapeFlags))
@@ -739,7 +743,7 @@ bool TeardownFormat::readShape(scenegraph::SceneGraph &sceneGraph, io::ReadStrea
 	wrap(s.readFloat(texWeight))
 	float blendWeight;
 	wrap(s.readFloat(blendWeight))
-	glm::vec3 textureOffset;
+	math::Vec3f textureOffset;
 	wrapBool(io::readVec3(s, textureOffset))
 
 	float emissiveScale;
@@ -767,10 +771,10 @@ bool TeardownFormat::readLight(io::ReadStream &s) {
 	/*bool enabled =*/s.readBool();
 	uint8_t type;
 	wrap(s.readUInt8(type))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
-	glm::vec4 color;
+	math::Vec4f color;
 	wrapBool(io::readColor(s, color))
 	float scale;
 	wrap(s.readFloat(scale))
@@ -794,7 +798,7 @@ bool TeardownFormat::readLight(io::ReadStream &s) {
 	wrap(s.readFloat(areaSize1))
 	float capsule;
 	wrap(s.readFloat(capsule))
-	glm::vec3 position;
+	math::Vec3f position;
 	wrapBool(io::readVec3(s, position))
 	uint8_t index;
 	wrap(s.readUInt8(index))
@@ -814,8 +818,8 @@ bool TeardownFormat::readLight(io::ReadStream &s) {
 bool TeardownFormat::readLocation(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
 	return true;
 }
@@ -823,8 +827,8 @@ bool TeardownFormat::readLocation(io::ReadStream &s) {
 bool TeardownFormat::readWater(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
 	float depth;
 	wrap(s.readFloat(depth))
@@ -836,12 +840,12 @@ bool TeardownFormat::readWater(io::ReadStream &s) {
 	wrap(s.readFloat(motion))
 	float foam;
 	wrap(s.readFloat(foam))
-	glm::vec4 color;
+	math::Vec4f color;
 	wrapBool(io::readColor(s, color))
 
 	float ringheight;
 	wrap(s.readFloat(ringheight))
-	glm::vec4 pbr;
+	math::Vec4f pbr;
 	wrapBool(io::readVec4(s, pbr))
 	float drag;
 	wrap(s.readFloat(drag))
@@ -859,9 +863,9 @@ bool TeardownFormat::readWater(io::ReadStream &s) {
 
 	uint32_t splashTexture;
 	wrap(s.readUInt32(splashTexture))
-	glm::vec4 splashColorA;
+	math::Vec4f splashColorA;
 	wrapBool(io::readColor(s, splashColorA))
-	glm::vec4 splashColorB;
+	math::Vec4f splashColorB;
 	wrapBool(io::readColor(s, splashColorB))
 	float splashAlphaA;
 	wrap(s.readFloat(splashAlphaA))
@@ -902,14 +906,14 @@ bool TeardownFormat::readWater(io::ReadStream &s) {
 	uint32_t vertexCount;
 	wrap(s.readUInt32(vertexCount))
 	for (uint32_t i = 0; i < vertexCount; ++i) {
-		glm::vec2 v;
+		math::Vec2f v;
 		wrapBool(io::readVec2(s, v))
 	}
 	return true;
 }
 
 bool TeardownFormat::readRope(io::ReadStream &s) {
-	glm::vec4 color;
+	math::Vec4f color;
 	wrapBool(io::readColor(s, color))
 	float zero;
 	wrap(s.readFloat(zero))
@@ -926,9 +930,9 @@ bool TeardownFormat::readRope(io::ReadStream &s) {
 	uint32_t segments;
 	wrap(s.readUInt32(segments))
 	for (uint32_t i = 0; i < segments; ++i) {
-		glm::vec3 from;
+		math::Vec3f from;
 		wrapBool(io::readVec3(s, from))
-		glm::vec3 to;
+		math::Vec3f to;
 		wrapBool(io::readVec3(s, to))
 	}
 	return true;
@@ -940,13 +944,13 @@ bool TeardownFormat::readJoint(io::ReadStream &s) {
 	uint32_t shape0, shape1;
 	wrap(s.readUInt32(shape0))
 	wrap(s.readUInt32(shape1))
-	glm::vec3 pos0;
+	math::Vec3f pos0;
 	wrapBool(io::readVec3(s, pos0))
-	glm::vec3 pos1;
+	math::Vec3f pos1;
 	wrapBool(io::readVec3(s, pos1))
-	glm::vec3 axis0;
+	math::Vec3f axis0;
 	wrapBool(io::readVec3(s, axis0))
-	glm::vec3 axis1;
+	math::Vec3f axis1;
 	wrapBool(io::readVec3(s, axis1))
 	/*bool connected =*/s.readBool();
 	/*bool collide =*/s.readBool();
@@ -954,9 +958,9 @@ bool TeardownFormat::readJoint(io::ReadStream &s) {
 	wrap(s.readFloat(rotstrength))
 	float rotspring;
 	wrap(s.readFloat(rotspring))
-	glm::quat hingeRot;
+	math::Quatf hingeRot;
 	wrapBool(io::readQuat(s, hingeRot))
-	glm::vec2 limits;
+	math::Vec2f limits;
 	wrapBool(io::readVec2(s, limits))
 	float maxvel;
 	wrap(s.readFloat(maxvel))
@@ -981,11 +985,11 @@ bool TeardownFormat::readVehicle(io::ReadStream &s) {
 	wrap(s.readUInt16(flags))
 	uint32_t body;
 	wrap(s.readUInt32(body))
-	glm::vec3 pos1;
-	glm::quat rot1;
+	math::Vec3f pos1;
+	math::Quatf rot1;
 	wrapBool(readTransform(s, pos1, rot1))
-	glm::vec3 pos2;
-	glm::quat rot2;
+	math::Vec3f pos2;
+	math::Quatf rot2;
 	wrapBool(readTransform(s, pos2, rot2))
 	uint32_t wheelCount;
 	wrap(s.readUInt32(wheelCount))
@@ -1022,15 +1026,15 @@ bool TeardownFormat::readVehicle(io::ReadStream &s) {
 	wrapBool(s.readString(TDStringLength, sndPath, true))
 	float sndVol;
 	wrap(s.readFloat(sndVol))
-	glm::vec3 camera;
+	math::Vec3f camera;
 	wrapBool(io::readVec3(s, camera))
-	glm::vec3 player;
+	math::Vec3f player;
 	wrapBool(io::readVec3(s, player))
-	glm::vec3 driver_seat;
+	math::Vec3f driver_seat;
 	wrapBool(io::readVec3(s, driver_seat))
-	glm::vec3 exit;
+	math::Vec3f exit;
 	wrapBool(io::readVec3(s, exit))
-	glm::vec3 propeller;
+	math::Vec3f propeller;
 	wrapBool(io::readVec3(s, propeller))
 	float difflock;
 	wrap(s.readFloat(difflock))
@@ -1050,8 +1054,8 @@ bool TeardownFormat::readVehicle(io::ReadStream &s) {
 	uint32_t exhaustCount;
 	wrap(s.readUInt32(exhaustCount))
 	for (uint32_t i = 0; i < exhaustCount; ++i) {
-		glm::vec3 pos;
-		glm::quat rot;
+		math::Vec3f pos;
+		math::Quatf rot;
 		wrapBool(readTransform(s, pos, rot))
 		float str;
 		wrap(s.readFloat(str))
@@ -1061,7 +1065,7 @@ bool TeardownFormat::readVehicle(io::ReadStream &s) {
 	for (uint32_t i = 0; i < vitalCount; ++i) {
 		uint32_t b;
 		wrap(s.readUInt32(b))
-		glm::vec3 pos;
+		math::Vec3f pos;
 		wrapBool(io::readVec3(s, pos))
 		float r;
 		wrap(s.readFloat(r))
@@ -1073,8 +1077,8 @@ bool TeardownFormat::readVehicle(io::ReadStream &s) {
 	for (uint32_t i = 0; i < animCount; ++i) {
 		core::String name;
 		wrapBool(s.readString(TDStringLength, name, true))
-		glm::vec3 pos;
-		glm::quat rot;
+		math::Vec3f pos;
+		math::Quatf rot;
 		wrapBool(readTransform(s, pos, rot))
 		uint32_t h;
 		wrap(s.readUInt32(h))
@@ -1118,17 +1122,17 @@ bool TeardownFormat::readWheel(io::ReadStream &s) {
 		wrap(s.readUInt32(v))
 	}
 	/* bool onGround = */ s.readBool();
-	glm::vec3 pos1;
-	glm::quat rot1;
+	math::Vec3f pos1;
+	math::Quatf rot1;
 	wrapBool(readTransform(s, pos1, rot1))
-	glm::vec3 pos2;
-	glm::quat rot2;
+	math::Vec3f pos2;
+	math::Quatf rot2;
 	wrapBool(readTransform(s, pos2, rot2))
 	float steer;
 	wrap(s.readFloat(steer))
 	float drive;
 	wrap(s.readFloat(drive))
-	glm::vec2 travel;
+	math::Vec2f travel;
 	wrapBool(io::readVec2(s, travel))
 	float radius;
 	wrap(s.readFloat(radius))
@@ -1146,10 +1150,10 @@ bool TeardownFormat::readWheel(io::ReadStream &s) {
 bool TeardownFormat::readScreen(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
-	glm::vec2 size;
+	math::Vec2f size;
 	wrapBool(io::readVec2(s, size))
 	float bulge;
 	wrap(s.readFloat(bulge))
@@ -1176,21 +1180,21 @@ bool TeardownFormat::readScreen(io::ReadStream &s) {
 bool TeardownFormat::readTrigger(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
 	uint32_t type;
 	wrap(s.readUInt32(type))
 	float sphere;
 	wrap(s.readFloat(sphere))
-	glm::vec3 boxSize;
+	math::Vec3f boxSize;
 	wrapBool(io::readVec3(s, boxSize))
 	float polygon;
 	wrap(s.readFloat(polygon))
 	uint32_t vertexCount;
 	wrap(s.readUInt32(vertexCount))
 	for (uint32_t i = 0; i < vertexCount; ++i) {
-		glm::vec2 v;
+		math::Vec2f v;
 		wrapBool(io::readVec2(s, v))
 	}
 	core::String path;
@@ -1347,8 +1351,8 @@ bool TeardownFormat::readLuaTable(io::ReadStream &s) {
 bool TeardownFormat::readAnimator(io::ReadStream &s) {
 	uint16_t flags;
 	wrap(s.readUInt16(flags))
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
 	core::String path;
 	wrapBool(s.readString(TDStringLength, path, true))
@@ -1367,12 +1371,12 @@ bool TeardownFormat::readAnimator(io::ReadStream &s) {
 
 	wrap(s.readUInt32(entries))
 	for (uint32_t i = 0; i < entries; ++i) {
-		glm::vec3 p;
-		glm::quat r;
+		math::Vec3f p;
+		math::Quatf r;
 		wrapBool(readTransform(s, p, r))
-		glm::vec2 v1;
+		math::Vec2f v1;
 		wrapBool(io::readVec2(s, v1))
-		glm::vec2 v2;
+		math::Vec2f v2;
 		wrapBool(io::readVec2(s, v2))
 		float f1, f2;
 		wrap(s.readFloat(f1))
@@ -1385,9 +1389,9 @@ bool TeardownFormat::readAnimator(io::ReadStream &s) {
 		wrap(s.readUInt32(i2))
 		wrap(s.readUInt32(i3))
 		wrap(s.readUInt32(i4))
-		glm::quat q;
+		math::Quatf q;
 		wrapBool(io::readQuat(s, q))
-		glm::vec3 v3_1, v3_2, v3_3, v3_4;
+		math::Vec3f v3_1, v3_2, v3_3, v3_4;
 		wrapBool(io::readVec3(s, v3_1))
 		wrapBool(io::readVec3(s, v3_2))
 		wrapBool(io::readVec3(s, v3_3))
@@ -1401,8 +1405,8 @@ bool TeardownFormat::readAnimator(io::ReadStream &s) {
 	for (uint32_t i = 0; i < entries; ++i) {
 		uint32_t i1;
 		wrap(s.readUInt32(i1))
-		glm::vec3 p2;
-		glm::quat r2;
+		math::Vec3f p2;
+		math::Quatf r2;
 		wrapBool(readTransform(s, p2, r2))
 		float f1, f2;
 		wrap(s.readFloat(f1))
@@ -1499,8 +1503,8 @@ bool TeardownFormat::readAnimator(io::ReadStream &s) {
 	for (uint32_t i = 0; i < entries; ++i) {
 		core::String str;
 		wrapBool(s.readString(TDStringLength, str, true))
-		glm::vec3 p3;
-		glm::quat r3;
+		math::Vec3f p3;
+		math::Quatf r3;
 		wrapBool(readTransform(s, p3, r3))
 	}
 	return true;
@@ -1514,13 +1518,13 @@ bool TeardownFormat::readRig(io::ReadStream &s) {
 	for (uint32_t i = 0; i < locCount; ++i) {
 		core::String tags;
 		wrapBool(s.readString(TDStringLength, tags, true))
-		glm::vec3 pos;
-		glm::quat rot;
+		math::Vec3f pos;
+		math::Quatf rot;
 		wrapBool(readTransform(s, pos, rot))
 		s.readBool();
 	}
-	glm::vec3 pos;
-	glm::quat rot;
+	math::Vec3f pos;
+	math::Quatf rot;
 	wrapBool(readTransform(s, pos, rot))
 	s.readBool();
 	uint32_t vehicle;

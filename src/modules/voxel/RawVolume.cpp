@@ -14,7 +14,7 @@
 #include "core/concurrent/Atomic.h"
 #include "private/SparseRawVolumeStorage.h"
 #include <SDL3/SDL_stdinc.h>
-#include <glm/common.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -187,10 +187,10 @@ bool RawVolume::hasFlags(const Region &region, uint8_t flags) const {
 	}
 
 	if (_storage != nullptr) {
-		const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getLowerY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getLowerZ() - (int64_t)_region.getLowerZ()));
-		const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getUpperY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getUpperZ() - (int64_t)_region.getLowerZ()));
 		return _storage->hasFlags(lMins, lMaxs, flags);
@@ -248,12 +248,12 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 		return Region::InvalidRegion;
 	}
 	if (_storage != nullptr) {
-		glm::ivec3 lMins;
-		glm::ivec3 lMaxs;
+		math::Vec3i lMins;
+		math::Vec3i lMaxs;
 		if (!_storage->regionForFlag(flag, lMins, lMaxs)) {
 			return Region::InvalidRegion;
 		}
-		const glm::ivec3 &lower = _region.getLowerCorner();
+		const math::Vec3i &lower = _region.getLowerCorner();
 		return Region((int32_t)((int64_t)lower.x + lMins.x), (int32_t)((int64_t)lower.y + lMins.y),
 					  (int32_t)((int64_t)lower.z + lMins.z), (int32_t)((int64_t)lower.x + lMaxs.x),
 					  (int32_t)((int64_t)lower.y + lMaxs.y), (int32_t)((int64_t)lower.z + lMaxs.z));
@@ -355,7 +355,7 @@ Region RawVolume::regionForFlag(uint8_t flag) const {
 		}
 	}
 
-	const glm::ivec3 &lower = _region.getLowerCorner();
+	const math::Vec3i &lower = _region.getLowerCorner();
 	return Region((int32_t)((int64_t)lower.x + minX), (int32_t)((int64_t)lower.y + minY),
 				  (int32_t)((int64_t)lower.z + minZ), (int32_t)((int64_t)lower.x + maxX),
 				  (int32_t)((int64_t)lower.y + maxY), (int32_t)((int64_t)lower.z + maxZ));
@@ -370,10 +370,10 @@ void RawVolume::removeFlags(const Region &region, uint8_t flags) {
 		r.cropTo(_region);
 	}
 	if (_storage != nullptr) {
-		const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getLowerY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getLowerZ() - (int64_t)_region.getLowerZ()));
-		const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getUpperY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getUpperZ() - (int64_t)_region.getLowerZ()));
 		_storage->modifyFlags(lMins, lMaxs, flags, 1);
@@ -430,10 +430,10 @@ void RawVolume::toggleFlags(const Region &region, uint8_t flags) {
 		r.cropTo(_region);
 	}
 	if (_storage != nullptr) {
-		const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getLowerY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getLowerZ() - (int64_t)_region.getLowerZ()));
-		const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getUpperY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getUpperZ() - (int64_t)_region.getLowerZ()));
 		_storage->modifyFlags(lMins, lMaxs, flags, 2);
@@ -488,10 +488,10 @@ void RawVolume::setFlags(const Region &region, uint8_t flags) {
 		r.cropTo(_region);
 	}
 	if (_storage != nullptr) {
-		const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getLowerY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getLowerZ() - (int64_t)_region.getLowerZ()));
-		const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getUpperY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getUpperZ() - (int64_t)_region.getLowerZ()));
 		_storage->modifyFlags(lMins, lMaxs, flags, 0);
@@ -549,10 +549,10 @@ bool RawVolume::isEmpty(const Region &region) const {
 	}
 
 	if (_storage != nullptr) {
-		const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getLowerY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getLowerZ() - (int64_t)_region.getLowerZ()));
-		const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)r.getUpperY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)r.getUpperZ() - (int64_t)_region.getLowerZ()));
 		return _storage->isEmpty(lMins, lMaxs);
@@ -603,20 +603,20 @@ bool RawVolume::equals(const RawVolume &other) const {
 	return other._storage->equalsDense(_data);
 }
 
-bool RawVolume::computeSolidBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const {
+bool RawVolume::computeSolidBounds(math::Vec3i &mins, math::Vec3i &maxs) const {
 	if (!valid()) {
 		return false;
 	}
 	if (_storage != nullptr) {
-		glm::ivec3 lMins;
-		glm::ivec3 lMaxs;
+		math::Vec3i lMins;
+		math::Vec3i lMaxs;
 		if (!_storage->computeSolidBounds(lMins, lMaxs)) {
 			return false;
 		}
-		const glm::ivec3 &lower = _region.getLowerCorner();
-		mins = glm::ivec3((int32_t)((int64_t)lower.x + lMins.x), (int32_t)((int64_t)lower.y + lMins.y),
+		const math::Vec3i &lower = _region.getLowerCorner();
+		mins = math::Vec3i((int32_t)((int64_t)lower.x + lMins.x), (int32_t)((int64_t)lower.y + lMins.y),
 						  (int32_t)((int64_t)lower.z + lMins.z));
-		maxs = glm::ivec3((int32_t)((int64_t)lower.x + lMaxs.x), (int32_t)((int64_t)lower.y + lMaxs.y),
+		maxs = math::Vec3i((int32_t)((int64_t)lower.x + lMaxs.x), (int32_t)((int64_t)lower.y + lMaxs.y),
 						  (int32_t)((int64_t)lower.z + lMaxs.z));
 		return true;
 	}
@@ -663,10 +663,10 @@ bool RawVolume::computeSolidBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 	if (maxZ < 0) {
 		return false;
 	}
-	const glm::ivec3 &lower = _region.getLowerCorner();
-	mins = glm::ivec3((int32_t)((int64_t)lower.x + minX), (int32_t)((int64_t)lower.y + minY),
+	const math::Vec3i &lower = _region.getLowerCorner();
+	mins = math::Vec3i((int32_t)((int64_t)lower.x + minX), (int32_t)((int64_t)lower.y + minY),
 					  (int32_t)((int64_t)lower.z + minZ));
-	maxs = glm::ivec3((int32_t)((int64_t)lower.x + maxX), (int32_t)((int64_t)lower.y + maxY),
+	maxs = math::Vec3i((int32_t)((int64_t)lower.x + maxX), (int32_t)((int64_t)lower.y + maxY),
 					  (int32_t)((int64_t)lower.z + maxZ));
 	return true;
 }
@@ -675,9 +675,9 @@ void RawVolume::readRegion(const Region &region, Voxel *target) const {
 	if (target == nullptr || !region.isValid() || !valid()) {
 		return;
 	}
-	const glm::ivec3 sz = region.getDimensionsInVoxels();
+	const math::Vec3i sz = region.getDimensionsInVoxels();
 	if (_region.containsRegion(region)) {
-		const glm::ivec3 lMins((int)((int64_t)region.getLowerX() - (int64_t)_region.getLowerX()),
+		const math::Vec3i lMins((int)((int64_t)region.getLowerX() - (int64_t)_region.getLowerX()),
 							   (int)((int64_t)region.getLowerY() - (int64_t)_region.getLowerY()),
 							   (int)((int64_t)region.getLowerZ() - (int64_t)_region.getLowerZ()));
 		if (_storage != nullptr) {
@@ -706,7 +706,7 @@ void RawVolume::readRegion(const Region &region, Voxel *target) const {
 	if (!overlap.cropTo(_region)) {
 		return;
 	}
-	const glm::ivec3 oSz = overlap.getDimensionsInVoxels();
+	const math::Vec3i oSz = overlap.getDimensionsInVoxels();
 	const int64_t offX = (int64_t)overlap.getLowerX() - (int64_t)region.getLowerX();
 	const int64_t offY = (int64_t)overlap.getLowerY() - (int64_t)region.getLowerY();
 	const int64_t offZ = (int64_t)overlap.getLowerZ() - (int64_t)region.getLowerZ();
@@ -799,8 +799,8 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 			for (int z = start; z < end; ++z) {
 				const int64_t tgtXZBase = tgtXStart + (tgtZStart + z) * tgtZStride;
 				for (int y = 0; y < yCount; ++y) {
-					src._storage->readRegion(glm::ivec3((int)srcXStart, (int)(srcYStart + y), (int)(srcZStart + z)),
-											 glm::ivec3(lineLength, 1, 1), rowBuf.data());
+					src._storage->readRegion(math::Vec3i((int)srcXStart, (int)(srcYStart + y), (int)(srcZStart + z)),
+											 math::Vec3i(lineLength, 1, 1), rowBuf.data());
 					core_memcpy((void *)&_data[tgtXZBase + (tgtYStart + y) * tgtW], (const void *)rowBuf.data(),
 								(size_t)lineLength * sizeof(Voxel));
 				}
@@ -850,10 +850,10 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 
 					// An absent source and destination brick already hold the same value.
 					if (sameAirDefault &&
-						!src._storage->hasOccupiedVoxelsInBox(glm::ivec3(sx0, sy0, sz0),
-															  glm::ivec3(sx0 + sxLen - 1, sy0 + syLen - 1, sz0 + szLen - 1)) &&
-						!_storage->hasOccupiedVoxelsInBox(glm::ivec3(localX, localY, localZ),
-														  glm::ivec3(localX + SparseChunk::BrickSide - 1,
+						!src._storage->hasOccupiedVoxelsInBox(math::Vec3i(sx0, sy0, sz0),
+															  math::Vec3i(sx0 + sxLen - 1, sy0 + syLen - 1, sz0 + szLen - 1)) &&
+						!_storage->hasOccupiedVoxelsInBox(math::Vec3i(localX, localY, localZ),
+														  math::Vec3i(localX + SparseChunk::BrickSide - 1,
 																	 localY + SparseChunk::BrickSide - 1,
 																	 localZ + SparseChunk::BrickSide - 1))) {
 						continue;
@@ -898,7 +898,7 @@ bool RawVolume::copyInto(const RawVolume &src, const voxel::Region &region) {
 							}
 						}
 					} else {
-						src._storage->readRegion(glm::ivec3(sx0, sy0, sz0), glm::ivec3(sxLen, syLen, szLen), srcTile);
+						src._storage->readRegion(math::Vec3i(sx0, sy0, sz0), math::Vec3i(sxLen, syLen, szLen), srcTile);
 						for (int dz = 0; dz < szLen; ++dz) {
 							const int lz = (cz0 - localZ) + dz;
 							for (int dy = 0; dy < syLen; ++dy) {
@@ -975,7 +975,7 @@ RawVolume::~RawVolume() {
 	_storage = nullptr;
 }
 
-bool RawVolume::move(const glm::ivec3 &shift) {
+bool RawVolume::move(const math::Vec3i &shift) {
 	if (!valid()) {
 		return false;
 	}
@@ -986,7 +986,7 @@ bool RawVolume::move(const glm::ivec3 &shift) {
 	const int h = height();
 	const int d = depth();
 
-	glm::ivec3 t = shift;
+	math::Vec3i t = shift;
 	t.x = (t.x % w + w) % w;
 	t.y = (t.y % h + h) % h;
 	t.z = (t.z % d + d) % d;
@@ -1071,10 +1071,10 @@ bool RawVolume::hasOccupiedVoxelsInRegion(const Region &region) const {
 	}
 	Region r = region;
 	r.cropTo(_region);
-	const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
+	const math::Vec3i lMins((int)((int64_t)r.getLowerX() - (int64_t)_region.getLowerX()),
 						   (int)((int64_t)r.getLowerY() - (int64_t)_region.getLowerY()),
 						   (int)((int64_t)r.getLowerZ() - (int64_t)_region.getLowerZ()));
-	const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
+	const math::Vec3i lMaxs((int)((int64_t)r.getUpperX() - (int64_t)_region.getLowerX()),
 						   (int)((int64_t)r.getUpperY() - (int64_t)_region.getLowerY()),
 						   (int)((int64_t)r.getUpperZ() - (int64_t)_region.getLowerZ()));
 	return _storage->hasOccupiedVoxelsInBox(lMins, lMaxs);
@@ -1084,14 +1084,14 @@ const SparseChunk::Brick *RawVolume::sparseBrickAt(int localX, int localY, int l
 	return _storage != nullptr ? _storage->brickAt(localX, localY, localZ) : nullptr;
 }
 
-bool RawVolume::readSparseBrickTile(const glm::ivec3 &localBrickOrigin, Voxel (&outTile)[SparseChunk::BrickVoxels],
+bool RawVolume::readSparseBrickTile(const math::Vec3i &localBrickOrigin, Voxel (&outTile)[SparseChunk::BrickVoxels],
 									uint64_t (&outMask)[SparseChunk::BrickMaskWords], int &outCount) const {
 	core_assert(_storage != nullptr);
 	return _storage->readBrickTile(localBrickOrigin.x, localBrickOrigin.y, localBrickOrigin.z, outTile, outMask,
 								   outCount);
 }
 
-size_t RawVolume::sparseChunkIndex(const glm::ivec3 &localBrickOrigin) const {
+size_t RawVolume::sparseChunkIndex(const math::Vec3i &localBrickOrigin) const {
 	core_assert(_storage != nullptr);
 	return _storage->chunkIndexAt(localBrickOrigin.x, localBrickOrigin.y, localBrickOrigin.z);
 }
@@ -1125,18 +1125,18 @@ void RawVolume::collectOccupiedSparseBricks(const Region &region, core::DynamicA
 	}
 	Region r = region;
 	r.cropTo(_region);
-	const glm::ivec3 &lower = _region.getLowerCorner();
-	const glm::ivec3 lMins((int)((int64_t)r.getLowerX() - (int64_t)lower.x),
+	const math::Vec3i &lower = _region.getLowerCorner();
+	const math::Vec3i lMins((int)((int64_t)r.getLowerX() - (int64_t)lower.x),
 						   (int)((int64_t)r.getLowerY() - (int64_t)lower.y),
 						   (int)((int64_t)r.getLowerZ() - (int64_t)lower.z));
-	const glm::ivec3 lMaxs((int)((int64_t)r.getUpperX() - (int64_t)lower.x),
+	const math::Vec3i lMaxs((int)((int64_t)r.getUpperX() - (int64_t)lower.x),
 						   (int)((int64_t)r.getUpperY() - (int64_t)lower.y),
 						   (int)((int64_t)r.getUpperZ() - (int64_t)lower.z));
 	core::DynamicArray<SparseRawVolumeStorage::OccupiedBrickInfo> infos;
 	_storage->collectOccupiedBricks(lMins, lMaxs, infos);
 	out.reserve(infos.size());
 	for (const SparseRawVolumeStorage::OccupiedBrickInfo &info : infos) {
-		out.push_back(OccupiedBrickSpan{glm::ivec3((int32_t)((int64_t)lower.x + info.localOrigin.x),
+		out.push_back(OccupiedBrickSpan{math::Vec3i((int32_t)((int64_t)lower.x + info.localOrigin.x),
 												   (int32_t)((int64_t)lower.y + info.localOrigin.y),
 												   (int32_t)((int64_t)lower.z + info.localOrigin.z)),
 										info.brick});
@@ -1155,7 +1155,7 @@ const core::AtomicInt *RawVolume::sparseGenerationPtr() const {
 
 void RawVolume::sampleSparseAt(int lx, int ly, int lz, const SparseChunk *&outChunk,
 							   const SparseChunk::Brick *&outBrick, const Voxel *&outRow, bool &outWholeBrick,
-							   glm::ivec3 &outLower, glm::ivec3 &outUpper, Voxel &outFallbackVoxel,
+							   math::Vec3i &outLower, math::Vec3i &outUpper, Voxel &outFallbackVoxel,
 							   uint32_t &outGen) const {
 	core_assert(_storage != nullptr);
 	_storage->sampleAt(lx, ly, lz, outChunk, outBrick, outRow, outWholeBrick, outLower, outUpper, outFallbackVoxel,
@@ -1185,8 +1185,8 @@ void RawVolume::fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, 
 	const int dAxis = math::getIndexForAxis(axis);
 	const int aAxis = math::getIndexForAxis(math::getPlaneAxisA(axis));
 	const int bAxis = math::getIndexForAxis(math::getPlaneAxisB(axis));
-	glm::ivec3 lo(0);
-	glm::ivec3 hi(0);
+	math::Vec3i lo(0);
+	math::Vec3i hi(0);
 	lo[dAxis] = hi[dAxis] = slice;
 	lo[aAxis] = minA;
 	hi[aAxis] = maxA;
@@ -1215,11 +1215,11 @@ void RawVolume::fillBehindPlane(math::Axis axis, int slice, int minA, int maxA, 
 	}
 
 	if (_storage != nullptr) {
-		const glm::ivec3 &lower = _region.getLowerCorner();
+		const math::Vec3i &lower = _region.getLowerCorner();
 		// Fast path: if default is air and the entire behind-region is empty, skip immediately
 		if (isAir(_storage->defaultVoxel().getMaterial())) {
-			glm::ivec3 behindLo = lo;
-			glm::ivec3 behindHi = hi;
+			math::Vec3i behindLo = lo;
+			math::Vec3i behindHi = hi;
 			behindLo[dAxis] = lower[dAxis];
 			behindHi[dAxis] = slice - 1;
 			if (isEmpty(Region(behindLo, behindHi))) {
@@ -1308,7 +1308,7 @@ void RawVolume::setBorderValue(const Voxel &voxel) {
 }
 
 bool RawVolume::setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel) {
-	return setVoxel(glm::ivec3(x, y, z), voxel);
+	return setVoxel(math::Vec3i(x, y, z), voxel);
 }
 
 bool RawVolume::setVoxel(int64_t idx, const Voxel &voxel) {
@@ -1330,7 +1330,7 @@ bool RawVolume::setVoxel(int64_t idx, const Voxel &voxel) {
 	return _storage->setVoxel(lx, ly, lz, voxel);
 }
 
-bool RawVolume::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
+bool RawVolume::setVoxel(const math::Vec3i &pos, const Voxel &voxel) {
 	const bool inside = _region.containsPoint(pos);
 	core_assert_msg(inside, "Position is outside valid region %i:%i:%i (mins[%i:%i:%i], maxs[%i:%i:%i])", pos.x, pos.y,
 					pos.z, _region.getLowerX(), _region.getLowerY(), _region.getLowerZ(), _region.getUpperX(),

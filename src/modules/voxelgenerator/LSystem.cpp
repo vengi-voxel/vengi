@@ -8,6 +8,8 @@
 #include "core/Tokenizer.h"
 #include "core/Log.h"
 #include "palette/Palette.h"
+#include "math/Vec3i.h"
+#include "math/Scalar.h"
 
 namespace voxelgenerator {
 namespace lsystem {
@@ -37,10 +39,10 @@ void prepareState(const LSystemConfig &conf, LSystemState &state) {
 	state.length = conf.length;
 	state.width = conf.width;
 	state.widthIncrement = conf.widthIncrement;
-	state.leafRadius = glm::max(0.0f, conf.leafRadius);
-	state.lengthScale = glm::max(0.0f, conf.lengthScale);
-	state.minLength = glm::max(0.0f, conf.minLength);
-	state.angleVariation = glm::max(0.0f, conf.angleVariation);
+	state.leafRadius = math::max(0.0f, conf.leafRadius);
+	state.lengthScale = math::max(0.0f, conf.lengthScale);
+	state.minLength = math::max(0.0f, conf.minLength);
+	state.angleVariation = math::max(0.0f, conf.angleVariation);
 	state.seed = conf.seed;
 	state.leafColor = conf.leafColor;
 
@@ -93,7 +95,7 @@ struct BoundsCollector {
 		return true;
 	}
 
-	bool setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
+	bool setVoxel(const math::Vec3i &pos, const voxel::Voxel &voxel) {
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}
 };
@@ -107,10 +109,10 @@ void scaleSizeParams(LSystemConfig &conf, float scale) {
 }
 
 void placeOnFloorCentered(LSystemConfig &conf, const voxel::Region &bounds, const voxel::Region &target) {
-	const glm::ivec3 bmin = bounds.getLowerCorner();
-	const glm::ivec3 bdim = bounds.getDimensionsInVoxels();
-	const glm::ivec3 tmin = target.getLowerCorner();
-	const glm::ivec3 tdim = target.getDimensionsInVoxels();
+	const math::Vec3i bmin = bounds.getLowerCorner();
+	const math::Vec3i bdim = bounds.getDimensionsInVoxels();
+	const math::Vec3i tmin = target.getLowerCorner();
+	const math::Vec3i tdim = target.getDimensionsInVoxels();
 	conf.position.x += tmin.x + (tdim.x - bdim.x) / 2 - bmin.x;
 	conf.position.y += tmin.y - bmin.y;
 	conf.position.z += tmin.z + (tdim.z - bdim.z) / 2 - bmin.z;
@@ -128,10 +130,10 @@ voxel::Region evaluateRegion(const LSystemConfig &conf, const voxel::Voxel &voxe
 	return collector.region;
 }
 
-static float fitScale(const glm::ivec3 &src, const glm::ivec3 &dst) {
-	float scale = (float)dst.x / (float)glm::max(1, src.x);
-	scale = glm::min(scale, (float)dst.y / (float)glm::max(1, src.y));
-	scale = glm::min(scale, (float)dst.z / (float)glm::max(1, src.z));
+static float fitScale(const math::Vec3i &src, const math::Vec3i &dst) {
+	float scale = (float)dst.x / (float)math::max(1, src.x);
+	scale = math::min(scale, (float)dst.y / (float)math::max(1, src.y));
+	scale = math::min(scale, (float)dst.z / (float)math::max(1, src.z));
 	return scale;
 }
 
@@ -141,13 +143,13 @@ bool adoptToRegion(LSystemConfig &conf, const voxel::Region &target) {
 	}
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	LSystemConfig probe = conf;
-	probe.position = glm::ivec3(0);
+	probe.position = math::Vec3i(0);
 	voxel::Region bounds = evaluateRegion(probe, voxel);
 	if (!bounds.isValid()) {
 		return false;
 	}
 
-	const glm::ivec3 tgtSize = target.getDimensionsInVoxels();
+	const math::Vec3i tgtSize = target.getDimensionsInVoxels();
 	float scale = fitScale(bounds.getDimensionsInVoxels(), tgtSize);
 	if (scale <= 0.0f) {
 		return false;
@@ -155,23 +157,23 @@ bool adoptToRegion(LSystemConfig &conf, const voxel::Region &target) {
 
 	for (int attempt = 0; attempt < 6; ++attempt) {
 		LSystemConfig scaled = conf;
-		scaled.position = glm::ivec3(0);
+		scaled.position = math::Vec3i(0);
 		scaleSizeParams(scaled, scale);
 		bounds = evaluateRegion(scaled, voxel);
 		if (!bounds.isValid()) {
 			return false;
 		}
-		const glm::ivec3 size = bounds.getDimensionsInVoxels();
+		const math::Vec3i size = bounds.getDimensionsInVoxels();
 		if (size.x <= tgtSize.x && size.y <= tgtSize.y && size.z <= tgtSize.z) {
 			conf = scaled;
 			placeOnFloorCentered(conf, bounds, target);
 			return true;
 		}
-		scale *= glm::min(0.95f, fitScale(size, tgtSize));
+		scale *= math::min(0.95f, fitScale(size, tgtSize));
 	}
 
 	scaleSizeParams(conf, scale);
-	conf.position = glm::ivec3(0);
+	conf.position = math::Vec3i(0);
 	bounds = evaluateRegion(conf, voxel);
 	if (!bounds.isValid()) {
 		return false;
@@ -189,7 +191,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	simpleTree.name = "Simple Tree";
 	simpleTree.description = "A basic tree structure that branches in 4 directions";
 	simpleTree.config.axiom = "X";
-	simpleTree.config.angle = glm::radians(25.0f);
+	simpleTree.config.angle = math::radians(25.0f);
 	simpleTree.config.length = 2.0f;
 	simpleTree.config.width = 2.0f;
 	simpleTree.config.widthIncrement = 0.4f;
@@ -206,7 +208,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	bush.name = "Dense Bush";
 	bush.description = "Short, wide, and bushy with many leaves";
 	bush.config.axiom = "F";
-	bush.config.angle = glm::radians(22.5f);
+	bush.config.angle = math::radians(22.5f);
 	bush.config.length = 1.5f;
 	bush.config.width = 1.0f;
 	bush.config.widthIncrement = 0.2f;
@@ -222,7 +224,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	alienSpiral.name = "Alien Spiral";
 	alienSpiral.description = "Asymmetric growth using only two rotation axes";
 	alienSpiral.config.axiom = "X";
-	alienSpiral.config.angle = glm::radians(30.0f);
+	alienSpiral.config.angle = math::radians(30.0f);
 	alienSpiral.config.length = 2.0f;
 	alienSpiral.config.width = 1.5f;
 	alienSpiral.config.widthIncrement = 0.1f;
@@ -239,7 +241,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	geometric.name = "Geometric";
 	geometric.description = "90-degree branching for a synthetic look";
 	geometric.config.axiom = "F";
-	geometric.config.angle = glm::radians(90.0f);
+	geometric.config.angle = math::radians(90.0f);
 	geometric.config.length = 3.0f;
 	geometric.config.width = 1.0f;
 	geometric.config.widthIncrement = 0.0f;
@@ -254,7 +256,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	sympodialTree.name = "Sympodial Tree";
 	sympodialTree.description = "A tree growth pattern where the main stem terminates and growth continues from lateral branches.";
 	sympodialTree.config.axiom = "F";
-	sympodialTree.config.angle = glm::radians(25.0f);
+	sympodialTree.config.angle = math::radians(25.0f);
 	sympodialTree.config.length = 2.0f;
 	sympodialTree.config.width = 2.0f;
 	sympodialTree.config.widthIncrement = 0.3f;
@@ -269,7 +271,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	monopodialTree.name = "Monopodial Tree";
 	monopodialTree.description = "A tree growth pattern with a single main trunk that continues to grow.";
 	monopodialTree.config.axiom = "X";
-	monopodialTree.config.angle = glm::radians(20.0f);
+	monopodialTree.config.angle = math::radians(20.0f);
 	monopodialTree.config.length = 2.0f;
 	monopodialTree.config.width = 2.0f;
 	monopodialTree.config.widthIncrement = 0.3f;
@@ -285,7 +287,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	tallShrub.name = "Tall Shrub";
 	tallShrub.description = "A tall, thin shrub with upward reaching branches.";
 	tallShrub.config.axiom = "F";
-	tallShrub.config.angle = glm::radians(22.5f);
+	tallShrub.config.angle = math::radians(22.5f);
 	tallShrub.config.length = 1.5f;
 	tallShrub.config.width = 1.0f;
 	tallShrub.config.widthIncrement = 0.2f;
@@ -300,7 +302,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	broadCanopy.name = "Broad Canopy";
 	broadCanopy.description = "A tree with a wide, spreading canopy.";
 	broadCanopy.config.axiom = "X";
-	broadCanopy.config.angle = glm::radians(30.0f);
+	broadCanopy.config.angle = math::radians(30.0f);
 	broadCanopy.config.length = 2.0f;
 	broadCanopy.config.width = 2.0f;
 	broadCanopy.config.widthIncrement = 0.3f;
@@ -316,7 +318,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	coniferLike.name = "Conifer-like";
 	coniferLike.description = "A cone-shaped tree resembling a conifer.";
 	coniferLike.config.axiom = "X";
-	coniferLike.config.angle = glm::radians(35.0f);
+	coniferLike.config.angle = math::radians(35.0f);
 	coniferLike.config.length = 2.0f;
 	coniferLike.config.width = 2.0f;
 	coniferLike.config.widthIncrement = 0.3f;
@@ -332,7 +334,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	twistedWeed.name = "Twisted Weed";
 	twistedWeed.description = "A chaotic, twisting weed-like structure.";
 	twistedWeed.config.axiom = "F";
-	twistedWeed.config.angle = glm::radians(35.0f);
+	twistedWeed.config.angle = math::radians(35.0f);
 	twistedWeed.config.length = 1.5f;
 	twistedWeed.config.width = 1.0f;
 	twistedWeed.config.widthIncrement = 0.1f;
@@ -347,7 +349,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	fern3D.name = "Fern 3D";
 	fern3D.description = "A fern-like plant with fronds.";
 	fern3D.config.axiom = "X";
-	fern3D.config.angle = glm::radians(25.0f);
+	fern3D.config.angle = math::radians(25.0f);
 	fern3D.config.length = 1.5f;
 	fern3D.config.width = 1.0f;
 	fern3D.config.widthIncrement = 0.1f;
@@ -363,7 +365,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	coralReef.name = "Coral Reef";
 	coralReef.description = "A branching structure resembling coral.";
 	coralReef.config.axiom = "F";
-	coralReef.config.angle = glm::radians(30.0f);
+	coralReef.config.angle = math::radians(30.0f);
 	coralReef.config.length = 1.5f;
 	coralReef.config.width = 1.5f;
 	coralReef.config.widthIncrement = 0.1f;
@@ -378,7 +380,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	alienFlower.name = "Alien Flower";
 	alienFlower.description = "An exotic, alien-looking flower structure.";
 	alienFlower.config.axiom = "X";
-	alienFlower.config.angle = glm::radians(45.0f);
+	alienFlower.config.angle = math::radians(45.0f);
 	alienFlower.config.length = 2.0f;
 	alienFlower.config.width = 1.0f;
 	alienFlower.config.widthIncrement = 0.1f;
@@ -394,7 +396,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	bamboo.name = "Bamboo";
 	bamboo.description = "Tall, straight segments with leaves at joints.";
 	bamboo.config.axiom = "F";
-	bamboo.config.angle = glm::radians(15.0f);
+	bamboo.config.angle = math::radians(15.0f);
 	bamboo.config.length = 3.0f;
 	bamboo.config.width = 1.5f;
 	bamboo.config.widthIncrement = 0.0f;
@@ -409,7 +411,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	pineTree.name = "Pine Tree";
 	pineTree.description = "A tall, conical evergreen tree.";
 	pineTree.config.axiom = "X";
-	pineTree.config.angle = glm::radians(35.0f);
+	pineTree.config.angle = math::radians(35.0f);
 	pineTree.config.length = 2.0f;
 	pineTree.config.width = 2.0f;
 	pineTree.config.widthIncrement = 0.2f;
@@ -425,8 +427,8 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	naturalTree.name = "Natural Branching Tree";
 	naturalTree.description = "Irregular branching with shorter outer segments and tapered limbs.";
 	naturalTree.config.axiom = "X";
-	naturalTree.config.angle = glm::radians(28.0f);
-	naturalTree.config.angleVariation = glm::radians(5.0f);
+	naturalTree.config.angle = math::radians(28.0f);
+	naturalTree.config.angleVariation = math::radians(5.0f);
 	naturalTree.config.length = 5.0f;
 	naturalTree.config.lengthScale = 0.85f;
 	naturalTree.config.minLength = 1.0f;
@@ -444,7 +446,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	dragonCurve.name = "Dragon Curve";
 	dragonCurve.description = "The famous fractal dragon curve.";
 	dragonCurve.config.axiom = "FX";
-	dragonCurve.config.angle = glm::radians(90.0f);
+	dragonCurve.config.angle = math::radians(90.0f);
 	dragonCurve.config.length = 2.0f;
 	dragonCurve.config.width = 1.0f;
 	dragonCurve.config.widthIncrement = 0.0f;
@@ -461,7 +463,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	sierpinski.name = "Sierpinski Triangle";
 	sierpinski.description = "Sierpinski arrowhead curve.";
 	sierpinski.config.axiom = "XF";
-	sierpinski.config.angle = glm::radians(60.0f);
+	sierpinski.config.angle = math::radians(60.0f);
 	sierpinski.config.length = 2.0f;
 	sierpinski.config.width = 1.0f;
 	sierpinski.config.widthIncrement = 0.0f;
@@ -478,7 +480,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	hilbert.name = "Hilbert Curve";
 	hilbert.description = "Space-filling Hilbert curve.";
 	hilbert.config.axiom = "X";
-	hilbert.config.angle = glm::radians(90.0f);
+	hilbert.config.angle = math::radians(90.0f);
 	hilbert.config.length = 2.0f;
 	hilbert.config.width = 1.0f;
 	hilbert.config.widthIncrement = 0.0f;
@@ -494,7 +496,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	weepingWillow.name = "Weeping Willow";
 	weepingWillow.description = "A tree with drooping branches.";
 	weepingWillow.config.axiom = "F";
-	weepingWillow.config.angle = glm::radians(25.0f);
+	weepingWillow.config.angle = math::radians(25.0f);
 	weepingWillow.config.length = 2.0f;
 	weepingWillow.config.width = 2.0f;
 	weepingWillow.config.widthIncrement = 0.2f;
@@ -509,7 +511,7 @@ core::DynamicArray<LSystemTemplate> defaultTemplates() {
 	cactus.name = "Cactus";
 	cactus.description = "A simple cactus structure.";
 	cactus.config.axiom = "F";
-	cactus.config.angle = glm::radians(25.0f);
+	cactus.config.angle = math::radians(25.0f);
 	cactus.config.length = 3.0f;
 	cactus.config.width = 3.0f;
 	cactus.config.widthIncrement = -0.2f;

@@ -6,7 +6,6 @@
 #include "scenegraph/SceneGraph.h"
 #include "core/Log.h"
 #include "core/UUID.h"
-#include <glm/ext/scalar_constants.hpp>
 #include "core/collection/DynamicArray.h"
 #include "math/Easing.h"
 #include "voxel/RawVolume.h"
@@ -14,6 +13,11 @@
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeSplitter.h"
 #include "core/collection/DynamicMap.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
@@ -353,7 +357,7 @@ void copySceneGraphResolveReferences(SceneGraph &target, const SceneGraph &sourc
 
 static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeId, int destParentId,
 						   core::DynamicMap<int, core::Buffer<int>> &splitMap,
-						   bool crop, bool createEmpty, bool skipHidden, const glm::ivec3 &maxSize) {
+						   bool crop, bool createEmpty, bool skipHidden, const math::Vec3i &maxSize) {
 	if (!src.hasNode(srcNodeId)) {
 		return;
 	}
@@ -369,7 +373,7 @@ static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeI
 			return;
 		}
 
-		if (glm::all(glm::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
+		if (math::all(math::lessThanEqual(region.getDimensionsInVoxels(), maxSize))) {
 			SceneGraphNode newNode(SceneGraphNodeType::Model);
 			copyNode(node, newNode, true);
 			int newNodeId = addToGraph(dest, core::move(newNode), destParentId);
@@ -458,7 +462,7 @@ static void splitVolumes_r(const SceneGraph &src, SceneGraph &dest, int srcNodeI
 }
 
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph, bool crop,
-				  bool createEmpty, bool skipHidden, const glm::ivec3 &maxSize) {
+				  bool createEmpty, bool skipHidden, const math::Vec3i &maxSize) {
 	core_assert(&srcSceneGraph != &destSceneGraph);
 	destSceneGraph.reserve(srcSceneGraph.size());
 	core::DynamicMap<int, core::Buffer<int>> splitMap;
@@ -512,9 +516,9 @@ bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::Scene
 	return !destSceneGraph.empty();
 }
 
-static glm::vec3 interpolateVec3(InterpolationType interpolationType, double current, double start, double end,
-								const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec3 &p3) {
-	return glm::vec3((float)interpolate(interpolationType, current, start, end, p0.x, p1.x, p2.x, p3.x),
+static math::Vec3f interpolateVec3(InterpolationType interpolationType, double current, double start, double end,
+								const math::Vec3f &p0, const math::Vec3f &p1, const math::Vec3f &p2, const math::Vec3f &p3) {
+	return math::Vec3f((float)interpolate(interpolationType, current, start, end, p0.x, p1.x, p2.x, p3.x),
 					 (float)interpolate(interpolationType, current, start, end, p0.y, p1.y, p2.y, p3.y),
 					 (float)interpolate(interpolationType, current, start, end, p0.z, p1.z, p2.z, p3.z));
 }
@@ -542,7 +546,7 @@ SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameI
 	const double start = (double)a.frameIdx;
 	const double endTime = (double)b.frameIdx;
 	const double time = interpolate(a.interpolation, current, start, endTime);
-	const float t = glm::clamp((float)((time - start) / (endTime - start)), 0.0f, 1.0f);
+	const float t = math::clamp((float)((time - start) / (endTime - start)), 0.0f, 1.0f);
 	SceneGraphTransform result;
 	result.setLocalTranslation(interpolateVec3(a.interpolation, current, start, endTime,
 											   p0.transform().localTranslation(), a.transform().localTranslation(),
@@ -550,33 +554,33 @@ SceneGraphTransform sampleLocalTransform(const SceneGraphKeyFrames &keys, FrameI
 	result.setLocalScale(interpolateVec3(a.interpolation, current, start, endTime, p0.transform().localScale(),
 										 a.transform().localScale(), b.transform().localScale(),
 										 p3.transform().localScale()));
-	glm::quat orientation = b.transform().localOrientation();
-	const glm::quat startOrient = a.transform().localOrientation();
+	math::Quatf orientation = b.transform().localOrientation();
+	const math::Quatf startOrient = a.transform().localOrientation();
 	if (a.longRotation) {
 		// Opposite hemispheres select the long arc. slerp would undo this sign choice.
-		if (glm::dot(startOrient, orientation) > 0.0f) {
+		if (math::dot(startOrient, orientation) > 0.0f) {
 			orientation = -orientation;
 		}
-		const float dot = glm::clamp(glm::dot(startOrient, orientation), -1.0f, 1.0f);
-		const glm::quat tangent = orientation - startOrient * dot;
-		const float length = glm::length(tangent);
+		const float dot = math::clamp(math::dot(startOrient, orientation), -1.0f, 1.0f);
+		const math::Quatf tangent = orientation - startOrient * dot;
+		const float length = math::length(tangent);
 		if (length > 0.000001f) {
-			const float angle = glm::acos(dot) * t;
-			orientation = startOrient * glm::cos(angle) + tangent * (glm::sin(angle) / length);
+			const float angle = math::acos(dot) * t;
+			orientation = startOrient * math::cos(angle) + tangent * (math::sin(angle) / length);
 		} else {
 			// Identical orientations cannot specify the axis of a full turn.
-			orientation = glm::slerp(startOrient, b.transform().localOrientation(), t);
+			orientation = math::slerp(startOrient, b.transform().localOrientation(), t);
 		}
 	} else {
-		orientation = glm::slerp(startOrient, orientation, t);
+		orientation = math::slerp(startOrient, orientation, t);
 	}
-	result.setLocalOrientation(glm::normalize(orientation));
+	result.setLocalOrientation(math::normalize(orientation));
 	return result;
 }
 
 double interpolate(InterpolationType interpolationType, double current, double start, double end, double p0, double p1,
 				   double p2, double p3) {
-	if (glm::abs(start - end) < glm::epsilon<double>()) {
+	if (math::abs(start - end) < math::epsilond) {
 		return p1;
 	}
 	if (interpolationType == InterpolationType::CatmullRom) {
@@ -624,8 +628,8 @@ double interpolate(InterpolationType interpolationType, double current, double s
 	return interpolate(interpolationType, current, start, end, start, start, end, end);
 }
 
-void offsetNodeWorldTransforms(SceneGraphNode &node, const glm::vec3 &delta) {
-	const glm::mat4 offset = glm::translate(glm::mat4(1.0f), delta);
+void offsetNodeWorldTransforms(SceneGraphNode &node, const math::Vec3f &delta) {
+	const math::Mat4f offset = math::translate(math::Mat4f(1.0f), delta);
 	SceneGraphKeyFramesMap &keyFramesMap = node.allKeyFrames();
 	for (const auto &entry : keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : entry->value) {

@@ -8,7 +8,8 @@
 #include "color/RGBA.h"
 #include "core/String.h"
 #include "image/ImageFwd.h"
-#include <glm/fwd.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 namespace palette {
 
@@ -30,27 +31,27 @@ private:
 	color::RGBA _normals[NormalPaletteMaxNormals]{};
 
 public:
-	static color::RGBA toRGBA(const glm::vec3 &normal);
-	static glm::vec3 toVec3(const color::RGBA &rgba);
+	static color::RGBA toRGBA(const math::Vec3f &normal);
+	static math::Vec3f toVec3(const color::RGBA &rgba);
 	static const char *getDefaultPaletteName();
 
-	int getClosestMatch(const glm::vec3 &normal) const;
+	int getClosestMatch(const math::Vec3f &normal) const;
 	/** Map palette indices to target indices. The buffer needs NormalPaletteMaxNormals entries.
 	 * Missing entries map to NO_NORMAL_REMAP_FOUND. Identical entries at the same index retain their index.
 	 */
 	void createRemap(const NormalPalette &target, uint8_t *remap) const;
 	void loadNormalMap(const color::RGBA *normals, int size);
-	void loadNormalMap(const glm::vec3 *normals, int size);
+	void loadNormalMap(const math::Vec3f *normals, int size);
 
 	const color::RGBA &normal(uint8_t index) const;
-	glm::vec3 normal3f(uint8_t index) const;
+	math::Vec3f normal3f(uint8_t index) const;
 	void setNormal(uint8_t index, const color::RGBA &normal);
-	void setNormal(uint8_t index, const glm::vec3 &normal);
+	void setNormal(uint8_t index, const math::Vec3f &normal);
 
 	/**
 	 * @note The target buffer must at least have space for 256 entries
 	 */
-	void toVec4f(glm::highp_vec4 *vec4f) const;
+	void toVec4f(math::Vec4f *vec4f) const;
 
 	const core::String &name() const;
 	void setName(const core::String &name);

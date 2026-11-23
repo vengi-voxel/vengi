@@ -62,11 +62,11 @@
 
 #include "FontLucide.h"
 
-#include <glm/mat4x4.hpp>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_version.h>
 #include "dearimgui/backends/imgui_impl_sdl3.h"
+#include "math/Vec4f.h"
 
 namespace ui {
 
@@ -532,7 +532,7 @@ void IMGUIApp::setColorTheme() {
 	style.FontScaleDpi = mainScale;
 }
 
-const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
+const math::Vec4f &IMGUIApp::color(style::StyleColor color) {
 	const int style = _uistyle->intVal();
 	switch (color) {
 	case style::ColorAxisX:
@@ -563,7 +563,7 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 	case style::ColorReferenceNode:
 		return color::LightGreen();
 	case style::ColorHighlightArea: {
-		static const glm::vec4 c = color::alpha(color::Green(), 0.2f);
+		static const math::Vec4f c = color::alpha(color::Green(), 0.2f);
 		return c;
 	}
 	case style::ColorUVEditor: {
@@ -604,15 +604,15 @@ const glm::vec4 &IMGUIApp::color(style::StyleColor color) {
 		}
 		return color::Yellow();
 	case style::ColorBrushGizmoPolygon: {
-		static const glm::vec4 c(1.0f, 1.0f, 1.0f, 0.1f);
+		static const math::Vec4f c(1.0f, 1.0f, 1.0f, 0.1f);
 		return c;
 	}
 	case style::ColorAddNodeFaceHighlight: {
-		static const glm::vec4 c = color::alpha(color::Green(), 0.45f);
+		static const math::Vec4f c = color::alpha(color::Green(), 0.45f);
 		return c;
 	}
 	case style::ColorAddNodePreview: {
-		static const glm::vec4 c = color::alpha(color::LightGreen(), 0.85f);
+		static const math::Vec4f c = color::alpha(color::LightGreen(), 0.85f);
 		return c;
 	}
 	}
@@ -911,7 +911,7 @@ app::AppState IMGUIApp::onRunning() {
 	}
 
 	const float dpiScale = ImGui::GetStyle().FontScaleDpi;
-	if (_languageVar->isDirty() || _uiFontSize->isDirty() || glm::abs(dpiScale - _dpiScale) > 0.001f) {
+	if (_languageVar->isDirty() || _uiFontSize->isDirty() || math::abs(dpiScale - _dpiScale) > 0.001f) {
 		loadFonts();
 		_dpiScale = dpiScale;
 		_uiFontSize->markClean();

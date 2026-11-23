@@ -17,6 +17,8 @@
 #include "voxelutil/VolumeRescaler.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 class VoxelUtilBenchmark : public app::AbstractBenchmark {
 protected:
@@ -37,7 +39,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, Move)(benchmark::State &state) {
 		voxel::RawVolume out(voxel::Region{-20, 20});
 		voxel::RawVolume in(voxel::Region{-20, 20});
 		in.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-		voxelutil::moveVolume(&out, &in, glm::ivec3(1, 1, 1));
+		voxelutil::moveVolume(&out, &in, math::Vec3i(1, 1, 1));
 	}
 }
 
@@ -92,7 +94,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleVolumeDouble)(benchmark::State &stat
 	in.setVoxel(5, 3, 2, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
 	in.setVoxel(5, 3, 3, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
 	for (auto _ : state) {
-		voxel::RawVolume *scaled = voxelutil::scaleVolume(&in, glm::vec3(2.0f));
+		voxel::RawVolume *scaled = voxelutil::scaleVolume(&in, math::Vec3f(2.0f));
 		if (scaled != nullptr) {
 			benchmark::DoNotOptimize(scaled);
 			delete scaled;
@@ -110,7 +112,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleVolumeHalf)(benchmark::State &state)
 	in.setVoxel(10, 10, 10, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
 	in.setVoxel(20, 20, 20, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
 	for (auto _ : state) {
-		voxel::RawVolume *scaled = voxelutil::scaleVolume(&in, glm::vec3(0.5f));
+		voxel::RawVolume *scaled = voxelutil::scaleVolume(&in, math::Vec3f(0.5f));
 		if (scaled != nullptr) {
 			benchmark::DoNotOptimize(scaled);
 			delete scaled;
@@ -127,7 +129,7 @@ BENCHMARK_DEFINE_F(VoxelUtilBenchmark, ScaleVolumeFractional)(benchmark::State &
 	in.setVoxel(5, 5, 5, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
 	in.setVoxel(10, 10, 10, voxel::createVoxel(voxel::VoxelType::Generic, color++ % palette::PaletteMaxColors));
 	for (auto _ : state) {
-		voxel::RawVolume *scaled = voxelutil::scaleVolume(&in, glm::vec3(1.5f));
+		voxel::RawVolume *scaled = voxelutil::scaleVolume(&in, math::Vec3f(1.5f));
 		if (scaled != nullptr) {
 			benchmark::DoNotOptimize(scaled);
 			delete scaled;

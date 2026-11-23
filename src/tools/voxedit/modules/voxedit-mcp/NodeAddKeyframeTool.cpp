@@ -8,6 +8,7 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -148,9 +149,9 @@ bool NodeAddKeyframeTool::execute(const json::Json &id, const json::Json &args, 
 	const bool hasScale = args.contains("scale");
 
 	if (hasTranslation || hasRotation || hasScale) {
-		glm::vec3 translation(0.0f);
-		glm::vec3 angles(0.0f);
-		glm::vec3 scale(1.0f);
+		math::Vec3f translation(0.0f);
+		math::Vec3f angles(0.0f);
+		math::Vec3f scale(1.0f);
 
 		if (hasTranslation && args.get("translation").isObject()) {
 			const auto &t = args.get("translation");

@@ -7,7 +7,8 @@
 #include "voxedit-util/modifier/brush/SnapshotHelper.h"
 #include "core/collection/Buffer.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -26,10 +27,10 @@ enum class TransformMode : uint8_t {
 struct TransformParameters {
 	TransformMode mode = TransformMode::Move;
 	voxel::VoxelSampling sampling = voxel::VoxelSampling::Nearest;
-	glm::ivec3 translation{0};
-	glm::ivec3 shear{0};
-	glm::vec3 scale{1.0f};
-	glm::vec3 rotationDegrees{0.0f};
+	math::Vec3i translation{0};
+	math::Vec3i shear{0};
+	math::Vec3f scale{1.0f};
+	math::Vec3f rotationDegrees{0.0f};
 
 	bool operator==(const TransformParameters &other) const {
 		return mode == other.mode && sampling == other.sampling && translation == other.translation &&
@@ -44,7 +45,7 @@ protected:
 
 	SnapshotHelper _snapshotHelper;
 	// Center of selection (used as pivot for scale/rotate)
-	glm::vec3 _snapshotCenter{0.0f};
+	math::Vec3f _snapshotCenter{0.0f};
 
 	// Cached region for preview (union of snapshot + transformed bounding box)
 	voxel::Region _cachedRegion;
@@ -59,8 +60,8 @@ protected:
 	void applyInverseMapping(ModifierVolumeWrapper &wrapper);
 	voxel::Region computeTransformedRegion() const;
 	voxel::Region computeDestinationRegion() const;
-	glm::ivec3 transformPosition(const glm::ivec3 &pos) const;
-	glm::vec3 inverseTransformPosition(const glm::ivec3 &pos) const;
+	math::Vec3i transformPosition(const math::Vec3i &pos) const;
+	math::Vec3f inverseTransformPosition(const math::Vec3i &pos) const;
 
 public:
 	static constexpr bool requiresSelection = true;

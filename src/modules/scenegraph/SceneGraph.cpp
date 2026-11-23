@@ -22,6 +22,7 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+#include "math/OBB.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
@@ -35,13 +36,10 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include "core/collection/Buffer.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/ext/quaternion_relational.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
 namespace scenegraph {
 
 SceneGraph::MergeResult::MergeResult(voxel::RawVolume *volume, const palette::Palette &_palette,
@@ -457,8 +455,8 @@ math::AABB<float> SceneGraph::calculateGroupAABB(const SceneGraphNode &node, Fra
 	return aabb;
 }
 
-glm::mat4 SceneGraph::worldMatrix(const scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
-	glm::mat4 mat(1.0f);
+math::Mat4f SceneGraph::worldMatrix(const scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
+	math::Mat4f mat(1.0f);
 	if (!applyTransforms) {
 		return mat;
 	}
@@ -493,7 +491,7 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, con
 			if (!voxel::intersects(region, regionAABB)) {
 				continue;
 			}
-			out.emplace_back(volume, glm::mat4(1.0f));
+			out.emplace_back(volume, math::Mat4f(1.0f));
 		}
 		return;
 	}
@@ -512,17 +510,17 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, con
 		cnodes.push_back(&node);
 	}
 
-	const glm::vec3 &queryMins = aabb.mins();
-	const glm::vec3 &queryMaxs = aabb.maxs();
+	const math::Vec3f &queryMins = aabb.mins();
+	const math::Vec3f &queryMaxs = aabb.maxs();
 
 	out.resize(cnodes.size());
 	app::for_parallel(0, (int)cnodes.size(), [&](int begin, int end) {
 		for (int i = begin; i < end; ++i) {
 			const scenegraph::SceneGraphNode &node = *cnodes[i];
 			const voxel::RawVolume *volume = resolveVolume(node);
-			const glm::mat4 &worldMat = worldMatrix(node, frameIdx, true);
-			glm::vec3 transformedMins;
-			glm::vec3 transformedMaxs;
+			const math::Mat4f &worldMat = worldMatrix(node, frameIdx, true);
+			math::Vec3f transformedMins;
+			math::Vec3f transformedMaxs;
 			volume->region().transformArvo(worldMat, transformedMins, transformedMaxs);
 			if (transformedMaxs.x < queryMins.x || transformedMins.x > queryMaxs.x ||
 				transformedMaxs.y < queryMins.y || transformedMins.y > queryMaxs.y ||
@@ -530,7 +528,7 @@ void SceneGraph::getCollisionNodes(CollisionNodes &out, FrameIndex frameIdx, con
 				continue;
 			}
 
-			const glm::mat4 &worldToModel = glm::inverse(worldMat);
+			const math::Mat4f &worldToModel = math::inverse(worldMat);
 			out[i] = CollisionNode(volume, worldToModel);
 		}
 	});
@@ -569,7 +567,7 @@ void SceneGraph::invalidateFrameTransformCache(int nodeId) {
 	}
 }
 
-FrameTransform SceneGraph::composeFrameTransform(const SceneGraphNode &node, const glm::mat4 &parentWorld,
+FrameTransform SceneGraph::composeFrameTransform(const SceneGraphNode &node, const math::Mat4f &parentWorld,
 												 FrameIndex frameIdx) const {
 	// TODO: SCENEGRAPH: solve flipping of child transforms if parent has rotation applied - see
 	// https://github.com/vengi-voxel/vengi/issues/420
@@ -595,7 +593,7 @@ FrameTransform SceneGraph::composeFrameTransform(const SceneGraphNode &node, con
 	return transform;
 }
 
-void SceneGraph::buildFrameTransforms_r(const SceneGraphNode &node, const glm::mat4 &parentWorld,
+void SceneGraph::buildFrameTransforms_r(const SceneGraphNode &node, const math::Mat4f &parentWorld,
 										FrameIndex frameIdx) const {
 	const FrameTransform transform = composeFrameTransform(node, parentWorld, frameIdx);
 	const int id = node.id();
@@ -639,16 +637,16 @@ void SceneGraph::buildFrameTransforms(FrameIndex frameIdx) const {
 				continue;
 			}
 			if (n.keyFrames().empty()) {
-				_frameWorldMatrices[id] = glm::mat4(1.0f);
+				_frameWorldMatrices[id] = math::Mat4f::identity();
 				continue;
 			}
 			const SceneGraphKeyFrame *kf = n.keyFrame(0);
-			_frameWorldMatrices[id] = kf != nullptr ? kf->transform().worldMatrix() : glm::mat4(1.0f);
+			_frameWorldMatrices[id] = kf != nullptr ? kf->transform().worldMatrix() : math::Mat4f::identity();
 		}
 	}
 	if (animated) {
 		const SceneGraphNode &root = node(0);
-		buildFrameTransforms_r(root, glm::mat4(1.0f), frameIdx);
+		buildFrameTransforms_r(root, math::Mat4f(1.0f), frameIdx);
 		_frameWorldMatricesStatic = false;
 	} else {
 		_frameWorldMatricesStatic = true;
@@ -681,7 +679,7 @@ FrameTransform SceneGraph::transformForFrame(const SceneGraphNode &node, FrameIn
 	if (const SceneGraphNode *parent = parentNode(node)) {
 		parentTransform = transformForFrame(*parent, frameIdx);
 	} else {
-		parentTransform.setWorldMatrix(glm::mat4(1.0f));
+		parentTransform.setWorldMatrix(math::Mat4f(1.0f));
 	}
 
 	FrameTransform transform = composeFrameTransform(node, parentTransform.worldMatrix(), frameIdx);
@@ -838,7 +836,7 @@ voxel::Region SceneGraph::sceneRegion(const SceneGraphNode &node, FrameIndex fra
 	} else if (node.isAnyModelNode()) {
 		return toRegion(sceneOBB(node, frameIdx));
 	} else if (node.isPointNode() || node.isCameraNode()) {
-		const glm::ivec3 p(glm::floor(transformForFrame(node, frameIdx).worldTranslation()));
+		const math::Vec3i p(math::floor(transformForFrame(node, frameIdx).worldTranslation()));
 		return voxel::Region(p, p);
 	}
 	return voxel::Region::InvalidRegion;
@@ -1130,7 +1128,7 @@ bool SceneGraph::changeParent(int nodeId, int newParentId, NodeMoveFlag flag) {
 		for (const core::String &animation : animations()) {
 			for (SceneGraphKeyFrame &keyframe : n.keyFrames(animation)) {
 				SceneGraphTransform &transform = keyframe.transform();
-				const glm::mat4 worldMatrix = transform.worldMatrix();
+				const math::Mat4f worldMatrix = transform.worldMatrix();
 				transform.setWorldMatrix(worldMatrix);
 			}
 		}
@@ -1531,7 +1529,7 @@ void SceneGraph::bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume 
 		return;
 	}
 
-	const glm::mat4 &worldMat = transform.worldMatrix();
+	const math::Mat4f &worldMat = transform.worldMatrix();
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(*v, worldMat, node.pivot()));
 	voxelutil::visitVolume(*rotated, func);
 }
@@ -1668,9 +1666,9 @@ void SceneGraph::align(int padding) {
 		SceneGraphNode &n = node(rect.id);
 		SceneGraphTransform transform;
 		n.setTransform(0, transform);
-		n.setPivot(glm::vec3(0.0f));
+		n.setPivot(math::Vec3f(0.0f));
 		n.volume()->translate(-n.region().getLowerCorner());
-		n.volume()->translate(glm::ivec3(rect.x, 0, rect.y));
+		n.volume()->translate(math::Vec3i(rect.x, 0, rect.y));
 	}
 	for (SceneGraphListener *listener : _listeners) {
 		listener->onNodesAligned();

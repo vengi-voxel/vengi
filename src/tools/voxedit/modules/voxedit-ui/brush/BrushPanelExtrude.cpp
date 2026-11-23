@@ -10,6 +10,7 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxel/Face.h"
+#include "math/Vec4f.h"
 
 namespace voxedit {
 
@@ -25,12 +26,12 @@ void BrushPanelExtrude::update(BrushPanelContext &ctx, command::CommandExecution
 	int maxDepth = DefaultMaxExtrudeDepth;
 	if (node) {
 		const voxel::Region &r = node->region();
-		maxDepth = glm::max(r.getWidthInVoxels(), glm::max(r.getHeightInVoxels(), r.getDepthInVoxels()));
+		maxDepth = math::max(r.getWidthInVoxels(), math::max(r.getHeightInVoxels(), r.getDepthInVoxels()));
 	}
 
 	const voxel::FaceNames extrudeFace = brush.face();
 
-	const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
+	const math::Vec4f &warningTextColor = style::color(style::StyleColor::ColorWarningText);
 	if (extrudeFace == voxel::FaceNames::Max) {
 		ImGui::TextColored(warningTextColor, "%s",
 						   _("Click a voxel face in the viewport to set the extrusion direction"));

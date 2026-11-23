@@ -19,8 +19,10 @@
 #include "voxelformat/private/mesh/Mesh.h"
 #include "voxelformat/private/mesh/Polygon.h"
 #include "json/JSON.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
+#include <float.h>
 
 namespace voxelformat {
 
@@ -154,18 +156,18 @@ color::RGBA OSMFormat::featureSubtypeColor(const OSMElement &elem) {
 	}
 }
 
-glm::vec3 OSMFormat::latLonToLocal(double lat, double lon, double elevation, const CoordSystem &cs) const {
+math::Vec3f OSMFormat::latLonToLocal(double lat, double lon, double elevation, const CoordSystem &cs) const {
 	// Equirectangular projection centered on the data centroid
 	const double R = 6371000.0; // Earth radius in meters
-	const double centerLatRad = cs.centerLat * glm::pi<double>() / 180.0;
-	const double deltaLat = (lat - cs.centerLat) * glm::pi<double>() / 180.0;
-	const double deltaLon = (lon - cs.centerLon) * glm::pi<double>() / 180.0;
+	const double centerLatRad = cs.centerLat * math::piD / 180.0;
+	const double deltaLat = (lat - cs.centerLat) * math::piD / 180.0;
+	const double deltaLon = (lon - cs.centerLon) * math::piD / 180.0;
 
-	const double x = R * deltaLon * glm::cos(centerLatRad) / cs.metersPerVoxel;
+	const double x = R * deltaLon * math::cos(centerLatRad) / cs.metersPerVoxel;
 	const double z = R * deltaLat / cs.metersPerVoxel;
 	const double y = elevation / cs.metersPerVoxel;
 
-	return glm::vec3((float)x, (float)y, (float)z);
+	return math::Vec3f((float)x, (float)y, (float)z);
 }
 
 float OSMFormat::estimateBuildingHeight(const OSMElement &elem) {
@@ -218,8 +220,8 @@ float OSMFormat::estimateRoofHeight(const OSMElement &elem, float totalHeight, f
 	// roof:angle: compute roof height from angle and half the short extent
 	// tan(angle) = roofHeight / (shortExtent / 2)
 	if (elem.roofAngle > 0.0f) {
-		const float angleRad = elem.roofAngle * glm::pi<float>() / 180.0f;
-		return glm::tan(angleRad) * (shortExtent * 0.5f);
+		const float angleRad = elem.roofAngle * math::pi / 180.0f;
+		return math::tan(angleRad) * (shortExtent * 0.5f);
 	}
 	// roof:levels: each roof level ~3m
 	if (elem.roofLevels > 0) {
@@ -231,8 +233,8 @@ float OSMFormat::estimateRoofHeight(const OSMElement &elem, float totalHeight, f
 		return 0.0f;
 	}
 	// Default: roof is ~1/3 of total height, but at least 2m
-	const float defaultRoof = glm::max(totalHeight * 0.33f, 2.0f);
-	return glm::min(defaultRoof, totalHeight * 0.5f);
+	const float defaultRoof = math::max(totalHeight * 0.33f, 2.0f);
+	return math::min(defaultRoof, totalHeight * 0.5f);
 }
 
 float OSMFormat::estimateRoadHalfWidth(const core::String &highwayType) {
@@ -298,7 +300,7 @@ bool OSMFormat::pointNode(scenegraph::SceneGraph &sceneGraph, const OSMElement &
 	}
 
 	const GeomPoint &gp = elem.geometry[0];
-	const glm::vec3 pos = latLonToLocal(gp.lat, gp.lon, gp.elevation, cs);
+	const math::Vec3f pos = latLonToLocal(gp.lat, gp.lon, gp.elevation, cs);
 	const color::RGBA color = featureSubtypeColor(elem);
 
 	scenegraph::SceneGraphNode groundNode(scenegraph::SceneGraphNodeType::Point);
@@ -315,10 +317,10 @@ bool OSMFormat::treeToVoxels(scenegraph::SceneGraph &sceneGraph, const OSMElemen
 	}
 
 	const GeomPoint &gp = elem.geometry[0];
-	const glm::vec3 pos = latLonToLocal(gp.lat, gp.lon, gp.elevation, cs);
-	const int wx = (int)glm::round(pos.x);
-	const int wy = (int)glm::round(pos.y) + 1; // start above ground plane
-	const int wz = (int)glm::round(pos.z);
+	const math::Vec3f pos = latLonToLocal(gp.lat, gp.lon, gp.elevation, cs);
+	const int wx = (int)math::round(pos.x);
+	const int wy = (int)math::round(pos.y) + 1; // start above ground plane
+	const int wz = (int)math::round(pos.z);
 
 	// Small voxel tree: 3 wide, 7 tall, 3 deep
 	const voxel::Region region(wx - 1, wy, wz - 1, wx + 1, wy + 6, wz + 1);
@@ -543,67 +545,67 @@ bool OSMFormat::parseOverpassJson(const core::String &json, core::DynamicArray<O
 	return true;
 }
 
-glm::vec3 OSMFormat::roofPt(const RoofParams &rp, float u, float v, float y) {
-	return glm::vec3(rp.ocX + rp.ridgeDir2.x * u + rp.perpDir2.x * v, y,
+math::Vec3f OSMFormat::roofPt(const RoofParams &rp, float u, float v, float y) {
+	return math::Vec3f(rp.ocX + rp.ridgeDir2.x * u + rp.perpDir2.x * v, y,
 					 rp.ocZ + rp.ridgeDir2.y * u + rp.perpDir2.y * v);
 }
 
-glm::vec2 OSMFormat::toUV(const RoofParams &rp, float wx, float wz) {
+math::Vec2f OSMFormat::toUV(const RoofParams &rp, float wx, float wz) {
 	const float dx = wx - rp.ocX;
 	const float dz = wz - rp.ocZ;
-	return glm::vec2(dx * rp.ridgeDir2.x + dz * rp.ridgeDir2.y, dx * rp.perpDir2.x + dz * rp.perpDir2.y);
+	return math::Vec2f(dx * rp.ridgeDir2.x + dz * rp.ridgeDir2.y, dx * rp.perpDir2.x + dz * rp.perpDir2.y);
 }
 
-void OSMFormat::edgeToRidgeRoof(const RoofParams &rp, const core::DynamicArray<glm::vec3> &verts, size_t numVerts,
+void OSMFormat::edgeToRidgeRoof(const RoofParams &rp, const core::DynamicArray<math::Vec3f> &verts, size_t numVerts,
 								color::RGBA roofColor, Mesh &mesh, float ridgeHalfU, float ridgeV) {
 	mesh.reserveAdditionalTris(2 * numVerts);
 	for (size_t i = 0; i < numVerts; ++i) {
 		const size_t j = (i + 1) % numVerts;
-		const glm::vec3 ev0(verts[i].x, verts[i].y + rp.archBaseY + rp.wallHeight, verts[i].z);
-		const glm::vec3 ev1(verts[j].x, verts[j].y + rp.archBaseY + rp.wallHeight, verts[j].z);
-		const glm::vec2 uv0 = toUV(rp, verts[i].x, verts[i].z);
-		const glm::vec2 uv1 = toUV(rp, verts[j].x, verts[j].z);
+		const math::Vec3f ev0(verts[i].x, verts[i].y + rp.archBaseY + rp.wallHeight, verts[i].z);
+		const math::Vec3f ev1(verts[j].x, verts[j].y + rp.archBaseY + rp.wallHeight, verts[j].z);
+		const math::Vec2f uv0 = toUV(rp, verts[i].x, verts[i].z);
+		const math::Vec2f uv1 = toUV(rp, verts[j].x, verts[j].z);
 		// Nearest point on the ridge line for each vertex
-		const float cu0 = glm::clamp(uv0.x, -ridgeHalfU, ridgeHalfU);
-		const glm::vec3 rp0 = roofPt(rp, cu0, ridgeV, rp.pY);
-		const float cu1 = glm::clamp(uv1.x, -ridgeHalfU, ridgeHalfU);
-		const glm::vec3 rp1 = roofPt(rp, cu1, ridgeV, rp.pY);
-		if (glm::distance(rp0, rp1) < 0.001f) {
+		const float cu0 = math::clamp(uv0.x, -ridgeHalfU, ridgeHalfU);
+		const math::Vec3f rp0 = roofPt(rp, cu0, ridgeV, rp.pY);
+		const float cu1 = math::clamp(uv1.x, -ridgeHalfU, ridgeHalfU);
+		const math::Vec3f rp1 = roofPt(rp, cu1, ridgeV, rp.pY);
+		if (math::distance(rp0, rp1) < 0.001f) {
 			// Both vertices project to the same ridge point -> triangle (hip/gable end)
 			Polygon p;
-			p.addVertex(ev0, glm::vec2(0.0f), roofColor);
-			p.addVertex(ev1, glm::vec2(0.0f), roofColor);
-			p.addVertex(rp0, glm::vec2(0.0f), roofColor);
+			p.addVertex(ev0, math::Vec2f(0.0f), roofColor);
+			p.addVertex(ev1, math::Vec2f(0.0f), roofColor);
+			p.addVertex(rp0, math::Vec2f(0.0f), roofColor);
 			p.toTris(mesh);
 		} else {
 			// Quad from footprint edge to ridge segment (slope face)
 			Polygon p;
-			p.addVertex(ev0, glm::vec2(0.0f), roofColor);
-			p.addVertex(ev1, glm::vec2(0.0f), roofColor);
-			p.addVertex(rp1, glm::vec2(0.0f), roofColor);
-			p.addVertex(rp0, glm::vec2(0.0f), roofColor);
+			p.addVertex(ev0, math::Vec2f(0.0f), roofColor);
+			p.addVertex(ev1, math::Vec2f(0.0f), roofColor);
+			p.addVertex(rp1, math::Vec2f(0.0f), roofColor);
+			p.addVertex(rp0, math::Vec2f(0.0f), roofColor);
 			p.toTris(mesh);
 		}
 	}
 }
 
 template<typename HeightFn>
-void OSMFormat::perVertexHeightRoof(const RoofParams &rp, const core::DynamicArray<glm::vec3> &verts, size_t numVerts,
+void OSMFormat::perVertexHeightRoof(const RoofParams &rp, const core::DynamicArray<math::Vec3f> &verts, size_t numVerts,
 									color::RGBA roofColor, color::RGBA wallColor, Mesh &mesh, HeightFn heightFn) {
 	// Roof surface polygon
 	Polygon roofPoly;
 	for (size_t i = 0; i < numVerts; ++i) {
-		const glm::vec2 uv = toUV(rp, verts[i].x, verts[i].z);
+		const math::Vec2f uv = toUV(rp, verts[i].x, verts[i].z);
 		const float h = heightFn(uv.x, uv.y);
 		const float roofY = verts[i].y + rp.archBaseY + rp.wallHeight + h;
-		roofPoly.addVertex(glm::vec3(verts[i].x, roofY, verts[i].z), glm::vec2(0.0f), roofColor);
+		roofPoly.addVertex(math::Vec3f(verts[i].x, roofY, verts[i].z), math::Vec2f(0.0f), roofColor);
 	}
 	roofPoly.toTris(mesh);
 	// Gable/end walls: fill vertical gaps between wall top and roof surface
 	for (size_t i = 0; i < numVerts; ++i) {
 		const size_t j = (i + 1) % numVerts;
-		const glm::vec2 uv0 = toUV(rp, verts[i].x, verts[i].z);
-		const glm::vec2 uv1 = toUV(rp, verts[j].x, verts[j].z);
+		const math::Vec2f uv0 = toUV(rp, verts[i].x, verts[i].z);
+		const math::Vec2f uv1 = toUV(rp, verts[j].x, verts[j].z);
 		const float h0 = heightFn(uv0.x, uv0.y);
 		const float h1 = heightFn(uv1.x, uv1.y);
 		if (h0 < 0.01f && h1 < 0.01f) {
@@ -612,10 +614,10 @@ void OSMFormat::perVertexHeightRoof(const RoofParams &rp, const core::DynamicArr
 		const float eave0 = verts[i].y + rp.archBaseY + rp.wallHeight;
 		const float eave1 = verts[j].y + rp.archBaseY + rp.wallHeight;
 		Polygon gable;
-		gable.addVertex(glm::vec3(verts[i].x, eave0, verts[i].z), glm::vec2(0.0f), wallColor);
-		gable.addVertex(glm::vec3(verts[i].x, eave0 + h0, verts[i].z), glm::vec2(0.0f), wallColor);
-		gable.addVertex(glm::vec3(verts[j].x, eave1 + h1, verts[j].z), glm::vec2(0.0f), wallColor);
-		gable.addVertex(glm::vec3(verts[j].x, eave1, verts[j].z), glm::vec2(0.0f), wallColor);
+		gable.addVertex(math::Vec3f(verts[i].x, eave0, verts[i].z), math::Vec2f(0.0f), wallColor);
+		gable.addVertex(math::Vec3f(verts[i].x, eave0 + h0, verts[i].z), math::Vec2f(0.0f), wallColor);
+		gable.addVertex(math::Vec3f(verts[j].x, eave1 + h1, verts[j].z), math::Vec2f(0.0f), wallColor);
+		gable.addVertex(math::Vec3f(verts[j].x, eave1, verts[j].z), math::Vec2f(0.0f), wallColor);
 		gable.toTris(mesh);
 	}
 }
@@ -626,7 +628,7 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 	}
 
 	// Convert geometry to local coordinates
-	core::DynamicArray<glm::vec3> verts;
+	core::DynamicArray<math::Vec3f> verts;
 	verts.reserve(elem.geometry.size());
 	for (const GeomPoint &gp : elem.geometry) {
 		verts.push_back(latLonToLocal(gp.lat, gp.lon, gp.elevation, cs));
@@ -634,7 +636,7 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 
 	// Skip closing vertex if it duplicates the first
 	size_t numVerts = verts.size();
-	if (numVerts > 3 && glm::distance(verts[0], verts[numVerts - 1]) < 0.001f) {
+	if (numVerts > 3 && math::distance(verts[0], verts[numVerts - 1]) < 0.001f) {
 		--numVerts;
 	}
 	if (numVerts < 3) {
@@ -646,10 +648,10 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 	float roofMinZ = FLT_MAX, roofMaxZ = -FLT_MAX;
 	float avgTerrainY = 0.0f;
 	for (size_t i = 0; i < numVerts; ++i) {
-		roofMinX = glm::min(roofMinX, verts[i].x);
-		roofMaxX = glm::max(roofMaxX, verts[i].x);
-		roofMinZ = glm::min(roofMinZ, verts[i].z);
-		roofMaxZ = glm::max(roofMaxZ, verts[i].z);
+		roofMinX = math::min(roofMinX, verts[i].x);
+		roofMaxX = math::max(roofMaxX, verts[i].x);
+		roofMinZ = math::min(roofMinZ, verts[i].z);
+		roofMaxZ = math::max(roofMaxZ, verts[i].z);
 		avgTerrainY += verts[i].y;
 	}
 	avgTerrainY /= (float)numVerts;
@@ -664,11 +666,11 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 	const float metersPerVoxel = (float)cs.metersPerVoxel;
 	const float totalHeightMeters = estimateBuildingHeight(elem);
 	const float minHMeters = estimateMinHeight(elem);
-	const float shortExtentMeters = glm::min(xExtent, zExtent) * metersPerVoxel;
+	const float shortExtentMeters = math::min(xExtent, zExtent) * metersPerVoxel;
 	float roofHMeters = estimateRoofHeight(elem, totalHeightMeters, shortExtentMeters);
 	// Clamp roof height so walls are at least 1m
 	if (roofHMeters > totalHeightMeters - minHMeters - 1.0f) {
-		roofHMeters = glm::max(0.0f, totalHeightMeters - minHMeters - 1.0f);
+		roofHMeters = math::max(0.0f, totalHeightMeters - minHMeters - 1.0f);
 	}
 	const float wallHeight = (totalHeightMeters - roofHMeters - minHMeters) / metersPerVoxel;
 	const float roofPeakHeight = roofHMeters / metersPerVoxel;
@@ -686,16 +688,16 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 	// Walls: one quad per edge
 	mesh.reserveAdditionalTris(2 * numVerts);
 	for (size_t i = 0; i < numVerts; ++i) {
-		const glm::vec3 &v0 = verts[i];
-		const glm::vec3 &v1 = verts[(i + 1) % numVerts];
+		const math::Vec3f &v0 = verts[i];
+		const math::Vec3f &v1 = verts[(i + 1) % numVerts];
 
 		const float base0 = v0.y + archBaseY;
 		const float base1 = v1.y + archBaseY;
 
-		const glm::vec3 bl(v0.x, base0, v0.z);
-		const glm::vec3 tl(v0.x, base0 + wallHeight, v0.z);
-		const glm::vec3 tr(v1.x, base1 + wallHeight, v1.z);
-		const glm::vec3 br(v1.x, base1, v1.z);
+		const math::Vec3f bl(v0.x, base0, v0.z);
+		const math::Vec3f tl(v0.x, base0 + wallHeight, v0.z);
+		const math::Vec3f tr(v1.x, base1 + wallHeight, v1.z);
+		const math::Vec3f br(v1.x, base1, v1.z);
 
 		const size_t base = mesh.vertices.size();
 		for (int k = 0; k < 4; ++k) {
@@ -736,27 +738,27 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 	// Oriented Bounding Rectangle (OBR) for roof shapes
 	// Find the longest polygon edge to determine the building's major axis.
 	// The ridge runs parallel to this axis (unless roof:orientation=across).
-	glm::vec2 ridgeDir2(1.0f, 0.0f);
+	math::Vec2f ridgeDir2(1.0f, 0.0f);
 	float maxEdgeLen2 = 0.0f;
 	for (size_t i = 0; i < numVerts; ++i) {
 		const size_t j = (i + 1) % numVerts;
-		const glm::vec2 edge(verts[j].x - verts[i].x, verts[j].z - verts[i].z);
-		const float len2 = glm::dot(edge, edge);
+		const math::Vec2f edge(verts[j].x - verts[i].x, verts[j].z - verts[i].z);
+		const float len2 = math::dot(edge, edge);
 		if (len2 > maxEdgeLen2) {
 			maxEdgeLen2 = len2;
 			ridgeDir2 = edge;
 		}
 	}
-	const float edgeLen = glm::sqrt(maxEdgeLen2);
+	const float edgeLen = math::sqrt(maxEdgeLen2);
 	if (edgeLen > 0.001f) {
 		ridgeDir2 /= edgeLen;
 	}
 	// roof:orientation=across rotates ridge 90 degree to be perpendicular to the longest side
 	if (elem.roofOrientation == "across") {
-		ridgeDir2 = glm::vec2(-ridgeDir2.y, ridgeDir2.x);
+		ridgeDir2 = math::Vec2f(-ridgeDir2.y, ridgeDir2.x);
 	}
 	// Perpendicular direction (90 degree CCW rotation in XZ plane)
-	const glm::vec2 perpDir2(-ridgeDir2.y, ridgeDir2.x);
+	const math::Vec2f perpDir2(-ridgeDir2.y, ridgeDir2.x);
 
 	// Compute centroid of the polygon footprint in XZ
 	float cX = 0.0f, cZ = 0.0f;
@@ -775,10 +777,10 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		const float dz = verts[i].z - cZ;
 		const float u = dx * ridgeDir2.x + dz * ridgeDir2.y;
 		const float v = dx * perpDir2.x + dz * perpDir2.y;
-		minU = glm::min(minU, u);
-		maxU = glm::max(maxU, u);
-		minV = glm::min(minV, v);
-		maxV = glm::max(maxV, v);
+		minU = math::min(minU, u);
+		maxU = math::max(maxU, u);
+		minV = math::min(minV, v);
+		maxV = math::max(maxV, v);
 	}
 	const float halfU = (maxU - minU) * 0.5f; // half-extent along ridge
 	const float halfV = (maxV - minV) * 0.5f; // half-extent across ridge
@@ -809,7 +811,7 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		Polygon roofPoly;
 		for (size_t i = 0; i < numVerts; ++i) {
 			const float roofY = verts[i].y + archBaseY + wallHeight;
-			roofPoly.addVertex(glm::vec3(verts[i].x, roofY, verts[i].z), glm::vec2(0.0f), roofColor);
+			roofPoly.addVertex(math::Vec3f(verts[i].x, roofY, verts[i].z), math::Vec2f(0.0f), roofColor);
 		}
 		roofPoly.toTris(mesh);
 	} else if (roofShape == "pyramidal" || roofShape == "cone") {
@@ -820,12 +822,12 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		edgeToRidgeRoof(rp, verts, numVerts, roofColor, mesh, halfU, 0.0f);
 	} else if (roofShape == "hipped") {
 		// Ridge shortened by halfV from each end; hip slopes at ends
-		const float ridgeHalfU = glm::max(0.0f, halfU - halfV);
+		const float ridgeHalfU = math::max(0.0f, halfU - halfV);
 		edgeToRidgeRoof(rp, verts, numVerts, roofColor, mesh, ridgeHalfU, 0.0f);
 	} else if (roofShape == "half-hipped") {
 		// Like hipped but with a much longer ridge (smaller hips)
 		const float hipFraction = 0.33f;
-		const float ridgeHalfU = glm::max(0.0f, halfU - halfV * hipFraction);
+		const float ridgeHalfU = math::max(0.0f, halfU - halfV * hipFraction);
 		edgeToRidgeRoof(rp, verts, numVerts, roofColor, mesh, ridgeHalfU, 0.0f);
 	} else if (roofShape == "saltbox") {
 		// Asymmetric gable: ridge offset toward -V side
@@ -842,7 +844,7 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		const float breakV = halfV * breakFrac;
 		const float breakH = roofPeakHeight * 0.5f;
 		perVertexHeightRoof(rp, verts, numVerts, roofColor, wallColor, mesh, [&](float /*u*/, float v) -> float {
-			const float absV = glm::abs(v);
+			const float absV = math::abs(v);
 			if (absV >= halfV) {
 				return 0.0f;
 			}
@@ -856,9 +858,9 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		const float breakH = roofPeakHeight * 0.7f;
 		const float breakT = 0.65f; // normalized distance at which break occurs
 		perVertexHeightRoof(rp, verts, numVerts, roofColor, wallColor, mesh, [&](float u, float v) -> float {
-			const float tu = (halfU > 0.001f) ? glm::abs(u) / halfU : 0.0f;
-			const float tv = (halfV > 0.001f) ? glm::abs(v) / halfV : 0.0f;
-			const float t = glm::max(tu, tv); // 0 at center, 1 at edge
+			const float tu = (halfU > 0.001f) ? math::abs(u) / halfU : 0.0f;
+			const float tv = (halfV > 0.001f) ? math::abs(v) / halfV : 0.0f;
+			const float t = math::max(tu, tv); // 0 at center, 1 at edge
 			if (t >= 1.0f) {
 				return 0.0f;
 			}
@@ -873,43 +875,43 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		const int rings = 6;
 		mesh.reserveAdditionalTris(2 * segments * rings);
 		for (int ring = 0; ring < rings; ++ring) {
-			const float phi0 = ((float)ring / (float)rings) * glm::half_pi<float>();
-			const float phi1 = ((float)(ring + 1) / (float)rings) * glm::half_pi<float>();
+			const float phi0 = ((float)ring / (float)rings) * math::halfPi;
+			const float phi1 = ((float)(ring + 1) / (float)rings) * math::halfPi;
 			float rU0, rV0, rU1, rV1;
 			if (roofShape == "onion") {
-				const float bulge0 = 1.0f + 0.3f * glm::sin(phi0 * 2.0f);
-				const float bulge1 = 1.0f + 0.3f * glm::sin(phi1 * 2.0f);
-				rU0 = halfU * glm::cos(phi0) * bulge0;
-				rV0 = halfV * glm::cos(phi0) * bulge0;
-				rU1 = halfU * glm::cos(phi1) * bulge1;
-				rV1 = halfV * glm::cos(phi1) * bulge1;
+				const float bulge0 = 1.0f + 0.3f * math::sin(phi0 * 2.0f);
+				const float bulge1 = 1.0f + 0.3f * math::sin(phi1 * 2.0f);
+				rU0 = halfU * math::cos(phi0) * bulge0;
+				rV0 = halfV * math::cos(phi0) * bulge0;
+				rU1 = halfU * math::cos(phi1) * bulge1;
+				rV1 = halfV * math::cos(phi1) * bulge1;
 			} else {
-				rU0 = halfU * glm::cos(phi0);
-				rV0 = halfV * glm::cos(phi0);
-				rU1 = halfU * glm::cos(phi1);
-				rV1 = halfV * glm::cos(phi1);
+				rU0 = halfU * math::cos(phi0);
+				rV0 = halfV * math::cos(phi0);
+				rU1 = halfU * math::cos(phi1);
+				rV1 = halfV * math::cos(phi1);
 			}
-			const float y0 = eY + roofPeakHeight * glm::sin(phi0);
-			const float y1 = eY + roofPeakHeight * glm::sin(phi1);
+			const float y0 = eY + roofPeakHeight * math::sin(phi0);
+			const float y1 = eY + roofPeakHeight * math::sin(phi1);
 			for (int seg = 0; seg < segments; ++seg) {
-				const float theta0 = ((float)seg / (float)segments) * glm::two_pi<float>();
-				const float theta1 = ((float)(seg + 1) / (float)segments) * glm::two_pi<float>();
-				const glm::vec3 v00 = roofPt(rp, rU0 * glm::cos(theta0), rV0 * glm::sin(theta0), y0);
-				const glm::vec3 v10 = roofPt(rp, rU1 * glm::cos(theta0), rV1 * glm::sin(theta0), y1);
-				const glm::vec3 v11 = roofPt(rp, rU1 * glm::cos(theta1), rV1 * glm::sin(theta1), y1);
-				const glm::vec3 v01 = roofPt(rp, rU0 * glm::cos(theta1), rV0 * glm::sin(theta1), y0);
+				const float theta0 = ((float)seg / (float)segments) * math::twoPi;
+				const float theta1 = ((float)(seg + 1) / (float)segments) * math::twoPi;
+				const math::Vec3f v00 = roofPt(rp, rU0 * math::cos(theta0), rV0 * math::sin(theta0), y0);
+				const math::Vec3f v10 = roofPt(rp, rU1 * math::cos(theta0), rV1 * math::sin(theta0), y1);
+				const math::Vec3f v11 = roofPt(rp, rU1 * math::cos(theta1), rV1 * math::sin(theta1), y1);
+				const math::Vec3f v01 = roofPt(rp, rU0 * math::cos(theta1), rV0 * math::sin(theta1), y0);
 				if (ring == rings - 1) {
 					Polygon p;
-					p.addVertex(v00, glm::vec2(0.0f), roofColor);
-					p.addVertex(v10, glm::vec2(0.0f), roofColor);
-					p.addVertex(v01, glm::vec2(0.0f), roofColor);
+					p.addVertex(v00, math::Vec2f(0.0f), roofColor);
+					p.addVertex(v10, math::Vec2f(0.0f), roofColor);
+					p.addVertex(v01, math::Vec2f(0.0f), roofColor);
 					p.toTris(mesh);
 				} else {
 					Polygon p;
-					p.addVertex(v00, glm::vec2(0.0f), roofColor);
-					p.addVertex(v10, glm::vec2(0.0f), roofColor);
-					p.addVertex(v11, glm::vec2(0.0f), roofColor);
-					p.addVertex(v01, glm::vec2(0.0f), roofColor);
+					p.addVertex(v00, math::Vec2f(0.0f), roofColor);
+					p.addVertex(v10, math::Vec2f(0.0f), roofColor);
+					p.addVertex(v11, math::Vec2f(0.0f), roofColor);
+					p.addVertex(v01, math::Vec2f(0.0f), roofColor);
 					p.toTris(mesh);
 				}
 			}
@@ -919,41 +921,41 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		const int arcSegments = 8;
 		mesh.reserveAdditionalTris(2 * arcSegments + 2 * arcSegments);
 		for (int seg = 0; seg < arcSegments; ++seg) {
-			const float angle0 = ((float)seg / (float)arcSegments) * glm::pi<float>();
-			const float angle1 = ((float)(seg + 1) / (float)arcSegments) * glm::pi<float>();
-			const float sv0 = -halfV * glm::cos(angle0);
-			const float sy0 = eY + roofPeakHeight * glm::sin(angle0);
-			const float sv1 = -halfV * glm::cos(angle1);
-			const float sy1 = eY + roofPeakHeight * glm::sin(angle1);
+			const float angle0 = ((float)seg / (float)arcSegments) * math::pi;
+			const float angle1 = ((float)(seg + 1) / (float)arcSegments) * math::pi;
+			const float sv0 = -halfV * math::cos(angle0);
+			const float sy0 = eY + roofPeakHeight * math::sin(angle0);
+			const float sv1 = -halfV * math::cos(angle1);
+			const float sy1 = eY + roofPeakHeight * math::sin(angle1);
 			{
 				Polygon p;
-				p.addVertex(roofPt(rp, -halfU, sv0, sy0), glm::vec2(0.0f), roofColor);
-				p.addVertex(roofPt(rp, halfU, sv0, sy0), glm::vec2(0.0f), roofColor);
-				p.addVertex(roofPt(rp, halfU, sv1, sy1), glm::vec2(0.0f), roofColor);
-				p.addVertex(roofPt(rp, -halfU, sv1, sy1), glm::vec2(0.0f), roofColor);
+				p.addVertex(roofPt(rp, -halfU, sv0, sy0), math::Vec2f(0.0f), roofColor);
+				p.addVertex(roofPt(rp, halfU, sv0, sy0), math::Vec2f(0.0f), roofColor);
+				p.addVertex(roofPt(rp, halfU, sv1, sy1), math::Vec2f(0.0f), roofColor);
+				p.addVertex(roofPt(rp, -halfU, sv1, sy1), math::Vec2f(0.0f), roofColor);
 				p.toTris(mesh);
 			}
 		}
 		// End caps (semicircular fan)
 		for (int seg = 0; seg < arcSegments; ++seg) {
-			const float angle0 = ((float)seg / (float)arcSegments) * glm::pi<float>();
-			const float angle1 = ((float)(seg + 1) / (float)arcSegments) * glm::pi<float>();
+			const float angle0 = ((float)seg / (float)arcSegments) * math::pi;
+			const float angle1 = ((float)(seg + 1) / (float)arcSegments) * math::pi;
 			{
 				Polygon p;
-				p.addVertex(roofPt(rp, -halfU, 0.0f, eY), glm::vec2(0.0f), roofColor);
-				p.addVertex(roofPt(rp, -halfU, -halfV * glm::cos(angle0), eY + roofPeakHeight * glm::sin(angle0)),
-							glm::vec2(0.0f), roofColor);
-				p.addVertex(roofPt(rp, -halfU, -halfV * glm::cos(angle1), eY + roofPeakHeight * glm::sin(angle1)),
-							glm::vec2(0.0f), roofColor);
+				p.addVertex(roofPt(rp, -halfU, 0.0f, eY), math::Vec2f(0.0f), roofColor);
+				p.addVertex(roofPt(rp, -halfU, -halfV * math::cos(angle0), eY + roofPeakHeight * math::sin(angle0)),
+							math::Vec2f(0.0f), roofColor);
+				p.addVertex(roofPt(rp, -halfU, -halfV * math::cos(angle1), eY + roofPeakHeight * math::sin(angle1)),
+							math::Vec2f(0.0f), roofColor);
 				p.toTris(mesh);
 			}
 			{
 				Polygon p;
-				p.addVertex(roofPt(rp, halfU, 0.0f, eY), glm::vec2(0.0f), roofColor);
-				p.addVertex(roofPt(rp, halfU, -halfV * glm::cos(angle1), eY + roofPeakHeight * glm::sin(angle1)),
-							glm::vec2(0.0f), roofColor);
-				p.addVertex(roofPt(rp, halfU, -halfV * glm::cos(angle0), eY + roofPeakHeight * glm::sin(angle0)),
-							glm::vec2(0.0f), roofColor);
+				p.addVertex(roofPt(rp, halfU, 0.0f, eY), math::Vec2f(0.0f), roofColor);
+				p.addVertex(roofPt(rp, halfU, -halfV * math::cos(angle1), eY + roofPeakHeight * math::sin(angle1)),
+							math::Vec2f(0.0f), roofColor);
+				p.addVertex(roofPt(rp, halfU, -halfV * math::cos(angle0), eY + roofPeakHeight * math::sin(angle0)),
+							math::Vec2f(0.0f), roofColor);
 				p.toTris(mesh);
 			}
 		}
@@ -963,7 +965,7 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		Polygon roofPoly;
 		for (size_t i = 0; i < numVerts; ++i) {
 			const float roofY = verts[i].y + archBaseY + wallHeight;
-			roofPoly.addVertex(glm::vec3(verts[i].x, roofY, verts[i].z), glm::vec2(0.0f), roofColor);
+			roofPoly.addVertex(math::Vec3f(verts[i].x, roofY, verts[i].z), math::Vec2f(0.0f), roofColor);
 		}
 		roofPoly.toTris(mesh);
 	}
@@ -973,7 +975,7 @@ bool OSMFormat::buildingToMesh(const OSMElement &elem, const CoordSystem &cs, Me
 		Polygon floorPoly;
 		for (size_t i = numVerts; i > 0; --i) {
 			const float floorY = verts[i - 1].y + archBaseY;
-			floorPoly.addVertex(glm::vec3(verts[i - 1].x, floorY, verts[i - 1].z), glm::vec2(0.0f), wallColor);
+			floorPoly.addVertex(math::Vec3f(verts[i - 1].x, floorY, verts[i - 1].z), math::Vec2f(0.0f), wallColor);
 		}
 		floorPoly.toTris(mesh);
 	}
@@ -1003,7 +1005,7 @@ bool OSMFormat::roadToMesh(const OSMElement &elem, const CoordSystem &cs, Mesh &
 	}
 
 	// Convert to local coords
-	core::DynamicArray<glm::vec3> pts;
+	core::DynamicArray<math::Vec3f> pts;
 	pts.reserve(elem.geometry.size());
 	for (const GeomPoint &gp : elem.geometry) {
 		pts.push_back(latLonToLocal(gp.lat, gp.lon, gp.elevation, cs));
@@ -1012,18 +1014,18 @@ bool OSMFormat::roadToMesh(const OSMElement &elem, const CoordSystem &cs, Mesh &
 	// Generate a box ribbon mesh along the polyline (closed volume for proper voxelization)
 	mesh.reserveAdditionalTris(8 * pts.size());
 	for (size_t i = 0; i < pts.size() - 1; ++i) {
-		const glm::vec3 &p0 = pts[i];
-		const glm::vec3 &p1 = pts[i + 1];
+		const math::Vec3f &p0 = pts[i];
+		const math::Vec3f &p1 = pts[i + 1];
 
-		glm::vec3 dir = p1 - p0;
-		const float len = glm::length(dir);
+		math::Vec3f dir = p1 - p0;
+		const float len = math::length(dir);
 		if (len < 0.001f) {
 			continue;
 		}
 		dir /= len;
 
 		// Perpendicular in the XZ plane
-		const glm::vec3 perp(-dir.z, 0.0f, dir.x);
+		const math::Vec3f perp(-dir.z, 0.0f, dir.x);
 
 		// Use terrain elevation from vertices - offset above ground features
 		const float bottom0 = p0.y + roadYOffset;
@@ -1032,14 +1034,14 @@ bool OSMFormat::roadToMesh(const OSMElement &elem, const CoordSystem &cs, Mesh &
 		const float top1 = p1.y + roadYOffset + roadHeight;
 
 		// 8 vertices for a box segment
-		const glm::vec3 v0 = glm::vec3(p0.x, bottom0, p0.z) - perp * halfWidth; // bottom-left-start
-		const glm::vec3 v1 = glm::vec3(p0.x, bottom0, p0.z) + perp * halfWidth; // bottom-right-start
-		const glm::vec3 v2 = glm::vec3(p1.x, bottom1, p1.z) + perp * halfWidth; // bottom-right-end
-		const glm::vec3 v3 = glm::vec3(p1.x, bottom1, p1.z) - perp * halfWidth; // bottom-left-end
-		const glm::vec3 v4 = glm::vec3(p0.x, top0, p0.z) - perp * halfWidth;	// top-left-start
-		const glm::vec3 v5 = glm::vec3(p0.x, top0, p0.z) + perp * halfWidth;	// top-right-start
-		const glm::vec3 v6 = glm::vec3(p1.x, top1, p1.z) + perp * halfWidth;	// top-right-end
-		const glm::vec3 v7 = glm::vec3(p1.x, top1, p1.z) - perp * halfWidth;	// top-left-end
+		const math::Vec3f v0 = math::Vec3f(p0.x, bottom0, p0.z) - perp * halfWidth; // bottom-left-start
+		const math::Vec3f v1 = math::Vec3f(p0.x, bottom0, p0.z) + perp * halfWidth; // bottom-right-start
+		const math::Vec3f v2 = math::Vec3f(p1.x, bottom1, p1.z) + perp * halfWidth; // bottom-right-end
+		const math::Vec3f v3 = math::Vec3f(p1.x, bottom1, p1.z) - perp * halfWidth; // bottom-left-end
+		const math::Vec3f v4 = math::Vec3f(p0.x, top0, p0.z) - perp * halfWidth;	// top-left-start
+		const math::Vec3f v5 = math::Vec3f(p0.x, top0, p0.z) + perp * halfWidth;	// top-right-start
+		const math::Vec3f v6 = math::Vec3f(p1.x, top1, p1.z) + perp * halfWidth;	// top-right-end
+		const math::Vec3f v7 = math::Vec3f(p1.x, top1, p1.z) - perp * halfWidth;	// top-left-end
 
 		const size_t base = mesh.vertices.size();
 		for (int k = 0; k < 8; ++k) {
@@ -1097,14 +1099,14 @@ bool OSMFormat::areaToMesh(const OSMElement &elem, const CoordSystem &cs, Featur
 		return false;
 	}
 
-	core::DynamicArray<glm::vec3> verts;
+	core::DynamicArray<math::Vec3f> verts;
 	verts.reserve(elem.geometry.size());
 	for (const GeomPoint &gp : elem.geometry) {
 		verts.push_back(latLonToLocal(gp.lat, gp.lon, gp.elevation, cs));
 	}
 
 	size_t numVerts = verts.size();
-	if (numVerts > 3 && glm::distance(verts[0], verts[numVerts - 1]) < 0.001f) {
+	if (numVerts > 3 && math::distance(verts[0], verts[numVerts - 1]) < 0.001f) {
 		--numVerts;
 	}
 	if (numVerts < 3) {
@@ -1147,8 +1149,8 @@ bool OSMFormat::areaToMesh(const OSMElement &elem, const CoordSystem &cs, Featur
 	{
 		Polygon topPoly;
 		for (size_t i = 0; i < numVerts; ++i) {
-			const glm::vec3 topVert(verts[i].x, verts[i].y + areaHeight, verts[i].z);
-			topPoly.addVertex(topVert, glm::vec2(0.0f), color);
+			const math::Vec3f topVert(verts[i].x, verts[i].y + areaHeight, verts[i].z);
+			topPoly.addVertex(topVert, math::Vec2f(0.0f), color);
 		}
 		topPoly.toTris(mesh);
 	}
@@ -1157,8 +1159,8 @@ bool OSMFormat::areaToMesh(const OSMElement &elem, const CoordSystem &cs, Featur
 	{
 		Polygon bottomPoly;
 		for (size_t i = numVerts; i > 0; --i) {
-			const glm::vec3 bottomVert(verts[i - 1].x, verts[i - 1].y, verts[i - 1].z);
-			bottomPoly.addVertex(bottomVert, glm::vec2(0.0f), color);
+			const math::Vec3f bottomVert(verts[i - 1].x, verts[i - 1].y, verts[i - 1].z);
+			bottomPoly.addVertex(bottomVert, math::Vec2f(0.0f), color);
 		}
 		bottomPoly.toTris(mesh);
 	}
@@ -1166,8 +1168,8 @@ bool OSMFormat::areaToMesh(const OSMElement &elem, const CoordSystem &cs, Featur
 	// Add walls to create a closed volume for proper voxelization
 	mesh.reserveAdditionalTris(2 * numVerts);
 	for (size_t i = 0; i < numVerts; ++i) {
-		const glm::vec3 &v0 = verts[i];
-		const glm::vec3 &v1 = verts[(i + 1) % numVerts];
+		const math::Vec3f &v0 = verts[i];
+		const math::Vec3f &v1 = verts[(i + 1) % numVerts];
 
 		const size_t base = mesh.vertices.size();
 		for (int k = 0; k < 4; ++k) {
@@ -1175,10 +1177,10 @@ bool OSMFormat::areaToMesh(const OSMElement &elem, const CoordSystem &cs, Featur
 			mv.color = color;
 			mesh.vertices.push_back(mv);
 		}
-		mesh.vertices[base + 0].pos = glm::vec3(v0.x, v0.y, v0.z);
-		mesh.vertices[base + 1].pos = glm::vec3(v0.x, v0.y + areaHeight, v0.z);
-		mesh.vertices[base + 2].pos = glm::vec3(v1.x, v1.y + areaHeight, v1.z);
-		mesh.vertices[base + 3].pos = glm::vec3(v1.x, v1.y, v1.z);
+		mesh.vertices[base + 0].pos = math::Vec3f(v0.x, v0.y, v0.z);
+		mesh.vertices[base + 1].pos = math::Vec3f(v0.x, v0.y + areaHeight, v0.z);
+		mesh.vertices[base + 2].pos = math::Vec3f(v1.x, v1.y + areaHeight, v1.z);
+		mesh.vertices[base + 3].pos = math::Vec3f(v1.x, v1.y, v1.z);
 
 		mesh.indices.push_back((voxel::IndexType)(base + 0));
 		mesh.indices.push_back((voxel::IndexType)(base + 1));
@@ -1221,10 +1223,10 @@ bool OSMFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	double minLon = 180.0, maxLon = -180.0;
 	for (const OSMElement &elem : elements) {
 		for (const GeomPoint &gp : elem.geometry) {
-			minLat = glm::min(minLat, gp.lat);
-			maxLat = glm::max(maxLat, gp.lat);
-			minLon = glm::min(minLon, gp.lon);
-			maxLon = glm::max(maxLon, gp.lon);
+			minLat = math::min(minLat, gp.lat);
+			maxLat = math::max(maxLat, gp.lat);
+			minLon = math::min(minLon, gp.lon);
+			maxLon = math::max(maxLon, gp.lon);
 		}
 	}
 
@@ -1240,22 +1242,22 @@ bool OSMFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	{
 		// Compute local XZ bounds for ground plane
-		glm::vec2 localMinXZ(FLT_MAX, FLT_MAX);
-		glm::vec2 localMaxXZ(-FLT_MAX, -FLT_MAX);
+		math::Vec2f localMinXZ(FLT_MAX, FLT_MAX);
+		math::Vec2f localMaxXZ(-FLT_MAX, -FLT_MAX);
 		for (const OSMElement &elem : elements) {
 			for (const GeomPoint &gp : elem.geometry) {
-				const glm::vec3 localPos = latLonToLocal(gp.lat, gp.lon, gp.elevation, cs);
-				localMinXZ.x = glm::min(localMinXZ.x, localPos.x);
-				localMinXZ.y = glm::min(localMinXZ.y, localPos.z);
-				localMaxXZ.x = glm::max(localMaxXZ.x, localPos.x);
-				localMaxXZ.y = glm::max(localMaxXZ.y, localPos.z);
+				const math::Vec3f localPos = latLonToLocal(gp.lat, gp.lon, gp.elevation, cs);
+				localMinXZ.x = math::min(localMinXZ.x, localPos.x);
+				localMinXZ.y = math::min(localMinXZ.y, localPos.z);
+				localMaxXZ.x = math::max(localMaxXZ.x, localPos.x);
+				localMaxXZ.y = math::max(localMaxXZ.y, localPos.z);
 			}
 		}
 		const float padding = 2.0f;
-		const int x0 = (int)glm::floor(localMinXZ.x - padding);
-		const int x1 = (int)glm::ceil(localMaxXZ.x + padding);
-		const int z0 = (int)glm::floor(localMinXZ.y - padding);
-		const int z1 = (int)glm::ceil(localMaxXZ.y + padding);
+		const int x0 = (int)math::floor(localMinXZ.x - padding);
+		const int x1 = (int)math::ceil(localMaxXZ.x + padding);
+		const int z0 = (int)math::floor(localMinXZ.y - padding);
+		const int z1 = (int)math::ceil(localMaxXZ.y + padding);
 
 		const voxel::Region groundRegion(x0, -1, z0, x1, 0, z1);
 		voxel::RawVolume *groundVolume = new voxel::RawVolume(groundRegion);

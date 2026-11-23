@@ -17,9 +17,9 @@
 #include "core/collection/DynamicMap.h"
 #include "voxel/Region.h"
 #include "voxel/Face.h"
-#include <glm/vec3.hpp>
 #include <list>
 #include <vector>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -376,7 +376,7 @@ static void meshify(Mesh* result, bool mergeQuads, bool ambientOcclusion, QuadLi
 }
 
 static IndexType addVertex(bool reuseVertices, bool computeAmbientOcclusion, uint32_t x, uint32_t y, uint32_t z, const Voxel& materialIn, Array& existingVertices,
-		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const glm::ivec3& offset) {
+		Mesh* meshCurrent, const VoxelType face1, const VoxelType face2, const VoxelType corner, const math::Vec3i& offset) {
 	core_trace_scoped(AddVertex);
 	// When AO is disabled, use a constant so adjacent same-material faces share indices
 	// and mergeQuads can collapse long coplanar runs (see issue #72).
@@ -391,7 +391,7 @@ static IndexType addVertex(bool reuseVertices, bool computeAmbientOcclusion, uin
 		if (entry.index == 0) {
 			// No vertices matched and we've now hit an empty space. Fill it by creating a vertex.
 			VoxelVertex vertex;
-			vertex.position = glm::ivec3(x, y, z) + offset;
+			vertex.position = math::Vec3i(x, y, z) + offset;
 			vertex.colorIndex = materialIn.getColor();
 			vertex.normalIndex = materialIn.getNormal();
 			vertex.ambientOcclusion = ambientOcclusion;
@@ -419,12 +419,12 @@ static IndexType addVertex(bool reuseVertices, bool computeAmbientOcclusion, uin
 }
 
 CORE_NO_SANITIZE_ADDRESS void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
-												const glm::ivec3 &translate, bool ambientOcclusion, bool mergeQuads,
+												const math::Vec3i &translate, bool ambientOcclusion, bool mergeQuads,
 												bool reuseVertices, bool preserveVoxelNormals) {
 	core_trace_scoped(ExtractCubicMesh);
 
-	const glm::ivec3& offset = region.getLowerCorner();
-	const glm::ivec3& upper = region.getUpperCorner();
+	const math::Vec3i& offset = region.getLowerCorner();
+	const math::Vec3i& upper = region.getUpperCorner();
 	result->setOffset(offset);
 
 	// Used to avoid creating duplicate vertices.

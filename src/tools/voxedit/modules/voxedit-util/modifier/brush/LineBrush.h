@@ -10,6 +10,8 @@
 #include "core/collection/DynamicArray.h"
 #include "math/Bezier.h"
 #include "voxel/Region.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -65,7 +67,7 @@ protected:
 	/** True once the control point was moved explicitly */
 	bool _hasCustomControlPoint = false;
 	/** Quadratic bezier control point */
-	glm::ivec3 _controlPoint{0};
+	math::Vec3i _controlPoint{0};
 	/** Line thickness in voxels (1 = single voxel) */
 	int _thickness = 1;
 	/** Downward sag in voxels for rope/cable effect (0 = straight line) */
@@ -73,9 +75,9 @@ protected:
 	/** 9-bit pattern controlling which voxels are placed */
 	LineStipplePattern _stipplePattern;
 
-	glm::ivec3 defaultControlPoint(const BrushContext &ctx) const;
-	glm::ivec3 previewControlPoint(const BrushContext &ctx) const;
-	glm::ivec3 controlPoint(const BrushContext &ctx) const;
+	math::Vec3i defaultControlPoint(const BrushContext &ctx) const;
+	math::Vec3i previewControlPoint(const BrushContext &ctx) const;
+	math::Vec3i controlPoint(const BrushContext &ctx) const;
 	void syncControlPoint(const BrushContext &ctx);
 	void lockSegment(const BrushContext &ctx);
 	void clearPendingSegments();
@@ -122,7 +124,7 @@ public:
 	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
 	bool hasHandle(const BrushContext &ctx) const;
 	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
-	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &deltaMatrix,
 						 uint32_t operation) override;
 
 	/**
@@ -141,7 +143,7 @@ public:
 	void setBezier(bool bezier);
 	void setThickness(int thickness);
 	void setSag(int sag);
-	void setControlPoint(const glm::ivec3 &controlPoint);
+	void setControlPoint(const math::Vec3i &controlPoint);
 	int pendingSegmentCount() const;
 	int selectedSegment() const;
 	bool selectSegment(int index);
@@ -182,7 +184,7 @@ inline int LineBrush::thickness() const {
 }
 
 inline void LineBrush::setThickness(int thickness) {
-	thickness = glm::clamp(thickness, 1, 64);
+	thickness = math::clamp(thickness, 1, 64);
 	if (_thickness == thickness) {
 		return;
 	}
@@ -213,7 +215,7 @@ inline void LineBrush::setBezier(bool bezier) {
 	markDirty();
 }
 
-inline void LineBrush::setControlPoint(const glm::ivec3 &controlPoint) {
+inline void LineBrush::setControlPoint(const math::Vec3i &controlPoint) {
 	if (_hasCustomControlPoint && _controlPoint == controlPoint) {
 		return;
 	}

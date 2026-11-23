@@ -4,141 +4,51 @@
 
 #pragma once
 
-#include <glm/vector_relational.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "math/Print.h"
+#include "math/Vec2f.h"
+#include "math/Vec2i.h"
+#include "math/Vec3f.h"
+#include "math/Vec3i.h"
+#include "math/Vec4f.h"
+#include "math/Vec4i.h"
 #include <gtest/gtest.h>
-#include <iomanip>
 
-namespace glm {
-namespace priv {
-
-template<int L, typename T, qualifier Q = defaultp>
-inline testing::AssertionResult AssertMsg(const char *lhs_expression, const char *rhs_expression,
-										  const glm::vec<L, T, Q> &lhs_value, const glm::vec<L, T, Q> &rhs_value) {
-	testing::Message msg;
-	msg << std::fixed << std::setprecision(7);
-	msg << "Expected similar values: ";
-	for (int i = 0; i < lhs_value.length(); i++) {
-		if (i > 0) {
-			msg << ", ";
-		} else {
-			msg << "\n  " << lhs_expression << ": ";
+template<class T>
+inline ::testing::AssertionResult vecComponentsNear(const T &lhs, const T &rhs, double delta) {
+	for (int i = 0; i < lhs.length(); ++i) {
+		const double a = (double)lhs[i];
+		const double b = (double)rhs[i];
+		const double diff = a > b ? a - b : b - a;
+		if (diff > delta) {
+			return ::testing::AssertionFailure() << "component " << i << ": " << a << " vs " << b;
 		}
-		msg << lhs_value[i];
 	}
-	for (int i = 0; i < rhs_value.length(); i++) {
-		if (i > 0) {
-			msg << ", ";
-		} else {
-			msg << "\n  " << rhs_expression << ": ";
-		}
-		msg << rhs_value[i];
-	}
-
-	return testing::AssertionFailure() << msg;
+	return ::testing::AssertionSuccess();
 }
 
-template<int L, typename T, qualifier Q = defaultp>
-inline testing::AssertionResult CmpHelperVecEQ(const char *lhs_expression, const char *rhs_expression,
-											   const char *max_distance_expression, const glm::vec<L, T, Q> &lhs_value,
-											   const glm::vec<L, T, Q> &rhs_value, T max_distance) {
-	if (glm::all(glm::epsilonEqual(lhs_value, rhs_value, max_distance))) {
-		return testing::AssertionSuccess();
-	}
+#define EXPECT_VEC_NEAR(lhs, rhs, delta) EXPECT_TRUE(vecComponentsNear((lhs), (rhs), (double)(delta)))
 
-	return AssertMsg(lhs_expression, rhs_expression, lhs_value, rhs_value);
-}
+#define ASSERT_VEC_NEAR(lhs, rhs, delta) ASSERT_TRUE(vecComponentsNear((lhs), (rhs), (double)(delta)))
 
-template<int L, typename T, qualifier Q = defaultp>
-inline testing::AssertionResult CmpHelperVecNE(const char *lhs_expression, const char *rhs_expression,
-											   const char *max_distance_expression, const glm::vec<L, T, Q> &lhs_value,
-											   const glm::vec<L, T, Q> &rhs_value, T max_distance) {
-	if (glm::any(glm::epsilonNotEqual(lhs_value, rhs_value, max_distance))) {
-		return testing::AssertionSuccess();
-	}
+#define EXPECT_VEC_NOT_NEAR(lhs, rhs, delta)                                                                                   \
+	do {                                                                                                                       \
+		const auto &_vl = (lhs);                                                                                              \
+		const auto &_vr = (rhs);                                                                                              \
+		bool _diff = false;                                                                                                   \
+		for (int _i = 0; _i < _vl.length(); ++_i) {                                                                            \
+			const double _d = (double)_vl[_i] - (double)_vr[_i];                                                           \
+			if (_d > (double)(delta) || -_d > (double)(delta)) {                                                           \
+				_diff = true;                                                                                                 \
+			}                                                                                                                 \
+		}                                                                                                                      \
+		EXPECT_TRUE(_diff);                                                                                                   \
+	} while (0)
 
-	return AssertMsg(lhs_expression, rhs_expression, lhs_value, rhs_value);
-}
+#define ASSERT_VEC_NOT_NEAR(lhs, rhs, delta) EXPECT_VEC_NOT_NEAR(lhs, rhs, delta)
 
-} // namespace priv
-} // namespace glm
-
-namespace glm {
-
-inline ::std::ostream &operator<<(::std::ostream &os, const vec3 &v) {
-	os << std::fixed << std::setprecision(7);
-	for (int i = 0; i < v.length(); i++) {
-		if (i > 0) {
-			os << ", ";
-		}
-		os << v[i];
-	}
-	return os;
-}
-
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec3 &v) {
-	for (int i = 0; i < v.length(); i++) {
-		if (i > 0) {
-			os << ", ";
-		}
-		os << v[i];
-	}
-	return os;
-}
-inline ::std::ostream &operator<<(::std::ostream &os, const vec4 &v) {
-	os << std::fixed << std::setprecision(7);
-	for (int i = 0; i < v.length(); i++) {
-		if (i > 0) {
-			os << ", ";
-		}
-		os << v[i];
-	}
-	return os;
-}
-
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec4 &v) {
-	for (int i = 0; i < v.length(); i++) {
-		if (i > 0) {
-			os << ", ";
-		}
-		os << v[i];
-	}
-	return os;
-}
-
-inline ::std::ostream &operator<<(::std::ostream &os, const vec2 &v) {
-	for (int i = 0; i < v.length(); i++) {
-		if (i > 0) {
-			os << ", ";
-		}
-		os << v[i];
-	}
-	return os;
-}
-
-inline ::std::ostream &operator<<(::std::ostream &os, const ivec2 &v) {
-	for (int i = 0; i < v.length(); i++) {
-		if (i > 0) {
-			os << ", ";
-		}
-		os << v[i];
-	}
-	return os;
-}
-
-}
-
-
-#define EXPECT_VEC_NEAR(lhs, rhs, delta) EXPECT_PRED_FORMAT3(::glm::priv::CmpHelperVecEQ, lhs, rhs, delta)
-#define ASSERT_VEC_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVecEQ, lhs, rhs, delta)
-#define EXPECT_VEC_NOT_NEAR(lhs, rhs, delta) EXPECT_PRED_FORMAT3(::glm::priv::CmpHelperVecNE, lhs, rhs, delta)
-#define ASSERT_VEC_NOT_NEAR(lhs, rhs, delta) ASSERT_PRED_FORMAT3(::glm::priv::CmpHelperVecNE, lhs, rhs, delta)
-#define EXPECT_MAT_NEAR(lhs, rhs, delta) \
-	do { \
-		for (int col = 0; col < (lhs).length(); col++) { \
-			EXPECT_VEC_NEAR((lhs)[col], (rhs)[col], delta); \
-		} \
+#define EXPECT_MAT_NEAR(lhs, rhs, delta)                                                                                       \
+	do {                                                                                                                       \
+		for (int col = 0; col < (lhs).length(); col++) {                                                                       \
+			EXPECT_VEC_NEAR((lhs)[col], (rhs)[col], delta);                                                                    \
+		}                                                                                                                      \
 	} while (0)

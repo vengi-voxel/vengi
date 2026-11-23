@@ -12,6 +12,8 @@
 #include "video/tests/AbstractGLTest.h"
 #ifdef USE_VK_RENDERER
 #include "video/vk/VkMemoryRanges.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 #endif
 
 namespace video {
@@ -141,7 +143,7 @@ TEST_F(RendererStreamingTest, QueuedUploadsPreserveEveryFrameAcrossRingReuseAndO
 }
 
 TEST_F(RendererTest, testMapType) {
-	ASSERT_EQ(DataType::Float, mapType<decltype(glm::vec3::x)>());
+	ASSERT_EQ(DataType::Float, mapType<decltype(math::Vec3f::x)>());
 }
 
 TEST_F(RendererTest, testMapTypeStructOffset) {
@@ -164,12 +166,12 @@ TEST_F(RendererTest, testMapTypeStructOffset) {
 }
 
 TEST_F(RendererTest, testFramebufferUvUIncreasesLeftToRight) {
-	const glm::vec4 &uv = framebufferUV();
+	const math::Vec4f &uv = framebufferUV();
 	EXPECT_LT(uv.x, uv.z);
 }
 
 TEST_F(RendererTest, testFramebufferUvYFlippedWhenClipOriginLowerLeft) {
-	const glm::vec4 &uv = framebufferUV();
+	const math::Vec4f &uv = framebufferUV();
 	if (clipOriginLowerLeft()) {
 		EXPECT_GT(uv.y, uv.w);
 	} else {

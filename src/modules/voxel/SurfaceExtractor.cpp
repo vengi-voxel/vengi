@@ -16,11 +16,12 @@
 #include "voxel/private/DualContouringSurfaceExtractor.h"
 #include "voxel/private/MarchingCubesSurfaceExtractor.h"
 #include "voxel/private/TextureSurfaceExtractor.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
 SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-										   const glm::ivec3 &translate, bool mergeQuads, bool reuseVertices,
+										   const math::Vec3i &translate, bool mergeQuads, bool reuseVertices,
 										   bool ambientOcclusion, bool optimize) {
 	static palette::Palette unused;
 	return SurfaceExtractionContext(volume, unused, region, mesh, translate, SurfaceExtractionType::Cubic,
@@ -29,26 +30,26 @@ SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region
 
 SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette, bool optimize) {
-	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), SurfaceExtractionType::MarchingCubes,
+	return SurfaceExtractionContext(volume, palette, region, mesh, math::Vec3i(0), SurfaceExtractionType::MarchingCubes,
 									false, false, false, optimize);
 }
 
 SurfaceExtractionContext buildGreedyTextureContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette, bool optimize) {
 	const bool textureDedupe = core::getVar(cfg::VoxelTextureDedupe)->boolVal();
-	return SurfaceExtractionContext(volume, palette, region, mesh, glm::ivec3(0), SurfaceExtractionType::GreedyTexture,
+	return SurfaceExtractionContext(volume, palette, region, mesh, math::Vec3i(0), SurfaceExtractionType::GreedyTexture,
 									false, false, false, optimize, textureDedupe);
 }
 
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-										   const glm::ivec3 &translate, bool ambientOcclusion, bool optimize) {
+										   const math::Vec3i &translate, bool ambientOcclusion, bool optimize) {
 	static palette::Palette unused;
 	return SurfaceExtractionContext(volume, unused, region, mesh, translate, SurfaceExtractionType::Binary,
 									false, false, ambientOcclusion, optimize);
 }
 
 SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-													const glm::ivec3 &translate, bool optimize) {
+													const math::Vec3i &translate, bool optimize) {
 	static palette::Palette unused;
 	return SurfaceExtractionContext(volume, unused, region, mesh, translate, SurfaceExtractionType::DualContouring,
 									false, false, false, optimize);
@@ -56,8 +57,8 @@ SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, con
 
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	core_assert_msg(ctx.volume != nullptr, "Provided volume cannot be null");
-	const glm::ivec3 &mins = ctx.region.getLowerCorner();
-	const glm::ivec3 &maxs = ctx.region.getUpperCorner();
+	const math::Vec3i &mins = ctx.region.getLowerCorner();
+	const math::Vec3i &maxs = ctx.region.getUpperCorner();
 	Log::debug("Extracting surface with mode %i in region [%d, %d, %d] - [%d, %d, %d]", (int)ctx.type, mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 
 	ctx.mesh.clear();
@@ -94,7 +95,7 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 
 voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type, const voxel::RawVolume *volume,
 											  const voxel::Region &region, const palette::Palette &palette,
-											  voxel::ChunkMesh &mesh, const glm::ivec3 &translate, bool mergeQuads,
+											  voxel::ChunkMesh &mesh, const math::Vec3i &translate, bool mergeQuads,
 											  bool reuseVertices, bool ambientOcclusion, bool optimize) {
 	if (type == voxel::SurfaceExtractionType::MarchingCubes) {
 		return voxel::buildMarchingCubesContext(volume, region, mesh, palette, optimize);

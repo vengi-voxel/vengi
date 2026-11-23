@@ -10,7 +10,7 @@
 #include "Voxel.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
-#include <glm/ext/vector_int3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -111,7 +111,7 @@ public:
 	/**
 	 * @brief Compute bounds of all non-air voxels without materializing sparse storage
 	 */
-	bool computeSolidBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const;
+	bool computeSolidBounds(math::Vec3i &mins, math::Vec3i &maxs) const;
 
 	/**
 	 * @brief Read a sub-region into a tightly packed X-major buffer without materializing sparse storage
@@ -155,15 +155,15 @@ public:
 	int32_t height() const;
 	int32_t depth() const;
 
-	glm::ivec3 mins() const;
-	glm::ivec3 maxs() const;
+	math::Vec3i mins() const;
+	math::Vec3i maxs() const;
 
 	const Voxel &voxel(int32_t x, int32_t y, int32_t z) const;
-	CORE_NO_SANITIZE_ADDRESS inline const Voxel &voxel(const glm::ivec3 &pos) const;
+	CORE_NO_SANITIZE_ADDRESS inline const Voxel &voxel(const math::Vec3i &pos) const;
 
 	void setBorderValue(const Voxel &voxel);
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int32_t x, int32_t y, int32_t z, const Voxel &voxel);
-	CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
+	CORE_NO_SANITIZE_ADDRESS bool setVoxel(const math::Vec3i &pos, const Voxel &voxel);
 	CORE_NO_SANITIZE_ADDRESS bool setVoxel(int64_t idx, const Voxel &voxel);
 	CORE_NO_SANITIZE_ADDRESS bool setVoxelOverwrite(int32_t x, int32_t y, int32_t z, const Voxel &voxel);
 
@@ -195,7 +195,7 @@ public:
 	 * @brief Reference to a live brick inside a sparse RawVolume (for lock-free parallel read or in-place modify).
 	 */
 	struct OccupiedBrickSpan {
-		glm::ivec3 worldOrigin{0};
+		math::Vec3i worldOrigin{0};
 		SparseChunk::Brick *brick = nullptr;
 	};
 
@@ -218,9 +218,9 @@ public:
 	bool hasOccupiedVoxelsInRegion(const Region &region) const;
 	/** Lock-free lookup of the brick covering volume-local coordinate (localX, localY, localZ), or nullptr. */
 	const SparseChunk::Brick *sparseBrickAt(int localX, int localY, int localZ) const;
-	bool readSparseBrickTile(const glm::ivec3 &localBrickOrigin, Voxel (&outTile)[SparseChunk::BrickVoxels],
+	bool readSparseBrickTile(const math::Vec3i &localBrickOrigin, Voxel (&outTile)[SparseChunk::BrickVoxels],
 							 uint64_t (&outMask)[SparseChunk::BrickMaskWords], int &outCount) const;
-	size_t sparseChunkIndex(const glm::ivec3 &localBrickOrigin) const;
+	size_t sparseChunkIndex(const math::Vec3i &localBrickOrigin) const;
 	void adoptPreparedSparseBricks(core::DynamicArray<PreparedTileBrick> &prepared);
 	void collectOccupiedSparseBricks(const Region &region, core::DynamicArray<OccupiedBrickSpan> &out) const;
 	void notifySparseModified();
@@ -228,7 +228,7 @@ public:
 	const core::AtomicInt *sparseGenerationPtr() const;
 
 	void sampleSparseAt(int lx, int ly, int lz, const SparseChunk *&outChunk, const SparseChunk::Brick *&outBrick,
-						const Voxel *&outRow, bool &outWholeBrick, glm::ivec3 &outLower, glm::ivec3 &outUpper,
+						const Voxel *&outRow, bool &outWholeBrick, math::Vec3i &outLower, math::Vec3i &outUpper,
 						Voxel &outFallbackVoxel, uint32_t &outGen) const;
 
 	/** Allocated payload and directory bytes, excluding allocator overhead. */
@@ -237,11 +237,11 @@ public:
 	/** True if the volume has allocated storage. */
 	bool valid() const;
 
-	void translate(const glm::ivec3 &t) {
+	void translate(const math::Vec3i &t) {
 		_region.shift(t.x, t.y, t.z);
 	}
 
-	bool move(const glm::ivec3 &t);
+	bool move(const math::Vec3i &t);
 
 	void removeFlags(const Region &region, uint8_t flags);
 	void setFlags(const Region &region, uint8_t flags);
@@ -285,7 +285,7 @@ inline int32_t RawVolume::depth() const {
 	return _region.getDepthInVoxels();
 }
 
-inline const Voxel &RawVolume::voxel(const glm::ivec3 &pos) const {
+inline const Voxel &RawVolume::voxel(const math::Vec3i &pos) const {
 	return voxel(pos.x, pos.y, pos.z);
 }
 

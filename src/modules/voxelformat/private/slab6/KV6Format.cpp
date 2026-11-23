@@ -28,8 +28,11 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
 #include <float.h>
-#include <glm/common.hpp>
-#include <glm/gtc/constants.hpp>
+#include "math/Vec3d.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -99,15 +102,15 @@ static uint8_t calculateDir(const voxel::RawVolume *v, int x, int y, int z, cons
 	double zmulk = 2.0 / 255.0;
 	double zaddk = zmulk * 0.5 - 1.0;
 	const double GOLDRAT = 0.3819660112501052;
-	const float goldratpi2 = GOLDRAT * glm::two_pi<double>();
+	const float goldratpi2 = GOLDRAT * math::twoPiD;
 
 	for (uint8_t i = 0; i < 255u; ++i) {
-		glm::dvec3 result;
+		math::Vec3d result;
 		result.z = i * zmulk + zaddk;
-		const double r = glm::sqrt(1.0 - result.z * result.z);
+		const double r = math::sqrt(1.0 - result.z * result.z);
 		const double val = i * goldratpi2;
-		result.x = glm::cos(val) * r;
-		result.y = glm::sin(val) * r;
+		result.x = math::cos(val) * r;
+		result.y = math::sin(val) * r;
 		const double f2 = result.x * (double)offsetX + result.z * (double)offsetY - result.y * (double)offsetZ;
 		if (f2 > maxF) {
 			maxF = f2;
@@ -153,7 +156,7 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 	wrap(stream->readUInt32(xsiz_w))
 	wrap(stream->readUInt32(ysiz_d))
 	wrap(stream->readUInt32(zsiz_h))
-	glm::vec3 pivot;
+	math::Vec3f pivot;
 	wrap(stream->readFloat(pivot.x))
 	wrap(stream->readFloat(pivot.y))
 	wrap(stream->readFloat(pivot.z))
@@ -204,7 +207,7 @@ size_t KV6Format::loadPalette(const core::String &filename, const io::ArchivePtr
 	}
 
 bool KV6Format::loadRawVolume(const core::String &filename, const io::ArchivePtr &archive, voxel::RawVolume *&volume,
-							  palette::Palette &palette, glm::vec3 &kenPivot, const LoadContext &ctx,
+							  palette::Palette &palette, math::Vec3f &kenPivot, const LoadContext &ctx,
 							  core::Buffer<KFAFormat::KenSpriteVox> *kenVoxels) {
 	volume = nullptr;
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
@@ -230,11 +233,11 @@ bool KV6Format::loadRawVolume(const core::String &filename, const io::ArchivePtr
 		return false;
 	}
 
-	glm::vec3 pivot;
+	math::Vec3f pivot;
 	wrap(stream->readFloat(pivot.x)) // Ken x / width
 	wrap(stream->readFloat(pivot.z)) // Ken y / depth stored in vengi z
 	wrap(stream->readFloat(pivot.y)) // Ken z / height stored in vengi y
-	kenPivot = glm::vec3(pivot.x, pivot.z, pivot.y);
+	kenPivot = math::Vec3f(pivot.x, pivot.z, pivot.y);
 
 	const voxel::Region region(0, 0, 0, (int)width - 1, (int)height - 1, (int)depth - 1);
 	if (!region.isValid()) {
@@ -347,7 +350,7 @@ bool KV6Format::loadRawVolume(const core::String &filename, const io::ArchivePtr
 bool KV6Format::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
 								  scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const LoadContext &ctx) {
 	voxel::RawVolume *volume = nullptr;
-	glm::vec3 kenPivot(0.0f);
+	math::Vec3f kenPivot(0.0f);
 	core::Buffer<KFAFormat::KenSpriteVox> kenVoxels;
 	if (!loadRawVolume(filename, archive, volume, palette, kenPivot, ctx, &kenVoxels)) {
 		return false;
@@ -368,9 +371,9 @@ bool KV6Format::loadGroupsPalette(const core::String &filename, const io::Archiv
 	}
 
 	const voxel::Region &region = volume->region();
-	const glm::vec3 normalizedPivot =
-		glm::vec3(kenPivot.x, kenPivot.z, kenPivot.y) /
-		glm::vec3(region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
+	const math::Vec3f normalizedPivot =
+		math::Vec3f(kenPivot.x, kenPivot.z, kenPivot.y) /
+		math::Vec3f(region.getWidthInVoxels(), region.getHeightInVoxels(), region.getDepthInVoxels());
 	palette::NormalPalette normalPalette;
 	normalPalette.slab6();
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -405,7 +408,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	core_assert(node);
 
 	const voxel::Region &region = node->region();
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 
 	if (dim.x > 256 || dim.z > 256 || dim.y > 255) {
 		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
@@ -465,9 +468,9 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	// KV6 only stores a pivot. Bake node translation into it so a scene-mode
 	// move (e.g. raising a model off the waterline) survives save/reload.
-	const glm::vec3 nodePivot =
+	const math::Vec3f nodePivot =
 		priv::bakedNormalizedPivot(node->pivot(), priv::nodeTranslation(sceneGraph, *node), dim);
-	const glm::vec3 pivot = nodePivot * glm::vec3(region.getDimensionsInVoxels());
+	const math::Vec3f pivot = nodePivot * math::Vec3f(region.getDimensionsInVoxels());
 	wrapBool(stream->writeFloat(pivot.x))
 	wrapBool(stream->writeFloat(pivot.z))
 	wrapBool(stream->writeFloat(pivot.y))

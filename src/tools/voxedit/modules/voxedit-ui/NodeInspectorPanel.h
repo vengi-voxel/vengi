@@ -11,8 +11,8 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/Panel.h"
+#include "math/Vec3i.h"
 
-#include <glm/vec3.hpp>
 
 namespace scenegraph {
 class SceneGraphNode;
@@ -30,8 +30,8 @@ private:
 	core::VarPtr _localSpace;
 	core::VarPtr _regionSizes;
 	core::VarPtr _gridSize;
-	core::Buffer<glm::ivec3> _validRegionSizes;
-	glm::ivec3 _newRegionSize{32, 32, 32};
+	core::Buffer<math::Vec3i> _validRegionSizes;
+	math::Vec3i _newRegionSize{32, 32, 32};
 	SceneManagerPtr _sceneMgr;
 	core::String _propertyKey;
 	core::String _propertyValue;
@@ -41,7 +41,7 @@ private:
 
 	void modelRegions(command::CommandExecutionListener &listener, scenegraph::SceneGraphNode &node);
 	void updateModelRegionSizes();
-	void saveRegionSizes(const core::Buffer<glm::ivec3> &regionSizes);
+	void saveRegionSizes(const core::Buffer<math::Vec3i> &regionSizes);
 	void modelProperties(scenegraph::SceneGraphNode &node);
 	void modelView(command::CommandExecutionListener &listener);
 	void modelViewMenuBar(scenegraph::SceneGraphNode &node);

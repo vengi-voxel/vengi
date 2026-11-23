@@ -7,7 +7,6 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
-#include <glm/trigonometric.hpp>
 #include "scenegraph/SceneGraphNode.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
@@ -16,6 +15,8 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelui/PaletteColorInput.h"
+#include "math/Scalar.h"
+#include <float.h>
 
 namespace voxedit {
 
@@ -141,9 +142,9 @@ void LSystemPanel::update(const char *id) {
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add Rule"))) {
 			_conf.rules.emplace_back();
 		}
-		float angle = glm::degrees(_conf.angle);
+		float angle = math::degrees(_conf.angle);
 		if (ImGui::InputFloat(_("Angle"), &angle, 1.0f, 10.0f, "%.1f")) {
-			_conf.angle = glm::radians(angle);
+			_conf.angle = math::radians(angle);
 		}
 		ImGui::TooltipTextUnformatted(_("The angle in degrees"));
 		ImGui::InputFloat(_("Length"), &_conf.length);
@@ -151,9 +152,9 @@ void LSystemPanel::update(const char *id) {
 		ImGui::InputFloat(_("Length scale"), &_conf.lengthScale);
 		ImGui::TooltipTextUnformatted(_("Multiply segment length after drawing; 1 keeps the length constant"));
 		ImGui::InputFloat(_("Minimum length"), &_conf.minLength);
-		float angleVariation = glm::degrees(_conf.angleVariation);
+		float angleVariation = math::degrees(_conf.angleVariation);
 		if (ImGui::InputFloat(_("Angle variation"), &angleVariation)) {
-			_conf.angleVariation = glm::radians(glm::max(0.0f, angleVariation));
+			_conf.angleVariation = math::radians(math::max(0.0f, angleVariation));
 		}
 		ImGui::TooltipTextUnformatted(_("Random angle variation in degrees; 0 disables variation"));
 		ImGui::InputInt(_("Seed"), &_conf.seed);

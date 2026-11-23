@@ -6,9 +6,9 @@
 
 #include "image/ImageFwd.h"
 #include "core/String.h"
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -18,8 +18,8 @@ class SceneGraphNode;
 namespace voxelformat {
 
 struct ThumbnailContext {
-	glm::ivec2 outputSize{128, 128};
-	glm::vec4 clearColor{0.0f, 0.0f, 0.0f, 1.0f};
+	math::Vec2i outputSize{128, 128};
+	math::Vec4f clearColor{0.0f, 0.0f, 0.0f, 1.0f};
 	float pitch = 0.0f; // given in radians
 	float yaw = 0.0f; // given in radians
 	float roll = 0.0f; // given in radians
@@ -30,10 +30,10 @@ struct ThumbnailContext {
 	/** This is applied to 2d renderer shots of an image (headless mode) */
 	float depthFactor2D = 0.0f;
 	/** The camera rotation - see @c deltaFrameSeconds */
-	glm::vec3 omega{0.0f, 0.0f, 0.0f};
+	math::Vec3f omega{0.0f, 0.0f, 0.0f};
 	core::String cameraMode = "free"; // see voxelrender::SceneCameraModeStr
 	/** only used when @c useWorldPosition is set to @c true */
-	glm::vec3 worldPosition{0.0f, 0.0f, 0.0f};
+	math::Vec3f worldPosition{0.0f, 0.0f, 0.0f};
 	/** This is particularly useful when also using @c omega for the camera rotation */
 	double deltaFrameSeconds = 0.001;
 	/** Use the scene node camera for rendering the thumbnail */

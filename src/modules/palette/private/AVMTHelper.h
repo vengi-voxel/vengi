@@ -8,7 +8,7 @@
 #include "color/RGBA.h"
 #include "io/TokenStream.h"
 #include "palette/Material.h"
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -60,7 +60,7 @@ public:
 
 struct AVMTMaterial {
 	color::RGBA rgba;
-	glm::vec4 color{0.0f, 0.0f, 0.0f, 1.0f};
+	math::Vec4f color{0.0f, 0.0f, 0.0f, 1.0f};
 	core::String name;
 	palette::Material mat;
 

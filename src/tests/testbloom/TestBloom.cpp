@@ -9,6 +9,7 @@
 #include "testcore/TestAppMain.h"
 #include "video/Texture.h"
 #include "core/Log.h"
+#include "math/Vec2i.h"
 
 TestBloom::TestBloom(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
@@ -72,27 +73,27 @@ void TestBloom::onRenderUI() {
 	}
 
 	ImGui::Text("scene");
-	ImGui::Image(_sceneTexture->handle(), glm::ivec2(_sceneTexture->width(), _sceneTexture->height()));
+	ImGui::Image(_sceneTexture->handle(), math::Vec2i(_sceneTexture->width(), _sceneTexture->height()));
 
 	ImGui::Text("glow");
-	ImGui::Image(_glowTexture->handle(), glm::ivec2(_glowTexture->width(), _glowTexture->height()));
+	ImGui::Image(_glowTexture->handle(), math::Vec2i(_glowTexture->width(), _glowTexture->height()));
 
 	for (int i = 0; i < render::BloomRenderer::passes(); ++i) {
 		ImGui::Separator();
 		{
 			const video::TexturePtr &tex = _bloomRenderer.texture0(i);
 			ImGui::Text("texture0[%i] %i:%i", i, tex->width(), tex->height());
-			ImGui::Image(tex->handle(), glm::ivec2(tex->width(), tex->height()));
+			ImGui::Image(tex->handle(), math::Vec2i(tex->width(), tex->height()));
 		}
 		{
 			const video::TexturePtr &tex = _bloomRenderer.texture1(i);
 			ImGui::Text("texture1[%i] %i:%i", i, tex->width(), tex->height());
-			ImGui::Image(tex->handle(), glm::ivec2(tex->width(), tex->height()));
+			ImGui::Image(tex->handle(), math::Vec2i(tex->width(), tex->height()));
 		}
 		{
 			const video::TexturePtr &tex = _bloomRenderer.texture2(i);
 			ImGui::Text("texture2[%i] %i:%i", i, tex->width(), tex->height());
-			ImGui::Image(tex->handle(), glm::ivec2(tex->width(), tex->height()));
+			ImGui::Image(tex->handle(), math::Vec2i(tex->width(), tex->height()));
 		}
 	}
 }

@@ -11,15 +11,11 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <cmath>
+#include <limits.h>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/trigonometric.hpp>
 
 namespace voxedit {
 
@@ -29,14 +25,14 @@ bool TransformOperation::setParameters(const TransformParameters &parameters) {
 		return false;
 	}
 	for (int i = 0; i < 3; ++i) {
-		if (!std::isfinite(parameters.scale[i]) || !std::isfinite(parameters.rotationDegrees[i])) {
+		if (!math::isfinite(parameters.scale[i]) || !math::isfinite(parameters.rotationDegrees[i])) {
 			return false;
 		}
 	}
 	_parameters = parameters;
-	_parameters.translation = glm::clamp(parameters.translation, glm::ivec3(-MaxMoveOffset), glm::ivec3(MaxMoveOffset));
-	_parameters.shear = glm::clamp(parameters.shear, glm::ivec3(-MaxShearOffset), glm::ivec3(MaxShearOffset));
-	_parameters.scale = glm::max(parameters.scale, glm::vec3(0.01f));
+	_parameters.translation = math::clamp(parameters.translation, math::Vec3i(-MaxMoveOffset), math::Vec3i(MaxMoveOffset));
+	_parameters.shear = math::clamp(parameters.shear, math::Vec3i(-MaxShearOffset), math::Vec3i(MaxShearOffset));
+	_parameters.scale = math::max(parameters.scale, math::Vec3f(0.01f));
 	return true;
 }
 
@@ -45,14 +41,14 @@ void TransformOperation::prepare(const voxel::RawVolume *volume, const voxel::Re
 		_snapshotHelper.captureSnapshot(volume, region);
 		if (_snapshotHelper.hasSnapshot()) {
 			const voxel::Region &sr = _snapshotHelper.snapshotRegion();
-			_snapshotCenter = glm::vec3(sr.getLowerCorner() + sr.getUpperCorner()) * 0.5f;
+			_snapshotCenter = math::Vec3f(sr.getLowerCorner() + sr.getUpperCorner()) * 0.5f;
 		}
 	} else if (_snapshotHelper.hasSnapshot()) {
 		// Detect volume region shift (e.g. node was moved) and adjust cached data
-		const glm::ivec3 delta = region.getLowerCorner() - _snapshotHelper.capturedVolumeLower();
-		if (delta != glm::ivec3(0)) {
+		const math::Vec3i delta = region.getLowerCorner() - _snapshotHelper.capturedVolumeLower();
+		if (delta != math::Vec3i(0)) {
 			_snapshotHelper.adjustForRegionShift(delta);
-			_snapshotCenter += glm::vec3(delta);
+			_snapshotCenter += math::Vec3f(delta);
 		}
 	}
 	_cachedRegion = computeTransformedRegion();
@@ -64,24 +60,24 @@ voxel::Region TransformOperation::computeTransformedRegion() const {
 	if (!_snapshotHelper.hasSnapshot() || _snapshotHelper.snapshotVoxelCount() == 0) {
 		return voxel::Region::InvalidRegion;
 	}
-	const glm::ivec3 &srcLo = _snapshotHelper.snapshotRegion().getLowerCorner();
-	const glm::ivec3 &srcHi = _snapshotHelper.snapshotRegion().getUpperCorner();
-	glm::ivec3 dstLo = srcLo;
-	glm::ivec3 dstHi = srcHi;
+	const math::Vec3i &srcLo = _snapshotHelper.snapshotRegion().getLowerCorner();
+	const math::Vec3i &srcHi = _snapshotHelper.snapshotRegion().getUpperCorner();
+	math::Vec3i dstLo = srcLo;
+	math::Vec3i dstHi = srcHi;
 
 	static constexpr int NumCorners = 8;
 	for (int corner = 0; corner < NumCorners; ++corner) {
-		const glm::ivec3 cornerPos((corner & 1) ? srcHi.x : srcLo.x, (corner & 2) ? srcHi.y : srcLo.y,
+		const math::Vec3i cornerPos((corner & 1) ? srcHi.x : srcLo.x, (corner & 2) ? srcHi.y : srcLo.y,
 								   (corner & 4) ? srcHi.z : srcLo.z);
-		const glm::ivec3 transformed = transformPosition(cornerPos);
-		dstLo = glm::min(dstLo, transformed);
-		dstHi = glm::max(dstHi, transformed);
+		const math::Vec3i transformed = transformPosition(cornerPos);
+		dstLo = math::min(dstLo, transformed);
+		dstHi = math::max(dstHi, transformed);
 	}
 
 	// Union of original and transformed regions with a small margin for rounding
 	static constexpr int Margin = 2;
-	const glm::ivec3 unionLo = glm::min(srcLo, dstLo) - Margin;
-	const glm::ivec3 unionHi = glm::max(srcHi, dstHi) + Margin;
+	const math::Vec3i unionLo = math::min(srcLo, dstLo) - Margin;
+	const math::Vec3i unionHi = math::max(srcHi, dstHi) + Margin;
 	return voxel::Region(unionLo, unionHi);
 }
 
@@ -89,18 +85,18 @@ voxel::Region TransformOperation::computeDestinationRegion() const {
 	if (!_snapshotHelper.hasSnapshot() || _snapshotHelper.snapshotVoxelCount() == 0) {
 		return voxel::Region::InvalidRegion;
 	}
-	const glm::ivec3 &srcLo = _snapshotHelper.snapshotRegion().getLowerCorner();
-	const glm::ivec3 &srcHi = _snapshotHelper.snapshotRegion().getUpperCorner();
-	glm::ivec3 dstLo(INT_MAX);
-	glm::ivec3 dstHi(INT_MIN);
+	const math::Vec3i &srcLo = _snapshotHelper.snapshotRegion().getLowerCorner();
+	const math::Vec3i &srcHi = _snapshotHelper.snapshotRegion().getUpperCorner();
+	math::Vec3i dstLo(INT_MAX);
+	math::Vec3i dstHi(INT_MIN);
 
 	static constexpr int NumCorners = 8;
 	for (int corner = 0; corner < NumCorners; ++corner) {
-		const glm::ivec3 cornerPos((corner & 1) ? srcHi.x : srcLo.x, (corner & 2) ? srcHi.y : srcLo.y,
+		const math::Vec3i cornerPos((corner & 1) ? srcHi.x : srcLo.x, (corner & 2) ? srcHi.y : srcLo.y,
 								   (corner & 4) ? srcHi.z : srcLo.z);
-		const glm::ivec3 transformed = transformPosition(cornerPos);
-		dstLo = glm::min(dstLo, transformed);
-		dstHi = glm::max(dstHi, transformed);
+		const math::Vec3i transformed = transformPosition(cornerPos);
+		dstLo = math::min(dstLo, transformed);
+		dstHi = math::max(dstHi, transformed);
 	}
 	static constexpr int Margin = 2;
 	return voxel::Region(dstLo - Margin, dstHi + Margin);
@@ -129,13 +125,13 @@ bool TransformOperation::dirtyRegions(core::Buffer<voxel::Region> &regions) cons
 	return !regions.empty();
 }
 
-glm::ivec3 TransformOperation::transformPosition(const glm::ivec3 &pos) const {
-	const glm::vec3 center = _snapshotCenter;
-	glm::vec3 result(pos);
+math::Vec3i TransformOperation::transformPosition(const math::Vec3i &pos) const {
+	const math::Vec3f center = _snapshotCenter;
+	math::Vec3f result(pos);
 
 	switch (_parameters.mode) {
 	case TransformMode::Move:
-		result += glm::vec3(_parameters.translation);
+		result += math::Vec3f(_parameters.translation);
 		break;
 
 	case TransformMode::Shear: {
@@ -144,8 +140,8 @@ glm::ivec3 TransformOperation::transformPosition(const glm::ivec3 &pos) const {
 		// X shear: each Y-layer shifts in X (top goes +X, bottom goes -X)
 		// Y shear: each Z-layer shifts in Y (front goes +Y, back goes -Y)
 		// Z shear: each X-layer shifts in Z (right goes +Z, left goes -Z)
-		const glm::vec3 relative = result - center;
-		const glm::vec3 halfSize = glm::vec3(_snapshotHelper.snapshotRegion().getDimensionsInVoxels()) * 0.5f;
+		const math::Vec3f relative = result - center;
+		const math::Vec3f halfSize = math::Vec3f(_snapshotHelper.snapshotRegion().getDimensionsInVoxels()) * 0.5f;
 
 		if (halfSize.y > 0.0f && _parameters.shear.x != 0) {
 			result.x += (relative.y / halfSize.y) * (float)_parameters.shear.x;
@@ -160,21 +156,21 @@ glm::ivec3 TransformOperation::transformPosition(const glm::ivec3 &pos) const {
 	}
 
 	case TransformMode::Scale: {
-		const glm::vec3 relative = result - center;
+		const math::Vec3f relative = result - center;
 		result = center + relative * _parameters.scale;
 		break;
 	}
 
 	case TransformMode::Rotate: {
-		glm::vec3 relative = result - center;
+		math::Vec3f relative = result - center;
 		if (_parameters.rotationDegrees.x != 0.0f) {
-			relative = glm::rotateX(relative, glm::radians(_parameters.rotationDegrees.x));
+			relative = math::rotateX(relative, math::radians(_parameters.rotationDegrees.x));
 		}
 		if (_parameters.rotationDegrees.y != 0.0f) {
-			relative = glm::rotateY(relative, glm::radians(_parameters.rotationDegrees.y));
+			relative = math::rotateY(relative, math::radians(_parameters.rotationDegrees.y));
 		}
 		if (_parameters.rotationDegrees.z != 0.0f) {
-			relative = glm::rotateZ(relative, glm::radians(_parameters.rotationDegrees.z));
+			relative = math::rotateZ(relative, math::radians(_parameters.rotationDegrees.z));
 		}
 		result = center + relative;
 		break;
@@ -184,32 +180,32 @@ glm::ivec3 TransformOperation::transformPosition(const glm::ivec3 &pos) const {
 		break;
 	}
 
-	return glm::ivec3(glm::round(result));
+	return math::Vec3i(math::round(result));
 }
 
-glm::vec3 TransformOperation::inverseTransformPosition(const glm::ivec3 &pos) const {
-	const glm::vec3 center = _snapshotCenter;
-	glm::vec3 result(pos);
+math::Vec3f TransformOperation::inverseTransformPosition(const math::Vec3i &pos) const {
+	const math::Vec3f center = _snapshotCenter;
+	math::Vec3f result(pos);
 
 	switch (_parameters.mode) {
 	case TransformMode::Scale: {
 		// Inverse of: result = center + relative * scale
-		const glm::vec3 relative = result - center;
+		const math::Vec3f relative = result - center;
 		result = center + relative / _parameters.scale;
 		break;
 	}
 
 	case TransformMode::Rotate: {
 		// Inverse rotation: apply in reverse order with negated angles
-		glm::vec3 relative = result - center;
+		math::Vec3f relative = result - center;
 		if (_parameters.rotationDegrees.z != 0.0f) {
-			relative = glm::rotateZ(relative, glm::radians(-_parameters.rotationDegrees.z));
+			relative = math::rotateZ(relative, math::radians(-_parameters.rotationDegrees.z));
 		}
 		if (_parameters.rotationDegrees.y != 0.0f) {
-			relative = glm::rotateY(relative, glm::radians(-_parameters.rotationDegrees.y));
+			relative = math::rotateY(relative, math::radians(-_parameters.rotationDegrees.y));
 		}
 		if (_parameters.rotationDegrees.x != 0.0f) {
-			relative = glm::rotateX(relative, glm::radians(-_parameters.rotationDegrees.x));
+			relative = math::rotateX(relative, math::radians(-_parameters.rotationDegrees.x));
 		}
 		result = center + relative;
 		break;
@@ -232,7 +228,7 @@ void TransformOperation::eraseSnapshotPositions(ModifierVolumeWrapper &wrapper) 
 		SnapshotHelper *helper;
 		bool setVoxel(int x, int y, int z, const voxel::Voxel &) {
 			constexpr voxel::Voxel air;
-			const glm::ivec3 pos(x, y, z);
+			const math::Vec3i pos(x, y, z);
 			helper->writeVoxel(*wrapper, pos, air);
 			return true;
 		}
@@ -251,23 +247,23 @@ void TransformOperation::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 	voxel::RawVolume snapshotRaw(snapshotRegion);
 	_snapshotHelper.snapshot().copyTo(snapshotRaw);
 
-	const glm::ivec3 &srcLo = snapshotRegion.getLowerCorner();
-	const glm::ivec3 &srcHi = snapshotRegion.getUpperCorner();
-	glm::ivec3 dstLo(INT_MAX);
-	glm::ivec3 dstHi(INT_MIN);
+	const math::Vec3i &srcLo = snapshotRegion.getLowerCorner();
+	const math::Vec3i &srcHi = snapshotRegion.getUpperCorner();
+	math::Vec3i dstLo(INT_MAX);
+	math::Vec3i dstHi(INT_MIN);
 
 	static constexpr int NumCorners = 8;
 	for (int corner = 0; corner < NumCorners; ++corner) {
-		const glm::ivec3 cornerPos((corner & 1) ? srcHi.x : srcLo.x, (corner & 2) ? srcHi.y : srcLo.y,
+		const math::Vec3i cornerPos((corner & 1) ? srcHi.x : srcLo.x, (corner & 2) ? srcHi.y : srcLo.y,
 								   (corner & 4) ? srcHi.z : srcLo.z);
-		const glm::ivec3 transformed = transformPosition(cornerPos);
-		dstLo = glm::min(dstLo, transformed);
-		dstHi = glm::max(dstHi, transformed);
+		const math::Vec3i transformed = transformPosition(cornerPos);
+		dstLo = math::min(dstLo, transformed);
+		dstHi = math::max(dstHi, transformed);
 	}
 
 	// Clamp to volume bounds
-	dstLo = glm::max(dstLo, volRegion.getLowerCorner());
-	dstHi = glm::min(dstHi, volRegion.getUpperCorner());
+	dstLo = math::max(dstLo, volRegion.getLowerCorner());
+	dstHi = math::min(dstHi, volRegion.getUpperCorner());
 
 	const int zSlices = dstHi.z - dstLo.z + 1;
 	if (zSlices <= 0) {
@@ -288,8 +284,8 @@ void TransformOperation::applyInverseMapping(ModifierVolumeWrapper &wrapper) {
 			results.reserve((dstHi.x - dstLo.x + 1) * (dstHi.y - dstLo.y + 1));
 			for (int dy = dstLo.y; dy <= dstHi.y; ++dy) {
 				for (int dx = dstLo.x; dx <= dstHi.x; ++dx) {
-					const glm::ivec3 dstPos(dx, dy, dz);
-					const glm::vec3 srcPos = inverseTransformPosition(dstPos);
+					const math::Vec3i dstPos(dx, dy, dz);
+					const math::Vec3f srcPos = inverseTransformPosition(dstPos);
 					const voxel::Voxel source = voxel::sampleVoxel(sampler, _parameters.sampling, srcPos);
 					if (!voxel::isAir(source.getMaterial())) {
 						results.push_back({dstPos, source});
@@ -323,7 +319,7 @@ void TransformOperation::applyTransform(ModifierVolumeWrapper &wrapper) {
 		voxelutil::visitVolume(
 			_snapshotHelper.snapshot(), _snapshotHelper.snapshotRegion(),
 			[&](int x, int y, int z, const voxel::Voxel &v) {
-				const glm::ivec3 newPos = transformPosition(glm::ivec3(x, y, z));
+				const math::Vec3i newPos = transformPosition(math::Vec3i(x, y, z));
 				_snapshotHelper.writeVoxel(wrapper, newPos, v);
 			},
 			voxelutil::VisitSolid());

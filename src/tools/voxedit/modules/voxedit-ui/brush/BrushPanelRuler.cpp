@@ -8,6 +8,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/brush/RulerBrush.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -23,9 +24,9 @@ void BrushPanelRuler::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		ImGui::TextWrappedUnformatted(_("Click two points to measure the distance between them"));
 	}
 	if (brush.hasMeasurement()) {
-		const glm::ivec3 &start = brush.startPos();
-		const glm::ivec3 &end = brush.endPos();
-		const glm::ivec3 d = brush.delta();
+		const math::Vec3i &start = brush.startPos();
+		const math::Vec3i &end = brush.endPos();
+		const math::Vec3i d = brush.delta();
 		ImGui::SeparatorText(_("Measurement"));
 		ImGui::InputVec3(_("Start"), start);
 		ImGui::InputVec3(_("End"), end);

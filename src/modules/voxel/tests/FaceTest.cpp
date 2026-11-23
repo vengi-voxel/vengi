@@ -3,14 +3,13 @@
  */
 
 #include "app/tests/AbstractTest.h"
-#include "core/Bits.h"
+#include "core/BitsHelper.h"
 #include "core/Enum.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 
-#include <glm/geometric.hpp>
 
 namespace voxel {
 

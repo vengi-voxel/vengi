@@ -9,6 +9,7 @@
 #include "core/collection/StringMap.h"
 #include "image/Image.h"
 #include "palette/Material.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -30,7 +31,7 @@ public:
 	int width() const;
 	int height() const;
 	[[nodiscard]] color::RGBA apply(color::RGBA color) const;
-	[[nodiscard]] bool colorAt(color::RGBA &color, const glm::vec2 &uv, bool originUpperLeft = false) const;
+	[[nodiscard]] bool colorAt(color::RGBA &color, const math::Vec2f &uv, bool originUpperLeft = false) const;
 };
 
 using MeshMaterialPtr = core::SharedPtr<MeshMaterial>;

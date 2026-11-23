@@ -35,7 +35,11 @@
 #include "voxelformat/tests/AbstractFormatTest.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <limits>
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -60,7 +64,7 @@ TEST_F(MeshFormatTest, testAxisAlignedPlanarMesh) {
 TEST_F(MeshFormatTest, testExportIgnoresVoxelNormals) {
 	class TestMesh : public MeshFormat {
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			vertices = indices = normals = 0;
 			for (const ChunkMeshExt &entry : meshes) {
 				for (const voxel::Mesh &mesh : entry.mesh->mesh) {
@@ -127,7 +131,7 @@ TEST_F(MeshFormatTest, testExportIgnoresVoxelNormals) {
 TEST_F(MeshFormatTest, testExportVoxelNormals) {
 	class TestMesh : public MeshFormat {
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			vertices = 0;
 			for (const ChunkMeshExt &entry : meshes) {
 				for (const voxel::Mesh &mesh : entry.mesh->mesh) {
@@ -135,11 +139,11 @@ TEST_F(MeshFormatTest, testExportVoxelNormals) {
 					EXPECT_EQ(mesh.getNoOfVertices(), mesh.getNormalVector().size());
 					for (size_t i = 0; i < mesh.getNoOfVertices(); ++i) {
 						const uint8_t index = mesh.getVertex(i).normalIndex;
-						const glm::vec3 &normal = mesh.getNormalVector()[i];
-						EXPECT_NEAR(1.0f, glm::length(normal), 0.0001f);
+						const math::Vec3f &normal = mesh.getNormalVector()[i];
+						EXPECT_NEAR(1.0f, math::length(normal), 0.0001f);
 						if (index > NO_NORMAL && (size_t)(index - NORMAL_PALETTE_OFFSET) < palette.size()) {
-							const glm::vec3 expected = glm::normalize(palette.normal3f(index - NORMAL_PALETTE_OFFSET));
-							EXPECT_NEAR(1.0f, glm::dot(expected, normal), 0.0001f);
+							const math::Vec3f expected = math::normalize(palette.normal3f(index - NORMAL_PALETTE_OFFSET));
+							EXPECT_NEAR(1.0f, math::dot(expected, normal), 0.0001f);
 							++stored;
 						} else {
 							++fallback;
@@ -158,7 +162,7 @@ TEST_F(MeshFormatTest, testExportVoxelNormals) {
 	util::ScopedVarChange normals(cfg::VoxformatWithNormals, "true");
 	util::ScopedVarChange voxelNormals(cfg::VoxformatWithVoxelNormals, "true");
 	util::ScopedVarChange optimize(cfg::VoxformatMeshOptimize, "false");
-	const glm::vec3 values[] = {glm::normalize(glm::vec3(1, 2, 3)), glm::normalize(glm::vec3(-2, 1, 3))};
+	const math::Vec3f values[] = {math::normalize(math::Vec3f(1, 2, 3)), math::normalize(math::Vec3f(-2, 1, 3))};
 	palette::NormalPalette palette;
 	palette.loadNormalMap(values, 2);
 	scenegraph::SceneGraph graph;
@@ -276,15 +280,15 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 		util::ScopedVarChange transform(cfg::VoxformatTransform, "true");
 		util::ScopedVarChange quads(cfg::VoxformatQuads, "false");
 		palette::NormalPalette palette;
-		const glm::vec3 values[] = {glm::normalize(glm::vec3(1, 2, 3))};
+		const math::Vec3f values[] = {math::normalize(math::Vec3f(1, 2, 3))};
 		palette.loadNormalMap(values, 1);
-		const glm::vec3 expected = glm::normalize(palette.normal3f(0) / glm::vec3(2, 3, 4));
+		const math::Vec3f expected = math::normalize(palette.normal3f(0) / math::Vec3f(2, 3, 4));
 		scenegraph::SceneGraph graph;
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.createVolume(voxel::Region(0, 0, 0, 0, 0, 0));
 		node.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 42, 1));
 		node.setNormalPalette(palette);
-		node.transform(0).setLocalScale(glm::vec3(2, 3, 4));
+		node.transform(0).setLocalScale(math::Vec3f(2, 3, 4));
 		graph.emplace(core::move(node));
 		graph.updateTransforms();
 		const io::MemoryArchivePtr archive = io::openMemoryArchive();
@@ -313,7 +317,7 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 						continue;
 					}
 				}
-				EXPECT_NEAR(1.0f, glm::dot(expected, glm::vec3(x, y, z)), 0.0002f);
+				EXPECT_NEAR(1.0f, math::dot(expected, math::Vec3f(x, y, z)), 0.0002f);
 				found = true;
 			}
 			EXPECT_TRUE(found) << filename;
@@ -333,7 +337,7 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 			float normal[3];
 			ASSERT_TRUE(cgltf_accessor_read_float(accessor, i, normal, 3));
 			// glTF keeps the node transform, so the normals stay in local space.
-			EXPECT_NEAR(1.0f, glm::dot(glm::normalize(palette.normal3f(0)), glm::vec3(normal[0], normal[1], normal[2])), 0.0001f);
+			EXPECT_NEAR(1.0f, math::dot(math::normalize(palette.normal3f(0)), math::Vec3f(normal[0], normal[1], normal[2])), 0.0001f);
 		}
 		cgltf_free(data);
 		core::ScopedPtr<io::SeekableReadStream> fbxStream(archive->readStream("mesh.fbx"));
@@ -348,7 +352,7 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 		ASSERT_TRUE(fbxNormals.exists);
 		for (size_t i = 0; i < fbxNormals.values.count; ++i) {
 			const ufbx_vec3 &normal = fbxNormals.values.data[i];
-			EXPECT_NEAR(1.0f, glm::dot(expected, glm::vec3(normal.x, normal.y, normal.z)), 0.0001f);
+			EXPECT_NEAR(1.0f, math::dot(expected, math::Vec3f(normal.x, normal.y, normal.z)), 0.0001f);
 		}
 		ufbx_free_scene(scene);
 		const FormatVarMeta *meta = FormatConfig::findVarMeta(cfg::VoxformatWithVoxelNormals);
@@ -364,9 +368,9 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 TEST_F(MeshFormatTest, testSubdivide) {
 	MeshTriCollection tinyTris;
 	voxelformat::MeshTri meshTri;
-	meshTri.setVertices(glm::vec3(-8.77272797, -11.43335, -0.154544264),
-						glm::vec3(-8.77272701, 11.1000004, -0.154543981),
-						glm::vec3(8.77272701, 11.1000004, -0.154543981));
+	meshTri.setVertices(math::Vec3f(-8.77272797, -11.43335, -0.154544264),
+						math::Vec3f(-8.77272701, 11.1000004, -0.154543981),
+						math::Vec3f(8.77272701, 11.1000004, -0.154543981));
 	MeshFormat::subdivideTri(meshTri, tinyTris, 0);
 	EXPECT_EQ(1024u, tinyTris.size());
 }
@@ -376,7 +380,7 @@ TEST_F(MeshFormatTest, testSubdivideRejectsTooLarge) {
 	// within the depth budget; early-out instead of exploding toward 4^depth leaves.
 	MeshTriCollection tinyTris;
 	voxelformat::MeshTri meshTri;
-	meshTri.setVertices(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0e6f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0e6f, 0.0f));
+	meshTri.setVertices(math::Vec3f(0.0f, 0.0f, 0.0f), math::Vec3f(1.0e6f, 0.0f, 0.0f), math::Vec3f(0.0f, 1.0e6f, 0.0f));
 	MeshFormat::subdivideTri(meshTri, tinyTris, 0);
 	EXPECT_FALSE(tinyTris.empty());
 	EXPECT_LT(tinyTris.size(), 16u);
@@ -386,7 +390,7 @@ TEST_F(MeshFormatTest, testSubdivideSkipsNonFinite) {
 	MeshTriCollection tinyTris;
 	voxelformat::MeshTri meshTri;
 	const float inf = std::numeric_limits<float>::infinity();
-	meshTri.setVertices(glm::vec3(inf, 0.0f, 0.0f), glm::vec3(0.0f, inf, 0.0f), glm::vec3(0.0f, 0.0f, inf));
+	meshTri.setVertices(math::Vec3f(inf, 0.0f, 0.0f), math::Vec3f(0.0f, inf, 0.0f), math::Vec3f(0.0f, 0.0f, inf));
 	EXPECT_FALSE(MeshFormat::subdivideTri(meshTri, tinyTris, 0));
 	EXPECT_TRUE(tinyTris.empty());
 }
@@ -397,7 +401,7 @@ TEST_F(MeshFormatTest, testVoxelizeSkipsSubdivisionForVoxelSizedTris) {
 	class TestMesh : public MeshFormat {
 	public:
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 		int voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
@@ -412,9 +416,9 @@ TEST_F(MeshFormatTest, testVoxelizeSkipsSubdivisionForVoxelSizedTris) {
 	Mesh mesh;
 	voxelformat::MeshTri meshTri;
 	meshTri.setColor(color::RGBA(255, 0, 0), color::RGBA(255, 0, 0), color::RGBA(255, 0, 0));
-	meshTri.setVertices(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(0.7f, 0.2f, 0.15f), glm::vec3(0.2f, 0.65f, 0.25f));
-	const glm::vec3 size = meshTri.maxs() - meshTri.mins();
-	ASSERT_FALSE(glm::any(glm::greaterThan(size, glm::vec3(1.0f))));
+	meshTri.setVertices(math::Vec3f(0.1f, 0.1f, 0.1f), math::Vec3f(0.7f, 0.2f, 0.15f), math::Vec3f(0.2f, 0.65f, 0.25f));
+	const math::Vec3f size = meshTri.maxs() - meshTri.mins();
+	ASSERT_FALSE(math::any(math::greaterThan(size, math::Vec3f(1.0f))));
 	mesh.addTriangle(meshTri);
 
 	MeshTriCollection checkTris;
@@ -435,7 +439,7 @@ TEST_F(MeshFormatTest, testVoxelizeSubdividesLargeTris) {
 	class TestMesh : public MeshFormat {
 	public:
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 		int voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
@@ -450,9 +454,9 @@ TEST_F(MeshFormatTest, testVoxelizeSubdividesLargeTris) {
 	Mesh mesh;
 	voxelformat::MeshTri meshTri;
 	meshTri.setColor(color::RGBA(0, 255, 0), color::RGBA(0, 255, 0), color::RGBA(0, 255, 0));
-	meshTri.setVertices(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(8.0f, 1.0f, 0.5f), glm::vec3(1.0f, 7.0f, 2.0f));
-	const glm::vec3 size = meshTri.maxs() - meshTri.mins();
-	ASSERT_TRUE(glm::any(glm::greaterThan(size, glm::vec3(1.0f))));
+	meshTri.setVertices(math::Vec3f(0.0f, 0.0f, 0.0f), math::Vec3f(8.0f, 1.0f, 0.5f), math::Vec3f(1.0f, 7.0f, 2.0f));
+	const math::Vec3f size = meshTri.maxs() - meshTri.mins();
+	ASSERT_TRUE(math::any(math::greaterThan(size, math::Vec3f(1.0f))));
 	mesh.addTriangle(meshTri);
 
 	MeshTriCollection checkTris;
@@ -482,7 +486,7 @@ TEST_F(MeshFormatTest, testColorAt) {
 	meshMaterialArray.emplace_back(createMaterial(texture));
 	meshTri.materialIdx = meshMaterialArray.size() - 1;
 	for (int i = 0; i < 256; ++i) {
-		const glm::vec2 uv = texture->uv(i, 0);
+		const math::Vec2f uv = texture->uv(i, 0);
 		meshTri.setUVs(uv, uv, uv);
 		const color::RGBA color = colorAt(meshTri, meshMaterialArray, meshTri.centerUV());
 		ASSERT_EQ(pal.color(i), color) << "i: " << i << " " << color::print(pal.color(i)) << " vs "
@@ -493,12 +497,12 @@ TEST_F(MeshFormatTest, testColorAt) {
 TEST_F(MeshFormatTest, testSceneVoxelSize) {
 	class TestMesh : public MeshFormat {
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 		bool voxelizeGroups(const core::String &, const io::ArchivePtr &, scenegraph::SceneGraph &graph,
 							const LoadContext &ctx) override {
-			const glm::vec3 scale = getInputScale(glm::vec3(0), glm::vec3(14, 4, 0));
+			const math::Vec3f scale = getInputScale(math::Vec3f(0), math::Vec3f(14, 4, 0));
 			for (int i = 0; i < 2; ++i) {
 				Mesh mesh;
 				MeshTri tri;
@@ -510,7 +514,7 @@ TEST_F(MeshFormatTest, testSceneVoxelSize) {
 				if (id == InvalidNodeId) {
 					return false;
 				}
-				graph.node(id).setTranslation(glm::vec3(i * 10, 0, 0) * scale);
+				graph.node(id).setTranslation(math::Vec3f(i * 10, 0, 0) * scale);
 			}
 			return true;
 		}
@@ -540,7 +544,7 @@ TEST_F(MeshFormatTest, testSceneVoxelSize) {
 TEST_F(MeshFormatTest, testSceneVoxelSizeTransformedBounds) {
 	class TestMesh : public MeshFormat {
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 		bool voxelizeGroups(const core::String &, const io::ArchivePtr &, scenegraph::SceneGraph &graph,
@@ -550,20 +554,20 @@ TEST_F(MeshFormatTest, testSceneVoxelSizeTransformedBounds) {
 			tri.setVertices({0, 1, 0}, {1, 0, 0}, {2, 2, 0});
 			tri.setColor(color::RGBA(255, 0, 0));
 			mesh.addTriangle(tri);
-			inputScale = getInputScale(glm::vec3(0), glm::vec3(2, 2, 0));
+			inputScale = getInputScale(math::Vec3f(0), math::Vec3f(2, 2, 0));
 			const int id = importMesh("triangle", graph, core::move(mesh), 0, false, ctx.progress);
 			if (id == InvalidNodeId) {
 				return false;
 			}
 			graph.node(id).transform(0).setLocalOrientation(rotation);
 			graph.node(id).transform(0).setLocalScale(scale);
-			graph.node(id).setTranslation(glm::vec3(10, -5, 0) * inputScale);
+			graph.node(id).setTranslation(math::Vec3f(10, -5, 0) * inputScale);
 			return true;
 		}
 	public:
-		glm::quat rotation{1.0f, 0.0f, 0.0f, 0.0f};
-		glm::vec3 scale{1.0f};
-		glm::vec3 inputScale{1.0f};
+		math::Quatf rotation{1.0f, 0.0f, 0.0f, 0.0f};
+		math::Vec3f scale{1.0f};
+		math::Vec3f inputScale{1.0f};
 	};
 	util::ScopedVarChange voxelSize(cfg::VoxformatVoxelSize, "20");
 	util::ScopedVarChange voxelMode(cfg::VoxformatVoxelizeMode, "1");
@@ -577,14 +581,14 @@ TEST_F(MeshFormatTest, testSceneVoxelSizeTransformedBounds) {
 	}
 	{
 		// The local AABB has a larger rotated extent than this triangle itself.
-		format.rotation = glm::angleAxis(glm::radians(45.0f), glm::vec3(0, 0, 1));
+		format.rotation = math::angleAxis(math::radians(45.0f), math::Vec3f(0, 0, 1));
 		scenegraph::SceneGraph graph;
 		ASSERT_TRUE(format.loadGroups("scene", {}, graph, testLoadCtx));
-		EXPECT_NEAR(format.inputScale.x, 20.0f / (3.0f / glm::sqrt(2.0f)), 0.0001f);
+		EXPECT_NEAR(format.inputScale.x, 20.0f / (3.0f / math::sqrt(2.0f)), 0.0001f);
 	}
 	{
-		format.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-		format.scale = glm::vec3(-2, 3, 1);
+		format.rotation = math::Quatf(1.0f, 0.0f, 0.0f, 0.0f);
+		format.scale = math::Vec3f(-2, 3, 1);
 		scenegraph::SceneGraph graph;
 		ASSERT_TRUE(format.loadGroups("scene", {}, graph, testLoadCtx));
 		EXPECT_NEAR(format.inputScale.x, 20.0f / 6.0f, 0.0001f);
@@ -596,16 +600,16 @@ TEST_F(MeshFormatTest, testCalculateAABB) {
 	voxelformat::MeshTri meshTri;
 
 	{
-		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(10, 0, 0), glm::vec3(10, 0, 10));
+		meshTri.setVertices(math::Vec3f(0, 0, 0), math::Vec3f(10, 0, 0), math::Vec3f(10, 0, 10));
 		tris.push_back(meshTri);
 	}
 
 	{
-		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(-10, 0, 0), glm::vec3(-10, 0, -10));
+		meshTri.setVertices(math::Vec3f(0, 0, 0), math::Vec3f(-10, 0, 0), math::Vec3f(-10, 0, -10));
 		tris.push_back(meshTri);
 	}
 
-	glm::vec3 mins, maxs;
+	math::Vec3f mins, maxs;
 	ASSERT_TRUE(MeshFormat::calculateAABB(tris, mins, maxs));
 	EXPECT_FLOAT_EQ(mins.x, -10.0f);
 	EXPECT_FLOAT_EQ(mins.y, 0.0f);
@@ -620,19 +624,19 @@ TEST_F(MeshFormatTest, testAreAllTrisAxisAligned) {
 	voxelformat::MeshTri meshTri;
 
 	{
-		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(10, 0, 0), glm::vec3(10, 0, 10));
+		meshTri.setVertices(math::Vec3f(0, 0, 0), math::Vec3f(10, 0, 0), math::Vec3f(10, 0, 10));
 		tris.push_back(meshTri);
 	}
 
 	{
-		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(-10, 0, 0), glm::vec3(-10, 0, -10));
+		meshTri.setVertices(math::Vec3f(0, 0, 0), math::Vec3f(-10, 0, 0), math::Vec3f(-10, 0, -10));
 		tris.push_back(meshTri);
 	}
 
 	EXPECT_TRUE(MeshFormat::isVoxelMesh(tris));
 
 	{
-		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(-10, 1, 0), glm::vec3(-10, 0, -10));
+		meshTri.setVertices(math::Vec3f(0, 0, 0), math::Vec3f(-10, 1, 0), math::Vec3f(-10, 0, -10));
 		tris.push_back(meshTri);
 	}
 
@@ -649,7 +653,7 @@ TEST_F(MeshFormatTest, testVoxelizeColor) {
 			class TestMesh : public MeshFormat {
 			public:
 				bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-								const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+								const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 					return false;
 				}
 				void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
@@ -713,7 +717,7 @@ TEST_F(MeshFormatTest, testVoxelizeChunked) {
 	class TestMesh : public MeshFormat {
 	public:
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 		void voxelize(scenegraph::SceneGraph &sceneGraph, Mesh &&mesh) {
@@ -740,13 +744,13 @@ TEST_F(MeshFormatTest, testVoxelizeChunked) {
 	const float extent = 300.0f;
 	{
 		voxelformat::MeshTri meshTri;
-		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(extent, 0, 0), glm::vec3(extent, 0, extent));
+		meshTri.setVertices(math::Vec3f(0, 0, 0), math::Vec3f(extent, 0, 0), math::Vec3f(extent, 0, extent));
 		meshTri.setColor(nipponRed, nipponRed, nipponRed);
 		mesh.addTriangle(meshTri);
 	}
 	{
 		voxelformat::MeshTri meshTri;
-		meshTri.setVertices(glm::vec3(0, 0, 0), glm::vec3(extent, 0, extent), glm::vec3(0, 0, extent));
+		meshTri.setVertices(math::Vec3f(0, 0, 0), math::Vec3f(extent, 0, extent), math::Vec3f(0, 0, extent));
 		meshTri.setColor(nipponRed, nipponRed, nipponRed);
 		mesh.addTriangle(meshTri);
 	}
@@ -786,12 +790,12 @@ TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
 		mutable PointCloud savedPointCloud;
 
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 
 		bool savePointCloud(const scenegraph::SceneGraph &, const PointCloud &pointCloud, const core::String &,
-							const io::ArchivePtr &, const glm::vec3 &, bool) const override {
+							const io::ArchivePtr &, const math::Vec3f &, bool) const override {
 			savedPointCloud = pointCloud;
 			return true;
 		}
@@ -800,7 +804,7 @@ TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
 	TestMesh testMesh;
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(1, 0, 0)));
+	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(math::Vec3i(0), math::Vec3i(1, 0, 0)));
 	palette::Palette palette;
 	palette.nippon();
 	const color::RGBA nipponRed = palette.color(37);
@@ -814,8 +818,8 @@ TEST_F(MeshFormatTest, testSaveAsPointCloudUsesVoxelCenters) {
 	ASSERT_TRUE(testMesh.saveGroups(sceneGraph, "test.ply", nullptr, {}));
 
 	ASSERT_EQ(2u, testMesh.savedPointCloud.size());
-	EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), testMesh.savedPointCloud[0].position);
-	EXPECT_EQ(glm::vec3(1.5f, 0.5f, 0.5f), testMesh.savedPointCloud[1].position);
+	EXPECT_EQ(math::Vec3f(0.5f, 0.5f, 0.5f), testMesh.savedPointCloud[0].position);
+	EXPECT_EQ(math::Vec3f(1.5f, 0.5f, 0.5f), testMesh.savedPointCloud[1].position);
 	EXPECT_EQ(nipponRed, testMesh.savedPointCloud[0].color);
 	EXPECT_EQ(nipponRed, testMesh.savedPointCloud[1].color);
 }
@@ -826,7 +830,7 @@ TEST_F(MeshFormatTest, testSaveWithoutModels) {
 		bool saved = false;
 
 		bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &,
-						const ChunkMeshes &meshes, const core::String &, const io::ArchivePtr &, const glm::vec3 &,
+						const ChunkMeshes &meshes, const core::String &, const io::ArchivePtr &, const math::Vec3f &,
 						bool, bool, bool) override {
 			EXPECT_TRUE(meshIdxNodeMap.empty());
 			EXPECT_TRUE(meshes.empty());
@@ -871,7 +875,7 @@ TEST_F(MeshFormatTest, testSaveWithNodeIdHole) {
 TEST_F(MeshFormatTest, testSimplifyRespectsRatioAndKeepsColors) {
 	class TestMesh : public MeshFormat {
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 
@@ -889,9 +893,9 @@ TEST_F(MeshFormatTest, testSimplifyRespectsRatioAndKeepsColors) {
 	for (int z = 0; z <= gridSize; ++z) {
 		for (int x = 0; x <= gridSize; ++x) {
 			MeshVertex vertex;
-			vertex.pos = glm::vec3((float)x, 0.0f, (float)z);
+			vertex.pos = math::Vec3f((float)x, 0.0f, (float)z);
 			vertex.color = (x < gridSize / 2) ? color::RGBA(255, 0, 0, 255) : color::RGBA(0, 0, 255, 255);
-			vertex.uv = glm::vec2((float)x / (float)gridSize, (float)z / (float)gridSize);
+			vertex.uv = math::Vec2f((float)x / (float)gridSize, (float)z / (float)gridSize);
 			vertex.materialIdx = (x < gridSize / 2) ? 0 : 1;
 			mesh.vertices.push_back(vertex);
 		}

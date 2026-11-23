@@ -5,12 +5,18 @@
 #include "video/Camera.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ConfigVar.h"
-#include "core/GLM.h"
 #include "core/Var.h"
 #include "math/Frustum.h"
 #include "math/Ray.h"
 #include "util/VarUtil.h"
 #include "video/Renderer.h"
+#include "math/Quatf.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Axes.h"
+#include "math/Scalar.h"
 
 namespace video {
 
@@ -25,9 +31,9 @@ protected:
 	core::VarPtr _minZoom;
 
 	// looking straight down is the default
-	Camera setup(const glm::vec2 &dimension = glm::vec2(1024, 768),
-				 const glm::vec3 &position = glm::vec3(0.0, 1.0, 0.0), const glm::vec3 &lookAt = glm::vec3(0.0),
-				 const glm::vec3 &lookAlong = glm::forward()) {
+	Camera setup(const math::Vec2f &dimension = math::Vec2f(1024, 768),
+				 const math::Vec3f &position = math::Vec3f(0.0, 1.0, 0.0), const math::Vec3f &lookAt = math::Vec3f(0.0),
+				 const math::Vec3f &lookAlong = math::forward()) {
 		Camera camera;
 		camera.setNearPlane(0.1f);
 		camera.setFarPlane(100.0f);
@@ -50,17 +56,17 @@ protected:
 
 TEST_F(CameraTest, testLookAt) {
 	Camera camera = setup();
-	EXPECT_FLOAT_EQ(glm::half_pi<float>(), camera.pitch());
+	EXPECT_FLOAT_EQ(math::halfPi, camera.pitch());
 	EXPECT_FLOAT_EQ(0.0f, camera.yaw());
 	EXPECT_FLOAT_EQ(0.0f, camera.roll());
-	const glm::vec4 invecs[6] = {
+	const math::Vec4f invecs[6] = {
 		// left bottom, right bottom, right top
-		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+		math::Vec4f(-1.0f, -1.0f, 0.0f, 1.0f), math::Vec4f( 1.0f, -1.0f, 0.0f, 1.0f), math::Vec4f( 1.0f,  1.0f, 0.0f, 1.0f),
 		// left bottom, right top, left top
-		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f), glm::vec4(-1.0f,  1.0f, 0.0f, 1.0f)
+		math::Vec4f(-1.0f, -1.0f, 0.0f, 1.0f), math::Vec4f( 1.0f,  1.0f, 0.0f, 1.0f), math::Vec4f(-1.0f,  1.0f, 0.0f, 1.0f)
 	};
 
-	glm::vec4 outvecs[6];
+	math::Vec4f outvecs[6];
 	for (int i = 0; i < 6; ++i) {
 		outvecs[i] = camera.viewProjectionMatrix() * invecs[i];
 	}
@@ -76,20 +82,20 @@ TEST_F(CameraTest, testLookAt) {
 }
 
 TEST_F(CameraTest, OverlaySegmentsClipBeforePerspectiveDivision) {
-	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0), glm::vec3(0, 0, -1), glm::up());
+	Camera camera = setup(math::Vec2f(800, 600), math::Vec3f(0), math::Vec3f(0, 0, -1), math::up());
 	camera.setNearPlane(1);
 	camera.update(0);
-	glm::ivec2 a, b;
-	EXPECT_FALSE(camera.worldSegmentToScreen(glm::vec3(0, 0, 2), glm::vec3(1, 0, 1), a, b));
-	EXPECT_FALSE(camera.worldSegmentToScreen(glm::vec3(100, 0, -5), glm::vec3(120, 0, -5), a, b));
-	ASSERT_TRUE(camera.worldSegmentToScreen(glm::vec3(-1, 0, -5), glm::vec3(1, 0, 0.5f), a, b));
-	for (const glm::ivec2 &p : {a, b}) {
+	math::Vec2i a, b;
+	EXPECT_FALSE(camera.worldSegmentToScreen(math::Vec3f(0, 0, 2), math::Vec3f(1, 0, 1), a, b));
+	EXPECT_FALSE(camera.worldSegmentToScreen(math::Vec3f(100, 0, -5), math::Vec3f(120, 0, -5), a, b));
+	ASSERT_TRUE(camera.worldSegmentToScreen(math::Vec3f(-1, 0, -5), math::Vec3f(1, 0, 0.5f), a, b));
+	for (const math::Vec2i &p : {a, b}) {
 		EXPECT_GE(p.x, 0);
 		EXPECT_LE(p.x, 800);
 		EXPECT_GE(p.y, 0);
 		EXPECT_LE(p.y, 600);
 	}
-	ASSERT_TRUE(camera.worldSegmentToScreen(glm::vec3(-100, 0, -5), glm::vec3(100, 0, -5), a, b));
+	ASSERT_TRUE(camera.worldSegmentToScreen(math::Vec3f(-100, 0, -5), math::Vec3f(100, 0, -5), a, b));
 	EXPECT_EQ(0, a.x);
 	EXPECT_EQ(800, b.x);
 	EXPECT_EQ(300, a.y);
@@ -98,22 +104,22 @@ TEST_F(CameraTest, OverlaySegmentsClipBeforePerspectiveDivision) {
 
 TEST_F(CameraTest, testMotion) {
 	// TODO: finish this
-	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 1.0, 0.0));
-	camera.rotate(glm::vec3(0.0f, 10.0f, 0.0f));
+	Camera camera = setup(math::Vec2f(1024, 768), math::Vec3f(0.0, 1.0, 0.0));
+	camera.rotate(math::Vec3f(0.0f, 10.0f, 0.0f));
 	camera.update(0.0);
 }
 
 TEST_F(CameraTest, testParallelLookAt) {
-	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 10.0, 0.0), glm::vec3(0.0), glm::up());
+	Camera camera = setup(math::Vec2f(1024, 768), math::Vec3f(0.0, 10.0, 0.0), math::Vec3f(0.0), math::up());
 	camera.update(0.0);
-	const glm::vec4 invecs[6] = {
+	const math::Vec4f invecs[6] = {
 		// left bottom, right bottom, right top
-		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f),
+		math::Vec4f(-1.0f, -1.0f, 0.0f, 1.0f), math::Vec4f( 1.0f, -1.0f, 0.0f, 1.0f), math::Vec4f( 1.0f,  1.0f, 0.0f, 1.0f),
 		// left bottom, right top, left top
-		glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4( 1.0f,  1.0f, 0.0f, 1.0f), glm::vec4(-1.0f,  1.0f, 0.0f, 1.0f)
+		math::Vec4f(-1.0f, -1.0f, 0.0f, 1.0f), math::Vec4f( 1.0f,  1.0f, 0.0f, 1.0f), math::Vec4f(-1.0f,  1.0f, 0.0f, 1.0f)
 	};
 
-	glm::vec4 outvecs[6];
+	math::Vec4f outvecs[6];
 	for (int i = 0; i < 6; ++i) {
 		outvecs[i] = camera.viewProjectionMatrix() * invecs[i];
 	}
@@ -129,60 +135,60 @@ TEST_F(CameraTest, testParallelLookAt) {
 }
 
 TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
-	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.1, 1.0, 0.1));
+	Camera camera = setup(math::Vec2f(1024, 768), math::Vec3f(0.1, 1.0, 0.1));
 	camera.setMode(CameraMode::Perspective);
 	camera.update(0.0);
 	const math::Frustum &frustum = camera.frustum();
-	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
-	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 1.0, 0.0)));
-	EXPECT_EQ(math::FrustumResult::Intersect, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(math::Vec3f(0.0, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(math::Vec3f(0.0, 1.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Intersect, frustum.test(math::Vec3f(-1.0, -1.0, -1.0), math::Vec3f(0.5, 0.5, 0.5)));
 }
 
 TEST_F(CameraTest, testMoveAndPan) {
-	Camera camera = setup(glm::vec2(1024, 768), glm::vec3(0.0, 1.0, 0.0));
-	const glm::vec3 before = camera.worldPosition();
+	Camera camera = setup(math::Vec2f(1024, 768), math::Vec3f(0.0, 1.0, 0.0));
+	const math::Vec3f before = camera.worldPosition();
 
 	// moving along +z in camera-space should change world position
-	const bool moved = camera.move(glm::vec3(0.0f, 0.0f, 1.0f));
+	const bool moved = camera.move(math::Vec3f(0.0f, 0.0f, 1.0f));
 	EXPECT_TRUE(moved);
-	const glm::vec3 after = camera.worldPosition();
+	const math::Vec3f after = camera.worldPosition();
 	// For the default look-at (looking down) moving +z moves the camera up in world Y
 	EXPECT_NE(before, after);
 
 	// panning should change panOffset
-	const glm::vec3 panBefore = camera.worldPosition();
+	const math::Vec3f panBefore = camera.worldPosition();
 	camera.pan(10, 20);
-	const glm::vec3 panAfter = camera.worldPosition();
+	const math::Vec3f panAfter = camera.worldPosition();
 	EXPECT_NE(panBefore, panAfter);
 }
 
 TEST_F(CameraTest, testSlerp) {
 	Camera camera = setup();
-	const glm::quat startQuat = camera.quaternion();
+	const math::Quatf startQuat = camera.quaternion();
 	// rotate target by 90 degrees around Y
-	const glm::quat targetQuat = glm::angleAxis(glm::half_pi<float>(), glm::up());
+	const math::Quatf targetQuat = math::angleAxis(math::halfPi, math::up());
 	camera.slerp(targetQuat, 0.5f);
-	const glm::quat midQuat = camera.quaternion();
+	const math::Quatf midQuat = camera.quaternion();
 	// Expect quaternion to have changed but not equal to target yet
-	EXPECT_FALSE(glm::all(glm::epsilonEqual(startQuat, midQuat, 0.0001f)));
-	EXPECT_FALSE(glm::all(glm::epsilonEqual(targetQuat, midQuat, 0.0001f)));
+	EXPECT_FALSE(math::all(math::epsilonEqual(startQuat, midQuat, 0.0001f)));
+	EXPECT_FALSE(math::all(math::epsilonEqual(targetQuat, midQuat, 0.0001f)));
 }
 
 TEST_F(CameraTest, testLerpBetweenCameras) {
-	Camera a = setup(glm::vec2(200, 200), glm::vec3(0.0f, 10.0f, 0.0));
-	Camera b = setup(glm::vec2(200, 200), glm::vec3(10.0f, 10.0f, 0.0));
+	Camera a = setup(math::Vec2f(200, 200), math::Vec3f(0.0f, 10.0f, 0.0));
+	Camera b = setup(math::Vec2f(200, 200), math::Vec3f(10.0f, 10.0f, 0.0));
 	// ensure target is clean before lerp
 	b.update(0.0);
-	const glm::vec3 aBefore = a.worldPosition();
-	const glm::vec3 bPos = b.worldPosition();
+	const math::Vec3f aBefore = a.worldPosition();
+	const math::Vec3f bPos = b.worldPosition();
 	a.lerp(b);
 	// progress half-way
 	a.update(0.5);
-	const glm::vec3 aMid = a.worldPosition();
-	EXPECT_FALSE(glm::all(glm::epsilonEqual(aBefore, aMid, 0.0001f)));
+	const math::Vec3f aMid = a.worldPosition();
+	EXPECT_FALSE(math::all(math::epsilonEqual(aBefore, aMid, 0.0001f)));
 	// finish lerp
 	a.update(1.0);
-	const glm::vec3 aAfter = a.worldPosition();
+	const math::Vec3f aAfter = a.worldPosition();
 	// after finishing lerp the world position should be (approximately) equal to target
 	EXPECT_NEAR(bPos.x, aAfter.x, 0.001f);
 	EXPECT_NEAR(bPos.y, aAfter.y, 0.001f);
@@ -191,17 +197,17 @@ TEST_F(CameraTest, testLerpBetweenCameras) {
 
 TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	Camera camera;
-	camera.setSize(glm::vec2(100.0f, 100.0f));
+	camera.setSize(math::Vec2f(100.0f, 100.0f));
 	camera.setMode(CameraMode::Orthogonal);
 	camera.setOrthoDepth(10.0f);
-	camera.setWorldPosition(glm::vec3(0.1, 1.0, 0.1));
-	camera.lookAt(glm::vec3(0.0), glm::forward());
+	camera.setWorldPosition(math::Vec3f(0.1, 1.0, 0.1));
+	camera.lookAt(math::Vec3f(0.0), math::forward());
 	camera.update(0.0);
 	const math::Frustum &frustum = camera.frustum();
-	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(math::Vec3f(0.0, 0.0, 0.0)));
 	// A point far above the camera should be outside the frustum when looking down
-	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(glm::vec3(0.0, 10.0, 0.0)));
-	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	EXPECT_EQ(math::FrustumResult::Outside, frustum.test(math::Vec3f(0.0, 10.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Inside, frustum.test(math::Vec3f(-1.0, -1.0, -1.0), math::Vec3f(0.5, 0.5, 0.5)));
 	// TODO: add math::FrustumResult::Intersect test
 }
 
@@ -209,7 +215,7 @@ TEST_F(CameraTest, testOrthoZoom) {
 	util::ScopedVarChange zoomSpeedChange(_zoomSpeed, 0.9f);
 	Camera camera;
 	camera.setMode(CameraMode::Perspective);
-	camera.setSize(glm::ivec2(1024, 768));
+	camera.setSize(math::Vec2i(1024, 768));
 	camera.setMode(CameraMode::Orthogonal);
 	camera.update(0.0);
 
@@ -220,7 +226,7 @@ TEST_F(CameraTest, testOrthoZoom) {
 	EXPECT_GT(zoomedOut, initialZoom);
 	EXPECT_LE(zoomedOut, _maxZoom->floatVal());
 
-	const float expectedFactor = glm::exp(_zoomSpeed->floatVal());
+	const float expectedFactor = math::exp(_zoomSpeed->floatVal());
 	EXPECT_NEAR(zoomedOut, initialZoom * expectedFactor, 0.001f) << "Zoom out should match configured speed";
 
 	camera.zoom(-1.0f);
@@ -236,56 +242,56 @@ TEST_F(CameraTest, testOrthoZoom) {
 
 TEST_F(CameraTest, testIsometricProjectionSanitizesOrientation) {
 	Camera camera;
-	camera.setSize(glm::ivec2(1024, 768));
+	camera.setSize(math::Vec2i(1024, 768));
 	camera.setMode(CameraMode::Isometric);
-	camera.setAngles(0.1f, glm::radians(30.0f), glm::radians(10.0f));
+	camera.setAngles(0.1f, math::radians(30.0f), math::radians(10.0f));
 	camera.update(0.0);
 
 	EXPECT_TRUE(camera.isOrthographic());
 	EXPECT_LT(camera.horizontalYaw(), 0.0f);
-	EXPECT_GT(camera.horizontalYaw(), -glm::half_pi<float>());
+	EXPECT_GT(camera.horizontalYaw(), -math::halfPi);
 	EXPECT_LT(camera.forward().y, -0.45f);
 	EXPECT_GT(camera.forward().y, -0.75f);
 }
 
 TEST_F(CameraTest, testIsometricYawWraps) {
 	Camera camera;
-	camera.setSize(glm::ivec2(1024, 768));
+	camera.setSize(math::Vec2i(1024, 768));
 	camera.setMode(CameraMode::Isometric);
-	camera.setAngles(Camera::IsometricPitch, glm::radians(179.0f), 0.0f);
+	camera.setAngles(Camera::IsometricPitch, math::radians(179.0f), 0.0f);
 	camera.update(0.0);
-	const glm::vec3 before = camera.forward();
+	const math::Vec3f before = camera.forward();
 
-	camera.turn(glm::radians(20.0f));
+	camera.turn(math::radians(20.0f));
 	camera.update(0.0);
 
 	EXPECT_LT(camera.horizontalYaw(), 0.0f);
-	EXPECT_GT(glm::length(camera.forward() - before), 0.01f);
+	EXPECT_GT(math::length(camera.forward() - before), 0.01f);
 }
 
 TEST_F(CameraTest, testIsometricTurnTwoCirclesSmallSteps) {
 	Camera camera;
-	camera.setSize(glm::ivec2(1024, 768));
+	camera.setSize(math::Vec2i(1024, 768));
 	camera.setMode(CameraMode::Isometric);
 	camera.setRotationType(CameraRotationType::Target);
-	camera.setTarget(glm::zero<glm::vec3>());
+	camera.setTarget(math::Vec3f(0.0f));
 	camera.setTargetDistance(10.0f);
 	camera.setAngles(Camera::IsometricPitch, 0.0f, 0.0f);
 	camera.update(0.0);
 
-	const glm::vec3 initialForward = camera.forward();
-	const glm::vec3 initialWorldPos = camera.worldPosition();
-	glm::vec3 previousForward = initialForward;
-	glm::vec3 previousWorldPos = initialWorldPos;
+	const math::Vec3f initialForward = camera.forward();
+	const math::Vec3f initialWorldPos = camera.worldPosition();
+	math::Vec3f previousForward = initialForward;
+	math::Vec3f previousWorldPos = initialWorldPos;
 	float accumulatedTravel = 0.0f;
-	const float step = glm::radians(1.0f);
+	const float step = math::radians(1.0f);
 
 	for (int i = 0; i < 720; ++i) {
 		camera.turn(step);
 		camera.update(1.0 / 60.0);
 
-		const float worldDelta = glm::distance(previousWorldPos, camera.worldPosition());
-		const float forwardDelta = glm::length(previousForward - camera.forward());
+		const float worldDelta = math::distance(previousWorldPos, camera.worldPosition());
+		const float forwardDelta = math::length(previousForward - camera.forward());
 		EXPECT_GT(worldDelta, 0.01f);
 		EXPECT_GT(forwardDelta, 0.001f);
 		EXPECT_NEAR(10.0f, camera.targetDistance(), 0.0001f);
@@ -295,55 +301,55 @@ TEST_F(CameraTest, testIsometricTurnTwoCirclesSmallSteps) {
 	}
 
 	EXPECT_GT(accumulatedTravel, 50.0f);
-	const float finalForwardDelta = glm::length(initialForward - camera.forward());
-	const float finalWorldPosDelta = glm::distance(initialWorldPos, camera.worldPosition());
+	const float finalForwardDelta = math::length(initialForward - camera.forward());
+	const float finalWorldPosDelta = math::distance(initialWorldPos, camera.worldPosition());
 	EXPECT_LT(finalForwardDelta, 0.01f) << "final forward delta: " << finalForwardDelta;
 	EXPECT_LT(finalWorldPosDelta, 0.05f) << "final world position delta: " << finalWorldPosDelta;
 }
 
 TEST_F(CameraTest, testIsometricIdleUpdateIsStable) {
 	Camera camera;
-	camera.setSize(glm::ivec2(1024, 768));
+	camera.setSize(math::Vec2i(1024, 768));
 	camera.setMode(CameraMode::Isometric);
-	camera.setAngles(Camera::IsometricPitch, glm::radians(30.0f), 0.0f);
+	camera.setAngles(Camera::IsometricPitch, math::radians(30.0f), 0.0f);
 	camera.update(0.0);
 
-	const glm::quat beforeQuat = camera.quaternion();
-	const glm::vec3 beforeForward = camera.forward();
+	const math::Quatf beforeQuat = camera.quaternion();
+	const math::Vec3f beforeForward = camera.forward();
 	const float beforeYaw = camera.horizontalYaw();
 
 	for (int i = 0; i < 120; ++i) {
 		camera.update(1.0 / 60.0);
 	}
 
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(beforeForward, camera.forward(), 0.0001f)));
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(glm::vec4(beforeQuat.x, beforeQuat.y, beforeQuat.z, beforeQuat.w),
-										   glm::vec4(camera.quaternion().x, camera.quaternion().y,
+	EXPECT_TRUE(math::all(math::epsilonEqual(beforeForward, camera.forward(), 0.0001f)));
+	EXPECT_TRUE(math::all(math::epsilonEqual(math::Vec4f(beforeQuat.x, beforeQuat.y, beforeQuat.z, beforeQuat.w),
+										   math::Vec4f(camera.quaternion().x, camera.quaternion().y,
 													 camera.quaternion().z, camera.quaternion().w),
 										   0.0001f)));
 	EXPECT_NEAR(beforeYaw, camera.horizontalYaw(), 0.0001f);
 }
 
 TEST_F(CameraTest, testWorldToScreen) {
-	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
+	Camera camera = setup(math::Vec2f(100, 100), math::Vec3f(0.0, 0.0, 10.0), math::Vec3f(0.0, 0.0, 0.0), math::up());
 
-	const glm::ivec2 center = camera.worldToScreen(glm::vec3(0.0, 0.0, 0.0));
+	const math::Vec2i center = camera.worldToScreen(math::Vec3f(0.0, 0.0, 0.0));
 	EXPECT_EQ(50, center.x);
 	EXPECT_EQ(50, center.y);
 
-	const glm::ivec2 up = camera.worldToScreen(glm::up());
+	const math::Vec2i up = camera.worldToScreen(math::up());
 	EXPECT_LT(up.y, center.y);
 	EXPECT_EQ(up.x, center.x);
 
-	const glm::ivec2 right = camera.worldToScreen(glm::right());
+	const math::Vec2i right = camera.worldToScreen(math::right());
 	EXPECT_GT(right.x, center.x);
 	EXPECT_EQ(right.y, center.y);
 }
 
 TEST_F(CameraTest, testRayHonorsOffsetEdgesAndRes) {
-	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0, 0, 10), glm::vec3(0), glm::up());
-	const glm::vec4 view(300, 100, 400, 300);
-	math::Ray center(glm::vec3(0), glm::vec3(0));
+	Camera camera = setup(math::Vec2f(800, 600), math::Vec3f(0, 0, 10), math::Vec3f(0), math::up());
+	const math::Vec4f view(300, 100, 400, 300);
+	math::Ray center(math::Vec3f(0), math::Vec3f(0));
 	ASSERT_TRUE(camera.mouseRay(view, {500, 250}, center));
 	EXPECT_NEAR(-1, center.direction.z, .001f);
 	math::Ray right = center;
@@ -358,36 +364,36 @@ TEST_F(CameraTest, testRayHonorsOffsetEdgesAndRes) {
 	camera.setSize({1600, 1200});
 	camera.update(0);
 	ASSERT_TRUE(camera.mouseRay(view, {500, 250}, right));
-	EXPECT_NEAR(0, glm::length(right.direction - center.direction), .001f);
+	EXPECT_NEAR(0, math::length(right.direction - center.direction), .001f);
 }
 
 TEST_F(CameraTest, testRayRejectsInvalid) {
-	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0, 0, 10), glm::vec3(0), glm::up());
-	math::Ray ray(glm::vec3(1, 2, 3), glm::vec3(0, 0, -1));
-	for (const glm::vec4 &view :
-		 {glm::vec4(0, 0, 0, 10), glm::vec4(0, 0, 10, -1), glm::vec4(NAN, 0, 10, 10), glm::vec4(0, 0, INFINITY, 10)}) {
+	Camera camera = setup(math::Vec2f(800, 600), math::Vec3f(0, 0, 10), math::Vec3f(0), math::up());
+	math::Ray ray(math::Vec3f(1, 2, 3), math::Vec3f(0, 0, -1));
+	for (const math::Vec4f &view :
+		 {math::Vec4f(0, 0, 0, 10), math::Vec4f(0, 0, 10, -1), math::Vec4f(math::NotANumber, 0, 10, 10), math::Vec4f(0, 0, math::Infinity, 10)}) {
 		EXPECT_FALSE(camera.mouseRay(view, {1, 1}, ray));
 	}
-	EXPECT_FALSE(camera.mouseRay({0, 0, 10, 10}, {NAN, 1}, ray));
-	EXPECT_FALSE(camera.mouseRay({0, 0, 10, 10}, {1, INFINITY}, ray));
-	EXPECT_EQ(glm::vec3(1, 2, 3), ray.origin);
-	EXPECT_EQ(glm::vec3(0, 0, -1), ray.direction);
+	EXPECT_FALSE(camera.mouseRay({0, 0, 10, 10}, {math::NotANumber, 1}, ray));
+	EXPECT_FALSE(camera.mouseRay({0, 0, 10, 10}, {1, math::Infinity}, ray));
+	EXPECT_EQ(math::Vec3f(1, 2, 3), ray.origin);
+	EXPECT_EQ(math::Vec3f(0, 0, -1), ray.direction);
 }
 
 TEST_F(CameraTest, testMouseRay) {
-	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
+	Camera camera = setup(math::Vec2f(100, 100), math::Vec3f(0.0, 0.0, 10.0), math::Vec3f(0.0, 0.0, 0.0), math::up());
 
-	const math::Ray& ray = camera.mouseRay(glm::ivec2(50, 50));
-	const glm::vec3& dir = ray.direction;
+	const math::Ray& ray = camera.mouseRay(math::Vec2i(50, 50));
+	const math::Vec3f& dir = ray.direction;
 	EXPECT_NEAR(0.0f, dir.x, 0.001f);
 	EXPECT_NEAR(0.0f, dir.y, 0.001f);
 	EXPECT_NEAR(-1.0f, dir.z, 0.001f);
 
-	const math::Ray& ray2 = camera.mouseRay(glm::ivec2(50, 0));
+	const math::Ray& ray2 = camera.mouseRay(math::Vec2i(50, 0));
 	EXPECT_GT(ray2.direction.y, 0.0f);
 	EXPECT_NEAR(0.0f, ray2.direction.x, 0.001f);
 
-	const math::Ray& ray3 = camera.mouseRay(glm::ivec2(100, 50));
+	const math::Ray& ray3 = camera.mouseRay(math::Vec2i(100, 50));
 	EXPECT_GT(ray3.direction.x, 0.0f);
 	EXPECT_NEAR(0.0f, ray3.direction.y, 0.001f);
 }
@@ -400,25 +406,25 @@ TEST_F(CameraTest, testMouseRayClipControlUpperLeftZeroToOne) {
 	rs.clipOriginLowerLeft = false;
 	rs.clipDepthZeroToOne = true;
 
-	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
+	Camera camera = setup(math::Vec2f(100, 100), math::Vec3f(0.0, 0.0, 10.0), math::Vec3f(0.0, 0.0, 0.0), math::up());
 
-	const math::Ray &ray = camera.mouseRay(glm::ivec2(50, 50));
+	const math::Ray &ray = camera.mouseRay(math::Vec2i(50, 50));
 	EXPECT_NEAR(0.0f, ray.direction.x, 0.001f);
 	EXPECT_NEAR(0.0f, ray.direction.y, 0.001f);
 	EXPECT_NEAR(-1.0f, ray.direction.z, 0.001f);
 
-	const math::Ray &rayTop = camera.mouseRay(glm::ivec2(50, 0));
+	const math::Ray &rayTop = camera.mouseRay(math::Vec2i(50, 0));
 	EXPECT_GT(rayTop.direction.y, 0.0f);
 	EXPECT_NEAR(0.0f, rayTop.direction.x, 0.001f);
 
-	const math::Ray &rayBottom = camera.mouseRay(glm::ivec2(50, 100));
+	const math::Ray &rayBottom = camera.mouseRay(math::Vec2i(50, 100));
 	EXPECT_LT(rayBottom.direction.y, 0.0f);
 	EXPECT_NEAR(0.0f, rayBottom.direction.x, 0.001f);
 
-	const glm::ivec2 center = camera.worldToScreen(glm::vec3(0.0, 0.0, 0.0));
+	const math::Vec2i center = camera.worldToScreen(math::Vec3f(0.0, 0.0, 0.0));
 	EXPECT_EQ(50, center.x);
 	EXPECT_EQ(50, center.y);
-	const glm::ivec2 up = camera.worldToScreen(glm::up());
+	const math::Vec2i up = camera.worldToScreen(math::up());
 	EXPECT_LT(up.y, center.y);
 
 	rs.clipOriginLowerLeft = prevOrigin;
@@ -445,29 +451,29 @@ TEST_F(CameraTest, testSliceFrustumNearCascadesStayTight) {
 TEST_F(CameraTest, testOrthoClipWIsNotViewDepth) {
 	Camera camera = setup();
 	camera.setMode(CameraMode::Orthogonal);
-	camera.setWorldPosition(glm::vec3(0.0f, 0.0f, 200.0f));
-	camera.lookAt(glm::vec3(0.0f), glm::up());
+	camera.setWorldPosition(math::Vec3f(0.0f, 0.0f, 200.0f));
+	camera.lookAt(math::Vec3f(0.0f), math::up());
 	camera.update(0.0);
 
-	const glm::vec4 clip = camera.viewProjectionMatrix() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	const math::Vec4f clip = camera.viewProjectionMatrix() * math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f);
 	EXPECT_NEAR(clip.w, 1.0f, 0.01f);
-	const float viewz = glm::dot(glm::vec3(0.0f) - camera.eye(), camera.forward());
+	const float viewz = math::dot(math::Vec3f(0.0f) - camera.eye(), camera.forward());
 	EXPECT_GT(viewz, 1.0f);
 }
 
 TEST_F(CameraTest, testOrthoSplitFrustumUsesSliceDepth) {
-	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0.0f, 80.0f, 80.0f), glm::vec3(0.0f), glm::up());
+	Camera camera = setup(math::Vec2f(800, 600), math::Vec3f(0.0f, 80.0f, 80.0f), math::Vec3f(0.0f), math::up());
 	camera.setMode(CameraMode::Isometric);
 	camera.setOrthoDepth(10000.0f);
 	camera.setNearPlane(0.1f);
 	camera.update(0.0);
 
-	glm::vec3 corners[math::FRUSTUM_VERTICES_MAX];
+	math::Vec3f corners[math::FRUSTUM_VERTICES_MAX];
 	camera.splitFrustum(0.1f, 50.0f, corners);
 	float zmin = 1.0e9f;
 	float zmax = -1.0e9f;
 	for (uint8_t i = 0; i < math::FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec3 view = glm::vec3(camera.viewMatrix() * glm::vec4(corners[i], 1.0f));
+		const math::Vec3f view = math::Vec3f(camera.viewMatrix() * math::Vec4f(corners[i], 1.0f));
 		zmin = core_min(zmin, view.z);
 		zmax = core_max(zmax, view.z);
 	}
@@ -475,7 +481,7 @@ TEST_F(CameraTest, testOrthoSplitFrustumUsesSliceDepth) {
 }
 
 TEST_F(CameraTest, testOrthoSliceFrustumPositiveDistances) {
-	Camera camera = setup(glm::vec2(800, 600), glm::vec3(0.0f, 80.0f, 80.0f), glm::vec3(0.0f), glm::up());
+	Camera camera = setup(math::Vec2f(800, 600), math::Vec3f(0.0f, 80.0f, 80.0f), math::Vec3f(0.0f), math::up());
 	camera.setMode(CameraMode::Isometric);
 	camera.setOrthoDepth(10000.0f);
 	camera.setNearPlane(0.1f);
@@ -493,8 +499,8 @@ TEST_F(CameraTest, testOrthoSliceFrustumPositiveDistances) {
 }
 
 TEST_F(CameraTest, testBillboard) {
-	Camera camera = setup(glm::vec2(100, 100), glm::vec3(0.0, 0.0, 10.0), glm::vec3(0.0, 0.0, 0.0), glm::up());
-	glm::vec3 right, up;
+	Camera camera = setup(math::Vec2f(100, 100), math::Vec3f(0.0, 0.0, 10.0), math::Vec3f(0.0, 0.0, 0.0), math::up());
+	math::Vec3f right, up;
 	camera.billboard(&right, &up);
 
 	EXPECT_NEAR(1.0f, right.x, 0.001f);
@@ -515,23 +521,23 @@ TEST_F(CameraTest, navigationPanTracksPixelsAcrossProjectionAndRotationModes) {
 				Camera camera;
 				camera.setRotationType(CameraRotationType::Target);
 				camera.setSize({1000, 800});
-				camera.setTarget(glm::vec3(0));
+				camera.setTarget(math::Vec3f(0));
 				camera.setWorldPosition({0, 0, distance});
 				camera.setTargetDistance(distance);
 				camera.setMode(mode);
 				camera.update(0);
 				camera.setRotationType(rotation);
 				camera.update(0);
-				const glm::ivec2 before = camera.worldToScreen(glm::vec3(0));
+				const math::Vec2i before = camera.worldToScreen(math::Vec3f(0));
 				camera.pan(40, -20);
 				camera.update(0);
-				const glm::ivec2 after = camera.worldToScreen(glm::vec3(0));
+				const math::Vec2i after = camera.worldToScreen(math::Vec3f(0));
 				EXPECT_NEAR(after.x - before.x, 40, 1) << (int)mode << "/" << (int)rotation;
 				EXPECT_NEAR(after.y - before.y, -20, 1) << (int)mode << "/" << (int)rotation;
-				const glm::vec3 position = camera.worldPosition();
+				const math::Vec3f position = camera.worldPosition();
 				camera.setRotationType(CameraRotationType::Target);
 				camera.update(0);
-				EXPECT_LT(glm::distance(position, camera.worldPosition()), 0.001f);
+				EXPECT_LT(math::distance(position, camera.worldPosition()), 0.001f);
 			}
 		}
 	}
@@ -540,19 +546,19 @@ TEST_F(CameraTest, navigationPanTracksPixelsAcrossProjectionAndRotationModes) {
 TEST_F(CameraTest, perspectiveZoomMovesEyeWithoutChangingOrientation) {
 	Camera camera;
 	camera.setSize({1000, 800});
-	camera.setTarget(glm::vec3(0));
+	camera.setTarget(math::Vec3f(0));
 	camera.setWorldPosition({0, 0, 100});
 	camera.setTargetDistance(100);
 	camera.setRotationType(CameraRotationType::Eye);
 	camera.update(0);
-	const glm::vec3 forward = camera.forward();
-	const glm::ivec2 before = camera.worldToScreen({10, 0, 0});
+	const math::Vec3f forward = camera.forward();
+	const math::Vec2i before = camera.worldToScreen({10, 0, 0});
 	camera.zoom(-1);
 	camera.update(0);
-	const glm::ivec2 after = camera.worldToScreen({10, 0, 0});
-	EXPECT_GT(glm::abs(after.x - 500), glm::abs(before.x - 500));
+	const math::Vec2i after = camera.worldToScreen({10, 0, 0});
+	EXPECT_GT(math::abs(after.x - 500), math::abs(before.x - 500));
 	EXPECT_NEAR(camera.worldPosition().z, camera.targetDistance(), 0.001f);
-	EXPECT_LT(glm::distance(forward, camera.forward()), 0.001f);
+	EXPECT_LT(math::distance(forward, camera.forward()), 0.001f);
 	camera.zoom(1);
 	camera.update(0);
 	EXPECT_NEAR(camera.worldPosition().z, 100, 0.001f);

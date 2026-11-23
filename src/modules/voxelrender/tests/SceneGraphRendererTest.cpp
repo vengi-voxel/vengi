@@ -24,6 +24,9 @@
 #include "voxelrender/RenderUtil.h"
 #include "voxelformat/FormatThumbnail.h"
 #include "image/Image.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace voxelrender {
 
@@ -108,7 +111,7 @@ TEST_F(SceneGraphRendererTest, InstancedReferenceShadowsMatchUniqueMeshesIncludi
 					source = id;
 			}
 			auto &transform = scene.node(id).transform();
-			transform.setLocalTranslation({4 + (i % 4) * 5, 1, 6 + (i / 4) * 9});
+			transform.setLocalTranslation(math::Vec3f(4 + (i % 4) * 5, 1, 6 + (i / 4) * 9));
 			if (i % 2)
 				transform.setLocalScale({-1, 1, 1});
 		}
@@ -159,8 +162,8 @@ TEST_F(SceneGraphRendererTest, InstancedReferenceShadowsMatchUniqueMeshesIncludi
 TEST_F(SceneGraphRendererTest, BinaryTerrainAcrossMultipleChunksCoversItsWorldPosition) {
 	core::getVar(cfg::VoxelMeshMode)->setVal((int)voxel::SurfaceExtractionType::Binary);
 	core::getVar(cfg::ClientShadowMap)->setVal(false);
-	_renderer.setAmbientColor(glm::vec3(1));
-	_renderer.setDiffuseColor(glm::vec3(0));
+	_renderer.setAmbientColor(math::Vec3f(1));
+	_renderer.setDiffuseColor(math::Vec3f(0));
 	scenegraph::SceneGraph scene;
 	scenegraph::SceneGraphNode floor(scenegraph::SceneGraphNodeType::Model);
 	floor.createVolume(voxel::Region(0, 0, 0, 127, 0, 127));
@@ -200,8 +203,8 @@ TEST_F(SceneGraphRendererTest, BlackEmissionDoesNotTintTheSceneWhenBloomIsEnable
 	for (int samples : {0, 4}) {
 		core::getVar(cfg::ClientMultiSampleSamples)->setVal(samples);
 		RenderContext context;
-		ASSERT_TRUE(context.init(glm::ivec2(64)));
-		video::clearColor(glm::vec4(0.125f, 0.25f, 0.375f, 1));
+		ASSERT_TRUE(context.init(math::Vec2i(64)));
+		video::clearColor(math::Vec4f(0.125f, 0.25f, 0.375f, 1));
 		context.beginFrame();
 		context.resolveMultisampling();
 		context.sceneHasGlow = true;
@@ -227,8 +230,8 @@ TEST_F(SceneGraphRendererTest, SceneBackgroundDoesNotPolluteBloomAttachment) {
 	for (int samples : {0, 4}) {
 		core::getVar(cfg::ClientMultiSampleSamples)->setVal(samples);
 		RenderContext context;
-		ASSERT_TRUE(context.init(glm::ivec2(32)));
-		video::clearColor(glm::vec4(0.125f, 0.25f, 0.375f, 1));
+		ASSERT_TRUE(context.init(math::Vec2i(32)));
+		video::clearColor(math::Vec4f(0.125f, 0.25f, 0.375f, 1));
 		context.beginFrame();
 		context.resolveMultisampling();
 		context.beginOverlays();
@@ -376,14 +379,14 @@ TEST_F(SceneGraphRendererTest, testRenderTransparentWeightedOIT) {
 	sceneGraph.updateTransforms();
 
 	RenderContext renderContext;
-	ASSERT_TRUE(renderContext.init(glm::ivec2(64, 64)));
+	ASSERT_TRUE(renderContext.init(math::Vec2i(64, 64)));
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.enableBloom = false;
 	EXPECT_TRUE(renderContext.hasOit());
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(64, 64));
+	camera.setSize(math::Vec2i(64, 64));
 	configureCamera(camera, sceneGraph.sceneRegion(), SceneCameraMode::Free, 500.0f);
 
 	renderContext.frameBuffer.bind(true);
@@ -407,13 +410,13 @@ TEST_F(SceneGraphRendererTest, testBloomThenOverlays) {
 	sceneGraph.updateTransforms();
 
 	RenderContext renderContext;
-	ASSERT_TRUE(renderContext.init(glm::ivec2(64, 64)));
+	ASSERT_TRUE(renderContext.init(math::Vec2i(64, 64)));
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.enableBloom = true;
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(64, 64));
+	camera.setSize(math::Vec2i(64, 64));
 	configureCamera(camera, sceneGraph.sceneRegion(), SceneCameraMode::Free, 500.0f);
 
 	renderContext.frameBuffer.bind(true);
@@ -436,13 +439,13 @@ TEST_F(SceneGraphRendererTest, testClearAfterRenderDropsVolumesSafely) {
 	sceneGraph.updateTransforms();
 
 	RenderContext renderContext;
-	ASSERT_TRUE(renderContext.init(glm::ivec2(64, 64)));
+	ASSERT_TRUE(renderContext.init(math::Vec2i(64, 64)));
 	renderContext.sceneGraph = &sceneGraph;
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.enableBloom = false;
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(64, 64));
+	camera.setSize(math::Vec2i(64, 64));
 	configureCamera(camera, sceneGraph.sceneRegion(), SceneCameraMode::Free, 500.0f);
 
 	renderContext.frameBuffer.bind(true);
@@ -480,12 +483,12 @@ TEST_F(SceneGraphRendererTest, testNewOpaqueSceneDropsPreviousTransparencyMesh) 
 	const core::UUID glassUuid = glassScene.firstModelNode()->uuid();
 
 	RenderContext renderContext;
-	ASSERT_TRUE(renderContext.init(glm::ivec2(64, 64)));
+	ASSERT_TRUE(renderContext.init(math::Vec2i(64, 64)));
 	renderContext.renderMode = RenderMode::Scene;
 	renderContext.enableBloom = false;
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(64, 64));
+	camera.setSize(math::Vec2i(64, 64));
 	configureCamera(camera, glassScene.sceneRegion(), SceneCameraMode::Top, 500.0f);
 	camera.update(0.0);
 
@@ -557,7 +560,7 @@ TEST_F(SceneGraphRendererTest, testVolumeThumbnailNotDarkenedByDefault) {
 
 	// Default ThumbnailContext disables shadow map darkening even when cl_shadowmap is true.
 	voxelformat::ThumbnailContext defaultCtx;
-	defaultCtx.outputSize = glm::ivec2(64, 64);
+	defaultCtx.outputSize = math::Vec2i(64, 64);
 	const image::ImagePtr defaultImg = volumeThumbnail(scene, defaultCtx);
 	ASSERT_TRUE(defaultImg);
 	const double defaultBright = avgBrightness(defaultImg);

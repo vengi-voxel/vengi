@@ -6,14 +6,13 @@
 
 #include "Brush.h"
 #include "operation/ExtrudeOperation.h"
-#include "core/GLM.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Mat4f.h"
 
 namespace voxedit {
 
@@ -102,8 +101,8 @@ public:
 	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
 	bool hasHandle(const BrushContext &ctx) const;
 	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
-	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
-						 const glm::mat4 &deltaMatrix, uint32_t operation) override;
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix,
+						 const math::Mat4f &deltaMatrix, uint32_t operation) override;
 
 };
 

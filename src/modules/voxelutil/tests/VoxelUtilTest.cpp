@@ -3,7 +3,6 @@
  */
 
 #include "color/ColorUtil.h"
-#include <glm/gtc/matrix_transform.hpp>
 #include "voxelutil/VoxelUtil.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
@@ -17,6 +16,10 @@
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelutil/FillHollow.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelutil {
 
@@ -78,7 +81,7 @@ TEST_F(VoxelUtilTest, testExtrudePlanePositiveY) {
 	v.setVoxel(1, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 1, groundVoxel);
-	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel,
+	EXPECT_EQ(4, voxelutil::extrudePlane(wrapper, math::Vec3i(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel,
 										 newPlaneVoxel, 1));
 	EXPECT_EQ(8, voxelutil::countVoxels(v));
 }
@@ -94,7 +97,7 @@ TEST_F(VoxelUtilTest, testOverridePlanePositiveY) {
 	v.setVoxel(1, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 0, groundVoxel);
 	v.setVoxel(2, 0, 1, groundVoxel);
-	EXPECT_EQ(9, voxelutil::overridePlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, newPlaneVoxel));
+	EXPECT_EQ(9, voxelutil::overridePlane(wrapper, math::Vec3i(1, 0, 0), voxel::FaceNames::PositiveY, newPlaneVoxel));
 	EXPECT_EQ(9, voxelutil::countVoxelsByColor(v, newPlaneVoxel));
 }
 
@@ -111,7 +114,7 @@ TEST_F(VoxelUtilTest, testExtrudePlaneRegion) {
 	v.setVoxel(2, 0, 1, groundVoxel);
 	const int thickness = 5;
 	const voxel::Region extrudeRegion = voxelutil::extrudePlaneRegion(
-		*wrapper.volume(), glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel, thickness);
+		*wrapper.volume(), math::Vec3i(1, 1, 0), voxel::FaceNames::PositiveY, groundVoxel, newPlaneVoxel, thickness);
 	EXPECT_EQ(thickness, extrudeRegion.getDimensionsInVoxels().y)
 		<< extrudeRegion.getDimensionsInVoxels().x << ":" << extrudeRegion.getDimensionsInVoxels().y << ":"
 		<< extrudeRegion.getDimensionsInVoxels().z;
@@ -129,7 +132,7 @@ TEST_F(VoxelUtilTest, testExtrudeEraseRegion) {
 	v.setVoxel(2, 0, 0, fillVoxel2); // second group here is the plane split
 	v.setVoxel(2, 0, 1, fillVoxel1); // second group
 	const voxel::Region extrudeRegion =
-		voxelutil::erasePlaneRegion(*wrapper.volume(), glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1);
+		voxelutil::erasePlaneRegion(*wrapper.volume(), math::Vec3i(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1);
 	EXPECT_EQ(1, extrudeRegion.getDimensionsInVoxels().y);
 }
 
@@ -145,7 +148,7 @@ TEST_F(VoxelUtilTest, testPaintPlanePositiveY) {
 	v.setVoxel(2, 0, 0, fillVoxel2); // second group here is the plane split
 	v.setVoxel(2, 0, 1, fillVoxel1); // second group
 	EXPECT_EQ(2,
-			  voxelutil::paintPlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1, fillVoxel2));
+			  voxelutil::paintPlane(wrapper, math::Vec3i(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1, fillVoxel2));
 	int voxel2counter = 0;
 	auto func = [&](int, int, int, const voxel::Voxel &voxel) {
 		if (voxel.getColor() == fillVoxel2.getColor())
@@ -166,7 +169,7 @@ TEST_F(VoxelUtilTest, testErasePlanePositiveY) {
 	v.setVoxel(1, 0, 0, fillVoxel1); // first group and selected for the erase call
 	v.setVoxel(2, 0, 0, fillVoxel2); // second group here is the plane split
 	v.setVoxel(2, 0, 1, fillVoxel1); // second group
-	EXPECT_EQ(2, voxelutil::erasePlane(wrapper, glm::ivec3(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1));
+	EXPECT_EQ(2, voxelutil::erasePlane(wrapper, math::Vec3i(1, 0, 0), voxel::FaceNames::PositiveY, fillVoxel1));
 	EXPECT_EQ(2, voxelutil::countVoxels(v));
 }
 
@@ -175,7 +178,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlaneNegativeX) {
 	voxel::RawVolume v(region);
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(0, -1, -1), voxel::FaceNames::NegativeX, voxel::Voxel(),
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, math::Vec3i(0, -1, -1), voxel::FaceNames::NegativeX, voxel::Voxel(),
 										 fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::countVoxels(v));
 }
@@ -185,7 +188,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveY) {
 	voxel::RawVolume v(region);
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, voxel::Voxel(),
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, math::Vec3i(1, 0, 1), voxel::FaceNames::PositiveY, voxel::Voxel(),
 										 fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::countVoxels(v));
 }
@@ -195,7 +198,7 @@ TEST_F(VoxelUtilTest, testFillEmptyPlanePositiveZ) {
 	voxel::RawVolume v(region);
 	const voxel::Voxel fillVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	voxel::RawVolumeWrapper wrapper(&v);
-	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, glm::ivec3(1, 1, 0), voxel::FaceNames::PositiveZ, voxel::Voxel(),
+	EXPECT_EQ(9, voxelutil::extrudePlane(wrapper, math::Vec3i(1, 1, 0), voxel::FaceNames::PositiveZ, voxel::Voxel(),
 										 fillVoxel, 1));
 	EXPECT_EQ(9, voxelutil::countVoxels(v));
 }
@@ -212,7 +215,7 @@ TEST_F(VoxelUtilTest, testExtrudePlaneLargeGround) {
 		}
 	}
 	voxel::RawVolumeWrapper wrapper(&v);
-	const int n = voxelutil::extrudePlane(wrapper, glm::ivec3(16, 1, 16), voxel::FaceNames::PositiveY, ground,
+	const int n = voxelutil::extrudePlane(wrapper, math::Vec3i(16, 1, 16), voxel::FaceNames::PositiveY, ground,
 										 extruded, 3);
 	EXPECT_EQ(32 * 32 * 3, n);
 	EXPECT_EQ(extruded.getColor(), v.voxel(16, 3, 16).getColor());
@@ -236,7 +239,7 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	voxel::RawVolume v(region);
 	voxel::RawVolumeWrapper wrapper(&v);
 	const int plane1Voxels =
-		voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 0), voxel::FaceNames::PositiveZ);
+		voxelutil::fillPlane(wrapper, img, voxel::Voxel(), math::Vec3i(0, 0, 0), voxel::FaceNames::PositiveZ);
 	EXPECT_EQ(img->width() * img->height(), plane1Voxels);
 
 	for (int x = 0; x < img->width(); ++x) {
@@ -250,7 +253,7 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 	}
 
 	const int plane2Voxels =
-		voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0, 0, 1), voxel::FaceNames::PositiveZ);
+		voxelutil::fillPlane(wrapper, img, voxel::Voxel(), math::Vec3i(0, 0, 1), voxel::FaceNames::PositiveZ);
 	EXPECT_EQ(img->width() * img->height(), plane2Voxels);
 
 	for (int x = 0; x < img->width(); ++x) {
@@ -263,9 +266,9 @@ TEST_F(VoxelUtilTest, testFillPlaneWithImage) {
 			<< v;
 	}
 
-	EXPECT_EQ(0, voxelutil::fillPlane(wrapper, (const image::Image *)nullptr, voxel::Voxel(), glm::ivec3(0),
+	EXPECT_EQ(0, voxelutil::fillPlane(wrapper, (const image::Image *)nullptr, voxel::Voxel(), math::Vec3i(0),
 									  voxel::FaceNames::PositiveZ));
-	EXPECT_EQ(0, voxelutil::fillPlane(wrapper, img, voxel::Voxel(), glm::ivec3(0), voxel::FaceNames::Max));
+	EXPECT_EQ(0, voxelutil::fillPlane(wrapper, img, voxel::Voxel(), math::Vec3i(0), voxel::FaceNames::Max));
 }
 
 TEST_F(VoxelUtilTest, copyIntoRegion) {
@@ -289,8 +292,8 @@ TEST_F(VoxelUtilTest, applyTransformToVolume) {
 		}
 	}
 
-	const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.5f)));
+	const math::Mat4f transform = math::rotate(math::Mat4f(1.0f), math::radians(90.0f), math::Vec3f(0.0f, 0.0f, 1.0f));
+	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::applyTransformToVolume(v, transform, math::Vec3f(0.5f)));
 	ASSERT_NE(rotated, nullptr);
 	EXPECT_EQ(rotated->region().getDimensionsInVoxels(), v.region().getDimensionsInVoxels());
 	const int voxelCount = voxelutil::countVoxels(*rotated);
@@ -304,10 +307,10 @@ TEST_F(VoxelUtilTest, applyTransformToVolumeWithScale) {
 	v.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 3));
 
 	// Scale by 2x
-	const glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.0f)));
+	const math::Mat4f transform = math::scale(math::Mat4f(1.0f), math::Vec3f(2.0f));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::applyTransformToVolume(v, transform, math::Vec3f(0.0f)));
 	ASSERT_NE(scaled, nullptr);
-	const glm::ivec3 dims = scaled->region().getDimensionsInVoxels();
+	const math::Vec3i dims = scaled->region().getDimensionsInVoxels();
 	// 4x4x4 scaled by 2 should be 8x8x8
 	EXPECT_EQ(dims.x, 8);
 	EXPECT_EQ(dims.y, 8);
@@ -323,9 +326,9 @@ TEST_F(VoxelUtilTest, applyTransformToVolumeWithScaleAndRotation) {
 	v.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 	// Scale by 2x and rotate 90 degrees around Z
-	glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
-	transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	core::ScopedPtr<voxel::RawVolume> result(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.5f)));
+	math::Mat4f transform = math::scale(math::Mat4f(1.0f), math::Vec3f(2.0f));
+	transform = math::rotate(transform, math::radians(90.0f), math::Vec3f(0.0f, 0.0f, 1.0f));
+	core::ScopedPtr<voxel::RawVolume> result(voxelutil::applyTransformToVolume(v, transform, math::Vec3f(0.5f)));
 	ASSERT_NE(result, nullptr);
 	// Should have voxels after scaling and rotation
 	const int voxelCount = voxelutil::countVoxels(*result);
@@ -338,10 +341,10 @@ TEST_F(VoxelUtilTest, applyTransformToVolumeWithNonUniformScale) {
 	v.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 	// Non-uniform scale: 2x in X, 1x in Y, 0.5x in Z
-	const glm::mat4 transform = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 1.0f, 0.5f));
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::applyTransformToVolume(v, transform, glm::vec3(0.0f)));
+	const math::Mat4f transform = math::scale(math::Mat4f(1.0f), math::Vec3f(2.0f, 1.0f, 0.5f));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::applyTransformToVolume(v, transform, math::Vec3f(0.0f)));
 	ASSERT_NE(scaled, nullptr);
-	const glm::ivec3 dims = scaled->region().getDimensionsInVoxels();
+	const math::Vec3i dims = scaled->region().getDimensionsInVoxels();
 	// 4x4x4 scaled by (2, 1, 0.5) should be approximately (8, 4, 2)
 	EXPECT_EQ(dims.x, 8);
 	EXPECT_EQ(dims.y, 4);

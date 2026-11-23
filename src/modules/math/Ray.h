@@ -4,9 +4,8 @@
 #pragma once
 
 #include "core/Common.h"
-#include <glm/common.hpp>
-#include <glm/vector_relational.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace math {
 
@@ -15,16 +14,16 @@ namespace math {
  */
 class Ray {
 public:
-	Ray(const glm::vec3& _origin, const glm::vec3& _direction) :
+	Ray(const math::Vec3f& _origin, const math::Vec3f& _direction) :
 			origin(_origin), direction(_direction) {
 	}
 
 	inline bool isValid() const {
-		return !glm::any(glm::isnan(origin)) && !glm::any(glm::isnan(direction));
+		return !math::any(math::isnan(origin)) && !math::any(math::isnan(direction));
 	}
 
-	glm::vec3 origin;
-	glm::vec3 direction;
+	math::Vec3f origin;
+	math::Vec3f direction;
 };
 
 }

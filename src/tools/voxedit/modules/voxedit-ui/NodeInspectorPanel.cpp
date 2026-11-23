@@ -25,13 +25,15 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Quatf.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
+#include <float.h>
 
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/ext/scalar_constants.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/matrix_decompose.hpp>
 
 namespace voxedit {
 
@@ -51,11 +53,11 @@ void NodeInspectorPanel::modelRegions(command::CommandExecutionListener &listene
 		const ImVec2 buttonSize(ImGui::CalcTextSize(max).x, ImGui::GetFrameHeight());
 		ui::Toolbar toolbar("toolbar", buttonSize, &listener);
 
-		for (glm::ivec3 maxs : _validRegionSizes) {
+		for (math::Vec3i maxs : _validRegionSizes) {
 			const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
 			toolbar.button([&](const ImVec2 &) {
 				if (ImGui::Button(title.c_str())) {
-					voxel::Region newRegion(glm::ivec3(0), maxs - 1);
+					voxel::Region newRegion(math::Vec3i(0), maxs - 1);
 					_sceneMgr->nodeResize(node.uuid(), newRegion);
 				}
 			}, false);
@@ -81,17 +83,17 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 		ImGui::TableSetupColumn(_("Name"), colFlags);
 		ImGui::TableHeadersRow();
 
-		glm::ivec3 position = region.getLowerCorner();
-		const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		math::Vec3i position = region.getLowerCorner();
+		const math::Vec3i gridRes = parseGridResolution(_gridSize->strVal());
 		const int minStep = core_min(gridRes.x, core_min(gridRes.y, gridRes.z));
 		const int maxStep = 10;
 		const bool posChange = ImGui::InputXYZ(_("Position"), position, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
 		if (posChange || ImGui::IsItemDeactivatedAfterEdit()) {
-			const glm::ivec3 &f = position - region.getLowerCorner();
+			const math::Vec3i &f = position - region.getLowerCorner();
 			_sceneMgr->nodeShift(node.uuid(), f);
 		}
 
-		glm::ivec3 dimensions = region.getDimensionsInVoxels();
+		math::Vec3i dimensions = region.getDimensionsInVoxels();
 		const bool sizeChange = ImGui::InputXYZ(_("Size"), dimensions, nullptr, ImGuiInputTextFlags_None, minStep, maxStep);
 		if (sizeChange || ImGui::IsItemDeactivatedAfterEdit()) {
 			voxel::Region newRegion(region.getLowerCorner(), region.getLowerCorner() + dimensions - 1);
@@ -150,7 +152,7 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 				ImPlot::SetupAxisLimits(ImAxis_X1, -0.5, n - 0.5, ImGuiCond_Always);
 				for (int i = 0; i < n; i++) {
 					const ColorBar &bar = chartBars[i];
-					const glm::vec4 &c = palette.color4(bar.index);
+					const math::Vec4f &c = palette.color4(bar.index);
 					const core::String label = core::String::format("Color %d##c%d", bar.index, bar.index);
 					const float x = (float)i;
 					const float y = (float)bar.count;
@@ -209,7 +211,7 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 				while (clipper.Step()) {
 					for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
 						const ColorBar &bar = bars[row];
-						const glm::vec4 &c = palette.color4(bar.index);
+						const math::Vec4f &c = palette.color4(bar.index);
 						const ImVec4 col(c.r, c.g, c.b, 1.0f);
 						ImGui::TableNextRow();
 						if (bar.index == (int)hoveredColorIdx) {
@@ -238,19 +240,19 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 	}
 }
 
-void NodeInspectorPanel::saveRegionSizes(const core::Buffer<glm::ivec3> &sizes) {
-	core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>> uniqueSizes;
-	for (const glm::ivec3 &maxs : sizes) {
+void NodeInspectorPanel::saveRegionSizes(const core::Buffer<math::Vec3i> &sizes) {
+	core::Set<math::Vec3i, 11, math::Vec3iHash> uniqueSizes;
+	for (const math::Vec3i &maxs : sizes) {
 		uniqueSizes.insert(maxs);
 	}
 
 	core::String valStr;
 	for (const auto &e : uniqueSizes) {
-		const glm::ivec3 &maxs = e->key;
+		const math::Vec3i &maxs = e->key;
 		if (!valStr.empty()) {
 			valStr += ",";
 		}
-		const voxel::Region region(glm::ivec3(0), maxs);
+		const voxel::Region region(math::Vec3i(0), maxs);
 		if (_sceneMgr->exceedsMaxSuggestedVolumeSize(region)) {
 			Log::warn("Invalid region size %ix%ix%i", maxs.x, maxs.y, maxs.z);
 			continue;
@@ -265,7 +267,7 @@ void NodeInspectorPanel::modelViewMenuBar(scenegraph::SceneGraphNode &node) {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginIconMenu(ICON_LC_MENU, _("Tools"))) {
 			const voxel::Region &region = node.region();
-			const glm::ivec3 &mins = region.getLowerCorner();
+			const math::Vec3i &mins = region.getLowerCorner();
 			ImGui::BeginDisabled(!region.isValid() || (mins.x == 0 && mins.y == 0 && mins.z == 0));
 			if (ImGui::IconButton(ICON_LC_MOVE_3D, _("To transform"))) {
 				_sceneMgr->nodeShiftAllKeyframes(node.uuid(), mins);
@@ -279,7 +281,7 @@ void NodeInspectorPanel::modelViewMenuBar(scenegraph::SceneGraphNode &node) {
 			if (ImGui::BeginIconMenu(ICON_LC_SIGMA, _("Region sizes"))) {
 				int removeIdx = -1;
 				for (size_t i = 0; i < _validRegionSizes.size(); ++i) {
-					const glm::ivec3 &maxs = _validRegionSizes[i];
+					const math::Vec3i &maxs = _validRegionSizes[i];
 					const core::String &title = core::String::format("%ix%ix%i##regionsize", maxs.x, maxs.y, maxs.z);
 					if (ImGui::Selectable(title.c_str())) {
 						removeIdx = (int)i;
@@ -357,15 +359,15 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 			p0 = i > 0 ? (*keys)[i - 1].transform().localTranslation().x : p1;
 			p3 = i + 2 < keys->size() ? (*keys)[i + 2].transform().localTranslation().x : p2;
 		}
-		core::Array<glm::vec2, 20> data;
+		core::Array<math::Vec2f, 20> data;
 		float ymin = 0.0f;
 		float ymax = 1.0f;
 		for (size_t i = 0; i < data.size(); ++i) {
 			const double t = (double)i / (double)data.size();
 			const double v = scenegraph::interpolate(keyFrame.interpolation, t, 0.0, 1.0, p0, p1, p2, p3);
-			data[i] = glm::vec2((float)t, (float)v);
-			ymin = glm::min(ymin, (float)v);
-			ymax = glm::max(ymax, (float)v);
+			data[i] = math::Vec2f((float)t, (float)v);
+			ymin = math::min(ymin, (float)v);
+			ymax = math::max(ymax, (float)v);
 		}
 		if (ymax - ymin < 0.001f) {
 			ymin -= 0.5f;
@@ -381,7 +383,7 @@ void NodeInspectorPanel::keyFrameInterpolationSettings(scenegraph::SceneGraphNod
 			ImPlotSpec spec;
 			spec.Flags = ImPlotLineFlags_None;
 			spec.Offset = 0;
-			spec.Stride = sizeof(glm::vec2);
+			spec.Stride = sizeof(math::Vec2f);
 			ImPlot::PlotLine(lineTitle, &data[0].x, &data[0].y, (int)data.size(), spec);
 			ImPlot::EndPlot();
 		}
@@ -437,11 +439,11 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
 	scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(frameIdx);
 	scenegraph::SceneGraphTransform &transform = node.keyFrame(keyFrameIdx).transform();
-	glm::vec3 matrixTranslation = _localSpace->boolVal() ? transform.localTranslation() : transform.worldTranslation();
-	glm::vec3 matrixScale = _localSpace->boolVal() ? transform.localScale() : transform.worldScale();
-	glm::quat matrixOrientation = _localSpace->boolVal() ? transform.localOrientation() : transform.worldOrientation();
-	glm::vec3 matrixRotation = glm::degrees(glm::eulerAngles(matrixOrientation));
-	glm::vec3 pivot = node.pivot();
+	math::Vec3f matrixTranslation = _localSpace->boolVal() ? transform.localTranslation() : transform.worldTranslation();
+	math::Vec3f matrixScale = _localSpace->boolVal() ? transform.localScale() : transform.worldScale();
+	math::Quatf matrixOrientation = _localSpace->boolVal() ? transform.localOrientation() : transform.worldOrientation();
+	math::Vec3f matrixRotation = math::degrees(math::eulerAngles(matrixOrientation));
+	math::Vec3f pivot = node.pivot();
 	static const uint32_t tableFlags =
 		ImGuiTableFlags_BordersInner | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoSavedSettings;
 	ui::ScopedStyle style;
@@ -476,7 +478,7 @@ void NodeInspectorPanel::sceneView(command::CommandExecutionListener &listener, 
 			ImGui::TableNextColumn();
 			ImGui::TableNextColumn();
 		}
-		const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		const math::Vec3i gridRes = parseGridResolution(_gridSize->strVal());
 		const float minStep = (float)core_min(gridRes.x, core_min(gridRes.y, gridRes.z));
 		const float maxStep = 10.0f;
 		change |= ImGui::InputXYZ(_("Translation"), matrixTranslation, nullptr, ImGuiInputTextFlags_EnterReturnsTrue, minStep, maxStep);
@@ -655,14 +657,14 @@ void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) 
 	ImGui::TooltipTextUnformatted(_("The target node the IK chain tries to reach"));
 
 	// Roll limits
-	float rollMinDeg = glm::degrees(constraint.rollMin);
-	float rollMaxDeg = glm::degrees(constraint.rollMax);
+	float rollMinDeg = math::degrees(constraint.rollMin);
+	float rollMaxDeg = math::degrees(constraint.rollMax);
 	if (ImGui::DragFloat(_("Roll min"), &rollMinDeg, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
-		constraint.rollMin = glm::radians(rollMinDeg);
+		constraint.rollMin = math::radians(rollMinDeg);
 		changed = true;
 	}
 	if (ImGui::DragFloat(_("Roll max"), &rollMaxDeg, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
-		constraint.rollMax = glm::radians(rollMaxDeg);
+		constraint.rollMax = math::radians(rollMaxDeg);
 		changed = true;
 	}
 
@@ -686,26 +688,26 @@ void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) 
 				ImGui::TableNextRow();
 
 				ImGui::TableNextColumn();
-				float yaw = glm::degrees(limit.center.x);
+				float yaw = math::degrees(limit.center.x);
 				ImGui::SetNextItemWidth(-FLT_MIN);
 				if (ImGui::DragFloat("##yaw", &yaw, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
-					limit.center.x = glm::radians(yaw);
+					limit.center.x = math::radians(yaw);
 					changed = true;
 				}
 
 				ImGui::TableNextColumn();
-				float pitch = glm::degrees(limit.center.y);
+				float pitch = math::degrees(limit.center.y);
 				ImGui::SetNextItemWidth(-FLT_MIN);
 				if (ImGui::DragFloat("##pitch", &pitch, 1.0f, -180.0f, 180.0f, "%.1f deg")) {
-					limit.center.y = glm::radians(pitch);
+					limit.center.y = math::radians(pitch);
 					changed = true;
 				}
 
 				ImGui::TableNextColumn();
-				float radiusDeg = glm::degrees(limit.radius);
+				float radiusDeg = math::degrees(limit.radius);
 				ImGui::SetNextItemWidth(-FLT_MIN);
 				if (ImGui::DragFloat("##radius", &radiusDeg, 1.0f, 0.0f, 180.0f, "%.1f deg")) {
-					limit.radius = glm::radians(radiusDeg);
+					limit.radius = math::radians(radiusDeg);
 					changed = true;
 				}
 
@@ -723,7 +725,7 @@ void NodeInspectorPanel::ikConstraintSettings(scenegraph::SceneGraphNode &node) 
 		}
 		if (ImGui::IconButton(ICON_LC_PLUS, _("Add swing limit"))) {
 			scenegraph::IKConstraint::RadiusConstraint rc;
-			rc.radius = glm::half_pi<float>();
+			rc.radius = math::halfPi;
 			constraint.swingLimits.push_back(rc);
 			changed = true;
 		}
@@ -856,9 +858,9 @@ void NodeInspectorPanel::updateModelRegionSizes() {
 		core::string::splitString(_regionSizes->strVal(), strs, ",");
 		_validRegionSizes.reserve(strs.size());
 		for (const core::String &s : strs) {
-			glm::ivec3 maxs(0);
+			math::Vec3i maxs(0);
 			core::string::parseIVec3(s, &maxs[0]);
-			const voxel::Region region(glm::ivec3(0), maxs);
+			const voxel::Region region(math::Vec3i(0), maxs);
 			if (_sceneMgr->exceedsMaxSuggestedVolumeSize(region)) {
 				continue;
 			}

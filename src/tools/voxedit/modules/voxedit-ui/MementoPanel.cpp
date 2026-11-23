@@ -12,6 +12,9 @@
 #include "ui/ScopedPanel.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include <float.h>
 
 namespace voxedit {
 
@@ -33,11 +36,11 @@ static void stateTooltip(const memento::MementoState &state) {
 		ImGui::Text(" - name: %s", state.name.c_str());
 		ImGui::Text(" - type: %s", _(scenegraph::SceneGraphNodeTypeStr[(int)state.nodeType]));
 		ImGui::Text(" - volume: %s", state.data.hasVolume() ? "volume" : "empty");
-		const glm::ivec3 &dataMins = state.dataRegion().getLowerCorner();
-		const glm::ivec3 &dataMaxs = state.dataRegion().getUpperCorner();
+		const math::Vec3i &dataMins = state.dataRegion().getLowerCorner();
+		const math::Vec3i &dataMaxs = state.dataRegion().getUpperCorner();
 		ImGui::Text(" - dataregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", dataMins.x, dataMins.y, dataMins.z, dataMaxs.x, dataMaxs.y, dataMaxs.z);
-		const glm::ivec3 &volumeMins = state.volumeRegion().getLowerCorner();
-		const glm::ivec3 &volumeMaxs = state.volumeRegion().getUpperCorner();
+		const math::Vec3i &volumeMins = state.volumeRegion().getLowerCorner();
+		const math::Vec3i &volumeMaxs = state.volumeRegion().getUpperCorner();
 		ImGui::Text(" - volumeregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", volumeMins.x, volumeMins.y, volumeMins.z, volumeMaxs.x, volumeMaxs.y, volumeMaxs.z);
 		ImGui::Text(" - size: %ib", (int)state.data.size());
 		ImGui::Text(" - palette: %s", palHash.c_str());
@@ -52,7 +55,7 @@ static void stateTooltip(const memento::MementoState &state) {
 				ImGui::Text("       - interpolation: %s", scenegraph::InterpolationTypeStr[(int)f.interpolation]);
 				ImGui::Text("       - long rotation: %s", f.longRotation ? "true" : "false");
 				ImGui::Text("       - transform");
-				const glm::mat4 &m = f.transform().worldMatrix();
+				const math::Mat4f &m = f.transform().worldMatrix();
 				ImGui::Text("         - %f:%f:%f:%f", m[0][0], m[0][1], m[0][2], m[0][3]);
 				ImGui::Text("         - %f:%f:%f:%f", m[1][0], m[1][1], m[1][2], m[1][3]);
 				ImGui::Text("         - %f:%f:%f:%f", m[2][0], m[2][1], m[2][2], m[2][3]);

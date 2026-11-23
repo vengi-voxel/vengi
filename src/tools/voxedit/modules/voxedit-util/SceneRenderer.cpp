@@ -19,10 +19,9 @@
 #include "voxel/RawVolume.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/SceneGraphRenderer.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -161,7 +160,7 @@ void SceneRenderer::doUpdateAABBMesh(bool sceneMode, const scenegraph::SceneGrap
 					   (int)node.type());
 			continue;
 		}
-		const glm::vec3 pivot = node.pivot();
+		const math::Vec3f pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const math::OBBF &obb = scenegraph::toOBB(true, region, pivot, transform);
 		_shapeBuilder.obb(obb);
@@ -232,8 +231,8 @@ void SceneRenderer::doUpdateBoneMesh(bool sceneMode, const scenegraph::SceneGrap
 
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(node, frameIdx);
 		const scenegraph::FrameTransform &ptransform = sceneGraph.transformForFrame(*pnode, frameIdx);
-		const glm::vec3 &ptranslation = ptransform.worldTranslation();
-		const glm::vec3 &translation = transform.worldTranslation();
+		const math::Vec3f &ptranslation = ptransform.worldTranslation();
+		const math::Vec3f &translation = transform.worldTranslation();
 
 		_shapeBuilder.bone(ptranslation, translation);
 	}
@@ -273,8 +272,8 @@ void SceneRenderer::handleCommandBuffer() {
 		case CommandType::NodeRegion: {
 			const core::UUID uuid(cmd.nodeRegion.uuid[0], cmd.nodeRegion.uuid[1]);
 			const voxel::Region region(
-				glm::ivec3(cmd.nodeRegion.regionMins[0], cmd.nodeRegion.regionMins[1], cmd.nodeRegion.regionMins[2]),
-				glm::ivec3(cmd.nodeRegion.regionMaxs[0], cmd.nodeRegion.regionMaxs[1], cmd.nodeRegion.regionMaxs[2]));
+				math::Vec3i(cmd.nodeRegion.regionMins[0], cmd.nodeRegion.regionMins[1], cmd.nodeRegion.regionMins[2]),
+				math::Vec3i(cmd.nodeRegion.regionMaxs[0], cmd.nodeRegion.regionMaxs[1], cmd.nodeRegion.regionMaxs[2]));
 			_sceneGraphRenderer.scheduleRegionExtraction(_meshState, uuid, region);
 			_cache.aabbDirty = true;
 			_cache.boneDirty = true;
@@ -282,8 +281,8 @@ void SceneRenderer::handleCommandBuffer() {
 		}
 		case CommandType::SliceRegion: {
 			const voxel::Region region(
-				glm::ivec3(cmd.sliceRegion.regionMins[0], cmd.sliceRegion.regionMins[1], cmd.sliceRegion.regionMins[2]),
-				glm::ivec3(cmd.sliceRegion.regionMaxs[0], cmd.sliceRegion.regionMaxs[1],
+				math::Vec3i(cmd.sliceRegion.regionMins[0], cmd.sliceRegion.regionMins[1], cmd.sliceRegion.regionMins[2]),
+				math::Vec3i(cmd.sliceRegion.regionMaxs[0], cmd.sliceRegion.regionMaxs[1],
 						   cmd.sliceRegion.regionMaxs[2]));
 			_sceneGraphRenderer.setSliceRegion(region);
 			break;
@@ -328,7 +327,7 @@ void SceneRenderer::update() {
 
 	handleCommandBuffer();
 
-	glm::vec3 val;
+	math::Vec3f val;
 	_ambientColor->vec3Val(&val[0]);
 	_sceneGraphRenderer.setAmbientColor(val);
 	_diffuseColor->vec3Val(&val[0]);
@@ -356,7 +355,7 @@ void SceneRenderer::setAddNodePreview(const AddNodePreview &preview) {
 }
 
 static void addObbFaceQuad(video::ShapeBuilder &shapeBuilder, const math::OBBF &obb, voxel::FaceNames face) {
-	glm::vec3 quad[4];
+	math::Vec3f quad[4];
 	scenegraph::obbFaceQuad(obb, face, quad);
 	shapeBuilder.setPrimitive(video::Primitive::Triangles);
 	const uint32_t i0 = shapeBuilder.addVertex(quad[0]);
@@ -474,7 +473,7 @@ void SceneRenderer::renderUI(voxelrender::RenderContext &renderContext, const vi
 		}
 		const voxel::Region &region = n->region();
 		const bool applyTransforms = region.isValid() && renderContext.applyTransforms();
-		const glm::mat4 &model = sceneGraph.worldMatrix(*n, renderContext.frame, applyTransforms);
+		const math::Mat4f &model = sceneGraph.worldMatrix(*n, renderContext.frame, applyTransforms);
 		if (isSliceModeActive()) {
 			_shapeRenderer.render(_indices.sliceRegion, camera, model);
 		}

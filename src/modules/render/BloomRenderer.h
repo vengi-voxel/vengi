@@ -12,9 +12,6 @@
 #include "video/Buffer.h"
 #include "video/FrameBuffer.h"
 #include "video/Texture.h"
-#include <glm/fwd.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
 
 namespace render {
 

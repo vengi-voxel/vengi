@@ -10,17 +10,16 @@
 #include "core/ArrayLength.h"
 #include "math/Frustum.h"
 #include "color/ColorUtil.h"
-#include "core/GLM.h"
 #include "core/ArrayLength.h"
 #include "video/Types.h"
-#include <glm/geometric.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/vector_relational.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/QuatOps.h"
+#include "math/Axes.h"
+#include "math/Scalar.h"
 
 #undef near
 #undef far
@@ -44,22 +43,22 @@ void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float st
 }
 
 void ShapeBuilder::aabbGridXY(const math::AABB<float>& aabb, bool near, float stepX, float stepY, float thickness) {
-	const glm::vec3& mins = aabb.mins();
-	const glm::vec3& width = aabb.getWidth();
+	const math::Vec3f& mins = aabb.mins();
+	const math::Vec3f& width = aabb.getWidth();
 	const float wz = near ? 0.0f : width.z;
 	const int n = (int)(width.x / stepX) + (int)(width.y / stepY) + 2;
-	const glm::vec4 darkerColor = color::darker(_color);
-	const glm::vec4 color = _color;
+	const math::Vec4f darkerColor = color::darker(_color);
+	const math::Vec4f color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
 	for (float x = 0.0f; x <= width.x; x += stepX, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
-		line(glm::vec3(x, 0.0f, wz) + mins, glm::vec3(x, width.y, wz) + mins, thickness);
+		line(math::Vec3f(x, 0.0f, wz) + mins, math::Vec3f(x, width.y, wz) + mins, thickness);
 	}
 	i = 0;
 	for (float y = 0.0f; y <= width.y; y += stepY, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
-		line(glm::vec3(0.0f, y, wz) + mins, glm::vec3(width.x, y, wz) + mins, thickness);
+		line(math::Vec3f(0.0f, y, wz) + mins, math::Vec3f(width.x, y, wz) + mins, thickness);
 	}
 	setColor(color);
 }
@@ -69,22 +68,22 @@ void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float st
 }
 
 void ShapeBuilder::aabbGridYZ(const math::AABB<float>& aabb, bool near, float stepY, float stepZ, float thickness) {
-	const glm::vec3& mins = aabb.mins();
-	const glm::vec3& width = aabb.getWidth();
+	const math::Vec3f& mins = aabb.mins();
+	const math::Vec3f& width = aabb.getWidth();
 	const float wx = near ? 0.0f : width.x;
 	const int n = (int)(width.y / stepY) + (int)(width.z / stepZ) + 2;
-	const glm::vec4 darkerColor = color::darker(_color);
-	const glm::vec4 color = _color;
+	const math::Vec4f darkerColor = color::darker(_color);
+	const math::Vec4f color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
 	for (float y = 0.0f; y <= width.y; y += stepY, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
-		line(glm::vec3(wx, y, 0.0f) + mins, glm::vec3(wx, y, width.z) + mins, thickness);
+		line(math::Vec3f(wx, y, 0.0f) + mins, math::Vec3f(wx, y, width.z) + mins, thickness);
 	}
 	i = 0;
 	for (float z = 0.0f; z <= width.z; z += stepZ, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
-		line(glm::vec3(wx, 0.0f, z) + mins, glm::vec3(wx, width.y, z) + mins, thickness);
+		line(math::Vec3f(wx, 0.0f, z) + mins, math::Vec3f(wx, width.y, z) + mins, thickness);
 	}
 	setColor(color);
 }
@@ -94,63 +93,63 @@ void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float st
 }
 
 void ShapeBuilder::aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepX, float stepZ, float thickness) {
-	const glm::vec3& mins = aabb.mins();
-	const glm::vec3& width = aabb.getWidth();
+	const math::Vec3f& mins = aabb.mins();
+	const math::Vec3f& width = aabb.getWidth();
 	const float wy = near ? 0.0f : width.y;
 	const int n = (int)(width.x / stepX) + (int)(width.z / stepZ) + 2;
-	const glm::vec4 darkerColor = color::darker(_color);
-	const glm::vec4 color = _color;
+	const math::Vec4f darkerColor = color::darker(_color);
+	const math::Vec4f color = _color;
 	reserve(n * 2, n * 2);
 	int i = 0;
 	for (float x = 0.0f; x <= width.x; x += stepX, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
-		line(glm::vec3(x, wy, 0.0f) + mins, glm::vec3(x, wy, width.z) + mins, thickness);
+		line(math::Vec3f(x, wy, 0.0f) + mins, math::Vec3f(x, wy, width.z) + mins, thickness);
 	}
 	i = 0;
 	for (float z = 0.0f; z <= width.z; z += stepZ, ++i) {
 		setColor(i % 5 == 0 ? color : darkerColor);
-		line(glm::vec3(0.0f, wy, z) + mins, glm::vec3(width.x, wy, z) + mins, thickness);
+		line(math::Vec3f(0.0f, wy, z) + mins, math::Vec3f(width.x, wy, z) + mins, thickness);
 	}
 	setColor(color);
 }
 
-void ShapeBuilder::arrow(const glm::vec3 &left, const glm::vec3 &center, const glm::vec3 &right, float thickness) {
+void ShapeBuilder::arrow(const math::Vec3f &left, const math::Vec3f &center, const math::Vec3f &right, float thickness) {
 	line(left, center, thickness);
 	line(center, right, thickness);
 }
 
-bool ShapeBuilder::setColor(const glm::vec4& color) {
-	if (glm::all(glm::epsilonEqual(_color, color, glm::epsilon<float>()))) {
+bool ShapeBuilder::setColor(const math::Vec4f& color) {
+	if (math::all(math::epsilonEqual(_color, color, math::epsilonf))) {
 		return false;
 	}
 	_color = color;
 	return true;
 }
 
-void ShapeBuilder::line(const glm::vec3& start, const glm::vec3& end, float thickness) {
+void ShapeBuilder::line(const math::Vec3f& start, const math::Vec3f& end, float thickness) {
 	if (thickness <= 1.0f) {
 		setPrimitive(Primitive::Lines);
 		reserve(2, 2);
 		addIndex(addVertex(start));
 		addIndex(addVertex(end));
 	} else {
-		glm::vec3 d = end - start;
-		const float d2 = glm::dot(d, d);
-		if (d2 > glm::epsilon<float>()) {
-			const float invLen = glm::inversesqrt(d2);
+		math::Vec3f d = end - start;
+		const float d2 = math::dot(d, d);
+		if (d2 > math::epsilonf) {
+			const float invLen = math::inversesqrt(d2);
 			d *= invLen;
 		}
 		d *= (thickness * 0.5f);
 
 		// TODO: RENDERER: this is broken - cube is of course not correct
 		const float dp = core_max(d.x, core_max(d.y, d.z));
-		const glm::vec3 mins(start.x + dp, start.y - dp, start.z - dp);
-		const glm::vec3 maxs(  end.x - dp,   end.y + dp,   end.z + dp);
+		const math::Vec3f mins(start.x + dp, start.y - dp, start.z - dp);
+		const math::Vec3f maxs(  end.x - dp,   end.y + dp,   end.z + dp);
 		cube(mins, maxs);
 	}
 }
 
-void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuilderCube sides) {
+void ShapeBuilder::cube(const math::Vec3f& mins, const math::Vec3f& maxs, ShapeBuilderCube sides) {
 	if (sides == ShapeBuilderCube::None) {
 		return;
 	}
@@ -162,15 +161,15 @@ void ShapeBuilder::cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuild
 	reserve(8, 36);
 
 	// front
-	addVertex(glm::vec3(mins.x, mins.y, maxs.z));
-	addVertex(glm::vec3(maxs.x, mins.y, maxs.z));
-	addVertex(glm::vec3(maxs.x, maxs.y, maxs.z));
-	addVertex(glm::vec3(mins.x, maxs.y, maxs.z));
+	addVertex(math::Vec3f(mins.x, mins.y, maxs.z));
+	addVertex(math::Vec3f(maxs.x, mins.y, maxs.z));
+	addVertex(math::Vec3f(maxs.x, maxs.y, maxs.z));
+	addVertex(math::Vec3f(mins.x, maxs.y, maxs.z));
 	// back
-	addVertex(glm::vec3(mins.x, mins.y, mins.z));
-	addVertex(glm::vec3(maxs.x, mins.y, mins.z));
-	addVertex(glm::vec3(maxs.x, maxs.y, mins.z));
-	addVertex(glm::vec3(mins.x, maxs.y, mins.z));
+	addVertex(math::Vec3f(mins.x, mins.y, mins.z));
+	addVertex(math::Vec3f(maxs.x, mins.y, mins.z));
+	addVertex(math::Vec3f(maxs.x, maxs.y, mins.z));
+	addVertex(math::Vec3f(mins.x, maxs.y, mins.z));
 
 	if ((sides & ShapeBuilderCube::Front) == ShapeBuilderCube::Front) {
 		addIndex(startIndex + 0, startIndex + 1, startIndex + 2);
@@ -202,30 +201,30 @@ void ShapeBuilder::obb(const math::OBBF& obb) {
 	setPrimitive(Primitive::Lines);
 	reserve(8, 24);
 
-	const glm::vec3& center = obb.origin();
-	const glm::mat3x3 rot(obb.rotation());
+	const math::Vec3f& center = obb.origin();
+	const math::Mat3f rot(obb.rotation());
 	int indices[8];
-	if (rot != glm::mat3(1.0f)) {
-		const glm::vec3& halfWidth = obb.extents();
-		const glm::vec3 vecs[8] = {
-			glm::vec3(-halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y,  halfWidth.z),
-			glm::vec3( halfWidth.x,  halfWidth.y,  halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y,  halfWidth.z),
-			glm::vec3(-halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3(-halfWidth.x, -halfWidth.y, -halfWidth.z),
-			glm::vec3( halfWidth.x,  halfWidth.y, -halfWidth.z), glm::vec3( halfWidth.x, -halfWidth.y, -halfWidth.z)
+	if (rot != math::Mat3f(1.0f)) {
+		const math::Vec3f& halfWidth = obb.extents();
+		const math::Vec3f vecs[8] = {
+			math::Vec3f(-halfWidth.x,  halfWidth.y,  halfWidth.z), math::Vec3f(-halfWidth.x, -halfWidth.y,  halfWidth.z),
+			math::Vec3f( halfWidth.x,  halfWidth.y,  halfWidth.z), math::Vec3f( halfWidth.x, -halfWidth.y,  halfWidth.z),
+			math::Vec3f(-halfWidth.x,  halfWidth.y, -halfWidth.z), math::Vec3f(-halfWidth.x, -halfWidth.y, -halfWidth.z),
+			math::Vec3f( halfWidth.x,  halfWidth.y, -halfWidth.z), math::Vec3f( halfWidth.x, -halfWidth.y, -halfWidth.z)
 		};
 		for (size_t i = 0; i < lengthof(vecs); ++i) {
 			indices[i] = addVertex(rot * vecs[i] + center);
 		}
 	} else {
-		const glm::vec3& halfWidth = obb.extents();
-		indices[0] = addVertex(glm::vec3(-halfWidth.x + center.x,  halfWidth.y + center.y,  halfWidth.z + center.z));
-		indices[1] = addVertex(glm::vec3(-halfWidth.x + center.x, -halfWidth.y + center.y,  halfWidth.z + center.z));
-		indices[2] = addVertex(glm::vec3( halfWidth.x + center.x,  halfWidth.y + center.y,  halfWidth.z + center.z));
-		indices[3] = addVertex(glm::vec3( halfWidth.x + center.x, -halfWidth.y + center.y,  halfWidth.z + center.z));
-		indices[4] = addVertex(glm::vec3(-halfWidth.x + center.x,  halfWidth.y + center.y, -halfWidth.z + center.z));
-		indices[5] = addVertex(glm::vec3(-halfWidth.x + center.x, -halfWidth.y + center.y, -halfWidth.z + center.z));
-		indices[6] = addVertex(glm::vec3( halfWidth.x + center.x,  halfWidth.y + center.y, -halfWidth.z + center.z));
-		indices[7] = addVertex(glm::vec3( halfWidth.x + center.x, -halfWidth.y + center.y, -halfWidth.z + center.z));
+		const math::Vec3f& halfWidth = obb.extents();
+		indices[0] = addVertex(math::Vec3f(-halfWidth.x + center.x,  halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[1] = addVertex(math::Vec3f(-halfWidth.x + center.x, -halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[2] = addVertex(math::Vec3f( halfWidth.x + center.x,  halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[3] = addVertex(math::Vec3f( halfWidth.x + center.x, -halfWidth.y + center.y,  halfWidth.z + center.z));
+		indices[4] = addVertex(math::Vec3f(-halfWidth.x + center.x,  halfWidth.y + center.y, -halfWidth.z + center.z));
+		indices[5] = addVertex(math::Vec3f(-halfWidth.x + center.x, -halfWidth.y + center.y, -halfWidth.z + center.z));
+		indices[6] = addVertex(math::Vec3f( halfWidth.x + center.x,  halfWidth.y + center.y, -halfWidth.z + center.z));
+		indices[7] = addVertex(math::Vec3f( halfWidth.x + center.x, -halfWidth.y + center.y, -halfWidth.z + center.z));
 	}
 
 	// front
@@ -248,15 +247,15 @@ void ShapeBuilder::obb(const math::OBBF& obb) {
 }
 
 void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float stepWidth, float thickness) {
-	glm::vec3 vecs[8] = {
-		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
-		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
-		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
+	math::Vec3f vecs[8] = {
+		math::Vec3f(-1.0f,  1.0f,  1.0f), math::Vec3f(-1.0f, -1.0f,  1.0f),
+		math::Vec3f( 1.0f,  1.0f,  1.0f), math::Vec3f( 1.0f, -1.0f,  1.0f),
+		math::Vec3f(-1.0f,  1.0f, -1.0f), math::Vec3f(-1.0f, -1.0f, -1.0f),
+		math::Vec3f( 1.0f,  1.0f, -1.0f), math::Vec3f( 1.0f, -1.0f, -1.0f)
 	};
-	const glm::vec3& width = aabb.getWidth();
-	const glm::vec3& halfWidth = width / 2.0f;
-	const glm::vec3& center = aabb.getCenter();
+	const math::Vec3f& width = aabb.getWidth();
+	const math::Vec3f& halfWidth = width / 2.0f;
+	const math::Vec3f& center = aabb.getCenter();
 
 	for (size_t i = 0; i < lengthof(vecs); ++i) {
 		vecs[i] = vecs[i] * halfWidth + center;
@@ -293,17 +292,17 @@ void ShapeBuilder::aabb(const math::AABB<float>& aabb, bool renderGrid, float st
 	}
 }
 
-void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs, float thickness) {
-	glm::vec3 vecs[8] = {
-		glm::vec3(-1.0f,  1.0f,  1.0f), glm::vec3(-1.0f, -1.0f,  1.0f),
-		glm::vec3( 1.0f,  1.0f,  1.0f), glm::vec3( 1.0f, -1.0f,  1.0f),
-		glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f, -1.0f, -1.0f),
-		glm::vec3( 1.0f,  1.0f, -1.0f), glm::vec3( 1.0f, -1.0f, -1.0f)
+void ShapeBuilder::aabb(const math::Vec3f& mins, const math::Vec3f& maxs, float thickness) {
+	math::Vec3f vecs[8] = {
+		math::Vec3f(-1.0f,  1.0f,  1.0f), math::Vec3f(-1.0f, -1.0f,  1.0f),
+		math::Vec3f( 1.0f,  1.0f,  1.0f), math::Vec3f( 1.0f, -1.0f,  1.0f),
+		math::Vec3f(-1.0f,  1.0f, -1.0f), math::Vec3f(-1.0f, -1.0f, -1.0f),
+		math::Vec3f( 1.0f,  1.0f, -1.0f), math::Vec3f( 1.0f, -1.0f, -1.0f)
 	};
 	reserve(lengthof(vecs), 24);
-	const glm::vec3& width = maxs - mins;
-	const glm::vec3& halfWidth = width / 2.0f;
-	const glm::vec3& center = maxs - halfWidth;
+	const math::Vec3f& width = maxs - mins;
+	const math::Vec3f& halfWidth = width / 2.0f;
+	const math::Vec3f& center = maxs - halfWidth;
 	for (size_t i = 0; i < lengthof(vecs); ++i) {
 		vecs[i] = vecs[i] * halfWidth + center;
 	}
@@ -327,7 +326,7 @@ void ShapeBuilder::aabb(const glm::vec3& mins, const glm::vec3& maxs, float thic
 	line(vecs[3], vecs[7], thickness);
 }
 
-void ShapeBuilder::geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive) {
+void ShapeBuilder::geom(const math::Vec3f* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive) {
 	setPrimitive(primitive);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
 
@@ -342,46 +341,46 @@ void ShapeBuilder::geom(const glm::vec3* vert, size_t vertCount, const uint32_t*
 	}
 }
 
-void ShapeBuilder::geom(const core::Buffer<glm::vec3>& vert, const core::Buffer<uint32_t>& indices, Primitive primitive) {
+void ShapeBuilder::geom(const core::Buffer<math::Vec3f>& vert, const core::Buffer<uint32_t>& indices, Primitive primitive) {
 	geom(&vert.front(), vert.size(), &indices.front(), indices.size(), primitive);
 }
 
 void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	setPrimitive(Primitive::Lines);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
-	const glm::vec3& planeNormal = plane.norm();
+	const math::Vec3f& planeNormal = plane.norm();
 	const float planeScale = plane.dist();
 
-	const glm::vec3& right = glm::cross(planeNormal, glm::up());
-	const glm::vec3& up = glm::cross(right, planeNormal);
-	const glm::mat4 rot(
+	const math::Vec3f& right = math::cross(planeNormal, math::up());
+	const math::Vec3f& up = math::cross(right, planeNormal);
+	const math::Mat4f rot(
 		right.x, up.x, -planeNormal.x, 0.0f,
 		right.y, up.y, -planeNormal.y, 0.0f,
 		right.z, up.z, -planeNormal.z, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f);
-	const glm::mat4& trans = glm::translate(planeNormal * planeScale);
-	const glm::mat4& result = trans * rot;
+	const math::Mat4f& trans = math::translate(planeNormal * planeScale);
+	const math::Mat4f& result = trans * rot;
 
-	static const glm::vec4 corners[] = {
-		glm::vec4(-planeScale, -planeScale, 0.0f, 1.0f),
-		glm::vec4(-planeScale,  planeScale, 0.0f, 1.0f),
-		glm::vec4( planeScale,  planeScale, 0.0f, 1.0f),
-		glm::vec4( planeScale, -planeScale, 0.0f, 1.0f)
+	static const math::Vec4f corners[] = {
+		math::Vec4f(-planeScale, -planeScale, 0.0f, 1.0f),
+		math::Vec4f(-planeScale,  planeScale, 0.0f, 1.0f),
+		math::Vec4f( planeScale,  planeScale, 0.0f, 1.0f),
+		math::Vec4f( planeScale, -planeScale, 0.0f, 1.0f)
 	};
 
 	reserve(lengthof(corners) + 2, 16);
 
 	setColor(color::Green());
 	for (uint32_t i = 0; i < lengthof(corners); ++i) {
-		const glm::vec4& v = result * corners[i];
-		addVertex(glm::vec3(v), planeNormal);
+		const math::Vec4f& v = result * corners[i];
+		addVertex(math::Vec3f(v), planeNormal);
 	}
 
 	if (normals) {
 		const float normalVecScale = 10.0f;
-		const glm::vec3& pvn = planeNormal * normalVecScale;
+		const math::Vec3f& pvn = planeNormal * normalVecScale;
 		setColor(color::Red());
-		addVertex(glm::zero<glm::vec3>(), planeNormal);
+		addVertex(math::Vec3f(0.0f), planeNormal);
 		addVertex(pvn, planeNormal);
 	}
 
@@ -412,16 +411,16 @@ void ShapeBuilder::plane(const math::Plane& plane, bool normals) {
 	}
 }
 
-void ShapeBuilder::pyramid(const glm::vec3& size) {
+void ShapeBuilder::pyramid(const math::Vec3f& size) {
 	setPrimitive(Primitive::Triangles);
 
 	reserve(5, 18);
 
-	const glm::vec3& tip = glm::vec3(_position.x, _position.y + size.y, _position.z);
-	const glm::vec3& vlfl = glm::vec3(_position.x - size.x, _position.y, _position.z + size.z);
-	const glm::vec3& vlfr = glm::vec3(_position.x + size.x, _position.y, _position.z + size.z);
-	const glm::vec3& vlbl = glm::vec3(_position.x - size.x, _position.y, _position.z - size.z);
-	const glm::vec3& vlbr = glm::vec3(_position.x + size.x, _position.y, _position.z - size.z);
+	const math::Vec3f& tip = math::Vec3f(_position.x, _position.y + size.y, _position.z);
+	const math::Vec3f& vlfl = math::Vec3f(_position.x - size.x, _position.y, _position.z + size.z);
+	const math::Vec3f& vlfr = math::Vec3f(_position.x + size.x, _position.y, _position.z + size.z);
+	const math::Vec3f& vlbl = math::Vec3f(_position.x - size.x, _position.y, _position.z - size.z);
+	const math::Vec3f& vlbr = math::Vec3f(_position.x + size.x, _position.y, _position.z - size.z);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t) _vertices.size();
 
 	addVertex(tip);
@@ -459,7 +458,7 @@ void ShapeBuilder::pyramid(const glm::vec3& size) {
 	addIndex(startIndex + 4);
 }
 
-uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal) {
+uint32_t ShapeBuilder::addVertex(const math::Vec3f& vertex, const math::Vec2f& uv, const math::Vec3f& normal) {
 	core_assert(_colors.capacity() > _colors.size());
 	_colors.push_back(_color);
 	core_assert(_vertices.capacity() > _vertices.size());
@@ -476,7 +475,7 @@ uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec2& uv, c
 	return (uint32_t)_vertices.size() - 1;
 }
 
-uint32_t ShapeBuilder::addVertex(const glm::vec3& vertex, const glm::vec3& normal) {
+uint32_t ShapeBuilder::addVertex(const math::Vec3f& vertex, const math::Vec3f& normal) {
 	core_assert(_colors.capacity() > _colors.size());
 	_colors.push_back(_color);
 	core_assert(_vertices.capacity() > _vertices.size());
@@ -504,26 +503,26 @@ void ShapeBuilder::cylinder(float radius, float length, int slices) {
 	reserve(slices + 2, (2 + slices) * 3 * 2);
 	const float invNumVerts = 1.0f / float(slices);
 
-	const uint32_t capTopIndex = addVertex(glm::zero<glm::vec3>());
-	const uint32_t capBottomIndex = addVertex(glm::vec3(0.0f, 0.0f, length));
+	const uint32_t capTopIndex = addVertex(math::Vec3f(0.0f));
+	const uint32_t capBottomIndex = addVertex(math::Vec3f(0.0f, 0.0f, length));
 	const uint32_t startIndex = (uint32_t)_vertices.size();
 
 	// the bottom sides of the cone
 	for (int j = 0; j < slices; j++) {
-		const float angle = glm::two_pi<float>() * (float)j * invNumVerts;
-		const float angleSin = glm::sin(angle);
-		const float angleCos = glm::cos(angle);
-		addVertex(glm::vec3(radius * angleCos, radius * angleSin, length));
+		const float angle = math::twoPi * (float)j * invNumVerts;
+		const float angleSin = math::sin(angle);
+		const float angleCos = math::cos(angle);
+		addVertex(math::Vec3f(radius * angleCos, radius * angleSin, length));
 	}
 
 	const uint32_t topIndexStart = (uint32_t)_vertices.size();
 
 	// the top sides of the cone
 	for (int j = 0; j < slices; j++) {
-		const float angle = glm::two_pi<float>() * (float)j * invNumVerts;
-		const float angleSin = glm::sin(angle);
-		const float angleCos = glm::cos(angle);
-		addVertex(glm::vec3(radius * angleCos, radius * angleSin, 0.0f));
+		const float angle = math::twoPi * (float)j * invNumVerts;
+		const float angleSin = math::sin(angle);
+		const float angleCos = math::cos(angle);
+		addVertex(math::Vec3f(radius * angleCos, radius * angleSin, 0.0f));
 	}
 
 	for (int i = 0; i < slices; ++i) {
@@ -571,14 +570,14 @@ void ShapeBuilder::diamond(float length1, float length2) {
 	if (_primitive == Primitive::Lines) {
 		reserve(6, 24);
 
-		const uint32_t diamond = addVertex(glm::vec3(0.0f, 0.0f, 0.0f));
+		const uint32_t diamond = addVertex(math::Vec3f(0.0f, 0.0f, 0.0f));
 
-		addVertex(glm::vec3(-halfLength1,  halfLength1, length1));
-		addVertex(glm::vec3( halfLength1,  halfLength1, length1));
-		addVertex(glm::vec3( halfLength1, -halfLength1, length1));
-		addVertex(glm::vec3(-halfLength1, -halfLength1, length1));
+		addVertex(math::Vec3f(-halfLength1,  halfLength1, length1));
+		addVertex(math::Vec3f( halfLength1,  halfLength1, length1));
+		addVertex(math::Vec3f( halfLength1, -halfLength1, length1));
+		addVertex(math::Vec3f(-halfLength1, -halfLength1, length1));
 
-		const uint32_t diamond2 = addVertex(glm::vec3(0.0f, 0.0f, length1 + length2));
+		const uint32_t diamond2 = addVertex(math::Vec3f(0.0f, 0.0f, length1 + length2));
 
 		addIndex(diamond, diamond + 1);
 		addIndex(diamond, diamond + 2);
@@ -595,12 +594,12 @@ void ShapeBuilder::diamond(float length1, float length2) {
 		addIndex(diamond2, diamond + 3);
 		addIndex(diamond2, diamond + 4);
 	} else if (_primitive == Primitive::Triangles) {
-		const glm::vec3 v0(0.0f, 0.0f, 0.0f);
-		const glm::vec3 v1(-halfLength1,  halfLength1, length1);
-		const glm::vec3 v2( halfLength1,  halfLength1, length1);
-		const glm::vec3 v3( halfLength1, -halfLength1, length1);
-		const glm::vec3 v4(-halfLength1, -halfLength1, length1);
-		const glm::vec3 v5(0.0f, 0.0f, length1 + length2);
+		const math::Vec3f v0(0.0f, 0.0f, 0.0f);
+		const math::Vec3f v1(-halfLength1,  halfLength1, length1);
+		const math::Vec3f v2( halfLength1,  halfLength1, length1);
+		const math::Vec3f v3( halfLength1, -halfLength1, length1);
+		const math::Vec3f v4(-halfLength1, -halfLength1, length1);
+		const math::Vec3f v5(0.0f, 0.0f, length1 + length2);
 
 		math::Tri tris[8];
 		tris[0].setColor(color::darker(_color, 2.0f));
@@ -635,8 +634,8 @@ void ShapeBuilder::diamond(float length1, float length2) {
 }
 
 void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
-	const glm::vec3 &n = calcNormal ? glm::normalize(tri.normal()) : glm::zero<glm::vec3>();
-	glm::vec4 copy = _color;
+	const math::Vec3f &n = calcNormal ? math::normalize(tri.normal()) : math::Vec3f(0.0f);
+	math::Vec4f copy = _color;
 	setColor(color::fromRGBA(tri.color0()));
 	addIndex(addVertex(tri.vertex0(), n));
 	setColor(color::fromRGBA(tri.color1()));
@@ -646,19 +645,19 @@ void ShapeBuilder::addTri(const math::Tri &tri, bool calcNormal) {
 	setColor(copy);
 }
 
-void ShapeBuilder::bone(const glm::vec3 &from, const glm::vec3 &to, float posSize, float boneSize) {
+void ShapeBuilder::bone(const math::Vec3f &from, const math::Vec3f &to, float posSize, float boneSize) {
 	// backup state
-	const glm::vec3 prevPos = _position;
-	const glm::mat4 prevRotation = _rotation;
+	const math::Vec3f prevPos = _position;
+	const math::Mat4f prevRotation = _rotation;
 	const bool prevApplyRotation = _applyRotation;
 
-	glm::vec3 dir = to - from;
+	math::Vec3f dir = to - from;
 	dir.z = -dir.z;
-	const glm::vec3 norm = glm::normalize(dir);
-	const float length = glm::distance(from, to);
+	const math::Vec3f norm = math::normalize(dir);
+	const float length = math::distance(from, to);
 
 	// change state
-	setRotation(glm::mat4_cast(glm::rotation(norm, glm::forward())));
+	setRotation(math::mat4_cast(math::rotation(norm, math::forward())));
 	setPosition(from);
 	bone(length, posSize, boneSize);
 
@@ -675,10 +674,10 @@ void ShapeBuilder::bone(float length, float posSize, float boneSize) {
 		reserve(8 * 3 * 3, 8 * 3 * 3);
 	}
 
-	const glm::vec3 pos = _position;
+	const math::Vec3f pos = _position;
 	diamond(posSize, posSize);
 	if (_applyRotation) {
-		_position += _rotation * glm::vec3(0.0f, 0.0f, 2.0f * posSize);
+		_position += _rotation * math::Vec3f(0.0f, 0.0f, 2.0f * posSize);
 	} else {
 		_position.z += 2.0f * posSize;
 	}
@@ -686,7 +685,7 @@ void ShapeBuilder::bone(float length, float posSize, float boneSize) {
 	if (length > 0.0f) {
 		diamond(boneSize, length);
 		if (_applyRotation) {
-			_position += _rotation * glm::vec3(0.0f, 0.0f, boneSize + length);
+			_position += _rotation * math::Vec3f(0.0f, 0.0f, boneSize + length);
 		} else {
 			_position.z += boneSize + length;
 		}
@@ -707,17 +706,17 @@ void ShapeBuilder::cone(float baseRadius, float length, int slices) {
 
 	reserve(slices + 2, (2 + slices) * 3 * 2);
 
-	const uint32_t tipConeIndex = addVertex(glm::zero<glm::vec3>());
-	const uint32_t capCenterIndex = addVertex(glm::vec3(0.0f, 0.0f, length));
+	const uint32_t tipConeIndex = addVertex(math::Vec3f(0.0f));
+	const uint32_t capCenterIndex = addVertex(math::Vec3f(0.0f, 0.0f, length));
 	const uint32_t startIndex = (uint32_t)_vertices.size();
 
 	// the sides of the cone
 	const float invNumVerts = 1.0f / float(slices);
 	for (int j = 0; j < slices; j++) {
-		const float angle = glm::two_pi<float>() * (float)j * invNumVerts;
-		const float angleSin = glm::sin(angle);
-		const float angleCos = glm::cos(angle);
-		addVertex(glm::vec3(baseRadius * angleCos, baseRadius * angleSin, length));
+		const float angle = math::twoPi * (float)j * invNumVerts;
+		const float angleSin = math::sin(angle);
+		const float angleCos = math::cos(angle);
+		addVertex(math::Vec3f(baseRadius * angleCos, baseRadius * angleSin, length));
 	}
 
 	for (int i = 0; i < slices; ++i) {
@@ -743,7 +742,7 @@ void ShapeBuilder::cone(float baseRadius, float length, int slices) {
 
 void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 	setPrimitive(Primitive::Lines);
-	glm::vec3 out[math::FRUSTUM_VERTICES_MAX];
+	math::Vec3f out[math::FRUSTUM_VERTICES_MAX];
 	uint32_t indices[math::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
 
@@ -774,7 +773,7 @@ void ShapeBuilder::frustum(const Camera& camera, int splitFrustum) {
 
 void ShapeBuilder::camera(const Camera& camera) {
 	setPrimitive(Primitive::Lines);
-	glm::vec3 out[math::FRUSTUM_VERTICES_MAX];
+	math::Vec3f out[math::FRUSTUM_VERTICES_MAX];
 	uint32_t indices[math::FRUSTUM_VERTICES_MAX * 3];
 	camera.frustumCorners(out, indices);
 
@@ -789,27 +788,27 @@ void ShapeBuilder::camera(const Camera& camera) {
 	}
 }
 
-void ShapeBuilder::axis(const glm::vec3& scale) {
+void ShapeBuilder::axis(const math::Vec3f& scale) {
 	setColor(color::Red());
-	line(glm::zero<glm::vec3>(), glm::right() * scale);
+	line(math::Vec3f(0.0f), math::right() * scale);
 
 	setColor(color::Green());
-	line(glm::zero<glm::vec3>(), glm::up() * scale);
+	line(math::Vec3f(0.0f), math::up() * scale);
 
 	setColor(color::Blue());
-	line(glm::zero<glm::vec3>(), glm::forward() * scale);
+	line(math::Vec3f(0.0f), math::forward() * scale);
 }
 
 void ShapeBuilder::plane(uint32_t tesselation) {
 	setPrimitive(Primitive::Triangles);
 	const uint32_t startIndex = _vertices.empty() ? 0u : (uint32_t)_vertices.size();
-	static const glm::vec2 uv0(0.0f, 1.0f);
-	static const glm::vec2 uv1(1.0f, 0.0f);
-	static const glm::vec2 uv2(0.0f, 0.0f);
-	static const glm::vec2 meshBounds(uv1.x - uv0.x, uv2.y - uv0.y);
-	static const glm::vec2 uvBounds(uv1.x - uv0.y, uv0.y - uv2.y);
-	static const glm::vec2 uvPos = uv2;
-	static const glm::vec2 anchorOffset(meshBounds.x / 2, meshBounds.y / 2);
+	static const math::Vec2f uv0(0.0f, 1.0f);
+	static const math::Vec2f uv1(1.0f, 0.0f);
+	static const math::Vec2f uv2(0.0f, 0.0f);
+	static const math::Vec2f meshBounds(uv1.x - uv0.x, uv2.y - uv0.y);
+	static const math::Vec2f uvBounds(uv1.x - uv0.y, uv0.y - uv2.y);
+	static const math::Vec2f uvPos = uv2;
+	static const math::Vec2f anchorOffset(meshBounds.x / 2, meshBounds.y / 2);
 
 	const uint32_t strucWidth = tesselation + 2;
 	const float segmentWidth = 1.0f / (float)(tesselation + 1);
@@ -820,9 +819,9 @@ void ShapeBuilder::plane(uint32_t tesselation) {
 
 	for (float y = 0.0f; y < strucWidth; ++y) {
 		for (float x = 0.0f; x < strucWidth; ++x) {
-			const glm::vec2 uv((x * segmentWidth * uvBounds.x) + uvPos.x, uvBounds.y - (y * segmentWidth * uvBounds.y) + uvPos.y);
-			const glm::vec3 v(x * scaleX - anchorOffset.x, 0.0f, y * scaleY - anchorOffset.y);
-			addVertex(v, uv, glm::zero<glm::vec3>());
+			const math::Vec2f uv((x * segmentWidth * uvBounds.x) + uvPos.x, uvBounds.y - (y * segmentWidth * uvBounds.y) + uvPos.y);
+			const math::Vec3f v(x * scaleX - anchorOffset.x, 0.0f, y * scaleY - anchorOffset.y);
+			addVertex(v, uv, math::Vec3f(0.0f));
 		}
 	}
 
@@ -848,17 +847,17 @@ void ShapeBuilder::sphere(int numSlices, int numStacks, float radius) {
 	reserve(numStacks * numSlices, nindices);
 
 	for (int stack = 0; stack <= numStacks; stack++) {
-		const float stackAngle = (glm::pi<float>() * (float)stack) / (float)numStacks;
-		const float sinStack = glm::sin(stackAngle);
-		const float cosStack = glm::cos(stackAngle);
+		const float stackAngle = (math::pi * (float)stack) / (float)numStacks;
+		const float sinStack = math::sin(stackAngle);
+		const float cosStack = math::cos(stackAngle);
 		for (int slice = 0; slice <= numSlices; slice++) {
-			const float sliceAngle = (glm::two_pi<float>() * (float)slice) / (float)numSlices;
-			const float sinSlice = glm::sin(sliceAngle);
-			const float cosSlice = glm::cos(sliceAngle);
-			const glm::vec3 norm(sinSlice * sinStack, cosSlice * sinStack, cosStack);
-			const glm::vec3 pos(norm * radius);
+			const float sliceAngle = (math::twoPi * (float)slice) / (float)numSlices;
+			const float sinSlice = math::sin(sliceAngle);
+			const float cosSlice = math::cos(sliceAngle);
+			const math::Vec3f norm(sinSlice * sinStack, cosSlice * sinStack, cosStack);
+			const math::Vec3f pos(norm * radius);
 			if (_vertices.size() == _texcoords.size()) {
-				addVertex(pos, glm::vec2(du * (float)slice, dv * (float)stack), norm);
+				addVertex(pos, math::Vec2f(du * (float)slice, dv * (float)stack), norm);
 			} else {
 				addVertex(pos, norm);
 			}

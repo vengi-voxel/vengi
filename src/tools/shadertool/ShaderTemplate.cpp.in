@@ -3,7 +3,7 @@
  */
 
 #include "$name$.h"
-#include "core/GLM.h"
+#include "core/Assert.h"
 #include "video/Renderer.h"
 #include "video/ShaderTypes.h"
 #include "video/UniformBuffer.h"

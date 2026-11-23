@@ -11,6 +11,7 @@
 #include "voxedit-util/modifier/brush/LUASelectionMode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -49,8 +50,8 @@ TEST_F(LUABrushTest, testPathBrush) {
 
 	BrushContext ctx;
 	// Path should walk from (0,0,0) to (5,0,0) over the solid voxels at y=-1
-	ctx.referencePos = glm::ivec3(0, 0, 0);
-	ctx.cursorPosition = glm::ivec3(5, 0, 0);
+	ctx.referencePos = math::Vec3i(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(5, 0, 0);
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	brush.preExecute(ctx, wrapper.volume());
@@ -168,7 +169,7 @@ TEST_F(LUABrushTest, testRetainedVolumesFinalizeBeforeToolResources) {
 		LUASelectionMode mode(_testApp->filesystem());
 		ASSERT_TRUE(mode.init());
 		ASSERT_TRUE(mode.loadScript(filename));
-		mode.execute(scene, wrapper, input, wrapper.region(), glm::ivec3(0), voxel::FaceNames::PositiveY);
+		mode.execute(scene, wrapper, input, wrapper.region(), math::Vec3i(0), voxel::FaceNames::PositiveY);
 		EXPECT_EQ(2, scene.node(id).volume()->voxel(0, 0, 0).getColor());
 	}
 	EXPECT_TRUE(io::Filesystem::sysRemoveFile(filename));

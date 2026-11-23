@@ -1,6 +1,6 @@
 set(LIB scenegraph)
 set(SRCS
-	CollisionNode.h
+	CollisionNode.h CollisionNode.cpp
 	CoordinateSystemUtil.h CoordinateSystemUtil.cpp
 	FrameTransform.h FrameTransform.cpp
 	FrameTransformCache.h FrameTransformCache.cpp

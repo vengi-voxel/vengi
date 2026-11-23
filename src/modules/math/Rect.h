@@ -5,27 +5,26 @@
 #pragma once
 
 #include <limits>
-#include <glm/vec2.hpp>
-#include <glm/common.hpp>
+#include "math/VecOf.h"
 
 namespace math {
 
 template<typename TYPE = int>
 class Rect {
 private:
-	glm::tvec2<TYPE> _mins;
-	glm::tvec2<TYPE> _maxs;
+	typename Vec2Of<TYPE>::Type _mins;
+	typename Vec2Of<TYPE>::Type _maxs;
 public:
 	Rect() :
-			_mins(glm::tvec2<TYPE>((TYPE)0)),
-			_maxs(glm::tvec2<TYPE>((TYPE)0)) {
+			_mins(typename Vec2Of<TYPE>::Type((TYPE)0)),
+			_maxs(typename Vec2Of<TYPE>::Type((TYPE)0)) {
 	}
 
 	Rect(TYPE minX, TYPE minZ, TYPE maxX, TYPE maxZ) :
 			_mins(minX, minZ), _maxs(maxX, maxZ) {
 	}
 
-	Rect(const glm::tvec2<TYPE>& mins, const glm::tvec2<TYPE>& maxs) :
+	Rect(const typename Vec2Of<TYPE>::Type& mins, const typename Vec2Of<TYPE>::Type& maxs) :
 			_mins(mins), _maxs(maxs) {
 	}
 
@@ -114,7 +113,7 @@ public:
 		return true;
 	}
 
-	inline constexpr bool contains(const glm::tvec2<TYPE>& point) const {
+	inline constexpr bool contains(const typename Vec2Of<TYPE>::Type& point) const {
 		if (point.x > getMaxX()) {
 			return false;
 		}
@@ -130,8 +129,8 @@ public:
 		return true;
 	}
 
-	inline bool containsf(const glm::vec2& point) const {
-		const glm::ivec2 p(glm::ceil(point));
+	inline bool containsf(const math::Vec2f& point) const {
+		const math::Vec2i p(math::ceil(point));
 		if (p.x > getMaxX()) {
 			return false;
 		}
@@ -147,28 +146,28 @@ public:
 		return true;
 	}
 
-	inline glm::tvec2<TYPE> maxs() const {
-		return glm::tvec2<TYPE>(getMaxX(), getMaxZ());
+	inline typename Vec2Of<TYPE>::Type maxs() const {
+		return typename Vec2Of<TYPE>::Type(getMaxX(), getMaxZ());
 	}
 
-	inline glm::tvec2<TYPE> mins() const {
-		return glm::tvec2<TYPE>(getMinX(), getMinZ());
+	inline typename Vec2Of<TYPE>::Type mins() const {
+		return typename Vec2Of<TYPE>::Type(getMinX(), getMinZ());
 	}
 
-	inline glm::tvec2<TYPE> upperLeft() const {
+	inline typename Vec2Of<TYPE>::Type upperLeft() const {
 		return mins();
 	}
 
-	inline glm::tvec2<TYPE> upperRight() const {
-		return glm::tvec2<TYPE>(getMaxX(), getMinZ());
+	inline typename Vec2Of<TYPE>::Type upperRight() const {
+		return typename Vec2Of<TYPE>::Type(getMaxX(), getMinZ());
 	}
 
-	inline glm::tvec2<TYPE> lowerRight() const {
+	inline typename Vec2Of<TYPE>::Type lowerRight() const {
 		return maxs();
 	}
 
-	inline glm::tvec2<TYPE> lowerLeft() const {
-		return glm::tvec2<TYPE>(getMinX(), getMaxZ());
+	inline typename Vec2Of<TYPE>::Type lowerLeft() const {
+		return typename Vec2Of<TYPE>::Type(getMinX(), getMaxZ());
 	}
 
 	inline constexpr TYPE width() const {
@@ -179,16 +178,16 @@ public:
 		return getMaxZ() - getMinZ();
 	}
 
-	inline glm::tvec2<TYPE> size() const {
+	inline typename Vec2Of<TYPE>::Type size() const {
 		return maxs() - mins();
 	}
 
-	inline glm::tvec2<TYPE> center() const {
+	inline typename Vec2Of<TYPE>::Type center() const {
 		return (mins() + maxs()) / (TYPE)2;
 	}
 
-	inline glm::vec2 centerf() const {
-		return glm::vec2(mins() + maxs()) / 2.0f;
+	inline math::Vec2f centerf() const {
+		return math::Vec2f(mins() + maxs()) / 2.0f;
 	}
 };
 

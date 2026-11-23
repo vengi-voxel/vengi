@@ -8,6 +8,7 @@
 #if defined(_MSC_VER)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "math/Vec4f.h"
 #endif
 
 namespace palette {
@@ -36,7 +37,7 @@ PaletteLookup::PaletteLookup(const palette::Palette &palette)
 	: _palette(palette), _cache(priv::CACHE_SIZE, PaletteColorNotFound) {
 }
 
-uint8_t PaletteLookup::findClosestIndex(const glm::vec4 &color) {
+uint8_t PaletteLookup::findClosestIndex(const math::Vec4f &color) {
 	return findClosestIndex(color::getRGBA(color));
 }
 

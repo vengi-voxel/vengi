@@ -11,7 +11,8 @@
 #include "video/Types.h"
 #include "video/KeyboardLayout.h"
 #include "video/FileDialogOptions.h"
-#include <glm/vec2.hpp>
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 struct SDL_Window;
 union SDL_Event;
@@ -34,8 +35,8 @@ private:
 protected:
 	SDL_Window* _window = nullptr;
 	RendererContext _rendererContext = nullptr;
-	glm::ivec2 _frameBufferDimension;
-	glm::ivec2 _windowDimension;
+	math::Vec2i _frameBufferDimension;
+	math::Vec2i _windowDimension;
 	float _aspect = 1.0f;
 	double _fps = 0.0;
 	bool _allowRelativeMouseMode = true;
@@ -67,7 +68,7 @@ protected:
 	/**
 	 * @brief Delta of the mouse movement since the last frame
 	 */
-	glm::vec2 _mouseRelativePos;
+	math::Vec2f _mouseRelativePos;
 
 	struct TouchPoint {
 		int64_t id = 0;
@@ -150,7 +151,7 @@ public:
 	 * drawable, i.e. the window was created with high-DPI support (Apple calls this
 	 * "Retina").
 	 */
-	const glm::ivec2& frameBufferDimension() const;
+	const math::Vec2i& frameBufferDimension() const;
 	/**
 	 * @brief This is the window size
 	 *
@@ -158,7 +159,7 @@ public:
 	 * the window was created with high-dpi support (e.g. iOS or OS X). Use
 	 * pixelDimension() to get the real client area size in pixels.
 	 */
-	const glm::ivec2& windowDimension() const;
+	const math::Vec2i& windowDimension() const;
 	int frameBufferWidth() const;
 	int frameBufferHeight() const;
 
@@ -240,11 +241,11 @@ inline bool WindowedApp::isSingleWindowMode() const {
 	return _singleWindowMode;
 }
 
-inline const glm::ivec2& WindowedApp::frameBufferDimension() const {
+inline const math::Vec2i& WindowedApp::frameBufferDimension() const {
 	return _frameBufferDimension;
 }
 
-inline const glm::ivec2& WindowedApp::windowDimension() const {
+inline const math::Vec2i& WindowedApp::windowDimension() const {
 	return _windowDimension;
 }
 

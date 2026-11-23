@@ -6,6 +6,7 @@
 #include "PixeloramaPalette.h"
 #include "core/Log.h"
 #include "json/JSON.h"
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -26,7 +27,7 @@ bool PixeloramaPalette::load(const core::String &filename, io::SeekableReadStrea
 		json::Json color = *it;
 		const core::String colorString = color.get("color").str();
 		const int idx = color.get("index").intVal();
-		glm::vec4 c{0.0f, 0.0f, 0.0f, 1.0f};
+		math::Vec4f c{0.0f, 0.0f, 0.0f, 1.0f};
 		if (SDL_sscanf(colorString.c_str(), "(%f, %f, %f, %f)", &c.r, &c.g, &c.b, &c.a) != 4) {
 			Log::warn("Unexpected color format: '%s'", colorString.c_str());
 		}
@@ -46,7 +47,7 @@ bool PixeloramaPalette::save(const palette::ColorPalette &palette, const core::S
 	stream.writeString("{\n \"colors\": [\n", false);
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const color::RGBA &rgba = palette.color(i);
-		const glm::vec4 &color = color::fromRGBA(rgba);
+		const math::Vec4f &color = color::fromRGBA(rgba);
 		stream.writeStringFormat(false, "  {\n   \"color\": \"(%f, %f, %f, %f)\",\n   \"index\": %d\n  }", color.r,
 								 color.g, color.b, color.a, i);
 		if (i + 1 < palette.colorCount()) {

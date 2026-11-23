@@ -21,7 +21,10 @@
 #include "voxel/MaterialColor.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelutil/ImageUtils.h"
-#include <glm/gtc/epsilon.hpp>
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -35,16 +38,16 @@ bool ThingFormat::loadNodeSpec(io::SeekableReadStream &stream, NodeSpec &nodeSpe
 	return parser.parseNode(nodeConfig, nodeSpec);
 }
 
-static scenegraph::SceneGraphTransform toTransform(const voxel::Region &region, const glm::vec3 &localPos,
-												   const glm::vec3 &localRot, const glm::vec3 &localSize, float scale) {
+static scenegraph::SceneGraphTransform toTransform(const voxel::Region &region, const math::Vec3f &localPos,
+												   const math::Vec3f &localRot, const math::Vec3f &localSize, float scale) {
 	// TODO: VOXELFORMAT: positioning is wrong
 	scenegraph::SceneGraphTransform transform;
-	transform.setLocalOrientation(glm::quat(glm::radians(localRot)));
+	transform.setLocalOrientation(math::Quatf(math::radians(localRot)));
 	transform.setLocalTranslation({-localPos.x, localPos.y, localPos.z});
-	if (!glm::epsilonEqual(scale, 1.0f, 0.00001f) ) {
+	if (!math::epsilonEqual(scale, 1.0f, 0.00001f) ) {
 		transform.setLocalScale({scale, scale, scale});
 	} else if (localSize.x != 0.0f && localSize.y != 0.0f && localSize.z != 0.0f) {
-		const glm::vec3 fullSize(region.getDimensionsInVoxels());
+		const math::Vec3f fullSize(region.getDimensionsInVoxels());
 		transform.setLocalScale(localSize / fullSize);
 	}
 	return transform;
@@ -80,7 +83,7 @@ bool ThingFormat::addMediaImage(const io::ArchivePtr &archive, const NodeSpec &n
 	if (mediaPlane) {
 		scenegraph::SceneGraphNode mediaNode(scenegraph::SceneGraphNodeType::Model);
 		mediaNode.setVolume(mediaPlane);
-		mediaNode.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
+		mediaNode.setPivot(math::Vec3f{0.5f, 0.0f, 0.5f});
 		mediaNode.setPalette(palette);
 		mediaNode.setProperty("mediaName", nodeSpec.mediaName);
 		mediaNode.setColor(nodeSpec.color);
@@ -119,7 +122,7 @@ bool ThingFormat::loadNode(const io::ArchivePtr &archive, const NodeSpec &nodeSp
 		scenegraph::SceneGraphTransform transform =
 			toTransform(node.region(), nodeSpec.localPos, nodeSpec.localRot, nodeSpec.localSize, nodeSpec.scale);
 		node.setTransform(keyFrameIdx, transform);
-		node.setPivot(glm::vec3{0.5f, 0.0f, 0.5f});
+		node.setPivot(math::Vec3f{0.5f, 0.0f, 0.5f});
 		node.setColor(nodeSpec.color);
 		node.setName(nodeSpec.name);
 		if (!nodeSpec.thingLibraryId.empty()) {

@@ -9,7 +9,6 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include "glm/ext/vector_uint3.hpp"
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "io/Stream.h"
@@ -18,6 +17,13 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include <stdint.h>
+#include "math/U16Vec3.h"
+#include "math/U8Vec4.h"
+#include "math/Vec3u.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -146,12 +152,12 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 	/* To get uv coordinates (ranging from 0.0 to 1.0), you have to add 0.5 to the uv coordinates and then
 	 * divide the result by hdr.skinwidth for u and hdr.skinheight for v */
-	core::Buffer<glm::vec2> texCoords;
+	core::Buffer<math::Vec2f> texCoords;
 	const uint32_t maxTexCoords = idPolyModel ? hdr.numVerts : hdr.numTexCoords;
 	for (uint32_t i = 0; i < maxTexCoords; ++i) {
 		uint32_t onseam;
 		wrap(stream->readUInt32(onseam))
-		glm::ivec2 uv;
+		math::Vec2i uv;
 		wrap(stream->readInt32(uv.x))
 		wrap(stream->readInt32(uv.y))
 		const float u = ((float)uv.x + 0.5f) / (float)hdr.skinWidth;
@@ -162,13 +168,19 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	struct MDLTriangle {
 		bool isFrontFace; /* textures include both sides of a face - the back face is the right side of the texture half
 						   */
+		struct Idx3u {
+			uint32_t x, y, z;
+		};
+		struct Idx3us {
+			uint16_t x, y, z;
+		};
 		union {
 			struct {
-				glm::uvec3 indices;
+				Idx3u indices;
 			} id;
 			struct {
-				glm::u16vec3 indices;
-				glm::u16vec3 uv;
+				Idx3us indices;
+				Idx3us uv;
 			} ra;
 		};
 	};
@@ -206,15 +218,15 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	// frames
 	struct MDLFrame {
 		uint32_t type;
-		glm::u8vec4 bboxmin; // vertex[0-3], normalindex
-		glm::u8vec4 bboxmax; // vertex[0-3], normalindex
+		math::U8Vec4 bboxmin; // vertex[0-3], normalindex
+		math::U8Vec4 bboxmax; // vertex[0-3], normalindex
 		core::String name;	 // 16 chars
-		core::Buffer<glm::vec3> vertices;
+		core::Buffer<math::Vec3f> vertices;
 	};
 
 	struct MDLPose {
-		glm::u8vec4 bboxmin;
-		glm::u8vec4 bboxmax;
+		math::U8Vec4 bboxmin;
+		math::U8Vec4 bboxmax;
 		core::Buffer<float> times; // for group frames
 		core::DynamicArray<MDLFrame> frames;
 	};
@@ -240,12 +252,13 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			wrapBool(stream->readString(16, frame.name, false))
 			frame.vertices.reserve(hdr.numVerts);
 			for (uint32_t j = 0; j < hdr.numVerts; ++j) {
-				glm::u8vec4 vertex;
+				math::U8Vec4 vertex;
 				wrap(stream->readUInt8(vertex.x))
 				wrap(stream->readUInt8(vertex.z))
 				wrap(stream->readUInt8(vertex.y))
 				wrap(stream->readUInt8(vertex.w)) // lightnormalindex (unused)
-				frame.vertices.push_back(glm::vec3(vertex) * hdr.scale + hdr.origin);
+				frame.vertices.push_back(math::Vec3f((float)vertex.x, (float)vertex.y, (float)vertex.z) * hdr.scale +
+										 hdr.origin);
 			}
 			simpleFrame.bboxmax = frame.bboxmax;
 			simpleFrame.bboxmin = frame.bboxmin;
@@ -292,12 +305,13 @@ bool MDLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				wrapBool(stream->readString(16, frame.name, false))
 				frame.vertices.reserve(hdr.numVerts);
 				for (uint32_t k = 0; k < hdr.numVerts; ++k) {
-					glm::u8vec4 vertex;
+					math::U8Vec4 vertex;
 					wrap(stream->readUInt8(vertex.x))
 					wrap(stream->readUInt8(vertex.z))
 					wrap(stream->readUInt8(vertex.y))
 					wrap(stream->readUInt8(vertex.w)) // normalindex
-					frame.vertices.push_back(glm::vec3(vertex) * hdr.scale + hdr.origin);
+					frame.vertices.push_back(math::Vec3f((float)vertex.x, (float)vertex.y, (float)vertex.z) * hdr.scale +
+										 hdr.origin);
 				}
 				groupFrame.frames.emplace_back(frame);
 			}

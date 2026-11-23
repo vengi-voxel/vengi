@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -30,7 +31,7 @@ protected:
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-					const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+					const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 		return false;
 	}
 

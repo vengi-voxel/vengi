@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "math/Vec3f.h"
 
 struct ufbx_node;
 struct ufbx_scene;
@@ -22,28 +23,28 @@ namespace voxelformat {
 class FBXFormat : public MeshFormat {
 private:
 	bool saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename, io::SeekableWriteStream &stream,
-						  const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords,
+						  const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords,
 						  const scenegraph::SceneGraph &sceneGraph);
 	bool voxelizeGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
 						const LoadContext &ctx) override;
 	int addNode_r(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 				  const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-				  const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap,
+				  const math::Vec3f &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap,
 				  core::IProgress *progress, int meshCount, int &meshIdx) const;
 	int addMeshNode(const ufbx_scene *scene, const ufbx_node *node, const core::String &filename,
 					const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
 					core::IProgress *progress, int meshCount, int &meshIdx) const;
 	int addGroupNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
-					 int parent, const glm::vec3 &scale) const;
+					 int parent, const math::Vec3f &scale) const;
 	void importAnimations(const ufbx_scene *scene, scenegraph::SceneGraph &sceneGraph,
-						  const core::Map<const ufbx_node *, int> &ufbxNodeMap, const glm::vec3 &scale) const;
+						  const core::Map<const ufbx_node *, int> &ufbxNodeMap, const math::Vec3f &scale) const;
 	int addCameraNode(const ufbx_scene *scene, const ufbx_node *node, scenegraph::SceneGraph &sceneGraph,
-					  int parent, const glm::vec3 &scale) const;
+					  int parent, const math::Vec3f &scale) const;
 
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
+					const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords) override;
 	image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive,
 								   const LoadContext &ctx) override;
 

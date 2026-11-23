@@ -21,12 +21,15 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
 
 // https://starmadepedia.net/wiki/ID_list
 #include "SMPalette.h"
+#include "math/Quatf.h"
+#include "math/Mat3f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -47,7 +50,7 @@ constexpr int smd3SegmentDataSize = ((smd3Blocks * smd3Blocks * smd3Blocks) * 3 
 
 } // namespace priv
 
-static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v);
+static bool readIvec3(io::SeekableReadStream &stream, math::Vec3i &v);
 
 // StarMade Tag types (org.schema.schine.resource.tag.Tag)
 enum SMTagType {
@@ -74,8 +77,8 @@ enum SMTagType {
 
 struct SMDock {
 	core::String name;
-	glm::vec3 translation{0.0f};
-	glm::quat orientation{1.0f, 0.0f, 0.0f, 0.0f};
+	math::Vec3f translation{0.0f};
+	math::Quatf orientation{1.0f, 0.0f, 0.0f, 0.0f};
 };
 
 static void stripTrailingSlash(core::String &path) {
@@ -106,32 +109,32 @@ static core::String entityPrefixFromDir(const core::String &dir) {
 	return prefix;
 }
 
-static glm::mat3 mat4RowMajorBasis(const float m[16]) {
-	return glm::mat3(m[0], m[4], m[8], m[1], m[5], m[9], m[2], m[6], m[10]);
+static math::Mat3f mat4RowMajorBasis(const float m[16]) {
+	return math::Mat3f(m[0], m[4], m[8], m[1], m[5], m[9], m[2], m[6], m[10]);
 }
 
 // javax.vecmath Matrix3f.rotX/Y/Z (column-vector multiply)
-static glm::mat3 smRotX(float a) {
-	const float c = glm::cos(a);
-	const float s = glm::sin(a);
-	return glm::mat3(1.0f, 0.0f, 0.0f, 0.0f, c, s, 0.0f, -s, c);
+static math::Mat3f smRotX(float a) {
+	const float c = math::cos(a);
+	const float s = math::sin(a);
+	return math::Mat3f(1.0f, 0.0f, 0.0f, 0.0f, c, s, 0.0f, -s, c);
 }
 
-static glm::mat3 smRotY(float a) {
-	const float c = glm::cos(a);
-	const float s = glm::sin(a);
-	return glm::mat3(c, 0.0f, -s, 0.0f, 1.0f, 0.0f, s, 0.0f, c);
+static math::Mat3f smRotY(float a) {
+	const float c = math::cos(a);
+	const float s = math::sin(a);
+	return math::Mat3f(c, 0.0f, -s, 0.0f, 1.0f, 0.0f, s, 0.0f, c);
 }
 
-static glm::mat3 smRotZ(float a) {
-	const float c = glm::cos(a);
-	const float s = glm::sin(a);
-	return glm::mat3(c, s, 0.0f, -s, c, 0.0f, 0.0f, 0.0f, 1.0f);
+static math::Mat3f smRotZ(float a) {
+	const float c = math::cos(a);
+	const float s = math::sin(a);
+	return math::Mat3f(c, s, 0.0f, -s, c, 0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 struct SMRigid {
-	glm::mat3 basis{1.0f};
-	glm::vec3 origin{0.0f};
+	math::Mat3f basis{1.0f};
+	math::Vec3f origin{0.0f};
 };
 
 static SMRigid smMul(const SMRigid &a, const SMRigid &b) {
@@ -143,7 +146,7 @@ static SMRigid smMul(const SMRigid &a, const SMRigid &b) {
 
 static SMRigid smInverse(const SMRigid &t) {
 	SMRigid out;
-	out.basis = glm::transpose(t.basis);
+	out.basis = math::transpose(t.basis);
 	out.origin = -out.basis * t.origin;
 	return out;
 }
@@ -158,7 +161,7 @@ static const float smOriencubeSecondaryY[24] = {
 	3.1415927f, 4.712389f, 0.0f, 1.5707964f, 3.1415927f, 1.5707964f, 0.0f,	  4.712389f,
 	0.0f, 1.5707964f, 3.1415927f, 4.712389f, 0.0f,		  4.712389f,  3.1415927f, 1.5707964f};
 
-static SMRigid oriencubeGetTrans(const glm::ivec3 &position, int orientation, bool mirrored, int move) {
+static SMRigid oriencubeGetTrans(const math::Vec3i &position, int orientation, bool mirrored, int move) {
 	int idx = orientation % 24;
 	if (idx < 0) {
 		idx += 24;
@@ -167,24 +170,24 @@ static SMRigid oriencubeGetTrans(const glm::ivec3 &position, int orientation, bo
 		idx = (int)smOriencubeMirror[idx];
 	}
 	const int face = (int)smOriencubePrimary[idx];
-	glm::vec3 origin((float)(position.x - 16), (float)(position.y - 16), (float)(position.z - 16));
-	glm::mat3 primary(1.0f);
+	math::Vec3f origin((float)(position.x - 16), (float)(position.y - 16), (float)(position.z - 16));
+	math::Mat3f primary(1.0f);
 	if (face == 0) {
-		primary = smRotX(glm::half_pi<float>());
+		primary = smRotX(math::halfPi);
 		origin.z += (float)move;
 	} else if (face == 1) {
-		primary = smRotX(-glm::half_pi<float>());
+		primary = smRotX(-math::halfPi);
 		origin.z -= (float)move;
 	} else if (face == 3) {
-		primary = smRotZ(-glm::pi<float>());
+		primary = smRotZ(-math::pi);
 		origin.y -= (float)move;
 	} else if (face == 2) {
 		origin.y += (float)move;
 	} else if (face == 4) {
-		primary = smRotZ(glm::half_pi<float>());
+		primary = smRotZ(math::halfPi);
 		origin.x -= (float)move;
 	} else {
-		primary = smRotZ(-glm::half_pi<float>());
+		primary = smRotZ(-math::halfPi);
 		origin.x += (float)move;
 	}
 	SMRigid trans;
@@ -194,13 +197,13 @@ static SMRigid oriencubeGetTrans(const glm::ivec3 &position, int orientation, bo
 }
 
 // RailRelation.getBlockTransform (static dock / originalOut path)
-static SMRigid railBlockTransform(const glm::ivec3 &railPos, int railOri, const glm::ivec3 &dockedPos, int dockedOri,
-								  const glm::mat3 &movingBasis, const glm::vec3 &movingOrigin) {
+static SMRigid railBlockTransform(const math::Vec3i &railPos, int railOri, const math::Vec3i &dockedPos, int dockedOri,
+								  const math::Mat3f &movingBasis, const math::Vec3f &movingOrigin) {
 	SMRigid rail = oriencubeGetTrans(railPos, railOri, false, 1);
 	rail.basis = movingBasis * rail.basis;
 	SMRigid docked = oriencubeGetTrans(dockedPos, dockedOri, true, 0);
 	SMRigid moving;
-	moving.basis = glm::mat3(1.0f);
+	moving.basis = math::Mat3f(1.0f);
 	moving.origin = movingOrigin;
 	return smMul(smMul(moving, rail), smInverse(docked));
 }
@@ -303,7 +306,7 @@ static bool skipSMPayload(io::SeekableReadStream &stream, int type, int depth) {
 }
 
 struct SMRailPiece {
-	glm::ivec3 position{0};
+	math::Vec3i position{0};
 	int orientation = 0;
 	bool valid = false;
 };
@@ -429,7 +432,7 @@ static bool parseRailChildTag(io::SeekableReadStream &stream, SMDock &dock) {
 	if (!expectSMTag(stream, SMTag_Vec3i, 3)) {
 		return false;
 	}
-	glm::ivec3 railContact;
+	math::Vec3i railContact;
 	if (!readIvec3(stream, railContact)) {
 		return false;
 	}
@@ -448,12 +451,12 @@ static bool parseRailChildTag(io::SeekableReadStream &stream, SMDock &dock) {
 	(void)dockedTransform;
 	(void)railContact;
 
-	const glm::vec3 movingT(moving[3], moving[7], moving[11]);
+	const math::Vec3f movingT(moving[3], moving[7], moving[11]);
 	const SMRigid dockedToParent =
 		railBlockTransform(rail.position, rail.orientation, docked.position, docked.orientation,
 						   mat4RowMajorBasis(moving), movingT);
 	dock.translation = dockedToParent.origin;
-	dock.orientation = glm::normalize(glm::quat_cast(dockedToParent.basis));
+	dock.orientation = math::normalize(math::quat_cast(dockedToParent.basis));
 	Log::debug("Rail dock %s offset=(%f,%f,%f) rail=(%i,%i,%i) ori=%i docker=(%i,%i,%i) ori=%i", dock.name.c_str(),
 			   dock.translation.x, dock.translation.y, dock.translation.z, rail.position.x, rail.position.y,
 			   rail.position.z, rail.orientation, docked.position.x, docked.position.y, docked.position.z,
@@ -552,7 +555,7 @@ static bool parseSmbpm(io::SeekableReadStream &stream, core::DynamicArray<SMDock
 				if (!stream.readPascalStringUInt16BE(childPath)) {
 					return false;
 				}
-				glm::ivec3 pos;
+				math::Vec3i pos;
 				if (!readIvec3(stream, pos)) {
 					return false;
 				}
@@ -567,7 +570,7 @@ static bool parseSmbpm(io::SeekableReadStream &stream, core::DynamicArray<SMDock
 				}
 				SMDock dock;
 				dock.name = pathBasename(childPath);
-				dock.translation = glm::vec3((float)(pos.x - coreOffset), (float)(pos.y - coreOffset),
+				dock.translation = math::Vec3f((float)(pos.x - coreOffset), (float)(pos.y - coreOffset),
 											 (float)(pos.z - coreOffset));
 				Log::debug("Docking entry %s pos=(%i,%i,%i) orient=%i", dock.name.c_str(), pos.x, pos.y, pos.z,
 						   (int)orientation);
@@ -658,7 +661,7 @@ static const SMDock *findDock(const core::DynamicArray<SMDock> &docks, const cor
 		return false;                                                                                                  \
 	}
 
-static bool readIvec3(io::SeekableReadStream &stream, glm::ivec3 &v) {
+static bool readIvec3(io::SeekableReadStream &stream, math::Vec3i &v) {
 	if (stream.readInt32BE(v.x) == -1) {
 		Log::error("failed to read int vector x component");
 		return false;
@@ -781,7 +784,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 				if (!isSmd2 && !isSmd3) {
 					continue;
 				}
-				glm::ivec3 position(0);
+				math::Vec3i position(0);
 				core::DynamicArray<core::String> parts;
 				core::string::splitString(e.name, parts, ".");
 				const int l = (int)parts.size();
@@ -852,7 +855,7 @@ bool SMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr
 }
 
 bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-						const core::Map<int, int> &blockPal, const glm::ivec3 &position,
+						const core::Map<int, int> &blockPal, const math::Vec3i &position,
 						const palette::Palette &palette, int parent) {
 	uint32_t version;
 	wrap(stream.readUInt32BE(version))
@@ -882,7 +885,7 @@ bool SMFormat::readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 }
 
 bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-						const core::Map<int, int> &blockPal, const glm::ivec3 &position,
+						const core::Map<int, int> &blockPal, const math::Vec3i &position,
 						const palette::Palette &palette, int parent) {
 	uint32_t version;
 	wrap(stream.readUInt32BE(version))
@@ -911,13 +914,13 @@ bool SMFormat::readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &
 	return true;
 }
 
-static glm::ivec3 posByIndex(uint32_t blockIndex, int blocks) {
+static math::Vec3i posByIndex(uint32_t blockIndex, int blocks) {
 	const int planeBlocks = blocks * blocks;
 	const int z = (int)blockIndex / planeBlocks;
 	const int divR = (int)blockIndex % planeBlocks;
 	const int y = divR / blocks;
 	const int x = divR % blocks;
-	return glm::ivec3(x, y, z);
+	return math::Vec3i(x, y, z);
 }
 
 size_t SMFormat::loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
@@ -959,7 +962,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	uint64_t timestamp;
 	wrap(stream.readUInt64BE(timestamp))
 
-	glm::ivec3 segmentPosition;
+	math::Vec3i segmentPosition;
 	wrapBool(readIvec3(stream, segmentPosition))
 	Log::debug("segmentPosition: %i:%i:%i", segmentPosition.x, segmentPosition.y, segmentPosition.z);
 
@@ -987,7 +990,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 
 	io::ZipReadStream blockDataStream(stream, (int)compressedSize);
 
-	const glm::ivec3 origin = segmentPosition - glm::ivec3(16);
+	const math::Vec3i origin = segmentPosition - math::Vec3i(16);
 	const voxel::Region region(origin, origin + (blocks - 1));
 	voxel::RawVolume *volume = new voxel::RawVolume(region);
 
@@ -1027,7 +1030,7 @@ bool SMFormat::readSegment(io::SeekableReadStream &stream, scenegraph::SceneGrap
 			palIndex = palIter->value;
 		}
 
-		glm::ivec3 pos = origin + posByIndex(index, blocks);
+		math::Vec3i pos = origin + posByIndex(index, blocks);
 
 		volume->setVoxel(pos, voxel::createVoxel(palette, palIndex));
 		empty = false;

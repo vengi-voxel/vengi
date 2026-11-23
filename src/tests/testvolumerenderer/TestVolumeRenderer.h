@@ -11,7 +11,7 @@
 #include "voxel/MeshState.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/RenderContext.h"
-#include <glm/mat4x4.hpp>
+#include "math/Mat4f.h"
 
 class TestVolumeRenderer : public TestApp {
 private:
@@ -29,7 +29,7 @@ private:
 	bool createMaterialScene();
 	bool createLSystemScene(const core::String &name);
 	bool loadScene(const core::String &filename);
-	bool addVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, const glm::mat4 &worldMatrix);
+	bool addVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, const math::Mat4f &worldMatrix);
 	void addReferenceInstances(int count);
 	void configureRendererFeatures();
 	void flushMeshes();

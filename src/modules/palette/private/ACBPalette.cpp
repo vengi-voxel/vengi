@@ -9,7 +9,7 @@
 #include "core/String.h"
 #include "core/Unicode.h"
 #include "palette/private/AdobeColorSpace.h"
-#include <glm/common.hpp>
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -202,9 +202,9 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			K /= 100.0f;
 
 			// Convert CMYK to RGB (0-255)
-			const uint8_t r = (uint8_t)(glm::round(255 * (1 - C) * (1 - K)));
-			const uint8_t g = (uint8_t)(glm::round(255 * (1 - M) * (1 - K)));
-			const uint8_t b = (uint8_t)(glm::round(255 * (1 - Y) * (1 - K)));
+			const uint8_t r = (uint8_t)(math::round(255 * (1 - C) * (1 - K)));
+			const uint8_t g = (uint8_t)(math::round(255 * (1 - M) * (1 - K)));
+			const uint8_t b = (uint8_t)(math::round(255 * (1 - Y) * (1 - K)));
 			palette.add(color::RGBA{r, g, b, 255}, colorName);
 		} else if (space == adobe::ColorSpace::Lab) {
 			uint8_t lab[3];
@@ -216,7 +216,7 @@ bool ACBPalette::load(const core::String &filename, io::SeekableReadStream &stre
 			float L = lab[0] / 2.55f;
 			float a = lab[1] / 2.55f - 128.0f;
 			float b = lab[2] / 2.55f - 128.0f;
-			palette.add(color::fromCIELab(glm::vec4(L, a, b, 1.0f)), colorName);
+			palette.add(color::fromCIELab(math::Vec4f(L, a, b, 1.0f)), colorName);
 		} else {
 			// TODO: PALETTE: support grayscale...
 			Log::error("Unsupported color space %d", colorSpace);

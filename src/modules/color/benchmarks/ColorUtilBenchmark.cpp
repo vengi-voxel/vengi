@@ -6,11 +6,8 @@
 #include "benchmark/benchmark.h"
 #include "color/ColorUtil.h"
 #include "color/RGBA.h"
-#include "core/GLM.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/color_space.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 class ColorUtilBenchmark : public app::AbstractBenchmark {};
 
@@ -43,7 +40,7 @@ BENCHMARK_DEFINE_F(ColorUtilBenchmark, getRGBA3)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(ColorUtilBenchmark, getHSB)(benchmark::State &state) {
 	for (auto _ : state) {
 		float hue, saturation, brightness;
-		glm::vec4 c(0.5f, 0.6f, 0.7f, 1.0f);
+		math::Vec4f c(0.5f, 0.6f, 0.7f, 1.0f);
 		color::getHSB(c, hue, saturation, brightness);
 		benchmark::DoNotOptimize(hue);
 		benchmark::DoNotOptimize(saturation);
@@ -62,15 +59,6 @@ BENCHMARK_DEFINE_F(ColorUtilBenchmark, getHSB_RGBA)(benchmark::State &state) {
 		benchmark::DoNotOptimize(hue);
 		benchmark::DoNotOptimize(saturation);
 		benchmark::DoNotOptimize(brightness);
-	}
-}
-
-BENCHMARK_DEFINE_F(ColorUtilBenchmark, glmHsvColor)(benchmark::State &state) {
-	glm::vec3 rgb(0.5f, 0.6f, 0.7f);
-	for (auto _ : state) {
-		benchmark::DoNotOptimize(rgb);
-		glm::vec3 hsv = glm::hsvColor(rgb);
-		benchmark::DoNotOptimize(hsv);
 	}
 }
 
@@ -117,7 +105,6 @@ BENCHMARK_REGISTER_F(ColorUtilBenchmark, getRGBA4);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getRGBA3);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getHSB);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getHSB_RGBA);
-BENCHMARK_REGISTER_F(ColorUtilBenchmark, glmHsvColor);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, fromHSB);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getDistanceApprox);
 BENCHMARK_REGISTER_F(ColorUtilBenchmark, getDistanceHSB);

@@ -12,6 +12,8 @@
 #include "util/VarUtil.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelformat/private/mesh/lego/LegoUtil.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -57,8 +59,8 @@ TEST_F(LXFFormatTest, testLoadLXFML) {
 	const scenegraph::FrameTransform cameraTransform = sceneGraph.transformForFrame(*camera, 0);
 	EXPECT_EQ(camera->fieldOfView(), 80);
 	EXPECT_NEAR(camera->farPlane(), 6.9282035827636719f, 0.00001f);
-	EXPECT_VEC_NEAR(glm::vec3(100.0f, -100.0f, -100.0f), cameraTransform.worldTranslation(), 0.001f);
-	EXPECT_VEC_NEAR(glm::vec3(1.0f), cameraTransform.worldScale(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(100.0f, -100.0f, -100.0f), cameraTransform.worldTranslation(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(1.0f), cameraTransform.worldScale(), 0.001f);
 }
 
 TEST_F(LXFFormatTest, testRegisterLdrawSearchPathsFallback) {
@@ -107,8 +109,8 @@ TEST_F(LXFFormatTest, testLoadLXFMLPartHierarchy) {
 	EXPECT_TRUE(secondPart->isModelNode());
 	EXPECT_EQ(firstPart->parentUUID(), groupNode->uuid());
 	EXPECT_EQ(secondPart->parentUUID(), groupNode->uuid());
-	EXPECT_EQ(firstPart->region().getLowerCorner(), glm::ivec3(0));
-	EXPECT_EQ(secondPart->region().getLowerCorner(), glm::ivec3(0));
+	EXPECT_EQ(firstPart->region().getLowerCorner(), math::Vec3i(0));
+	EXPECT_EQ(secondPart->region().getLowerCorner(), math::Vec3i(0));
 
 	sceneGraph.updateTransforms();
 	const scenegraph::FrameTransform firstTransform = sceneGraph.transformForFrame(*firstPart, 0);
@@ -132,8 +134,8 @@ TEST_F(LXFFormatTest, testLoadLXFMLRotatedPart) {
 	const scenegraph::SceneGraphNode *reference = sceneGraph.findNodeByUUID(groupNode->children()[1]);
 	ASSERT_NE(nullptr, rotated);
 	ASSERT_NE(nullptr, reference);
-	const glm::ivec3 rotatedSize = rotated->region().getDimensionsInCells();
-	const glm::ivec3 referenceSize = reference->region().getDimensionsInCells();
+	const math::Vec3i rotatedSize = rotated->region().getDimensionsInCells();
+	const math::Vec3i referenceSize = reference->region().getDimensionsInCells();
 	// Bundled 3001 is a 2x4 (longer along X at identity); 90 degree Y rotation swaps X/Z (vengi Y-up)
 	EXPECT_GT(rotatedSize.z, rotatedSize.x);
 	EXPECT_GT(referenceSize.x, referenceSize.z);

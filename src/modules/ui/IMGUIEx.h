@@ -16,7 +16,12 @@
 #include "math/Axis.h"
 #include "video/FileDialogOptions.h"
 #include "video/Types.h"
-#include <glm/fwd.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include <float.h>
 
 namespace io {
 struct FormatDescription;
@@ -29,10 +34,10 @@ class Camera;
 namespace ImGui {
 
 IMGUI_API ImTextureID toImTextureID(video::Id handle);
-IMGUI_API void AddImage(video::Id handle, const glm::vec2 &uv0 = glm::vec2(0), const glm::vec2 &uv1 = glm::vec2(1));
-IMGUI_API void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0 = glm::vec2(0),
-					 const glm::vec2 &uv1 = glm::vec2(1), const glm::vec4 &tintColor = glm::vec4(1),
-					 const glm::vec4 &borderColor = glm::vec4(0));
+IMGUI_API void AddImage(video::Id handle, const math::Vec2f &uv0 = math::Vec2f(0), const math::Vec2f &uv1 = math::Vec2f(1));
+IMGUI_API void Image(video::Id handle, const math::Vec2i &size, const math::Vec2f &uv0 = math::Vec2f(0),
+					 const math::Vec2f &uv1 = math::Vec2f(1), const math::Vec4f &tintColor = math::Vec4f(1),
+					 const math::Vec4f &borderColor = math::Vec4f(0));
 IMGUI_API void Image(video::Id handle, const ImVec2 &size, const ImVec2 &uv0 = ImVec2(),
 					 const ImVec2 &uv1 = ImVec2(1, 1), const ImVec4 &tintColor = ImVec4(1, 1, 1, 1),
 					 const ImVec4 &borderColor = ImVec4());
@@ -42,14 +47,14 @@ IMGUI_API bool InputIntWithButtons(const char *label, int *value, int step = 1, 
                                   ImGuiInputTextFlags flags = 0);
 /** Slider bounds also limit the buttons. Set clampMax to false to allow stepping above the maximum. */
 IMGUI_API bool SliderIntWithButtons(const char *label, int *value, int min, int max, bool clampMax = true);
-IMGUI_API bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputVec2(const char *label, glm::vec2 &vec, const char *format = "%.2f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputVec3(const char *label, glm::vec3 &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputVec3(const char *label, const glm::vec3 &vec);
-IMGUI_API bool InputXYZ(const char *label, const glm::vec3 &vec);
-IMGUI_API bool InputXYZ(const char *label, glm::vec3 &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0, float step = 0.0f, float step_fast = 0.0f);
-IMGUI_API bool InputXYZ(const char *label, glm::ivec3 &vec, const char *format = nullptr, ImGuiInputTextFlags flags = 0, int step = 0, int step_fast = 0);
+IMGUI_API bool InputVec2(const char *label, math::Vec2i &vec, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputVec2(const char *label, math::Vec2f &vec, const char *format = "%.2f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputVec3(const char *label, math::Vec3i &vec, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputVec3(const char *label, math::Vec3f &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputVec3(const char *label, const math::Vec3f &vec);
+IMGUI_API bool InputXYZ(const char *label, const math::Vec3f &vec);
+IMGUI_API bool InputXYZ(const char *label, math::Vec3f &vec, const char *format = "%.3f", ImGuiInputTextFlags flags = 0, float step = 0.0f, float step_fast = 0.0f);
+IMGUI_API bool InputXYZ(const char *label, math::Vec3i &vec, const char *format = nullptr, ImGuiInputTextFlags flags = 0, int step = 0, int step_fast = 0);
 // extension for optional in-table input
 IMGUI_API bool InputFloat(const char *label, float &v, const char *format = "%.3f", ImGuiInputTextFlags flags = 0);
 
@@ -105,8 +110,8 @@ IMGUI_API void InputFolder(const char *label, core::String *folder, ImGuiInputTe
 IMGUI_API float CalcTextWidth(const char *text, bool withPadding = true);
 IMGUI_API float CalcComboWidth(const char *previewLabel, bool withPadding = true);
 IMGUI_API void AxisStyleText(ui::ScopedStyle &style, math::Axis axis);
-IMGUI_API bool AxisSliders(glm::ivec3 &vec, int mins, int maxs);
-IMGUI_API bool AxisSliders(glm::vec3 &vec, float mins, float maxs, const char *format = "%.1f");
+IMGUI_API bool AxisSliders(math::Vec3i &vec, int mins, int maxs);
+IMGUI_API bool AxisSliders(math::Vec3f &vec, float mins, float maxs, const char *format = "%.1f");
 
 IMGUI_API bool AxisCommandButton(math::Axis axis, const char *name, const char *command, const char *icon, const char *tooltip,
 	float width, command::CommandExecutionListener *listener);

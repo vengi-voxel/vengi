@@ -36,15 +36,13 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "RenderUtil.h"
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
-#include <glm/common.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/norm.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Axes.h"
 
 namespace voxelrender {
 
@@ -76,12 +74,12 @@ struct VolumeBindSort {
 
 struct VolumeDistanceSort {
 	const voxel::MeshStatePtr &meshState;
-	glm::vec3 camPos;
+	math::Vec3f camPos;
 
 	bool operator()(int a, int b) const {
-		const glm::vec3 &posA = meshState->centerPos(a, true);
-		const glm::vec3 &posB = meshState->centerPos(b, true);
-		return glm::distance2(camPos, posA) > glm::distance2(camPos, posB);
+		const math::Vec3f &posA = meshState->centerPos(a, true);
+		const math::Vec3f &posB = meshState->centerPos(b, true);
+		return math::distance2(camPos, posA) > math::distance2(camPos, posB);
 	}
 };
 
@@ -302,8 +300,8 @@ bool RawVolumeRenderer::init(bool normals) {
 		Log::error("Failed to create the OIT composite buffers");
 		return false;
 	}
-	core_assert_always(_oitVbo.addAttribute(_oitShader.getPosAttribute(_oitBufferIndex, &glm::vec2::x)));
-	core_assert_always(_oitVbo.addAttribute(_oitShader.getTexcoordAttribute(_oitTexBufferIndex, &glm::vec2::x)));
+	core_assert_always(_oitVbo.addAttribute(_oitShader.getPosAttribute(_oitBufferIndex, &math::Vec2f::x)));
+	core_assert_always(_oitVbo.addAttribute(_oitShader.getTexcoordAttribute(_oitTexBufferIndex, &math::Vec2f::x)));
 
 	voxelrender::ShadowParameters shadowParams;
 	shadowParams.maxDepthBuffers = shader::VoxelShaderConstants::getMaxDepthBuffers();
@@ -312,8 +310,8 @@ bool RawVolumeRenderer::init(bool normals) {
 		return false;
 	}
 
-	_voxelShaderFragData.diffusecolor = glm::vec3(0.0f, 0.0f, 0.0f);
-	_voxelShaderFragData.ambientcolor = glm::vec3(1.0f, 1.0f, 1.0f);
+	_voxelShaderFragData.diffusecolor = math::Vec3f(0.0f, 0.0f, 0.0f);
+	_voxelShaderFragData.ambientcolor = math::Vec3f(1.0f, 1.0f, 1.0f);
 	_voxelShaderFragData.gamma = _gamma->floatVal();
 
 	_voxelData.create(_voxelShaderFragData);
@@ -328,7 +326,7 @@ bool RawVolumeRenderer::init(bool normals) {
 		using Vert = shader::VoxelData::VertData;
 		using Push = DrawInstanceData;
 		const video::UniformPushOverlayField fields[] = {
-			{(uint32_t)offsetof(Vert, model), (uint32_t)sizeof(glm::mat4), (uint32_t)offsetof(Push, model)},
+			{(uint32_t)offsetof(Vert, model), (uint32_t)sizeof(math::Mat4f), (uint32_t)offsetof(Push, model)},
 			{(uint32_t)offsetof(Vert, gray), (uint32_t)sizeof(int32_t), (uint32_t)offsetof(Push, gray)},
 			{(uint32_t)offsetof(Vert, locked), (uint32_t)sizeof(int32_t), (uint32_t)offsetof(Push, locked)},
 			{(uint32_t)offsetof(Vert, opacity), (uint32_t)sizeof(float), (uint32_t)offsetof(Push, opacity)},
@@ -479,13 +477,13 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 
 	const size_t verticesBufSize = vertCount * sizeof(voxel::VoxelVertex);
 	voxel::VoxelVertex *verticesBuf = (voxel::VoxelVertex *)ensureUploadScratch(_uploadVerticesScratch, verticesBufSize);
-	const size_t normalsBufSize = normalsCount * sizeof(glm::vec3);
-	glm::vec3 *normalsBuf = (glm::vec3 *)ensureUploadScratch(_uploadNormalsScratch, normalsBufSize);
+	const size_t normalsBufSize = normalsCount * sizeof(math::Vec3f);
+	math::Vec3f *normalsBuf = (math::Vec3f *)ensureUploadScratch(_uploadNormalsScratch, normalsBufSize);
 	const size_t indicesBufSize = indCount * sizeof(voxel::IndexType);
 	voxel::IndexType *indicesBuf = (voxel::IndexType *)ensureUploadScratch(_uploadIndicesScratch, indicesBufSize);
 
 	voxel::VoxelVertex *verticesPos = verticesBuf;
-	glm::vec3 *normalsPos = normalsBuf;
+	math::Vec3f *normalsPos = normalsBuf;
 	voxel::IndexType *indicesPos = indicesBuf;
 
 	voxel::IndexType offset = (voxel::IndexType)0;
@@ -504,7 +502,7 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 		core_memcpy(verticesPos, &vertexVector[0], vertexVector.size() * sizeof(voxel::VoxelVertex));
 		if (!normalVector.empty()) {
 			core_assert(vertexVector.size() == normalVector.size());
-			core_memcpy(normalsPos, &normalVector[0], normalVector.size() * sizeof(glm::vec3));
+			core_memcpy(normalsPos, &normalVector[0], normalVector.size() * sizeof(math::Vec3f));
 			normalsPos += normalVector.size();
 		}
 		core_memcpy(indicesPos, &indexVector[0], indexVector.size() * sizeof(voxel::IndexType));
@@ -546,22 +544,22 @@ bool RawVolumeRenderer::updateBufferForVolume(const voxel::MeshStatePtr &meshSta
 	return true;
 }
 
-void RawVolumeRenderer::setAmbientColor(const glm::vec3 &color) {
+void RawVolumeRenderer::setAmbientColor(const math::Vec3f &color) {
 	_voxelShaderFragData.ambientcolor = color;
 }
 
-void RawVolumeRenderer::setDiffuseColor(const glm::vec3 &color) {
+void RawVolumeRenderer::setDiffuseColor(const math::Vec3f &color) {
 	_voxelShaderFragData.diffusecolor = color;
 }
 
 // Convert Euler angles (pitch, yaw, roll) to a directional vector
 // Note: roll (angle.z) is unused
 // Angles are expected in degrees
-void RawVolumeRenderer::setSunAngle(const glm::vec3 &angle) {
-	const glm::vec3 direction = sunDirectionFromAngle(angle);
+void RawVolumeRenderer::setSunAngle(const math::Vec3f &angle) {
+	const math::Vec3f direction = sunDirectionFromAngle(angle);
 	const float sunDistance = 1000.0f;
-	const glm::vec3 sunPosition = direction * sunDistance;
-	_shadow.setPosition(sunPosition, glm::vec3(0.0f), glm::up());
+	const math::Vec3f sunPosition = direction * sunDistance;
+	_shadow.setPosition(sunPosition, math::Vec3f(0.0f), math::up());
 }
 
 int RawVolumeRenderer::culledVolumeCount() const {
@@ -633,7 +631,7 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 	const palette::NormalPalette &normalsPalette = meshState->normalsPalette(bufferIndex);
 	if (normalsPalette.hash() != _normalsPaletteHash) {
 		_normalsPaletteHash = normalsPalette.hash();
-		_voxelShaderVertData.normals[NO_NORMAL] = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		_voxelShaderVertData.normals[NO_NORMAL] = math::Vec4f(1.0f, 0.0f, 0.0f, 1.0f);
 		normalsPalette.toVec4f(&_voxelShaderVertData.normals[NORMAL_PALETTE_OFFSET]);
 		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals + NORMAL_PALETTE_OFFSET);
 	}
@@ -673,9 +671,9 @@ void RawVolumeRenderer::updateCulling(const voxel::MeshStatePtr &meshState, int 
 	if (!_cullNodes->boolVal()) {
 		return;
 	}
-	const glm::ivec3 &mins = meshState->mins(idx);
-	const glm::ivec3 &maxs = meshState->maxs(idx);
-	const glm::vec3 size = maxs - mins;
+	const math::Vec3i &mins = meshState->mins(idx);
+	const math::Vec3i &maxs = meshState->maxs(idx);
+	const math::Vec3f size = maxs - mins;
 	// if no mins/maxs were given, we can't cull
 	if (size.x >= 1.0f && size.y >= 1.0f && size.z >= 1.0f) {
 		_state[idx]._culled = !camera.isVisible(mins, maxs);
@@ -695,7 +693,7 @@ bool RawVolumeRenderer::isVisible(const voxel::MeshStatePtr &meshState, int idx,
 	return true;
 }
 
-static inline glm::vec3 centerPos(int x, int y, int z) {
+static inline math::Vec3f centerPos(int x, int y, int z) {
 	// we want the center of the voxel
 	return {(float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f};
 }
@@ -723,7 +721,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 					_shapeBuilder.reserve(2 * n, 2 * n);
 					voxelutil::visitSurfaceVolume(
 						*v, [this, &normalPalette](int x, int y, int z, const voxel::Voxel &voxel) {
-							const glm::vec3 &center = centerPos(x, y, z);
+							const math::Vec3f &center = centerPos(x, y, z);
 							uint8_t normalIndex = voxel.getNormal();
 							if (normalIndex == NO_NORMAL) {
 								return;
@@ -732,7 +730,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 							if (normalPaletteIndex >= normalPalette.size()) {
 								return;
 							}
-							const glm::vec3 &norm = normalPalette.normal3f(normalPaletteIndex);
+							const math::Vec3f &norm = normalPalette.normal3f(normalPaletteIndex);
 							_shapeBuilder.line(center, center + norm * 3.0f);
 						});
 				} else {
@@ -742,7 +740,7 @@ void RawVolumeRenderer::renderNormals(const voxel::MeshStatePtr &meshState, cons
 			_shapeRenderer.createOrUpdate(_state[idx]._normalPreviewBufferIndex, _shapeBuilder);
 			_state[idx]._dirtyNormals = false;
 		}
-		glm::mat4 model(1.0f);
+		math::Mat4f model(1.0f);
 		if (renderContext.applyTransforms()) {
 			model = meshState->model(idx);
 		}
@@ -973,7 +971,7 @@ void RawVolumeRenderer::renderOpaque(const voxel::MeshStatePtr &meshState, const
 }
 
 void RawVolumeRenderer::renderShadowVolumes(const voxel::MeshStatePtr &meshState, const core::Buffer<int> &sorted,
-											const glm::mat4 &lightViewProjection) {
+											const math::Mat4f &lightViewProjection) {
 	core_trace_scoped(RenderShadowVolumes);
 	if (sorted.empty()) {
 		return;
@@ -1124,7 +1122,7 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 	const video::Id mainFbo = video::currentFramebuffer();
 	int viewport[4];
 	video::getViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-	const glm::ivec2 &dim = renderContext.oitFrameBuffer.dimension();
+	const math::Vec2i &dim = renderContext.oitFrameBuffer.dimension();
 
 	video::blitFramebuffer(mainFbo, renderContext.oitFrameBuffer.handle(), video::ClearFlag::Depth, dim.x, dim.y);
 	video::bindFramebuffer(mainFbo);
@@ -1133,8 +1131,8 @@ void RawVolumeRenderer::renderTransparencyOIT(const voxel::MeshStatePtr &meshSta
 	const video::FrameBufferAttachment color01[] = {video::FrameBufferAttachment::Color0,
 													video::FrameBufferAttachment::Color1};
 	video::drawBuffers(2, color01);
-	const glm::vec4 oldClearColor = video::currentClearColor();
-	video::clearColor(glm::vec4(0.0f));
+	const math::Vec4f oldClearColor = video::currentClearColor();
+	video::clearColor(math::Vec4f(0.0f));
 	video::clear(video::ClearFlag::Color);
 	video::clearColor(oldClearColor);
 
@@ -1237,7 +1235,7 @@ void RawVolumeRenderer::sortBeforeRender(const voxel::MeshStatePtr &meshState, c
 	const core::Buffer<int> &active = meshState->activeIndices();
 	for (const auto &i : transparencyMeshes) {
 		for (int idx : active) { indices[idx] = -1; }
-		const glm::vec3 worldPosition = camera.worldPosition();
+		const math::Vec3f worldPosition = camera.worldPosition();
 		const voxel::MeshState::Meshes &meshes = i->second;
 		for (int idx : active) {
 			if (!isVisible(meshState, idx, true)) {
@@ -1284,8 +1282,8 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 
 	_shadowCasterScratch.clear();
 	if (_shadowMap->boolVal()) {
-		glm::vec3 sceneMins(1.0e8f);
-		glm::vec3 sceneMaxs(-1.0e8f);
+		math::Vec3f sceneMins(1.0e8f);
+		math::Vec3f sceneMaxs(-1.0e8f);
 		bool hasScene = false;
 		{
 			core_trace_value_scoped(CollectShadowCasters, activeForRender.size());
@@ -1297,8 +1295,8 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 				if (_state[bufferIndex]._empty) {
 					continue;
 				}
-				sceneMins = glm::min(sceneMins, meshState->mins(idx));
-				sceneMaxs = glm::max(sceneMaxs, meshState->maxs(idx));
+				sceneMins = math::min(sceneMins, meshState->mins(idx));
+				sceneMaxs = math::max(sceneMaxs, meshState->maxs(idx));
 				hasScene = true;
 				if (shadow && _state[bufferIndex].indices(voxel::MeshType_Opaque) > 0u) {
 					_shadowCasterScratch.push_back(idx);
@@ -1340,9 +1338,9 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 					return meshState->resolveIdx(a) < meshState->resolveIdx(b);
 				});
 			}
-			auto renderFunc = [this, &meshState](int depthBufferIndex, const glm::mat4 &lightViewProjection) {
+			auto renderFunc = [this, &meshState](int depthBufferIndex, const math::Mat4f &lightViewProjection) {
 				math::Frustum frustum;
-				frustum.updatePlanes(glm::mat4(1.0f), lightViewProjection, video::clipDepthZeroToOne());
+				frustum.updatePlanes(math::Mat4f(1.0f), lightViewProjection, video::clipDepthZeroToOne());
 
 				core::Buffer<int> &sorted = _volumeSortScratch;
 				{
@@ -1361,7 +1359,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			};
 			_shadow.render(renderFunc, true);
 		} else {
-			auto renderFunc = [](int i, const glm::mat4 &lightViewProjection) {
+			auto renderFunc = [](int i, const math::Mat4f &lightViewProjection) {
 				video::clear(video::ClearFlag::Depth);
 				return true;
 			};
@@ -1376,11 +1374,11 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 				_voxelShaderFragData.distances[i] = _shadow.distances()[i];
 			}
 			_voxelShaderFragData.lightdir = _shadow.sunDirection();
-			_voxelShaderFragData.camerapos = glm::vec4(camera.eye(), 0.0f);
-			_voxelShaderFragData.cameradir = glm::vec4(camera.forward(), camera.isOrthographic() ? 1.0f : 0.0f);
+			_voxelShaderFragData.camerapos = math::Vec4f(camera.eye(), 0.0f);
+			_voxelShaderFragData.cameradir = math::Vec4f(camera.forward(), camera.isOrthographic() ? 1.0f : 0.0f);
 			float t[4];
 			_selectionTint->vec4Val(t);
-			_voxelShaderFragData.selectiontint = glm::vec4(t[0], t[1], t[2], t[3]);
+			_voxelShaderFragData.selectiontint = math::Vec4f(t[0], t[1], t[2], t[3]);
 			_voxelShaderFragData.timemillis = _timeProvider->tickMillis();
 			_voxelShaderFragData.gamma = _gamma->floatVal();
 			_voxelShaderFragData.checkerboard = _checkerboard->intVal();

@@ -4,14 +4,16 @@
 
 #include "math/Bezier.h"
 #include "app/tests/AbstractTest.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace math {
 
 class BezierTest : public app::AbstractTest {};
 
 TEST_F(BezierTest, testGetPoint) {
-	Bezier<float> b(glm::vec3(0.0f), glm::vec3(10.0f, 0.0f, 0.0f), glm::vec3(5.0f, 5.0f, 0.0f));
-	glm::vec3 p = b.getPoint(0.0f);
+	Bezier<float> b(math::Vec3f(0.0f), math::Vec3f(10.0f, 0.0f, 0.0f), math::Vec3f(5.0f, 5.0f, 0.0f));
+	math::Vec3f p = b.getPoint(0.0f);
 	EXPECT_FLOAT_EQ(0.5f, p.x);
 	EXPECT_FLOAT_EQ(0.5f, p.y);
 	EXPECT_FLOAT_EQ(0.5f, p.z);
@@ -28,19 +30,19 @@ TEST_F(BezierTest, testGetPoint) {
 }
 
 TEST_F(BezierTest, testEvaluate) {
-	Bezier<float> b(glm::vec3(0.0f), glm::vec3(10.0f, 0.0f, 0.0f), glm::vec3(5.0f, 5.0f, 0.0f));
-	const glm::vec3 p = b.evaluate(0.5f);
+	Bezier<float> b(math::Vec3f(0.0f), math::Vec3f(10.0f, 0.0f, 0.0f), math::Vec3f(5.0f, 5.0f, 0.0f));
+	const math::Vec3f p = b.evaluate(0.5f);
 	EXPECT_FLOAT_EQ(5.0f, p.x);
 	EXPECT_FLOAT_EQ(2.5f, p.y);
 	EXPECT_FLOAT_EQ(0.0f, p.z);
 }
 
 TEST_F(BezierTest, testVisitSegments) {
-	Bezier<int> b(glm::ivec3(0), glm::ivec3(10, 0, 0), glm::ivec3(5, 5, 0));
-	glm::ivec3 firstFrom(-1);
-	glm::ivec3 lastTo(-1);
+	Bezier<int> b(math::Vec3i(0), math::Vec3i(10, 0, 0), math::Vec3i(5, 5, 0));
+	math::Vec3i firstFrom(-1);
+	math::Vec3i lastTo(-1);
 	int segments = 0;
-	b.visitSegments(4, [&](const glm::ivec3 &from, const glm::ivec3 &to) {
+	b.visitSegments(4, [&](const math::Vec3i &from, const math::Vec3i &to) {
 		if (segments == 0) {
 			firstFrom = from;
 		}
@@ -48,8 +50,8 @@ TEST_F(BezierTest, testVisitSegments) {
 		++segments;
 	});
 	EXPECT_EQ(4, segments);
-	EXPECT_EQ(glm::ivec3(0), firstFrom);
-	EXPECT_EQ(glm::ivec3(10, 0, 0), lastTo);
+	EXPECT_EQ(math::Vec3i(0), firstFrom);
+	EXPECT_EQ(math::Vec3i(10, 0, 0), lastTo);
 	EXPECT_EQ(16, b.estimateSteps());
 }
 

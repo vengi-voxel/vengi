@@ -9,13 +9,12 @@
 #include "core/StandardLib.h"
 #include "core/Unicode.h"
 #include "core/collection/Buffer.h"
+#include "math/Scalar.h"
 #if 0
 #include "core/collection/Map.h"
 #endif
 #include <SDL3/SDL_stdinc.h>
 #include <ctype.h>
-#include <glm/vec3.hpp>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -431,7 +430,7 @@ void splitString(const core::String &string, core::DynamicArray<core::String> &t
 bool isNumber(const core::String &in) {
 	char *end = nullptr;
 	double val = SDL_strtod(in.c_str(), &end);
-	return end != in.c_str() && *end == '\0' && val != HUGE_VAL;
+	return end != in.c_str() && *end == '\0' && math::isfinite(val);
 }
 
 bool isAlphaNum(int c) {
@@ -1063,7 +1062,7 @@ static bool tryParseDouble(const char *s, const char *s_end, double *result, boo
 			const int lut_entries = lengthof(pow_lut);
 
 			// NOTE: Don't use powf here, it will absolutely murder precision.
-			mantissa += (int)(*curr - '0') * (read < lut_entries ? pow_lut[read] : pow(10.0, -read));
+			mantissa += (int)(*curr - '0') * (read < lut_entries ? pow_lut[read] : math::pow(10.0, -read));
 			read++;
 			curr++;
 			end_not_reached = (curr != s_end);
@@ -1117,8 +1116,8 @@ assemble:
 		if (full && (curr != s_end || !has_digits))
 			return false;
 		const double value = (sign == '+' ? 1 : -1) *
-			(mantissa != 0.0 && exponent ? ldexp(mantissa * pow(5.0, exponent), exponent) : mantissa);
-		if (full && (SDL_isinf(value) || SDL_isnan(value) || (value == 0.0 && nonzero)))
+			(mantissa != 0.0 && exponent ? math::ldexp(mantissa * math::pow(5.0, exponent), exponent) : mantissa);
+		if (full && (math::isinf(value) || math::isnan(value) || (value == 0.0 && nonzero)))
 			return false;
 		*result = value;
 		return true;

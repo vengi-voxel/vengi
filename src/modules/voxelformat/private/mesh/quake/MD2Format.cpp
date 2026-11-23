@@ -12,6 +12,10 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
+#include "math/U16Vec3.h"
+#include "math/U8Vec4.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -131,18 +135,19 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		return false;
 	}
 
-	core::Buffer<glm::vec3> vertices;
+	core::Buffer<math::Vec3f> vertices;
 	vertices.reserve(hdr.numVerts);
 	Log::debug("Reading %i vertices", hdr.numVerts);
 	for (uint32_t i = 0; i < hdr.numVerts; ++i) {
-		glm::u8vec4 vertex;
+		math::U8Vec4 vertex;
 		stream.readUInt8(vertex.x);
 		stream.readUInt8(vertex.z);
 		stream.readUInt8(vertex.y);
 		stream.readUInt8(vertex.w); // normal index
 		// uncompressed vertex
-		vertices.push_back(glm::vec3(vertex) * glm::vec3(frameHdr.scale[0], frameHdr.scale[1], frameHdr.scale[2]) +
-						   glm::vec3(frameHdr.translate[0], frameHdr.translate[1], frameHdr.translate[2]));
+		vertices.push_back(math::Vec3f((float)vertex.x, (float)vertex.y, (float)vertex.z) *
+							   math::Vec3f(frameHdr.scale[0], frameHdr.scale[1], frameHdr.scale[2]) +
+						   math::Vec3f(frameHdr.translate[0], frameHdr.translate[1], frameHdr.translate[2]));
 	}
 
 	Log::debug("Reading %i texture coordinates", hdr.numST);
@@ -151,13 +156,14 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 		return false;
 	}
 
-	core::Buffer<glm::vec2> uvs;
+	core::Buffer<math::Vec2f> uvs;
 	uvs.reserve(hdr.numST);
 	for (uint32_t i = 0; i < hdr.numST; ++i) {
-		glm::i16vec2 uv;
-		stream.readInt16(uv.x);
-		stream.readInt16(uv.y);
-		uvs.push_back(glm::vec2((float)uv.x / (float)hdr.skinWidth, 1.0f - (float)uv.y / (float)hdr.skinHeight));
+		int16_t u = 0;
+		int16_t v = 0;
+		stream.readInt16(u);
+		stream.readInt16(v);
+		uvs.push_back(math::Vec2f((float)u / (float)hdr.skinWidth, 1.0f - (float)v / (float)hdr.skinHeight));
 	}
 
 	if (stream.seek(startOffset + hdr.offsetTris) == -1) {
@@ -171,7 +177,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 	mesh.vertices.reserve(hdr.numVerts);
 	mesh.materials = meshMaterialArray;
 	for (uint32_t i = 0; i < hdr.numTris; ++i) {
-		glm::u16vec3 vertexIndices;
+		math::U16Vec3 vertexIndices;
 		wrap(stream.readUInt16(vertexIndices.x))
 		wrap(stream.readUInt16(vertexIndices.z))
 		wrap(stream.readUInt16(vertexIndices.y))
@@ -180,7 +186,7 @@ bool MD2Format::loadFrame(const core::String &filename, io::SeekableReadStream &
 			return false;
 		}
 
-		glm::u16vec3 uvIndices;
+		math::U16Vec3 uvIndices;
 		wrap(stream.readUInt16(uvIndices.x))
 		wrap(stream.readUInt16(uvIndices.z))
 		wrap(stream.readUInt16(uvIndices.y))

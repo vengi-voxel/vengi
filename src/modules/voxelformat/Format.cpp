@@ -30,6 +30,8 @@
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VoxelUtil.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -47,13 +49,13 @@ void Format::cropOnLoad(voxel::RawVolume *&v) {
 bool Format::checkValidRegion(const voxel::Region &region) const {
 	const size_t bytes = voxel::RawVolume::size(region);
 	if (!app::App::getInstance()->hasEnoughMemory(bytes)) {
-		const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+		const math::Vec3i &vdim = region.getDimensionsInVoxels();
 		const core::String &neededMem = core::string::humanSize(bytes);
 		Log::error("Not enough memory to create a volume of size %i:%i:%i (would need %s)", vdim.x, vdim.y, vdim.z, neededMem.c_str());
 		return false;
 	}
 	if (bytes == 0u) {
-		const glm::ivec3 &vdim = region.getDimensionsInVoxels();
+		const math::Vec3i &vdim = region.getDimensionsInVoxels();
 		Log::error("Invalid volume size %i:%i:%i", vdim.x, vdim.y, vdim.z);
 		return false;
 	}
@@ -96,10 +98,10 @@ image::ImagePtr SaveContext::renderToImageThumbnailCreator(const scenegraph::Sce
 														   const voxelformat::ThumbnailContext &ctx) {
 	voxel::FaceNames frontFace = voxel::FaceNames::Front;
 	if (ctx.useWorldPosition) {
-		const glm::vec3 &center = sceneGraph.region().calcCenterf();
-		const glm::vec3 &dir = center - ctx.worldPosition;
+		const math::Vec3f &center = sceneGraph.region().calcCenterf();
+		const math::Vec3f &dir = center - ctx.worldPosition;
 		// Determine dominant direction
-		glm::vec3 absDir = glm::abs(dir);
+		math::Vec3f absDir = math::abs(dir);
 		if (absDir.x >= absDir.y && absDir.x >= absDir.z) {
 			frontFace = dir.x > 0.0f ? voxel::FaceNames::NegativeX : voxel::FaceNames::PositiveX;
 		} else if (absDir.y >= absDir.x && absDir.y >= absDir.z) {
@@ -131,19 +133,19 @@ image::ImagePtr Format::createThumbnail(const scenegraph::SceneGraph &sceneGraph
 	return thumbnailCreator(sceneGraph, ctx);
 }
 
-bool Format::isEmptyBlock(const voxel::RawVolume *v, const glm::ivec3 &maxSize, int x, int y, int z) const {
+bool Format::isEmptyBlock(const voxel::RawVolume *v, const math::Vec3i &maxSize, int x, int y, int z) const {
 	const voxel::Region region(x, y, z, x + maxSize.x - 1, y + maxSize.y - 1, z + maxSize.z - 1);
 	return voxelutil::isEmpty(*v, region);
 }
 
-void Format::calcMinsMaxs(const voxel::Region &region, const glm::ivec3 &maxSize, glm::ivec3 &mins,
-						  glm::ivec3 &maxs) const {
-	const glm::ivec3 &lower = region.getLowerCorner();
+void Format::calcMinsMaxs(const voxel::Region &region, const math::Vec3i &maxSize, math::Vec3i &mins,
+						  math::Vec3i &maxs) const {
+	const math::Vec3i &lower = region.getLowerCorner();
 	mins[0] = lower[0] & ~(maxSize.x - 1);
 	mins[1] = lower[1] & ~(maxSize.y - 1);
 	mins[2] = lower[2] & ~(maxSize.z - 1);
 
-	const glm::ivec3 &upper = region.getUpperCorner();
+	const math::Vec3i &upper = region.getUpperCorner();
 	maxs[0] = (upper[0] & ~(maxSize.x - 1)) + maxSize.x - 1;
 	maxs[1] = (upper[1] & ~(maxSize.y - 1)) + maxSize.y - 1;
 	maxs[2] = (upper[2] & ~(maxSize.z - 1)) + maxSize.z - 1;
@@ -170,17 +172,17 @@ image::ImagePtr Format::loadScreenshot(const core::String &filename, const io::A
 	return image::ImagePtr();
 }
 
-glm::ivec3 Format::maxSize() const {
-	return glm::ivec3(-1);
+math::Vec3i Format::maxSize() const {
+	return math::Vec3i(-1);
 }
 
-glm::ivec3 Format::cropSize() const {
-	return glm::ivec3(-1);
+math::Vec3i Format::cropSize() const {
+	return math::Vec3i(-1);
 }
 
-voxel::RawVolume *Format::mergeVolumes(const scenegraph::SceneGraph &sceneGraph, const glm::ivec3 &maxSize,
+voxel::RawVolume *Format::mergeVolumes(const scenegraph::SceneGraph &sceneGraph, const math::Vec3i &maxSize,
 									   palette::Palette &palette, bool skipHidden) const {
-	if (glm::any(glm::lessThanEqual(maxSize, glm::ivec3(0)))) {
+	if (math::any(math::lessThanEqual(maxSize, math::Vec3i(0)))) {
 		return nullptr;
 	}
 	const_cast<scenegraph::SceneGraph &>(sceneGraph).updateTransforms();
@@ -188,9 +190,9 @@ voxel::RawVolume *Format::mergeVolumes(const scenegraph::SceneGraph &sceneGraph,
 	if (!sceneBounds.isValid()) {
 		return nullptr;
 	}
-	const glm::ivec3 size = glm::min(sceneBounds.getDimensionsInVoxels(), maxSize);
-	const glm::ivec3 mins = sceneBounds.getLowerCorner();
-	const glm::ivec3 maxs = mins + size - 1;
+	const math::Vec3i size = math::min(sceneBounds.getDimensionsInVoxels(), maxSize);
+	const math::Vec3i mins = sceneBounds.getLowerCorner();
+	const math::Vec3i maxs = mins + size - 1;
 	const voxel::Region bounds(mins, maxs);
 	if (!checkValidRegion(bounds)) {
 		return nullptr;
@@ -245,16 +247,16 @@ bool Format::supportsReferences() const {
 
 bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &filename, const io::ArchivePtr &archive,
 				  const SaveContext &ctx) {
-	const glm::ivec3 cropsize = cropSize();
-	const bool crop = glm::all(glm::greaterThan(cropsize, glm::ivec3(0)));
+	const math::Vec3i cropsize = cropSize();
+	const bool crop = math::all(math::greaterThan(cropsize, math::Vec3i(0)));
 	bool needsSplit = false;
-	const glm::ivec3 maxsize = maxSize();
+	const math::Vec3i maxsize = maxSize();
 	if (!crop && maxsize.x > 0 && maxsize.y > 0 && maxsize.z > 0) {
 		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 			const scenegraph::SceneGraphNode &node = *iter;
 			const voxel::Region &region = node.region();
-			const glm::ivec3 &maxs = region.getDimensionsInVoxels();
-			if (glm::all(glm::lessThanEqual(maxs, maxsize))) {
+			const math::Vec3i &maxs = region.getDimensionsInVoxels();
+			if (math::all(math::lessThanEqual(maxs, maxsize))) {
 				continue;
 			}
 			Log::debug("Need to split node %s because it exceeds the max size (%i:%i:%i)", node.name().c_str(), maxs.x,

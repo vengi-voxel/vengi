@@ -16,6 +16,7 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <string.h>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -221,7 +222,7 @@ BrushApplyResult DraftEditSession<Operation>::update(const typename Operation::P
 		voxelutil::visitVolume(
 			*target->original.get(), changedRegion,
 			[&](int x, int y, int z, const voxel::Voxel &old) {
-				if (_constraint.isValid() && !_constraint.containsPoint(glm::ivec3(x, y, z))) {
+				if (_constraint.isValid() && !_constraint.containsPoint(math::Vec3i(x, y, z))) {
 					target->draft->setVoxel(x, y, z, old);
 				} else if (!(old == target->draft->voxel(x, y, z))) {
 					priv::accumulate(target->dirty, voxel::Region(x, y, z, x, y, z));

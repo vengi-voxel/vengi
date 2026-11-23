@@ -13,6 +13,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/ImportFace.h"
+#include "math/Vec2f.h"
 
 namespace voxedit {
 
@@ -32,8 +33,8 @@ bool TextureBrush::createImageFromFace(const voxel::RawVolume *volume, const pal
 		return false;
 	}
 	setImage(image);
-	_uv0 = glm::vec2(0.0f);
-	_uv1 = glm::vec2(1.0f);
+	_uv0 = math::Vec2f(0.0f);
+	_uv1 = math::Vec2f(1.0f);
 	Log::info("Created texture from face with dimensions %ix%i", image->width(), image->height());
 	return true;
 }
@@ -75,23 +76,23 @@ const image::ImagePtr &TextureBrush::image() const {
 	return _image;
 }
 
-void TextureBrush::setUV0(const glm::vec2 &uv0) {
+void TextureBrush::setUV0(const math::Vec2f &uv0) {
 	markSettingsChanged();
 	_uv0 = uv0;
 	markDirty();
 }
 
-const glm::vec2 &TextureBrush::uv0() const {
+const math::Vec2f &TextureBrush::uv0() const {
 	return _uv0;
 }
 
-void TextureBrush::setUV1(const glm::vec2 &uv1) {
+void TextureBrush::setUV1(const math::Vec2f &uv1) {
 	markSettingsChanged();
 	_uv1 = uv1;
 	markDirty();
 }
 
-const glm::vec2 &TextureBrush::uv1() const {
+const math::Vec2f &TextureBrush::uv1() const {
 	return _uv1;
 }
 
@@ -120,8 +121,8 @@ void TextureBrush::construct() {
 
 	command::Command::registerCommand("texturebrushresetuv")
 		.setHandler([&](const command::CommandArgs &args) {
-			_uv0 = glm::vec2(0.0f);
-			_uv1 = glm::vec2(1.0f);
+			_uv0 = math::Vec2f(0.0f);
+			_uv1 = math::Vec2f(1.0f);
 		}).setHelp(_("Reset the uv coordinates"));
 
 	command::Command::registerCommand("texturebrushfromface")

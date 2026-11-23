@@ -4,17 +4,16 @@
 
 #include "DrawShapeTool.h"
 #include "Authoring.h"
-#include "core/GLM.h"
-#include "math/Math.h"
 #include "voxel/Region.h"
 #include "voxelutil/VisitInside.h"
-#include <glm/geometric.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
 static constexpr int MaxShapeCells = 250000;
 
-static int64_t boxCount(const glm::ivec3 &lo, const glm::ivec3 &hi) {
+static int64_t boxCount(const math::Vec3i &lo, const math::Vec3i &hi) {
 	const int64_t dx = (int64_t)hi.x - (int64_t)lo.x + 1;
 	const int64_t dy = (int64_t)hi.y - (int64_t)lo.y + 1;
 	const int64_t dz = (int64_t)hi.z - (int64_t)lo.z + 1;
@@ -28,30 +27,30 @@ static int64_t boxCount(const glm::ivec3 &lo, const glm::ivec3 &hi) {
 }
 
 template<typename INSIDE>
-static bool collectShape(const glm::ivec3 &lo, const glm::ivec3 &hi, bool hollow, INSIDE inside,
-						 core::DynamicArray<glm::ivec3> &out, core::String &error) {
+static bool collectShape(const math::Vec3i &lo, const math::Vec3i &hi, bool hollow, INSIDE inside,
+						 core::DynamicArray<math::Vec3i> &out, core::String &error) {
 	if (boxCount(lo, hi) > MaxShapeCells) {
 		error = core::String::format("That shape is too big (over %i cells)", MaxShapeCells);
 		return false;
 	}
 	voxelutil::visitInside(voxel::Region(lo, hi), hollow, inside, [&](int x, int y, int z) {
-		out.push_back(glm::ivec3(x, y, z));
+		out.push_back(math::Vec3i(x, y, z));
 	});
 	return true;
 }
 
-static bool readCorners(const json::Json &args, glm::ivec3 &lo, glm::ivec3 &hi, core::String &error) {
+static bool readCorners(const json::Json &args, math::Vec3i &lo, math::Vec3i &hi, core::String &error) {
 	if (!args.contains("from") || !args.contains("to")) {
 		error = "from and to corners are required";
 		return false;
 	}
-	glm::ivec3 from(0);
-	glm::ivec3 to(0);
+	math::Vec3i from(0);
+	math::Vec3i to(0);
 	if (!parseCell(args.get("from"), from, "from", error) || !parseCell(args.get("to"), to, "to", error)) {
 		return false;
 	}
-	lo = glm::ivec3(core_min(from.x, to.x), core_min(from.y, to.y), core_min(from.z, to.z));
-	hi = glm::ivec3(core_max(from.x, to.x), core_max(from.y, to.y), core_max(from.z, to.z));
+	lo = math::Vec3i(core_min(from.x, to.x), core_min(from.y, to.y), core_min(from.z, to.z));
+	hi = math::Vec3i(core_max(from.x, to.x), core_max(from.y, to.y), core_max(from.z, to.z));
 	return true;
 }
 
@@ -127,11 +126,11 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 	}
 	const bool hollow = args.boolVal("hollow", false);
 	const core::String shape = args.strVal("shape", "").toLower();
-	core::DynamicArray<glm::ivec3> positions;
+	core::DynamicArray<math::Vec3i> positions;
 
 	if (shape == "box") {
-		glm::ivec3 lo(0);
-		glm::ivec3 hi(0);
+		math::Vec3i lo(0);
+		math::Vec3i hi(0);
 		if (!readCorners(args, lo, hi, error)) {
 			return ctx.result(id, error, true);
 		}
@@ -142,16 +141,16 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 			return ctx.result(id, error, true);
 		}
 	} else if (shape == "sphere" || shape == "ellipsoid") {
-		glm::vec3 center(0.0f);
-		glm::vec3 radii(1.0f);
-		glm::ivec3 lo(0);
-		glm::ivec3 hi(0);
+		math::Vec3f center(0.0f);
+		math::Vec3f radii(1.0f);
+		math::Vec3i lo(0);
+		math::Vec3i hi(0);
 		float limit = 1.0001f;
 		if (shape == "sphere") {
 			if (!args.contains("center") || !args.contains("radius")) {
 				return ctx.result(id, "sphere requires center and radius", true);
 			}
-			glm::ivec3 cell(0);
+			math::Vec3i cell(0);
 			if (!parseCell(args.get("center"), cell, "center", error)) {
 				return ctx.result(id, error, true);
 			}
@@ -159,26 +158,26 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 			if (radius < 0.0f) {
 				return ctx.result(id, "radius must be >= 0", true);
 			}
-			center = glm::vec3(cell) + 0.5f;
+			center = math::Vec3f(cell) + 0.5f;
 			const float radiusVoxels = core_max(0.5f, radius + 0.5f);
-			radii = glm::vec3(radiusVoxels);
-			lo = glm::ivec3(math::floorToInt(center.x - radii.x), math::floorToInt(center.y - radii.y),
+			radii = math::Vec3f(radiusVoxels);
+			lo = math::Vec3i(math::floorToInt(center.x - radii.x), math::floorToInt(center.y - radii.y),
 							math::floorToInt(center.z - radii.z));
-			hi = glm::ivec3(math::floorToInt(center.x + radii.x), math::floorToInt(center.y + radii.y),
+			hi = math::Vec3i(math::floorToInt(center.x + radii.x), math::floorToInt(center.y + radii.y),
 							math::floorToInt(center.z + radii.z));
 			limit = 0.9999f;
 		} else {
 			if (!readCorners(args, lo, hi, error)) {
 				return ctx.result(id, error, true);
 			}
-			center = (glm::vec3(lo) + glm::vec3(hi) + glm::vec3(1.0f)) * 0.5f;
-			radii = (glm::vec3(hi) - glm::vec3(lo) + glm::vec3(1.0f)) * 0.5f;
+			center = (math::Vec3f(lo) + math::Vec3f(hi) + math::Vec3f(1.0f)) * 0.5f;
+			radii = (math::Vec3f(hi) - math::Vec3f(lo) + math::Vec3f(1.0f)) * 0.5f;
 		}
 		auto inside = [center, radii, limit](int x, int y, int z) {
-			const glm::vec3 delta((x + 0.5f - center.x) / core_max(radii.x, 0.01f),
+			const math::Vec3f delta((x + 0.5f - center.x) / core_max(radii.x, 0.01f),
 								  (y + 0.5f - center.y) / core_max(radii.y, 0.01f),
 								  (z + 0.5f - center.z) / core_max(radii.z, 0.01f));
-			return glm::dot(delta, delta) < limit;
+			return math::dot(delta, delta) < limit;
 		};
 		if (!collectShape(lo, hi, hollow, inside, positions, error)) {
 			return ctx.result(id, error, true);
@@ -187,7 +186,7 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 		if (!args.contains("base") || !args.contains("radius")) {
 			return ctx.result(id, "cylinder requires base and radius", true);
 		}
-		glm::ivec3 base(0);
+		math::Vec3i base(0);
 		if (!parseCell(args.get("base"), base, "base", error)) {
 			return ctx.result(id, error, true);
 		}
@@ -202,8 +201,8 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 		}
 		const int extent = math::ceilToInt(radius + 0.5f);
 		const float limit = (radius + 0.5f) * (radius + 0.5f) - 0.01f;
-		glm::ivec3 lo = base;
-		glm::ivec3 hi = base;
+		math::Vec3i lo = base;
+		math::Vec3i hi = base;
 		setAxisComponent(hi, axis, axisComponent(base, axis) + height - 1);
 		const math::Axis uAxis = axis == math::Axis::X ? math::Axis::Y : math::Axis::X;
 		const math::Axis vAxis = axis == math::Axis::Z ? math::Axis::Y : math::Axis::Z;
@@ -212,7 +211,7 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 		setAxisComponent(lo, vAxis, axisComponent(base, vAxis) - extent);
 		setAxisComponent(hi, vAxis, axisComponent(base, vAxis) + extent);
 		auto inside = [base, height, axis, limit](int x, int y, int z) {
-			const glm::ivec3 pos(x, y, z);
+			const math::Vec3i pos(x, y, z);
 			const int along = axisComponent(pos, axis) - axisComponent(base, axis);
 			if (along < 0 || along >= height) {
 				return false;
@@ -238,12 +237,12 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 		if (!args.contains("from") || !args.contains("to")) {
 			return ctx.result(id, "line requires from and to", true);
 		}
-		glm::ivec3 from(0);
-		glm::ivec3 to(0);
+		math::Vec3i from(0);
+		math::Vec3i to(0);
 		if (!parseCell(args.get("from"), from, "from", error) || !parseCell(args.get("to"), to, "to", error)) {
 			return ctx.result(id, error, true);
 		}
-		const glm::ivec3 delta = to - from;
+		const math::Vec3i delta = to - from;
 		const int ax = delta.x < 0 ? -delta.x : delta.x;
 		const int ay = delta.y < 0 ? -delta.y : delta.y;
 		const int az = delta.z < 0 ? -delta.z : delta.z;
@@ -253,9 +252,9 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 		}
 		for (int i = 0; i <= steps; ++i) {
 			const float t = steps == 0 ? 0.0f : (float)i / (float)steps;
-			const glm::ivec3 pos((int)glm::round((float)from.x + (float)delta.x * t),
-								 (int)glm::round((float)from.y + (float)delta.y * t),
-								 (int)glm::round((float)from.z + (float)delta.z * t));
+			const math::Vec3i pos((int)math::round((float)from.x + (float)delta.x * t),
+								 (int)math::round((float)from.y + (float)delta.y * t),
+								 (int)math::round((float)from.z + (float)delta.z * t));
 			positions.push_back(pos);
 		}
 	} else {
@@ -264,7 +263,7 @@ bool DrawShapeTool::execute(const json::Json &id, const json::Json &args, ToolCo
 
 	core::DynamicArray<PaintCell> cells;
 	cells.reserve(positions.size());
-	for (const glm::ivec3 &pos : positions) {
+	for (const math::Vec3i &pos : positions) {
 		PaintCell cell;
 		cell.pos = pos;
 		cell.erase = color.erase;

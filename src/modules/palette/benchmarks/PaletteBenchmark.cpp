@@ -9,6 +9,7 @@
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "palette/PaletteUtil.h"
+#include "math/Vec4f.h"
 
 class PaletteBenchmark : public app::AbstractBenchmark {
 protected:
@@ -66,8 +67,8 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fPalette)(benchmark::State &state) {
 	palette::Palette palette;
 	palette.nippon();
 	for (auto _ : state) {
-		glm::highp_vec4 materialColors[256];
-		glm::highp_vec4 emitColors[256];
+		math::Vec4f materialColors[256];
+		math::Vec4f emitColors[256];
 		palette.toVec4f(materialColors, emitColors);
 		benchmark::DoNotOptimize(materialColors);
 		benchmark::DoNotOptimize(emitColors);
@@ -77,7 +78,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fPalette)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fNormalPalette)(benchmark::State &state) {
 	palette::NormalPalette normalPalette;
 	normalPalette.redAlert2();
-	glm::highp_vec4 vec4f[palette::NormalPaletteMaxNormals];
+	math::Vec4f vec4f[palette::NormalPaletteMaxNormals];
 	for (auto _ : state) {
 		normalPalette.toVec4f(vec4f);
 		benchmark::DoNotOptimize(vec4f);

@@ -7,6 +7,15 @@
 
 namespace core {
 
+TEST(BitsTest, countLeadingZeros) {
+	EXPECT_EQ(32, countLeadingZeros(0u));
+	EXPECT_EQ(31, countLeadingZeros(1u));
+	EXPECT_EQ(26, countLeadingZeros(32u));
+	EXPECT_EQ(23, countLeadingZeros(256u));
+	EXPECT_EQ(23, countLeadingZeros(300u));
+	EXPECT_EQ(0, countLeadingZeros(0x80000000u));
+}
+
 TEST(BitsTest, countTrailingZeros) {
 	EXPECT_EQ(64, countTrailingZeros(0));
 	for (int bit = 0; bit < 64; ++bit) {

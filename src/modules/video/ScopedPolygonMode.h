@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Types.h"
-#include <glm/fwd.hpp>
+#include "math/Vec2f.h"
 
 namespace video {
 
@@ -20,7 +20,7 @@ private:
 	bool _alreadyActive = false;
 public:
 	ScopedPolygonMode(video::PolygonMode mode);
-	ScopedPolygonMode(video::PolygonMode mode, const glm::vec2& offset);
+	ScopedPolygonMode(video::PolygonMode mode, const math::Vec2f& offset);
 	~ScopedPolygonMode();
 };
 

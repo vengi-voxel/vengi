@@ -30,12 +30,10 @@
 #include <random>
 #include <math.h>
 #include <stdlib.h>
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat2x2.hpp>
+#include "math/Mat2f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 // This brings back the returned noise of the dnoise functions into -1,1 range. For some reason this is not the case in Stefan Gustavson implementation
 //#define SIMPLEX_DERIVATIVES_RESCALE
@@ -47,112 +45,112 @@ namespace noise {
 //! Returns a 1D simplex noise
 inline float noise(float x);
 //! Returns a 2D simplex noise
-inline float noise(const glm::vec2 &v);
+inline float noise(const math::Vec2f &v);
 //! Returns a 3D simplex noise
-inline float noise(const glm::vec3 &v);
+inline float noise(const math::Vec3f &v);
 //! Returns a 4D simplex noise
-inline float noise(const glm::vec4 &v);
+inline float noise(const math::Vec4f &v);
 
 //! Returns a 1D simplex ridged noise
 inline float ridgedNoise(float x);
 //! Returns a 2D simplex ridged noise
-inline float ridgedNoise(const glm::vec2 &v);
+inline float ridgedNoise(const math::Vec2f &v);
 //! Returns a 3D simplex ridged noise
-inline float ridgedNoise(const glm::vec3 &v);
+inline float ridgedNoise(const math::Vec3f &v);
 //! Returns a 4D simplex ridged noise
-inline float ridgedNoise(const glm::vec4 &v);
+inline float ridgedNoise(const math::Vec4f &v);
 
 //! Returns a 1D simplex noise with analytical derivative.
-inline glm::vec2 dnoise(float x);
+inline math::Vec2f dnoise(float x);
 //! Returns a 2D simplex noise with analytical derivatives.
-inline glm::vec3 dnoise(const glm::vec2 &v);
+inline math::Vec3f dnoise(const math::Vec2f &v);
 //! Returns a 3D simplex noise with analytical derivatives.
-inline glm::vec4 dnoise(const glm::vec3 &v);
+inline math::Vec4f dnoise(const math::Vec3f &v);
 // not optimal but easiest way to return 5 floats
 typedef core::Array<float, 5> vec5;
 //! Returns a 4D simplex noise with analytical derivatives
-inline vec5 dnoise(const glm::vec4 &v);
+inline vec5 dnoise(const math::Vec4f &v);
 
 //! Returns a 2D simplex cellular/worley noise
-inline float worleyNoise(const glm::vec2 &v);
+inline float worleyNoise(const math::Vec2f &v);
 //! Returns a 3D simplex cellular/worley noise
-inline float worleyNoise(const glm::vec3 &v);
+inline float worleyNoise(const math::Vec3f &v);
 //! Returns a 2D simplex smooth cellular/worley noise
-inline float worleyNoise(const glm::vec2 &v, float falloff);
+inline float worleyNoise(const math::Vec2f &v, float falloff);
 //! Returns a 3D simplex smooth cellular/worley noise
-inline float worleyNoise(const glm::vec3 &v, float falloff);
+inline float worleyNoise(const math::Vec3f &v, float falloff);
 
 //! Returns a 2D simplex noise with rotating gradients
-inline float flowNoise(const glm::vec2 &v, float angle);
+inline float flowNoise(const math::Vec2f &v, float angle);
 //! Returns a 3D simplex noise with rotating gradients
-inline float flowNoise(const glm::vec3 &v, float angle);
+inline float flowNoise(const math::Vec3f &v, float angle);
 
 //! Returns a 2D simplex noise with rotating gradients and analytical derivatives
-inline glm::vec3 dFlowNoise(const glm::vec2 &v, float angle);
+inline math::Vec3f dFlowNoise(const math::Vec2f &v, float angle);
 //! Returns a 3D simplex noise with rotating gradients and analytical derivatives
-inline glm::vec4 dFlowNoise(const glm::vec3 &v, float angle);
+inline math::Vec4f dFlowNoise(const math::Vec3f &v, float angle);
 
 //! Returns the curl of a 2D simplex noise
-inline glm::vec2 curlNoise(const glm::vec2 &v);
+inline math::Vec2f curlNoise(const math::Vec2f &v);
 //! Returns the curl of a 2D simplex flow noise
-inline glm::vec2 curlNoise(const glm::vec2 &v, float t);
+inline math::Vec2f curlNoise(const math::Vec2f &v, float t);
 //! Returns the curl of a 2D simplex noise fractal brownian motion sum
-inline glm::vec2 curlNoise(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain);
+inline math::Vec2f curlNoise(const math::Vec2f &v, uint8_t octaves, float lacunarity, float gain);
 //! Returns the curl of a 3D simplex noise
-inline glm::vec3 curlNoise(const glm::vec3 &v);
+inline math::Vec3f curlNoise(const math::Vec3f &v);
 //! Returns the curl of a 3D simplex flow noise
-inline glm::vec3 curlNoise(const glm::vec3 &v, float t);
+inline math::Vec3f curlNoise(const math::Vec3f &v, float t);
 //! Returns the curl approximation of a 3D simplex noise fractal brownian motion sum
-inline glm::vec3 curlNoise(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain);
+inline math::Vec3f curlNoise(const math::Vec3f &v, uint8_t octaves, float lacunarity, float gain);
 
 //! Returns the curl of a custom 2D potential using finite difference approximation
-inline glm::vec2 curl(const glm::vec2 &v, const std::function<float(const glm::vec2&)> &potential, float delta = 1e-4f);
+inline math::Vec2f curl(const math::Vec2f &v, const std::function<float(const math::Vec2f&)> &potential, float delta = 1e-4f);
 //! Returns the curl of a custom 3D potential using finite difference approximation
-inline glm::vec3 curl(const glm::vec3 &v, const std::function<glm::vec3(const glm::vec3&)> &potential, float delta = 1e-4f);
+inline math::Vec3f curl(const math::Vec3f &v, const std::function<math::Vec3f(const math::Vec3f&)> &potential, float delta = 1e-4f);
 
 //! Returns a 1D simplex noise fractal brownian motion sum
 inline float fBm(float x, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 2D simplex noise fractal brownian motion sum
-inline float fBm(const glm::vec2 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float fBm(const math::Vec2f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 3D simplex noise fractal brownian motion sum
-inline float fBm(const glm::vec3 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float fBm(const math::Vec3f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 4D simplex noise fractal brownian motion sum
-inline float fBm(const glm::vec4 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float fBm(const math::Vec4f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 
 //! Returns a 2D simplex cellular/worley noise fractal brownian motion sum
-inline float worleyfBm(const glm::vec2 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float worleyfBm(const math::Vec2f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 3D simplex cellular/worley noise fractal brownian motion sum
-inline float worleyfBm(const glm::vec3 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float worleyfBm(const math::Vec3f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 2D simplex smooth cellular/worley noise fractal brownian motion sum
-inline float worleyfBm(const glm::vec2 &v, float falloff, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float worleyfBm(const math::Vec2f &v, float falloff, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 3D simplex smooth cellular/worley noise fractal brownian motion sum
-inline float worleyfBm(const glm::vec3 &v, float falloff, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float worleyfBm(const math::Vec3f &v, float falloff, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 
 //! Returns a 1D simplex noise fractal brownian motion sum with analytical derivatives
-inline glm::vec2 dfBm(float x, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline math::Vec2f dfBm(float x, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 2D simplex noise fractal brownian motion sum with analytical derivatives
-inline glm::vec3 dfBm(const glm::vec2 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline math::Vec3f dfBm(const math::Vec2f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 3D simplex noise fractal brownian motion sum with analytical derivatives
-inline glm::vec4 dfBm(const glm::vec3 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline math::Vec4f dfBm(const math::Vec3f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 4D simplex noise fractal brownian motion sum with analytical derivatives
-inline vec5 dfBm(const glm::vec4 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline vec5 dfBm(const math::Vec4f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 
 //! Returns a 1D simplex ridged multi-fractal noise sum
 inline float ridgedMF(float x, float ridgeOffset = 1.0f, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 2D simplex ridged multi-fractal noise sum
-inline float ridgedMF(const glm::vec2 &v, float ridgeOffset = 1.0f, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float ridgedMF(const math::Vec2f &v, float ridgeOffset = 1.0f, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 3D simplex ridged multi-fractal noise sum
-inline float ridgedMF(const glm::vec3 &v, float ridgeOffset = 1.0f, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float ridgedMF(const math::Vec3f &v, float ridgeOffset = 1.0f, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns a 4D simplex ridged multi-fractal noise sum
-inline float ridgedMF(const glm::vec4 &v, float ridgeOffset = 1.0f, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float ridgedMF(const math::Vec4f &v, float ridgeOffset = 1.0f, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 
 //! Returns the 2D simplex noise fractal brownian motion sum variation by Iñigo Quilez
-inline float iqfBm(const glm::vec2 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float iqfBm(const math::Vec2f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 //! Returns the 2D simplex noise fractal brownian motion sum variation by Iñigo Quilez
-inline float iqfBm(const glm::vec3 &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
+inline float iqfBm(const math::Vec3f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 
 //! Returns the 2D simplex noise fractal brownian motion sum variation by Iñigo Quilez that use a mat2 to transform each octave
-inline float iqMatfBm(const glm::vec2 &v, uint8_t octaves = 4, const glm::mat2 &mat = glm::mat2(1.6, -1.2, 1.2, 1.6), float gain = 0.5f);
+inline float iqMatfBm(const math::Vec2f &v, uint8_t octaves = 4, const math::Mat2f &mat = math::Mat2f(1.6, -1.2, 1.2, 1.6), float gain = 0.5f);
 
 //! Seeds the permutation table with new random values
 inline void seed(uint32_t s);
@@ -413,7 +411,7 @@ float noise(float x) {
 }
 
 // 2D simplex noise
-float noise(const glm::vec2 &v) {
+float noise(const math::Vec2f &v) {
 	float n0, n1, n2; // Noise contributions from the three corners
 
 	// Skew the input space to determine which simplex cell we're in
@@ -485,7 +483,7 @@ float noise(const glm::vec2 &v) {
 }
 
 // 3D simplex noise
-float noise(const glm::vec3 &v) {
+float noise(const math::Vec3f &v) {
 	float n0, n1, n2, n3; // Noise contributions from the four corners
 
 	// Skew the input space to determine which simplex cell we're in
@@ -632,7 +630,7 @@ static LutType sSimplexLut[64][4] = { { 0, 1, 2, 3 }, { 0, 1, 3, 2 }, { 0, 0, 0,
 }
 
 // 4D simplex noise
-float noise(const glm::vec4 &v) {
+float noise(const math::Vec4f &v) {
 	float n0, n1, n2, n3, n4; // Noise contributions from the five corners
 
 	// Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
@@ -766,7 +764,7 @@ float noise(const glm::vec4 &v) {
 	return 27.0f * (n0 + n1 + n2 + n3 + n4); // TODO: The scale factor is preliminary!
 }
 
-glm::vec2 dnoise(float x) {
+math::Vec2f dnoise(float x) {
 	const int i0 = FASTFLOOR(x);
 	const int i1 = i0 + 1;
 	const float x0 = x - i0;
@@ -806,13 +804,13 @@ glm::vec2 dnoise(float x) {
 	// A factor of 0.395 would scale to fit exactly within [-1,1], but
 	// to better match classic Perlin noise, we scale it down some more.
 #ifdef SIMPLEX_DERIVATIVES_RESCALE
-	return glm::vec2(0.3961965135f * (n0 + n1), dnoise_dx);
+	return math::Vec2f(0.3961965135f * (n0 + n1), dnoise_dx);
 #else
-	return glm::vec2(0.25f * (n0 + n1), dnoise_dx);
+	return math::Vec2f(0.25f * (n0 + n1), dnoise_dx);
 #endif
 }
 
-glm::vec3 dnoise(const glm::vec2 &v) {
+math::Vec3f dnoise(const math::Vec2f &v) {
 	float n0, n1, n2; // Noise contributions from the three corners
 
 	// Skew the input space to determine which simplex cell we're in
@@ -918,13 +916,13 @@ glm::vec3 dnoise(const glm::vec2 &v) {
 	// Add contributions from each corner to get the final noise value.
 	// The result is scaled to return values in the interval [-1,1].
 #ifdef SIMPLEX_DERIVATIVES_RESCALE
-	return glm::vec3(70.175438596f * (n0 + n1 + n2), dnoise_dx, dnoise_dy); // TODO: The scale factor is preliminary!
+	return math::Vec3f(70.175438596f * (n0 + n1 + n2), dnoise_dx, dnoise_dy); // TODO: The scale factor is preliminary!
 #else
-	return glm::vec3(40.0f * (n0 + n1 + n2), dnoise_dx, dnoise_dy); // TODO: The scale factor is preliminary!
+	return math::Vec3f(40.0f * (n0 + n1 + n2), dnoise_dx, dnoise_dy); // TODO: The scale factor is preliminary!
 #endif
 }
 
-glm::vec4 dnoise(const glm::vec3 &v) {
+math::Vec4f dnoise(const math::Vec3f &v) {
 	float n0, n1, n2, n3; /* Noise contributions from the four simplex corners */
 	float noise; /* Return value */
 	float gx0, gy0, gz0, gx1, gy1, gz1; /* Gradients at simplex corners */
@@ -1120,10 +1118,10 @@ glm::vec4 dnoise(const glm::vec3 &v) {
 	dnoise_dy *= 28.0f;
 	dnoise_dz *= 28.0f;
 
-	return glm::vec4(noise, dnoise_dx, dnoise_dy, dnoise_dz);
+	return math::Vec4f(noise, dnoise_dx, dnoise_dy, dnoise_dz);
 }
 
-vec5 dnoise(const glm::vec4 &v) {
+vec5 dnoise(const math::Vec4f &v) {
 	float n0, n1, n2, n3, n4; // Noise contributions from the five corners
 	float noise; // Return value
 	float gx0, gy0, gz0, gw0, gx1, gy1, gz1, gw1; /* Gradients at simplex corners */
@@ -1337,75 +1335,75 @@ vec5 dnoise(const glm::vec4 &v) {
 	return { {noise, dnoise_dx, dnoise_dy, dnoise_dz, dnoise_dw}};
 }
 
-float worleyNoise(const glm::vec2 &v) {
-	const glm::vec2& p = glm::floor(v);
-	const glm::vec2& f = glm::fract(v);
+float worleyNoise(const math::Vec2f &v) {
+	const math::Vec2f& p = math::floor(v);
+	const math::Vec2f& f = math::fract(v);
 
 	float res = 8.0f;
 	for (int j = -1; j <= 1; ++j) {
 		for (int i = -1; i <= 1; ++i) {
-			const glm::vec2 b(i, j);
-			const glm::vec2& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-			const float d = glm::dot(r, r);
-			res = (glm::min)(res, d);
+			const math::Vec2f b(i, j);
+			const math::Vec2f& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+			const float d = math::dot(r, r);
+			res = (math::min)(res, d);
 		}
 	}
 	return sqrt(res) * 2.0f - 1.0f;
 }
 
-float worleyNoise(const glm::vec3 &v) {
-	const glm::vec3& p = glm::floor(v);
-	const glm::vec3& f = glm::fract(v);
+float worleyNoise(const math::Vec3f &v) {
+	const math::Vec3f& p = math::floor(v);
+	const math::Vec3f& f = math::fract(v);
 
 	float res = 8.0;
 	for (int k = -1; k <= 1; ++k) {
 		for (int j = -1; j <= 1; ++j) {
 			for (int i = -1; i <= 1; ++i) {
-				const glm::vec3 b(i, j, k);
-				const glm::vec3& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-				const float d = glm::dot(r, r);
-				res = (glm::min)(res, d);
+				const math::Vec3f b(i, j, k);
+				const math::Vec3f& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+				const float d = math::dot(r, r);
+				res = (math::min)(res, d);
 			}
 		}
 	}
 	return sqrt(res) * 2.0f - 1.0f;
 }
 
-float worleyNoise(const glm::vec2 &v, float falloff) {
-	const glm::vec2& p = glm::floor(v);
-	const glm::vec2& f = glm::fract(v);
+float worleyNoise(const math::Vec2f &v, float falloff) {
+	const math::Vec2f& p = math::floor(v);
+	const math::Vec2f& f = math::fract(v);
 
 	float res = 0.0f;
 	for (int j = -1; j <= 1; ++j) {
 		for (int i = -1; i <= 1; ++i) {
-			const glm::vec2 b(i, j);
-			const glm::vec2& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-			const float d = glm::length(r);
-			res += glm::exp(-falloff * d);
+			const math::Vec2f b(i, j);
+			const math::Vec2f& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+			const float d = math::length(r);
+			res += math::exp(-falloff * d);
 		}
 	}
-	return -(1.0f / falloff) * glm::log(res);
+	return -(1.0f / falloff) * math::log(res);
 }
 
-float worleyNoise(const glm::vec3 &v, float falloff) {
-	const glm::vec3& p = glm::floor(v);
-	const glm::vec3& f = glm::fract(v);
+float worleyNoise(const math::Vec3f &v, float falloff) {
+	const math::Vec3f& p = math::floor(v);
+	const math::Vec3f& f = math::fract(v);
 
 	float res = 0.0f;
 	for (int k = -1; k <= 1; ++k) {
 		for (int j = -1; j <= 1; ++j) {
 			for (int i = -1; i <= 1; ++i) {
-				const glm::vec3 b(i, j, k);
-				const glm::vec3& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
-				const float d = glm::length(r);
-				res += glm::exp(-falloff * d);
+				const math::Vec3f b(i, j, k);
+				const math::Vec3f& r = b - f + (noise::noise(p + b) * 0.5f + 0.5f);
+				const float d = math::length(r);
+				res += math::exp(-falloff * d);
 			}
 		}
 	}
-	return -(1.0f / falloff) * glm::log(res);
+	return -(1.0f / falloff) * math::log(res);
 }
 
-float flowNoise(const glm::vec2 &v, float angle) {
+float flowNoise(const math::Vec2f &v, float angle) {
 	/* Sine and cosine for the gradient rotation angle */
 	const float sin_t = sin(angle);
 	const float cos_t = cos(angle);
@@ -1489,7 +1487,7 @@ float flowNoise(const glm::vec2 &v, float angle) {
 	return 40.0f * (n0 + n1 + n2);
 }
 
-float flowNoise(const glm::vec3 &v, float angle) {
+float flowNoise(const math::Vec3f &v, float angle) {
 	float n0, n1, n2, n3; /* Noise contributions from the four simplex corners */
 	float gx0, gy0, gz0, gx1, gy1, gz1; /* Gradients at simplex corners */
 	float gx2, gy2, gz2, gx3, gy3, gz3;
@@ -1642,7 +1640,7 @@ float flowNoise(const glm::vec3 &v, float angle) {
 	return 28.0f * (n0 + n1 + n2 + n3);
 }
 
-glm::vec3 dFlowNoise(const glm::vec2 &v, float angle) {
+math::Vec3f dFlowNoise(const math::Vec2f &v, float angle) {
 
 	float n0, n1, n2; /* Noise contributions from the three simplex corners */
 	float gx0, gy0, gx1, gy1, gx2, gy2; /* Gradients at simplex corners */
@@ -1754,10 +1752,10 @@ glm::vec3 dFlowNoise(const glm::vec2 &v, float angle) {
 	dnoise_dx *= 40.0f; /* Scale derivative to match the noise scaling */
 	dnoise_dy *= 40.0f;
 
-	return glm::vec3(noise, dnoise_dx, dnoise_dy);
+	return math::Vec3f(noise, dnoise_dx, dnoise_dy);
 }
 
-glm::vec4 dFlowNoise(const glm::vec3 &v, float angle) {
+math::Vec4f dFlowNoise(const math::Vec3f &v, float angle) {
 	float n0, n1, n2, n3; /* Noise contributions from the four simplex corners */
 	float noise; /* Return value */
 	float gx0, gy0, gz0, gx1, gy1, gz1; /* Gradients at simplex corners */
@@ -1955,50 +1953,50 @@ glm::vec4 dFlowNoise(const glm::vec3 &v, float angle) {
 	dnoise_dy *= 28.0f;
 	dnoise_dz *= 28.0f;
 
-	return glm::vec4(noise, dnoise_dx, dnoise_dy, dnoise_dz);
+	return math::Vec4f(noise, dnoise_dx, dnoise_dy, dnoise_dz);
 }
 
-glm::vec2 curlNoise(const glm::vec2 &v) {
-	const glm::vec3& derivative = dnoise(v);
-	return glm::vec2(derivative.z, -derivative.y);
+math::Vec2f curlNoise(const math::Vec2f &v) {
+	const math::Vec3f& derivative = dnoise(v);
+	return math::Vec2f(derivative.z, -derivative.y);
 }
-glm::vec2 curlNoise(const glm::vec2 &v, float t) {
-	const glm::vec3& derivative = dFlowNoise(v, t);
-	return glm::vec2(derivative.z, -derivative.y);
+math::Vec2f curlNoise(const math::Vec2f &v, float t) {
+	const math::Vec3f& derivative = dFlowNoise(v, t);
+	return math::Vec2f(derivative.z, -derivative.y);
 }
-glm::vec2 curlNoise(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
-	const glm::vec3& derivative = dfBm(v, octaves, lacunarity, gain);
-	return glm::vec2(derivative.z, -derivative.y);
+math::Vec2f curlNoise(const math::Vec2f &v, uint8_t octaves, float lacunarity, float gain) {
+	const math::Vec3f& derivative = dfBm(v, octaves, lacunarity, gain);
+	return math::Vec2f(derivative.z, -derivative.y);
 }
-glm::vec3 curlNoise(const glm::vec3 &v) {
-	const glm::vec4& derivX = dnoise(v);
-	const glm::vec4& derivY = dnoise(v + glm::vec3(123.456f, 789.012f, 345.678f));
-	const glm::vec4& derivZ = dnoise(v + glm::vec3(901.234f, 567.891f, 234.567f));
-	return glm::vec3(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
+math::Vec3f curlNoise(const math::Vec3f &v) {
+	const math::Vec4f& derivX = dnoise(v);
+	const math::Vec4f& derivY = dnoise(v + math::Vec3f(123.456f, 789.012f, 345.678f));
+	const math::Vec4f& derivZ = dnoise(v + math::Vec3f(901.234f, 567.891f, 234.567f));
+	return math::Vec3f(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
 }
-glm::vec3 curlNoise(const glm::vec3 &v, float t) {
-	const glm::vec4& derivX = dFlowNoise(v, t);
-	const glm::vec4& derivY = dFlowNoise(v + glm::vec3(123.456f, 789.012f, 345.678f), t);
-	const glm::vec4& derivZ = dFlowNoise(v + glm::vec3(901.234f, 567.891f, 234.567f), t);
-	return glm::vec3(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
+math::Vec3f curlNoise(const math::Vec3f &v, float t) {
+	const math::Vec4f& derivX = dFlowNoise(v, t);
+	const math::Vec4f& derivY = dFlowNoise(v + math::Vec3f(123.456f, 789.012f, 345.678f), t);
+	const math::Vec4f& derivZ = dFlowNoise(v + math::Vec3f(901.234f, 567.891f, 234.567f), t);
+	return math::Vec3f(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
 }
-glm::vec3 curlNoise(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
-	const glm::vec4& derivX = dfBm(v, octaves, lacunarity, gain);
-	const glm::vec4& derivY = dfBm(v + glm::vec3(123.456f, 789.012f, 345.678f), octaves, lacunarity, gain);
-	const glm::vec4& derivZ = dfBm(v + glm::vec3(901.234f, 567.891f, 234.567f), octaves, lacunarity, gain);
-	return glm::vec3(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
+math::Vec3f curlNoise(const math::Vec3f &v, uint8_t octaves, float lacunarity, float gain) {
+	const math::Vec4f& derivX = dfBm(v, octaves, lacunarity, gain);
+	const math::Vec4f& derivY = dfBm(v + math::Vec3f(123.456f, 789.012f, 345.678f), octaves, lacunarity, gain);
+	const math::Vec4f& derivZ = dfBm(v + math::Vec3f(901.234f, 567.891f, 234.567f), octaves, lacunarity, gain);
+	return math::Vec3f(derivZ.z - derivY.w, derivX.w - derivZ.y, derivY.y - derivX.z);
 }
 
-glm::vec2 curl(const glm::vec2 &v, const std::function<float(const glm::vec2&)> &potential, float delta) {
-	const glm::vec2 deltaX(delta, 0.0f);
-	const glm::vec2 deltaY(0.0f, delta);
-	return glm::vec2(-(potential(v + deltaY) - potential(v - deltaY)), (potential(v + deltaX) - potential(v - deltaX))) / (2.0f * delta);
+math::Vec2f curl(const math::Vec2f &v, const std::function<float(const math::Vec2f&)> &potential, float delta) {
+	const math::Vec2f deltaX(delta, 0.0f);
+	const math::Vec2f deltaY(0.0f, delta);
+	return math::Vec2f(-(potential(v + deltaY) - potential(v - deltaY)), (potential(v + deltaX) - potential(v - deltaX))) / (2.0f * delta);
 }
-glm::vec3 curl(const glm::vec3 &v, const std::function<glm::vec3(const glm::vec3&)> &potential, float delta) {
-	const glm::vec3 deltaX(delta, 0.0f, 0.0f);
-	const glm::vec3 deltaY(0.0f, delta, 0.0f);
-	const glm::vec3 deltaZ(0.0f, 0.0f, delta);
-	return glm::vec3(((potential(v + deltaY).z - potential(v - deltaY).z) - (potential(v + deltaZ).y - potential(v - deltaZ).y)),
+math::Vec3f curl(const math::Vec3f &v, const std::function<math::Vec3f(const math::Vec3f&)> &potential, float delta) {
+	const math::Vec3f deltaX(delta, 0.0f, 0.0f);
+	const math::Vec3f deltaY(0.0f, delta, 0.0f);
+	const math::Vec3f deltaZ(0.0f, 0.0f, delta);
+	return math::Vec3f(((potential(v + deltaY).z - potential(v - deltaY).z) - (potential(v + deltaZ).y - potential(v - deltaZ).y)),
 			((potential(v + deltaZ).x - potential(v - deltaZ).x) - (potential(v + deltaX).z - potential(v - deltaX).z)),
 			((potential(v + deltaX).y - potential(v - deltaX).y) - (potential(v + deltaY).x - potential(v - deltaY).x))) / (2.0f * delta);
 }
@@ -2025,15 +2023,15 @@ float fBm(float x, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(x, octaves, lacunarity, gain);
 }
 
-float fBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
+float fBm(const math::Vec2f &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(v, octaves, lacunarity, gain);
 }
 
-float fBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
+float fBm(const math::Vec3f &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(v, octaves, lacunarity, gain);
 }
 
-float fBm(const glm::vec4 &v, uint8_t octaves, float lacunarity, float gain) {
+float fBm(const math::Vec4f &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::fBm_t(v, octaves, lacunarity, gain);
 }
 
@@ -2069,52 +2067,52 @@ float worleyfBm_t(const T &input, float falloff, uint8_t octaves, float lacunari
 }
 }
 
-float worleyfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
+float worleyfBm(const math::Vec2f &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, octaves, lacunarity, gain);
 }
 
-float worleyfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
+float worleyfBm(const math::Vec3f &v, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, octaves, lacunarity, gain);
 }
 
-float worleyfBm(const glm::vec2 &v, float falloff, uint8_t octaves, float lacunarity, float gain) {
+float worleyfBm(const math::Vec2f &v, float falloff, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, falloff, octaves, lacunarity, gain);
 }
 
-float worleyfBm(const glm::vec3 &v, float falloff, uint8_t octaves, float lacunarity, float gain) {
+float worleyfBm(const math::Vec3f &v, float falloff, uint8_t octaves, float lacunarity, float gain) {
 	return details::worleyfBm_t(v, falloff, octaves, lacunarity, gain);
 }
 
-glm::vec2 dfBm(float x, uint8_t octaves, float lacunarity, float gain) {
-	glm::vec2 sum(0.0f);
+math::Vec2f dfBm(float x, uint8_t octaves, float lacunarity, float gain) {
+	math::Vec2f sum(0.0f);
 	float freq = 1.0f;
 	float amp = 0.5f;
 	for (uint8_t i = 0; i < octaves; ++i) {
-		const glm::vec2& n = dnoise(x * freq);
+		const math::Vec2f& n = dnoise(x * freq);
 		sum += n * amp;
 		freq *= lacunarity;
 		amp *= gain;
 	}
 	return sum;
 }
-glm::vec3 dfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
-	glm::vec3 sum(0.0f);
+math::Vec3f dfBm(const math::Vec2f &v, uint8_t octaves, float lacunarity, float gain) {
+	math::Vec3f sum(0.0f);
 	float freq = 1.0f;
 	float amp = 0.5f;
 	for (uint8_t i = 0; i < octaves; ++i) {
-		const glm::vec3& n = dnoise(v * freq);
+		const math::Vec3f& n = dnoise(v * freq);
 		sum += n * amp;
 		freq *= lacunarity;
 		amp *= gain;
 	}
 	return sum;
 }
-glm::vec4 dfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
-	glm::vec4 sum(0.0f);
+math::Vec4f dfBm(const math::Vec3f &v, uint8_t octaves, float lacunarity, float gain) {
+	math::Vec4f sum(0.0f);
 	float freq = 1.0f;
 	float amp = 0.5f;
 	for (uint8_t i = 0; i < octaves; ++i) {
-		const glm::vec4& n = dnoise(v * freq);
+		const math::Vec4f& n = dnoise(v * freq);
 		sum += n * amp;
 		freq *= lacunarity;
 		amp *= gain;
@@ -2122,7 +2120,7 @@ glm::vec4 dfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain
 	return sum;
 }
 
-vec5 dfBm(const glm::vec4 &v, uint8_t octaves, float lacunarity, float gain) {
+vec5 dfBm(const math::Vec4f &v, uint8_t octaves, float lacunarity, float gain) {
 	vec5 sum = { { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f } };
 	float freq = 1.0f;
 	float amp = 0.5f;
@@ -2144,7 +2142,7 @@ vec5 dfBm(const glm::vec4 &v, uint8_t octaves, float lacunarity, float gain) {
 namespace details {
 template<typename T>
 inline float ridgedNoise_t(const T &input) {
-	return (1.0f - glm::abs(noise(input))) * 2.0f - 1.0f;
+	return (1.0f - math::abs(noise(input))) * 2.0f - 1.0f;
 }
 }
 
@@ -2152,21 +2150,21 @@ float ridgedNoise(float x) {
 	return details::ridgedNoise_t(x);
 }
 
-float ridgedNoise(const glm::vec2 &v) {
+float ridgedNoise(const math::Vec2f &v) {
 	return details::ridgedNoise_t(v);
 }
 
-float ridgedNoise(const glm::vec3 &v) {
+float ridgedNoise(const math::Vec3f &v) {
 	return details::ridgedNoise_t(v);
 }
 
-float ridgedNoise(const glm::vec4 &v) {
+float ridgedNoise(const math::Vec4f &v) {
 	return details::ridgedNoise_t(v);
 }
 
 namespace details {
 inline float ridge(float h, float offset) {
-	h = offset - glm::abs(h);
+	h = offset - math::abs(h);
 	return h * h;
 }
 
@@ -2192,28 +2190,28 @@ float ridgedMF(float x, float ridgeOffset, uint8_t octaves, float lacunarity, fl
 	return details::ridgedMF_t(x, ridgeOffset, octaves, lacunarity, gain);
 }
 
-float ridgedMF(const glm::vec2 &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
+float ridgedMF(const math::Vec2f &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
 	return details::ridgedMF_t(v, ridgeOffset, octaves, lacunarity, gain);
 }
 
-float ridgedMF(const glm::vec3 &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
+float ridgedMF(const math::Vec3f &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
 	return details::ridgedMF_t(v, ridgeOffset, octaves, lacunarity, gain);
 }
 
-float ridgedMF(const glm::vec4 &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
+float ridgedMF(const math::Vec4f &v, float ridgeOffset, uint8_t octaves, float lacunarity, float gain) {
 	return details::ridgedMF_t(v, ridgeOffset, octaves, lacunarity, gain);
 }
 
-float iqfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
+float iqfBm(const math::Vec2f &v, uint8_t octaves, float lacunarity, float gain) {
 	float sum = 0.0f;
 	float amp = 0.5f;
-	glm::vec2 delta(0.0f);
+	math::Vec2f delta(0.0f);
 	float freq = 1.0f;
 	for (uint8_t i = 0; i < octaves; ++i) {
-		const glm::vec3& d = dnoise(v * freq);
+		const math::Vec3f& d = dnoise(v * freq);
 		delta.x += d.y;
 		delta.y += d.y;
-		sum += amp * d.x / (1.0f + glm::dot(delta, delta));
+		sum += amp * d.x / (1.0f + math::dot(delta, delta));
 		freq *= lacunarity;
 		amp *= gain;
 	}
@@ -2221,17 +2219,17 @@ float iqfBm(const glm::vec2 &v, uint8_t octaves, float lacunarity, float gain) {
 	return sum;
 }
 
-float iqfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
+float iqfBm(const math::Vec3f &v, uint8_t octaves, float lacunarity, float gain) {
 	float sum = 0.0f;
 	float amp = 0.5f;
-	glm::vec3 delta(0.0f);
+	math::Vec3f delta(0.0f);
 	float freq = 1.0f;
 	for (uint8_t i = 0; i < octaves; ++i) {
-		const glm::vec4& d = dnoise(v * freq);
+		const math::Vec4f& d = dnoise(v * freq);
 		delta.x += d.y;
 		delta.y += d.y;
 		delta.z += d.z;
-		sum += amp * d.x / (1.0f + glm::dot(delta, delta));
+		sum += amp * d.x / (1.0f + math::dot(delta, delta));
 		freq *= lacunarity;
 		amp *= gain;
 	}
@@ -2239,15 +2237,15 @@ float iqfBm(const glm::vec3 &v, uint8_t octaves, float lacunarity, float gain) {
 	return sum;
 }
 
-float iqMatfBm(const glm::vec2 &v, uint8_t octaves, const glm::mat2 &mat, float gain) {
+float iqMatfBm(const math::Vec2f &v, uint8_t octaves, const math::Mat2f &mat, float gain) {
 	float sum = 0.0f;
 	float amp = 1.0f;
-	glm::vec2 pos = v;
-	glm::vec2 noiseAccum(0.0f);
+	math::Vec2f pos = v;
+	math::Vec2f noiseAccum(0.0f);
 	for (uint8_t i = 0; i < octaves; ++i) {
-		const glm::vec3& n = dnoise(pos);
-		noiseAccum += glm::vec2(n.y, n.z);
-		sum += amp * n.x / (1.0f + glm::dot(noiseAccum, noiseAccum));
+		const math::Vec3f& n = dnoise(pos);
+		noiseAccum += math::Vec2f(n.y, n.z);
+		sum += amp * n.x / (1.0f + math::dot(noiseAccum, noiseAccum));
 		amp *= gain;
 		pos = mat * pos;
 	}

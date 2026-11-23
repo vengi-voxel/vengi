@@ -8,6 +8,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -26,7 +27,7 @@ TEST_F(MDLFormatTest, testVoxelize) {
 	EXPECT_EQ(node->name(), "flame1");
 	const voxel::RawVolume *v = node->volume();
 	ASSERT_NE(v, nullptr);
-	EXPECT_EQ(v->region().getDimensionsInVoxels(), glm::ivec3(8, 18, 8));
+	EXPECT_EQ(v->region().getDimensionsInVoxels(), math::Vec3i(8, 18, 8));
 	EXPECT_EQ(178, voxelutil::countVoxels(*v));
 	EXPECT_GT(node->palette().colorCount(), 50);
 	EXPECT_LT(node->palette().colorCount(), 250);

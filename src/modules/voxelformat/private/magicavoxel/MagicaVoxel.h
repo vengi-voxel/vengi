@@ -10,12 +10,14 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"
-#include "core/GLM.h"
 #include "voxel/Voxel.h"
-#include <glm/mat4x4.hpp>
 #include <stdint.h>
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/external/ogt_vox.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace io {
 class WriteStream;
@@ -59,25 +61,25 @@ static const ogt_vox_transform ogt_identity_transform{
 void *_ogt_alloc(size_t size);
 void _ogt_free(void *mem);
 
-glm::mat4 ogtToMat(const ogt_vox_transform &t);
-ogt_vox_transform matToOgt(const glm::mat4 &mat);
+math::Mat4f ogtToMat(const ogt_vox_transform &t);
+ogt_vox_transform matToOgt(const math::Mat4f &mat);
 
 /**
  * @brief MagicaVoxel model-space pivot floor(size/2) mapped into the vengi volume layout used by
  * loadModels (MagicaVoxel (x,y,z) -> vengi (sx-1-x, z, y)), as a normalized [0,1] pivot.
  */
-glm::vec3 ogtNormalizedPivot(const ogt_vox_model *model);
-glm::vec3 ogtNormalizedPivot(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ);
+math::Vec3f ogtNormalizedPivot(const ogt_vox_model *model);
+math::Vec3f ogtNormalizedPivot(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ);
 
 /**
  * @brief Convert a MagicaVoxel-space transform matrix into vengi coordinate space for node TRS.
  */
-glm::mat4 ogtMatToVengi(const glm::mat4 &ogtMat);
+math::Mat4f ogtMatToVengi(const math::Mat4f &ogtMat);
 
 /**
  * @brief Convert a vengi-space transform matrix back into MagicaVoxel coordinate space for saving.
  */
-glm::mat4 vengiMatToOgt(const glm::mat4 &vengiMat);
+math::Mat4f vengiMatToOgt(const math::Mat4f &vengiMat);
 
 bool loadInstanceKeyFrames(scenegraph::SceneGraphNode &node, const ogt_vox_instance &ogtInstance,
 						   const ogt_vox_scene *scene);
@@ -204,20 +206,20 @@ bool instanceHidden(const ogt_vox_scene *scene, const ogt_vox_instance &instance
 const char *instanceName(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 color::RGBA instanceColor(const ogt_vox_scene *scene, const ogt_vox_instance &instance);
 
-inline glm::vec3 ogtVolumeSize(const ogt_vox_model *model) {
-	return glm::vec3(model->size_x - 1, model->size_y - 1, model->size_z - 1);
+inline math::Vec3f ogtVolumeSize(const ogt_vox_model *model) {
+	return math::Vec3f(model->size_x - 1, model->size_y - 1, model->size_z - 1);
 }
 
-inline glm::vec4 ogtVolumePivot(const ogt_vox_model *model) {
-	return glm::vec4((float)(int)(model->size_x / 2), (float)(int)(model->size_y / 2), (float)(int)(model->size_z / 2),
+inline math::Vec4f ogtVolumePivot(const ogt_vox_model *model) {
+	return math::Vec4f((float)(int)(model->size_x / 2), (float)(int)(model->size_y / 2), (float)(int)(model->size_z / 2),
 					 0.0f);
 }
 
 /**
  * @brief MagicaVoxel applies floor(M * pos) per voxel. Useful for tests comparing world placement.
  */
-inline glm::ivec3 calcTransform(const glm::mat4x4 &mat, const glm::vec3 &pos) {
-	return glm::floor(mat * glm::vec4(pos, 1.0f));
+inline math::Vec3i calcTransform(const math::Mat4f &mat, const math::Vec3f &pos) {
+	return math::Vec3i(math::floor(math::Vec3f(mat * math::Vec4f(pos, 1.0f))));
 }
 
 /**
@@ -232,14 +234,14 @@ struct BakeAffine {
 	int32_t translate[3] = {0, 0, 0};
 	bool valid = false;
 
-	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS glm::ivec3 apply(int x, int y, int z) const {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS math::Vec3i apply(int x, int y, int z) const {
 		const int in[3] = {x, y, z};
-		return glm::ivec3(sign[0] * in[src[0]] + translate[0], sign[1] * in[src[1]] + translate[1],
+		return math::Vec3i(sign[0] * in[src[0]] + translate[0], sign[1] * in[src[1]] + translate[1],
 						  sign[2] * in[src[2]] + translate[2]);
 	}
 };
 
-BakeAffine extractBakeAffine(const glm::mat4 &bakeMat);
+BakeAffine extractBakeAffine(const math::Mat4f &bakeMat);
 
 /** Rotation-only key for reuse of baked volumes that differ only by translation. */
 inline uint64_t bakeRotationKey(uint32_t modelIndex, const BakeAffine &affine) {
@@ -249,13 +251,13 @@ inline uint64_t bakeRotationKey(uint32_t modelIndex, const BakeAffine &affine) {
 	return ((uint64_t)modelIndex << 32) | (uint64_t)rot;
 }
 
-glm::ivec3 bakeModelWorldShift(const ogt_vox_model *model, const glm::mat4 &bakeMat);
+math::Vec3i bakeModelWorldShift(const ogt_vox_model *model, const math::Mat4f &bakeMat);
 
 /**
  * @brief MagicaVoxel bake matrix: global nTRN * translate(0.5) * translate(-floor(size/2)).
  * Used with @c calcTransform for per-voxel placement when @c cfg::VoxformatMVApplyTransform is on.
  */
-glm::mat4 ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frameIdx, const ogt_vox_scene *scene,
+math::Mat4f ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frameIdx, const ogt_vox_scene *scene,
 								const ogt_vox_model *model);
 
 void buildBakeVoxelLut(const palette::Palette &palette, voxel::Voxel lut[256]);
@@ -266,8 +268,8 @@ void buildBakeVoxelLut(const palette::Palette &palette, voxel::Voxel lut[256]);
  * @p parallelZ splits work across Z slices; disable when the caller already parallelizes bakes.
  * @p lut optional MagicaVoxel color->Voxel table from @c buildBakeVoxelLut; built locally if null.
  */
-CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat,
-														const palette::Palette &palette, glm::ivec3 &outShift,
+CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const math::Mat4f &bakeMat,
+														const palette::Palette &palette, math::Vec3i &outShift,
 														bool parallelZ = true, const voxel::Voxel *lut = nullptr);
 
 struct MVModelToNode {

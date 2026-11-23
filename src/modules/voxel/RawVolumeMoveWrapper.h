@@ -6,6 +6,7 @@
 
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeSampler.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -28,7 +29,7 @@ public:
 
 		inline bool setVoxel(const Voxel &voxel) {
 			if (_currentPositionInvalid) {
-				const glm::ivec3& into = _region.moveInto(position().x, position().y, position().z);
+				const math::Vec3i& into = _region.moveInto(position().x, position().y, position().z);
 				_volume->setVoxel(into, voxel);
 				return true;
 			}
@@ -67,7 +68,7 @@ public:
 
 	inline void sampleSparseAt(int lx, int ly, int lz, const SparseChunk *&outChunk,
 							   const SparseChunk::Brick *&outBrick, const Voxel *&outRow, bool &outWholeBrick,
-							   glm::ivec3 &outLower, glm::ivec3 &outUpper, Voxel &outFallbackVoxel,
+							   math::Vec3i &outLower, math::Vec3i &outUpper, Voxel &outFallbackVoxel,
 							   uint32_t &outGen) const {
 		_volume->sampleSparseAt(lx, ly, lz, outChunk, outBrick, outRow, outWholeBrick, outLower, outUpper,
 								outFallbackVoxel, outGen);
@@ -109,7 +110,7 @@ public:
 		return _region;
 	}
 
-	inline const Voxel& voxel(const glm::ivec3& pos) const {
+	inline const Voxel& voxel(const math::Vec3i& pos) const {
 		return _volume->voxel(pos.x, pos.y, pos.z);
 	}
 
@@ -117,13 +118,13 @@ public:
 		return _volume->voxel(x, y, z);
 	}
 
-	inline bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+	inline bool setVoxel(const math::Vec3i& pos, const Voxel& voxel) {
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}
 
 	inline bool setVoxel(int x, int y, int z, const Voxel& voxel) {
 		if (!_region.containsPoint(x, y, z)) {
-			const glm::ivec3& into = _region.moveInto(x, y, z);
+			const math::Vec3i& into = _region.moveInto(x, y, z);
 			_volume->setVoxel(into, voxel);
 			return true;
 		}

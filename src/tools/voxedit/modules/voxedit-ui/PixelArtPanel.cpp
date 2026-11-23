@@ -21,12 +21,12 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Face.h"
 #include "voxelutil/ImageUtils.h"
-#include <glm/common.hpp>
+#include "math/Mat4f.h"
 
 namespace voxedit {
 
-static void mixMatrix(uint64_t &hash, const glm::mat4 &matrix) {
-	const float *values = &matrix[0][0];
+static void mixMatrix(uint64_t &hash, const math::Mat4f &matrix) {
+	const float *values = math::value_ptr(matrix);
 	for (int i = 0; i < 16; ++i) {
 		uint32_t bits = 0;
 		core_memcpy(&bits, &values[i], sizeof(bits));
@@ -240,7 +240,7 @@ void PixelArtPanel::update(const char *id) {
 		}
 		const ImVec2 available = ImGui::GetContentRegionAvail();
 		const float dpi = core_max(1.0f, ImGui::GetWindowDpiScale());
-		const int fit = core_max(1, (int)glm::floor(core_min(available.x * dpi / (float)img->width(),
+		const int fit = core_max(1, (int)math::floor(core_min(available.x * dpi / (float)img->width(),
 															 available.y * dpi / (float)img->height())));
 		if (!_zoomUser || _zoom < 1) {
 			_zoom = fit;
@@ -249,8 +249,8 @@ void PixelArtPanel::update(const char *id) {
 		// The child clips the enlarged image. Wheel zooms instead of scrolling.
 		ImGui::BeginChild("##pixelartscroll", ImVec2(0.0f, 0.0f), ImGuiChildFlags_None,
 						  ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-		const float scrollX = glm::floor(ImGui::GetScrollX() * dpi + 0.5f) / dpi;
-		const float scrollY = glm::floor(ImGui::GetScrollY() * dpi + 0.5f) / dpi;
+		const float scrollX = math::floor(ImGui::GetScrollX() * dpi + 0.5f) / dpi;
+		const float scrollY = math::floor(ImGui::GetScrollY() * dpi + 0.5f) / dpi;
 		if (scrollX != ImGui::GetScrollX()) {
 			ImGui::SetScrollX(scrollX);
 		}
@@ -261,7 +261,7 @@ void PixelArtPanel::update(const char *id) {
 		const float texel = (float)_zoom / dpi;
 		const ImVec2 size((float)img->width() * texel, (float)img->height() * texel);
 		const ImVec2 cursor = ImGui::GetCursorScreenPos();
-		ImGui::SetCursorScreenPos(ImVec2(glm::floor(cursor.x * dpi) / dpi, glm::floor(cursor.y * dpi) / dpi));
+		ImGui::SetCursorScreenPos(ImVec2(math::floor(cursor.x * dpi) / dpi, math::floor(cursor.y * dpi) / dpi));
 		ImGui::InvisibleButton("##pixelartcanvas", size);
 		const ImVec2 origin = ImGui::GetItemRectMin();
 		const ImVec2 drawn(origin.x + size.x, origin.y + size.y);

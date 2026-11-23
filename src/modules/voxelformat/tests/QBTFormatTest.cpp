@@ -13,13 +13,19 @@
 #include "util/VarUtil.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3u.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
 class QBTFormatTest: public AbstractFormatTest {
 protected:
-	io::MemoryArchivePtr fixture(const glm::uvec3 &scale, const glm::vec3 &pivot,
-								 const glm::vec3 &globalScale = glm::vec3(1.0f), bool compound = false) {
+	io::MemoryArchivePtr fixture(const math::Vec3u &scale, const math::Vec3f &pivot,
+								 const math::Vec3f &globalScale = math::Vec3f(1.0f), bool compound = false) {
 		io::BufferedReadWriteStream file;
 		file.write("QB 2", 4);
 		file.writeUInt8(1);
@@ -30,14 +36,14 @@ protected:
 		file.write("COLORMAP", 8);
 		file.writeUInt32(0);
 		file.write("DATATREE", 8);
-		writeMatrix(file, scale, pivot, glm::ivec3(10, -20, 30), compound);
+		writeMatrix(file, scale, pivot, math::Vec3i(10, -20, 30), compound);
 		io::MemoryArchivePtr archive = io::openMemoryArchive();
 		archive->add("synthetic.qbt", file.getBuffer(), file.size());
 		return archive;
 	}
 
-	void writeMatrix(io::BufferedReadWriteStream &file, const glm::uvec3 &scale,
-					 const glm::vec3 &pivot, const glm::ivec3 &position, bool compound) {
+	void writeMatrix(io::BufferedReadWriteStream &file, const math::Vec3u &scale,
+					 const math::Vec3f &pivot, const math::Vec3i &position, bool compound) {
 		file.writeUInt32(compound ? 2 : 0);
 		const int64_t sizePos = file.pos();
 		file.writeUInt32(0);
@@ -66,7 +72,7 @@ protected:
 		file.write(data.getBuffer(), data.size());
 		if (compound) {
 			file.writeUInt32(1);
-			writeMatrix(file, glm::uvec3(3, 2, 1), glm::vec3(0.5f, 1.0f, 2.0f), glm::ivec3(4, 5, 6), false);
+			writeMatrix(file, math::Vec3u(3, 2, 1), math::Vec3f(0.5f, 1.0f, 2.0f), math::Vec3i(4, 5, 6), false);
 		}
 		const int64_t endPos = file.pos();
 		file.seek(sizePos);
@@ -119,34 +125,34 @@ TEST_F(QBTFormatTest, testResaveMultipleModels) {
 
 TEST_F(QBTFormatTest, testLoadPivotAndScale) {
 	QBTFormat format;
-	const glm::vec3 globalScale(0.5f, 1.5f, 2.0f);
-	const io::MemoryArchivePtr archive = fixture(glm::uvec3(2, 3, 4), glm::vec3(1, 1.5f, 2), globalScale);
+	const math::Vec3f globalScale(0.5f, 1.5f, 2.0f);
+	const io::MemoryArchivePtr archive = fixture(math::Vec3u(2, 3, 4), math::Vec3f(1, 1.5f, 2), globalScale);
 	scenegraph::SceneGraph graph;
 	ASSERT_TRUE(format.load("synthetic.qbt", archive, graph, testLoadCtx));
 	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	EXPECT_VEC_NEAR(node->pivot(), glm::vec3(0.5f), 0.0001f);
-	EXPECT_VEC_NEAR(node->transform(0).localScale(), glm::vec3(2, 3, 4), 0.0001f);
+	EXPECT_VEC_NEAR(node->pivot(), math::Vec3f(0.5f), 0.0001f);
+	EXPECT_VEC_NEAR(node->transform(0).localScale(), math::Vec3f(2, 3, 4), 0.0001f);
 	EXPECT_VEC_NEAR(graph.root().transform(0).localScale(), globalScale, 0.0001f);
 	// Pivot metadata must not move the grid origin or its individual cells.
-	const glm::mat4 world = graph.worldMatrix(*node, 0);
-	EXPECT_VEC_NEAR(glm::vec3(world * glm::vec4(0, 0, 0, 1)), glm::vec3(5, -30, 60), 0.0001f);
-	EXPECT_VEC_NEAR(glm::vec3(world * glm::vec4(1, 2, 3, 1)), glm::vec3(6, -21, 84), 0.0001f);
+	const math::Mat4f world = graph.worldMatrix(*node, 0);
+	EXPECT_VEC_NEAR(math::Vec3f(world * math::Vec4f(0, 0, 0, 1)), math::Vec3f(5, -30, 60), 0.0001f);
+	EXPECT_VEC_NEAR(math::Vec3f(world * math::Vec4f(1, 2, 3, 1)), math::Vec3f(6, -21, 84), 0.0001f);
 
 	ASSERT_TRUE(format.save(graph, "roundtrip.qbt", archive, testSaveCtx));
 	scenegraph::SceneGraph loaded;
 	ASSERT_TRUE(format.load("roundtrip.qbt", archive, loaded, testLoadCtx));
 	ASSERT_NE(nullptr, loaded.firstModelNode());
 	EXPECT_VEC_NEAR(loaded.firstModelNode()->pivot(), node->pivot(), 0.0001f);
-	EXPECT_VEC_NEAR(loaded.firstModelNode()->transform(0).localScale(), glm::vec3(2, 3, 4), 0.0001f);
+	EXPECT_VEC_NEAR(loaded.firstModelNode()->transform(0).localScale(), math::Vec3f(2, 3, 4), 0.0001f);
 	EXPECT_VEC_NEAR(loaded.root().transform(0).localScale(), globalScale, 0.0001f);
-	const glm::mat4 reloadedWorld = loaded.worldMatrix(*loaded.firstModelNode(), 0);
-	EXPECT_VEC_NEAR(glm::vec3(reloadedWorld * glm::vec4(1, 2, 3, 1)), glm::vec3(6, -21, 84), 0.0001f);
+	const math::Mat4f reloadedWorld = loaded.worldMatrix(*loaded.firstModelNode(), 0);
+	EXPECT_VEC_NEAR(math::Vec3f(reloadedWorld * math::Vec4f(1, 2, 3, 1)), math::Vec3f(6, -21, 84), 0.0001f);
 }
 
 TEST_F(QBTFormatTest, testCompoundRelativePlacement) {
 	util::ScopedVarChange mergeCompounds(cfg::VoxformatQBTMergeCompounds, "false");
-	const io::MemoryArchivePtr archive = fixture(glm::uvec3(2, 3, 4), glm::vec3(1, 1.5f, 2), glm::vec3(1), true);
+	const io::MemoryArchivePtr archive = fixture(math::Vec3u(2, 3, 4), math::Vec3f(1, 1.5f, 2), math::Vec3f(1), true);
 	QBTFormat format;
 	scenegraph::SceneGraph graph;
 	ASSERT_TRUE(format.load("synthetic.qbt", archive, graph, testLoadCtx));
@@ -157,9 +163,9 @@ TEST_F(QBTFormatTest, testCompoundRelativePlacement) {
 	const scenegraph::SceneGraphNode *child = graph.findNodeByUUID(parent->children().front());
 	ASSERT_NE(nullptr, child);
 	EXPECT_EQ(parent, graph.parentNode(*child));
-	const glm::mat4 world = graph.worldMatrix(*child, 0);
-	EXPECT_VEC_NEAR(glm::vec3(world * glm::vec4(0, 0, 0, 1)), glm::vec3(18, -5, 54), 0.0001f);
-	EXPECT_VEC_NEAR(glm::vec3(world * glm::vec4(1, 2, 3, 1)), glm::vec3(24, 7, 66), 0.0001f);
+	const math::Mat4f world = graph.worldMatrix(*child, 0);
+	EXPECT_VEC_NEAR(math::Vec3f(world * math::Vec4f(0, 0, 0, 1)), math::Vec3f(18, -5, 54), 0.0001f);
+	EXPECT_VEC_NEAR(math::Vec3f(world * math::Vec4f(1, 2, 3, 1)), math::Vec3f(24, 7, 66), 0.0001f);
 	ASSERT_TRUE(format.save(graph, "compound.qbt", archive, testSaveCtx));
 	scenegraph::SceneGraph loaded;
 	ASSERT_TRUE(format.load("compound.qbt", archive, loaded, testLoadCtx));
@@ -171,36 +177,36 @@ TEST_F(QBTFormatTest, testCompoundRelativePlacement) {
 	ASSERT_EQ(1u, merged.size(scenegraph::SceneGraphNodeType::Model));
 	const scenegraph::SceneGraphNode *mergedNode = merged.firstModelNode();
 	ASSERT_NE(nullptr, mergedNode);
-	EXPECT_VEC_NEAR(glm::vec3(merged.worldMatrix(*mergedNode, 0) * glm::vec4(0, 0, 0, 1)), glm::vec3(10, -20, 30), 0.0001f);
+	EXPECT_VEC_NEAR(math::Vec3f(merged.worldMatrix(*mergedNode, 0) * math::Vec4f(0, 0, 0, 1)), math::Vec3f(10, -20, 30), 0.0001f);
 }
 
 TEST_F(QBTFormatTest, testRejectsInvalidScalesAndPivot) {
 	QBTFormat format;
-	const io::MemoryArchivePtr invalidLocal = fixture(glm::uvec3(1, 0, 1), glm::vec3(0));
+	const io::MemoryArchivePtr invalidLocal = fixture(math::Vec3u(1, 0, 1), math::Vec3f(0));
 	scenegraph::SceneGraph graph;
 	EXPECT_FALSE(format.load("synthetic.qbt", invalidLocal, graph, testLoadCtx));
-	const io::MemoryArchivePtr invalidGlobal = fixture(glm::uvec3(1), glm::vec3(0), glm::vec3(0));
+	const io::MemoryArchivePtr invalidGlobal = fixture(math::Vec3u(1), math::Vec3f(0), math::Vec3f(0));
 	graph.clear();
 	EXPECT_FALSE(format.load("synthetic.qbt", invalidGlobal, graph, testLoadCtx));
-	const io::MemoryArchivePtr invalidPivot = fixture(glm::uvec3(1), glm::vec3(nanf("")));
+	const io::MemoryArchivePtr invalidPivot = fixture(math::Vec3u(1), math::Vec3f(nanf("")));
 	graph.clear();
 	EXPECT_FALSE(format.load("synthetic.qbt", invalidPivot, graph, testLoadCtx));
 }
 
 TEST_F(QBTFormatTest, testRejectsUnrepresentableExportScale) {
 	QBTFormat format;
-	const io::MemoryArchivePtr archive = fixture(glm::uvec3(1), glm::vec3(0));
+	const io::MemoryArchivePtr archive = fixture(math::Vec3u(1), math::Vec3f(0));
 	scenegraph::SceneGraph graph;
 	ASSERT_TRUE(format.load("synthetic.qbt", archive, graph, testLoadCtx));
 	scenegraph::SceneGraphNode *node = graph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	const glm::vec3 scales[] = {glm::vec3(1.5f, 1, 1), glm::vec3(-1, 1, 1), glm::vec3(0, 1, 1)};
-	for (const glm::vec3 &scale : scales) {
+	const math::Vec3f scales[] = {math::Vec3f(1.5f, 1, 1), math::Vec3f(-1, 1, 1), math::Vec3f(0, 1, 1)};
+	for (const math::Vec3f &scale : scales) {
 		node->transform(0).setLocalScale(scale);
 		EXPECT_FALSE(format.save(graph, "invalid-scale.qbt", archive, testSaveCtx));
 	}
-	node->transform(0).setLocalScale(glm::vec3(1));
-	graph.node(graph.root().id()).transform(0).setLocalScale(glm::vec3(0));
+	node->transform(0).setLocalScale(math::Vec3f(1));
+	graph.node(graph.root().id()).transform(0).setLocalScale(math::Vec3f(0));
 	EXPECT_FALSE(format.save(graph, "invalid-global-scale.qbt", archive, testSaveCtx));
 }
 
@@ -209,8 +215,8 @@ TEST_F(QBTFormatTest, testExportShiftedVolumeAndGroupScale) {
 	io::MemoryArchivePtr archive = io::openMemoryArchive();
 	scenegraph::SceneGraph graph;
 	scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group);
-	group.transform(0).setLocalTranslation(glm::vec3(10, 20, 30));
-	group.transform(0).setLocalScale(glm::vec3(2, 3, 4));
+	group.transform(0).setLocalTranslation(math::Vec3f(10, 20, 30));
+	group.transform(0).setLocalScale(math::Vec3f(2, 3, 4));
 	const int parent = graph.emplace(core::move(group));
 	ASSERT_NE(InvalidNodeId, parent);
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -221,21 +227,21 @@ TEST_F(QBTFormatTest, testExportShiftedVolumeAndGroupScale) {
 	volume->setVoxel(3, 4, 5, voxel::createVoxel(palette, 0));
 	node.setVolume(volume);
 	node.setPalette(palette);
-	node.setPivot(glm::vec3(0.5f));
-	node.transform(0).setLocalTranslation(glm::vec3(7, 8.5f, 9));
-	node.transform(0).setLocalScale(glm::vec3(2, 1, 3));
+	node.setPivot(math::Vec3f(0.5f));
+	node.transform(0).setLocalTranslation(math::Vec3f(7, 8.5f, 9));
+	node.transform(0).setLocalScale(math::Vec3f(2, 1, 3));
 	const int id = graph.emplace(core::move(node), parent);
 	ASSERT_NE(InvalidNodeId, id);
 	graph.updateTransforms();
-	const glm::mat4 world = graph.worldMatrix(graph.node(id), 0);
-	const glm::vec3 expected = glm::vec3(world * glm::vec4(3, 4, 5, 1));
+	const math::Mat4f world = graph.worldMatrix(graph.node(id), 0);
+	const math::Vec3f expected = math::Vec3f(world * math::Vec4f(3, 4, 5, 1));
 	ASSERT_TRUE(format.save(graph, "shifted.qbt", archive, testSaveCtx));
 	scenegraph::SceneGraph loaded;
 	ASSERT_TRUE(format.load("shifted.qbt", archive, loaded, testLoadCtx));
 	const scenegraph::SceneGraphNode *model = loaded.firstModelNode();
 	ASSERT_NE(nullptr, model);
-	EXPECT_VEC_NEAR(model->transform(0).localScale(), glm::vec3(4, 3, 12), 0.0001f);
-	EXPECT_VEC_NEAR(glm::vec3(loaded.worldMatrix(*model, 0) * glm::vec4(0, 0, 0, 1)), expected, 0.0001f);
+	EXPECT_VEC_NEAR(model->transform(0).localScale(), math::Vec3f(4, 3, 12), 0.0001f);
+	EXPECT_VEC_NEAR(math::Vec3f(loaded.worldMatrix(*model, 0) * math::Vec4f(0, 0, 0, 1)), expected, 0.0001f);
 }
 
 }

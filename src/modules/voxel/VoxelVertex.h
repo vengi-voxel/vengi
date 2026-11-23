@@ -1,10 +1,10 @@
+#include "math/Vec3f.h"
 /**
  * @file
  */
 
 #pragma once
 
-#include <glm/vec3.hpp>
 
 namespace voxel {
 
@@ -14,7 +14,7 @@ namespace voxel {
  * @note see voxel.vert for the shader layout
  */
 struct VoxelVertex {
-	glm::highp_vec3 position;
+	math::Vec3f position;
 	/** 0 is the darkest, 3 is no occlusion at all */
 	union {
 		struct {

@@ -5,17 +5,21 @@
 #include "VXLShared.h"
 #include "core/Log.h"
 #include "math/CoordinateSystemUtil.h"
-#include <glm/ext/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
 namespace vxl {
 
-void VXLMatrix::fromVengi(const glm::mat4 &vengiMatrix) {
+void VXLMatrix::fromVengi(const math::Mat4f &vengiMatrix) {
 	matrix = math::convertCoordinateSystem(math::CoordinateSystem::Vengi, math::CoordinateSystem::VXL, vengiMatrix);
 }
 
-glm::mat4 VXLMatrix::toVengi() const {
+math::Mat4f VXLMatrix::toVengi() const {
 	return math::convertCoordinateSystem(math::CoordinateSystem::VXL, math::CoordinateSystem::Vengi, matrix);
 }
 
@@ -28,23 +32,23 @@ int vxl::VXLModel::findLayerByName(const core::String &name) const {
 	return -1;
 }
 
-glm::mat4 convertVXLRead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
+math::Mat4f convertVXLRead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
 	// The VXL base pose matrix is not scaled by the global footer.scale.
 	// The per-section scale is applied here to the base matrix.
-	const glm::mat4 vengiMatrix = matrix.toVengi();
-	const glm::vec3 sectionScale = footer.calcScale();
+	const math::Mat4f vengiMatrix = matrix.toVengi();
+	const math::Vec3f sectionScale = footer.calcScale();
 	// The offset is handled by the pivot
-	const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), sectionScale);
+	const math::Mat4f scaleMatrix = math::scale(math::Mat4f(1.0f), sectionScale);
 	return scaleMatrix * vengiMatrix;
 }
 
-vxl::VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix) {
+vxl::VXLMatrix convertVXLWrite(const math::Mat4f &vengiMatrix) {
 	vxl::VXLMatrix vxlMatrix;
-	glm::mat4 originalMatrix = vengiMatrix;
+	math::Mat4f originalMatrix = vengiMatrix;
 	// Remove the scale from the matrix before converting to VXL
 	// We assume uniform scale for now
-	const glm::vec3 scale(glm::length(originalMatrix[0]), glm::length(originalMatrix[1]), glm::length(originalMatrix[2]));
-	if (scale.x > glm::epsilon<float>()) {
+	const math::Vec3f scale(math::length(originalMatrix[0]), math::length(originalMatrix[1]), math::length(originalMatrix[2]));
+	if (scale.x > math::epsilonf) {
 		originalMatrix[0] /= scale.x;
 		originalMatrix[1] /= scale.y;
 		originalMatrix[2] /= scale.z;
@@ -55,20 +59,20 @@ vxl::VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix) {
 	return vxlMatrix;
 }
 
-VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
+VXLMatrix convertHVAWrite(const math::Mat4f &vengiMatrix) {
 	VXLMatrix vxlMatrix;
-	glm::mat4 originalMatrix = vengiMatrix;
+	math::Mat4f originalMatrix = vengiMatrix;
 
 	// Remove the scale from the matrix before converting to HVA
 	// We assume uniform scale for now
-	const glm::vec3 scale(glm::length(originalMatrix[0]), glm::length(originalMatrix[1]), glm::length(originalMatrix[2]));
-	if (scale.x > glm::epsilon<float>()) {
+	const math::Vec3f scale(math::length(originalMatrix[0]), math::length(originalMatrix[1]), math::length(originalMatrix[2]));
+	if (scale.x > math::epsilonf) {
 		originalMatrix[0] /= scale.x;
 		originalMatrix[1] /= scale.y;
 		originalMatrix[2] /= scale.z;
 	}
 
-	glm::vec4 &translation = originalMatrix[3];
+	math::Vec4f &translation = originalMatrix[3];
 	translation.x /= vxl::Scale;
 	translation.y /= vxl::Scale;
 	translation.z /= vxl::Scale;
@@ -90,20 +94,20 @@ VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix) {
 // 3. The per-section scale is applied.
 //
 // See https://github.com/vengi-voxel/vengi/issues/537 and https://github.com/vengi-voxel/vengi/issues/636
-glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
-	glm::mat4 vengiMatrix = matrix.toVengi();
+math::Mat4f convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &footer) {
+	math::Mat4f vengiMatrix = matrix.toVengi();
 	// Extract rotation (upper-left 3x3) and translation (4th column)
-	glm::mat3 rotation = glm::mat3(vengiMatrix);
-	glm::vec3 hvaTranslation = glm::vec3(vengiMatrix[3]);
+	math::Mat3f rotation = math::Mat3f(vengiMatrix);
+	math::Vec3f hvaTranslation = math::Vec3f(vengiMatrix[3]);
 
 	// Scale ONLY the translation component by footer.scale (NOT sectionScale!)
 	// The sectionScale is already baked into the VXL base transform, and HVA translations
 	// are in leptons which are absolute world units independent of voxel dimensions.
-	glm::vec3 scaledTranslation = hvaTranslation * footer.scale;
+	math::Vec3f scaledTranslation = hvaTranslation * footer.scale;
 
 	// Rebuild matrix with original rotation + scaled translation
-	glm::mat4 hvaTransform = glm::mat4(rotation);
-	hvaTransform[3] = glm::vec4(scaledTranslation, 1.0f);
+	math::Mat4f hvaTransform = math::Mat4f(rotation);
+	hvaTransform[3] = math::Vec4f(scaledTranslation, 1.0f);
 
 	Log::debug("ConvertRead HVA: translation (leptons): %f %f %f -> scaled: %f %f %f",
 	           hvaTranslation.x, hvaTranslation.y, hvaTranslation.z,
@@ -111,22 +115,22 @@ glm::mat4 convertHVARead(const VXLMatrix &matrix, const vxl::VXLLayerInfo &foote
 
 	// Apply section scale
 	// The offset is handled by the pivot
-	const glm::vec3 sectionScale = footer.calcScale();
-	const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), sectionScale);
+	const math::Vec3f sectionScale = footer.calcScale();
+	const math::Mat4f scaleMatrix = math::scale(math::Mat4f(1.0f), sectionScale);
 
 	return hvaTransform * scaleMatrix;
 }
 
 // y and z flipped to bring it into vengi space
-glm::vec3 VXLLayerInfo::calcScale() const {
-	const glm::vec3 s{(maxs[0] - mins[0]) / (float)xsize, (maxs[2] - mins[2]) / (float)zsize, (maxs[1] - mins[1]) / (float)ysize};
+math::Vec3f VXLLayerInfo::calcScale() const {
+	const math::Vec3f s{(maxs[0] - mins[0]) / (float)xsize, (maxs[2] - mins[2]) / (float)zsize, (maxs[1] - mins[1]) / (float)ysize};
 	Log::debug("Scale: %f:%f:%f", s.x, s.y, s.z);
 	return s;
 }
 
 // y and z flipped to bring it into vengi space
-glm::vec3 VXLLayerInfo::offset() const {
-	const glm::vec3 offset(mins[0], mins[2], mins[1]);
+math::Vec3f VXLLayerInfo::offset() const {
+	const math::Vec3f offset(mins[0], mins[2], mins[1]);
 	Log::debug("Offset: %f:%f:%f", offset.x, offset.y, offset.z);
 	return offset;
 }
@@ -151,7 +155,7 @@ glm::vec3 VXLLayerInfo::offset() const {
 // - Voxel offset scales with section scale, HVA offset does NOT
 //
 // y and z flipped to bring it into vengi space
-glm::vec3 VXLLayerInfo::pivot() const {
+math::Vec3f VXLLayerInfo::pivot() const {
 	// mins represents the offset of voxel data from origin in VXL coordinate system
 	// Default mins = -size/2 (centers the voxel around origin)
 	// mins can be adjusted to offset the voxel
@@ -169,7 +173,7 @@ glm::vec3 VXLLayerInfo::pivot() const {
 	const float spanX = maxs.x - mins.x;
 	const float spanY = maxs.y - mins.y;
 	const float spanZ = maxs.z - mins.z;
-	glm::vec3 pivot{-mins.x / spanX, -mins.z / spanZ, -mins.y / spanY};
+	math::Vec3f pivot{-mins.x / spanX, -mins.z / spanZ, -mins.y / spanY};
 	Log::debug("Pivot: %f:%f:%f", pivot.x, pivot.y, pivot.z);
 	return pivot;
 }

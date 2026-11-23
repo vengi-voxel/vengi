@@ -18,33 +18,30 @@
 #include "io/MemoryReadStream.h"
 #include "json/JSON.h"
 #include "scenegraph/SceneGraph.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtc/epsilon.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 
 namespace voxelformat {
 
 namespace croco_priv {
 
-static glm::vec3 toVec3(const json::Json &json) {
+static math::Vec3f toVec3(const json::Json &json) {
 	if (json.isArray() && json.size() >= 3) {
-		return glm::vec3(json.get(0).floatVal(), json.get(1).floatVal(), json.get(2).floatVal());
+		return math::Vec3f(json.get(0).floatVal(), json.get(1).floatVal(), json.get(2).floatVal());
 	}
-	return glm::vec3(json.floatVal("x", 0.0f), json.floatVal("y", 0.0f), json.floatVal("z", 0.0f));
+	return math::Vec3f(json.floatVal("x", 0.0f), json.floatVal("y", 0.0f), json.floatVal("z", 0.0f));
 }
 
-static glm::vec2 toVec2(const json::Json &json) {
+static math::Vec2f toVec2(const json::Json &json) {
 	if (json.isArray() && json.size() >= 2) {
-		return glm::vec2(json.get(0).floatVal(), json.get(1).floatVal());
+		return math::Vec2f(json.get(0).floatVal(), json.get(1).floatVal());
 	}
-	return glm::vec2(json.floatVal("x", 0.0f), json.floatVal("y", 0.0f));
+	return math::Vec2f(json.floatVal("x", 0.0f), json.floatVal("y", 0.0f));
 }
 
 static color::RGBA toColor(const json::Json &json, color::RGBA fallback = color::RGBA(255, 255, 255, 255)) {
@@ -55,7 +52,7 @@ static color::RGBA toColor(const json::Json &json, color::RGBA fallback = color:
 	const float g = json.floatVal("g", 1.0f);
 	const float b = json.floatVal("b", 1.0f);
 	const float a = json.floatVal("a", 1.0f);
-	return color::getRGBA(glm::clamp(glm::vec4(r, g, b, a), 0.0f, 1.0f));
+	return color::getRGBA(math::clamp(math::Vec4f(r, g, b, a), 0.0f, 1.0f));
 }
 
 static image::ImagePtr loadDataUrlImage(const core::String &source, const core::String &name) {
@@ -92,70 +89,70 @@ static image::ImagePtr loadDataUrlImage(const core::String &source, const core::
 	return image;
 }
 
-static glm::mat4 rotationMatrix(const json::Json &rotationJson) {
+static math::Mat4f rotationMatrix(const json::Json &rotationJson) {
 	if (!rotationJson.isValid() || !rotationJson.isObject()) {
-		return glm::mat4(1.0f);
+		return math::Mat4f(1.0f);
 	}
 	const float x = rotationJson.floatVal("_x", rotationJson.floatVal("x", 0.0f));
 	const float y = rotationJson.floatVal("_y", rotationJson.floatVal("y", 0.0f));
 	const float z = rotationJson.floatVal("_z", rotationJson.floatVal("z", 0.0f));
 	const core::String order = json::toStr(rotationJson, "_order", "XYZ");
 	if (order == "YXZ") {
-		return glm::eulerAngleYXZ(y, x, z);
+		return math::eulerAngleYXZ(y, x, z);
 	}
 	if (order == "ZXY") {
-		return glm::eulerAngleZXY(z, x, y);
+		return math::eulerAngleZXY(z, x, y);
 	}
 	if (order == "ZYX") {
-		return glm::eulerAngleZYX(z, y, x);
+		return math::eulerAngleZYX(z, y, x);
 	}
 	if (order == "YZX") {
-		return glm::eulerAngleYZX(y, z, x);
+		return math::eulerAngleYZX(y, z, x);
 	}
 	if (order == "XZY") {
-		return glm::eulerAngleXZY(x, z, y);
+		return math::eulerAngleXZY(x, z, y);
 	}
 	// Default Three.js / Crocotile order
-	return glm::eulerAngleXYZ(x, y, z);
+	return math::eulerAngleXYZ(x, y, z);
 }
 
-static glm::mat4 localTransform(const json::Json &instanceJson) {
-	const glm::vec3 pos = instanceJson.contains("position") ? toVec3(instanceJson.get("position")) : glm::vec3(0.0f);
-	glm::vec3 scale(1.0f);
+static math::Mat4f localTransform(const json::Json &instanceJson) {
+	const math::Vec3f pos = instanceJson.contains("position") ? toVec3(instanceJson.get("position")) : math::Vec3f(0.0f);
+	math::Vec3f scale(1.0f);
 	if (instanceJson.contains("scale")) {
 		scale = toVec3(instanceJson.get("scale"));
-		if (glm::all(glm::epsilonEqual(scale, glm::vec3(0.0f), 0.00001f))) {
-			scale = glm::vec3(1.0f);
+		if (math::all(math::epsilonEqual(scale, math::Vec3f(0.0f), 0.00001f))) {
+			scale = math::Vec3f(1.0f);
 		}
 	}
-	glm::mat4 m(1.0f);
-	m = glm::translate(m, pos);
+	math::Mat4f m(1.0f);
+	m = math::translate(m, pos);
 	if (instanceJson.contains("rotation")) {
 		m *= rotationMatrix(instanceJson.get("rotation"));
 	}
-	m = glm::scale(m, scale);
+	m = math::scale(m, scale);
 	return m;
 }
 
 struct InstanceInfo {
 	int id = -1;
 	int parentId = -1;
-	glm::mat4 local{1.0f};
-	glm::mat4 world{1.0f};
+	math::Mat4f local{1.0f};
+	math::Mat4f world{1.0f};
 	bool worldComputed = false;
 };
 
-static glm::mat4 computeWorld(core::Map<int, InstanceInfo> &instances, int id) {
+static math::Mat4f computeWorld(core::Map<int, InstanceInfo> &instances, int id) {
 	auto iter = instances.find(id);
 	if (iter == instances.end()) {
-		return glm::mat4(1.0f);
+		return math::Mat4f(1.0f);
 	}
 	InstanceInfo &info = iter->value;
 	if (info.worldComputed) {
 		return info.world;
 	}
 	info.worldComputed = true;
-	glm::mat4 parent(1.0f);
+	math::Mat4f parent(1.0f);
 	if (info.parentId >= 0 && instances.hasKey(info.parentId)) {
 		parent = computeWorld(instances, info.parentId);
 	}
@@ -163,8 +160,8 @@ static glm::mat4 computeWorld(core::Map<int, InstanceInfo> &instances, int id) {
 	return info.world;
 }
 
-static void emitTri(Mesh &mesh, int materialIdx, const glm::vec3 &v0, const glm::vec3 &v1, const glm::vec3 &v2,
-					const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec2 &uv2, color::RGBA c0, color::RGBA c1,
+static void emitTri(Mesh &mesh, int materialIdx, const math::Vec3f &v0, const math::Vec3f &v1, const math::Vec3f &v2,
+					const math::Vec2f &uv0, const math::Vec2f &uv1, const math::Vec2f &uv2, color::RGBA c0, color::RGBA c1,
 					color::RGBA c2) {
 	Polygon polygon;
 	if (materialIdx >= 0) {
@@ -180,7 +177,7 @@ static void emitTri(Mesh &mesh, int materialIdx, const glm::vec3 &v0, const glm:
  * Match the reference crocotile_to_obj.py export: world = position + vertices, raw UVs
  * (no V flip - Image::colorAt already maps OpenGL-style V), faces as stored.
  */
-static void appendTile(Mesh &mesh, const json::Json &tileJson, const glm::mat4 &transform, int defaultMaterialIdx) {
+static void appendTile(Mesh &mesh, const json::Json &tileJson, const math::Mat4f &transform, int defaultMaterialIdx) {
 	if (!tileJson.contains("vertices") || !tileJson.contains("faces") || !tileJson.contains("uvs")) {
 		return;
 	}
@@ -191,7 +188,7 @@ static void appendTile(Mesh &mesh, const json::Json &tileJson, const glm::mat4 &
 		return;
 	}
 
-	const glm::vec3 tilePos = tileJson.contains("position") ? toVec3(tileJson.get("position")) : glm::vec3(0.0f);
+	const math::Vec3f tilePos = tileJson.contains("position") ? toVec3(tileJson.get("position")) : math::Vec3f(0.0f);
 	int materialIdx = defaultMaterialIdx;
 	if (tileJson.contains("texture")) {
 		materialIdx = tileJson.intVal("texture", defaultMaterialIdx);
@@ -203,7 +200,7 @@ static void appendTile(Mesh &mesh, const json::Json &tileJson, const glm::mat4 &
 		}
 	}
 
-	core::DynamicArray<glm::vec3> positions;
+	core::DynamicArray<math::Vec3f> positions;
 	core::DynamicArray<color::RGBA> colors;
 	positions.reserve(verticesJson.size());
 	colors.reserve(verticesJson.size());
@@ -212,9 +209,9 @@ static void appendTile(Mesh &mesh, const json::Json &tileJson, const glm::mat4 &
 	const json::Json colorsJson = hasColors ? tileJson.get("colors") : json::Json();
 
 	for (int i = 0; i < verticesJson.size(); ++i) {
-		const glm::vec3 local = tilePos + toVec3(verticesJson.get(i));
-		const glm::vec4 world = transform * glm::vec4(local, 1.0f);
-		positions.push_back(glm::vec3(world));
+		const math::Vec3f local = tilePos + toVec3(verticesJson.get(i));
+		const math::Vec4f world = transform * math::Vec4f(local, 1.0f);
+		positions.push_back(math::Vec3f(world));
 		if (hasColors && i < colorsJson.size()) {
 			colors.push_back(toColor(colorsJson.get(i)));
 		} else {
@@ -231,7 +228,7 @@ static void appendTile(Mesh &mesh, const json::Json &tileJson, const glm::mat4 &
 		}
 
 		int idx[3];
-		glm::vec2 uv[3];
+		math::Vec2f uv[3];
 		bool valid = true;
 		for (int vi = 0; vi < 3; ++vi) {
 			idx[vi] = face.get(vi).intVal();
@@ -317,7 +314,7 @@ bool CrocotileFormat::voxelizeGroups(const core::String &filename, const io::Arc
 		}
 		const json::Json objects = model.get("object");
 		for (int ti = 0; ti < objects.size(); ++ti) {
-			croco_priv::appendTile(mesh, objects.get(ti), glm::mat4(1.0f), mi);
+			croco_priv::appendTile(mesh, objects.get(ti), math::Mat4f(1.0f), mi);
 		}
 	}
 
@@ -375,7 +372,7 @@ bool CrocotileFormat::voxelizeGroups(const core::String &filename, const io::Arc
 			const json::Json instArr = prefab.get("instances");
 			for (int ii = 0; ii < instArr.size(); ++ii) {
 				const json::Json inst = instArr.get(ii);
-				glm::mat4 world(1.0f);
+				math::Mat4f world(1.0f);
 				const int id = inst.intVal("id", -1);
 				if (id >= 0) {
 					auto iter = instances.find(id);

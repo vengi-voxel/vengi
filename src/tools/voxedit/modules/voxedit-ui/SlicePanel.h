@@ -14,6 +14,8 @@
 #include "ui/Panel.h"
 #include "video/Camera.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
+#include "math/Vec2i.h"
 
 namespace scenegraph {
 class SceneGraphNode;
@@ -51,9 +53,9 @@ private:
 	math::Axis _gizmoAxis = math::Axis::X;
 	ImVec2 _gizmoStart;
 	float _gizmoCell = 1.0f;
-	glm::ivec3 _gizmoOffset{0};
+	math::Vec3i _gizmoOffset{0};
 	core::SharedPtr<voxel::RawVolume> _gizmoPreview;
-	glm::ivec3 _target{0};
+	math::Vec3i _target{0};
 	struct TargetView {
 		ImDrawList *draw = nullptr;
 		ImVec2 origin;
@@ -68,14 +70,14 @@ private:
 	ImU32 _bgLut[palette::PaletteMaxColors];
 	uint64_t _lastPaletteHash = 0;
 
-	static glm::ivec3 voxelPosition(SliceView view, const voxel::Region &region, int slice, int u, int v);
-	static glm::ivec2 viewPosition(SliceView view, const voxel::Region &region, const glm::ivec3 &pos);
+	static math::Vec3i voxelPosition(SliceView view, const voxel::Region &region, int slice, int u, int v);
+	static math::Vec2i viewPosition(SliceView view, const voxel::Region &region, const math::Vec3i &pos);
 	void drawTarget(const voxel::Region &region);
 	void drawView(SliceView view, scenegraph::SceneGraphNode &node, const ImVec2 &size);
 	voxel::Region sliceSelection(const scenegraph::SceneGraphNode &node, SliceView view) const;
-	void moveSelection(scenegraph::SceneGraphNode &node, SliceView view, const glm::ivec3 &offset);
+	void moveSelection(scenegraph::SceneGraphNode &node, SliceView view, const math::Vec3i &offset);
 	void updateGizmoPreview(scenegraph::SceneGraphNode &node);
-	voxel::Voxel displayVoxel(const voxel::RawVolume &volume, const glm::ivec3 &pos) const;
+	voxel::Voxel displayVoxel(const voxel::RawVolume &volume, const math::Vec3i &pos) const;
 	bool selectionGizmo(SliceView view, scenegraph::SceneGraphNode &node, const ImVec2 &origin, float cell, bool hovered);
 
 public:

@@ -7,12 +7,11 @@
 #include "AABBBrush.h"
 #include "PaintStrokeState.h"
 #include "app/I18NMarkers.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/collection/Buffer.h"
 #include "ui/IconsLucide.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
 
 namespace palette {
 class Palette;

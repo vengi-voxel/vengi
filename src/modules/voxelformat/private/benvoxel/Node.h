@@ -23,13 +23,13 @@
 #pragma once
 
 #include "io/Stream.h"
-#include <glm/vec3.hpp>
+#include "math/U16Vec3.h"
 
 namespace BenVoxel {
 
 class Branch;
 
-using Position = glm::u16vec3;
+using Position = math::U16Vec3;
 
 enum class NodeType { Branch, Leaf };
 

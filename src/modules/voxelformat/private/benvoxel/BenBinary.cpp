@@ -11,6 +11,7 @@
 #include "io/ZipWriteStream.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -50,7 +51,7 @@ static bool loadMetadataBinary(io::SeekableReadStream &stream, Metadata &metadat
 					Log::error("Failed to read point name");
 					return false;
 				}
-				glm::ivec3 pointPos;
+				math::Vec3i pointPos;
 				if (stream.readInt32(pointPos.x) != 0 || stream.readInt32(pointPos.z) != 0 ||
 					stream.readInt32(pointPos.y) != 0) {
 					Log::error("Failed to read point position");
@@ -356,7 +357,7 @@ static bool saveModelBinary(const scenegraph::SceneGraph &sceneGraph, const scen
 			Log::error("No volume found for model node %i", node.id());
 			return false;
 		}
-		const glm::ivec3 &dim = volume->region().getDimensionsInVoxels();
+		const math::Vec3i &dim = volume->region().getDimensionsInVoxels();
 		if (!stream.writeUInt16(dim.x) || !stream.writeUInt16(dim.z) || !stream.writeUInt16(dim.y)) {
 			Log::error("Failed to write size of model");
 			return false;

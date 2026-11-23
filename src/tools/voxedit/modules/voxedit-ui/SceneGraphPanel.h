@@ -10,6 +10,8 @@
 #include "core/Var.h"
 #include "core/collection/Set.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace video {
 class Camera;
@@ -82,10 +84,10 @@ public:
 	bool _popupRescaleNode = false;
 	int _resizeNodeId = InvalidNodeId;
 	int _rescaleNodeId = InvalidNodeId;
-	glm::ivec3 _resizeMins {0};
-	glm::ivec3 _resizeMaxs {0};
-	glm::ivec3 _rescaleTargetSize {0};
-	glm::vec3 _rescalePercent {100.0f};
+	math::Vec3i _resizeMins {0};
+	math::Vec3i _resizeMaxs {0};
+	math::Vec3i _rescaleTargetSize {0};
+	math::Vec3f _rescalePercent {100.0f};
 	bool _rescaleMaintainAspectRatio = true;
 	bool _rescaleUseVoxelSize = true;
 	bool init();

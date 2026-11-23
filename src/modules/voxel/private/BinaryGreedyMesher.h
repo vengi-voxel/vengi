@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <glm/fwd.hpp>
 #include "core/Common.h"
 #include "core/collection/DynamicArray.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -53,8 +53,8 @@ struct ChunkMesh;
  *
  * @see extractBinaryGreedyMeshType() for the core meshing algorithm
  */
-CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset,
-													  ChunkMesh *result, const glm::ivec3 &translate,
+CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const math::Vec3i &offset,
+													  ChunkMesh *result, const math::Vec3i &translate,
 													  bool ambientOcclusion = true, bool preserveVoxelNormals = true);
 
 bool exceedsBinaryMesherRegion(const voxel::Region &region);

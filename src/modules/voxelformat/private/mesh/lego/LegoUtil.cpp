@@ -12,6 +12,9 @@
 #include "io/CompositeArchive.h"
 #include "io/FilesystemArchive.h"
 #include <SDL3/SDL_stdinc.h>
+#include <stdlib.h>
+#include "math/Mat3f.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -276,8 +279,8 @@ void parseLine(const char *line, Mesh &mesh, ColorMap &colors, core::DynamicArra
 				return;
 			}
 		}
-		ref.pos = glm::vec3(values[0], values[1], values[2]);
-		ref.transform = glm::mat3(values[3], values[6], values[9], values[4], values[7], values[10], values[5],
+		ref.pos = math::Vec3f(values[0], values[1], values[2]);
+		ref.transform = math::Mat3f(values[3], values[6], values[9], values[4], values[7], values[10], values[5],
 								  values[8], values[11]);
 		while (*numStart == ' ' || *numStart == '\t') {
 			++numStart;
@@ -316,7 +319,7 @@ void parseLine(const char *line, Mesh &mesh, ColorMap &colors, core::DynamicArra
 		const color::RGBA rgba = lookupColor(colors, colorCode);
 		for (int i = 0; i < 3; ++i) {
 			MeshVertex vert;
-			vert.pos = glm::vec3(vals[i * 3 + 0], -vals[i * 3 + 1], -vals[i * 3 + 2]);
+			vert.pos = math::Vec3f(vals[i * 3 + 0], -vals[i * 3 + 1], -vals[i * 3 + 2]);
 			vert.color = rgba;
 			mesh.indices.push_back(mesh.vertices.size());
 			mesh.vertices.emplace_back(core::move(vert));
@@ -350,9 +353,9 @@ void parseLine(const char *line, Mesh &mesh, ColorMap &colors, core::DynamicArra
 		}
 
 		const color::RGBA rgba = lookupColor(colors, colorCode);
-		glm::vec3 verts[4];
+		math::Vec3f verts[4];
 		for (int i = 0; i < 4; ++i) {
-			verts[i] = glm::vec3(vals[i * 3 + 0], -vals[i * 3 + 1], -vals[i * 3 + 2]);
+			verts[i] = math::Vec3f(vals[i * 3 + 0], -vals[i * 3 + 1], -vals[i * 3 + 2]);
 		}
 
 		// Reverse winding order to compensate for the Z negation (odd reflection)

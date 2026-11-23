@@ -8,7 +8,7 @@
 #include "palette/NormalPalette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
-#include <glm/common.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -17,15 +17,15 @@ namespace voxedit {
  * this allows us to keep all voxels inside the volume boundaries even on the
  * +x, +y and +z sides where the voxels are currently flowing out of the volume
  */
-glm::ivec3 clampBrushCursor(const voxel::Region &volumeRegion, const voxel::Region &brushRegion,
-							const glm::ivec3 &cursor) {
+math::Vec3i clampBrushCursor(const voxel::Region &volumeRegion, const voxel::Region &brushRegion,
+							const math::Vec3i &cursor) {
 	if (!brushRegion.isValid()) {
 		return cursor;
 	}
 	if (volumeRegion.containsRegion(brushRegion)) {
 		return cursor;
 	}
-	glm::ivec3 delta(0);
+	math::Vec3i delta(0);
 	if (brushRegion.getUpperX() > volumeRegion.getUpperX()) {
 		delta.x = volumeRegion.getUpperX() - brushRegion.getUpperX();
 	}
@@ -37,13 +37,13 @@ glm::ivec3 clampBrushCursor(const voxel::Region &volumeRegion, const voxel::Regi
 	}
 
 	if (brushRegion.getLowerX() < volumeRegion.getLowerX()) {
-		delta.x = glm::abs(volumeRegion.getLowerX() - brushRegion.getUpperX());
+		delta.x = math::abs(volumeRegion.getLowerX() - brushRegion.getUpperX());
 	}
 	if (brushRegion.getLowerY() < volumeRegion.getLowerY()) {
-		delta.y = glm::abs(volumeRegion.getLowerY() - brushRegion.getLowerY());
+		delta.y = math::abs(volumeRegion.getLowerY() - brushRegion.getLowerY());
 	}
 	if (brushRegion.getLowerZ() < volumeRegion.getLowerZ()) {
-		delta.z = glm::abs(volumeRegion.getLowerZ() - brushRegion.getLowerZ());
+		delta.z = math::abs(volumeRegion.getLowerZ() - brushRegion.getLowerZ());
 	}
 
 	return cursor + delta;
@@ -112,7 +112,7 @@ BrushApplyResult applyBrushSample(Brush &brush, scenegraph::SceneGraph &sceneGra
 	}
 	if (target.sliceRegion.isValid()) {
 		ctx.cursorPosition =
-			glm::clamp(ctx.cursorPosition, target.sliceRegion.getLowerCorner(), target.sliceRegion.getUpperCorner());
+			math::clamp(ctx.cursorPosition, target.sliceRegion.getLowerCorner(), target.sliceRegion.getUpperCorner());
 	}
 
 	brush.preExecute(ctx, writeVolume);

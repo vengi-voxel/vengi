@@ -10,8 +10,8 @@
 #include "image/FontAtlas.h"
 #include "video/Buffer.h"
 #include "video/Texture.h"
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec2f.h"
 
 namespace render {
 
@@ -22,8 +22,8 @@ namespace render {
 class CanvasRenderer {
 private:
 	struct Vertex {
-		glm::vec2 pos, texcoord;
-		glm::vec4 color, clip;
+		math::Vec2f pos, texcoord;
+		math::Vec4f color, clip;
 	};
 	struct Batch {
 		video::TexturePtr texture;
@@ -34,36 +34,36 @@ private:
 	int _vertices = -1;
 	image::FontAtlas _font;
 	video::TexturePtr _fontTexture;
-	glm::vec2 _solidUV{0};
+	math::Vec2f _solidUV{0};
 	core::DynamicArray<Batch> _batches;
-	glm::vec2 _size{1};
-	glm::vec4 _clip{0};
-	core::DynamicArray<glm::vec4> _clips;
-	void triangle(const glm::vec2 &a, const glm::vec2 &b, const glm::vec2 &c, const glm::vec4 &color);
+	math::Vec2f _size{1};
+	math::Vec4f _clip{0};
+	core::DynamicArray<math::Vec4f> _clips;
+	void triangle(const math::Vec2f &a, const math::Vec2f &b, const math::Vec2f &c, const math::Vec4f &color);
 	Batch &batch(const video::TexturePtr &texture);
 
 public:
 	bool init(const char *font = "font.ttf", uint32_t lastCodepoint = 255);
 	void shutdown();
-	void begin(const glm::vec2 &logicalSize);
-	void clip(const glm::vec4 &rect);
+	void begin(const math::Vec2f &logicalSize);
+	void clip(const math::Vec4f &rect);
 	void resetClip();
-	bool pushClip(const glm::vec4 &rect);
+	bool pushClip(const math::Vec4f &rect);
 	bool popClip();
-	const glm::vec4 &clipRect() const;
-	void rect(const glm::vec4 &rect, const glm::vec4 &color, float radius = 0);
-	void line(const glm::vec2 &a, const glm::vec2 &b, const glm::vec4 &color, float width = 1);
-	void circle(const glm::vec2 &center, float radius, const glm::vec4 &color, float width = 1);
-	void text(const glm::vec2 &position, const char *text, const glm::vec4 &color, float height = 18);
+	const math::Vec4f &clipRect() const;
+	void rect(const math::Vec4f &rect, const math::Vec4f &color, float radius = 0);
+	void line(const math::Vec2f &a, const math::Vec2f &b, const math::Vec4f &color, float width = 1);
+	void circle(const math::Vec2f &center, float radius, const math::Vec4f &color, float width = 1);
+	void text(const math::Vec2f &position, const char *text, const math::Vec4f &color, float height = 18);
 	float textWidth(const char *text, float height = 18) const;
-	void image(const glm::vec4 &rect, const video::TexturePtr &texture, const glm::vec4 &uv = glm::vec4(0, 0, 1, 1));
+	void image(const math::Vec4f &rect, const video::TexturePtr &texture, const math::Vec4f &uv = math::Vec4f(0, 0, 1, 1));
 
 	/** Flush into the current target and viewport; normalized coordinates also support high-DPI targets. */
 	void render();
-	static bool contains(const glm::vec4 &rect, const glm::vec2 &point);
+	static bool contains(const math::Vec4f &rect, const math::Vec2f &point);
 };
 
-inline const glm::vec4 &CanvasRenderer::clipRect() const {
+inline const math::Vec4f &CanvasRenderer::clipRect() const {
 	return _clip;
 }
 

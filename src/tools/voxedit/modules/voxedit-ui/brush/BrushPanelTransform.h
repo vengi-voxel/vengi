@@ -5,7 +5,8 @@
 #pragma once
 
 #include "BrushPanelContext.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace command {
 struct CommandExecutionListener;
@@ -21,11 +22,11 @@ public:
 	void update(BrushPanelContext &ctx, command::CommandExecutionListener &listener);
 
 private:
-	glm::ivec3 _moveOffset{0};
-	glm::ivec3 _shearOffset{0};
-	glm::vec3 _scale{1.0f};
-	glm::vec3 _rotation{0.0f};
-	glm::ivec3 _targetSize{0};
+	math::Vec3i _moveOffset{0};
+	math::Vec3i _shearOffset{0};
+	math::Vec3f _scale{1.0f};
+	math::Vec3f _rotation{0.0f};
+	math::Vec3i _targetSize{0};
 	bool _uniformScale = true;
 	bool _useVoxelSize = false;
 	bool _maintainAspectRatio = true;

@@ -1,6 +1,3 @@
-# based on glm_pp
-# https://github.com/jwueller/glm_pp
-
 """
 launch.json for VSCode with cmake plugin installed
 
@@ -86,91 +83,6 @@ def _iter_n(n):
     limit = min(int(n), _print_elements())
     for i in range(limit):
         yield i
-
-
-def _vec_info(v):
-    # vec contains either a union of structs or a struct of unions, depending on
-    # configuration. gdb can't properly access the named members, and in some
-    # cases the names are wrong.
-    # It would be simple to cast to an array, similarly to how operator[] is
-    # implemented, but values returned by functions called from gdb don't have
-    # an address.
-    # Instead, recursively find all fields of required type and sort by offset.
-    #
-    # Component count comes from glm::vec<L, T, Q> (template arg 0). sizeof/T
-    # is wrong for aligned vec3, which is padded to 16 bytes.
-
-    v = _strip(v)
-    T = v.type.template_argument(1)
-
-    if T.code == gdb.TYPE_CODE_FLT:
-        if T.sizeof == 4:
-            type_prefix = ""
-        elif T.sizeof == 8:
-            type_prefix = "d"
-        else:
-            raise NotImplementedError
-    elif T.code == gdb.TYPE_CODE_INT:
-        if T.is_signed:
-            type_prefix = "i"
-        else:
-            type_prefix = "u"
-    elif T.code == gdb.TYPE_CODE_BOOL:
-        type_prefix = "b"
-    else:
-        raise NotImplementedError
-
-    try:
-        length = int(v.type.template_argument(0))
-    except (gdb.error, TypeError, ValueError):
-        length = v.type.sizeof // T.sizeof
-
-    items = {}
-
-    def find(cur, bitpos):
-        t = cur.type.strip_typedefs()
-        if t.code in (gdb.TYPE_CODE_STRUCT, gdb.TYPE_CODE_UNION):
-            for f in t.fields():
-                if hasattr(f, "bitpos"):  # not static
-                    find(cur[f], bitpos + f.bitpos)
-        elif t == T:
-            items[bitpos] = cur
-
-    find(v, 0)
-    ordered = [str(f) for _, f in sorted(items.items())]
-    if len(ordered) > length:
-        ordered = ordered[:length]
-    elif len(ordered) < length:
-        # Fallback: treat the object as a packed T[length] at offset 0.
-        try:
-            arr = v.address.cast(T.array(length - 1).pointer()).dereference()
-            ordered = [str(arr[i]) for i in range(length)]
-        except gdb.error:
-            pass
-    return type_prefix, length, ordered
-
-
-class VecPrinter:
-    def __init__(self, v):
-        self.v = v
-
-    def to_string(self):
-        type_prefix, length, items = _vec_info(self.v)
-        return "{}vec{}({})".format(type_prefix, length, ", ".join(items))
-
-
-class MatPrinter:
-    def __init__(self, v):
-        self.v = v
-
-    def to_string(self):
-        V = _strip(self.v)["value"]
-        columns = []
-        for i in range(V.type.range()[1] + 1):
-            type_prefix, length, items = _vec_info(V[i])
-            columns.append("({})".format(", ".join(items)))
-        return "{}mat{}x{}({})".format(
-            type_prefix, len(columns), length, ", ".join(columns))
 
 
 class StringPrinter:
@@ -769,8 +681,6 @@ def _wrapper(name, *fields):
 
 def build_pretty_printer():
     pp = gdb.printing.RegexpCollectionPrettyPrinter("vengi")
-    pp.add_printer("glm::vec", r"^glm::vec<", VecPrinter)
-    pp.add_printer("glm::mat", r"^glm::mat<", MatPrinter)
     pp.add_printer("core::String", r"^core::String$", StringPrinter)
     pp.add_printer("core::DynamicArray", r"^core::DynamicArray<.*>$", DynamicArrayPrinter)
     pp.add_printer("core::Buffer", r"^core::Buffer<.*>$", BufferPrinter)

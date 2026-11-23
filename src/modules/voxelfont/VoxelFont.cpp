@@ -6,6 +6,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "math/Vec3i.h"
 
 namespace voxelfont {
 
@@ -37,7 +38,7 @@ void VoxelFont::dimensions(const char *string, uint8_t size, int &w, int &h) con
 	_atlas.measure(string, (float)size, w, h);
 }
 
-int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const glm::ivec3 &pos,
+int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const math::Vec3i &pos,
 							   voxel::RawVolumeWrapper &volume, const voxel::Voxel &voxel, math::Axis axis) {
 	uint8_t *bitmap = nullptr;
 	int w = 0;
@@ -53,7 +54,7 @@ int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const
 	(void)iy0;
 
 	const int widthIndex = math::getIndexForAxis(axis);
-	glm::ivec3 dim;
+	math::Vec3i dim;
 	dim[(widthIndex + 0) % 3] = w;
 	dim[(widthIndex + 1) % 3] = h;
 	dim[(widthIndex + 2) % 3] = thickness;
@@ -62,7 +63,7 @@ int VoxelFont::renderCharacter(int codepoint, uint8_t size, int thickness, const
 		for (int x = 0; x < w; ++x) {
 			// antialiasing
 			if (bitmap[y * w + x] >= 25) {
-				glm::ivec3 v;
+				math::Vec3i v;
 				v[(widthIndex + 0) % 3] = x;
 				v[(widthIndex + 1) % 3] = dim[(widthIndex + 1) % 3] - 1 - y;
 				v[(widthIndex + 2) % 3] = 0;

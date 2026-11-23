@@ -11,6 +11,7 @@
 #include "voxedit-ui/ViewMode.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -40,7 +41,7 @@ int viewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
 int viewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
 bool activateViewportSceneMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
 bool activateViewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app);
-bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node, const glm::ivec3 &pos, const voxel::Voxel &voxel);
+bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node, const math::Vec3i &pos, const voxel::Voxel &voxel);
 
 /**
  * Switches view mode for a UI test, then restores ViewMode::Default on destruction so later

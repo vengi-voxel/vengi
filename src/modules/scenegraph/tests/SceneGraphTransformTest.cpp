@@ -10,13 +10,12 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include <glm/gtc/epsilon.hpp>
-#include <glm/gtc/quaternion.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/string_cast.hpp>
-#include <glm/gtx/transform.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
+#include "math/Print.h"
 
 namespace scenegraph {
 
@@ -31,7 +30,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalTranslation) {
 	parentNode.setName("parent");
 	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
-	parentTransform.setLocalTranslation(glm::vec3(10.0f, 20.0f, 30.0f));
+	parentTransform.setLocalTranslation(math::Vec3f(10.0f, 20.0f, 30.0f));
 	parentNode.setTransform(0, parentTransform);
 	int parentId = sceneGraph.emplace(core::move(parentNode), 0);
 	ASSERT_GT(parentId, 0);
@@ -49,14 +48,14 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalTranslation) {
 	// Get the child node and set its world position to (15, 25, 35)
 	SceneGraphNode &child = sceneGraph.node(childId);
 	SceneGraphTransform &childTransform = child.transform(0);
-	childTransform.setWorldTranslation(glm::vec3(15.0f, 25.0f, 35.0f));
+	childTransform.setWorldTranslation(math::Vec3f(15.0f, 25.0f, 35.0f));
 	childTransform.update(sceneGraph, child, 0, false);
 
 	// The local translation should be the difference: (5, 5, 5)
-	const glm::vec3 expectedLocal(5.0f, 5.0f, 5.0f);
-	const glm::vec3 &actualLocal = childTransform.localTranslation();
+	const math::Vec3f expectedLocal(5.0f, 5.0f, 5.0f);
+	const math::Vec3f &actualLocal = childTransform.localTranslation();
 	EXPECT_VEC_NEAR(actualLocal, expectedLocal, 0.0001f)
-		<< "Local: " << glm::to_string(actualLocal) << ", Expected: " << glm::to_string(expectedLocal);
+		<< "Local: " << math::to_string(actualLocal) << ", Expected: " << math::to_string(expectedLocal);
 }
 
 TEST_F(SceneGraphTransformTest, testWorldToLocalWithRotation) {
@@ -68,8 +67,8 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithRotation) {
 	parentNode.setName("parent");
 	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
-	parentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
-	parentTransform.setLocalOrientation(glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f)));
+	parentTransform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 0.0f));
+	parentTransform.setLocalOrientation(math::angleAxis(math::halfPi, math::Vec3f(0.0f, 1.0f, 0.0f)));
 	parentNode.setTransform(0, parentTransform);
 	int parentId = sceneGraph.emplace(core::move(parentNode), 0);
 	ASSERT_GT(parentId, 0);
@@ -86,15 +85,15 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithRotation) {
 	// Set child world position to (10, 0, 10) - which is 10 units forward from parent
 	SceneGraphNode &child = sceneGraph.node(childId);
 	SceneGraphTransform &childTransform = child.transform(0);
-	childTransform.setWorldTranslation(glm::vec3(10.0f, 0.0f, 10.0f));
+	childTransform.setWorldTranslation(math::Vec3f(10.0f, 0.0f, 10.0f));
 	childTransform.update(sceneGraph, child, 0, false);
 
 	// Due to parent's 90-degree Y rotation, local (0, 0, 10) becomes world (10, 0, 10) relative to parent at (10, 0, 0)
 	// So the local position should be approximately (-10, 0, 0) after inverse rotation
-	const glm::vec3 &actualLocal = childTransform.localTranslation();
-	EXPECT_NEAR(actualLocal.x, -10.0f, 0.01f) << "Local translation X: " << glm::to_string(actualLocal);
-	EXPECT_NEAR(actualLocal.y, 0.0f, 0.01f) << "Local translation Y: " << glm::to_string(actualLocal);
-	EXPECT_NEAR(actualLocal.z, 0.0f, 0.01f) << "Local translation Z: " << glm::to_string(actualLocal);
+	const math::Vec3f &actualLocal = childTransform.localTranslation();
+	EXPECT_NEAR(actualLocal.x, -10.0f, 0.01f) << "Local translation X: " << math::to_string(actualLocal);
+	EXPECT_NEAR(actualLocal.y, 0.0f, 0.01f) << "Local translation Y: " << math::to_string(actualLocal);
+	EXPECT_NEAR(actualLocal.z, 0.0f, 0.01f) << "Local translation Z: " << math::to_string(actualLocal);
 }
 
 TEST_F(SceneGraphTransformTest, testWorldToLocalWithScale) {
@@ -106,8 +105,8 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithScale) {
 	parentNode.setName("parent");
 	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
-	parentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
-	parentTransform.setLocalScale(glm::vec3(2.0f, 2.0f, 2.0f));
+	parentTransform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 0.0f));
+	parentTransform.setLocalScale(math::Vec3f(2.0f, 2.0f, 2.0f));
 	parentNode.setTransform(0, parentTransform);
 	int parentId = sceneGraph.emplace(core::move(parentNode), 0);
 	ASSERT_GT(parentId, 0);
@@ -124,14 +123,14 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalWithScale) {
 	// Set child world position to (20, 0, 0)
 	SceneGraphNode &child = sceneGraph.node(childId);
 	SceneGraphTransform &childTransform = child.transform(0);
-	childTransform.setWorldTranslation(glm::vec3(20.0f, 0.0f, 0.0f));
+	childTransform.setWorldTranslation(math::Vec3f(20.0f, 0.0f, 0.0f));
 	childTransform.update(sceneGraph, child, 0, false);
 
 	// Local translation should account for parent's scale: (20 - 10) / 2 = (5, 0, 0)
-	const glm::vec3 expectedLocal(5.0f, 0.0f, 0.0f);
-	const glm::vec3 &actualLocal = childTransform.localTranslation();
+	const math::Vec3f expectedLocal(5.0f, 0.0f, 0.0f);
+	const math::Vec3f &actualLocal = childTransform.localTranslation();
 	EXPECT_VEC_NEAR(actualLocal, expectedLocal, 0.01f)
-		<< "Local: " << glm::to_string(actualLocal) << ", Expected: " << glm::to_string(expectedLocal);
+		<< "Local: " << math::to_string(actualLocal) << ", Expected: " << math::to_string(expectedLocal);
 }
 
 TEST_F(SceneGraphTransformTest, testWorldToLocalScale) {
@@ -143,7 +142,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalScale) {
 	parentNode.setName("parent");
 	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
-	parentTransform.setLocalScale(glm::vec3(2.0f, 2.0f, 2.0f));
+	parentTransform.setLocalScale(math::Vec3f(2.0f, 2.0f, 2.0f));
 	parentNode.setTransform(0, parentTransform);
 	int parentId = sceneGraph.emplace(core::move(parentNode), 0);
 	ASSERT_GT(parentId, 0);
@@ -160,14 +159,14 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalScale) {
 	// Set child world scale to (4, 4, 4)
 	SceneGraphNode &child = sceneGraph.node(childId);
 	SceneGraphTransform &childTransform = child.transform(0);
-	childTransform.setWorldScale(glm::vec3(4.0f, 4.0f, 4.0f));
+	childTransform.setWorldScale(math::Vec3f(4.0f, 4.0f, 4.0f));
 	childTransform.update(sceneGraph, child, 0, false);
 
 	// Local scale should be: worldScale / parentWorldScale = (4, 4, 4) / (2, 2, 2) = (2, 2, 2)
-	const glm::vec3 expectedLocal(2.0f, 2.0f, 2.0f);
-	const glm::vec3 &actualLocal = childTransform.localScale();
+	const math::Vec3f expectedLocal(2.0f, 2.0f, 2.0f);
+	const math::Vec3f &actualLocal = childTransform.localScale();
 	EXPECT_VEC_NEAR(actualLocal, expectedLocal, 0.0001f)
-		<< "Local: " << glm::to_string(actualLocal) << ", Expected: " << glm::to_string(expectedLocal);
+		<< "Local: " << math::to_string(actualLocal) << ", Expected: " << math::to_string(expectedLocal);
 }
 
 TEST_F(SceneGraphTransformTest, testWorldToLocalOrientation) {
@@ -179,7 +178,7 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalOrientation) {
 	parentNode.setName("parent");
 	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
-	const glm::quat parentRot = glm::angleAxis(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	const math::Quatf parentRot = math::angleAxis(math::quarterPi, math::Vec3f(0.0f, 1.0f, 0.0f));
 	parentTransform.setLocalOrientation(parentRot);
 	parentNode.setTransform(0, parentTransform);
 	int parentId = sceneGraph.emplace(core::move(parentNode), 0);
@@ -197,19 +196,19 @@ TEST_F(SceneGraphTransformTest, testWorldToLocalOrientation) {
 	// Set child world orientation to 90-degree rotation around Y axis
 	SceneGraphNode &child = sceneGraph.node(childId);
 	SceneGraphTransform &childTransform = child.transform(0);
-	const glm::quat worldRot = glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	const math::Quatf worldRot = math::angleAxis(math::halfPi, math::Vec3f(0.0f, 1.0f, 0.0f));
 	childTransform.setWorldOrientation(worldRot);
 	childTransform.update(sceneGraph, child, 0, false);
 
 	// Local orientation should be: worldOrientation * inverse(parentWorldOrientation)
 	// 90 degree * inverse(45 degree) = 45 degree around Y
-	const glm::quat expectedLocal = glm::angleAxis(glm::quarter_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	const glm::quat &actualLocal = childTransform.localOrientation();
+	const math::Quatf expectedLocal = math::angleAxis(math::quarterPi, math::Vec3f(0.0f, 1.0f, 0.0f));
+	const math::Quatf &actualLocal = childTransform.localOrientation();
 
 	// Compare quaternions - they can be negated and still represent the same rotation
-	bool equal = glm::all(glm::epsilonEqual(actualLocal, expectedLocal, 0.001f)) ||
-				 glm::all(glm::epsilonEqual(actualLocal, -expectedLocal, 0.001f));
-	EXPECT_TRUE(equal) << "Local: " << glm::to_string(actualLocal) << ", Expected: " << glm::to_string(expectedLocal);
+	bool equal = math::all(math::epsilonEqual(actualLocal, expectedLocal, 0.001f)) ||
+				 math::all(math::epsilonEqual(actualLocal, -expectedLocal, 0.001f));
+	EXPECT_TRUE(equal) << "Local: " << math::to_string(actualLocal) << ", Expected: " << math::to_string(expectedLocal);
 }
 
 TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
@@ -221,7 +220,7 @@ TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
 	grandparentNode.setName("grandparent");
 	grandparentNode.setUnownedVolume(&v);
 	SceneGraphTransform grandparentTransform;
-	grandparentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
+	grandparentTransform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 0.0f));
 	grandparentNode.setTransform(0, grandparentTransform);
 	int grandparentId = sceneGraph.emplace(core::move(grandparentNode), 0);
 	ASSERT_GT(grandparentId, 0);
@@ -231,7 +230,7 @@ TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
 	parentNode.setName("parent");
 	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
-	parentTransform.setLocalTranslation(glm::vec3(5.0f, 0.0f, 0.0f));
+	parentTransform.setLocalTranslation(math::Vec3f(5.0f, 0.0f, 0.0f));
 	parentNode.setTransform(0, parentTransform);
 	int parentId = sceneGraph.emplace(core::move(parentNode), grandparentId);
 	ASSERT_GT(parentId, 0);
@@ -241,7 +240,7 @@ TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
 	childNode.setName("child");
 	childNode.setUnownedVolume(&v);
 	SceneGraphTransform childTransform;
-	childTransform.setLocalTranslation(glm::vec3(3.0f, 0.0f, 0.0f));
+	childTransform.setLocalTranslation(math::Vec3f(3.0f, 0.0f, 0.0f));
 	childNode.setTransform(0, childTransform);
 	int childId = sceneGraph.emplace(core::move(childNode), parentId);
 	ASSERT_GT(childId, 0);
@@ -251,13 +250,13 @@ TEST_F(SceneGraphTransformTest, testMultiLevelHierarchy) {
 
 	// Verify world positions
 	const SceneGraphNode &parent = sceneGraph.node(parentId);
-	const glm::vec3 &parentWorld = parent.transform(0).worldTranslation();
-	EXPECT_VEC_NEAR(parentWorld, glm::vec3(15.0f, 0.0f, 0.0f), 0.0001f)
-		<< "Parent world: " << glm::to_string(parentWorld);
+	const math::Vec3f &parentWorld = parent.transform(0).worldTranslation();
+	EXPECT_VEC_NEAR(parentWorld, math::Vec3f(15.0f, 0.0f, 0.0f), 0.0001f)
+		<< "Parent world: " << math::to_string(parentWorld);
 
 	const SceneGraphNode &child = sceneGraph.node(childId);
-	const glm::vec3 &childWorld = child.transform(0).worldTranslation();
-	EXPECT_VEC_NEAR(childWorld, glm::vec3(18.0f, 0.0f, 0.0f), 0.0001f) << "Child world: " << glm::to_string(childWorld);
+	const math::Vec3f &childWorld = child.transform(0).worldTranslation();
+	EXPECT_VEC_NEAR(childWorld, math::Vec3f(18.0f, 0.0f, 0.0f), 0.0001f) << "Child world: " << math::to_string(childWorld);
 }
 
 TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
@@ -269,8 +268,8 @@ TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
 	parent1Node.setName("parent1");
 	parent1Node.setUnownedVolume(&v);
 	SceneGraphTransform parent1Transform;
-	parent1Transform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
-	parent1Transform.setLocalScale(glm::vec3(2.0f, 2.0f, 2.0f));
+	parent1Transform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 0.0f));
+	parent1Transform.setLocalScale(math::Vec3f(2.0f, 2.0f, 2.0f));
 	parent1Node.setTransform(0, parent1Transform);
 	int parent1Id = sceneGraph.emplace(core::move(parent1Node), 0);
 	ASSERT_GT(parent1Id, 0);
@@ -280,7 +279,7 @@ TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
 	parent2Node.setName("parent2");
 	parent2Node.setUnownedVolume(&v);
 	SceneGraphTransform parent2Transform;
-	parent2Transform.setLocalTranslation(glm::vec3(5.0f, 5.0f, 5.0f));
+	parent2Transform.setLocalTranslation(math::Vec3f(5.0f, 5.0f, 5.0f));
 	parent2Node.setTransform(0, parent2Transform);
 	int parent2Id = sceneGraph.emplace(core::move(parent2Node), 0);
 	ASSERT_GT(parent2Id, 0);
@@ -290,7 +289,7 @@ TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
 	childNode.setName("child");
 	childNode.setUnownedVolume(&v);
 	SceneGraphTransform childTransform;
-	childTransform.setLocalTranslation(glm::vec3(5.0f, 0.0f, 0.0f));
+	childTransform.setLocalTranslation(math::Vec3f(5.0f, 0.0f, 0.0f));
 	childNode.setTransform(0, childTransform);
 	int childId = sceneGraph.emplace(core::move(childNode), parent1Id);
 	ASSERT_GT(childId, 0);
@@ -299,40 +298,40 @@ TEST_F(SceneGraphTransformTest, testChangeParentKeepWorldTransform) {
 
 	// Store the child's world transform before reparenting
 	const SceneGraphNode &childBefore = sceneGraph.node(childId);
-	const glm::vec3 worldPosBefore = childBefore.transform(0).worldTranslation();
-	const glm::quat worldRotBefore = childBefore.transform(0).worldOrientation();
-	const glm::vec3 worldScaleBefore = childBefore.transform(0).worldScale();
+	const math::Vec3f worldPosBefore = childBefore.transform(0).worldTranslation();
+	const math::Quatf worldRotBefore = childBefore.transform(0).worldOrientation();
+	const math::Vec3f worldScaleBefore = childBefore.transform(0).worldScale();
 
-	EXPECT_VEC_NEAR(worldPosBefore, glm::vec3(20.0f, 0.0f, 0.0f), 0.0001f)
-		<< "World position before: " << glm::to_string(worldPosBefore);
+	EXPECT_VEC_NEAR(worldPosBefore, math::Vec3f(20.0f, 0.0f, 0.0f), 0.0001f)
+		<< "World position before: " << math::to_string(worldPosBefore);
 
 	// Change parent from parent1 to parent2, keeping world transform
 	ASSERT_TRUE(sceneGraph.changeParent(childId, parent2Id, NodeMoveFlag::KeepWorldTransform));
 
 	// Verify the child's world transform remains the same
 	const SceneGraphNode &childAfter = sceneGraph.node(childId);
-	const glm::vec3 worldPosAfter = childAfter.transform(0).worldTranslation();
-	const glm::quat worldRotAfter = childAfter.transform(0).worldOrientation();
-	const glm::vec3 worldScaleAfter = childAfter.transform(0).worldScale();
+	const math::Vec3f worldPosAfter = childAfter.transform(0).worldTranslation();
+	const math::Quatf worldRotAfter = childAfter.transform(0).worldOrientation();
+	const math::Vec3f worldScaleAfter = childAfter.transform(0).worldScale();
 
 	EXPECT_VEC_NEAR(worldPosAfter, worldPosBefore, 0.01f)
-		<< "World position should remain unchanged. Before: " << glm::to_string(worldPosBefore)
-		<< ", After: " << glm::to_string(worldPosAfter);
+		<< "World position should remain unchanged. Before: " << math::to_string(worldPosBefore)
+		<< ", After: " << math::to_string(worldPosAfter);
 
-	bool orientationEqual = glm::all(glm::epsilonEqual(worldRotAfter, worldRotBefore, 0.001f)) ||
-							glm::all(glm::epsilonEqual(worldRotAfter, -worldRotBefore, 0.001f));
+	bool orientationEqual = math::all(math::epsilonEqual(worldRotAfter, worldRotBefore, 0.001f)) ||
+							math::all(math::epsilonEqual(worldRotAfter, -worldRotBefore, 0.001f));
 	EXPECT_TRUE(orientationEqual) << "World orientation should remain unchanged. Before: "
-								  << glm::to_string(worldRotBefore) << ", After: " << glm::to_string(worldRotAfter);
+								  << math::to_string(worldRotBefore) << ", After: " << math::to_string(worldRotAfter);
 
 	EXPECT_VEC_NEAR(worldScaleAfter, worldScaleBefore, 0.01f)
-		<< "World scale should remain unchanged. Before: " << glm::to_string(worldScaleBefore)
-		<< ", After: " << glm::to_string(worldScaleAfter);
+		<< "World scale should remain unchanged. Before: " << math::to_string(worldScaleBefore)
+		<< ", After: " << math::to_string(worldScaleAfter);
 
 	// But the local transform should have changed
-	const glm::vec3 &localPosAfter = childAfter.transform(0).localTranslation();
+	const math::Vec3f &localPosAfter = childAfter.transform(0).localTranslation();
 	// New local position should be (20 - 5, 0 - 5, 0 - 5) = (15, -5, -5)
-	EXPECT_VEC_NEAR(localPosAfter, glm::vec3(15.0f, -5.0f, -5.0f), 0.01f)
-		<< "Local position after reparenting: " << glm::to_string(localPosAfter);
+	EXPECT_VEC_NEAR(localPosAfter, math::Vec3f(15.0f, -5.0f, -5.0f), 0.01f)
+		<< "Local position after reparenting: " << math::to_string(localPosAfter);
 }
 
 TEST_F(SceneGraphTransformTest, testLocalToWorldUpdate) {
@@ -344,7 +343,7 @@ TEST_F(SceneGraphTransformTest, testLocalToWorldUpdate) {
 	parentNode.setName("parent");
 	parentNode.setUnownedVolume(&v);
 	SceneGraphTransform parentTransform;
-	parentTransform.setLocalTranslation(glm::vec3(10.0f, 0.0f, 0.0f));
+	parentTransform.setLocalTranslation(math::Vec3f(10.0f, 0.0f, 0.0f));
 	parentNode.setTransform(0, parentTransform);
 	int parentId = sceneGraph.emplace(core::move(parentNode), 0);
 	ASSERT_GT(parentId, 0);
@@ -361,12 +360,12 @@ TEST_F(SceneGraphTransformTest, testLocalToWorldUpdate) {
 	// Modify the child's local translation
 	SceneGraphNode &child = sceneGraph.node(childId);
 	SceneGraphTransform &childTransform = child.transform(0);
-	childTransform.setLocalTranslation(glm::vec3(5.0f, 3.0f, 2.0f));
+	childTransform.setLocalTranslation(math::Vec3f(5.0f, 3.0f, 2.0f));
 	childTransform.update(sceneGraph, child, 0, false);
 
 	// World position should be parent + local = (10, 0, 0) + (5, 3, 2) = (15, 3, 2)
-	const glm::vec3 &worldPos = childTransform.worldTranslation();
-	EXPECT_VEC_NEAR(worldPos, glm::vec3(15.0f, 3.0f, 2.0f), 0.0001f) << "World position: " << glm::to_string(worldPos);
+	const math::Vec3f &worldPos = childTransform.worldTranslation();
+	EXPECT_VEC_NEAR(worldPos, math::Vec3f(15.0f, 3.0f, 2.0f), 0.0001f) << "World position: " << math::to_string(worldPos);
 }
 
 TEST_F(SceneGraphTransformTest, testMatrixDecompositionConsistency) {
@@ -379,9 +378,9 @@ TEST_F(SceneGraphTransformTest, testMatrixDecompositionConsistency) {
 	SceneGraphTransform transform;
 
 	// Set up a complex transform
-	const glm::vec3 translation(5.0f, 10.0f, 15.0f);
-	const glm::quat orientation = glm::angleAxis(glm::quarter_pi<float>(), glm::normalize(glm::vec3(1.0f, 1.0f, 0.0f)));
-	const glm::vec3 scale(1.5f, 2.0f, 1.0f);
+	const math::Vec3f translation(5.0f, 10.0f, 15.0f);
+	const math::Quatf orientation = math::angleAxis(math::quarterPi, math::normalize(math::Vec3f(1.0f, 1.0f, 0.0f)));
+	const math::Vec3f scale(1.5f, 2.0f, 1.0f);
 
 	transform.setLocalTranslation(translation);
 	transform.setLocalOrientation(orientation);
@@ -396,10 +395,10 @@ TEST_F(SceneGraphTransformTest, testMatrixDecompositionConsistency) {
 	// Get the transform and verify the matrix represents the same TRS
 	const SceneGraphNode &resultNode = sceneGraph.node(nodeId);
 	const SceneGraphTransform &resultTransform = resultNode.transform(0);
-	const glm::mat4 &worldMatrix = resultTransform.worldMatrix();
+	const math::Mat4f &worldMatrix = resultTransform.worldMatrix();
 
 	// Manually construct the expected matrix
-	const glm::mat4 expectedMatrix = glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale);
+	const math::Mat4f expectedMatrix = math::translate(translation) * math::mat4_cast(orientation) * math::scale(scale);
 
 	// Compare matrices
 	for (int i = 0; i < 4; ++i) {
@@ -432,7 +431,7 @@ TEST_F(SceneGraphTransformTest, testDirtyFlagManagement) {
 	EXPECT_FALSE(resultTransform.dirty()) << "Transform should not be dirty after update";
 
 	// Modify local translation
-	resultTransform.setLocalTranslation(glm::vec3(1.0f, 2.0f, 3.0f));
+	resultTransform.setLocalTranslation(math::Vec3f(1.0f, 2.0f, 3.0f));
 	EXPECT_TRUE(resultTransform.dirty()) << "Transform should be dirty after modification";
 
 	// Update and verify it's clean again

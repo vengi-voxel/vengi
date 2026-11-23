@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "math/Vec3f.h"
 
 struct cgltf_data;
 struct cgltf_node;
@@ -42,9 +43,9 @@ private:
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override;
+					const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords) override;
 	bool savePointCloud(const scenegraph::SceneGraph &sceneGraph, const PointCloud &pointCloud,
-						const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
+						const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale,
 						bool withColor) const override;
 
 	static const io::FormatDescription &format() {

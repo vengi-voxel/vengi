@@ -9,6 +9,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelutil {
 
@@ -25,8 +27,8 @@ protected:
 		ASSERT_TRUE(v);
 		const voxel::Region scaledRegion = v->region();
 		EXPECT_EQ(v->region().voxels(), n * 8);
-		const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
-		const glm::ivec3 mins = scaledRegion.getLowerCorner();
+		const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
+		const math::Vec3i mins = scaledRegion.getLowerCorner();
 		ASSERT_EQ(dims, volume.region().getDimensionsInVoxels() * 2);
 		ASSERT_EQ(mins, volume.region().getLowerCorner());
 		EXPECT_EQ(voxelutil::countVoxels(*v), n * 8) << "Expected " << n * 8 << " voxels, but got " << countVoxels(*v);
@@ -38,8 +40,8 @@ TEST_F(VolumeRescalerTest, testScaleUpEmpty) {
 	core::ScopedPtr<voxel::RawVolume> v(voxelutil::scaleUp(volume));
 	ASSERT_TRUE(v);
 	const voxel::Region scaledRegion = v->region();
-	const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
-	const glm::ivec3 mins = scaledRegion.getLowerCorner();
+	const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
+	const math::Vec3i mins = scaledRegion.getLowerCorner();
 	ASSERT_EQ(dims, volume.region().getDimensionsInVoxels() * 2);
 	ASSERT_EQ(mins, volume.region().getLowerCorner());
 }
@@ -63,7 +65,7 @@ TEST_F(VolumeRescalerTest, testScaleDown) {
 	pal.nippon();
 	ASSERT_EQ(5 * 5 * 17, voxelutil::countVoxels(volume));
 	const voxel::Region &srcRegion = volume.region();
-	const glm::ivec3 &targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	const math::Vec3i &targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDimensionsHalf);
 	voxel::RawVolume destVolume(destRegion);
 	voxelutil::scaleDown(volume, pal, destVolume);
@@ -82,7 +84,7 @@ TEST_F(VolumeRescalerTest, testScaleDown) {
 		}
 	}
 	const voxel::Region &thinSrcRegion = thinVolume.region();
-	const glm::ivec3 &thinTargetDims = (thinSrcRegion.getDimensionsInVoxels() / 2) - 1;
+	const math::Vec3i &thinTargetDims = (thinSrcRegion.getDimensionsInVoxels() / 2) - 1;
 	const voxel::Region thinDestRegion(thinSrcRegion.getLowerCorner(), thinSrcRegion.getLowerCorner() + thinTargetDims);
 	voxel::RawVolume thinDestVolume(thinDestRegion);
 	voxelutil::scaleDown(thinVolume, pal, thinDestVolume);
@@ -105,7 +107,7 @@ TEST_F(VolumeRescalerTest, testScaleDownUniformColorPreserved) {
 	palette::Palette pal;
 	pal.nippon();
 	const voxel::Region &srcRegion = volume.region();
-	const glm::ivec3 targetDims = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	const math::Vec3i targetDims = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDims);
 	voxel::RawVolume destVolume(destRegion);
 	voxelutil::scaleDown(volume, pal, destVolume);
@@ -138,7 +140,7 @@ TEST_F(VolumeRescalerTest, testScaleDownSurfaceColorFromNeighborhood) {
 	palette::Palette pal;
 	pal.nippon();
 	const voxel::Region &srcRegion = volume.region();
-	const glm::ivec3 targetDims = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	const math::Vec3i targetDims = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	const voxel::Region destRegion(srcRegion.getLowerCorner(), srcRegion.getLowerCorner() + targetDims);
 	voxel::RawVolume destVolume(destRegion);
 	voxelutil::scaleDown(volume, pal, destVolume);
@@ -157,10 +159,10 @@ TEST_F(VolumeRescalerTest, testScaleVolumeDoubleSize) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	volume.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 3));
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(2.0f)));
 	ASSERT_TRUE(scaled);
 	const voxel::Region &scaledRegion = scaled->region();
-	const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
 	// Source is 4x4x4 (0-3), scaled by 2 should be 8x8x8
 	EXPECT_EQ(dims.x, 8);
 	EXPECT_EQ(dims.y, 8);
@@ -179,10 +181,10 @@ TEST_F(VolumeRescalerTest, testScaleVolumeHalfSize) {
 			}
 		}
 	}
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(0.5f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(0.5f)));
 	ASSERT_TRUE(scaled);
 	const voxel::Region &scaledRegion = scaled->region();
-	const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
 	// Source is 8x8x8 (0-7), scaled by 0.5 should be 4x4x4
 	EXPECT_EQ(dims.x, 4);
 	EXPECT_EQ(dims.y, 4);
@@ -197,10 +199,10 @@ TEST_F(VolumeRescalerTest, testScaleVolumeFractional) {
 	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	volume.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 3));
 	volume.setVoxel(3, 3, 3, voxel::createVoxel(voxel::VoxelType::Generic, 4));
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(1.5f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(1.5f)));
 	ASSERT_TRUE(scaled);
 	const voxel::Region &scaledRegion = scaled->region();
-	const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
 	EXPECT_EQ(dims.x, 6);
 	EXPECT_EQ(dims.y, 6);
 	EXPECT_EQ(dims.z, 6);
@@ -212,10 +214,10 @@ TEST_F(VolumeRescalerTest, testScaleVolumeNonUniform) {
 	voxel::RawVolume volume({0, 3});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f, 1.0f, 0.5f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(2.0f, 1.0f, 0.5f)));
 	ASSERT_TRUE(scaled);
 	const voxel::Region &scaledRegion = scaled->region();
-	const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
 	// Source is 4x4x4 (0-3), scaled by (2, 1, 0.5) should give (8, 4, 2)
 	EXPECT_EQ(dims.x, 8);
 	EXPECT_EQ(dims.y, 4);
@@ -224,14 +226,14 @@ TEST_F(VolumeRescalerTest, testScaleVolumeNonUniform) {
 
 TEST_F(VolumeRescalerTest, testScaleVolumeEmpty) {
 	voxel::RawVolume volume({0, 3});
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(2.0f)));
 	ASSERT_TRUE(scaled);
 	const int voxelCount = voxelutil::countVoxels(*scaled);
 	EXPECT_EQ(voxelCount, 0);
 }
 
 TEST_F(VolumeRescalerTest, testScaleVolumeNull) {
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(nullptr, glm::vec3(2.0f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(nullptr, math::Vec3f(2.0f)));
 	EXPECT_FALSE(scaled);
 }
 
@@ -240,12 +242,12 @@ TEST_F(VolumeRescalerTest, testScaleVolumeWithCenterPivot) {
 	voxel::RawVolume volume({0, 3});
 	// Place voxel at center
 	volume.setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	const glm::vec3 centerPivot(0.5f, 0.5f, 0.5f);
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f), centerPivot));
+	const math::Vec3f centerPivot(0.5f, 0.5f, 0.5f);
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(2.0f), centerPivot));
 	ASSERT_TRUE(scaled);
 	// With center pivot, the region should expand equally in all directions
 	const voxel::Region &scaledRegion = scaled->region();
-	const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
 	// Source is 4x4x4, scaled by 2 with center pivot should give 8x8x8
 	EXPECT_EQ(dims.x, 8);
 	EXPECT_EQ(dims.y, 8);
@@ -260,12 +262,12 @@ TEST_F(VolumeRescalerTest, testScaleVolumeWithCornerPivot) {
 	// The pivot is at the center of voxel (0,0,0), so scaling expands in all directions from there
 	voxel::RawVolume volume({0, 3});
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	const glm::vec3 cornerPivot(0.0f, 0.0f, 0.0f);
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f), cornerPivot));
+	const math::Vec3f cornerPivot(0.0f, 0.0f, 0.0f);
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(2.0f), cornerPivot));
 	ASSERT_TRUE(scaled);
 	// The region expands in all directions from the pivot point
 	const voxel::Region &scaledRegion = scaled->region();
-	const glm::ivec3 dims = scaledRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = scaledRegion.getDimensionsInVoxels();
 	EXPECT_EQ(dims.x, 8);
 	EXPECT_EQ(dims.y, 8);
 	EXPECT_EQ(dims.z, 8);
@@ -279,7 +281,7 @@ TEST_F(VolumeRescalerTest, testScaleVolumePreservesVoxelCount) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	volume.setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	const int originalCount = voxelutil::countVoxels(volume);
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(2.0f)));
 	ASSERT_TRUE(scaled);
 	const int scaledCount = voxelutil::countVoxels(*scaled);
 	// Each voxel should become approximately 8 voxels (2^3) when scaling by 2
@@ -293,7 +295,7 @@ TEST_F(VolumeRescalerTest, testScaleVolumeSparseInLargeEmptyVolume) {
 	volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	volume.setVoxel(15, 8, 4, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	volume.setVoxel(30, 30, 30, voxel::createVoxel(voxel::VoxelType::Generic, 3));
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(2.0f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(2.0f)));
 	ASSERT_TRUE(scaled);
 	EXPECT_GT(voxelutil::countVoxels(*scaled), 0);
 	EXPECT_FALSE(voxel::isAir(scaled->voxel(0, 0, 0).getMaterial()));
@@ -325,7 +327,7 @@ TEST_F(VolumeRescalerTest, testScaleVolumeNoGaps3x) {
 			}
 		}
 	}
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(3.0f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(3.0f)));
 	ASSERT_TRUE(scaled);
 	// Every interior dest voxel should be solid - no gaps
 	const voxel::Region &region = scaled->region();
@@ -350,11 +352,11 @@ TEST_F(VolumeRescalerTest, testScaleVolumeThinWallPreserved) {
 			volume.setVoxel(4, y, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		}
 	}
-	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, glm::vec3(3.0f)));
+	core::ScopedPtr<voxel::RawVolume> scaled(voxelutil::scaleVolume(&volume, math::Vec3f(3.0f)));
 	ASSERT_TRUE(scaled);
 	// The wall at x=4 in source should map to 3 consecutive x values in dest
 	// Check the center row for solid voxels
-	const glm::ivec3 center = scaled->region().getCenter();
+	const math::Vec3i center = scaled->region().getCenter();
 	const int centerY = center.y;
 	const int centerZ = center.z;
 	int wallThickness = 0;

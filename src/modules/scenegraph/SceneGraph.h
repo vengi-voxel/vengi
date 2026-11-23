@@ -17,7 +17,6 @@
 #include "core/collection/DynamicParallelMap.h"
 #include "core/concurrent/Lock.h"
 #include "math/AABB.h"
-#include "math/OBB.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/CollisionNode.h"
@@ -26,10 +25,17 @@
 #include "scenegraph/SceneGraphListener.h"
 
 #include <type_traits>
+#include "math/Mat4f.h"
 
 namespace voxel {
 class RawVolume;
 class SparseVolume;
+}
+
+namespace math {
+template<class T>
+class OBB;
+using OBBF = OBB<float>;
 }
 
 namespace scenegraph {
@@ -72,7 +78,7 @@ protected:
 	 * Per-frame world matrices indexed by node id. Filled by @c buildFrameTransforms()
 	 * on the main thread so parallel @c transformForFrame() callers avoid the cache lock.
 	 */
-	mutable core::Buffer<glm::mat4> _frameWorldMatrices;
+	mutable core::Buffer<math::Mat4f> _frameWorldMatrices;
 	mutable FrameIndex _frameWorldMatricesFrame = InvalidFrame;
 	mutable bool _frameWorldMatricesReady = false;
 	/** True when the table was filled from single-keyframe world matrices (no sampling). */
@@ -81,8 +87,8 @@ protected:
 	bool updateTransforms_r(SceneGraphNode &node, bool updateChildren = true);
 	bool solveIK();
 	voxel::Region calcRegion() const;
-	void buildFrameTransforms_r(const SceneGraphNode &node, const glm::mat4 &parentWorld, FrameIndex frameIdx) const;
-	FrameTransform composeFrameTransform(const SceneGraphNode &node, const glm::mat4 &parentWorld,
+	void buildFrameTransforms_r(const SceneGraphNode &node, const math::Mat4f &parentWorld, FrameIndex frameIdx) const;
+	FrameTransform composeFrameTransform(const SceneGraphNode &node, const math::Mat4f &parentWorld,
 										 FrameIndex frameIdx) const;
 
 public:
@@ -107,7 +113,7 @@ public:
 
 	scenegraph::SceneGraphNodeCamera *activeCameraNode() const;
 
-	glm::mat4 worldMatrix(const scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx = 0, bool applyTransforms = true) const;
+	math::Mat4f worldMatrix(const scenegraph::SceneGraphNode &node, scenegraph::FrameIndex frameIdx = 0, bool applyTransforms = true) const;
 
 	/**
 	 * @brief Returns the first valid palette from any of the nodes

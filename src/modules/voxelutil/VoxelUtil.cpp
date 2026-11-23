@@ -3,7 +3,6 @@
  */
 
 #include "VoxelUtil.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
@@ -21,33 +20,39 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "core/Function.h"
-#include <glm/geometric.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace voxelutil {
 
-voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &worldMat,
-										 const glm::vec3 &normalizedPivot) {
-	const glm::vec3 translation(worldMat[3]);
+voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const math::Mat4f &worldMat,
+										 const math::Vec3f &normalizedPivot) {
+	const math::Vec3f translation(worldMat[3]);
 
 	// Extract scale from the matrix columns
-	const glm::vec3 scale(glm::length(glm::vec3(worldMat[0])), glm::length(glm::vec3(worldMat[1])),
-						  glm::length(glm::vec3(worldMat[2])));
+	const math::Vec3f scale(math::length(math::Vec3f(worldMat[0])), math::length(math::Vec3f(worldMat[1])),
+						  math::length(math::Vec3f(worldMat[2])));
 
 	// Create a normalized rotation matrix (remove scale)
-	glm::mat4 rotMat = worldMat;
-	rotMat[0] = glm::vec4(glm::vec3(worldMat[0]) / scale.x, 0.0f);
-	rotMat[1] = glm::vec4(glm::vec3(worldMat[1]) / scale.y, 0.0f);
-	rotMat[2] = glm::vec4(glm::vec3(worldMat[2]) / scale.z, 0.0f);
-	rotMat[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	math::Mat4f rotMat = worldMat;
+	rotMat[0] = math::Vec4f(math::Vec3f(worldMat[0]) / scale.x, 0.0f);
+	rotMat[1] = math::Vec4f(math::Vec3f(worldMat[1]) / scale.y, 0.0f);
+	rotMat[2] = math::Vec4f(math::Vec3f(worldMat[2]) / scale.z, 0.0f);
+	rotMat[3] = math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f);
 
-	glm::quat q = glm::quat_cast(rotMat);
-	const glm::vec3 angles = glm::degrees(glm::eulerAngles(q));
+	math::Quatf q = math::quat_cast(rotMat);
+	const math::Vec3f angles = math::degrees(math::eulerAngles(q));
 	Log::debug("Apply transforms: angles: %f %f %f, scale: %f %f %f, translation: %f %f %f", angles.x, angles.y,
 			   angles.z, scale.x, scale.y, scale.z, translation.x, translation.y, translation.z);
 
-	const bool hasScale = !glm::all(glm::epsilonEqual(scale, glm::vec3(1.0f), 0.001f));
-	const bool hasRotation = !glm::all(glm::epsilonEqual(angles, glm::vec3(0.0f), 0.001f));
+	const bool hasScale = !math::all(math::epsilonEqual(scale, math::Vec3f(1.0f), 0.001f));
+	const bool hasRotation = !math::all(math::epsilonEqual(angles, math::Vec3f(0.0f), 0.001f));
 
 	const voxel::RawVolume *currentVolume = &volume;
 	core::ScopedPtr<voxel::RawVolume> scaledVolume;
@@ -82,21 +87,21 @@ voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const g
 	}
 
 	// Apply translation - the pivot is the rotation center which stays fixed during rotation
-	const glm::vec3 dim(volume.region().getDimensionsInVoxels());
-	const glm::vec3 pivot = normalizedPivot * dim;
-	result->translate(glm::ivec3(glm::round(translation - pivot)));
+	const math::Vec3f dim(volume.region().getDimensionsInVoxels());
+	const math::Vec3f pivot = normalizedPivot * dim;
+	result->translate(math::Vec3i(math::round(translation - pivot)));
 	return result;
 }
 
-bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Connectivity connectivity) {
+bool isTouching(const voxel::RawVolume &volume, const math::Vec3i &pos, voxel::Connectivity connectivity) {
 	voxel::RawVolume::Sampler sampler(volume);
 	if (!sampler.setPosition(pos)) {
 		return false;
 	}
 	switch (connectivity) {
 	case voxel::Connectivity::TwentySixConnected:
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderCorners) {
-			const glm::ivec3 &volPos = pos + offset;
+		for (const math::Vec3i &offset : voxel::arrayPathfinderCorners) {
+			const math::Vec3i &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
 			}
@@ -107,8 +112,8 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Co
 		/* fallthrough */
 
 	case voxel::Connectivity::EighteenConnected:
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
-			const glm::ivec3 &volPos = pos + offset;
+		for (const math::Vec3i &offset : voxel::arrayPathfinderEdges) {
+			const math::Vec3i &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
 			}
@@ -119,8 +124,8 @@ bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::Co
 		/* fallthrough */
 
 	case voxel::Connectivity::SixConnected:
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-			const glm::ivec3 &volPos = pos + offset;
+		for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+			const math::Vec3i &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
 			}
@@ -150,20 +155,20 @@ void clear(voxel::RawVolumeWrapper &in) {
 	in.clear();
 }
 
-using IVec3Set = core::Set<glm::ivec3, 11, glm::hash<glm::ivec3>>;
-using WalkCheckCallback = core::Function<bool(const voxel::RawVolumeWrapper &, const glm::ivec3 &, voxel::FaceNames)>;
-using WalkExecCallback = core::Function<bool(voxel::RawVolumeWrapper &, const glm::ivec3 &)>;
+using IVec3Set = core::Set<math::Vec3i, 11, math::Vec3iHash>;
+using WalkCheckCallback = core::Function<bool(const voxel::RawVolumeWrapper &, const math::Vec3i &, voxel::FaceNames)>;
+using WalkExecCallback = core::Function<bool(voxel::RawVolumeWrapper &, const math::Vec3i &)>;
 
 template<class CHECK, class EXEC, class Volume>
 static int walkPlaneIter(IVec3Set &visited, Volume &volume, const voxel::Region &region, CHECK &&check, EXEC &&exec,
-						 const glm::ivec3 &start, const glm::ivec3 &offsetForCheckCallback, voxel::FaceNames face) {
+						 const math::Vec3i &start, const math::Vec3i &offsetForCheckCallback, voxel::FaceNames face) {
 	// Heap stack. The previous recursive walk overflowed the Android SDL thread on a large plane.
-	core::DynamicArray<glm::ivec3> pending({start});
+	core::DynamicArray<math::Vec3i> pending({start});
 	int n = 0;
 	while (!pending.empty()) {
-		const glm::ivec3 position = pending[pending.size() - 1];
+		const math::Vec3i position = pending[pending.size() - 1];
 		pending.pop();
-		const glm::ivec3 checkPosition = position + offsetForCheckCallback;
+		const math::Vec3i checkPosition = position + offsetForCheckCallback;
 		if (visited.has(checkPosition)) {
 			continue;
 		}
@@ -178,16 +183,16 @@ static int walkPlaneIter(IVec3Set &visited, Volume &volume, const voxel::Region 
 			continue;
 		}
 		++n;
-		const glm::ivec3 neighbors[6] = {
-			glm::ivec3(position.x + 1, position.y, position.z),
-			glm::ivec3(position.x - 1, position.y, position.z),
-			glm::ivec3(position.x, position.y + 1, position.z),
-			glm::ivec3(position.x, position.y - 1, position.z),
-			glm::ivec3(position.x, position.y, position.z + 1),
-			glm::ivec3(position.x, position.y, position.z - 1),
+		const math::Vec3i neighbors[6] = {
+			math::Vec3i(position.x + 1, position.y, position.z),
+			math::Vec3i(position.x - 1, position.y, position.z),
+			math::Vec3i(position.x, position.y + 1, position.z),
+			math::Vec3i(position.x, position.y - 1, position.z),
+			math::Vec3i(position.x, position.y, position.z + 1),
+			math::Vec3i(position.x, position.y, position.z - 1),
 		};
 		pending.reserve(lengthof(neighbors));
-		for (const glm::ivec3 &next : neighbors) {
+		for (const math::Vec3i &next : neighbors) {
 			if (region.containsPoint(next)) {
 				pending.push_back(next);
 			}
@@ -211,7 +216,7 @@ static int walkPlaneIter(IVec3Set &visited, Volume &volume, const voxel::Region 
  * @c true
  */
 template<class CHECK, class EXEC, class Volume>
-static int walkPlane(Volume &volume, glm::ivec3 position, voxel::FaceNames face, int checkOffset, CHECK &&checkCallback,
+static int walkPlane(Volume &volume, math::Vec3i position, voxel::FaceNames face, int checkOffset, CHECK &&checkCallback,
 					 EXEC &&execCallback, int amount) {
 	const math::Axis axis = voxel::faceToAxis(face);
 	if (axis == math::Axis::None) {
@@ -221,13 +226,13 @@ static int walkPlane(Volume &volume, glm::ivec3 position, voxel::FaceNames face,
 	const int idx = math::getIndexForAxis(axis);
 	const bool negativeFace = voxel::isNegativeFace(face);
 
-	glm::ivec3 mins = region.getLowerCorner();
-	glm::ivec3 maxs = region.getUpperCorner();
+	math::Vec3i mins = region.getLowerCorner();
+	math::Vec3i maxs = region.getUpperCorner();
 	mins[idx] = position[idx];
 	maxs[idx] = position[idx];
 
 	// which voxel should we check on
-	glm::ivec3 offsetForCheckCallback(0);
+	math::Vec3i offsetForCheckCallback(0);
 	if (negativeFace) {
 		offsetForCheckCallback[idx] = -checkOffset;
 	} else {
@@ -242,7 +247,7 @@ static int walkPlane(Volume &volume, glm::ivec3 position, voxel::FaceNames face,
 		if (!walkRegion.isValid()) {
 			return 0;
 		}
-		const glm::ivec3 &dim = walkRegion.getDimensionsInVoxels();
+		const math::Vec3i &dim = walkRegion.getDimensionsInVoxels();
 		const int maxSize = dim.x * dim.y * dim.z;
 		IVec3Set visited(maxSize);
 		const int n0 = walkPlaneIter(visited, volume, walkRegion, checkCallback, execCallback, position, offsetForCheckCallback, face);
@@ -257,8 +262,8 @@ static int walkPlane(Volume &volume, glm::ivec3 position, voxel::FaceNames face,
 	return n;
 }
 
-static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxel::FaceNames face) {
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+static math::Vec2f calcUV(const math::Vec3i &pos, const voxel::Region &region, voxel::FaceNames face) {
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 	switch (face) {
 	case voxel::FaceNames::PositiveX:
 	case voxel::FaceNames::NegativeX:
@@ -271,12 +276,12 @@ static glm::vec2 calcUV(const glm::ivec3 &pos, const voxel::Region &region, voxe
 		return image::Image::uv(pos.x, region.getHeightInCells() - pos.y, dim.x, dim.y);
 	default:
 	case voxel::FaceNames::Max:
-		return glm::vec2(0.0f);
+		return math::Vec2f(0.0f);
 	}
 }
 
 template<class Volume>
-static bool checkOverrideFunc(Volume &volume, const glm::ivec3 &pos, const voxel::Voxel &replaceVoxel,
+static bool checkOverrideFunc(Volume &volume, const math::Vec3i &pos, const voxel::Voxel &replaceVoxel,
 							  voxel::FaceNames face, bool &firstVoxelIsAir, bool &firstVoxel) {
 	const voxel::Voxel &v = volume.voxel(pos);
 	if (firstVoxel) {
@@ -289,51 +294,51 @@ static bool checkOverrideFunc(Volume &volume, const glm::ivec3 &pos, const voxel
 	return v.isSame(replaceVoxel);
 }
 
-int overridePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+int overridePlane(voxel::RawVolumeWrapper &volume, const math::Vec3i &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel, int thickness) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [&](const voxel::RawVolumeWrapper &in, const math::Vec3i &p, voxel::FaceNames) {
 		return checkOverrideFunc(in, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
+	auto exec = [=](voxel::RawVolumeWrapper &in, const math::Vec3i &p) { return in.setVoxel(p, replaceVoxel); };
 	return voxelutil::walkPlane(volume, pos, voxel::oppositeFace(face), -1, check, exec, thickness);
 }
 
-voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const math::Vec3i &pos, voxel::FaceNames face,
 								  const voxel::Voxel &replaceVoxel, int thickness) {
 	bool firstVoxelIsAir = false;
 	bool firstVoxel = true;
-	auto check = [&](const voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [&](const voxel::ModificationRecorder<voxel::RawVolume> &in, const math::Vec3i &p, voxel::FaceNames) {
 		return checkOverrideFunc(in, p, replaceVoxel, face, firstVoxelIsAir, firstVoxel);
 	};
-	auto exec = [=](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p) { return in.setVoxel(p, replaceVoxel); };
+	auto exec = [=](voxel::ModificationRecorder<voxel::RawVolume> &in, const math::Vec3i &p) { return in.setVoxel(p, replaceVoxel); };
 	voxel::ModificationRecorder recorder(volume);
 	voxelutil::walkPlane(recorder, pos, voxel::oppositeFace(face), -1, check, exec, thickness);
 	return recorder.dirtyRegion();
 }
 
-int paintPlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+int paintPlane(voxel::RawVolumeWrapper &volume, const math::Vec3i &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel) {
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [&](const voxel::RawVolumeWrapper &in, const math::Vec3i &p, voxel::FaceNames) {
 		const voxel::Voxel &v = in.voxel(p);
 		return v.isSame(searchVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) {
+	auto exec = [=](voxel::RawVolumeWrapper &in, const math::Vec3i &p) {
 		return in.setVoxel(p, replaceVoxel);
 	};
 	return voxelutil::walkPlane(volume, pos, face, 0, check, exec, 1);
 }
 
 template<class Volume>
-static bool checkEraseFunc(Volume &volume, const glm::ivec3 &p, const voxel::Voxel &groundVoxel,
+static bool checkEraseFunc(Volume &volume, const math::Vec3i &p, const voxel::Voxel &groundVoxel,
 						   voxel::FaceNames face) {
 	const voxel::Voxel &voxel = volume.voxel(p);
 	if (voxel.isSame(groundVoxel)) {
 		const math::Axis axis = voxel::faceToAxis(face);
 		const int idx = math::getIndexForAxis(axis);
 		const int offset = voxel::isNegativeFace(face) ? -1 : 1;
-		glm::ivec3 abovePos = p;
+		math::Vec3i abovePos = p;
 		abovePos[idx] += offset;
 		const voxel::Voxel &aboveVoxel = volume.voxel(abovePos);
 		return voxel::isAir(aboveVoxel.getMaterial());
@@ -341,29 +346,29 @@ static bool checkEraseFunc(Volume &volume, const glm::ivec3 &p, const voxel::Vox
 	return false;
 }
 
-int erasePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+int erasePlane(voxel::RawVolumeWrapper &volume, const math::Vec3i &pos, voxel::FaceNames face,
 			   const voxel::Voxel &groundVoxel, int thickness) {
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [&](const voxel::RawVolumeWrapper &in, const math::Vec3i &p, voxel::FaceNames) {
 		return checkEraseFunc(in, p, groundVoxel, face);
 	};
-	auto exec = [](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) { return in.setVoxel(p, voxel::Voxel()); };
+	auto exec = [](voxel::RawVolumeWrapper &in, const math::Vec3i &p) { return in.setVoxel(p, voxel::Voxel()); };
 	return voxelutil::walkPlane(volume, pos, voxel::oppositeFace(face), 0, check, exec, thickness);
 }
 
-voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const math::Vec3i &pos, voxel::FaceNames face,
 							   const voxel::Voxel &groundVoxel, int thickness) {
-	auto check = [&](const voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [&](const voxel::ModificationRecorder<voxel::RawVolume> &in, const math::Vec3i &p, voxel::FaceNames) {
 		return checkEraseFunc(in, p, groundVoxel, face);
 	};
-	auto exec = [](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p) { return in.setVoxel(p, voxel::Voxel()); };
+	auto exec = [](voxel::ModificationRecorder<voxel::RawVolume> &in, const math::Vec3i &p) { return in.setVoxel(p, voxel::Voxel()); };
 	voxel::ModificationRecorder recorder(volume);
 	voxelutil::walkPlane(recorder, pos, voxel::oppositeFace(face), 0, check, exec, thickness);
 	return recorder.dirtyRegion();
 }
 
 template<class Volume>
-static bool checkExtrudeFunc(Volume &volume, const glm::ivec3 &callbackPos, voxel::FaceNames direction,
-							 const glm::ivec3 &initialCursorPos, const voxel::Voxel &groundVoxel,
+static bool checkExtrudeFunc(Volume &volume, const math::Vec3i &callbackPos, voxel::FaceNames direction,
+							 const math::Vec3i &initialCursorPos, const voxel::Voxel &groundVoxel,
 							 const voxel::Voxel &newPlaneVoxel) {
 	const voxel::Voxel &v = volume.voxel(callbackPos);
 	const math::Axis axis = voxel::faceToAxis(direction);
@@ -375,13 +380,13 @@ static bool checkExtrudeFunc(Volume &volume, const glm::ivec3 &callbackPos, voxe
 	return v.isSame(newPlaneVoxel);
 }
 
-voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const math::Vec3i &pos, voxel::FaceNames face,
 								 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness) {
-	auto check = [&](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p, voxel::FaceNames direction) {
+	auto check = [&](voxel::ModificationRecorder<voxel::RawVolume> &in, const math::Vec3i &p, voxel::FaceNames direction) {
 		return checkExtrudeFunc(in, p, direction, pos, groundVoxel, newPlaneVoxel);
 	};
 
-	auto exec = [&](voxel::ModificationRecorder<voxel::RawVolume> &in, const glm::ivec3 &p) {
+	auto exec = [&](voxel::ModificationRecorder<voxel::RawVolume> &in, const math::Vec3i &p) {
 		in.setVoxel(p, newPlaneVoxel);
 		return true;
 	};
@@ -390,17 +395,17 @@ voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec
 	return recorder.dirtyRegion();
 }
 
-int extrudePlane(voxel::RawVolumeWrapper &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+int extrudePlane(voxel::RawVolumeWrapper &volume, const math::Vec3i &pos, voxel::FaceNames face,
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness) {
-	auto check = [&](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames direction) {
+	auto check = [&](const voxel::RawVolumeWrapper &in, const math::Vec3i &p, voxel::FaceNames direction) {
 		return checkExtrudeFunc(in, p, direction, pos, groundVoxel, newPlaneVoxel);
 	};
-	auto exec = [=](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) { return in.setVoxel(p, newPlaneVoxel); };
+	auto exec = [=](voxel::RawVolumeWrapper &in, const math::Vec3i &p) { return in.setVoxel(p, newPlaneVoxel); };
 	return voxelutil::walkPlane(volume, pos, face, -1, check, exec, thickness);
 }
 
 int fillPlane(voxel::RawVolumeWrapper &volume, const image::Image *image, const voxel::Voxel &searchedVoxel,
-			  const glm::ivec3 &position, voxel::FaceNames face) {
+			  const math::Vec3i &position, voxel::FaceNames face) {
 	if (image == nullptr || !image->isLoaded() || face == voxel::FaceNames::Max) {
 		return 0;
 	}
@@ -410,7 +415,7 @@ int fillPlane(voxel::RawVolumeWrapper &volume, const image::Image *image, const 
 
 	const voxel::Region &region = volume.region();
 
-	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &in, const glm::ivec3 &p, voxel::FaceNames) {
+	auto check = [searchedVoxel](const voxel::RawVolumeWrapper &in, const math::Vec3i &p, voxel::FaceNames) {
 		if (voxel::isAir(searchedVoxel.getMaterial())) {
 			return true;
 		}
@@ -418,8 +423,8 @@ int fillPlane(voxel::RawVolumeWrapper &volume, const image::Image *image, const 
 		return voxel.isSame(searchedVoxel);
 	};
 
-	auto exec = [&](voxel::RawVolumeWrapper &in, const glm::ivec3 &p) {
-		const glm::vec2 &uv = calcUV(p, region, face);
+	auto exec = [&](voxel::RawVolumeWrapper &in, const math::Vec3i &p) {
+		const math::Vec2f &uv = calcUV(p, region, face);
 		const color::RGBA rgba = image->colorAt(uv);
 		if (rgba.a == 0) {
 			return true;
@@ -454,10 +459,10 @@ voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume
 	const voxel::Region &r1 = v1->region();
 	const voxel::Region &r2 = v2->region();
 
-	const glm::ivec3 &r1mins = r1.getLowerCorner();
-	const glm::ivec3 &r1maxs = r1.getUpperCorner();
-	const glm::ivec3 &r2mins = r2.getLowerCorner();
-	const glm::ivec3 &r2maxs = r2.getUpperCorner();
+	const math::Vec3i &r1mins = r1.getLowerCorner();
+	const math::Vec3i &r1maxs = r1.getUpperCorner();
+	const math::Vec3i &r2mins = r2.getLowerCorner();
+	const math::Vec3i &r2maxs = r2.getUpperCorner();
 	voxel::RawVolume *v = nullptr;
 	// TODO: PERF: use a sampler
 	for (int r1z = r1mins.z, r2z = r2mins.z; r1z <= r1maxs.z && r2z <= r2maxs.z; ++r1z, ++r2z) {

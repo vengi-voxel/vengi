@@ -5,6 +5,8 @@
 #pragma once
 
 #include "voxel/Face.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelutil {
 
@@ -24,14 +26,14 @@ struct PickResult {
 	bool firstInvalidPosition = false;
 
 	/** The location of the solid voxel it hit */
-	glm::ivec3 hitVoxel {0};
+	math::Vec3i hitVoxel {0};
 
 	/** The location of the step before we end the trace - see @a validPreviousPosition */
-	glm::ivec3 previousPosition {0};
+	math::Vec3i previousPosition {0};
 	/** The location where the trace entered the valid volume region */
-	glm::ivec3 firstPosition {0};
+	math::Vec3i firstPosition {0};
 
-	glm::vec3 direction {0.0f};
+	math::Vec3f direction {0.0f};
 
 	voxel::FaceNames hitFace = voxel::FaceNames::Max;
 };

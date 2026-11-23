@@ -5,6 +5,7 @@
 #include "app/tests/AbstractTest.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -17,8 +18,8 @@ TEST_F(VolumeCropperTest, testCropSmall) {
 	voxel::RawVolume *croppedVolume = voxelutil::cropVolume(&smallVolume);
 	ASSERT_NE(nullptr, croppedVolume) << "Expected to get the cropped raw volume";
 	const voxel::Region& croppedRegion = croppedVolume->region();
-	EXPECT_EQ(croppedRegion.getUpperCorner(), glm::ivec3(0)) << croppedRegion.toString();
-	EXPECT_EQ(croppedRegion.getLowerCorner(), glm::ivec3(0)) << croppedRegion.toString();
+	EXPECT_EQ(croppedRegion.getUpperCorner(), math::Vec3i(0)) << croppedRegion.toString();
+	EXPECT_EQ(croppedRegion.getLowerCorner(), math::Vec3i(0)) << croppedRegion.toString();
 	EXPECT_TRUE(croppedVolume->voxel(croppedRegion.getLowerCorner()).isSame(voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	delete croppedVolume;
 }

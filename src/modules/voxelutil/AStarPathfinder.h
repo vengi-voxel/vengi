@@ -7,14 +7,14 @@
 #include "AStarPathfinderImpl.h"
 #include "core/Common.h"
 #include "core/Assert.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/collection/List.h"
 #include "voxel/Connectivity.h"
-#include <glm/gtc/constants.hpp>
-#include <glm/geometric.hpp>
 
 #include "core/Function.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelutil {
 
@@ -33,7 +33,7 @@ namespace voxelutil {
 template<typename VolumeType>
 struct AStarPathfinderParams {
 public:
-	AStarPathfinderParams(const VolumeType* volData, const glm::ivec3& v3dStart, const glm::ivec3& v3dEnd, core::List<glm::ivec3>* listResult, core::Function<bool(const VolumeType*, const glm::ivec3&)> funcIsVoxelValidForPath, float fHBias = 1.0f,
+	AStarPathfinderParams(const VolumeType* volData, const math::Vec3i& v3dStart, const math::Vec3i& v3dEnd, core::List<math::Vec3i>* listResult, core::Function<bool(const VolumeType*, const math::Vec3i&)> funcIsVoxelValidForPath, float fHBias = 1.0f,
 			uint32_t uMaxNoOfNodes = 10000, voxel::Connectivity requiredConnectivity = voxel::Connectivity::TwentySixConnected, core::Function<void(float)> funcProgressCallback = nullptr) :
 			volume(volData), start(v3dStart), end(v3dEnd), result(listResult), connectivity(requiredConnectivity), hBias(fHBias), maxNumberOfNodes(uMaxNoOfNodes), isVoxelValidForPath(
 					core::move(funcIsVoxelValidForPath)), progressCallback(core::move(funcProgressCallback)) {
@@ -43,14 +43,14 @@ public:
 	const VolumeType* volume;
 
 	/// The start point for the pathfinding algorithm.
-	glm::ivec3 start;
+	math::Vec3i start;
 
 	/// The end point for the pathfinding algorithm.
-	glm::ivec3 end;
+	math::Vec3i end;
 
 	/// The resulting path will be stored as a series of points in
 	/// this list. Any existing contents will be cleared.
-	core::List<glm::ivec3>* result;
+	core::List<math::Vec3i>* result;
 
 	/// The AStarPathfinder performs its search by examining the neighbours
 	/// of each voxel it encounters. This property controls the meaning of
@@ -76,7 +76,7 @@ public:
 	/// This function is called to determine whether the path can pass though a given voxel.
 	/// For example, if you always want a path to follow a surface then
 	/// you could check to ensure that the voxel above is empty and the voxel below is solid.
-	core::Function<bool(const VolumeType*, const glm::ivec3&)> isVoxelValidForPath;
+	core::Function<bool(const VolumeType*, const math::Vec3i&)> isVoxelValidForPath;
 
 	/// This function is called by the AStarPathfinder to report on its progress in getting to
 	/// the goal. The progress is reported by computing the distance from the closest node found
@@ -118,12 +118,12 @@ public:
 	bool execute();
 
 private:
-	void processNeighbour(const glm::ivec3& neighbourPos, float neighbourGVal);
+	void processNeighbour(const math::Vec3i& neighbourPos, float neighbourGVal);
 
-	float SixConnectedCost(const glm::ivec3& a, const glm::ivec3& b);
-	float EighteenConnectedCost(const glm::ivec3& a, const glm::ivec3& b);
-	float TwentySixConnectedCost(const glm::ivec3& a, const glm::ivec3& b);
-	float computeH(const glm::ivec3& a, const glm::ivec3& b);
+	float SixConnectedCost(const math::Vec3i& a, const math::Vec3i& b);
+	float EighteenConnectedCost(const math::Vec3i& a, const math::Vec3i& b);
+	float TwentySixConnectedCost(const math::Vec3i& a, const math::Vec3i& b);
+	float computeH(const math::Vec3i& a, const math::Vec3i& b);
 	uint32_t hash(uint32_t a);
 
 	// Node containers
@@ -175,7 +175,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 
 	_openNodes.insert(startNode);
 
-	float fDistStartToEnd = glm::length(glm::vec3(endNode->position) - glm::vec3(startNode->position));
+	float fDistStartToEnd = math::length(math::Vec3f(endNode->position) - math::Vec3f(startNode->position));
 	_progress = 0.0f;
 	if (_params.progressCallback) {
 		_params.progressCallback(_progress);
@@ -190,7 +190,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 		//Update the user on our progress
 		if (_params.progressCallback) {
 			const float fMinProgresIncreament = 0.001f;
-			float fDistCurrentToEnd = glm::length(glm::vec3(endNode->position) - glm::vec3(_current->position));
+			float fDistCurrentToEnd = math::length(math::Vec3f(endNode->position) - math::Vec3f(_current->position));
 			float fDistNormalised = fDistCurrentToEnd / fDistStartToEnd;
 			float fProgress = 1.0f - fDistNormalised;
 			if (fProgress >= _progress + fMinProgresIncreament) {
@@ -201,8 +201,8 @@ bool AStarPathfinder<VolumeType>::execute() {
 
 		//The distance from one cell to another connected by face, edge, or corner.
 		const float fFaceCost = 1.0f;
-		const float fEdgeCost = glm::root_two<float>();
-		const float fCornerCost = glm::root_three<float>();
+		const float fEdgeCost = math::rootTwo;
+		const float fCornerCost = math::rootThree;
 
 		//Process the neighbours. Note the deliberate lack of 'break'
 		//statements, larger connectivities include smaller ones.
@@ -272,7 +272,7 @@ bool AStarPathfinder<VolumeType>::execute() {
 }
 
 template<typename VolumeType>
-void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPos, float neighbourGVal) {
+void AStarPathfinder<VolumeType>::processNeighbour(const math::Vec3i& neighbourPos, float neighbourGVal) {
 	bool bIsVoxelValidForPath = _params.isVoxelValidForPath(_params.volume, neighbourPos);
 	if (!bIsVoxelValidForPath) {
 		return;
@@ -321,14 +321,14 @@ void AStarPathfinder<VolumeType>::processNeighbour(const glm::ivec3& neighbourPo
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::SixConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
+float AStarPathfinder<VolumeType>::SixConnectedCost(const math::Vec3i& a, const math::Vec3i& b) {
 	//This is the only heuristic I'm sure of - just use the manhatten distance for the 6-connected case.
-	const uint32_t faceSteps = glm::abs(a.x - b.x) + glm::abs(a.y - b.y) + glm::abs(a.z - b.z);
+	const uint32_t faceSteps = math::abs(a.x - b.x) + math::abs(a.y - b.y) + math::abs(a.z - b.z);
 	return float(faceSteps);
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::EighteenConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
+float AStarPathfinder<VolumeType>::EighteenConnectedCost(const math::Vec3i& a, const math::Vec3i& b) {
 	//I'm not sure of the correct heuristic for the 18-connected case, so I'm just letting it fall through to the
 	//6-connected case. This means 'h' will be bigger than it should be, resulting in a faster path which may not
 	//actually be the shortest one. If you have a correct heuristic for the 18-connected case then please let me know.
@@ -337,13 +337,13 @@ float AStarPathfinder<VolumeType>::EighteenConnectedCost(const glm::ivec3& a, co
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const glm::ivec3& a, const glm::ivec3& b) {
+float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const math::Vec3i& a, const math::Vec3i& b) {
 	//Can't say I'm certain about this heuristic - if anyone has
 	//a better idea of what it should be then please let me know.
 	uint32_t array[3];
-	array[0] = glm::abs(a.x - b.x);
-	array[1] = glm::abs(a.y - b.y);
-	array[2] = glm::abs(a.z - b.z);
+	array[0] = math::abs(a.x - b.x);
+	array[1] = math::abs(a.y - b.y);
+	array[2] = math::abs(a.z - b.z);
 
 	//Maybe this is better implemented directly
 	//using three compares and two swaps... but not
@@ -354,11 +354,11 @@ float AStarPathfinder<VolumeType>::TwentySixConnectedCost(const glm::ivec3& a, c
 	const uint32_t edgeSteps = array[1] - array[0];
 	const uint32_t faceSteps = array[2] - array[1];
 
-	return (float)cornerSteps * glm::root_three<float>() + (float)edgeSteps * glm::root_two<float>() + (float)faceSteps;
+	return (float)cornerSteps * math::rootThree + (float)edgeSteps * math::rootTwo + (float)faceSteps;
 }
 
 template<typename VolumeType>
-float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec3& b) {
+float AStarPathfinder<VolumeType>::computeH(const math::Vec3i& a, const math::Vec3i& b) {
 	float hVal;
 
 	switch (_params.connectivity) {
@@ -379,8 +379,8 @@ float AStarPathfinder<VolumeType>::computeH(const glm::ivec3& a, const glm::ivec
 #if 0
 	//Sanity checks in debug mode. These can come out eventually, but I
 	//want to make sure that the heuristics I've come up with make sense.
-	core_assert_msg(glm::length(glm::vec3(a) - glm::vec3(b)) <= TwentySixConnectedCost(a, b),
-					"A* heuristic error (%f vs %f).", glm::length(glm::vec3(a) - glm::vec3(b)),
+	core_assert_msg(math::length(math::Vec3f(a) - math::Vec3f(b)) <= TwentySixConnectedCost(a, b),
+					"A* heuristic error (%f vs %f).", math::length(math::Vec3f(a) - math::Vec3f(b)),
 					TwentySixConnectedCost(a, b));
 	core_assert_msg(TwentySixConnectedCost(a, b) <= EighteenConnectedCost(a, b), "A* heuristic error (%f vs %f).",
 					TwentySixConnectedCost(a, b), EighteenConnectedCost(a, b));

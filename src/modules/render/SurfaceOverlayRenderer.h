@@ -8,7 +8,8 @@
 #include "SurfaceoverlayData.h"
 #include "video/Buffer.h"
 #include "video/FrameBuffer.h"
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
 
 namespace render {
 
@@ -28,12 +29,12 @@ private:
 	video::FrameBuffer _surfaces;
 	video::FrameBuffer _sceneDepth;
 	int _position = -1;
-	bool resize(const glm::ivec2 &size);
+	bool resize(const math::Vec2i &size);
 
 public:
-	bool begin(const glm::ivec2 &size);
+	bool begin(const math::Vec2i &size);
 	/** A nonzero tint alpha enables a hatched intent overlay in the supplied color. */
-	void end(const glm::vec4 &tint = glm::vec4(0.0f));
+	void end(const math::Vec4f &tint = math::Vec4f(0.0f));
 	void shutdown();
 };
 

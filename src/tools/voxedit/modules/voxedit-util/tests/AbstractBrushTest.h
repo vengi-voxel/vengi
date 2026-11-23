@@ -13,6 +13,7 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -46,7 +47,7 @@ protected:
 			if (voxel::isNegativeFace(brushContext.cursorFace)) {
 				coord = max - i;
 			}
-			brushContext.cursorPosition = glm::ivec3(0);
+			brushContext.cursorPosition = math::Vec3i(0);
 			brushContext.cursorPosition[math::getIndexForAxis(voxel::faceToAxis(brushContext.cursorFace))] = coord;
 			brush.preExecute(brushContext, &volume);
 			ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext)) << "for coord: " << i;

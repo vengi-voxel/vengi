@@ -5,19 +5,22 @@
 #include "Frustum.h"
 #include "core/TraceScoped.h"
 #include "core/Assert.h"
-#include "core/GLM.h"
 #include "math/AABB.h"
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 
 namespace math {
 
-Frustum::Frustum(const glm::vec3& mins, const glm::vec3& maxs) {
-	update(glm::mat4(1.0f), mins, maxs);
+Frustum::Frustum(const math::Vec3f& mins, const math::Vec3f& maxs) {
+	update(math::Mat4f(1.0f), mins, maxs);
 }
 
-void Frustum::update(const glm::mat4& mat, const glm::vec3& mins, const glm::vec3& maxs) {
-	update(mat, glm::ortho(mins.x, maxs.x, mins.y, maxs.y, -mins.z, -maxs.z));
+void Frustum::update(const math::Mat4f& mat, const math::Vec3f& mins, const math::Vec3f& maxs) {
+	update(mat, math::ortho(mins.x, maxs.x, mins.y, maxs.y, -mins.z, -maxs.z));
 }
 
 const Plane& Frustum::operator[](size_t idx) const {
@@ -25,13 +28,13 @@ const Plane& Frustum::operator[](size_t idx) const {
 	return _planes[idx];
 }
 
-void Frustum::transform(const glm::mat4& mat) {
+void Frustum::transform(const math::Mat4f& mat) {
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		_planes[i].transform(mat);
 	}
 }
 
-void Frustum::corners(glm::vec3 out[FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
+void Frustum::corners(math::Vec3f out[FRUSTUM_VERTICES_MAX], uint32_t indices[24]) const {
 	if (out != nullptr) {
 		for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
 			out[i] = _frustumVertices[i];
@@ -88,20 +91,20 @@ math::AABB<float> Frustum::aabb() const {
 	return math::AABB<float>::construct(_frustumVertices, FRUSTUM_VERTICES_MAX);
 }
 
-void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_MAX], bool depthZeroToOne) const {
+void Frustum::split(const math::Mat4f& transform, math::Vec3f out[FRUSTUM_VERTICES_MAX], bool depthZeroToOne) const {
 	const float nearZ = depthZeroToOne ? 0.0f : -1.0f;
 	const float farZ = 1.0f;
-	static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f,  farZ, 1.0f), glm::vec4(-1.0f, -1.0f,  farZ, 1.0f),
-		glm::vec4( 1.0f,  1.0f,  farZ, 1.0f), glm::vec4( 1.0f, -1.0f,  farZ, 1.0f),
-		glm::vec4(-1.0f,  1.0f, nearZ, 1.0f), glm::vec4(-1.0f, -1.0f, nearZ, 1.0f),
-		glm::vec4( 1.0f,  1.0f, nearZ, 1.0f), glm::vec4( 1.0f, -1.0f, nearZ, 1.0f)
+	static const math::Vec4f cornerVecs[FRUSTUM_VERTICES_MAX] = {
+		math::Vec4f(-1.0f,  1.0f,  farZ, 1.0f), math::Vec4f(-1.0f, -1.0f,  farZ, 1.0f),
+		math::Vec4f( 1.0f,  1.0f,  farZ, 1.0f), math::Vec4f( 1.0f, -1.0f,  farZ, 1.0f),
+		math::Vec4f(-1.0f,  1.0f, nearZ, 1.0f), math::Vec4f(-1.0f, -1.0f, nearZ, 1.0f),
+		math::Vec4f( 1.0f,  1.0f, nearZ, 1.0f), math::Vec4f( 1.0f, -1.0f, nearZ, 1.0f)
 	};
 
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& v = transform * cornerVecs[i];
-		out[i] = glm::vec3(v) / v.w;
-		core_assert(!glm::any(glm::isnan(out[i])));
+		const math::Vec4f& v = transform * cornerVecs[i];
+		out[i] = math::Vec3f(v) / v.w;
+		core_assert(!math::any(math::isnan(out[i])));
 	}
 }
 
@@ -109,14 +112,14 @@ void Frustum::split(const glm::mat4& transform, glm::vec3 out[FRUSTUM_VERTICES_M
  * http://gamedevs.org/uploads/fast-extraction-viewing-frustum-planes-from-world-view-projection-matrix.pdf
  * https://fgiesen.wordpress.com/2012/08/31/frustum-planes-from-the-projection-matrix/
  */
-void Frustum::updatePlanes(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne) {
+void Frustum::updatePlanes(const math::Mat4f& view, const math::Mat4f& projection, bool depthZeroToOne) {
 	// world space
-	const glm::mat4 &clipMatrix = projection * view;
+	const math::Mat4f &clipMatrix = projection * view;
 
-	const glm::vec4& rx = glm::row(clipMatrix, 0);
-	const glm::vec4& ry = glm::row(clipMatrix, 1);
-	const glm::vec4& rz = glm::row(clipMatrix, 2);
-	const glm::vec4& rw = glm::row(clipMatrix, 3);
+	const math::Vec4f& rx = math::row(clipMatrix, 0);
+	const math::Vec4f& ry = math::row(clipMatrix, 1);
+	const math::Vec4f& rz = math::row(clipMatrix, 2);
+	const math::Vec4f& rw = math::row(clipMatrix, 3);
 
 	plane(FrustumPlanes::Right). set(rw + rx);
 	plane(FrustumPlanes::Left).  set(rw - rx);
@@ -131,26 +134,26 @@ void Frustum::updatePlanes(const glm::mat4& view, const glm::mat4& projection, b
 	}
 }
 
-void Frustum::updateVertices(const glm::mat4& view, const glm::mat4& projection, bool depthZeroToOne) {
-	const glm::mat4& transform = glm::inverse(projection * view);
+void Frustum::updateVertices(const math::Mat4f& view, const math::Mat4f& projection, bool depthZeroToOne) {
+	const math::Mat4f& transform = math::inverse(projection * view);
 	const float nearZ = depthZeroToOne ? 0.0f : -1.0f;
 	const float farZ = 1.0f;
-	static const glm::vec4 cornerVecs[FRUSTUM_VERTICES_MAX] = {
-		glm::vec4(-1.0f,  1.0f,  farZ, 1.0f), glm::vec4(-1.0f, -1.0f,  farZ, 1.0f),
-		glm::vec4( 1.0f,  1.0f,  farZ, 1.0f), glm::vec4( 1.0f, -1.0f,  farZ, 1.0f),
-		glm::vec4(-1.0f,  1.0f, nearZ, 1.0f), glm::vec4(-1.0f, -1.0f, nearZ, 1.0f),
-		glm::vec4( 1.0f,  1.0f, nearZ, 1.0f), glm::vec4( 1.0f, -1.0f, nearZ, 1.0f)
+	static const math::Vec4f cornerVecs[FRUSTUM_VERTICES_MAX] = {
+		math::Vec4f(-1.0f,  1.0f,  farZ, 1.0f), math::Vec4f(-1.0f, -1.0f,  farZ, 1.0f),
+		math::Vec4f( 1.0f,  1.0f,  farZ, 1.0f), math::Vec4f( 1.0f, -1.0f,  farZ, 1.0f),
+		math::Vec4f(-1.0f,  1.0f, nearZ, 1.0f), math::Vec4f(-1.0f, -1.0f, nearZ, 1.0f),
+		math::Vec4f( 1.0f,  1.0f, nearZ, 1.0f), math::Vec4f( 1.0f, -1.0f, nearZ, 1.0f)
 	};
 
 	for (uint8_t i = 0; i < FRUSTUM_VERTICES_MAX; ++i) {
-		const glm::vec4& v = transform * cornerVecs[i];
+		const math::Vec4f& v = transform * cornerVecs[i];
 		_frustumVertices[i] = v / v.w;
-		core_assert(!glm::any(glm::isnan(_frustumVertices[i])));
-		core_assert(!glm::any(glm::isinf(_frustumVertices[i])));
+		core_assert(!math::any(math::isnan(_frustumVertices[i])));
+		core_assert(!math::any(math::isinf(_frustumVertices[i])));
 	}
 }
 
-FrustumResult Frustum::test(const glm::vec3& position) const {
+FrustumResult Frustum::test(const math::Vec3f& position) const {
 	FrustumResult result = FrustumResult::Inside;
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
@@ -161,12 +164,12 @@ FrustumResult Frustum::test(const glm::vec3& position) const {
 	return result;
 }
 
-bool Frustum::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
+bool Frustum::isVisible(const math::Vec3f& mins, const math::Vec3f& maxs) const {
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
-		const glm::vec3& normal = p.norm();
+		const math::Vec3f& normal = p.norm();
 
-		const glm::vec3 pos(normal.x > 0.0f ? maxs.x : mins.x,
+		const math::Vec3f pos(normal.x > 0.0f ? maxs.x : mins.x,
 				normal.y > 0.0f ? maxs.y : mins.y,
 				normal.z > 0.0f ? maxs.z : mins.z);
 
@@ -178,7 +181,7 @@ bool Frustum::isVisible(const glm::vec3& mins, const glm::vec3& maxs) const {
 	return true;
 }
 
-bool Frustum::isVisible(const glm::vec3& center, float radius) const {
+bool Frustum::isVisible(const math::Vec3f& center, float radius) const {
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
 		const float dist = p.distanceToPlane(center);
@@ -190,7 +193,7 @@ bool Frustum::isVisible(const glm::vec3& center, float radius) const {
 	return true;
 }
 
-bool Frustum::isVisible(const glm::vec3& pos) const {
+bool Frustum::isVisible(const math::Vec3f& pos) const {
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
 		const bool back = p.isBackSide(pos);
@@ -202,14 +205,14 @@ bool Frustum::isVisible(const glm::vec3& pos) const {
 	return true;
 }
 
-FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const {
+FrustumResult Frustum::test(const math::Vec3f& mins, const math::Vec3f& maxs) const {
 	core_trace_scoped(FrustumTest);
 	FrustumResult result = FrustumResult::Inside;
 	for (uint8_t i = 0; i < FRUSTUM_PLANES_MAX; ++i) {
 		const Plane& p = _planes[i];
-		const glm::vec3& normal = p.norm();
+		const math::Vec3f& normal = p.norm();
 
-		const glm::vec3 positiveVertex(normal.x > 0.0f ? maxs.x : mins.x,
+		const math::Vec3f positiveVertex(normal.x > 0.0f ? maxs.x : mins.x,
 				normal.y > 0.0f ? maxs.y : mins.y,
 				normal.z > 0.0f ? maxs.z : mins.z);
 
@@ -217,7 +220,7 @@ FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const 
 			return FrustumResult::Outside;
 		}
 
-		const glm::vec3 negativeVertex(normal.x > 0.0f ? mins.x : maxs.x,
+		const math::Vec3f negativeVertex(normal.x > 0.0f ? mins.x : maxs.x,
 				normal.y > 0.0f ? mins.y : maxs.y,
 				normal.z > 0.0f ? mins.z : maxs.z);
 		if (p.isBackSide(negativeVertex)) {
@@ -228,9 +231,9 @@ FrustumResult Frustum::test(const glm::vec3& mins, const glm::vec3& maxs) const 
 	return result;
 }
 
-bool Frustum::isVisible(const glm::vec3& eye, float orientation, const glm::vec3& target, float fieldOfView) {
-	const glm::vec2 direction = glm::normalize(glm::vec2(target.x - eye.x, target.z - eye.z));
-	const float angle = ::atan2(direction.y, direction.x);
+bool Frustum::isVisible(const math::Vec3f& eye, float orientation, const math::Vec3f& target, float fieldOfView) {
+	const math::Vec2f direction = math::normalize(math::Vec2f(target.x - eye.x, target.z - eye.z));
+	const float angle = math::atan(direction.y, direction.x);
 
 	float delta;
 	if (angle > orientation) {

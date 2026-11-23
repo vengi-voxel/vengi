@@ -13,7 +13,8 @@
 #include "util/VarUtil.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxel/RawVolume.h"
-#include <glm/gtc/quaternion.hpp>
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -357,16 +358,16 @@ TEST_F(GodotSceneFormatTest, testImportGodotAnimation) {
 	EXPECT_EQ(nullptr, graph.findNodeByName("Player"));
 	const auto *model = graph.findNodeByName("Box");
 	ASSERT_NE(nullptr, model);
-	EXPECT_EQ(glm::vec3(1, 2, 3), model->keyFrames("Actions/Move")[0].transform().localScale());
+	EXPECT_EQ(math::Vec3f(1, 2, 3), model->keyFrames("Actions/Move")[0].transform().localScale());
 	const auto &midpoint = model->keyFrames("Actions/Move")[12].transform();
-	EXPECT_EQ(glm::vec3(3, 4, 5), midpoint.localTranslation());
-	EXPECT_EQ(glm::vec3(2, 3, 4), midpoint.localScale());
-	EXPECT_NEAR(glm::sqrt(0.5f), glm::abs(midpoint.localOrientation().y), 0.0001f);
+	EXPECT_EQ(math::Vec3f(3, 4, 5), midpoint.localTranslation());
+	EXPECT_EQ(math::Vec3f(2, 3, 4), midpoint.localScale());
+	EXPECT_NEAR(math::sqrt(0.5f), math::abs(midpoint.localOrientation().y), 0.0001f);
 	const auto world = graph.transformForFrame(*model, 12);
-	EXPECT_EQ(glm::vec3(15, 7, 9), world.worldTranslation());
+	EXPECT_EQ(math::Vec3f(15, 7, 9), world.worldTranslation());
 	EXPECT_FLOAT_EQ(1, model->keyFrames("Actions/Step")[11].transform().localTranslation().x);
 	EXPECT_FLOAT_EQ(9, model->keyFrames("Actions/Step")[12].transform().localTranslation().x);
-	EXPECT_EQ(glm::vec3(1), model->keyFrames("Actions/Step")[12].transform().localScale());
+	EXPECT_EQ(math::Vec3f(1), model->keyFrames("Actions/Step")[12].transform().localScale());
 	EXPECT_EQ("1", graph.root().property("godot_animation_loop/Actions/Step"));
 }
 
@@ -396,7 +397,7 @@ TEST_F(GodotSceneFormatTest, testExportVengiAnimation) {
 	scenegraph::SceneGraph graph;
 	scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group);
 	group.setName("Rig");
-	group.transform(0).setLocalTranslation(glm::vec3(2, 3, 4));
+	group.transform(0).setLocalTranslation(math::Vec3f(2, 3, 4));
 	const int groupId = graph.emplace(core::move(group));
 	ASSERT_NE(InvalidNodeId, groupId);
 
@@ -420,9 +421,9 @@ TEST_F(GodotSceneFormatTest, testExportVengiAnimation) {
 		const int key = node.addKeyFrame(24);
 		ASSERT_NE(InvalidKeyFrame, key);
 		node.setTransform(key, first);
-		node.transform(key).setLocalTranslation(first.localTranslation() + glm::vec3(4, 2, 0));
-		node.transform(key).setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)));
-		node.transform(key).setLocalScale(glm::vec3(2));
+		node.transform(key).setLocalTranslation(first.localTranslation() + math::Vec3f(4, 2, 0));
+		node.transform(key).setLocalOrientation(math::angleAxis(math::radians(90.0f), math::Vec3f(0, 1, 0)));
+		node.transform(key).setLocalScale(math::Vec3f(2));
 	}
 	graph.updateTransforms();
 	GodotSceneFormat format;
@@ -463,7 +464,7 @@ TEST_F(GodotSceneFormatTest, testExternalAnimationResources) {
 	const auto *model = graph.findNodeByName("Model");
 	ASSERT_NE(nullptr, model);
 	EXPECT_FLOAT_EQ(2, model->keyFrames("Ease")[12].transform().localTranslation().x);
-	EXPECT_EQ(glm::vec3(1), model->keyFrames("Ease")[12].transform().localScale());
+	EXPECT_EQ(math::Vec3f(1), model->keyFrames("Ease")[12].transform().localScale());
 }
 
 TEST_F(GodotSceneFormatTest, testMalformedAnimationTracks) {

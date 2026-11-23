@@ -12,6 +12,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -46,7 +47,7 @@ void SnapshotHelper::captureSnapshot(const voxel::RawVolume *volume, const voxel
 				volRegion.getUpperX(), volRegion.getUpperY(), sliceEnd - 1);
 			voxelutil::visitVolume(*volume, subRegion,
 				[&threadResults, chunk](int x, int y, int z, const voxel::Voxel &voxel) {
-					threadResults[chunk].push_back({glm::ivec3(x, y, z), voxel});
+					threadResults[chunk].push_back({math::Vec3i(x, y, z), voxel});
 				},
 				voxelutil::VisitSolidOutline());
 		}
@@ -71,11 +72,11 @@ void SnapshotHelper::captureSnapshot(const voxel::RawVolume *volume, const voxel
 	}
 
 	// Compute bounding box
-	glm::ivec3 selLo(collected[0].pos);
-	glm::ivec3 selHi(collected[0].pos);
+	math::Vec3i selLo(collected[0].pos);
+	math::Vec3i selHi(collected[0].pos);
 	for (const voxel::VoxelPosition &vp : collected) {
-		selLo = glm::min(selLo, vp.pos);
-		selHi = glm::max(selHi, vp.pos);
+		selLo = math::min(selLo, vp.pos);
+		selHi = math::max(selHi, vp.pos);
 	}
 
 	// Batch insert into sparse volume (sorts by chunk for cache efficiency)
@@ -86,7 +87,7 @@ void SnapshotHelper::captureSnapshot(const voxel::RawVolume *volume, const voxel
 	_hasSnapshot = true;
 }
 
-void SnapshotHelper::adjustForRegionShift(const glm::ivec3 &delta) {
+void SnapshotHelper::adjustForRegionShift(const math::Vec3i &delta) {
 	core_trace_scoped(SnapshotHelperAdjustForRegionShift);
 	// Shift snapshot entries
 	voxel::DynamicVoxelArray entries;
@@ -102,9 +103,9 @@ void SnapshotHelper::adjustForRegionShift(const glm::ivec3 &delta) {
 	// Shift history entries
 	struct EntryCollector {
 		voxel::DynamicVoxelArray *entries;
-		glm::ivec3 delta;
+		math::Vec3i delta;
 		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
-			entries->push_back({glm::ivec3(x + delta.x, y + delta.y, z + delta.z), voxel});
+			entries->push_back({math::Vec3i(x + delta.x, y + delta.y, z + delta.z), voxel});
 			return true;
 		}
 	};
@@ -118,14 +119,14 @@ void SnapshotHelper::adjustForRegionShift(const glm::ivec3 &delta) {
 	}
 }
 
-void SnapshotHelper::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos) {
+void SnapshotHelper::saveToHistory(voxel::RawVolume *vol, const math::Vec3i &pos) {
 	if (_history.hasVoxel(pos)) {
 		return;
 	}
 	_history.setVoxel(pos, vol->voxel(pos));
 }
 
-void SnapshotHelper::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos,
+void SnapshotHelper::writeVoxel(ModifierVolumeWrapper &wrapper, const math::Vec3i &pos,
 								const voxel::Voxel &newVoxel) {
 	voxel::RawVolume *volume = wrapper.volume();
 	if (!volume->region().containsPoint(pos)) {
@@ -150,7 +151,7 @@ void SnapshotHelper::restoreHistory(voxel::RawVolume *vol, ModifierVolumeWrapper
 		ModifierVolumeWrapper *wrapper;
 		bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) {
 			if (vol->setVoxel(x, y, z, voxel)) {
-				wrapper->addToDirtyRegion(glm::ivec3(x, y, z));
+				wrapper->addToDirtyRegion(math::Vec3i(x, y, z));
 			}
 			return true;
 		}
@@ -164,7 +165,7 @@ void SnapshotHelper::clear() {
 	_snapshot.clear();
 	_history.clear();
 	_snapshotRegion = voxel::Region::InvalidRegion;
-	_capturedVolumeLower = glm::ivec3(0);
+	_capturedVolumeLower = math::Vec3i(0);
 	_hasSnapshot = false;
 }
 

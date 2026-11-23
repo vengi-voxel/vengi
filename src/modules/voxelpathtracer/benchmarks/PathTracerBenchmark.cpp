@@ -16,6 +16,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelpathtracer/PathTracer.h"
+#include "math/Vec2i.h"
 
 class PathTracerBenchmark : public app::AbstractBenchmark {
 protected:
@@ -126,7 +127,7 @@ public:
 		params.voxelEdge = scenario == 1 ? 1.0f : 0.0f;
 		params.sunIntensity = scenario == 4 ? 0.0f : 3.0f;
 		video::Camera camera;
-		camera.setSize(glm::ivec2(params.resolution));
+		camera.setSize(math::Vec2i(params.resolution));
 		voxelrender::configureCamera(camera, voxel::Region(0, 0, 0, size - 1, 23, size - 1),
 									 voxelrender::SceneCameraMode::Free, (float)size * 4.0f);
 		camera.update(0.0);

@@ -9,6 +9,8 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/BrushGizmo.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -19,7 +21,7 @@ TEST_F(RulerBrushTest, testMeasurement) {
 	ASSERT_TRUE(brush.init());
 
 	BrushContext ctx;
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
@@ -27,22 +29,22 @@ TEST_F(RulerBrushTest, testMeasurement) {
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
 	EXPECT_TRUE(brush.active());
-	EXPECT_EQ(brush.startPos(), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(brush.startPos(), math::Vec3i(0, 0, 0));
 
 	// move cursor - update tracks end position
-	ctx.cursorPosition = glm::ivec3(3, 4, 0);
+	ctx.cursorPosition = math::Vec3i(3, 4, 0);
 	brush.update(ctx, 0.0);
 
 	// second click finalizes end
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
-	EXPECT_EQ(brush.endPos(), glm::ivec3(3, 4, 0));
+	EXPECT_EQ(brush.endPos(), math::Vec3i(3, 4, 0));
 
 	voxel::RawVolume volume(voxel::Region(-1, 5));
 	// no voxels should be placed on the real volume
-	EXPECT_FALSE(voxel::isBlocked(volume.voxel(glm::ivec3(1, 1, 0)).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(volume.voxel(math::Vec3i(1, 1, 0)).getMaterial()));
 
-	EXPECT_EQ(brush.delta(), glm::ivec3(3, 4, 0));
+	EXPECT_EQ(brush.delta(), math::Vec3i(3, 4, 0));
 	EXPECT_FLOAT_EQ(brush.euclideanDistance(), 5.0f);
 	EXPECT_EQ(brush.manhattanDistance(), 7);
 
@@ -61,7 +63,7 @@ TEST_F(RulerBrushTest, testPreviewDoesNotModifyRealVolume) {
 	scenegraph::SceneGraph sceneGraph;
 
 	BrushContext ctx;
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
@@ -70,7 +72,7 @@ TEST_F(RulerBrushTest, testPreviewDoesNotModifyRealVolume) {
 	brush.endBrush(ctx);
 
 	// move cursor - update tracks end
-	ctx.cursorPosition = glm::ivec3(5, 5, 5);
+	ctx.cursorPosition = math::Vec3i(5, 5, 5);
 	brush.update(ctx, 0.0);
 
 	// between clicks: gizmo shows tracking line
@@ -79,15 +81,15 @@ TEST_F(RulerBrushTest, testPreviewDoesNotModifyRealVolume) {
 	brush.describeHandle(ctx, state);
 	EXPECT_EQ(state.operations, (uint32_t)BrushGizmo_Line);
 	EXPECT_EQ(state.numPositions, 2);
-	EXPECT_EQ(state.positions[0], glm::vec3(0.5f));
-	EXPECT_EQ(state.positions[1], glm::vec3(5.5f));
+	EXPECT_EQ(state.positions[0], math::Vec3f(0.5f));
+	EXPECT_EQ(state.positions[1], math::Vec3f(5.5f));
 
 	// second click finalizes end
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
 
 	// no voxels placed
-	EXPECT_FALSE(voxel::isBlocked(realVolume.voxel(glm::ivec3(2, 2, 2)).getMaterial()));
+	EXPECT_FALSE(voxel::isBlocked(realVolume.voxel(math::Vec3i(2, 2, 2)).getMaterial()));
 
 	brush.shutdown();
 }
@@ -97,7 +99,7 @@ TEST_F(RulerBrushTest, testDeltaIsAbsolute) {
 	ASSERT_TRUE(brush.init());
 
 	BrushContext ctx;
-	ctx.cursorPosition = glm::ivec3(5, 5, 5);
+	ctx.cursorPosition = math::Vec3i(5, 5, 5);
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
@@ -106,13 +108,13 @@ TEST_F(RulerBrushTest, testDeltaIsAbsolute) {
 	brush.endBrush(ctx);
 
 	// move cursor and finalize with second click
-	ctx.cursorPosition = glm::ivec3(2, 1, 3);
+	ctx.cursorPosition = math::Vec3i(2, 1, 3);
 	brush.update(ctx, 0.0);
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
 
 	// delta should be absolute values even when end < start
-	EXPECT_EQ(brush.delta(), glm::ivec3(3, 4, 2));
+	EXPECT_EQ(brush.delta(), math::Vec3i(3, 4, 2));
 
 	brush.shutdown();
 }
@@ -122,7 +124,7 @@ TEST_F(RulerBrushTest, testMeasurementPersistsAfterEndBrush) {
 	ASSERT_TRUE(brush.init());
 
 	BrushContext ctx;
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
@@ -131,7 +133,7 @@ TEST_F(RulerBrushTest, testMeasurementPersistsAfterEndBrush) {
 	brush.endBrush(ctx);
 
 	// move cursor, then second click sets end
-	ctx.cursorPosition = glm::ivec3(5, 5, 5);
+	ctx.cursorPosition = math::Vec3i(5, 5, 5);
 	brush.update(ctx, 0.0);
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
@@ -140,13 +142,13 @@ TEST_F(RulerBrushTest, testMeasurementPersistsAfterEndBrush) {
 	EXPECT_TRUE(brush.active());
 	EXPECT_TRUE(brush.hasMeasurement());
 	EXPECT_TRUE(brush.hasHandle(ctx));
-	EXPECT_EQ(brush.startPos(), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(brush.endPos(), glm::ivec3(5, 5, 5));
+	EXPECT_EQ(brush.startPos(), math::Vec3i(0, 0, 0));
+	EXPECT_EQ(brush.endPos(), math::Vec3i(5, 5, 5));
 
 	// cursor movement should NOT update the end position after measurement is complete
-	ctx.cursorPosition = glm::ivec3(9, 9, 9);
+	ctx.cursorPosition = math::Vec3i(9, 9, 9);
 	brush.update(ctx, 0.0);
-	EXPECT_EQ(brush.endPos(), glm::ivec3(5, 5, 5));
+	EXPECT_EQ(brush.endPos(), math::Vec3i(5, 5, 5));
 
 	brush.shutdown();
 }
@@ -156,8 +158,8 @@ TEST_F(RulerBrushTest, testReferencePositionMode) {
 	ASSERT_TRUE(brush.init());
 
 	BrushContext ctx;
-	ctx.referencePos = glm::ivec3(1, 2, 3);
-	ctx.cursorPosition = glm::ivec3(4, 6, 3);
+	ctx.referencePos = math::Vec3i(1, 2, 3);
+	ctx.cursorPosition = math::Vec3i(4, 6, 3);
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
@@ -171,19 +173,19 @@ TEST_F(RulerBrushTest, testReferencePositionMode) {
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
 	EXPECT_TRUE(brush.active());
-	EXPECT_EQ(brush.startPos(), glm::ivec3(1, 2, 3));
-	EXPECT_EQ(brush.endPos(), glm::ivec3(4, 6, 3));
+	EXPECT_EQ(brush.startPos(), math::Vec3i(1, 2, 3));
+	EXPECT_EQ(brush.endPos(), math::Vec3i(4, 6, 3));
 	EXPECT_FLOAT_EQ(brush.euclideanDistance(), 5.0f);
 
 	// cursor movement should NOT update end position (persisted)
-	ctx.cursorPosition = glm::ivec3(9, 9, 9);
+	ctx.cursorPosition = math::Vec3i(9, 9, 9);
 	brush.update(ctx, 0.0);
-	EXPECT_EQ(brush.endPos(), glm::ivec3(4, 6, 3));
+	EXPECT_EQ(brush.endPos(), math::Vec3i(4, 6, 3));
 
 	// but start should track reference position changes
-	ctx.referencePos = glm::ivec3(2, 3, 4);
+	ctx.referencePos = math::Vec3i(2, 3, 4);
 	brush.update(ctx, 0.0);
-	EXPECT_EQ(brush.startPos(), glm::ivec3(2, 3, 4));
+	EXPECT_EQ(brush.startPos(), math::Vec3i(2, 3, 4));
 
 	// gizmo should show the line
 	EXPECT_TRUE(brush.hasHandle(ctx));
@@ -193,10 +195,10 @@ TEST_F(RulerBrushTest, testReferencePositionMode) {
 	EXPECT_EQ(state.numPositions, 2);
 
 	// next click updates end position
-	ctx.cursorPosition = glm::ivec3(7, 8, 9);
+	ctx.cursorPosition = math::Vec3i(7, 8, 9);
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
-	EXPECT_EQ(brush.endPos(), glm::ivec3(7, 8, 9));
+	EXPECT_EQ(brush.endPos(), math::Vec3i(7, 8, 9));
 
 	// switching off reference mode resets state
 	brush.setUseReferencePos(false);

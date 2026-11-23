@@ -8,11 +8,12 @@
 
 #include "core/SharedPtr.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 struct character_0 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-9, 19, -7);
-	glm::ivec3 maxs(8, 32, 6);
+	math::Vec3i mins(-9, 19, -7);
+	math::Vec3i maxs(8, 32, 6);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-5, 23, -3, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -376,8 +377,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_1 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-8, 13, -4);
-	glm::ivec3 maxs(-1, 24, 3);
+	math::Vec3i mins(-8, 13, -4);
+	math::Vec3i maxs(-1, 24, 3);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-6, 13, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -593,8 +594,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_2 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-9, 18, -7);
-	glm::ivec3 maxs(8, 31, 6);
+	math::Vec3i mins(-9, 18, -7);
+	math::Vec3i maxs(8, 31, 6);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-5, 27, -3, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -902,8 +903,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_3 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(0, 13, -4);
-	glm::ivec3 maxs(7, 24, 3);
+	math::Vec3i mins(0, 13, -4);
+	math::Vec3i maxs(7, 24, 3);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(3, 13, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -1119,8 +1120,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_4 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-7, 2, -3);
-	glm::ivec3 maxs(-2, 13, 2);
+	math::Vec3i mins(-7, 2, -3);
+	math::Vec3i maxs(-2, 13, 2);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-6, 8, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -1245,8 +1246,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_5 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-9, 31, -7);
-	glm::ivec3 maxs(8, 44, 6);
+	math::Vec3i mins(-9, 31, -7);
+	math::Vec3i maxs(8, 44, 6);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-6, 35, -4, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -2270,8 +2271,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_6 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-7, 0, -4);
-	glm::ivec3 maxs(-3, 4, 7);
+	math::Vec3i mins(-7, 0, -4);
+	math::Vec3i maxs(-3, 4, 7);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-6, 0, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -2348,8 +2349,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_7 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-13, 28, -4);
-	glm::ivec3 maxs(-6, 41, 3);
+	math::Vec3i mins(-13, 28, -4);
+	math::Vec3i maxs(-6, 41, 3);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-9, 28, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -2489,8 +2490,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_8 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-12, 40, -12);
-	glm::ivec3 maxs(11, 63, 11);
+	math::Vec3i mins(-12, 40, -12);
+	math::Vec3i maxs(11, 63, 11);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-4, 46, -5, voxel::createVoxel(voxel::VoxelType::Generic,  80));
@@ -4078,8 +4079,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_9 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(2, 2, -3);
-	glm::ivec3 maxs(7, 13, 2);
+	math::Vec3i mins(2, 2, -3);
+	math::Vec3i maxs(7, 13, 2);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(3, 8, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -4204,8 +4205,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_10 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-11, 20, -3);
-	glm::ivec3 maxs(-6, 29, 2);
+	math::Vec3i mins(-11, 20, -3);
+	math::Vec3i maxs(-6, 29, 2);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-9, 20, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -4294,8 +4295,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_11 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(5, 28, -4);
-	glm::ivec3 maxs(12, 41, 3);
+	math::Vec3i mins(5, 28, -4);
+	math::Vec3i maxs(12, 41, 3);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(6, 28, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -4435,8 +4436,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_12 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(-10, 10, -4);
-	glm::ivec3 maxs(-5, 19, 1);
+	math::Vec3i mins(-10, 10, -4);
+	math::Vec3i maxs(-5, 19, 1);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(-9, 16, -3, voxel::createVoxel(voxel::VoxelType::Generic,  80));
@@ -4510,8 +4511,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_13 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(2, 0, -4);
-	glm::ivec3 maxs(6, 4, 7);
+	math::Vec3i mins(2, 0, -4);
+	math::Vec3i maxs(6, 4, 7);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(3, 0, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -4588,8 +4589,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_14 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(5, 19, -3);
-	glm::ivec3 maxs(10, 28, 2);
+	math::Vec3i mins(5, 19, -3);
+	math::Vec3i maxs(10, 28, 2);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(6, 20, -2, voxel::createVoxel(voxel::VoxelType::Generic,  207));
@@ -4678,8 +4679,8 @@ static core::SharedPtr<voxel::RawVolume> create() {
 };
 struct character_15 {
 static core::SharedPtr<voxel::RawVolume> create() {
-	glm::ivec3 mins(4, 10, -4);
-	glm::ivec3 maxs(9, 19, 1);
+	math::Vec3i mins(4, 10, -4);
+	math::Vec3i maxs(9, 19, 1);
 	voxel::Region region(mins, maxs);
 	core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 	v->setVoxel(5, 16, -3, voxel::createVoxel(voxel::VoxelType::Generic,  80));

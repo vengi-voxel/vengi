@@ -11,7 +11,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -29,13 +29,13 @@ struct PaletteUse {
 };
 
 struct PaintCell {
-	glm::ivec3 pos{0};
+	math::Vec3i pos{0};
 	bool erase = false;
 	uint8_t index = 0;
 };
 
 struct VoxelEdit {
-	glm::ivec3 pos{0};
+	math::Vec3i pos{0};
 	voxel::Voxel voxel;
 };
 
@@ -47,7 +47,7 @@ scenegraph::SceneGraphNode *authoringNode(ToolContext &ctx, const json::Json &ar
 /**
  * @brief Read [x, y, z] or {x, y, z}.
  */
-bool parseCell(const json::Json &value, glm::ivec3 &out, const char *what, core::String &error);
+bool parseCell(const json::Json &value, math::Vec3i &out, const char *what, core::String &error);
 
 /**
  * @brief Read a shape-brush style region object.
@@ -81,14 +81,14 @@ bool applyEdits(ToolContext &ctx, scenegraph::SceneGraphNode &node, const core::
 				int &changed, int &skipped);
 
 struct SolidVoxel {
-	glm::ivec3 pos{0};
+	math::Vec3i pos{0};
 	voxel::Voxel voxel;
 };
 
 bool collectSolids(const voxel::RawVolume &volume, core::DynamicArray<SolidVoxel> &out, core::String &error);
 
-int axisComponent(const glm::ivec3 &pos, math::Axis axis);
-void setAxisComponent(glm::ivec3 &pos, math::Axis axis, int value);
+int axisComponent(const math::Vec3i &pos, math::Axis axis);
+void setAxisComponent(math::Vec3i &pos, math::Axis axis, int value);
 bool parseAxis(const core::String &text, math::Axis &axis);
 
 } // namespace voxedit

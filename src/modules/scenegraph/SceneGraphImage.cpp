@@ -14,12 +14,12 @@
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include <glm/exponential.hpp>
-#include <glm/geometric.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/vec3.hpp>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 namespace {
@@ -74,36 +74,36 @@ uint8_t takeColor(palette::Palette &palette, color::RGBA rgba, const palette::Ma
 	return (uint8_t)best;
 }
 
-glm::mat3 normalMatrixFromWorld(const glm::mat4 &world) {
-	const glm::mat3 linear(world);
-	const float det = glm::determinant(linear);
+math::Mat3f normalMatrixFromWorld(const math::Mat4f &world) {
+	const math::Mat3f linear(world);
+	const float det = math::determinant(linear);
 	if (det > -1.0e-8f && det < 1.0e-8f) {
-		return glm::mat3(1.0f);
+		return math::Mat3f(1.0f);
 	}
-	return glm::transpose(glm::inverse(linear));
+	return math::transpose(math::inverse(linear));
 }
 
-bool isIdentityMat3(const glm::mat3 &m) {
-	return glm::all(glm::epsilonEqual(m[0], glm::vec3(1.0f, 0.0f, 0.0f), 0.001f)) &&
-		   glm::all(glm::epsilonEqual(m[1], glm::vec3(0.0f, 1.0f, 0.0f), 0.001f)) &&
-		   glm::all(glm::epsilonEqual(m[2], glm::vec3(0.0f, 0.0f, 1.0f), 0.001f));
+bool isIdentityMat3(const math::Mat3f &m) {
+	return math::all(math::epsilonEqual(m[0], math::Vec3f(1.0f, 0.0f, 0.0f), 0.001f)) &&
+		   math::all(math::epsilonEqual(m[1], math::Vec3f(0.0f, 1.0f, 0.0f), 0.001f)) &&
+		   math::all(math::epsilonEqual(m[2], math::Vec3f(0.0f, 0.0f, 1.0f), 0.001f));
 }
 
 // Reuse a palette slot when the direction is already stored. Otherwise append it.
-int takeNormal(palette::NormalPalette &dst, const glm::vec3 &direction) {
-	const float len2 = glm::dot(direction, direction);
+int takeNormal(palette::NormalPalette &dst, const math::Vec3f &direction) {
+	const float len2 = math::dot(direction, direction);
 	if (len2 <= 1.0e-8f) {
 		return palette::PaletteNormalNotFound;
 	}
-	const glm::vec3 n = direction * (1.0f / glm::sqrt(len2));
+	const math::Vec3f n = direction * (1.0f / math::sqrt(len2));
 	int match = palette::PaletteNormalNotFound;
 	if (dst.size() > 0) {
 		match = dst.getClosestMatch(n);
 		if (match != palette::PaletteNormalNotFound) {
-			const glm::vec3 existing = dst.normal3f((uint8_t)match);
-			const float existingLen2 = glm::dot(existing, existing);
+			const math::Vec3f existing = dst.normal3f((uint8_t)match);
+			const float existingLen2 = math::dot(existing, existing);
 			if (existingLen2 > 1.0e-8f &&
-				glm::dot(existing * (1.0f / glm::sqrt(existingLen2)), n) >= 0.99f) {
+				math::dot(existing * (1.0f / math::sqrt(existingLen2)), n) >= 0.99f) {
 				return match;
 			}
 		}
@@ -117,7 +117,7 @@ int takeNormal(palette::NormalPalette &dst, const glm::vec3 &direction) {
 }
 
 // Remap values are voxel normal indices (palette slot + NORMAL_PALETTE_OFFSET).
-void buildNormalRemap(const palette::NormalPalette &src, const glm::mat3 &normalMat, palette::NormalPalette &dst,
+void buildNormalRemap(const palette::NormalPalette &src, const math::Mat3f &normalMat, palette::NormalPalette &dst,
 					  uint8_t *remap) {
 	const bool identity = isIdentityMat3(normalMat);
 	for (int i = 0; i < palette::NormalPaletteMaxNormals; ++i) {
@@ -129,8 +129,8 @@ void buildNormalRemap(const palette::NormalPalette &src, const glm::mat3 &normal
 			remap[i] = (uint8_t)(i + NORMAL_PALETTE_OFFSET);
 			continue;
 		}
-		glm::vec3 direction = src.normal3f((uint8_t)i);
-		const float len2 = glm::dot(direction, direction);
+		math::Vec3f direction = src.normal3f((uint8_t)i);
+		const float len2 = math::dot(direction, direction);
 		if (len2 <= 1.0e-8f) {
 			continue;
 		}
@@ -199,8 +199,8 @@ void bakeNode(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneG
 }
 
 const voxel::RawVolume *tightVolume(const voxel::RawVolume *volume, core::ScopedPtr<voxel::RawVolume> &cropped) {
-	glm::ivec3 mins;
-	glm::ivec3 maxs;
+	math::Vec3i mins;
+	math::Vec3i maxs;
 	if (!voxelutil::computeSolidBounds(volume, mins, maxs)) {
 		return nullptr;
 	}
@@ -252,7 +252,7 @@ bool bakeScene(const scenegraph::SceneGraph &sceneGraph, int nodeId, scenegraph:
 		if (node.hasNormalPalette() && node.normalPalette().size() > 0) {
 			out.normalPalette = node.normalPalette();
 			out.useNormals = true;
-			const glm::mat3 normalMat = normalMatrixFromWorld(transform.worldMatrix());
+			const math::Mat3f normalMat = normalMatrixFromWorld(transform.worldMatrix());
 			if (out.owned != nullptr && !isIdentityMat3(normalMat)) {
 				uint8_t remap[palette::NormalPaletteMaxNormals];
 				buildNormalRemap(node.normalPalette(), normalMat, out.normalPalette, remap);
@@ -275,7 +275,7 @@ bool bakeScene(const scenegraph::SceneGraph &sceneGraph, int nodeId, scenegraph:
 		uint8_t remap[palette::NormalPaletteMaxNormals];
 		const uint8_t *remapPtr = nullptr;
 		if (out.useNormals && node.hasNormalPalette() && node.normalPalette().size() > 0) {
-			const glm::mat3 normalMat =
+			const math::Mat3f normalMat =
 				normalMatrixFromWorld(sceneGraph.transformForFrame(node, frameIdx).worldMatrix());
 			buildNormalRemap(node.normalPalette(), normalMat, out.normalPalette, remap);
 			remapPtr = remap;

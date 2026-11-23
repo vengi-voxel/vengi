@@ -3,18 +3,20 @@
  */
 
 #include "app/benchmark/AbstractBenchmark.h"
-#include "core/GLM.h"
 #include "math/OBB.h"
 #include "video/ShapeBuilder.h"
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
 
 class ShapeBuilderBenchmark : public app::AbstractBenchmark {};
 
 BENCHMARK_DEFINE_F(ShapeBuilderBenchmark, OBB)(benchmark::State &state) {
 	for (auto _ : state) {
 		video::ShapeBuilder shapeBuilder(100);
-		const glm::mat4 rot = glm::mat4_cast(glm::quat(glm::vec3(0.0f, state.range(), 0.0f)));
-		math::OBBF obb(glm::vec3(0.0f), glm::vec3(1.0f), rot);
+		const math::Mat4f rot = math::mat4_cast(math::Quatf(math::Vec3f(0.0f, state.range(), 0.0f)));
+		math::OBBF obb(math::Vec3f(0.0f), math::Vec3f(1.0f), rot);
 		shapeBuilder.obb(obb);
 	}
 }

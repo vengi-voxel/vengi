@@ -12,14 +12,11 @@
 #include "core/Log.h"
 #include "meshoptimizer.h"
 #include "util/BufferUtil.h"
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/vector_relational.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/norm.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
+#include <limits>
 
 namespace voxel {
 
@@ -181,11 +178,11 @@ const IndexType *Mesh::getRawIndexData() const {
 	return _vecIndices.data();
 }
 
-const glm::ivec3 &Mesh::getOffset() const {
+const math::Vec3i &Mesh::getOffset() const {
 	return _offset;
 }
 
-void Mesh::setOffset(const glm::ivec3 &offset) {
+void Mesh::setOffset(const math::Vec3i &offset) {
 	_offset = offset;
 }
 
@@ -194,7 +191,7 @@ void Mesh::clear() {
 	_vecIndices.release();
 	_normals.release();
 	_uvs.release();
-	_offset = glm::ivec3(0);
+	_offset = math::Vec3i(0);
 }
 
 bool Mesh::isEmpty() const {
@@ -243,7 +240,7 @@ IndexType Mesh::addVertex(const VoxelVertex &vertex) {
 	return (IndexType)_vecVertices.size() - 1;
 }
 
-IndexType Mesh::addVertex(const VoxelVertex &vertex, const glm::vec2 &uv) {
+IndexType Mesh::addVertex(const VoxelVertex &vertex, const math::Vec2f &uv) {
 	IndexType idx = addVertex(vertex);
 	// keep UVs in sync
 	if (_uvs.capacity() < _uvs.size() + 1) {
@@ -253,7 +250,7 @@ IndexType Mesh::addVertex(const VoxelVertex &vertex, const glm::vec2 &uv) {
 	return idx;
 }
 
-void Mesh::setNormal(IndexType index, const glm::vec3 &normal) {
+void Mesh::setNormal(IndexType index, const math::Vec3f &normal) {
 	// We should not add more vertices than our chosen index type will let us index.
 	core_assert_msg(_normals.size() < (std::numeric_limits<IndexType>::max)(),
 					"Mesh has more normals that the chosen index type allows.");
@@ -320,18 +317,18 @@ void Mesh::calculateNormals() {
 		return;
 	}
 	_normals.resize(_vecVertices.size());
-	_normals.fill(glm::vec3(0.0f));
+	_normals.fill(math::Vec3f(0.0f));
 
 	for (size_t i = 0; i < _vecIndices.size(); i += 3) {
 		IndexType index0 = _vecIndices[i + 0];
 		IndexType index1 = _vecIndices[i + 1];
 		IndexType index2 = _vecIndices[i + 2];
 
-		const glm::vec3 &v0 = _vecVertices[index0].position;
-		const glm::vec3 &v1 = _vecVertices[index1].position;
-		const glm::vec3 &v2 = _vecVertices[index2].position;
+		const math::Vec3f &v0 = _vecVertices[index0].position;
+		const math::Vec3f &v1 = _vecVertices[index1].position;
+		const math::Vec3f &v2 = _vecVertices[index2].position;
 
-		glm::vec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+		math::Vec3f normal = math::normalize(math::cross(v1 - v0, v2 - v0));
 
 		_normals[index0] += normal;
 		_normals[index1] += normal;
@@ -339,23 +336,23 @@ void Mesh::calculateNormals() {
 	}
 
 	for (size_t i = 0; i < _normals.size(); ++i) {
-		if (glm::length(_normals[i]) > 0.0f) {
-			_normals[i] = glm::normalize(_normals[i]);
+		if (math::length(_normals[i]) > 0.0f) {
+			_normals[i] = math::normalize(_normals[i]);
 		}
 	}
 }
 
 void Mesh::calculateBounds() {
-	_mins = glm::vec3(std::numeric_limits<float>::max());
-	_maxs = glm::vec3(std::numeric_limits<float>::lowest());
+	_mins = math::Vec3f(std::numeric_limits<float>::max());
+	_maxs = math::Vec3f(std::numeric_limits<float>::lowest());
 	for (const VoxelVertex &vertex : _vecVertices) {
-		_mins = glm::min(_mins, vertex.position);
-		_maxs = glm::max(_maxs, vertex.position);
+		_mins = math::min(_mins, vertex.position);
+		_maxs = math::max(_maxs, vertex.position);
 	}
 }
 
 bool Mesh::operator<(const Mesh &rhs) const {
-	return glm::all(glm::lessThan(getOffset(), rhs.getOffset()));
+	return math::all(math::lessThan(getOffset(), rhs.getOffset()));
 }
 
 struct Triangle {
@@ -369,7 +366,7 @@ struct Triangle {
 	voxel::IndexType vi1;
 	voxel::IndexType vi2;
 
-	inline glm::vec3 center() const {
+	inline math::Vec3f center() const {
 		return (v0->position + v1->position + v2->position) / 3.0f;
 	}
 
@@ -554,15 +551,15 @@ struct TriangleView {
 	}
 };
 
-bool Mesh::sort(const glm::vec3 &cameraPos) {
+bool Mesh::sort(const math::Vec3f &cameraPos) {
 	core_trace_scoped(MeshSort);
-	if (glm::all(glm::epsilonEqual(cameraPos, _lastCameraPos, glm::vec3(0.5f)))) {
+	if (math::all(math::epsilonEqual(cameraPos, _lastCameraPos, math::Vec3f(0.5f)))) {
 		return false;
 	}
 	_lastCameraPos = cameraPos;
 	TriangleView triView(_vecVertices, _vecIndices);
 	app::sort_parallel(triView.begin(), triView.end(), [&cameraPos](const Triangle &lhs, const Triangle &rhs) {
-		return glm::distance2(lhs.center(), cameraPos) < glm::distance2(rhs.center(), cameraPos);
+		return math::distance2(lhs.center(), cameraPos) < math::distance2(rhs.center(), cameraPos);
 	});
 	return true;
 }
@@ -617,12 +614,12 @@ void Mesh::optimize() {
 	meshopt_remapVertexBuffer(_vecVertices.data(), _vecVertices.data(), vertexCount, sizeof(VoxelVertex), remap.data());
 	if (!_normals.empty()) {
 		core_assert(_normals.size() == vertexCount);
-		meshopt_remapVertexBuffer(_normals.data(), _normals.data(), vertexCount, sizeof(glm::vec3), remap.data());
+		meshopt_remapVertexBuffer(_normals.data(), _normals.data(), vertexCount, sizeof(math::Vec3f), remap.data());
 		_normals.shrink(usedVertexCount);
 	}
 	if (!_uvs.empty()) {
 		core_assert(_uvs.size() == vertexCount);
-		meshopt_remapVertexBuffer(_uvs.data(), _uvs.data(), vertexCount, sizeof(glm::vec2), remap.data());
+		meshopt_remapVertexBuffer(_uvs.data(), _uvs.data(), vertexCount, sizeof(math::Vec2f), remap.data());
 		_uvs.shrink(usedVertexCount);
 	}
 	meshopt_remapIndexBuffer(_vecIndices.data(), _vecIndices.data(), _vecIndices.size(), remap.data());

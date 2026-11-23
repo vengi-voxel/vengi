@@ -12,6 +12,10 @@
 #include "video/Camera.h"
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/RenderUtil.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace io {
 class FileStream;
@@ -44,7 +48,7 @@ private:
 	 * @sa reset()
 	 */
 	bool _transformMementoLocked = false;
-	glm::mat4x4 _transformLocalMatrix{1.0f};
+	math::Mat4f _transformLocalMatrix{1.0f};
 
 	math::Axis _sliceAxis = math::Axis::Y;
 
@@ -76,13 +80,13 @@ private:
 
 	double _nowSeconds = 0.0;
 	double _resizeRequestSeconds = 1.0;
-	glm::ivec2 _resizeRequestSize{0, 0};
-	glm::ivec2 _pos{0};
-	glm::ivec2 _size{0};
+	math::Vec2i _resizeRequestSize{0, 0};
+	math::Vec2i _pos{0};
+	math::Vec2i _size{0};
 
 	struct Bounds {
-		glm::vec3 mins{0};
-		glm::vec3 maxs{0};
+		math::Vec3f mins{0};
+		math::Vec3f maxs{0};
 	};
 	Bounds _boundsNode;
 	Bounds _bounds;
@@ -119,17 +123,17 @@ private:
 	voxelrender::SceneCameraMode _cachedTitleCamMode = voxelrender::SceneCameraMode::Max;
 
 	bool wantGizmo() const;
-	glm::mat4 gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
+	math::Mat4f gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const;
 	void updateBounds(const scenegraph::SceneGraphNode &node);
 	const float *gizmoBounds(const scenegraph::SceneGraphNode &node);
-	bool gizmoManipulate(const video::Camera &camera, const float *boundsPtr, glm::mat4 &matrix, glm::mat4 &deltaMatrix,
+	bool gizmoManipulate(const video::Camera &camera, const float *boundsPtr, math::Mat4f &matrix, math::Mat4f &deltaMatrix,
 						 uint32_t operation) const;
 	uint32_t gizmoMode() const;
 	uint32_t gizmoOperation(const scenegraph::SceneGraphNode &node) const;
 	void renderToFrameBuffer();
-	bool setupFrameBuffer(const glm::ivec2 &frameBufferSize);
+	bool setupFrameBuffer(const math::Vec2i &frameBufferSize);
 	void updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
-						   const glm::mat4 &matrix);
+						   const math::Mat4f &matrix);
 	/**
 	 * See the return value documentation of @c renderGizmo()
 	 * @sa renderGizmo()
@@ -140,10 +144,10 @@ private:
 	 * @return true if the brush gizmo was interacted with
 	 */
 	bool runBrushGizmo(const video::Camera &camera, float headerSize);
-	void manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4 &deltaMatrix);
+	void manipulatePivot(scenegraph::SceneGraphNode &node, const math::Mat4f &deltaMatrix);
 	void manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-								 scenegraph::KeyFrameIndex &keyFrameIdx, const glm::mat4 &worldMatrix);
-	void manipulateNodeVolumeRegion(scenegraph::SceneGraphNode &node, const glm::mat4 &worldMatrix);
+								 scenegraph::KeyFrameIndex &keyFrameIdx, const math::Mat4f &worldMatrix);
+	void manipulateNodeVolumeRegion(scenegraph::SceneGraphNode &node, const math::Mat4f &worldMatrix);
 	void renderCameraManipulator(video::Camera &camera, float headerSize);
 	/**
 	 * @return @c true if the the gizmo was used in edit mode.
@@ -153,11 +157,11 @@ private:
 	 */
 	bool renderGizmo(video::Camera &camera, float headerSize, const ImVec2 &size);
 	void updateViewportInput(float headerSize);
-	void renderViewportImage(const glm::ivec2 &contentSize);
+	void renderViewportImage(const math::Vec2i &contentSize);
 	void dragAndDrop(float headerSize);
 	void renderCursor();
 	void renderCursorDetails() const;
-	bool renderSlicer(const glm::ivec2 &contentSize);
+	bool renderSlicer(const math::Vec2i &contentSize);
 	void renderViewport();
 	void toggleVideoRecording();
 	void menuBarPolygonModeOptions();
@@ -168,10 +172,10 @@ private:
 	void menuBarMementoOptions(command::CommandExecutionListener *listener);
 	void menuBarRecentColors();
 	void renderMenuBar(command::CommandExecutionListener *listener);
-	void resize(const glm::ivec2 &contentSize);
-	void resizeCamera(const glm::ivec2 &contentSize);
-	void delayResize(const glm::ivec2 &contentSize);
-	glm::vec2 dpiScale() const;
+	void resize(const math::Vec2i &contentSize);
+	void resizeCamera(const math::Vec2i &contentSize);
+	void delayResize(const math::Vec2i &contentSize);
+	math::Vec2f dpiScale() const;
 	image::ImagePtr renderToImage(const char *imageName);
 	void setRenderMode(voxelrender::RenderMode renderMode);
 
@@ -204,8 +208,8 @@ public:
 	void shutdown();
 
 	int id() const;
-	const glm::ivec2 &pos() const;
-	const glm::ivec2 &size() const;
+	const math::Vec2i &pos() const;
+	const math::Vec2i &size() const;
 
 	void resetCamera();
 	void setCamMode(voxelrender::SceneCameraMode mode);
@@ -239,11 +243,11 @@ inline bool Viewport::isVisible() const {
 	return _visible;
 }
 
-inline const glm::ivec2 &Viewport::pos() const {
+inline const math::Vec2i &Viewport::pos() const {
 	return _pos;
 }
 
-inline const glm::ivec2 &Viewport::size() const {
+inline const math::Vec2i &Viewport::size() const {
 	return _size;
 }
 

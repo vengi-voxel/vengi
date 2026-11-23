@@ -3,13 +3,14 @@
  */
 
 #include "ConcurrentSparseVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
 ConcurrentSparseVolume::ConcurrentSparseVolume(const voxel::Region &region) : _region(region), _isRegionValid(_region.isValid()) {
 }
 
-ConcurrentSparseVolume::Chunk *ConcurrentSparseVolume::findChunkUnsafe(const glm::ivec3 &chunkPos) const {
+ConcurrentSparseVolume::Chunk *ConcurrentSparseVolume::findChunkUnsafe(const math::Vec3i &chunkPos) const {
 	const auto iter = _chunks.find(chunkPos);
 	if (iter != _chunks.end()) {
 		return iter->value.get();
@@ -17,7 +18,7 @@ ConcurrentSparseVolume::Chunk *ConcurrentSparseVolume::findChunkUnsafe(const glm
 	return nullptr;
 }
 
-ConcurrentSparseVolume::ChunkPtr ConcurrentSparseVolume::findOrCreateChunkCached(const glm::ivec3 &chunkPos) {
+ConcurrentSparseVolume::ChunkPtr ConcurrentSparseVolume::findOrCreateChunkCached(const math::Vec3i &chunkPos) {
 	core::ScopedLock mapLock(_chunkLock);
 	if (_cachedChunkPosition == chunkPos && _cachedChunkPtr) {
 		return _cachedChunkPtr;
@@ -35,13 +36,13 @@ ConcurrentSparseVolume::ChunkPtr ConcurrentSparseVolume::findOrCreateChunkCached
 	return chunkPtr;
 }
 
-bool ConcurrentSparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
+bool ConcurrentSparseVolume::setVoxel(const math::Vec3i &pos, const voxel::Voxel &voxel) {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
 
-	const glm::ivec3 &chunkPos = sparse::chunkPosition(pos);
-	const glm::ivec3 &localPos = sparse::localPosition(pos);
+	const math::Vec3i &chunkPos = sparse::chunkPosition(pos);
+	const math::Vec3i &localPos = sparse::localPosition(pos);
 	const bool isEmptyVoxel = !_storeEmptyVoxels && isAir(voxel.getMaterial());
 
 	if (isEmptyVoxel) {
@@ -61,7 +62,7 @@ bool ConcurrentSparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel 
 		if (emptyAfter) {
 			if (_cachedChunkPosition == chunkPos) {
 				_cachedChunkPtr = ChunkPtr();
-				_cachedChunkPosition = glm::ivec3(INT32_MAX, INT32_MAX, INT32_MAX);
+				_cachedChunkPosition = math::Vec3i(INT32_MAX, INT32_MAX, INT32_MAX);
 			}
 			_chunks.remove(chunkPos);
 		}
@@ -90,9 +91,9 @@ void ConcurrentSparseVolume::setVoxelsRow(int x, int y, int z, int count, const 
 	const int endX = x + count;
 	int currentX = x;
 	while (currentX < endX) {
-		const glm::ivec3 pos(currentX, y, z);
-		const glm::ivec3 chunkPos = sparse::chunkPosition(pos);
-		const glm::ivec3 localPos = sparse::localPosition(pos);
+		const math::Vec3i pos(currentX, y, z);
+		const math::Vec3i chunkPos = sparse::chunkPosition(pos);
+		const math::Vec3i localPos = sparse::localPosition(pos);
 		const int chunkEndX = sparse::chunkBase(chunkPos).x + sparse::ChunkSide;
 		const int processUntilX = (endX < chunkEndX) ? endX : chunkEndX;
 
@@ -110,12 +111,12 @@ void ConcurrentSparseVolume::setVoxelsRow(int x, int y, int z, int count, const 
 	}
 }
 
-const Voxel &ConcurrentSparseVolume::voxel(const glm::ivec3 &pos) const {
+const Voxel &ConcurrentSparseVolume::voxel(const math::Vec3i &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return _emptyVoxel;
 	}
-	const glm::ivec3 &chunkPos = sparse::chunkPosition(pos);
-	const glm::ivec3 &localPos = sparse::localPosition(pos);
+	const math::Vec3i &chunkPos = sparse::chunkPosition(pos);
+	const math::Vec3i &localPos = sparse::localPosition(pos);
 
 	core::ScopedLock mapLock(_chunkLock);
 	const Chunk *chunk = findChunkUnsafe(chunkPos);
@@ -131,12 +132,12 @@ const Voxel &ConcurrentSparseVolume::voxel(const glm::ivec3 &pos) const {
 	return *v;
 }
 
-bool ConcurrentSparseVolume::hasVoxel(const glm::ivec3 &pos) const {
+bool ConcurrentSparseVolume::hasVoxel(const math::Vec3i &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
-	const glm::ivec3 &chunkPos = sparse::chunkPosition(pos);
-	const glm::ivec3 &localPos = sparse::localPosition(pos);
+	const math::Vec3i &chunkPos = sparse::chunkPosition(pos);
+	const math::Vec3i &localPos = sparse::localPosition(pos);
 
 	core::ScopedLock mapLock(_chunkLock);
 	const Chunk *chunk = findChunkUnsafe(chunkPos);
@@ -149,11 +150,11 @@ bool ConcurrentSparseVolume::hasVoxel(const glm::ivec3 &pos) const {
 }
 
 const Voxel &ConcurrentSparseVolume::voxel(int32_t x, int32_t y, int32_t z) const {
-	return voxel(glm::ivec3(x, y, z));
+	return voxel(math::Vec3i(x, y, z));
 }
 
 bool ConcurrentSparseVolume::hasVoxel(int x, int y, int z) const {
-	return hasVoxel(glm::ivec3(x, y, z));
+	return hasVoxel(math::Vec3i(x, y, z));
 }
 
 void ConcurrentSparseVolume::clear() {
@@ -161,7 +162,7 @@ void ConcurrentSparseVolume::clear() {
 	_chunks.clear();
 	_size = 0;
 	_cachedChunkPtr = ChunkPtr();
-	_cachedChunkPosition = glm::ivec3(INT32_MAX, INT32_MAX, INT32_MAX);
+	_cachedChunkPosition = math::Vec3i(INT32_MAX, INT32_MAX, INT32_MAX);
 }
 
 void ConcurrentSparseVolume::Sampler::invalidateChunkCache() {
@@ -171,8 +172,8 @@ void ConcurrentSparseVolume::Sampler::invalidateChunkCache() {
 void ConcurrentSparseVolume::Sampler::updateCurrentVoxel() {
 	int x, y, z;
 	readPosition(x, y, z);
-	const glm::ivec3 pos(x, y, z);
-	const glm::ivec3 chunkPos = sparse::chunkPosition(pos);
+	const math::Vec3i pos(x, y, z);
+	const math::Vec3i chunkPos = sparse::chunkPosition(pos);
 	_cachedLocal = sparse::localPosition(pos);
 	if (!_cachedChunk || _cachedChunkPos != chunkPos) {
 		core::ScopedLock mapLock(_volume->_chunkLock);
@@ -195,9 +196,9 @@ bool ConcurrentSparseVolume::Sampler::setVoxel(const Voxel &voxel) {
 
 	// Fast path: use cached chunk if valid
 	if (_cachedChunk) {
-		const glm::ivec3 currentChunkPos = sparse::chunkPosition(_posInVolume);
+		const math::Vec3i currentChunkPos = sparse::chunkPosition(_posInVolume);
 		if (currentChunkPos == _cachedChunkPos) {
-			const glm::ivec3 localPos = sparse::localPosition(_posInVolume);
+			const math::Vec3i localPos = sparse::localPosition(_posInVolume);
 			const bool isEmptyVoxel = !_volume->_storeEmptyVoxels && isAir(voxel.getMaterial());
 
 			core::ScopedLock chunkGuard(_cachedChunk->lock);
@@ -231,7 +232,7 @@ Region ConcurrentSparseVolume::calculateRegion() const {
 	}
 
 	core::ScopedLock mapLock(_chunkLock);
-	return sparse::calculateRegion(_chunks, [](const Chunk &chunk, glm::ivec3 &mins, glm::ivec3 &maxs) {
+	return sparse::calculateRegion(_chunks, [](const Chunk &chunk, math::Vec3i &mins, math::Vec3i &maxs) {
 		core::ScopedLock chunkLock(chunk.lock);
 		return chunk.data.calculateBounds(mins, maxs);
 	});

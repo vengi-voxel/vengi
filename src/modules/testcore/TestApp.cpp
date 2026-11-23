@@ -18,11 +18,7 @@
 #include "core/Log.h"
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_version.h>
-#include <glm/gtc/type_ptr.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
+#include "math/Vec3f.h"
 
 TestApp::TestApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
@@ -55,7 +51,7 @@ app::AppState TestApp::onConstruct() {
 			Log::info("target lock: %s", enabled.c_str());
 			if (enabled == "true") {
 				camera().setRotationType(video::CameraRotationType::Target);
-				camera().setTarget(glm::vec3(0.0f, 50.0f, 0.0f));
+				camera().setTarget(math::Vec3f(0.0f, 50.0f, 0.0f));
 				return;
 			}
 			camera().setRotationType(video::CameraRotationType::Eye);
@@ -96,7 +92,7 @@ app::AppState TestApp::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	if (!_plane.init() || !_plane.plane(glm::zero<glm::vec3>(), 0, _planeColor)) {
+	if (!_plane.init() || !_plane.plane(math::Vec3f(0.0f), 0, _planeColor)) {
 		return app::AppState::InitFailure;
 	}
 
@@ -106,8 +102,8 @@ app::AppState TestApp::onInit() {
 
 	Log::info("Set window dimensions: %ix%i (aspect: %f)", _frameBufferDimension.x, _frameBufferDimension.y, _aspect);
 	camera().setSize(windowDimension());
-	camera().setWorldPosition(glm::vec3(0.0f, 50.0f, 100.0f));
-	camera().lookAt(glm::vec3(0.0f));
+	camera().setWorldPosition(math::Vec3f(0.0f, 50.0f, 100.0f));
+	camera().lookAt(math::Vec3f(0.0f));
 
 	video::clearColor(::color::Black());
 	video::enable(video::State::DepthTest);
@@ -140,19 +136,19 @@ void TestApp::beforeUI() {
 		if (_cameraMotion) {
 			const bool current = isRelativeMouseMode();
 			if (current) {
-				camera().rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+				camera().rotate(math::Vec3f(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 				centerMousePosition();
 			}
 		}
 
 		_movement.update(_nowSeconds);
-		const glm::vec3 &moveDelta = _movement.moveDelta(_cameraSpeed);
+		const math::Vec3f &moveDelta = _movement.moveDelta(_cameraSpeed);
 		camera().move(moveDelta);
 	}
 	camera().update(_deltaFrameSeconds);
 
 	if (_renderPlane) {
-		_plane.render(camera(), glm::scale(glm::vec3(100.0f)));
+		_plane.render(camera(), math::scale(math::Vec3f(100.0f)));
 	}
 	{
 		core_trace_scoped(TestAppDoRender);
@@ -207,7 +203,7 @@ void TestApp::onRenderUI() {
 		ImGui::Checkbox("Camera motion", &_cameraMotion);
 	}
 	ImGui::InputFloat("Camera speed", &_cameraSpeed, 0.02f, 0.1f);
-	glm::vec3 cameraPos = camera().worldPosition();
+	math::Vec3f cameraPos = camera().worldPosition();
 	if (ImGui::InputVec3("Camera position", cameraPos)) {
 		camera().setWorldPosition(cameraPos);
 	}
@@ -260,7 +256,7 @@ bool TestApp::onMouseWheel(void *windowHandle, float x, float y, int32_t mouseId
 	if (_screenshotFrames >= 0) {
 		return retVal;
 	}
-	const float targetDistance = glm::clamp(camera().targetDistance() - y, 0.0f, 500.0f);
+	const float targetDistance = math::clamp(camera().targetDistance() - y, 0.0f, 500.0f);
 	camera().setTargetDistance(targetDistance);
 	return retVal;
 }

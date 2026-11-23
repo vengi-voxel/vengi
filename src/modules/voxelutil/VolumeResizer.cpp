@@ -6,6 +6,7 @@
 #include "app/App.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxel/RawVolumeWrapper.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -23,7 +24,7 @@ voxel::RawVolume* resize(const voxel::RawVolume* source, const voxel::Region &re
 	return newVolume;
 }
 
-voxel::RawVolume* resize(const voxel::RawVolume* source, const glm::ivec3& size, bool extendMins) {
+voxel::RawVolume* resize(const voxel::RawVolume* source, const math::Vec3i& size, bool extendMins) {
 	voxel::Region region = source->region();
 	region.shiftUpperCorner(size);
 	if (extendMins) {

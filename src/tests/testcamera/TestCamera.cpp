@@ -8,6 +8,9 @@
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
 #include "util/CustomButtonNames.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 TestCamera::TestCamera(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
@@ -34,7 +37,7 @@ app::AppState TestCamera::onInit() {
 	core_assert(ents - rows * cols == 0);
 	for (int row = 0; row < rows; ++row) {
 		for (int col = 0; col < cols; ++col) {
-			const glm::vec3 p(deltaX + distance * (float)col, deltaY + distance * (float)row, 50.0f);
+			const math::Vec3f p(deltaX + distance * (float)col, deltaY + distance * (float)row, 50.0f);
 			_entities[row * cols + col].setPosition(p).init();
 		}
 	}
@@ -46,11 +49,11 @@ app::AppState TestCamera::onInit() {
 		bool targetCamera = i == 0;
 		bool ortho = i == 2;
 
-		_renderCamera[i].setSize(ortho ? glm::ivec2(100, 50) : ortho ? glm::ivec2(100, 50) : windowDimension());
-		_renderCamera[i].setOmega(glm::vec3(0.0f, 0.1f, 0.0f));
+		_renderCamera[i].setSize(ortho ? math::Vec2i(100, 50) : ortho ? math::Vec2i(100, 50) : windowDimension());
+		_renderCamera[i].setOmega(math::Vec3f(0.0f, 0.1f, 0.0f));
 
-		_renderCamera[i].setWorldPosition(glm::zero<glm::vec3>());
-		_renderCamera[i].lookAt(glm::vec3(10.0f, 70.0f, 10.0f));
+		_renderCamera[i].setWorldPosition(math::Vec3f(0.0f));
+		_renderCamera[i].lookAt(math::Vec3f(10.0f, 70.0f, 10.0f));
 		_renderCamera[i].setNearPlane(nearPlane);
 		_renderCamera[i].setFarPlane(40.0f);
 
@@ -74,15 +77,15 @@ app::AppState TestCamera::onInit() {
 }
 
 void TestCamera::resetCameraPosition() {
-	camera().setWorldPosition(glm::vec3(0.0f, 100.0f, 250.0f));
+	camera().setWorldPosition(math::Vec3f(0.0f, 100.0f, 250.0f));
 	camera().setAngles(0.0f, 0.0f, 0.0f);
-	camera().lookAt(glm::vec3(0.0f));
+	camera().lookAt(math::Vec3f(0.0f));
 }
 
 void TestCamera::doRender() {
 	video::Camera c = _renderCamera[_targetCamera];
 	c.update(_deltaFrameSeconds);
-	const glm::vec4 colors[CAMERAS] = { color::Red(), color::Yellow(), color::Pink() };
+	const math::Vec4f colors[CAMERAS] = { color::Red(), color::Yellow(), color::Pink() };
 	render::CameraRenderer::Node node{0, core::move(c), color::getRGBA(colors[_targetCamera])};
 	_frustums[_targetCamera].render(camera(), node);
 	for (FrustumEntity& e : _entities) {
@@ -129,7 +132,7 @@ app::AppState TestCamera::onRunning() {
 	app::AppState state = Super::onRunning();
 	video::Camera& c = _renderCamera[_targetCamera];
 	if (ImGui::IsKeyPressed(ImGuiKey_LeftShift) || ImGui::IsKeyPressed(ImGuiKey_RightShift)) {
-		c.rotate(glm::vec3(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
+		c.rotate(math::Vec3f(_mouseRelativePos.y, _mouseRelativePos.x, 0.0f) * _rotationSpeed->floatVal());
 	}
 	camera().setTarget(c.worldPosition());
 	return state;

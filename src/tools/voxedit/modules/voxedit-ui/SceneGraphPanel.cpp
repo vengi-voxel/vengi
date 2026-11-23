@@ -25,7 +25,7 @@
 #include "voxedit-util/ModelNodeSettings.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelrender/RenderUtil.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/Vec4f.h"
 
 namespace voxedit {
 
@@ -212,8 +212,8 @@ void SceneGraphPanel::renderNode(video::Camera &camera, const scenegraph::SceneG
 			ImGui::OpenPopup(popupId);
 		}
 		if (ImGui::BeginPopup(popupId)) {
-			glm::vec4 editCol = color::fromRGBA(color);
-			if (ImGui::ColorPicker4("##picker", glm::value_ptr(editCol),
+			math::Vec4f editCol = color::fromRGBA(color);
+			if (ImGui::ColorPicker4("##picker", math::value_ptr(editCol),
 									ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview)) {
 				node.setColor(color::getRGBA(editCol));
 			}

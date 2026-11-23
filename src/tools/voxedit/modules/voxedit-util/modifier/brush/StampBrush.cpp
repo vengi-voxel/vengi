@@ -25,7 +25,7 @@
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include <glm/vector_relational.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -102,8 +102,8 @@ voxel::Region StampBrush::calcRegion(const BrushContext &ctx) const {
 	if (_volume == nullptr) {
 		return voxel::Region::InvalidRegion;
 	}
-	glm::ivec3 mins = ctx.cursorPosition + _offset;
-	const glm::ivec3 &dim = _volume->region().getDimensionsInVoxels();
+	math::Vec3i mins = ctx.cursorPosition + _offset;
+	const math::Vec3i &dim = _volume->region().getDimensionsInVoxels();
 	if (_center) {
 		mins -= dim / 2;
 	} else {
@@ -121,13 +121,13 @@ voxel::Region StampBrush::calcRegion(const BrushContext &ctx) const {
 			break;
 		}
 	}
-	glm::ivec3 maxs = mins + _volume->region().getDimensionsInCells();
+	math::Vec3i maxs = mins + _volume->region().getDimensionsInCells();
 	return voxel::Region(mins, maxs);
 }
 
 void StampBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 						  const voxel::Region &region) {
-	const glm::ivec3 &offset = region.isValid() ? region.getLowerCorner() : ctx.cursorPosition + _offset;
+	const math::Vec3i &offset = region.isValid() ? region.getLowerCorner() : ctx.cursorPosition + _offset;
 	if (!_volume) {
 		wrapper.setVoxel(offset.x, offset.y, offset.z, ctx.cursorVoxel);
 		return;
@@ -145,16 +145,16 @@ void StampBrush::reset() {
 	_center = true;
 	_continuous = false;
 	_volume = nullptr;
-	_offset = glm::ivec3(0);
+	_offset = math::Vec3i(0);
 }
 
-void StampBrush::setSize(const glm::ivec3 &size) {
+void StampBrush::setSize(const math::Vec3i &size) {
 	markSettingsChanged();
-	if (glm::any(glm::greaterThan(size, glm::ivec3(_maxVolumeSize->intVal())))) {
+	if (math::any(math::greaterThan(size, math::Vec3i(_maxVolumeSize->intVal())))) {
 		return;
 	}
 	if (_volume) {
-		_volume = voxelutil::resize(_volume, voxel::Region(glm::ivec3(0), size - 1));
+		_volume = voxelutil::resize(_volume, voxel::Region(math::Vec3i(0), size - 1));
 		_volume->translate(-_volume->region().getLowerCorner());
 		markDirty();
 	}
@@ -172,7 +172,7 @@ void StampBrush::setVolume(const voxel::RawVolume &volume, const palette::Palett
 		if (region.voxels() > maxSize * maxSize * maxSize) {
 			Log::warn("Stamp size exceeds the max allowed size of %ix%ix%i (check cvar %s)", maxSize, maxSize, maxSize,
 					  cfg::VoxEditMaxSuggestedVolumeSizePreview);
-			const glm::ivec3 &mins = region.getLowerCorner();
+			const math::Vec3i &mins = region.getLowerCorner();
 			const voxel::Region resize(mins, mins + maxSize - 1);
 			_volume = new voxel::RawVolume(*_volume, resize);
 		}

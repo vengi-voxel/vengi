@@ -25,15 +25,20 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "util/Version.h"
+#include "math/Scalar.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/ImportFace.h"
 
 #include "json/JSON.h"
-#include <glm/trigonometric.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/gtc/quaternion.hpp>
 #include <limits>
+#include <stdlib.h>
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -97,16 +102,16 @@ static void applyFormatMigrations(json::Json &json, BlockbenchFormat::BBMeta &bb
 
 struct KeyFrame {
 	core::String channel; // "rotation", "position", "scale"
-	core::Buffer<glm::vec3> dataPoints;
+	core::Buffer<math::Vec3f> dataPoints;
 	core::UUID uuid;
 	float time = 0.0f;
 	int color; // none = -1, white = 0, black, red, green, blue, yellow, pink, purple, orange, brown, cyan, gray, lightgray
 	scenegraph::InterpolationType interpolation = scenegraph::InterpolationType::Linear;
 	bool bezierLinked = false;
-	glm::vec3 bezierLeftTime{0.0f};
-	glm::vec3 bezierLeftValue{0.0f};
-	glm::vec3 bezierRightTime{0.0f};
-	glm::vec3 bezierRightValue{0.0f};
+	math::Vec3f bezierLeftTime{0.0f};
+	math::Vec3f bezierLeftValue{0.0f};
+	math::Vec3f bezierRightTime{0.0f};
+	math::Vec3f bezierRightValue{0.0f};
 };
 
 struct Animator {
@@ -196,9 +201,9 @@ static T toNumber(const json::Json &json, const char *key, T defaultValue) {
 	return (T)child.doubleVal();
 }
 
-static const glm::vec3 toVec3(const json::Json &json, const glm::vec3 &defaultValue = glm::vec3(0.0f)) {
+static const math::Vec3f toVec3(const json::Json &json, const math::Vec3f &defaultValue = math::Vec3f(0.0f)) {
 	if (json.isArray() && json.size() == 3) {
-		return glm::vec3(json.get(0).floatVal(), json.get(1).floatVal(), json.get(2).floatVal());
+		return math::Vec3f(json.get(0).floatVal(), json.get(1).floatVal(), json.get(2).floatVal());
 	}
 	if (!json.contains("x") || !json.contains("y") || !json.contains("z")) {
 		return defaultValue;
@@ -213,7 +218,7 @@ static const glm::vec3 toVec3(const json::Json &json, const glm::vec3 &defaultVa
 			const core::String str = val.str();
 			char *end = nullptr;
 			const float result = strtof(str.c_str(), &end);
-			if (end != str.c_str() && result != HUGE_VALF && result != -HUGE_VALF) {
+			if (end != str.c_str() && !math::isinf(result)) {
 				return result;
 			}
 			Log::debug("Failed to parse float from string: '%s'", str.c_str());
@@ -225,10 +230,10 @@ static const glm::vec3 toVec3(const json::Json &json, const glm::vec3 &defaultVa
 	const float x = getFloatValue(json.get("x"), defaultValue.x);
 	const float y = getFloatValue(json.get("y"), defaultValue.y);
 	const float z = getFloatValue(json.get("z"), defaultValue.z);
-	return glm::vec3(x, y, z);
+	return math::Vec3f(x, y, z);
 }
 
-static glm::vec3 toVec3(const json::Json &json, const char *key, const glm::vec3 &defaultValue = glm::vec3(0.0f)) {
+static math::Vec3f toVec3(const json::Json &json, const char *key, const math::Vec3f &defaultValue = math::Vec3f(0.0f)) {
 	if (!json.contains(key)) {
 		return defaultValue;
 	}
@@ -292,11 +297,11 @@ static int resolveTextureIndex(const json::Json &faceData, const BlockbenchForma
 }
 
 // Blockbench uses ZYX euler angle order for rotations
-static glm::quat eulerZYX(const glm::vec3 &degrees) {
-	const glm::vec3 rad = glm::radians(degrees);
-	return glm::angleAxis(rad.z, glm::vec3(0, 0, 1))
-		 * glm::angleAxis(rad.y, glm::vec3(0, 1, 0))
-		 * glm::angleAxis(rad.x, glm::vec3(1, 0, 0));
+static math::Quatf eulerZYX(const math::Vec3f &degrees) {
+	const math::Vec3f rad = math::radians(degrees);
+	return math::angleAxis(rad.z, math::Vec3f(0, 0, 1))
+		 * math::angleAxis(rad.y, math::Vec3f(0, 1, 0))
+		 * math::angleAxis(rad.x, math::Vec3f(1, 0, 0));
 }
 
 static bool isSupportModelFormat(const core::String &modelFormat) {
@@ -380,14 +385,14 @@ static bool parseMesh(const core::String &filename, const BlockbenchFormat::BBMe
 				Log::error("UV is not an array of size 2 in json file: %s", filename.c_str());
 				return false;
 			}
-			const glm::vec3 pos(vertexData.get(0).floatVal(), vertexData.get(1).floatVal(), vertexData.get(2).floatVal());
+			const math::Vec3f pos(vertexData.get(0).floatVal(), vertexData.get(1).floatVal(), vertexData.get(2).floatVal());
 			const int x = uvData.get(0).intVal();
 			const int y = uvData.get(1).intVal();
-			glm::vec2 uvCoords;
+			math::Vec2f uvCoords;
 			if (materialIdxValid) {
-				uvCoords = meshMaterialArray[materialIdx]->texture ? meshMaterialArray[materialIdx]->texture->uv(x, y) : glm::vec2(0.0f);
+				uvCoords = meshMaterialArray[materialIdx]->texture ? meshMaterialArray[materialIdx]->texture->uv(x, y) : math::Vec2f(0.0f);
 			} else {
-				uvCoords = glm::vec2(0.0f);
+				uvCoords = math::Vec2f(0.0f);
 			}
 			polygon.addVertex(pos, uvCoords);
 		}
@@ -396,7 +401,7 @@ static bool parseMesh(const core::String &filename, const BlockbenchFormat::BBMe
 	return true;
 }
 
-static bool parseCube(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
+static bool parseCube(const math::Vec3f &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 					  const json::Json &elementJson, const MeshMaterialArray &meshMaterialArray,
 					  BlockbenchFormat::BBElement &bbElement) {
 	if (!elementJson.contains("from") || !elementJson.contains("to")) {
@@ -415,17 +420,17 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 	bbElement.cube.to = scale * priv::toVec3(to);
 
 	// Apply stretch (non-uniform scale around cube center) then inflate
-	if (glm::any(glm::epsilonNotEqual(bbElement.stretch, glm::vec3(1.0f), 0.0001f))) {
-		const glm::vec3 center = (bbElement.cube.from + bbElement.cube.to) * 0.5f;
-		const glm::vec3 half = (bbElement.cube.to - bbElement.cube.from) * 0.5f;
-		const glm::vec3 stretchedHalf = half * bbElement.stretch;
+	if (math::any(math::epsilonNotEqual(bbElement.stretch, math::Vec3f(1.0f), 0.0001f))) {
+		const math::Vec3f center = (bbElement.cube.from + bbElement.cube.to) * 0.5f;
+		const math::Vec3f half = (bbElement.cube.to - bbElement.cube.from) * 0.5f;
+		const math::Vec3f stretchedHalf = half * bbElement.stretch;
 		bbElement.cube.from = center - stretchedHalf;
 		bbElement.cube.to = center + stretchedHalf;
 	}
 
 	// Apply inflate: expand geometry in all directions without changing UV mapping
 	if (bbElement.inflate != 0.0f) {
-		const glm::vec3 inf(bbElement.inflate);
+		const math::Vec3f inf(bbElement.inflate);
 		bbElement.cube.from -= inf;
 		bbElement.cube.to += inf;
 	}
@@ -502,21 +507,21 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 			const int uvH = materialIdx < (int)bbMeta.textureUVDimensions.size() && bbMeta.textureUVDimensions[materialIdx].y > 0
 				? bbMeta.textureUVDimensions[materialIdx].y
 				: meshMaterialArray[materialIdx]->texture->height();
-			glm::vec2 uv0 = image::Image::uv(uvs[0], uvs[1], uvW, uvH);
-			glm::vec2 uv1 = image::Image::uv(uvs[2] - 1, uvs[3] - 1, uvW, uvH);
+			math::Vec2f uv0 = image::Image::uv(uvs[0], uvs[1], uvW, uvH);
+			math::Vec2f uv1 = image::Image::uv(uvs[2] - 1, uvs[3] - 1, uvW, uvH);
 			// Apply UV rotation (0, 90, 180, 270 degrees) around the UV rect center
 			if (uvRotation == 90 || uvRotation == 270) {
-				const glm::vec2 center = (uv0 + uv1) * 0.5f;
-				const glm::vec2 half = (uv1 - uv0) * 0.5f;
+				const math::Vec2f center = (uv0 + uv1) * 0.5f;
+				const math::Vec2f half = (uv1 - uv0) * 0.5f;
 				if (uvRotation == 90) {
-					uv0 = center + glm::vec2(-half.y, half.x);
-					uv1 = center + glm::vec2(half.y, -half.x);
+					uv0 = center + math::Vec2f(-half.y, half.x);
+					uv1 = center + math::Vec2f(half.y, -half.x);
 				} else {
-					uv0 = center + glm::vec2(half.y, -half.x);
-					uv1 = center + glm::vec2(-half.y, half.x);
+					uv0 = center + math::Vec2f(half.y, -half.x);
+					uv1 = center + math::Vec2f(-half.y, half.x);
 				}
 			} else if (uvRotation == 180) {
-				const glm::vec2 tmp = uv0;
+				const math::Vec2f tmp = uv0;
 				uv0 = uv1;
 				uv1 = tmp;
 			}
@@ -530,24 +535,24 @@ static bool parseCube(const glm::vec3 &scale, const core::String &filename, cons
 	return true;
 }
 
-static void computeElementsAABB(const json::Json &elementsJson, glm::vec3 &mins, glm::vec3 &maxs) {
-	mins = glm::vec3(std::numeric_limits<float>::max());
-	maxs = glm::vec3(std::numeric_limits<float>::lowest());
+static void computeElementsAABB(const json::Json &elementsJson, math::Vec3f &mins, math::Vec3f &maxs) {
+	mins = math::Vec3f(std::numeric_limits<float>::max());
+	maxs = math::Vec3f(std::numeric_limits<float>::lowest());
 	for (const auto &elementJson : elementsJson) {
 		if (elementJson.contains("from") && elementJson.contains("to")) {
-			const glm::vec3 from = priv::toVec3(elementJson, "from");
-			const glm::vec3 to = priv::toVec3(elementJson, "to");
-			mins = glm::min(mins, glm::min(from, to));
-			maxs = glm::max(maxs, glm::max(from, to));
+			const math::Vec3f from = priv::toVec3(elementJson, "from");
+			const math::Vec3f to = priv::toVec3(elementJson, "to");
+			mins = math::min(mins, math::min(from, to));
+			maxs = math::max(maxs, math::max(from, to));
 		} else if (elementJson.contains("vertices")) {
 			const json::Json &verticesJson = elementJson.get("vertices");
 			if (verticesJson.isObject()) {
 				for (auto vIt = verticesJson.begin(); vIt != verticesJson.end(); ++vIt) {
 					json::Json entry = *vIt;
 					if (entry.isArray() && entry.size() == 3) {
-						const glm::vec3 pos(entry.get(0).floatVal(), entry.get(1).floatVal(), entry.get(2).floatVal());
-						mins = glm::min(mins, pos);
-						maxs = glm::max(maxs, pos);
+						const math::Vec3f pos(entry.get(0).floatVal(), entry.get(1).floatVal(), entry.get(2).floatVal());
+						mins = math::min(mins, pos);
+						maxs = math::max(maxs, pos);
 					}
 				}
 			}
@@ -555,29 +560,29 @@ static void computeElementsAABB(const json::Json &elementsJson, glm::vec3 &mins,
 	}
 }
 
-static bool parseBillboardAsCube(const glm::vec3 &scale, const json::Json &elementJson,
+static bool parseBillboardAsCube(const math::Vec3f &scale, const json::Json &elementJson,
 								 BlockbenchFormat::BBElement &bbElement) {
 	// Approximate billboard as a thin cube in the XY plane
-	glm::vec3 pos = priv::toVec3(elementJson, "position");
+	math::Vec3f pos = priv::toVec3(elementJson, "position");
 	if (elementJson.contains("origin") && !elementJson.contains("position")) {
 		pos = priv::toVec3(elementJson, "origin");
 	}
-	glm::vec2 size(2.0f, 2.0f);
+	math::Vec2f size(2.0f, 2.0f);
 	if (elementJson.contains("size")) {
 		const json::Json s = elementJson.get("size");
 		if (s.isArray() && s.size() >= 2) {
-			size = glm::vec2(s.get(0).floatVal(), s.get(1).floatVal());
+			size = math::Vec2f(s.get(0).floatVal(), s.get(1).floatVal());
 		}
 	}
 	bbElement.origin = scale * pos;
-	const glm::vec3 half(size.x * 0.5f, size.y * 0.5f, 0.5f);
+	const math::Vec3f half(size.x * 0.5f, size.y * 0.5f, 0.5f);
 	bbElement.cube.from = scale * (pos - half);
 	bbElement.cube.to = scale * (pos + half);
 	bbElement.type = BlockbenchFormat::BBElementType::Cube;
 	return true;
 }
 
-static bool parseElements(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
+static bool parseElements(const math::Vec3f &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 						  const json::Json &elementsJson, const MeshMaterialArray &meshMaterialArray,
 						  BlockbenchFormat::BBElementMap &bbElementMap, scenegraph::SceneGraph &sceneGraph) {
 	for (const auto &elementJson : elementsJson) {
@@ -592,7 +597,7 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 		bbElement.box_uv = elementJson.boolVal("box_uv", false);
 		bbElement.mirror_uv = elementJson.boolVal("mirror_uv", false);
 		bbElement.inflate = elementJson.floatVal("inflate", 0.0f);
-		bbElement.stretch = priv::toVec3(elementJson, "stretch", glm::vec3(1.0f));
+		bbElement.stretch = priv::toVec3(elementJson, "stretch", math::Vec3f(1.0f));
 		bbElement.color = priv::toNumber(elementJson, "color", 0);
 		bbElement.type = priv::toType(elementJson, "type");
 
@@ -658,7 +663,7 @@ static bool parseElements(const glm::vec3 &scale, const core::String &filename, 
 	return true;
 }
 
-static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
+static bool parseOutliner(const math::Vec3f &scale, const core::String &filename, const BlockbenchFormat::BBMeta &bbMeta,
 						  const json::Json &entryJson, BlockbenchFormat::BBNode &bbNode) {
 	bbNode.name = json::toStr(entryJson, "name");
 	bbNode.uuid = core::UUID(json::toStr(entryJson, "uuid"));
@@ -668,7 +673,7 @@ static bool parseOutliner(const glm::vec3 &scale, const core::String &filename, 
 	bbNode.origin = scale * priv::toVec3(entryJson, "origin");
 	bbNode.rotation = priv::toVec3(entryJson, "rotation");
 	bbNode.color = priv::toNumber(entryJson, "color", 0);
-	bbNode.size = priv::toVec3(entryJson, "size", glm::vec3(1.0f));
+	bbNode.size = priv::toVec3(entryJson, "size", math::Vec3f(1.0f));
 
 	Log::debug("Node name: %s (%i references)", bbNode.name.c_str(), (int)bbNode.referenced.size());
 
@@ -753,16 +758,16 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 
 	// In Blockbench, 'from' and 'to' define opposite corners of a cube, but they might not be in min/max order.
 	// We normalize them to ensure we have proper bounds. This doesn't affect UV coordinates - those are handled separately per face.
-	glm::vec3 mins = glm::min(bbElement.cube.from, bbElement.cube.to);
-	glm::vec3 maxs = glm::max(bbElement.cube.from, bbElement.cube.to);
+	math::Vec3f mins = math::min(bbElement.cube.from, bbElement.cube.to);
+	math::Vec3f maxs = math::max(bbElement.cube.from, bbElement.cube.to);
 
-	glm::vec3 size = maxs - mins;
+	math::Vec3f size = maxs - mins;
 	// even a plane is one voxel for us
-	size.x = glm::clamp(size.x, 1.0f, 1.0f + size.x);
-	size.y = glm::clamp(size.y, 1.0f, 1.0f + size.y);
-	size.z = glm::clamp(size.z, 1.0f, 1.0f + size.z);
+	size.x = math::clamp(size.x, 1.0f, 1.0f + size.x);
+	size.y = math::clamp(size.y, 1.0f, 1.0f + size.y);
+	size.z = math::clamp(size.z, 1.0f, 1.0f + size.z);
 
-	mins = glm::round(mins);
+	mins = math::round(mins);
 	maxs = mins + size - 1.0f;
 	voxel::Region region(mins, maxs);
 	if (!region.isValid()) {
@@ -777,7 +782,7 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 	model.setVisible(bbNode.visible);
 
 	// Calculate pivot
-	const glm::vec3 pivot = (bbElement.origin - bbElement.cube.from) / size;
+	const math::Vec3f pivot = (bbElement.origin - bbElement.cube.from) / size;
 	model.setPivot(pivot);
 
 	const voxel::FaceNames order[] = {voxel::FaceNames::NegativeX, voxel::FaceNames::PositiveX,
@@ -797,8 +802,8 @@ bool BlockbenchFormat::generateCube(const BBNode &bbNode, const BBElement &bbEle
 	}
 	model.volume()->translate(-region.getLowerCorner());
 	// Compute position relative to parent group
-	const glm::vec3 localFrom = bbElement.cube.from - bbNode.origin;
-	const glm::vec3 regionsize = region.getDimensionsInVoxels();
+	const math::Vec3f localFrom = bbElement.cube.from - bbNode.origin;
+	const math::Vec3f regionsize = region.getDimensionsInVoxels();
 	const int nodeId = sceneGraph.emplace(core::move(model), parent);
 	if (nodeId == InvalidNodeId) {
 		return false;
@@ -859,7 +864,7 @@ bool BlockbenchFormat::addNode(const BBNode &bbNode, const BBElementMap &bbEleme
 		group.setName(bbChild.name);
 		group.setVisible(bbChild.visible);
 		group.setLocked(bbChild.locked);
-		const glm::vec3 localOrigin = bbChild.origin - bbNode.origin;
+		const math::Vec3f localOrigin = bbChild.origin - bbNode.origin;
 		int groupParent = sceneGraph.emplace(core::move(group), parent);
 		if (groupParent == InvalidNodeId) {
 			Log::error("Failed to add node: %s", bbChild.name.c_str());
@@ -974,7 +979,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 				}
 				// Pre-5.0 compatibility: invert X for position/rotation, Y for rotation
 				if (priv::versionLessThan(bbMeta.version, 5, 0)) {
-					for (glm::vec3 &dp : kf.dataPoints) {
+					for (math::Vec3f &dp : kf.dataPoints) {
 						if (kf.channel == "position" || kf.channel == "rotation") {
 							dp.x = -dp.x;
 						}
@@ -994,7 +999,7 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 					}
 				} else {
 					// v5+: negate X and Z for rotation and position
-					for (glm::vec3 &dp : kf.dataPoints) {
+					for (math::Vec3f &dp : kf.dataPoints) {
 						if (kf.channel == "position" || kf.channel == "rotation") {
 							dp.x = -dp.x;
 							dp.z = -dp.z;
@@ -1076,28 +1081,28 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 				scenegraph::SceneGraphTransform transform = kf.transform();
 				// If this is a fresh keyframe, seed it with the base transform so
 				// channels not animated by this keyframe keep their rest pose values
-				if (glm::all(glm::epsilonEqual(transform.localTranslation(), glm::vec3(0.0f), 0.001f))
-					&& glm::all(glm::epsilonEqual(glm::vec3(glm::eulerAngles(transform.localOrientation())), glm::vec3(0.0f), 0.001f))) {
+				if (math::all(math::epsilonEqual(transform.localTranslation(), math::Vec3f(0.0f), 0.001f))
+					&& math::all(math::epsilonEqual(math::Vec3f(math::eulerAngles(transform.localOrientation())), math::Vec3f(0.0f), 0.001f))) {
 					transform.setLocalTranslation(baseTransform.localTranslation());
 					transform.setLocalOrientation(baseTransform.localOrientation());
 					transform.setLocalScale(baseTransform.localScale());
 				}
-				const glm::vec3 &value = keyframe.dataPoints[0];
+				const math::Vec3f &value = keyframe.dataPoints[0];
 
 				// In Blockbench, animation values are additive to the node's base transform
 
 				if (keyframe.channel == "rotation") {
 					// Blockbench uses ZYX euler angle order (degrees), additive to base rotation
-					const glm::quat animRot = priv::eulerZYX(value);
-					const glm::quat baseRot = baseTransform.localOrientation();
+					const math::Quatf animRot = priv::eulerZYX(value);
+					const math::Quatf baseRot = baseTransform.localOrientation();
 					transform.setLocalOrientation(baseRot * animRot);
 					Log::debug("  Rotation: %.2f, %.2f, %.2f degrees", value.x, value.y, value.z);
 				} else if (keyframe.channel == "position") {
-					const glm::vec3 basePos = baseTransform.localTranslation();
+					const math::Vec3f basePos = baseTransform.localTranslation();
 					transform.setLocalTranslation(basePos + value);
 					Log::debug("  Position: %.2f, %.2f, %.2f", value.x, value.y, value.z);
 				} else if (keyframe.channel == "scale") {
-					const glm::vec3 baseScale = baseTransform.localScale();
+					const math::Vec3f baseScale = baseTransform.localScale();
 					transform.setLocalScale(baseScale * value);
 					Log::debug("  Scale: %.2f, %.2f, %.2f", value.x, value.y, value.z);
 				} else {
@@ -1144,8 +1149,8 @@ static bool parseAnimations(const core::String &filename, const BlockbenchFormat
 			if (!kfs.empty()) {
 				scenegraph::SceneGraphTransform &t = kfs[0].transform();
 				// Only set base if the first keyframe is at frame 0 and has identity translation
-				if (kfs[0].frameIdx == 0 && glm::all(glm::epsilonEqual(t.localTranslation(), glm::vec3(0.0f), 0.001f))
-					&& glm::all(glm::epsilonEqual(glm::vec3(glm::eulerAngles(t.localOrientation())), glm::vec3(0.0f), 0.001f))) {
+				if (kfs[0].frameIdx == 0 && math::all(math::epsilonEqual(t.localTranslation(), math::Vec3f(0.0f), 0.001f))
+					&& math::all(math::epsilonEqual(math::Vec3f(math::eulerAngles(t.localOrientation())), math::Vec3f(0.0f), 0.001f))) {
 					t.setLocalTranslation(baseTransform.localTranslation());
 					t.setLocalOrientation(baseTransform.localOrientation());
 					t.setLocalScale(baseTransform.localScale());
@@ -1216,7 +1221,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 			bbMeta.resolution.y = priv::toNumber(resolutionJson, "height", 16);
 		}
 	} else {
-		bbMeta.resolution = glm::ivec2(16, 16);
+		bbMeta.resolution = math::Vec2i(16, 16);
 	}
 
 	json::Json textures = json.contains("textures") ? json.get("textures") : json::Json::array();
@@ -1322,7 +1327,7 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		}
 		const int uvWidth = priv::toNumber(texture, "uv_width", image && image->isLoaded() ? image->width() : bbMeta.resolution.x);
 		const int uvHeight = priv::toNumber(texture, "uv_height", image && image->isLoaded() ? image->height() : bbMeta.resolution.y);
-		bbMeta.textureUVDimensions.push_back(glm::ivec2(uvWidth, uvHeight));
+		bbMeta.textureUVDimensions.push_back(math::Vec2i(uvWidth, uvHeight));
 	}
 	json::Json elementsJson = json.contains("elements") ? json.get("elements") : json::Json::array();
 	if (!elementsJson.isArray()) {
@@ -1330,9 +1335,9 @@ bool BlockbenchFormat::voxelizeGroups(const core::String &filename, const io::Ar
 		return false;
 	}
 
-	glm::vec3 elementsMins, elementsMaxs;
+	math::Vec3f elementsMins, elementsMaxs;
 	priv::computeElementsAABB(elementsJson, elementsMins, elementsMaxs);
-	const glm::vec3 scale = getInputScale(elementsMins, elementsMaxs);
+	const math::Vec3f scale = getInputScale(elementsMins, elementsMaxs);
 	BBElementMap bbElementMap;
 	if (!priv::parseElements(scale, filename, bbMeta, elementsJson, meshMaterialArray, bbElementMap, sceneGraph)) {
 		Log::error("Failed to parse elements");
@@ -1463,7 +1468,7 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 	json::Json groups = json::Json::array();
 	json::Json outliner = json::Json::array();
 
-	auto vec3Array = [](const glm::vec3 &v) {
+	auto vec3Array = [](const math::Vec3f &v) {
 		json::Json arr = json::Json::array();
 		arr.push((double)v.x);
 		arr.push((double)v.y);
@@ -1476,13 +1481,13 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region &region = node.region();
-		const glm::vec3 dims = region.getDimensionsInVoxels();
+		const math::Vec3f dims = region.getDimensionsInVoxels();
 		const scenegraph::SceneGraphTransform &t = node.transform(0);
-		const glm::vec3 worldPos = t.worldTranslation();
-		const glm::vec3 pivot = node.pivot();
-		const glm::vec3 from = worldPos - pivot * dims;
-		const glm::vec3 to = from + dims;
-		const glm::vec3 origin = worldPos;
+		const math::Vec3f worldPos = t.worldTranslation();
+		const math::Vec3f pivot = node.pivot();
+		const math::Vec3f from = worldPos - pivot * dims;
+		const math::Vec3f to = from + dims;
+		const math::Vec3f origin = worldPos;
 
 		json::Json element = json::Json::object();
 		element.set("name", node.name());
@@ -1494,8 +1499,8 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 		element.set("visibility", node.visible());
 		element.set("locked", node.locked());
 
-		const glm::vec3 euler = glm::degrees(glm::eulerAngles(t.localOrientation()));
-		if (glm::any(glm::epsilonNotEqual(euler, glm::vec3(0.0f), 0.001f))) {
+		const math::Vec3f euler = math::degrees(math::eulerAngles(t.localOrientation()));
+		if (math::any(math::epsilonNotEqual(euler, math::Vec3f(0.0f), 0.001f))) {
 			element.set("rotation", vec3Array(euler));
 		}
 
@@ -1607,8 +1612,8 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 			group.set("visibility", node.visible());
 			group.set("locked", node.locked());
 			group.set("isOpen", true);
-			const glm::vec3 euler = glm::degrees(glm::eulerAngles(node.transform(0).localOrientation()));
-			if (glm::any(glm::epsilonNotEqual(euler, glm::vec3(0.0f), 0.001f))) {
+			const math::Vec3f euler = math::degrees(math::eulerAngles(node.transform(0).localOrientation()));
+			if (math::any(math::epsilonNotEqual(euler, math::Vec3f(0.0f), 0.001f))) {
 				group.set("rotation", toVec3(euler));
 			}
 			groupsOut.push(group);
@@ -1697,30 +1702,30 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 			json::Json keyframes = json::Json::array();
 			for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
 				const float time = (float)kf.frameIdx / fps;
-				maxTime = glm::max(maxTime, time);
+				maxTime = math::max(maxTime, time);
 				const scenegraph::SceneGraphTransform &t = kf.transform();
 
-				const glm::quat baseRot = baseTransform.localOrientation();
-				const glm::quat currentRot = t.localOrientation();
-				const glm::quat deltaRot = glm::conjugate(baseRot) * currentRot;
+				const math::Quatf baseRot = baseTransform.localOrientation();
+				const math::Quatf currentRot = t.localOrientation();
+				const math::Quatf deltaRot = math::conjugate(baseRot) * currentRot;
 				const float sinX = 2.0f * (deltaRot.w * deltaRot.x - deltaRot.y * deltaRot.z);
-				const float x = glm::abs(sinX) >= 1.0f ? glm::sign(sinX) * glm::half_pi<float>() : glm::asin(sinX);
+				const float x = math::abs(sinX) >= 1.0f ? math::sign(sinX) * math::halfPi : math::asin(sinX);
 				const float sinYcosX = 2.0f * (deltaRot.w * deltaRot.y + deltaRot.x * deltaRot.z);
 				const float cosYcosX = 1.0f - 2.0f * (deltaRot.x * deltaRot.x + deltaRot.y * deltaRot.y);
-				const float y = glm::atan(sinYcosX, cosYcosX);
+				const float y = math::atan(sinYcosX, cosYcosX);
 				const float sinZcosX = 2.0f * (deltaRot.w * deltaRot.z + deltaRot.x * deltaRot.y);
 				const float cosZcosX = 1.0f - 2.0f * (deltaRot.x * deltaRot.x + deltaRot.z * deltaRot.z);
-				const float z = glm::atan(sinZcosX, cosZcosX);
-				const glm::vec3 deltaEuler = glm::degrees(glm::vec3(x, y, z));
-				const glm::vec3 deltaPos = t.localTranslation() - baseTransform.localTranslation();
-				const glm::vec3 baseScale = baseTransform.localScale();
-				const glm::vec3 curScale = t.localScale();
-				const glm::vec3 scaleVal(baseScale.x != 0.0f ? curScale.x / baseScale.x : curScale.x,
+				const float z = math::atan(sinZcosX, cosZcosX);
+				const math::Vec3f deltaEuler = math::degrees(math::Vec3f(x, y, z));
+				const math::Vec3f deltaPos = t.localTranslation() - baseTransform.localTranslation();
+				const math::Vec3f baseScale = baseTransform.localScale();
+				const math::Vec3f curScale = t.localScale();
+				const math::Vec3f scaleVal(baseScale.x != 0.0f ? curScale.x / baseScale.x : curScale.x,
 										baseScale.y != 0.0f ? curScale.y / baseScale.y : curScale.y,
 										baseScale.z != 0.0f ? curScale.z / baseScale.z : curScale.z);
 
 				// Inverse of v5+ load conversion: negate X and Z for position/rotation
-				auto pushChannel = [&](const char *channel, const glm::vec3 &value, bool invertXZ) {
+				auto pushChannel = [&](const char *channel, const math::Vec3f &value, bool invertXZ) {
 					json::Json channelKf = json::Json::object();
 					channelKf.set("channel", channel);
 					channelKf.set("time", (double)time);
@@ -1736,13 +1741,13 @@ bool BlockbenchFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, cons
 					keyframes.push(channelKf);
 				};
 
-				if (glm::any(glm::epsilonNotEqual(deltaEuler, glm::vec3(0.0f), 0.1f))) {
+				if (math::any(math::epsilonNotEqual(deltaEuler, math::Vec3f(0.0f), 0.1f))) {
 					pushChannel("rotation", deltaEuler, true);
 				}
-				if (glm::any(glm::epsilonNotEqual(deltaPos, glm::vec3(0.0f), 0.01f))) {
+				if (math::any(math::epsilonNotEqual(deltaPos, math::Vec3f(0.0f), 0.01f))) {
 					pushChannel("position", deltaPos, true);
 				}
-				if (glm::any(glm::epsilonNotEqual(scaleVal, glm::vec3(1.0f), 0.01f))) {
+				if (math::any(math::epsilonNotEqual(scaleVal, math::Vec3f(1.0f), 0.01f))) {
 					pushChannel("scale", scaleVal, false);
 				}
 			}

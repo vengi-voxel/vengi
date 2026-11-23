@@ -11,6 +11,7 @@
 #include "io/FileStream.h"
 #include "voxedit-util/network/ProtocolVersion.h"
 #include "voxedit-util/network/SessionPlayer.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -72,7 +73,7 @@ TEST_F(SessionRecorderTest, testRecordAndPlaybackRoundtrip) {
 	modifier.setBrushType(BrushType::Shape);
 	modifier.shapeBrush().setStrokeMode();
 	modifier.setModifierType(ModifierType::Place);
-	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
+	modifier.setCursorPosition(math::Vec3i(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
@@ -179,7 +180,7 @@ TEST_F(SessionRecorderTest, testPlaybackPausesOnDirtyScene) {
 	modifier.setBrushType(BrushType::Shape);
 	modifier.shapeBrush().setStrokeMode();
 	modifier.setModifierType(ModifierType::Place);
-	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
+	modifier.setCursorPosition(math::Vec3i(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
@@ -228,7 +229,7 @@ TEST_F(SessionRecorderTest, testRecordingDuringNetworkMode) {
 	modifier.setBrushType(BrushType::Shape);
 	modifier.shapeBrush().setStrokeMode();
 	modifier.setModifierType(ModifierType::Place);
-	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::NegativeX);
+	modifier.setCursorPosition(math::Vec3i(0, 0, 0), voxel::FaceNames::NegativeX);
 	ASSERT_TRUE(modifier.beginBrush());
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));

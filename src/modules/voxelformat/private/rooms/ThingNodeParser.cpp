@@ -7,7 +7,6 @@
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/Tokenizer.h"
-#include <glm/gtc/type_ptr.hpp>
 
 namespace voxelformat {
 
@@ -123,11 +122,11 @@ static bool parseMediaCanvas(NodeSpec &nodeSpec, core::Tokenizer &tok) {
 		} else if (token == "mediaVolume") {
 			nodeSpec.mediaCanvas.mediaVolume = core::string::toInt(tok.next());
 		} else if (token == "localPos") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.mediaCanvas.localPos), " ,\t");
+			core::string::parseVec3(tok.next(), math::value_ptr(nodeSpec.mediaCanvas.localPos), " ,\t");
 		} else if (token == "localRot") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.mediaCanvas.localRot), " ,\t");
+			core::string::parseVec3(tok.next(), math::value_ptr(nodeSpec.mediaCanvas.localRot), " ,\t");
 		} else if (token == "localScale") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.mediaCanvas.localScale), " ,\t");
+			core::string::parseVec3(tok.next(), math::value_ptr(nodeSpec.mediaCanvas.localScale), " ,\t");
 		} else {
 			Log::debug("ThingFormat: Ignoring token: '%s'", token.c_str());
 		}
@@ -197,11 +196,11 @@ bool ThingNodeParser::parseNode(core::Tokenizer &tok, NodeSpec &nodeSpec) const 
 			core::string::parseHex(tok.next().c_str(), nodeSpec.color.r, nodeSpec.color.g, nodeSpec.color.b,
 								   nodeSpec.color.a);
 		} else if (token == "localPos") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localPos), " ,\t");
+			core::string::parseVec3(tok.next(), math::value_ptr(nodeSpec.localPos), " ,\t");
 		} else if (token == "localRot") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localRot), " ,\t");
+			core::string::parseVec3(tok.next(), math::value_ptr(nodeSpec.localRot), " ,\t");
 		} else if (token == "localSize") {
-			core::string::parseVec3(tok.next(), glm::value_ptr(nodeSpec.localSize), " ,\t");
+			core::string::parseVec3(tok.next(), math::value_ptr(nodeSpec.localSize), " ,\t");
 		} else if (token == "scale") {
 			nodeSpec.scale = core::string::toFloat(tok.next());
 		} else {

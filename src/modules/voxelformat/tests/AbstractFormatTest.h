@@ -10,6 +10,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -92,8 +93,8 @@ protected:
 	 * translation into the pivot on save. @p updateTransforms is false to cover
 	 * a dirty world translation (e.g. VOX load then save-as).
 	 */
-	void testSaveLoadBakedPivot(const core::String &filename, Format *format, const glm::vec3 &pivot,
-								const glm::vec3 &translation, const glm::vec3 &expectedPivot,
+	void testSaveLoadBakedPivot(const core::String &filename, Format *format, const math::Vec3f &pivot,
+								const math::Vec3f &translation, const math::Vec3f &expectedPivot,
 								bool updateTransforms = true);
 	void testConvert(const core::String &srcFilename, Format &srcFormat, const core::String &destFilename,
 							 Format &destFormat, voxel::ValidateFlags flags = voxel::ValidateFlags::All,

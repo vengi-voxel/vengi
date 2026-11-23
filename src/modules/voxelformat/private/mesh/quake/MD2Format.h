@@ -5,6 +5,8 @@
 #pragma once
 
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "math/Vec3f.h"
+#include "math/BVec4.h"
 
 namespace voxelformat {
 /**
@@ -36,7 +38,7 @@ public:
 	static_assert(sizeof(MD2Header) == 68, "MD2Header size is wrong");
 
 	struct MD2Vertex {
-		glm::bvec4 vertex; // scaled byte to fit frame mins/maxs
+		math::BVec4 vertex; // scaled byte to fit frame mins/maxs
 						   // only x, y and z are used, w is a padding byte
 	};
 	static_assert(sizeof(MD2Vertex) == 4, "MD2Vertex size is wrong");
@@ -59,7 +61,7 @@ private:
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-					const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
+					const math::Vec3f &scale = math::Vec3f(1.0f), bool quad = false, bool withColor = true,
 					bool withTexCoords = true) override {
 		return false;
 	}

@@ -9,6 +9,8 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/TransformBrush.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -130,7 +132,7 @@ bool TransformBrushTool::execute(const json::Json &id, const json::Json &args, T
 	brushContext.referencePos = brushContext.cursorPosition;
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = glm::ivec3(1);
+	brushContext.gridResolution = math::Vec3i(1);
 
 	// Create the modifier wrapper
 
@@ -146,28 +148,28 @@ bool TransformBrushTool::execute(const json::Json &id, const json::Json &args, T
 		if (args.contains("moveOffset")) {
 			const json::Json &offset = args.get("moveOffset");
 			transformBrush.setMoveOffset(
-				glm::ivec3(offset.intVal("x", 0), offset.intVal("y", 0), offset.intVal("z", 0)));
+				math::Vec3i(offset.intVal("x", 0), offset.intVal("y", 0), offset.intVal("z", 0)));
 		}
 		break;
 	case TransformMode::Shear:
 		if (args.contains("shearOffset")) {
 			const json::Json &offset = args.get("shearOffset");
 			transformBrush.setShearOffset(
-				glm::ivec3(offset.intVal("x", 0), offset.intVal("y", 0), offset.intVal("z", 0)));
+				math::Vec3i(offset.intVal("x", 0), offset.intVal("y", 0), offset.intVal("z", 0)));
 		}
 		break;
 	case TransformMode::Scale:
 		if (args.contains("scale")) {
 			const json::Json &s = args.get("scale");
 			transformBrush.setScale(
-				glm::vec3(s.floatVal("x", 1.0f), s.floatVal("y", 1.0f), s.floatVal("z", 1.0f)));
+				math::Vec3f(s.floatVal("x", 1.0f), s.floatVal("y", 1.0f), s.floatVal("z", 1.0f)));
 		}
 		break;
 	case TransformMode::Rotate:
 		if (args.contains("rotation")) {
 			const json::Json &r = args.get("rotation");
 			transformBrush.setRotationDegrees(
-				glm::vec3(r.floatVal("x", 0.0f), r.floatVal("y", 0.0f), r.floatVal("z", 0.0f)));
+				math::Vec3f(r.floatVal("x", 0.0f), r.floatVal("y", 0.0f), r.floatVal("z", 0.0f)));
 		}
 		break;
 	default:

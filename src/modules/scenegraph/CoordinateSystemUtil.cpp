@@ -5,18 +5,17 @@
 #include "CoordinateSystemUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "math/CoordinateSystemUtil.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
 // https://stackoverflow.com/a/71168853/774082
 bool convertCoordinateSystem(math::CoordinateSystem from, math::CoordinateSystem to,
 							 scenegraph::SceneGraph &sceneGraph) {
-	glm::mat4x4 transformationMatrix1;
-	glm::mat4x4 transformationMatrix2;
+	math::Mat4f transformationMatrix1;
+	math::Mat4f transformationMatrix2;
 	if (!math::coordinateSystemTransformationMatrix(from, to, transformationMatrix1, transformationMatrix2)) {
 		return false;
 	}
@@ -32,8 +31,8 @@ bool convertCoordinateSystem(math::CoordinateSystem from, math::CoordinateSystem
 		core::Buffer<scenegraph::SceneGraphKeyFrame> &frames = e->value;
 		for (scenegraph::SceneGraphKeyFrame &frame : frames) {
 			// the world matrix is still in 'fromSystem' coordinates
-			const glm::mat4x4 fromWorldMatrix = frame.transform().worldMatrix();
-			const glm::mat4x4 toWorldMatrix = fromWorldMatrix * transformationMatrix;
+			const math::Mat4f fromWorldMatrix = frame.transform().worldMatrix();
+			const math::Mat4f toWorldMatrix = fromWorldMatrix * transformationMatrix;
 			frame.transform().setWorldMatrix(toWorldMatrix);
 		}
 	}
@@ -45,8 +44,8 @@ bool convertCoordinateSystem(math::CoordinateSystem from, math::CoordinateSystem
 			SceneGraphKeyFrames &frames = e->value;
 			for (scenegraph::SceneGraphKeyFrame &frame : frames) {
 				// the local matrix is still in 'fromSystem' coordinates
-				const glm::mat4x4 fromLocalMatrix = frame.transform().localMatrix();
-				const glm::mat4x4 toLocalMatrix = transformationMatrix1 * fromLocalMatrix * transformationMatrix2;
+				const math::Mat4f fromLocalMatrix = frame.transform().localMatrix();
+				const math::Mat4f toLocalMatrix = transformationMatrix1 * fromLocalMatrix * transformationMatrix2;
 				frame.transform().setLocalMatrix(toLocalMatrix);
 			}
 		}
@@ -65,12 +64,12 @@ SceneGraphTransform convertCoordinateSystem(math::CoordinateSystem from, const S
 	return transform;
 }
 
-glm::vec3 convertUnityToVengi(const glm::vec3 &unityPos) {
-	return glm::vec3(unityPos.x, unityPos.y, -unityPos.z);
+math::Vec3f convertUnityToVengi(const math::Vec3f &unityPos) {
+	return math::Vec3f(unityPos.x, unityPos.y, -unityPos.z);
 }
 
-glm::quat convertUnityToVengi(const glm::quat &unityRot) {
-	return glm::quat::wxyz(-unityRot.w, unityRot.x, unityRot.y, -unityRot.z);
+math::Quatf convertUnityToVengi(const math::Quatf &unityRot) {
+	return math::Quatf::wxyz(-unityRot.w, unityRot.x, unityRot.y, -unityRot.z);
 }
 
 } // namespace scenegraph

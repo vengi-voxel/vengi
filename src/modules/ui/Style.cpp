@@ -4,10 +4,11 @@
 
 #include "Style.h"
 #include "ui/IMGUIApp.h"
+#include "math/Vec4f.h"
 
 namespace style {
 
-const glm::vec4 &color(StyleColor color) {
+const math::Vec4f &color(StyleColor color) {
 	ui::IMGUIApp *app = imguiApp();
 	if (app) {
 		return app->color(color);

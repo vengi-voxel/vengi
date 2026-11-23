@@ -13,6 +13,7 @@
 #include "palette/Palette.h"
 #include "voxel/Voxel.h"
 #include <iomanip>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -52,7 +53,7 @@ inline ::std::ostream &operator<<(::std::ostream &os, const voxel::RawVolume &vo
 		for (int32_t y = upperY; y >= lowerY; --y) {
 			os << "y " << std::setw(3) << y << ": ";
 			for (int32_t x = lowerX; x <= upperX; ++x) {
-				const glm::ivec3 pos(x, y, z);
+				const math::Vec3i pos(x, y, z);
 				const voxel::Voxel &voxel = volume.voxel(pos);
 				if (voxel.getMaterial() == VoxelType::Air) {
 					os << ".";

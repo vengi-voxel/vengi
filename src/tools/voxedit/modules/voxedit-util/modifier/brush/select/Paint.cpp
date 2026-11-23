@@ -9,6 +9,7 @@
 #include "voxel/Connectivity.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 namespace select {
@@ -23,7 +24,7 @@ voxel::Region Paint::calcRegion(const BrushContext &ctx, const AABBBrushState &s
 
 void Paint::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 					 const voxel::Region &region, const AABBBrushState &state) {
-	const glm::ivec3 center = ctx.cursorPosition;
+	const math::Vec3i center = ctx.cursorPosition;
 	const int rad = state.radius;
 	const int radSq = rad * rad;
 	const bool growOnly =
@@ -45,8 +46,8 @@ void Paint::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 		}
 		if (growOnly) {
 			bool hasSelectedNeighbor = false;
-			for (const glm::ivec3 &off : ::voxel::arrayPathfinderFaces) {
-				const glm::ivec3 npos(x + off.x, y + off.y, z + off.z);
+			for (const math::Vec3i &off : ::voxel::arrayPathfinderFaces) {
+				const math::Vec3i npos(x + off.x, y + off.y, z + off.z);
 				if (ctx.targetVolumeRegion.containsPoint(npos)) {
 					const ::voxel::Voxel &neighborVoxel = wrapper.voxel(npos);
 					if (!::voxel::isAir(neighborVoxel.getMaterial()) &&

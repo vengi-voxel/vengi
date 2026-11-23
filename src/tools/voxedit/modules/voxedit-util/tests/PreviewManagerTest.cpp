@@ -22,6 +22,8 @@
 #include "voxedit-util/modifier/brush/BrushType.h"
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -45,7 +47,7 @@ protected:
 			++updateCalls;
 			lastContext = ctx;
 		}
-		void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) override {
+		void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const math::Mat4f &modelMatrix) override {
 			++renderCalls;
 		}
 		void waitForPendingExtractions() override {
@@ -68,7 +70,7 @@ protected:
 		core::Var::registerVar(renderNormals);
 	}
 
-	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType,
+	void prepare(Modifier &modifier, const math::Vec3i &mins, const math::Vec3i &maxs, ModifierType modifierType,
 				 BrushType brushType) {
 		if (brushType == BrushType::Shape) {
 			modifier.shapeBrush().setBoxMode();
@@ -135,20 +137,20 @@ TEST_F(PreviewManagerTest, testPlanePreviewTracksExtrusionHeightUntilRelease) {
 		modifier.setHitCursorVoxel(ground);
 		const int initial = mode == ModifierType::Place ? 2 : 1;
 		const int direction = mode == ModifierType::Place ? 1 : -1;
-		modifier.setCursorPosition(glm::ivec3(1, initial, 1), voxel::FaceNames::PositiveY);
+		modifier.setCursorPosition(math::Vec3i(1, initial, 1), voxel::FaceNames::PositiveY);
 		ASSERT_TRUE(modifier.beginEdit());
 		const int heights[] = {initial, initial + direction * 2, initial + direction};
 		for (int height : heights) {
 			SCOPED_TRACE(height);
-			modifier.setCursorPosition(glm::ivec3(1, height, 1), voxel::FaceNames::PositiveY);
+			modifier.setCursorPosition(math::Vec3i(1, height, 1), voxel::FaceNames::PositiveY);
 			modifier.previewManager().updateBrushVolumePreview(modifier, node.palette(), volume, mgr.sceneGraph());
 			const voxel::RawVolume *preview = modifier.previewManager().previewVolume();
 			ASSERT_NE(nullptr, preview);
-			EXPECT_EQ(voxel::Region(0, glm::min(initial, height), 0, 2, glm::max(initial, height), 2), preview->region());
+			EXPECT_EQ(voxel::Region(0, math::min(initial, height), 0, 2, math::max(initial, height), 2), preview->region());
 			EXPECT_FALSE(modifier.previewManager().brushPreview().useSimplePreview);
 			for (int x = 0; x < 3; ++x) {
 				for (int z = 0; z < 3; ++z) {
-					for (int y = glm::min(initial, height); y <= glm::max(initial, height); ++y) {
+					for (int y = math::min(initial, height); y <= math::max(initial, height); ++y) {
 						EXPECT_EQ(mode == ModifierType::Place ? 2 : 1, preview->voxel(x, y, z).getColor());
 						EXPECT_FALSE(voxel::isAir(preview->voxel(x, y, z).getMaterial()));
 					}
@@ -201,7 +203,7 @@ TEST_F(PreviewManagerTest, testNormalPreview) {
 		modifier.normalBrush().setStrokeMode();
 		modifier.normalBrush().setPaintMode(mode);
 		modifier.setNormalColorIndex(7);
-		const glm::ivec3 pos(1, 0, 0);
+		const math::Vec3i pos(1, 0, 0);
 		prepare(modifier, pos, pos, ModifierType::Place, BrushType::Normal);
 		uint8_t expected = 7 + NORMAL_PALETTE_OFFSET;
 		if (mode == NormalBrush::PaintMode::Auto) {
@@ -271,15 +273,15 @@ TEST_F(PreviewManagerTest, testPaintPreviewRendersWithItsOwnPalette) {
 			brush.setRadius(0);
 			brush.setBlendOpacity(0.5f);
 			if (mirror) {
-				brush.setMirrorAxis(math::Axis::X, glm::ivec3(0));
+				brush.setMirrorAxis(math::Axis::X, math::Vec3i(0));
 			}
-			const glm::ivec3 pos(2, 0, 0);
-			glm::ivec3 mirrorPos = pos;
-			glm::ivec3 mirrorMax = pos;
+			const math::Vec3i pos(2, 0, 0);
+			math::Vec3i mirrorPos = pos;
+			math::Vec3i mirrorMax = pos;
 			brush.getMirrorBox(mirrorPos, mirrorMax);
-			for (const glm::ivec3 &center : {pos, mirrorPos}) {
+			for (const math::Vec3i &center : {pos, mirrorPos}) {
 				node.volume()->setVoxel(center, voxel::Voxel(voxel::VoxelType::Generic, 0));
-				node.volume()->setVoxel(center + glm::ivec3(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 1));
+				node.volume()->setVoxel(center + math::Vec3i(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 1));
 			}
 			const voxel::RawVolume original(*node.volume());
 			const uint64_t paletteHash = node.palette().hash();
@@ -302,7 +304,7 @@ TEST_F(PreviewManagerTest, testPaintPreviewRendersWithItsOwnPalette) {
 			BrushContext input = modifier.brushContext();
 			input.preview = true;
 			ASSERT_TRUE(brush.execute(mgr.sceneGraph(), output, input));
-			const auto expectedColor = [&](const glm::ivec3 &p) {
+			const auto expectedColor = [&](const math::Vec3i &p) {
 				return expected.palette().color(expected.volume()->voxel(p).getColor());
 			};
 			EXPECT_NE(node.palette().color(0), expectedColor(pos));
@@ -345,15 +347,15 @@ TEST_F(PreviewManagerTest, testBlurPreviewMatchesFullVolumeIncludingMirrors) {
 		brush.setRadius(0);
 		brush.setBlendOpacity(1.0f);
 		if (mirror) {
-			brush.setMirrorAxis(math::Axis::X, glm::ivec3(0));
+			brush.setMirrorAxis(math::Axis::X, math::Vec3i(0));
 		}
-		const glm::ivec3 pos(2, 0, 0);
-		glm::ivec3 mirrorPos = pos;
-		glm::ivec3 mirrorMax = pos;
+		const math::Vec3i pos(2, 0, 0);
+		math::Vec3i mirrorPos = pos;
+		math::Vec3i mirrorMax = pos;
 		brush.getMirrorBox(mirrorPos, mirrorMax);
-		for (const glm::ivec3 &center : {pos, mirrorPos}) {
+		for (const math::Vec3i &center : {pos, mirrorPos}) {
 			node.volume()->setVoxel(center, voxel::Voxel(voxel::VoxelType::Generic, 0, 5));
-			node.volume()->setVoxel(center + glm::ivec3(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 200, 5));
+			node.volume()->setVoxel(center + math::Vec3i(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 200, 5));
 		}
 		const voxel::RawVolume original(*node.volume());
 		const uint64_t paletteHash = node.palette().hash();
@@ -409,7 +411,7 @@ TEST_F(PreviewManagerTest, testZeroRadiusStrokeCursorMoves) {
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
 	palette.setSize(2);
 	for (int i = 0; i < 3; ++i) {
-		const glm::ivec3 pos(i, 0, 0);
+		const math::Vec3i pos(i, 0, 0);
 		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
 		triggerPreviewUpdate(modifier, palette);
 		const BrushPreview &preview = modifier.brushPreview();
@@ -422,7 +424,7 @@ TEST_F(PreviewManagerTest, testZeroRadiusStrokeCursorMoves) {
 	{
 		util::ScopedVarChange scoped(cfg::VoxEditShapeFaceCursor, "false");
 		for (int i = 0; i < 3; ++i) {
-			const glm::ivec3 pos(i, 0, 0);
+			const math::Vec3i pos(i, 0, 0);
 			modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
 			triggerPreviewUpdate(modifier, palette);
 			const BrushPreview &preview = modifier.brushPreview();
@@ -433,7 +435,7 @@ TEST_F(PreviewManagerTest, testZeroRadiusStrokeCursorMoves) {
 
 	modifier.shapeBrush().setRadius(2);
 	for (int i = 0; i < 3; ++i) {
-		const glm::ivec3 pos(i, 0, 0);
+		const math::Vec3i pos(i, 0, 0);
 		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
 		triggerPreviewUpdate(modifier, palette);
 		const BrushPreview &preview = modifier.brushPreview();
@@ -455,7 +457,7 @@ TEST_F(PreviewManagerTest, testPreviewShapeAABB) {
 	ModifierEx modifier(&mgr, renderer);
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(-1), math::Vec3i(1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
@@ -466,7 +468,7 @@ TEST_F(PreviewManagerTest, testPreviewShapeAABB) {
 	const BrushPreview &preview = modifier.brushPreview();
 	EXPECT_TRUE(preview.useSimplePreview) << "AABB shape should use simple preview";
 	EXPECT_TRUE(preview.simplePreviewRegion.isValid()) << "Simple preview region should be valid";
-	EXPECT_EQ(preview.simplePreviewRegion, voxel::Region(glm::ivec3(-1), glm::ivec3(1)));
+	EXPECT_EQ(preview.simplePreviewRegion, voxel::Region(math::Vec3i(-1), math::Vec3i(1)));
 	EXPECT_EQ(modifier.previewVolume(), nullptr) << "Simple preview should not create a volume";
 	modifier.shutdown();
 	mgr.shutdown();
@@ -485,7 +487,7 @@ TEST_F(PreviewManagerTest, testPreviewShapeEllipse) {
 	ASSERT_TRUE(modifier.init());
 
 	command::Command::execute("shapeellipse");
-	prepare(modifier, glm::ivec3(-2), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(-2), math::Vec3i(2), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
@@ -536,7 +538,7 @@ TEST_F(PreviewManagerTest, testPreviewPaintNeedsExistingVoxels) {
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
 
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Paint, BrushType::Paint);
+	prepare(modifier, math::Vec3i(-1), math::Vec3i(1), ModifierType::Paint, BrushType::Paint);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
@@ -564,7 +566,7 @@ TEST_F(PreviewManagerTest, testPreviewReset) {
 	ASSERT_TRUE(modifier.init());
 
 	command::Command::execute("shapeellipse");
-	prepare(modifier, glm::ivec3(-2), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(-2), math::Vec3i(2), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
@@ -599,7 +601,7 @@ TEST_F(PreviewManagerTest, testErasePreviewShowsOnlyRemovedSourceVoxels) {
 	ASSERT_TRUE(modifier.init());
 
 	command::Command::execute("shapeellipse");
-	prepare(modifier, glm::ivec3(-2), glm::ivec3(2), ModifierType::Erase, BrushType::Shape);
+	prepare(modifier, math::Vec3i(-2), math::Vec3i(2), ModifierType::Erase, BrushType::Shape);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
@@ -639,8 +641,8 @@ TEST_F(PreviewManagerTest, testPreviewMirror) {
 	ASSERT_TRUE(modifier.init());
 
 	command::Command::execute("shapeellipse");
-	modifier.shapeBrush().setMirrorAxis(math::Axis::X, glm::ivec3(0));
-	prepare(modifier, glm::ivec3(1, -1, -1), glm::ivec3(3, 1, 1), ModifierType::Place, BrushType::Shape);
+	modifier.shapeBrush().setMirrorAxis(math::Axis::X, math::Vec3i(0));
+	prepare(modifier, math::Vec3i(1, -1, -1), math::Vec3i(3, 1, 1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
@@ -666,8 +668,8 @@ TEST_F(PreviewManagerTest, testPreviewSimpleMirror) {
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
 
-	modifier.shapeBrush().setMirrorAxis(math::Axis::X, glm::ivec3(0));
-	prepare(modifier, glm::ivec3(1, -1, -1), glm::ivec3(3, 1, 1), ModifierType::Place, BrushType::Shape);
+	modifier.shapeBrush().setMirrorAxis(math::Axis::X, math::Vec3i(0));
+	prepare(modifier, math::Vec3i(1, -1, -1), math::Vec3i(3, 1, 1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});
@@ -693,7 +695,7 @@ TEST_F(PreviewManagerTest, testPreviewNoVolume) {
 	ModifierEx modifier(&mgr, renderer);
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(-1), math::Vec3i(1), ModifierType::Place, BrushType::Shape);
 
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA{255, 0, 0, 255});

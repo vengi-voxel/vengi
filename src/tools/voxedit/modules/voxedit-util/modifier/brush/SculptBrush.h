@@ -8,7 +8,7 @@
 #include "operation/SculptOperation.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/Optional.h"
 #include "core/ScopedPtr.h"
 #include "ui/IconsLucide.h"
@@ -22,7 +22,6 @@
 #include "voxelutil/VolumeSculpt.h"
 
 #include <climits>
-#include <glm/vec3.hpp>
 
 namespace voxel {
 class RawVolume;
@@ -230,7 +229,7 @@ inline float SculptBrush::strength() const {
 
 inline void SculptBrush::setStrength(float strength) {
 	markSettingsChanged();
-	_parameters.strength = glm::clamp(strength, 0.0f, 1.0f);
+	_parameters.strength = math::clamp(strength, 0.0f, 1.0f);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -241,7 +240,7 @@ inline int SculptBrush::iterations() const {
 
 inline void SculptBrush::setIterations(int iterations) {
 	markSettingsChanged();
-	_parameters.iterations = glm::clamp(iterations, 1, MaxFlattenIterations);
+	_parameters.iterations = math::clamp(iterations, 1, MaxFlattenIterations);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -260,7 +259,7 @@ inline int SculptBrush::heightThreshold() const {
 
 inline void SculptBrush::setHeightThreshold(int threshold) {
 	markSettingsChanged();
-	_parameters.heightThreshold = glm::clamp(threshold, 1, MaxHeightThreshold);
+	_parameters.heightThreshold = math::clamp(threshold, 1, MaxHeightThreshold);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -282,7 +281,7 @@ inline int SculptBrush::trimPerStep() const {
 
 inline void SculptBrush::setTrimPerStep(int value) {
 	markSettingsChanged();
-	_parameters.trimPerStep = glm::clamp(value, 1, MaxTrimPerStep);
+	_parameters.trimPerStep = math::clamp(value, 1, MaxTrimPerStep);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -293,7 +292,7 @@ inline int SculptBrush::kernelSize() const {
 
 inline void SculptBrush::setKernelSize(int size) {
 	markSettingsChanged();
-	_parameters.kernelSize = glm::clamp(size, 1, MaxKernelSize);
+	_parameters.kernelSize = math::clamp(size, 1, MaxKernelSize);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -304,7 +303,7 @@ inline float SculptBrush::sigma() const {
 
 inline void SculptBrush::setSigma(float sigma) {
 	markSettingsChanged();
-	_parameters.sigma = glm::clamp(sigma, MinSigma, MaxSigma);
+	_parameters.sigma = math::clamp(sigma, MinSigma, MaxSigma);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -315,7 +314,7 @@ inline int SculptBrush::smoothWallClearDepth() const {
 
 inline void SculptBrush::setSmoothWallClearDepth(int depth) {
 	markSettingsChanged();
-	_parameters.smoothWallClearDepth = glm::clamp(depth, 0, MaxSmoothWallClearDepth);
+	_parameters.smoothWallClearDepth = math::clamp(depth, 0, MaxSmoothWallClearDepth);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -383,14 +382,14 @@ inline void SculptBrush::setReskinPreview(bool preview) {
 
 inline void SculptBrush::setReskinMaxRepeatU(int count) {
 	markSettingsChanged();
-	_parameters.reskin.maxRepeatU = glm::clamp(count, 0, MaxReskinRepeat);
+	_parameters.reskin.maxRepeatU = math::clamp(count, 0, MaxReskinRepeat);
 	_paramsDirty = true;
 	markDirty();
 }
 
 inline void SculptBrush::setReskinMaxRepeatV(int count) {
 	markSettingsChanged();
-	_parameters.reskin.maxRepeatV = glm::clamp(count, 0, MaxReskinRepeat);
+	_parameters.reskin.maxRepeatV = math::clamp(count, 0, MaxReskinRepeat);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -403,7 +402,7 @@ inline void SculptBrush::setReskinSkinFace(voxel::FaceNames face) {
 		const voxel::Region &sr = _parameters.skin->region();
 		const int upIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 		const int depthExtent = sr.getUpperCorner()[upIdx] - sr.getLowerCorner()[upIdx] + 1;
-		_parameters.reskin.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
+		_parameters.reskin.skinDepth = math::clamp(depthExtent, 1, MaxReskinDepth);
 	}
 	_paramsDirty = true;
 	markDirty();
@@ -425,14 +424,14 @@ inline void SculptBrush::setReskinOffsetV(int offset) {
 
 inline void SculptBrush::setReskinSkinDepth(int depth) {
 	markSettingsChanged();
-	_parameters.reskin.skinDepth = glm::clamp(depth, 1, MaxReskinDepth);
+	_parameters.reskin.skinDepth = math::clamp(depth, 1, MaxReskinDepth);
 	_paramsDirty = true;
 	markDirty();
 }
 
 inline void SculptBrush::setReskinZOffset(int offset) {
 	markSettingsChanged();
-	_parameters.reskin.zOffset = glm::clamp(offset, -MaxReskinDepth, MaxReskinDepth);
+	_parameters.reskin.zOffset = math::clamp(offset, -MaxReskinDepth, MaxReskinDepth);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -474,7 +473,7 @@ inline int SculptBrush::removeAboveDepth() const {
 
 inline void SculptBrush::setRemoveAboveDepth(int depth) {
 	markSettingsChanged();
-	_parameters.removeAboveDepth = glm::clamp(depth, 0, MaxRemoveAboveDepth);
+	_parameters.removeAboveDepth = math::clamp(depth, 0, MaxRemoveAboveDepth);
 	_paramsDirty = true;
 	markDirty();
 }
@@ -507,7 +506,7 @@ inline int SculptBrush::previewRadius() const {
 
 inline void SculptBrush::setBrushRadius(int radius) {
 	markSettingsChanged();
-	_parameters.radius = glm::clamp(radius, 1, MaxBrushRadius);
+	_parameters.radius = math::clamp(radius, 1, MaxBrushRadius);
 }
 
 inline bool SculptBrush::planeFitted() const {

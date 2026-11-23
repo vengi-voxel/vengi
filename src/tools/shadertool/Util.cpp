@@ -9,6 +9,9 @@
 #include "core/ArrayLength.h"
 #include "video/Shader.h"
 #include "video/Version.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace util {
 
@@ -16,16 +19,16 @@ static const Types cTypes[] = {
 	{ Variable::FLOAT,                 1,  1, 1, "float",        Value,     "float" },
 	{ Variable::UNSIGNED_INT,          1,  1, 1, "uint32_t",     Value,     "uint" },
 	{ Variable::INT,                   1,  1, 1, "int32_t",      Value,     "int" },
-	{ Variable::UVEC2,                 2,  2, 2, "glm::highp_uvec2",   Reference, "uvec2" },
-	{ Variable::UVEC3,                 3,  4, 3, "glm::highp_uvec3",   Reference, "uvec3" },
-	{ Variable::UVEC4,                 4,  4, 4, "glm::highp_uvec4",   Reference, "uvec4" },
-	{ Variable::IVEC2,                 2,  2, 2, "glm::highp_ivec2",   Reference, "ivec2" },
-	{ Variable::IVEC3,                 3,  4, 3, "glm::highp_ivec3",   Reference, "ivec3" },
-	{ Variable::IVEC4,                 4,  4, 4, "glm::highp_ivec4",   Reference, "ivec4" },
-	{ Variable::VEC2,                  2,  2, 2, "glm::highp_vec2",    Reference, "vec2" },
-	{ Variable::VEC3,                 3,  4, 3, "glm::highp_vec3",    Reference, "vec3" },
-	{ Variable::VEC4,                 4,  4, 4, "glm::highp_vec4",    Reference, "vec4" },
-	{ Variable::MAT4,                 16, 4, 1, "glm::highp_mat4",    Reference, "mat4" },
+	{ Variable::UVEC2,                 2,  2, 2, "math::Vec2u",   Reference, "uvec2" },
+	{ Variable::UVEC3,                 3,  4, 3, "math::Vec3u",   Reference, "uvec3" },
+	{ Variable::UVEC4,                 4,  4, 4, "math::Vec4u",   Reference, "uvec4" },
+	{ Variable::IVEC2,                 2,  2, 2, "math::Vec2i",   Reference, "ivec2" },
+	{ Variable::IVEC3,                 3,  4, 3, "math::Vec3i",   Reference, "ivec3" },
+	{ Variable::IVEC4,                 4,  4, 4, "math::Vec4i",   Reference, "ivec4" },
+	{ Variable::VEC2,                  2,  2, 2, "math::Vec2f",    Reference, "vec2" },
+	{ Variable::VEC3,                 3,  4, 3, "math::Vec3f",    Reference, "vec3" },
+	{ Variable::VEC4,                 4,  4, 4, "math::Vec4f",    Reference, "vec4" },
+	{ Variable::MAT4,                 16, 4, 1, "math::Mat4f",    Reference, "mat4" },
 
 	{ Variable::IMAGE2D,              -1, -1, 1, "video::TextureUnit", Value, "image2D" },
 	{ Variable::SAMPLER1D,            -1, -1, 1, "video::TextureUnit", Value, "sampler1D" },

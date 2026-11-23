@@ -7,11 +7,7 @@
 #include "app/Async.h"
 #include "core/Common.h"
 #include "palette/Palette.h"
-#include <glm/vec3.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/norm.hpp>
+#include "math/Vec3f.h"
 
 namespace palette {
 
@@ -78,11 +74,11 @@ void PaletteView::sortBrightness() {
 
 void PaletteView::sortCIELab() {
 	app::sort_parallel(_uiIndices, &_uiIndices[_palette->size()], [this](uint8_t lhs, uint8_t rhs) {
-		glm::vec3 lcielab;
-		glm::vec3 rcielab;
+		math::Vec3f lcielab;
+		math::Vec3f rcielab;
 		color::getCIELab(_palette->color(lhs), lcielab.x, lcielab.y, lcielab.z);
 		color::getCIELab(_palette->color(rhs), rcielab.x, rcielab.y, rcielab.z);
-		return glm::length2(lcielab) < glm::length2(rcielab);
+		return math::length2(lcielab) < math::length2(rcielab);
 	});
 	_palette->markDirty();
 }

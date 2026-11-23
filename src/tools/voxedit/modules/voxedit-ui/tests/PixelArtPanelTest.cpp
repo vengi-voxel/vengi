@@ -12,6 +12,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -34,8 +35,8 @@ void PixelArtPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 		ctx->Yield();
 
 		IM_CHECK(_image && _image->isLoaded());

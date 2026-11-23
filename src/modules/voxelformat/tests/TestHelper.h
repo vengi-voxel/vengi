@@ -15,13 +15,13 @@
 #include "voxel/tests/VoxelPrinter.h"
 #include "math/tests/TestMathHelper.h"
 #include "scenegraph/SceneGraphNode.h"
-#include <glm/vec3.hpp>
 #include <gtest/gtest.h>
+#include "math/Vec3f.h"
 
-namespace glm {
-::std::ostream &operator<<(::std::ostream &os, const mat4x4 &matrix);
-::std::ostream &operator<<(::std::ostream &os, const mat3x3 &matrix);
-::std::ostream &operator<<(::std::ostream &os, const mat4x3 &matrix);
+namespace math {
+::std::ostream &operator<<(::std::ostream &os, const Mat4f &matrix);
+::std::ostream &operator<<(::std::ostream &os, const Mat3f &matrix);
+::std::ostream &operator<<(::std::ostream &os, const Mat4x3f &matrix);
 }
 
 namespace palette {
@@ -87,7 +87,7 @@ void colorComparatorDistance(color::RGBA c1, color::RGBA c2, float maxDelta = 0.
 void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);
-bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins, glm::vec3 &maxs);
+bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, math::Vec3f &mins, math::Vec3f &maxs);
 void occupiedWorldComparator(const scenegraph::SceneGraph &src, const scenegraph::SceneGraph &dst, bool dstMayBeSubset,
 							 float aabbDelta = 0.01f);
 

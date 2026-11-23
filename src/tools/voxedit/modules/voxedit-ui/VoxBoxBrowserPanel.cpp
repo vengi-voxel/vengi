@@ -15,6 +15,7 @@
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/Style.h"
+#include "math/Vec4f.h"
 
 namespace voxedit {
 
@@ -161,7 +162,7 @@ void VoxBoxBrowserPanel::loginPanel() {
 	}
 
 	if (!_loginError.empty()) {
-		const glm::vec4 &warningTextColor = style::color(style::ColorWarningText);
+		const math::Vec4f &warningTextColor = style::color(style::ColorWarningText);
 		ImGui::TextColored(warningTextColor, "%s", _loginError.c_str());
 	}
 

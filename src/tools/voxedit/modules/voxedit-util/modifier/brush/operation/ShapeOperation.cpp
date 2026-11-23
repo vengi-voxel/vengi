@@ -6,6 +6,7 @@
 #include "palette/Palette.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxelgenerator/ShapeGenerator.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -23,7 +24,7 @@ namespace voxedit {
  * @param[out] depth Shape depth perpendicular to face normal and width
  * @return The axis aligned with the face normal
  */
-static math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const glm::ivec3 &dimensions, int &width, int &height,
+static math::Axis getShapeDimensionForAxis(voxel::FaceNames face, const math::Vec3i &dimensions, int &width, int &height,
 										   int &depth) {
 	core_assert(face != voxel::FaceNames::Max);
 	switch (face) {
@@ -60,7 +61,7 @@ bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &paramet
 		settings.shape >= ShapeType::Max) {
 		return false;
 	}
-	const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
+	const math::Vec3i &dimensions = region.getDimensionsInVoxels();
 	int width = 0;
 	int height = 0;
 	int depth = 0;
@@ -72,9 +73,9 @@ bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &paramet
 	const bool negative = voxel::isNegativeFace(face);
 
 	const int axisIdx = math::getIndexForAxis(axis);
-	const glm::ivec3 &lc = region.getLowerCorner();
-	const glm::ivec3 center = lc + region.getDimensionsInVoxels() / 2;
-	glm::ivec3 centerBottom = center;
+	const math::Vec3i &lc = region.getLowerCorner();
+	const math::Vec3i center = lc + region.getDimensionsInVoxels() / 2;
+	math::Vec3i centerBottom = center;
 	centerBottom[axisIdx] = lc[axisIdx];
 
 	const voxel::Voxel &voxel = parameters.voxel;
@@ -95,8 +96,8 @@ bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &paramet
 	case ShapeType::Cylinder: {
 		const double radiusX = width / 2.0;
 		const double radiusZ = depth / 2.0;
-		glm::ivec3 circleCenter = centerBottom;
-		glm::ivec3 offset{0};
+		math::Vec3i circleCenter = centerBottom;
+		math::Vec3i offset{0};
 		offset[axisIdx] = 1;
 		for (int i = 0; i < height; ++i) {
 			voxelgenerator::shape::createEllipsePlane(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ,
@@ -117,8 +118,8 @@ bool evaluateShape(const ShapeSettings &settings, const ShapeParameters &paramet
 	case ShapeType::Circle: {
 		const double radiusX = width / 2.0;
 		const double radiusZ = depth / 2.0;
-		glm::ivec3 circleCenter = centerBottom;
-		glm::ivec3 offset{0};
+		math::Vec3i circleCenter = centerBottom;
+		math::Vec3i offset{0};
 		offset[axisIdx] = 1;
 		for (int i = 0; i < height; ++i) {
 			voxelgenerator::shape::createEllipseOutline(wrapper, circleCenter, axis, width, depth, radiusX, radiusZ,

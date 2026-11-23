@@ -10,8 +10,8 @@
 #include "core/String.h"
 #include "image/ImageType.h"
 #include "io/IOResource.h"
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace io {
 class File;
@@ -134,7 +134,7 @@ public:
 	 * @param wrapT Wrapping mode for the T coordinate.
 	 * @param originUpperLeft If true, origin is top-left; otherwise, bottom-left.
 	 */
-	static glm::ivec2 pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS = TextureWrap::Repeat,
+	static math::Vec2i pixels(const math::Vec2f &uv, int w, int h, TextureWrap wrapS = TextureWrap::Repeat,
 							 TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false);
 
 	/**
@@ -144,7 +144,7 @@ public:
 	 * @param wrapT Wrapping mode for the T coordinate.
 	 * @param originUpperLeft If true, origin is top-left; otherwise, bottom-left.
 	 */
-	glm::ivec2 pixels(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
+	math::Vec2i pixels(const math::Vec2f &uv, TextureWrap wrapS = TextureWrap::Repeat,
 					  TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 
 	/**
@@ -154,7 +154,7 @@ public:
 	 * @param y Y pixel coordinate.
 	 * @param originUpperLeft If true, origin is top-left; otherwise, bottom-left.
 	 */
-	glm::vec2 uv(int x, int y, bool originUpperLeft = false) const;
+	math::Vec2f uv(int x, int y, bool originUpperLeft = false) const;
 
 	/**
 	 * @brief Converts pixel coordinates to UV coordinates.
@@ -164,7 +164,7 @@ public:
 	 * @param h Height of the image.
 	 * @param originUpperLeft If true, origin is top-left; otherwise, bottom-left.
 	 */
-	static glm::vec2 uv(int x, int y, int w, int h, bool originUpperLeft = false);
+	static math::Vec2f uv(int x, int y, int w, int h, bool originUpperLeft = false);
 
 	/**
 	 * @brief Resizes the image to the specified dimensions.
@@ -248,7 +248,7 @@ public:
 	 * @param wrapT Wrapping mode for T.
 	 * @param originUpperLeft If true, origin is top-left; otherwise, bottom-left.
 	 */
-	color::RGBA colorAt(const glm::vec2 &uv, TextureWrap wrapS = TextureWrap::Repeat,
+	color::RGBA colorAt(const math::Vec2f &uv, TextureWrap wrapS = TextureWrap::Repeat,
 					   TextureWrap wrapT = TextureWrap::Repeat, bool originUpperLeft = false) const;
 
 	/**
@@ -291,7 +291,7 @@ public:
 	/**
 	 * @brief Returns the dimensions of the image.
 	 */
-	glm::vec2 size() const;
+	math::Vec2f size() const;
 
 	/**
 	 * @brief Returns the width of the image.
@@ -331,8 +331,8 @@ inline const uint8_t *Image::data() const {
 	return _colors;
 }
 
-inline glm::vec2 Image::size() const {
-	return {_width, _height};
+inline math::Vec2f Image::size() const {
+	return math::Vec2f((float)_width, (float)_height);
 }
 
 inline int Image::width() const {

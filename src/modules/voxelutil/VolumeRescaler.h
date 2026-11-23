@@ -12,6 +12,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelutil {
 
@@ -38,9 +40,9 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 		for (int32_t z = start; z < end; ++z) {
 			for (int32_t y = 0; y < height; ++y) {
 				for (int32_t x = 0; x < width; ++x) {
-					const glm::ivec3 curPos(x, y, z);
-					const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + curPos * 2;
-					const glm::ivec3 dstPos = destRegion.getLowerCorner() + curPos;
+					const math::Vec3i curPos(x, y, z);
+					const math::Vec3i srcPos = sourceRegion.getLowerCorner() + curPos * 2;
+					const math::Vec3i dstPos = destRegion.getLowerCorner() + curPos;
 
 					float colorContributors = 0.0f;
 					float solidVoxels = 0.0f;
@@ -117,7 +119,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 	// while also accounting for how visible the child voxels are.
 	app::for_parallel(0, depth, [&sourceVolume, sourceRegion, &palette, &destVolume, destRegion, &progress](int start, int end) {
 		typename DestVolume::Sampler dstSampler1(destVolume);
-		glm::ivec3 pos = destRegion.getLowerCorner();
+		math::Vec3i pos = destRegion.getLowerCorner();
 		pos.z += start;
 		dstSampler1.setPosition(pos);
 		for (int32_t z = start; z < end; ++z) {
@@ -140,7 +142,7 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
 						dstSampler3.movePositiveX();
 						continue;
 					}
-					const glm::ivec3 srcPos = sourceRegion.getLowerCorner() + dstSampler3.position() * 2;
+					const math::Vec3i srcPos = sourceRegion.getLowerCorner() + dstSampler3.position() * 2;
 
 					float totalRed = 0.0f;
 					float totalGreen = 0.0f;
@@ -234,8 +236,8 @@ void scaleDown(const SourceVolume &sourceVolume, const palette::Palette &palette
  * @param[in] sampling The sampling mode to use for interpolation (default: Nearest)
  * @return A new RawVolume. It's the caller's responsibility to free this memory.
  */
-[[nodiscard]] voxel::RawVolume *scaleVolume(const voxel::RawVolume *srcVolume, const glm::vec3 &scale,
-											const glm::vec3 &normalizedPivot = glm::vec3(0.0f),
+[[nodiscard]] voxel::RawVolume *scaleVolume(const voxel::RawVolume *srcVolume, const math::Vec3f &scale,
+											const math::Vec3f &normalizedPivot = math::Vec3f(0.0f),
 											voxel::VoxelSampling sampling = voxel::VoxelSampling::Nearest);
 
 } // namespace voxelutil

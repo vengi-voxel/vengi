@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "math/Math.h"
 #include "core/collection/Buffer.h"
+#include "math/Vec3i.h"
 
 namespace palette {
 class Palette;
@@ -24,7 +24,7 @@ inline bool hasGeneratedNormals(SurfaceExtractionType type) {
 
 struct SurfaceExtractionContext {
 	SurfaceExtractionContext(const RawVolume *_volume, const palette::Palette &_palette, const Region &_region,
-							 ChunkMesh &_mesh, const glm::ivec3 &_translate, SurfaceExtractionType _type,
+							 ChunkMesh &_mesh, const math::Vec3i &_translate, SurfaceExtractionType _type,
 							 bool _mergeQuads, bool _reuseVertices, bool _ambientOcclusion, bool _optimize,
 							 bool _textureDedupe = true)
 		: volume(_volume), palette(_palette), region(_region), mesh(_mesh), translate(_translate), type(_type),
@@ -35,7 +35,7 @@ struct SurfaceExtractionContext {
 	const palette::Palette &palette; // used only for MarchingCubes and GreedyTexture
 	const Region &region;
 	ChunkMesh &mesh;
-	const glm::ivec3 translate;
+	const math::Vec3i translate;
 	const SurfaceExtractionType type;
 	const bool mergeQuads;		 // used only for Cubic
 	const bool reuseVertices;	 // used only for Cubic
@@ -52,10 +52,10 @@ struct SurfaceExtractionContext {
 };
 
 SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-											const glm::ivec3 &translate = glm::ivec3(0), bool ambientOcclusion = true,
+											const math::Vec3i &translate = math::Vec3i(0), bool ambientOcclusion = true,
 											bool optimize = false);
 SurfaceExtractionContext buildCubicContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-										   const glm::ivec3 &translate = glm::ivec3(0), bool mergeQuads = true,
+										   const math::Vec3i &translate = math::Vec3i(0), bool mergeQuads = true,
 										   bool reuseVertices = true, bool ambientOcclusion = true,
 										   bool optimize = false);
 SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
@@ -64,13 +64,13 @@ SurfaceExtractionContext buildGreedyTextureContext(const RawVolume *volume, cons
 												   const palette::Palette &palette, bool optimize = false);
 // The region owns edges by their upper endpoint. Extend the upper corner by one for a whole volume.
 SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
-													const glm::ivec3 &translate = glm::ivec3(0), bool optimize = false);
+													const math::Vec3i &translate = math::Vec3i(0), bool optimize = false);
 
 void extractSurface(SurfaceExtractionContext &ctx);
 
 voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type, const voxel::RawVolume *volume,
 											  const voxel::Region &region, const palette::Palette &palette,
-											  voxel::ChunkMesh &mesh, const glm::ivec3 &translate,
+											  voxel::ChunkMesh &mesh, const math::Vec3i &translate,
 											  bool mergeQuads = true, bool reuseVertices = true,
 											  bool ambientOcclusion = true, bool optimize = false);
 

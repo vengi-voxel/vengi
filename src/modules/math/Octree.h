@@ -11,11 +11,11 @@
 #include <iterator>
 #include "AABB.h"
 #include "Frustum.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace math {
 
-extern math::AABB<int> computeAABB(const Frustum& area, const glm::vec3& gridSize);
+extern math::AABB<int> computeAABB(const Frustum& area, const math::Vec3f& gridSize);
 
 /**
  * @note Given NODE type must implement @c aabb() and return math::AABB<TYPE>
@@ -65,35 +65,35 @@ public:
 		 * O---------------O---------------O------------------+X
 		 */
 		static void split(const AABB<TYPE>& aabb, AABB<TYPE> (&result)[8]) {
-			const glm::tvec3<TYPE>& center = aabb.getCenter();
+			const typename Vec3Of<TYPE>::Type& center = aabb.getCenter();
 			result[0] = AABB<TYPE>(aabb.mins(), center);
 
-			glm::tvec3<TYPE> mins1(aabb.getLowerX(), aabb.getLowerY(), center.z);
-			glm::tvec3<TYPE> maxs1(center.x, center.y, aabb.getUpperZ());
+			typename Vec3Of<TYPE>::Type mins1(aabb.getLowerX(), aabb.getLowerY(), center.z);
+			typename Vec3Of<TYPE>::Type maxs1(center.x, center.y, aabb.getUpperZ());
 			result[1] = AABB<TYPE>(mins1, maxs1);
 
-			glm::tvec3<TYPE> mins2(aabb.getLowerX(), center.y, aabb.getLowerZ());
-			glm::tvec3<TYPE> maxs2(center.x, aabb.getUpperY(), center.z);
+			typename Vec3Of<TYPE>::Type mins2(aabb.getLowerX(), center.y, aabb.getLowerZ());
+			typename Vec3Of<TYPE>::Type maxs2(center.x, aabb.getUpperY(), center.z);
 			result[2] = AABB<TYPE>(mins2, maxs2);
 
-			glm::tvec3<TYPE> mins3(aabb.getLowerX(), center.y, center.z);
-			glm::tvec3<TYPE> maxs3(center.x, aabb.getUpperY(), aabb.getUpperZ());
+			typename Vec3Of<TYPE>::Type mins3(aabb.getLowerX(), center.y, center.z);
+			typename Vec3Of<TYPE>::Type maxs3(center.x, aabb.getUpperY(), aabb.getUpperZ());
 			result[3] = AABB<TYPE>(mins3, maxs3);
 
-			glm::tvec3<TYPE> mins4(center.x, aabb.getLowerY(), aabb.getLowerZ());
-			glm::tvec3<TYPE> maxs4(aabb.getUpperX(), center.y, center.z);
+			typename Vec3Of<TYPE>::Type mins4(center.x, aabb.getLowerY(), aabb.getLowerZ());
+			typename Vec3Of<TYPE>::Type maxs4(aabb.getUpperX(), center.y, center.z);
 			result[4] = AABB<TYPE>(mins4, maxs4);
 
-			glm::tvec3<TYPE> mins5(center.x, aabb.getLowerY(), center.z);
-			glm::tvec3<TYPE> maxs5(aabb.getUpperX(), center.y, aabb.getUpperZ());
+			typename Vec3Of<TYPE>::Type mins5(center.x, aabb.getLowerY(), center.z);
+			typename Vec3Of<TYPE>::Type maxs5(aabb.getUpperX(), center.y, aabb.getUpperZ());
 			result[5] = AABB<TYPE>(mins5, maxs5);
 
-			glm::tvec3<TYPE> mins6(center.x, center.y, aabb.getLowerZ());
-			glm::tvec3<TYPE> maxs6(aabb.getUpperX(), aabb.getUpperY(), center.z);
+			typename Vec3Of<TYPE>::Type mins6(center.x, center.y, aabb.getLowerZ());
+			typename Vec3Of<TYPE>::Type maxs6(aabb.getUpperX(), aabb.getUpperY(), center.z);
 			result[6] = AABB<TYPE>(mins6, maxs6);
 
-			glm::tvec3<TYPE> mins7(center.x, center.y, center.z);
-			glm::tvec3<TYPE> maxs7(aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
+			typename Vec3Of<TYPE>::Type mins7(center.x, center.y, center.z);
+			typename Vec3Of<TYPE>::Type maxs7(aabb.getUpperX(), aabb.getUpperY(), aabb.getUpperZ());
 			result[7] = AABB<TYPE>(mins7, maxs7);
 		}
 
@@ -120,8 +120,8 @@ public:
 			}
 
 			const auto& aabbRef = aabb();
-			const glm::tvec3<TYPE>& _aabbSize = aabbRef.getWidth();
-			const glm::tvec3<TYPE> one((TYPE)1);
+			const typename Vec3Of<TYPE>::Type& _aabbSize = aabbRef.getWidth();
+			const typename Vec3Of<TYPE>::Type one((TYPE)1);
 			if (_aabbSize.x <= one.x && _aabbSize.y <= one.y && _aabbSize.z <= one.z) {
 				return;
 			}
@@ -310,18 +310,18 @@ private:
 	const IOctreeListener* _listener = nullptr;
 
 	template<class VISITOR>
-	void visit(const Frustum& queryArea, const AABB<TYPE>& queryAABB, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) const {
+	void visit(const Frustum& queryArea, const AABB<TYPE>& queryAABB, VISITOR&& visitor, const typename Vec3Of<TYPE>::Type & minSize) const {
 		core_trace_scoped(OctreeVisitFrustum);
-		const glm::tvec3<TYPE>& mins = queryAABB.mins();
-		const glm::tvec3<TYPE>& width = queryAABB.getWidth();
+		const typename Vec3Of<TYPE>::Type& mins = queryAABB.mins();
+		const typename Vec3Of<TYPE>::Type& width = queryAABB.getWidth();
 		const TYPE maxX = mins.x + width.x;
 		const TYPE maxY = mins.y + width.y;
 		const TYPE maxZ = mins.z + width.z;
-		glm::tvec3<TYPE> qmins;
+		typename Vec3Of<TYPE>::Type qmins;
 		for (qmins.x = mins.x; qmins.x < maxX; qmins.x += minSize.x) {
 			for (qmins.y = mins.y; qmins.y < maxY; qmins.y += minSize.y) {
 				for (qmins.z = mins.z; qmins.z < maxZ; qmins.z += minSize.z) {
-					const glm::tvec3<TYPE> qmaxs(qmins + minSize);
+					const typename Vec3Of<TYPE>::Type qmaxs(qmins + minSize);
 					if (!queryArea.isVisible(qmins, qmaxs)) {
 						continue;
 					}
@@ -388,22 +388,22 @@ public:
 	 * @param minSize The minimum size of the AABBs when the recursion is stopped.
 	 */
 	template<class VISITOR>
-	inline void visit(const Frustum& area, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
+	inline void visit(const Frustum& area, VISITOR&& visitor, const typename Vec3Of<TYPE>::Type & minSize) {
 		core_trace_scoped(OctreeVisit);
-		const glm::vec3 fminsize(minSize);
+		const math::Vec3f fminsize(minSize);
 		const math::AABB<int>& aabb = computeAABB(area, fminsize);
 		visit(area, aabb, visitor, minSize);
 	}
 
 	template<class VISITOR>
-	inline void visit(const glm::vec<3, TYPE>& mins, const glm::vec<3, TYPE>& maxs, VISITOR&& visitor, const glm::vec<3, TYPE>& minSize) {
+	inline void visit(const typename Vec3Of<TYPE>::Type & mins, const typename Vec3Of<TYPE>::Type & maxs, VISITOR&& visitor, const typename Vec3Of<TYPE>::Type & minSize) {
 		core_trace_scoped(OctreeVisit);
 		const math::AABB<TYPE> aabb(mins, maxs);
-		glm::tvec3<TYPE> qmins;
+		typename Vec3Of<TYPE>::Type qmins;
 		for (qmins.x = mins.x; qmins.x < maxs.x; qmins.x += minSize.x) {
 			for (qmins.y = mins.y; qmins.y < maxs.y; qmins.y += minSize.y) {
 				for (qmins.z = mins.z; qmins.z < maxs.z; qmins.z += minSize.z) {
-					const glm::tvec3<TYPE> qmaxs(qmins + minSize);
+					const typename Vec3Of<TYPE>::Type qmaxs(qmins + minSize);
 					if (!visitor(qmins, qmaxs)) {
 						break;
 					}

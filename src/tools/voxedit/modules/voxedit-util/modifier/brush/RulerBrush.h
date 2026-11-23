@@ -6,6 +6,7 @@
 
 #include "Brush.h"
 #include "BrushGizmo.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -32,8 +33,8 @@ protected:
 	enum class State { Idle, Tracking, Measured };
 	State _state = State::Idle;
 	bool _useReferencePos = false;
-	glm::ivec3 _startPos{0};
-	glm::ivec3 _endPos{0};
+	math::Vec3i _startPos{0};
+	math::Vec3i _endPos{0};
 
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
 				  const voxel::Region &region) override {
@@ -59,10 +60,10 @@ public:
 	bool hasHandle(const BrushContext &ctx) const;
 	void describeHandle(const BrushContext &ctx, BrushGizmoState &state) const;
 
-	const glm::ivec3 &startPos() const;
-	const glm::ivec3 &endPos() const;
+	const math::Vec3i &startPos() const;
+	const math::Vec3i &endPos() const;
 	bool hasMeasurement() const;
-	glm::ivec3 delta() const;
+	math::Vec3i delta() const;
 	float euclideanDistance() const;
 	int manhattanDistance() const;
 
@@ -70,11 +71,11 @@ public:
 	void setUseReferencePos(bool use);
 };
 
-inline const glm::ivec3 &RulerBrush::startPos() const {
+inline const math::Vec3i &RulerBrush::startPos() const {
 	return _startPos;
 }
 
-inline const glm::ivec3 &RulerBrush::endPos() const {
+inline const math::Vec3i &RulerBrush::endPos() const {
 	return _endPos;
 }
 
@@ -82,8 +83,8 @@ inline bool RulerBrush::hasMeasurement() const {
 	return _state != State::Idle;
 }
 
-inline glm::ivec3 RulerBrush::delta() const {
-	return glm::abs(_endPos - _startPos);
+inline math::Vec3i RulerBrush::delta() const {
+	return math::abs(_endPos - _startPos);
 }
 
 inline bool RulerBrush::useReferencePos() const {

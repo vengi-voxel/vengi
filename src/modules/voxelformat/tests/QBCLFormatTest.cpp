@@ -11,6 +11,7 @@
 #include "io/ZipWriteStream.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -63,7 +64,7 @@ TEST_F(QBCLFormatTest, testPivotAndOpaqueModelDataRoundTrip) {
 	root.setProperty("qbcl_model_data", "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIj");
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName("pivoted");
-	node.setPivot(glm::vec3(0.25f, 0.5f, 0.75f));
+	node.setPivot(math::Vec3f(0.25f, 0.5f, 0.75f));
 	voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(0, 1));
 	volume->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0));
 	node.setVolume(volume);
@@ -72,7 +73,7 @@ TEST_F(QBCLFormatTest, testPivotAndOpaqueModelDataRoundTrip) {
 	palette.setSize(1);
 	node.setPalette(palette);
 	scenegraph::SceneGraphTransform transform;
-	transform.setLocalTranslation(glm::vec3(3.5f, 5.0f, 6.5f));
+	transform.setLocalTranslation(math::Vec3f(3.5f, 5.0f, 6.5f));
 	node.setTransform(0, transform);
 	ASSERT_NE(InvalidNodeId, graph.emplace(core::move(node)));
 	graph.updateTransforms();

@@ -7,11 +7,15 @@
 #include "ui/dearimgui/ImGuizmo.h"
 #include "video/Camera.h"
 #include "voxedit-util/modifier/Modifier.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace voxedit {
 static bool drawHandle(Modifier &modifier, const BrushGizmoState &state, const video::Camera &camera, float headerSize,
-					   const glm::vec2 &dpiScale, int viewportId) {
+					   const math::Vec2f &dpiScale, int viewportId) {
 	// Map BrushGizmoOperation to ImGuizmo::OPERATION
 	uint32_t imguizmoOp = 0;
 	if (state.operations & (BrushGizmo_Translate | BrushGizmo_BezierControl)) {
@@ -39,13 +43,13 @@ static bool drawHandle(Modifier &modifier, const BrushGizmoState &state, const v
 		if (state.numPositions >= 2) {
 			ImVec2 windowPos = ImGui::GetWindowPos();
 			windowPos.y += headerSize;
-			const glm::vec2 scale = dpiScale;
+			const math::Vec2f scale = dpiScale;
 			ImDrawList *drawList = ImGui::GetWindowDrawList();
 			const ImU32 lineColor = ImGui::GetColorU32(ImVec4(style::color(style::ColorBrushGizmoLine)));
 			const float lineThickness = 2.0f;
 			for (int i = 0; i < state.numPositions - 1; ++i) {
-				const glm::ivec2 screenA = camera.worldToScreen(state.positions[i]);
-				const glm::ivec2 screenB = camera.worldToScreen(state.positions[i + 1]);
+				const math::Vec2i screenA = camera.worldToScreen(state.positions[i]);
+				const math::Vec2i screenB = camera.worldToScreen(state.positions[i + 1]);
 				const ImVec2 a(windowPos.x + (float)screenA.x / scale.x, windowPos.y + (float)screenA.y / scale.y);
 				const ImVec2 b(windowPos.x + (float)screenB.x / scale.x, windowPos.y + (float)screenB.y / scale.y);
 				drawList->AddLine(a, b, lineColor, lineThickness);
@@ -59,7 +63,7 @@ static bool drawHandle(Modifier &modifier, const BrushGizmoState &state, const v
 			ImDrawList *drawList = ImGui::GetWindowDrawList();
 			const ImVec2 windowPos = ImGui::GetWindowPos();
 			const float offsetY = headerSize;
-			const glm::vec2 scale = dpiScale;
+			const math::Vec2f scale = dpiScale;
 			const int n = (int)points.size();
 			ImVec2 *imPoints = (ImVec2 *)alloca(sizeof(ImVec2) * n);
 			for (int i = 0; i < n; ++i) {
@@ -68,7 +72,7 @@ static bool drawHandle(Modifier &modifier, const BrushGizmoState &state, const v
 			}
 			drawList->AddConcavePolyFilled(imPoints, n,
 										   ImGui::GetColorU32(ImVec4(style::color(style::ColorBrushGizmoPolygon))));
-			const glm::vec4 outlineColor = glm::vec4(glm::vec3(style::color(style::ColorBrushGizmoPolygon)), 0.8f);
+			const math::Vec4f outlineColor = math::Vec4f(math::Vec3f(style::color(style::ColorBrushGizmoPolygon)), 0.8f);
 			drawList->AddPolyline(imPoints, n, ImGui::GetColorU32(ImVec4(outlineColor)), 1.5f, ImDrawFlags_Closed);
 		}
 	}
@@ -85,12 +89,12 @@ static bool drawHandle(Modifier &modifier, const BrushGizmoState &state, const v
 	const float *boundsPtr = state.hasBounds ? state.bounds : nullptr;
 	static const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
 
-	glm::mat4 matrix = state.matrix;
-	glm::mat4 deltaMatrix(1.0f);
-	float *mPtr = glm::value_ptr(matrix);
-	float *dMatPtr = glm::value_ptr(deltaMatrix);
-	const float *vMatPtr = glm::value_ptr(camera.viewMatrix());
-	const float *pMatPtr = glm::value_ptr(camera.projectionMatrix());
+	math::Mat4f matrix = state.matrix;
+	math::Mat4f deltaMatrix(1.0f);
+	float *mPtr = math::value_ptr(matrix);
+	float *dMatPtr = math::value_ptr(deltaMatrix);
+	const float *vMatPtr = math::value_ptr(camera.viewMatrix());
+	const float *pMatPtr = math::value_ptr(camera.projectionMatrix());
 
 	const bool manipulated = ImGuizmo::Manipulate(vMatPtr, pMatPtr, (ImGuizmo::OPERATION)imguizmoOp, mode, mPtr,
 												  dMatPtr, snapPtr, boundsPtr, boundsSnap);
@@ -128,7 +132,7 @@ static bool drawHandle(Modifier &modifier, const BrushGizmoState &state, const v
 	return changed;
 }
 
-bool drawBrushHandles(Modifier &modifier, const video::Camera &camera, float headerSize, const glm::vec2 &dpiScale,
+bool drawBrushHandles(Modifier &modifier, const video::Camera &camera, float headerSize, const math::Vec2f &dpiScale,
 					  int viewportId) {
 	core::DynamicArray<BrushGizmoState> handles;
 	modifier.brushHandles(handles);

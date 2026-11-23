@@ -18,11 +18,12 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace {
 
 struct LuantiNode {
-	glm::ivec3 pos;
+	math::Vec3i pos;
 	core::String name;
 };
 
@@ -136,8 +137,8 @@ bool LuantiWorldEditFormat::loadGroupsPalette(const core::String &filename, cons
 	core::DynamicArray<LuantiNode> nodes;
 	nodes.reserve(nodeCount);
 
-	glm::ivec3 mins(0);
-	glm::ivec3 maxs(0);
+	math::Vec3i mins(0);
+	math::Vec3i maxs(0);
 	bool hasBounds = false;
 	for (size_t i = 0u; i < nodeCount; ++i) {
 		ctx.report("node", (int)i, (int)nodeCount);
@@ -160,8 +161,8 @@ bool LuantiWorldEditFormat::loadGroupsPalette(const core::String &filename, cons
 			mins = maxs = entry.pos;
 			hasBounds = true;
 		} else {
-			mins = glm::min(mins, entry.pos);
-			maxs = glm::max(maxs, entry.pos);
+			mins = math::min(mins, entry.pos);
+			maxs = math::max(maxs, entry.pos);
 		}
 		nodes.push_back(core::move(entry));
 		lua.pop();

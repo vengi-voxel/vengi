@@ -19,11 +19,12 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/RawVolume.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/quaternion.hpp>
 #include "json/JSON.h"
+#include "math/Quatf.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/QuatOps.h"
 
 namespace voxelformat {
 
@@ -467,10 +468,10 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	node.setName(core::string::extractFilename(filename));
 	uint16_t shapeId = 1;
 	uint16_t parentShapeId = 0;
-	glm::vec3 pivot{0.5f}; // default is center of shape
-	glm::vec3 pos{0};
-	glm::vec3 eulerAngles{0};
-	glm::vec3 scale{1};
+	math::Vec3f pivot{0.5f}; // default is center of shape
+	math::Vec3f pos{0};
+	math::Vec3f eulerAngles{0};
+	math::Vec3f scale{1};
 	palette::Palette nodePalette = palette;
 	bool hasPivot = false;
 	bool sizeChunkFound = false;
@@ -517,9 +518,9 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 		}
 		case priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6: {
 			Log::debug("Load collision box");
-			glm::vec3 mins;
+			math::Vec3f mins;
 			wrapBool(io::readVec3(stream, mins))
-			glm::vec3 maxs;
+			math::Vec3f maxs;
 			wrapBool(io::readVec3(stream, maxs))
 			break;
 		}
@@ -636,7 +637,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			Log::debug("Load shape point position");
 			core::String name;
 			wrapBool(stream.readPascalStringUInt8(name))
-			glm::vec3 poiPos;
+			math::Vec3f poiPos;
 			wrapBool(io::readVec3(stream, poiPos))
 			if (scenegraph::SceneGraphNode *existingNode = sceneGraph.findNodeByName(name)) {
 				scenegraph::SceneGraphTransform &transform = existingNode->transform(0);
@@ -655,11 +656,11 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 			Log::debug("Load shape point rotation");
 			core::String name;
 			wrapBool(stream.readPascalStringUInt8(name))
-			glm::vec3 poiAngles;
+			math::Vec3f poiAngles;
 			wrapBool(io::readVec3(stream, poiAngles))
 			if (scenegraph::SceneGraphNode *existingNode = sceneGraph.findNodeByName(name)) {
 				scenegraph::SceneGraphTransform &transform = existingNode->transform(0);
-				transform.setLocalOrientation(glm::quat(poiAngles));
+				transform.setLocalOrientation(math::Quatf(poiAngles));
 			} else {
 				scenegraph::SceneGraphNode pointNode(scenegraph::SceneGraphNodeType::Point);
 				pointNode.setName(name);
@@ -693,7 +694,7 @@ bool CubzhFormat::loadShape6(const core::String &filename, const Header &header,
 	eulerAngles.z = -eulerAngles.z;
 	scenegraph::SceneGraphTransform transform;
 	transform.setLocalTranslation(pos);
-	transform.setLocalOrientation(glm::quat(eulerAngles));
+	transform.setLocalOrientation(math::Quatf(eulerAngles));
 	transform.setLocalScale(scale);
 	scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
@@ -900,7 +901,7 @@ bool CubzhFormat::savePointNodes(const scenegraph::SceneGraph &sceneGraph, const
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_POINT_V6, ws);
 			core::String name = child->name();
-			glm::vec3 pos = child->transform(0).localTranslation();
+			math::Vec3f pos = child->transform(0).localTranslation();
 			wrapBool(sub.writePascalStringUInt8(name))
 			wrapBool(sub.writeFloat(pos.x))
 			wrapBool(sub.writeFloat(pos.y))
@@ -909,7 +910,7 @@ bool CubzhFormat::savePointNodes(const scenegraph::SceneGraph &sceneGraph, const
 #if 0
 		{
 			core::String name = "TODO";
-			glm::vec3 poiPos;
+			math::Vec3f poiPos;
 			wrapBool(ws.writeUInt8(priv::CHUNK_ID_SHAPE_POINT_ROTATION_V6))
 			wrapBool(ws.writePascalStringUInt8(name))
 			wrapBool(ws.writeFloat(poiPos.x))
@@ -936,9 +937,9 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_TRANSFORM_V6, ws);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		const glm::vec3 pos = transform.localTranslation();
-		const glm::vec3 eulerAngles = glm::eulerAngles(transform.localOrientation());
-		const glm::vec3 scale = transform.localScale();
+		const math::Vec3f pos = transform.localTranslation();
+		const math::Vec3f eulerAngles = math::eulerAngles(transform.localOrientation());
+		const math::Vec3f scale = transform.localScale();
 		// negate X to convert back from vengi's coordinate system to cubzh's
 		wrapBool(sub.writeFloat(-pos.x))
 		wrapBool(sub.writeFloat(pos.y))
@@ -953,7 +954,7 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 	}
 	{
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
-		const glm::vec3 &pivot = node.worldPivot();
+		const math::Vec3f &pivot = node.worldPivot();
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
 		// mirror X to convert back from vengi's coordinate system to cubzh's
 		wrapBool(sub.writeFloat((float)region.getDimensionsInVoxels().x - pivot.x))
@@ -979,8 +980,8 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 	{
 		WriteSubChunkStream sub(priv::CHUNK_ID_OBJECT_COLLISION_BOX_V6, ws);
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		const glm::ivec3 mins = region.getLowerCorner();
-		const glm::ivec3 maxs = region.getUpperCorner() + 1;
+		const math::Vec3i mins = region.getLowerCorner();
+		const math::Vec3i maxs = region.getUpperCorner() + 1;
 		wrapBool(sub.writeFloat(mins.x))
 		wrapBool(sub.writeFloat(mins.y))
 		wrapBool(sub.writeFloat(mins.z))
@@ -995,7 +996,7 @@ bool CubzhFormat::saveModelNode(const scenegraph::SceneGraph &sceneGraph, const 
 	{
 		WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		const glm::ivec3 &dimensions = region.getDimensionsInVoxels();
+		const math::Vec3i &dimensions = region.getDimensionsInVoxels();
 		wrapBool(sub.writeUInt16(dimensions.x))
 		wrapBool(sub.writeUInt16(dimensions.y))
 		wrapBool(sub.writeUInt16(dimensions.z))
@@ -1040,7 +1041,7 @@ bool CubzhFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	const int64_t afterHeaderPos = stream->pos();
 
 	ThumbnailContext thumbnailCtx;
-	thumbnailCtx.outputSize = glm::ivec2(128);
+	thumbnailCtx.outputSize = math::Vec2i(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, ctx.thumbnailCreator, thumbnailCtx);
 	if (image && image->isLoaded()) {
 		WriteChunkStream ws(priv::CHUNK_ID_PREVIEW, *stream);
@@ -1139,9 +1140,9 @@ bool CubzhFormat::saveAnimations(const scenegraph::SceneGraph &sceneGraph, const
 			bool firstKeyFrame = true;
 			for (const scenegraph::SceneGraphKeyFrame &keyframe : node.keyFrames(animation)) {
 				const scenegraph::SceneGraphTransform &transform = keyframe.transform();
-				const glm::vec3 &translation = transform.localTranslation();
-				const glm::vec3 &eulerAngles = glm::eulerAngles(transform.localOrientation());
-				const glm::quat &rotation = transform.localOrientation();
+				const math::Vec3f &translation = transform.localTranslation();
+				const math::Vec3f &eulerAngles = math::eulerAngles(transform.localOrientation());
+				const math::Quatf &rotation = transform.localOrientation();
 				if (firstKeyFrame) {
 					firstKeyFrame = false;
 				} else {
@@ -1231,8 +1232,8 @@ bool CubzhFormat::loadAnimations(const core::String &filename, const io::Archive
 						}
 						scenegraph::SceneGraphKeyFrame &keyFrame = node->keyFrame(keyFrameIdx);
 
-						glm::vec3 localTranslation{0.0f};
-						glm::quat localOrientation = glm::quat_identity<float, glm::defaultp>();
+						math::Vec3f localTranslation{0.0f};
+						math::Quatf localOrientation = math::Quatf::identity();
 						const json::Json frameObject = *frameIt;
 						if (frameObject.contains("position")) {
 							const auto &position = frameObject.get("position");

@@ -25,8 +25,8 @@
 #include "schematic/Litematic.h"
 #include "schematic/Nbt.h"
 #include "schematic/Sponge.h"
+#include "math/Vec3i.h"
 
-#include <glm/common.hpp>
 
 namespace voxelformat {
 
@@ -193,8 +193,8 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 	}
 	core::ScopedPtr<voxel::RawVolume> mergedVolume(merged.volume());
 	const voxel::Region &region = mergedVolume->region();
-	const glm::ivec3 &size = region.getDimensionsInVoxels();
-	const glm::ivec3 &mins = region.getLowerCorner();
+	const math::Vec3i &size = region.getDimensionsInVoxels();
+	const math::Vec3i &mins = region.getLowerCorner();
 
 	io::ZipWriteStream zipStream(*stream);
 

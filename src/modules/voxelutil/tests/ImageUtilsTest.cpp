@@ -21,7 +21,9 @@
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelutil/ImportFace.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelutil {
 
@@ -153,7 +155,7 @@ TEST_F(ImageUtilsTest, testImportFace) {
 	palette.nippon();
 	voxel::FaceNames faceName = voxel::FaceNames::PositiveZ;
 	ASSERT_TRUE(
-		voxelutil::importFace(volume, region, palette, faceName, image, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f)));
+		voxelutil::importFace(volume, region, palette, faceName, image, math::Vec2f(0.0f, 1.0f), math::Vec2f(1.0f, 0.0f)));
 	ASSERT_EQ(8, voxelutil::countVoxels(volume));
 
 	validateVoxel(volume, palette, image, 5, 7);
@@ -195,23 +197,23 @@ TEST_F(ImageUtilsTest, testRenderToImage) {
 	const voxel::Voxel color3 = voxel::createVoxel(voxel::VoxelType::Generic, 3);
 
 	// Fill a small structure in the lower corner of the test region for a nicer render:
-	const glm::ivec3 base = _region.getLowerCorner();
+	const math::Vec3i base = _region.getLowerCorner();
 	// 3x3x3 cube with alternating colors
 	for (int z = 0; z < 3; ++z) {
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
 				voxel::Voxel v = (x + y + z) % 3 == 0 ? color1 : ((x + y + z) % 3 == 1 ? color2 : color3);
-				volume.setVoxel(base + glm::ivec3(x, y, z), v);
+				volume.setVoxel(base + math::Vec3i(x, y, z), v);
 			}
 		}
 	}
 
 	// Add a small column and a diagonal line for depth cues
 	for (int y = 0; y < 6; ++y) {
-		volume.setVoxel(base + glm::ivec3(5, y, 0), color2);
+		volume.setVoxel(base + math::Vec3i(5, y, 0), color2);
 	}
 	for (int i = 0; i < 6; ++i) {
-		volume.setVoxel(base + glm::ivec3(i, i % 4, 5), color3);
+		volume.setVoxel(base + math::Vec3i(i, i % 4, 5), color3);
 	}
 
 	ImageRenderConfig config;
@@ -304,23 +306,23 @@ TEST_F(ImageUtilsTest, testRenderIsometric) {
 	const voxel::Voxel color3 = voxel::createVoxel(voxel::VoxelType::Generic, 3);
 
 	// Fill a small structure in the lower corner of the test region for a nicer render:
-	const glm::ivec3 base = _region.getLowerCorner();
+	const math::Vec3i base = _region.getLowerCorner();
 	// 3x3x3 cube with alternating colors
 	for (int z = 0; z < 3; ++z) {
 		for (int y = 0; y < 3; ++y) {
 			for (int x = 0; x < 3; ++x) {
 				voxel::Voxel v = (x + y + z) % 3 == 0 ? color1 : ((x + y + z) % 3 == 1 ? color2 : color3);
-				volume.setVoxel(base + glm::ivec3(x, y, z), v);
+				volume.setVoxel(base + math::Vec3i(x, y, z), v);
 			}
 		}
 	}
 
 	// Add a small column and a diagonal line for depth cues
 	for (int y = 0; y < 6; ++y) {
-		volume.setVoxel(base + glm::ivec3(5, y, 0), color2);
+		volume.setVoxel(base + math::Vec3i(5, y, 0), color2);
 	}
 	for (int i = 0; i < 6; ++i) {
-		volume.setVoxel(base + glm::ivec3(i, i % 4, 5), color3);
+		volume.setVoxel(base + math::Vec3i(i, i % 4, 5), color3);
 	}
 
 	const image::ImagePtr &img = renderIsometricImage(&volume, palette);
@@ -465,8 +467,8 @@ TEST_F(ImageUtilsTest, testApplyTextureToFace) {
 	palette::Palette palette;
 	palette.nippon();
 	voxel::FaceNames faceName = voxel::FaceNames::PositiveZ;
-	voxelutil::applyTextureToFace(volume, region, palette, faceName, image, glm::vec2(0.0f, 1.0f),
-								  glm::vec2(1.0f, 0.0f));
+	voxelutil::applyTextureToFace(volume, region, palette, faceName, image, math::Vec2f(0.0f, 1.0f),
+								  math::Vec2f(1.0f, 0.0f));
 	EXPECT_EQ(1870, voxelutil::countVoxels(volume));
 }
 
@@ -513,8 +515,8 @@ TEST_F(ImageUtilsTest, testRenderIsometricVoxelNormal) {
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA(200, 200, 200, 255));
 	palette::NormalPalette normals;
-	normals.setNormal(0, glm::vec3(0.0f, 1.0f, 0.0f));
-	normals.setNormal(1, glm::vec3(1.0f, 0.0f, 0.0f));
+	normals.setNormal(0, math::Vec3f(0.0f, 1.0f, 0.0f));
+	normals.setNormal(1, math::Vec3f(1.0f, 0.0f, 0.0f));
 
 	auto lum = [](color::RGBA c) { return (int)c.r + (int)c.g + (int)c.b; };
 
@@ -560,7 +562,7 @@ TEST_F(ImageUtilsTest, testRenderIsometricVoxelNormal) {
 	EXPECT_GT(lum(front->colorAt(3, 1)), lum(fromRight->colorAt(3, 1)));
 
 	palette::NormalPalette holes;
-	holes.setNormal(1, glm::vec3(0.0f, 1.0f, 0.0f));
+	holes.setNormal(1, math::Vec3f(0.0f, 1.0f, 0.0f));
 	holes.setNormal(0, color::RGBA(0, 0, 0, 0));
 	voxel::Voxel holeVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	holeVoxel.setNormal(NORMAL_PALETTE_OFFSET);

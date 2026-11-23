@@ -24,8 +24,14 @@
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 #include "vox_glasses.h"
-#include <glm/gtc/quaternion.hpp>
 
 namespace voxelformat {
 
@@ -47,15 +53,15 @@ TEST_F(VoxFormatTest, testLoad) {
 }
 
 TEST_F(VoxFormatTest, testExtractBakeAffineMatchesCalcTransform) {
-	const glm::mat4 rot = glm::mat4(glm::vec4(0, 1, 0, 0), glm::vec4(0, 0, -1, 0), glm::vec4(-1, 0, 0, 0),
-									glm::vec4(3.5f, -2.5f, 8.0f, 1.0f));
+	const math::Mat4f rot = math::Mat4f(math::Vec4f(0, 1, 0, 0), math::Vec4f(0, 0, -1, 0), math::Vec4f(-1, 0, 0, 0),
+									math::Vec4f(3.5f, -2.5f, 8.0f, 1.0f));
 	const BakeAffine affine = extractBakeAffine(rot);
 	ASSERT_TRUE(affine.valid);
 	for (int z = 0; z < 4; ++z) {
 		for (int y = 0; y < 4; ++y) {
 			for (int x = 0; x < 4; ++x) {
-				const glm::ivec3 expected = calcTransform(rot, glm::vec3(x, y, z));
-				const glm::ivec3 got = affine.apply(x, y, z);
+				const math::Vec3i expected = calcTransform(rot, math::Vec3f(x, y, z));
+				const math::Vec3i got = affine.apply(x, y, z);
 				EXPECT_EQ(expected, got) << "at " << x << "," << y << "," << z;
 			}
 		}
@@ -63,10 +69,10 @@ TEST_F(VoxFormatTest, testExtractBakeAffineMatchesCalcTransform) {
 }
 
 TEST_F(VoxFormatTest, testBakeRotationKeyIgnoresTranslation) {
-	const glm::mat4 a = glm::mat4(glm::vec4(0, 1, 0, 0), glm::vec4(0, 0, -1, 0), glm::vec4(-1, 0, 0, 0),
-								  glm::vec4(3.5f, -2.5f, 8.0f, 1.0f));
-	const glm::mat4 b = glm::mat4(glm::vec4(0, 1, 0, 0), glm::vec4(0, 0, -1, 0), glm::vec4(-1, 0, 0, 0),
-								  glm::vec4(30.5f, 12.5f, -4.0f, 1.0f));
+	const math::Mat4f a = math::Mat4f(math::Vec4f(0, 1, 0, 0), math::Vec4f(0, 0, -1, 0), math::Vec4f(-1, 0, 0, 0),
+								  math::Vec4f(3.5f, -2.5f, 8.0f, 1.0f));
+	const math::Mat4f b = math::Mat4f(math::Vec4f(0, 1, 0, 0), math::Vec4f(0, 0, -1, 0), math::Vec4f(-1, 0, 0, 0),
+								  math::Vec4f(30.5f, 12.5f, -4.0f, 1.0f));
 	const BakeAffine affineA = extractBakeAffine(a);
 	const BakeAffine affineB = extractBakeAffine(b);
 	ASSERT_TRUE(affineA.valid);
@@ -152,7 +158,7 @@ TEST_F(VoxFormatTest, testLoadMaterials) {
 static void compareWorldVolume(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
 							   const voxel::RawVolume &golden, float maxDelta) {
 	sceneGraph.updateTransforms();
-	const glm::mat4 worldMat = sceneGraph.worldMatrix(node, 0);
+	const math::Mat4f worldMat = sceneGraph.worldMatrix(node, 0);
 	core::ScopedPtr<voxel::RawVolume> worldVolume(
 		voxelutil::applyTransformToVolume(*sceneGraph.resolveVolume(node), worldMat, node.pivot()));
 	ASSERT_NE(nullptr, (voxel::RawVolume *)worldVolume);
@@ -250,7 +256,7 @@ TEST_F(VoxFormatTest, testSaveMultipleModels) {
 
 TEST_F(VoxFormatTest, testSaveBigVolume) {
 	VoxFormat f;
-	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(1024, 1, 1));
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i(1024, 1, 1));
 	voxel::RawVolume bigVolume(region);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	bigVolume.setVoxel(0, 0, 0, voxel);
@@ -359,8 +365,8 @@ TEST_F(VoxFormatTest, testApplyTransformBakesVoxels) {
 	}
 	ASSERT_NE(nullptr, node);
 	ASSERT_NE(nullptr, node->volume());
-	EXPECT_EQ(glm::ivec3(0), node->region().getLowerCorner());
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(node->pivot(), glm::vec3(0.0f), 0.001f)));
+	EXPECT_EQ(math::Vec3i(0), node->region().getLowerCorner());
+	EXPECT_TRUE(math::all(math::epsilonEqual(node->pivot(), math::Vec3f(0.0f), 0.001f)));
 	const scenegraph::SceneGraphTransform &transform = node->transform(0);
 	EXPECT_NEAR(23.0f, transform.worldTranslation().x, 0.01f);
 	EXPECT_NEAR(-2.0f, transform.worldTranslation().y, 0.01f);
@@ -410,7 +416,7 @@ TEST_F(VoxFormatTest, testPaletteRemapPreservesSemiTransparentColors) {
 
 TEST_F(VoxFormatTest, testOgtPivotConversion) {
 	// MagicaVoxel size 40x40x30 -> vengi region 40x30x40, pivot floor(size/2) with X flip.
-	const glm::vec3 pivot = ogtNormalizedPivot(40, 40, 30);
+	const math::Vec3f pivot = ogtNormalizedPivot(40, 40, 30);
 	EXPECT_NEAR(19.0f / 40.0f, pivot.x, 0.0001f);
 	EXPECT_NEAR(15.0f / 30.0f, pivot.y, 0.0001f);
 	EXPECT_NEAR(20.0f / 40.0f, pivot.z, 0.0001f);
@@ -471,13 +477,13 @@ TEST_F(VoxFormatTest, testFullPalettePreservesUsedColors) {
 
 TEST_F(VoxFormatTest, testMatToOgtSnapsNonCardinalRotation) {
 	// 45-degree bases used to snap two columns onto the same axis and produce invalid _r packs.
-	const glm::quat q(glm::radians(glm::vec3(45.0f, 0.0f, 0.0f)));
-	const glm::mat4 mat = glm::mat4_cast(q);
+	const math::Quatf q(math::radians(math::Vec3f(45.0f, 0.0f, 0.0f)));
+	const math::Mat4f mat = math::mat4_cast(q);
 	const ogt_vox_transform t = matToOgt(mat);
 	checkRotation(t);
-	EXPECT_NE(glm::ivec3((int)t.m00, (int)t.m10, (int)t.m20), glm::ivec3(0));
-	EXPECT_NE(glm::ivec3((int)t.m01, (int)t.m11, (int)t.m21), glm::ivec3(0));
-	EXPECT_NE(glm::ivec3((int)t.m02, (int)t.m12, (int)t.m22), glm::ivec3(0));
+	EXPECT_NE(math::Vec3i((int)t.m00, (int)t.m10, (int)t.m20), math::Vec3i(0));
+	EXPECT_NE(math::Vec3i((int)t.m01, (int)t.m11, (int)t.m21), math::Vec3i(0));
+	EXPECT_NE(math::Vec3i((int)t.m02, (int)t.m12, (int)t.m22), math::Vec3i(0));
 	// Columns must be distinct axes.
 	const int ax = (t.m00 != 0.0f) ? 0 : ((t.m01 != 0.0f) ? 1 : 2);
 	const int ay = (t.m10 != 0.0f) ? 0 : ((t.m11 != 0.0f) ? 1 : 2);

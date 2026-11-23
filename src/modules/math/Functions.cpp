@@ -4,13 +4,13 @@
 
 #include "Functions.h"
 #include "core/Assert.h"
-#include <glm/gtc/round.hpp>
+#include "math/Scalar.h"
 
 namespace math {
 
 uint8_t logBase2(uint32_t input) {
 	core_assert_msg(input != 0u, "Cannot compute the log of zero.");
-	core_assert_msg(glm::isPowerOfTwo(input), "Input must be a power of two in order to compute the log.");
+	core_assert_msg(math::isPowerOfTwo(input), "Input must be a power of two in order to compute the log.");
 
 	uint32_t result = 0u;
 	while ((input >> result) != 0u) {

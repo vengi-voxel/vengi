@@ -20,6 +20,8 @@
 #include "voxelformat/private/mesh/LZUTF8.h"
 #include "voxelformat/tests/TestHelper.h"
 #include <SDL3/SDL_stdinc.h>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -47,10 +49,10 @@ protected:
 			}
 			if (child->name() == "cube" && child->type() == scenegraph::SceneGraphNodeType::Model) {
 				++cubeModels;
-				const glm::ivec3 dim = child->region().getDimensionsInVoxels();
-				if (firstCube == nullptr && dim == glm::ivec3(1, 2, 2)) {
+				const math::Vec3i dim = child->region().getDimensionsInVoxels();
+				if (firstCube == nullptr && dim == math::Vec3i(1, 2, 2)) {
 					firstCube = child;
-				} else if (secondCube == nullptr && dim == glm::ivec3(1, 1, 2)) {
+				} else if (secondCube == nullptr && dim == math::Vec3i(1, 1, 2)) {
 					secondCube = child;
 				} else if (firstCube == nullptr) {
 					firstCube = child;
@@ -66,9 +68,9 @@ protected:
 		if (isbbmodel) {
 			ASSERT_NE(nullptr, firstCube);
 			ASSERT_NE(nullptr, secondCube);
-			EXPECT_EQ(firstCube->region().getDimensionsInVoxels(), glm::ivec3(1, 2, 2));
-			EXPECT_EQ(secondCube->region().getDimensionsInVoxels(), glm::ivec3(1, 1, 2));
-			const glm::vec3 expectedFirstPivot(-4.0f, 0.5f, 0.5f);
+			EXPECT_EQ(firstCube->region().getDimensionsInVoxels(), math::Vec3i(1, 2, 2));
+			EXPECT_EQ(secondCube->region().getDimensionsInVoxels(), math::Vec3i(1, 1, 2));
+			const math::Vec3f expectedFirstPivot(-4.0f, 0.5f, 0.5f);
 			EXPECT_VEC_NEAR(firstCube->pivot(), expectedFirstPivot, 0.0001f);
 		}
 		EXPECT_GT(fingers_right->children().size(), 0u);
@@ -95,15 +97,15 @@ protected:
 		ASSERT_NE(eyeglossRight, nullptr);
 		EXPECT_EQ(eyeglossRight->type(), scenegraph::SceneGraphNodeType::Group);
 		const scenegraph::SceneGraphTransform &eyeglossRightTransform = eyeglossRight->transform(0);
-		EXPECT_VEC_NEAR(glm::vec3(3.0f, 27.4f, -3.91f), eyeglossRightTransform.worldTranslation(), 0.00001f);
+		EXPECT_VEC_NEAR(math::Vec3f(3.0f, 27.4f, -3.91f), eyeglossRightTransform.worldTranslation(), 0.00001f);
 		ASSERT_EQ(1u, eyeglossRight->children().size());
 
 		const scenegraph::SceneGraphNode *eyeglossRightCube = sceneGraph.findNodeByUUID(eyeglossRight->children()[0]);
 		ASSERT_NE(nullptr, eyeglossRightCube);
 		EXPECT_EQ(eyeglossRightCube->type(), scenegraph::SceneGraphNodeType::Model);
 		const scenegraph::SceneGraphTransform &eyeglossRightCubeTransform = eyeglossRightCube->transform(0);
-		EXPECT_VEC_NEAR(glm::vec3(2.5f, 27.15f, -3.991f), eyeglossRightCubeTransform.worldTranslation(), 0.00001f);
-		EXPECT_VEC_NEAR(glm::vec3(-0.25f, 23.9f, 0.0f), eyeglossRightCube->worldPivot(), 0.00001f);
+		EXPECT_VEC_NEAR(math::Vec3f(2.5f, 27.15f, -3.991f), eyeglossRightCubeTransform.worldTranslation(), 0.00001f);
+		EXPECT_VEC_NEAR(math::Vec3f(-0.25f, 23.9f, 0.0f), eyeglossRightCube->worldPivot(), 0.00001f);
 #endif
 	}
 };
@@ -178,7 +180,7 @@ TEST_F(BlockbenchFormatTest, testLoad_4_10) {
 	voxel::RawVolume *volume = cube->volume();
 	ASSERT_NE(volume, nullptr);
 	const voxel::Region &region = volume->region();
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 	EXPECT_EQ(dim.x, 8);
 	EXPECT_EQ(dim.y, 8);
 	EXPECT_EQ(dim.z, 8);
@@ -229,12 +231,12 @@ TEST_F(BlockbenchFormatTest, testSaveLoadInterpolation) {
 	struct KeySpec {
 		scenegraph::FrameIndex frame;
 		scenegraph::InterpolationType interpolation;
-		glm::vec3 delta;
+		math::Vec3f delta;
 	};
 	const KeySpec specs[] = {
-		{24, scenegraph::InterpolationType::CatmullRom, glm::vec3(4.0f, 0.0f, 0.0f)},
-		{48, scenegraph::InterpolationType::Instant, glm::vec3(8.0f, 0.0f, 0.0f)},
-		{72, scenegraph::InterpolationType::QuadEaseIn, glm::vec3(12.0f, 0.0f, 0.0f)},
+		{24, scenegraph::InterpolationType::CatmullRom, math::Vec3f(4.0f, 0.0f, 0.0f)},
+		{48, scenegraph::InterpolationType::Instant, math::Vec3f(8.0f, 0.0f, 0.0f)},
+		{72, scenegraph::InterpolationType::QuadEaseIn, math::Vec3f(12.0f, 0.0f, 0.0f)},
 	};
 	for (const KeySpec &spec : specs) {
 		const int key = animNode.addKeyFrame(spec.frame);

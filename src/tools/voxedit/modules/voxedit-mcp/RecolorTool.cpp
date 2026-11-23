@@ -8,6 +8,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxedit-util/SceneManager.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -55,7 +56,7 @@ static int recolorNode(ToolContext &ctx, scenegraph::SceneGraphNode &node, const
 			return;
 		}
 		PaintCell cell;
-		cell.pos = glm::ivec3(x, y, z);
+		cell.pos = math::Vec3i(x, y, z);
 		cell.erase = false;
 		cell.index = 0;
 		cells.push_back(cell);

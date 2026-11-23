@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include "core/collection/Map.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -29,11 +29,11 @@ private:
 	// Starmade Region Data file
 	// StarMade v0.199.257
 	bool readSmd3(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				  const core::Map<int, int> &blockPal, const glm::ivec3 &position, const palette::Palette &palette,
+				  const core::Map<int, int> &blockPal, const math::Vec3i &position, const palette::Palette &palette,
 				  int parent);
 	// Starmade Region Data file
 	bool readSmd2(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				  const core::Map<int, int> &blockPal, const glm::ivec3 &position, const palette::Palette &palette,
+				  const core::Map<int, int> &blockPal, const math::Vec3i &position, const palette::Palette &palette,
 				  int parent);
 	bool readSegment(io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
 					 const core::Map<int, int> &blockPal, int headerVersion, int fileVersion,

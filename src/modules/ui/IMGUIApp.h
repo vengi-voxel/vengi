@@ -15,6 +15,7 @@
 #include "Style.h"
 #ifdef IMGUI_ENABLE_TEST_ENGINE
 #include "ui/dearimgui/imgui_test_engine/imgui_te_engine.h"
+#include "math/Vec4f.h"
 #endif
 
 struct SDL_Cursor;
@@ -163,7 +164,7 @@ public:
 	// the main window should get the id "###app"
 	virtual void onRenderUI() = 0;
 	virtual app::AppState onCleanup() override;
-	const glm::vec4 &color(style::StyleColor color);
+	const math::Vec4f &color(style::StyleColor color);
 	ImFont* monospace() const { return _monospace; }
 	void languageOption();
 	void colorReductionOptions();

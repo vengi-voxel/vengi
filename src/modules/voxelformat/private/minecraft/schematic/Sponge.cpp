@@ -10,6 +10,7 @@
 #include "core/StringUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeTileDispatch.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 namespace sponge {
@@ -255,7 +256,7 @@ static bool parseVarIntBlockData(const priv::NamedBinaryTag &schematic, scenegra
 	const int32_t x = schematic.get("x").int32();
 	const int32_t y = schematic.get("y").int32();
 	const int32_t z = schematic.get("z").int32();
-	volume->translate(glm::ivec3(x, y, z));
+	volume->translate(math::Vec3i(x, y, z));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume);
@@ -334,7 +335,7 @@ static bool parseBlocks(const priv::NamedBinaryTag &schematic, scenegraph::Scene
 	const int32_t x = schematic.get("x").int32();
 	const int32_t y = schematic.get("y").int32();
 	const int32_t z = schematic.get("z").int32();
-	volume->translate(glm::ivec3(x, y, z));
+	volume->translate(math::Vec3i(x, y, z));
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume);

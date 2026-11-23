@@ -8,6 +8,8 @@
 #include "core/collection/Buffer.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "core/Function.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
@@ -54,7 +56,7 @@ int createNodeReference(SceneGraph &sceneGraph, const SceneGraphNode &node, int 
  */
 bool splitVolumes(const scenegraph::SceneGraph &srcSceneGraph, scenegraph::SceneGraph &destSceneGraph,
 				  bool crop = false, bool createEmpty = false, bool skipHidden = false,
-				  const glm::ivec3 &maxSize = glm::ivec3(128));
+				  const math::Vec3i &maxSize = math::Vec3i(128));
 
 /**
  * @brief Sample local TRS from nonempty, frame-sorted keyframes, clamping outside their range.
@@ -78,6 +80,6 @@ double interpolate(InterpolationType interpolationType, double current, double s
 /**
  * @brief Apply a world-space translation to all keyframe transforms of @c node
  */
-void offsetNodeWorldTransforms(SceneGraphNode &node, const glm::vec3 &delta);
+void offsetNodeWorldTransforms(SceneGraphNode &node, const math::Vec3f &delta);
 
 } // namespace scenegraph

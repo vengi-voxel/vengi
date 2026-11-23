@@ -8,6 +8,9 @@
 #include "MeshMaterial.h"
 #include "util/Version.h"
 #include "voxel/Face.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -172,25 +175,25 @@ namespace voxelformat {
 class BlockbenchFormat : public MeshFormat {
 public:
 	struct BBCubeFace {
-		glm::vec2 uvs[2]{{0.0f, 1.0f}, {0.0f, 1.0f}};
+		math::Vec2f uvs[2]{{0.0f, 1.0f}, {0.0f, 1.0f}};
 		int textureIndex = -1;
 		int color = -1;
 	};
 
 	struct BBCube {
 		BBCubeFace faces[(int)voxel::FaceNames::Max];
-		glm::vec3 from{0.0f};
-		glm::vec3 to{0.0f};
+		math::Vec3f from{0.0f};
+		math::Vec3f to{0.0f};
 	};
 
 	struct BBNode {
 		core::UUID uuid;
 		core::String name;
 		// in degrees
-		glm::vec3 rotation{0.0f};
+		math::Vec3f rotation{0.0f};
 		// in world coordinates
-		glm::vec3 origin{0.0f};
-		glm::vec3 size{1.0f};
+		math::Vec3f origin{0.0f};
+		math::Vec3f size{1.0f};
 		bool locked = false;
 		bool visible = true;
 		bool mirror_uv = false;
@@ -220,16 +223,16 @@ public:
 		core::UUID uuid;
 		core::String name;
 		// in degrees
-		glm::vec3 rotation{0.0f};
+		math::Vec3f rotation{0.0f};
 		// in world coordinates
-		glm::vec3 origin{0.0f}; // pivot - not normalized
+		math::Vec3f origin{0.0f}; // pivot - not normalized
 		bool rescale = false;
 		bool locked = false;
 		bool visible = true;
 		bool box_uv = false;
 		bool mirror_uv = false;
 		float inflate = 0.0f;
-		glm::vec3 stretch{1.0f};
+		math::Vec3f stretch{1.0f};
 		int color = 0;
 		BBCube cube;
 		Mesh mesh;
@@ -247,9 +250,9 @@ public:
 		core::String formatVersion;
 		core::String name;
 		core::String model_identifier;
-		glm::ivec2 resolution;
+		math::Vec2i resolution;
 		// Per-texture UV dimensions (may differ from pixel dimensions)
-		core::DynamicArray<glm::ivec2> textureUVDimensions;
+		core::DynamicArray<math::Vec2i> textureUVDimensions;
 		// Texture UUIDs in textures[] order for index/uuid remapping
 		core::DynamicArray<core::String> textureUUIDs;
 	};
@@ -278,7 +281,7 @@ protected:
 						const LoadContext &ctx) override;
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &,
 					const ChunkMeshes &, const core::String &, const io::ArchivePtr &,
-					const glm::vec3 &, bool, bool, bool) override {
+					const math::Vec3f &, bool, bool, bool) override {
 		return false;
 	}
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

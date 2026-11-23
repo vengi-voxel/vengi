@@ -18,6 +18,8 @@
 #include "voxel/Face.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -43,7 +45,7 @@ protected:
 			++updateCalls;
 			lastContext = ctx;
 		}
-		void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) override {
+		void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const math::Mat4f &modelMatrix) override {
 			++renderCalls;
 		}
 		void waitForPendingExtractions() override {
@@ -69,9 +71,9 @@ protected:
 				switch (cmd.type) {
 				case CommandType::HighlightRegion:
 					lastHighlightRegion = voxel::Region(
-						glm::ivec3(cmd.highlightRegion.regionMins[0], cmd.highlightRegion.regionMins[1],
+						math::Vec3i(cmd.highlightRegion.regionMins[0], cmd.highlightRegion.regionMins[1],
 								   cmd.highlightRegion.regionMins[2]),
-						glm::ivec3(cmd.highlightRegion.regionMaxs[0], cmd.highlightRegion.regionMaxs[1],
+						math::Vec3i(cmd.highlightRegion.regionMaxs[0], cmd.highlightRegion.regionMaxs[1],
 								   cmd.highlightRegion.regionMaxs[2]));
 					lastHighlightMillis = cmd.highlightRegion.renderRegionMillis;
 					++drainedHighlightCommands;
@@ -91,7 +93,7 @@ protected:
 		core::Var::registerVar(clientCameraZoomSpeed);
 	}
 
-	void prepare(Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs, ModifierType modifierType,
+	void prepare(Modifier &modifier, const math::Vec3i &mins, const math::Vec3i &maxs, ModifierType modifierType,
 				 BrushType brushType) {
 		if (brushType == BrushType::Shape) {
 			modifier.shapeBrush().setBoxMode();
@@ -115,7 +117,7 @@ protected:
 		modifier.executeAdditionalAction();
 	}
 
-	void select(scenegraph::SceneGraphNode &node, Modifier &modifier, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	void select(scenegraph::SceneGraphNode &node, Modifier &modifier, const math::Vec3i &mins, const math::Vec3i &maxs) {
 		prepare(modifier, mins, maxs, ModifierType::Paint, BrushType::Select);
 		scenegraph::SceneGraph sceneGraph;
 		modifier.execute(sceneGraph, node);
@@ -178,7 +180,7 @@ TEST_F(ModifierTest, testFailedBrushStillNotifiesPartialWrites) {
 	modifier.construct();
 	modifier.setModifierType(ModifierType::Override);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.beginBrush());
 	scenegraph::SceneGraph &scene = mgr.sceneGraph();
 	scenegraph::SceneGraphNode &node = scene.node(mgr.activeNode());
@@ -207,7 +209,7 @@ TEST_F(ModifierTest, testGestureDispatchDoesNotRequireAABBBrush) {
 		bool needsAdditionalAction(const BrushContext &) const override { return !stepped; }
 		void step(const BrushContext &) override { stepped = true; }
 		bool aborted(const BrushContext &) const override { return stepped; }
-		glm::ivec3 currentCursorPosition(const BrushContext &) const override { return glm::ivec3(3, 4, 5); }
+		math::Vec3i currentCursorPosition(const BrushContext &) const override { return math::Vec3i(3, 4, 5); }
 	};
 	class GestureModifier : public Modifier {
 	public:
@@ -220,7 +222,7 @@ TEST_F(ModifierTest, testGestureDispatchDoesNotRequireAABBBrush) {
 	auto brush = core::make_shared<GestureBrush>();
 	GestureModifier modifier(brush);
 	EXPECT_EQ(nullptr, modifier.currentAABBBrush());
-	EXPECT_EQ(glm::ivec3(3, 4, 5), modifier.currentCursorPosition());
+	EXPECT_EQ(math::Vec3i(3, 4, 5), modifier.currentCursorPosition());
 	EXPECT_TRUE(modifier.needsAdditionalAction());
 	EXPECT_FALSE(modifier.aborted());
 	modifier.executeAdditionalAction();
@@ -244,7 +246,7 @@ TEST_F(ModifierTest, testNormalBrushDoesNotChangePlacementNormal) {
 		modifier.normalBrush().setStrokeMode();
 		modifier.normalBrush().setPaintMode(NormalBrush::PaintMode::Manual);
 		modifier.setNormalColorIndex(7);
-		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::Place, BrushType::Normal);
+		prepare(modifier, math::Vec3i(0), math::Vec3i(0), ModifierType::Place, BrushType::Normal);
 		const voxel::Voxel cursor(voxel::VoxelType::Generic, 1, normal);
 		modifier.setCursorVoxel(cursor);
 		ASSERT_TRUE(modifier.execute(graph, node));
@@ -258,7 +260,7 @@ TEST_F(ModifierTest, testNormalBrushDoesNotChangePlacementNormal) {
 		modifier.shapeBrush().setStrokeMode();
 		modifier.shapeBrush().setRadius(0);
 		modifier.setModifierType(ModifierType::Place);
-		const glm::ivec3 pos(normal == NO_NORMAL ? 1 : 2, 0, 0);
+		const math::Vec3i pos(normal == NO_NORMAL ? 1 : 2, 0, 0);
 		modifier.setCursorPosition(pos, voxel::FaceNames::PositiveX);
 		ASSERT_TRUE(modifier.beginBrush());
 		ASSERT_TRUE(modifier.execute(graph, node));
@@ -287,7 +289,7 @@ TEST_F(ModifierTest, testNormalPaintPaletteIndices) {
 	for (uint8_t paletteIndex : {0, 7, 254}) {
 		modifier.normalBrush().setStrokeMode();
 		modifier.setNormalColorIndex(paletteIndex);
-		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::Place, BrushType::Normal);
+		prepare(modifier, math::Vec3i(0), math::Vec3i(0), ModifierType::Place, BrushType::Normal);
 		EXPECT_EQ(ModifierType::Place, modifier.modifierType());
 		EXPECT_TRUE(modifier.modifierTypeRequiresExistingVoxel());
 		ASSERT_TRUE(modifier.execute(graph, node));
@@ -314,7 +316,7 @@ TEST_F(ModifierTest, testNormalErase) {
 		node.volume()->setVoxel(1, 0, 0, original);
 		modifier.normalBrush().setStrokeMode();
 		modifier.normalBrush().setPaintMode(mode);
-		prepare(modifier, glm::ivec3(0), glm::ivec3(0), ModifierType::Erase, BrushType::Normal);
+		prepare(modifier, math::Vec3i(0), math::Vec3i(0), ModifierType::Erase, BrushType::Normal);
 		ASSERT_EQ(ModifierType::Erase, modifier.modifierType());
 		EXPECT_TRUE(modifier.modifierTypeRequiresExistingVoxel());
 		ASSERT_TRUE(modifier.execute(graph, node));
@@ -334,7 +336,7 @@ TEST_F(ModifierTest, testModifierAction) {
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(-1), math::Vec3i(1), ModifierType::Place, BrushType::Shape);
 	voxel::RawVolume volume({-10, 10});
 	bool modifierExecuted = false;
 	scenegraph::SceneGraph sceneGraph;
@@ -343,7 +345,7 @@ TEST_F(ModifierTest, testModifierAction) {
 	EXPECT_TRUE(modifier.execute(sceneGraph, node,
 								 [&](const voxel::Region &region, ModifierType modifierType, SceneModifiedFlags flags) {
 									 modifierExecuted = true;
-									 EXPECT_EQ(voxel::Region(glm::ivec3(-1), glm::ivec3(1)), region);
+									 EXPECT_EQ(voxel::Region(math::Vec3i(-1), math::Vec3i(1)), region);
 								 }));
 	EXPECT_TRUE(modifierExecuted);
 	modifier.shutdown();
@@ -370,7 +372,7 @@ TEST_F(ModifierTest, testModifierSelection) {
 		}
 	}
 
-	select(*node, modifier, glm::ivec3(1), glm::ivec3(2));
+	select(*node, modifier, math::Vec3i(1), math::Vec3i(2));
 
 	EXPECT_TRUE(mgr.hasSelection(node->uuid())) << "Node should have selection after select()";
 	// Voxel at (2,1,1) should be selected
@@ -381,12 +383,12 @@ TEST_F(ModifierTest, testModifierSelection) {
 	EXPECT_FALSE((volume->voxel(3, 3, 3).getFlags() & voxel::FlagOutline) != 0)
 		<< "Voxel outside selection should not be selected";
 
-	prepare(modifier, glm::ivec3(0), glm::ivec3(4), ModifierType::Override, BrushType::Shape);
+	prepare(modifier, math::Vec3i(0), math::Vec3i(4), ModifierType::Override, BrushType::Shape);
 	int modifierExecuted = 0;
 	EXPECT_TRUE(modifier.execute(mgr.sceneGraph(), *node,
 								 [&](const voxel::Region &region, ModifierType modifierType, SceneModifiedFlags flags) {
 									 ++modifierExecuted;
-									 EXPECT_EQ(voxel::Region(glm::ivec3(1), glm::ivec3(2)), region);
+									 EXPECT_EQ(voxel::Region(math::Vec3i(1), math::Vec3i(2)), region);
 								 }));
 	EXPECT_EQ(1, modifierExecuted);
 	// Selected voxels at corners should still have selection flag
@@ -413,10 +415,10 @@ TEST_F(ModifierTest, testMaskBlocksNonAdjacentPlace) {
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+	select(node, modifier, math::Vec3i(0), math::Vec3i(0));
 
 	// (3,0,0) is two steps away from the selected voxel - not adjacent
-	prepare(modifier, glm::ivec3(3, 0, 0), glm::ivec3(3, 0, 0), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(3, 0, 0), math::Vec3i(3, 0, 0), ModifierType::Place, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
 	int callbackCount = 0;
 	modifier.execute(sceneGraph, node,
@@ -440,10 +442,10 @@ TEST_F(ModifierTest, testMaskAllowsAdjacentPlace) {
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+	select(node, modifier, math::Vec3i(0), math::Vec3i(0));
 
 	// (1,0,0) is directly adjacent to the selected voxel at (0,0,0)
-	prepare(modifier, glm::ivec3(1, 0, 0), glm::ivec3(1, 0, 0), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(1, 0, 0), math::Vec3i(1, 0, 0), ModifierType::Place, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
 	bool callbackFired = false;
 	modifier.execute(sceneGraph, node,
@@ -470,10 +472,10 @@ TEST_F(ModifierTest, testMaskEraseOnlySelectedVoxels) {
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+	select(node, modifier, math::Vec3i(0), math::Vec3i(0));
 
 	// Erase over both voxels
-	prepare(modifier, glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0), ModifierType::Erase, BrushType::Shape);
+	prepare(modifier, math::Vec3i(0, 0, 0), math::Vec3i(1, 0, 0), ModifierType::Erase, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
 	modifier.execute(sceneGraph, node);
 
@@ -498,10 +500,10 @@ TEST_F(ModifierTest, testMaskOverrideOnlyAffectsSelectedVoxels) {
 	Modifier modifier(&mgr, core::make_shared<IModifierRenderer>());
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
-	select(node, modifier, glm::ivec3(0), glm::ivec3(0));
+	select(node, modifier, math::Vec3i(0), math::Vec3i(0));
 
 	// Override both voxels; prepare() sets the cursor voxel to color index 1
-	prepare(modifier, glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0), ModifierType::Override, BrushType::Shape);
+	prepare(modifier, math::Vec3i(0, 0, 0), math::Vec3i(1, 0, 0), ModifierType::Override, BrushType::Shape);
 	scenegraph::SceneGraph sceneGraph;
 	int callbackCount = 0;
 	modifier.execute(sceneGraph, node,
@@ -543,7 +545,7 @@ TEST_F(ModifierTest, testClamp) {
 		EXPECT_TRUE(modifier.execute(sceneGraph, node,
 									 [&dirtyRegion](const voxel::Region &region, ModifierType type,
 													SceneModifiedFlags flags) { dirtyRegion = region; }));
-		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), glm::ivec3(6, 9, 1));
+		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), math::Vec3i(6, 9, 1));
 	}
 	volume.clear();
 	{
@@ -552,7 +554,7 @@ TEST_F(ModifierTest, testClamp) {
 		EXPECT_TRUE(modifier.execute(sceneGraph, node,
 									 [&dirtyRegion](const voxel::Region &region, ModifierType type,
 													SceneModifiedFlags flags) { dirtyRegion = region; }));
-		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), glm::ivec3(10, 9, 1));
+		EXPECT_EQ(dirtyRegion.getDimensionsInVoxels(), math::Vec3i(10, 9, 1));
 	}
 
 	modifier.shutdown();
@@ -570,7 +572,7 @@ TEST_F(ModifierTest, testRenderCallsRenderer) {
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	modifier.setCursorPosition(glm::ivec3(5), voxel::FaceNames::PositiveX);
+	modifier.setCursorPosition(math::Vec3i(5), voxel::FaceNames::PositiveX);
 
 	palette::Palette palette;
 	palette.tryAdd(color::RGBA{255, 0, 0, 255});
@@ -582,8 +584,8 @@ TEST_F(ModifierTest, testRenderCallsRenderer) {
 	EXPECT_EQ(renderer->updateCalls, 1) << "Renderer update should be called once per render";
 	EXPECT_EQ(renderer->renderCalls, 1) << "Renderer render should be called once per render";
 	// Check that cursor position was passed to the renderer
-	EXPECT_EQ(renderer->lastContext.cursorPosition, glm::ivec3(5));
-	EXPECT_EQ(renderer->lastContext.activeRegion, voxel::Region(glm::ivec3(0), glm::ivec3(31)));
+	EXPECT_EQ(renderer->lastContext.cursorPosition, math::Vec3i(5));
+	EXPECT_EQ(renderer->lastContext.activeRegion, voxel::Region(math::Vec3i(0), math::Vec3i(31)));
 	modifier.shutdown();
 	mgr.shutdown();
 }
@@ -600,7 +602,7 @@ TEST_F(ModifierTest, testSetHighlightRegionDelegatesToRenderer) {
 	modifier.construct();
 	ASSERT_TRUE(modifier.init());
 
-	const voxel::Region highlightRegion(glm::ivec3(2), glm::ivec3(4));
+	const voxel::Region highlightRegion(math::Vec3i(2), math::Vec3i(4));
 	modifier.setHighlightRegion(highlightRegion, 250);
 	EXPECT_EQ(renderer->highlightCalls, 1);
 	EXPECT_EQ(renderer->lastHighlightRegion, highlightRegion);
@@ -612,7 +614,7 @@ TEST_F(ModifierTest, testSetHighlightRegionDelegatesToRenderer) {
 
 TEST_F(ModifierTest, testQueuedHighlightRegionCommand) {
 	QueuedModifierRenderer renderer;
-	const voxel::Region highlightRegion(glm::ivec3(1), glm::ivec3(3));
+	const voxel::Region highlightRegion(math::Vec3i(1), math::Vec3i(3));
 
 	renderer.setHighlightRegion(highlightRegion, 123);
 	renderer.update(ModifierRendererContext{});
@@ -660,7 +662,7 @@ TEST_F(ModifierTest, testAutoSelectPlacedShape) {
 	scenegraph::SceneGraphNode *node = mgr.sceneGraphModelNode(nodeId);
 	ASSERT_NE(node, nullptr);
 
-	prepare(modifier, glm::ivec3(1), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(1), math::Vec3i(2), ModifierType::Place, BrushType::Shape);
 	bool callbackFired = false;
 	modifier.execute(mgr.sceneGraph(), *node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
@@ -684,7 +686,7 @@ TEST_F(ModifierTest, testAutoSelectDisabledNoSelection) {
 	scenegraph::SceneGraphNode *node = mgr.sceneGraphModelNode(nodeId);
 	ASSERT_NE(node, nullptr);
 
-	prepare(modifier, glm::ivec3(1), glm::ivec3(2), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(1), math::Vec3i(2), ModifierType::Place, BrushType::Shape);
 	bool callbackFired = false;
 	modifier.execute(mgr.sceneGraph(), *node,
 					 [&](const voxel::Region &, ModifierType, SceneModifiedFlags) { callbackFired = true; });
@@ -716,7 +718,7 @@ TEST_F(ModifierTest, testAutoSelectClearsPreviousSelection) {
 
 	ASSERT_TRUE(mgr.hasSelection(node->uuid())) << "Pre-condition: node should have selection";
 
-	prepare(modifier, glm::ivec3(-1), glm::ivec3(1), ModifierType::Place, BrushType::Shape);
+	prepare(modifier, math::Vec3i(-1), math::Vec3i(1), ModifierType::Place, BrushType::Shape);
 	modifier.execute(mgr.sceneGraph(), *node);
 
 	EXPECT_TRUE((volume.voxel(0, 0, 0).getFlags() & voxel::FlagOutline) != 0)
@@ -748,7 +750,7 @@ TEST_F(ModifierTest, testAutoSelectExtrudeNewVoxels) {
 	modifier.setBrushType(BrushType::Extrude);
 	modifier.setModifierType(ModifierType::Place);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveX);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveX);
 	ExtrudeBrush &brush = modifier.extrudeBrush();
 	brush.setDepth(1);
 

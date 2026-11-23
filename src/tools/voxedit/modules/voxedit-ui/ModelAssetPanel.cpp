@@ -174,7 +174,8 @@ void ModelAssetPanel::thumbnailTooltip(voxelcollection::VoxelFile *voxelFile) {
 	if (const video::TexturePtr &texture = thumbnailLookup(*voxelFile)) {
 		if (ImGui::BeginItemTooltip()) {
 			const video::Id handle = texture->handle();
-			ImGui::Image(handle, ImGui::Size(40.0f));
+			const float thumb = ImGui::Size(40.0f);
+			ImGui::Image(handle, ImVec2(thumb, thumb));
 			ImGui::TextUnformatted(voxelFile->fullPath.c_str());
 			ImGui::EndTooltip();
 		}

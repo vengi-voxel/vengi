@@ -15,7 +15,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -44,9 +44,9 @@ void ExtrudeOperation::prune(ModifierVolumeWrapper &wrapper, PositionSet &saved)
 	if (wrapper.volume() && _parameters.depth > 0) {
 		const voxel::Region &volRegion = wrapper.volume()->region();
 		const voxel::Voxel air;
-		auto isInterior = [&](const glm::ivec3 &pos) {
+		auto isInterior = [&](const math::Vec3i &pos) {
 			for (int ni = 0; ni < lengthof(voxel::arrayPathfinderFaces); ++ni) {
-				const glm::ivec3 nb = pos + voxel::arrayPathfinderFaces[ni];
+				const math::Vec3i nb = pos + voxel::arrayPathfinderFaces[ni];
 				if (!volRegion.containsPoint(nb) || voxel::isAir(wrapper.volume()->voxel(nb).getMaterial())) {
 					return false;
 				}
@@ -54,19 +54,19 @@ void ExtrudeOperation::prune(ModifierVolumeWrapper &wrapper, PositionSet &saved)
 			return true;
 		};
 
-		core::DynamicArray<glm::ivec3> toPrune;
+		core::DynamicArray<math::Vec3i> toPrune;
 		toPrune.reserve(_history.size() + _cachedSelectedPositions.size());
 		for (const voxel::VoxelPosition &entry : _history) {
 			if (!voxel::isAir(wrapper.volume()->voxel(entry.pos).getMaterial()) && isInterior(entry.pos)) {
 				toPrune.push_back(entry.pos);
 			}
 		}
-		for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+		for (const math::Vec3i &selPos : _cachedSelectedPositions) {
 			if (!voxel::isAir(wrapper.volume()->voxel(selPos).getMaterial()) && isInterior(selPos)) {
 				toPrune.push_back(selPos);
 			}
 		}
-		for (const glm::ivec3 &pos : toPrune) {
+		for (const math::Vec3i &pos : toPrune) {
 			writeVoxel(wrapper, saved, pos, air);
 		}
 	}
@@ -89,7 +89,7 @@ void ExtrudeOperation::cacheSelection(const voxel::RawVolume *vol, const voxel::
 	const int threadCount = app::App::getInstance()->threads();
 	const int chunkCount = (threadCount > 1 && zRange > 1) ? core_min(threadCount, zRange) : 1;
 
-	core::DynamicArray<core::DynamicArray<glm::ivec3>> threadResults;
+	core::DynamicArray<core::DynamicArray<math::Vec3i>> threadResults;
 	threadResults.resize(chunkCount);
 
 	app::for_parallel(0, chunkCount, [&](int chunkStart, int chunkEnd) {
@@ -101,22 +101,22 @@ void ExtrudeOperation::cacheSelection(const voxel::RawVolume *vol, const voxel::
 			voxelutil::visitVolume(
 				*vol, subRegion,
 				[&threadResults, chunk](int x, int y, int z, const voxel::Voxel &) {
-					threadResults[chunk].push_back(glm::ivec3(x, y, z));
+					threadResults[chunk].push_back(math::Vec3i(x, y, z));
 				},
 				voxelutil::VisitSolidOutline());
 		}
 	});
 
 	// Merge results
-	glm::ivec3 selLo(volRegion.getUpperCorner());
-	glm::ivec3 selHi(volRegion.getLowerCorner());
+	math::Vec3i selLo(volRegion.getUpperCorner());
+	math::Vec3i selHi(volRegion.getLowerCorner());
 	PositionSet selectedSet;
 	for (auto &arr : threadResults) {
-		for (const glm::ivec3 &pos : arr) {
+		for (const math::Vec3i &pos : arr) {
 			_cachedSelectedPositions.push_back(pos);
 			selectedSet.insert(pos);
-			selLo = glm::min(selLo, pos);
-			selHi = glm::max(selHi, pos);
+			selLo = math::min(selLo, pos);
+			selHi = math::max(selHi, pos);
 		}
 	}
 
@@ -136,15 +136,15 @@ void ExtrudeOperation::cacheSelection(const voxel::RawVolume *vol, const voxel::
 	const int perp2 = (axisIdx + 2) % NumAxes;
 
 	static constexpr int NumPerpOffsets = 4;
-	glm::ivec3 perpOffsets[NumPerpOffsets] = {};
+	math::Vec3i perpOffsets[NumPerpOffsets] = {};
 	perpOffsets[0][perp1] = 1;
 	perpOffsets[1][perp1] = -1;
 	perpOffsets[2][perp2] = 1;
 	perpOffsets[3][perp2] = -1;
 
-	for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+	for (const math::Vec3i &selPos : _cachedSelectedPositions) {
 		for (int pi = 0; pi < NumPerpOffsets; ++pi) {
-			const glm::ivec3 neighborPos = selPos + perpOffsets[pi];
+			const math::Vec3i neighborPos = selPos + perpOffsets[pi];
 			if (!volRegion.containsPoint(neighborPos)) {
 				continue;
 			}
@@ -163,8 +163,8 @@ void ExtrudeOperation::cacheSelection(const voxel::RawVolume *vol, const voxel::
 	_hasCachedSelection = true;
 }
 
-void ExtrudeOperation::adjustCacheForRegionShift(const glm::ivec3 &delta) {
-	for (glm::ivec3 &pos : _cachedSelectedPositions) {
+void ExtrudeOperation::adjustCacheForRegionShift(const math::Vec3i &delta) {
+	for (math::Vec3i &pos : _cachedSelectedPositions) {
 		pos += delta;
 	}
 	_cachedSelectedBBox.shift(delta.x, delta.y, delta.z);
@@ -180,7 +180,7 @@ void ExtrudeOperation::adjustCacheForRegionShift(const glm::ivec3 &delta) {
 	_capturedVolumeLower += delta;
 }
 
-void ExtrudeOperation::writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &savedPositions, const glm::ivec3 &pos,
+void ExtrudeOperation::writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &savedPositions, const math::Vec3i &pos,
 								  const voxel::Voxel &newVoxel) {
 	voxel::RawVolume *vol = wrapper.volume();
 	const voxel::Region &volRegion = vol->region();
@@ -202,12 +202,12 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper) {
 	// This makes depth/offset changes fully reversible without touching the undo stack.
 	// Track the bounding box of all restored positions for dirty region.
 	const voxel::Region &volRegion = vol->region();
-	glm::ivec3 dirtyLo(volRegion.getUpperCorner());
-	glm::ivec3 dirtyHi(volRegion.getLowerCorner());
+	math::Vec3i dirtyLo(volRegion.getUpperCorner());
+	math::Vec3i dirtyHi(volRegion.getLowerCorner());
 	for (const voxel::VoxelPosition &entry : _history) {
 		vol->setVoxel(entry.pos, entry.voxel);
-		dirtyLo = glm::min(dirtyLo, entry.pos);
-		dirtyHi = glm::max(dirtyHi, entry.pos);
+		dirtyLo = math::min(dirtyLo, entry.pos);
+		dirtyHi = math::max(dirtyHi, entry.pos);
 	}
 	if (!_history.empty()) {
 		wrapper.addToDirtyRegion(dirtyLo);
@@ -224,10 +224,10 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper) {
 	const int faceSign = voxel::isNegativeFace(_parameters.face) ? -1 : 1;
 
 	const bool carving = _parameters.depth < 0;
-	const int steps = glm::abs(_parameters.depth);
+	const int steps = math::abs(_parameters.depth);
 	const int dirSign = carving ? -faceSign : faceSign;
 
-	glm::ivec3 dir(0);
+	math::Vec3i dir(0);
 	dir[axisIdx] = dirSign;
 
 	static constexpr int NumAxes = 3;
@@ -236,8 +236,8 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper) {
 
 	const float stepU = static_cast<float>(_parameters.offsetU) / steps;
 	const float stepV = static_cast<float>(_parameters.offsetV) / steps;
-	auto lateralShift = [&](int step) -> glm::ivec3 {
-		glm::ivec3 shift(0);
+	auto lateralShift = [&](int step) -> math::Vec3i {
+		math::Vec3i shift(0);
 		if (_parameters.offsetU != 0) {
 			shift[perp1] = static_cast<int>(stepU * step);
 		}
@@ -258,25 +258,25 @@ void ExtrudeOperation::evaluate(ModifierVolumeWrapper &wrapper) {
 		// Loop 1: Place walls at each depth step before carving
 		if (_parameters.fillWalls) {
 			for (int step = 0; step < steps; ++step) {
-				const glm::ivec3 shift = lateralShift(step);
+				const math::Vec3i shift = lateralShift(step);
 				for (const WallCandidate &wc : _cachedWallCandidates) {
-					const glm::ivec3 sidePos = wc.basePos + wc.perpOffset + dir * step + shift;
+					const math::Vec3i sidePos = wc.basePos + wc.perpOffset + dir * step + shift;
 					writeVoxel(wrapper, savedPositions, sidePos, _parameters.voxel);
 				}
 			}
 		}
 		// Loop 2: Carve out cached selected positions at each depth step
 		for (int step = 0; step < steps; ++step) {
-			const glm::ivec3 shift = lateralShift(step);
-			for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+			const math::Vec3i shift = lateralShift(step);
+			for (const math::Vec3i &selPos : _cachedSelectedPositions) {
 				writeVoxel(wrapper, savedPositions, selPos + dir * step + shift, air);
 			}
 		}
 	} else {
 		// Positive depth: place selected voxels at each step from 1 to depth
 		for (int step = 1; step <= steps; ++step) {
-			const glm::ivec3 shift = lateralShift(step);
-			for (const glm::ivec3 &selPos : _cachedSelectedPositions) {
+			const math::Vec3i shift = lateralShift(step);
+			for (const math::Vec3i &selPos : _cachedSelectedPositions) {
 				writeVoxel(wrapper, savedPositions, selPos + dir * step + shift, _parameters.voxel);
 			}
 		}

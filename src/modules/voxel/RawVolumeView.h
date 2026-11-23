@@ -6,6 +6,7 @@
 
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -40,15 +41,15 @@ public:
 	/**
 	 * @param[in] pos The position of the voxel relative to the view region
 	 */
-	inline const Voxel &voxel(const glm::ivec3 &pos) const {
-		const glm::ivec3 volumePos = pos + _region.getLowerCorner();
+	inline const Voxel &voxel(const math::Vec3i &pos) const {
+		const math::Vec3i volumePos = pos + _region.getLowerCorner();
 		if (!_region.containsPoint(volumePos)) {
 			return _volume->borderValue();
 		}
 		return _volume->voxel(volumePos);
 	}
 
-	inline glm::ivec3 viewPosFromIndex(size_t idx) const {
+	inline math::Vec3i viewPosFromIndex(size_t idx) const {
 		const int64_t width = _region.getWidthInVoxels();
 		const int64_t height = _region.getHeightInVoxels();
 		const int64_t dim = width * height;

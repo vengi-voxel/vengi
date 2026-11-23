@@ -4,26 +4,29 @@
 
 #include "AxisUtil.h"
 #include "core/ArrayLength.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
-void updateShapeBuilderForPlane(video::ShapeBuilder& shapeBuilder, const voxel::Region& region, bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color) {
+void updateShapeBuilderForPlane(video::ShapeBuilder& shapeBuilder, const voxel::Region& region, bool mirror, const math::Vec3i& pos, math::Axis axis, const math::Vec4f& color) {
 	const int index = mirror ? getIndexForMirrorAxis(axis) : math::getIndexForAxis(axis);
-	glm::vec3 mins = region.getLowerCorner();
-	glm::vec3 maxs = region.getUpperCorner() + 1;
+	math::Vec3f mins = region.getLowerCorner();
+	math::Vec3f maxs = region.getUpperCorner() + 1;
 	mins[index] = maxs[index] = pos[index];
-	const glm::vec3& ll = mins;
-	const glm::vec3& ur = maxs;
-	glm::vec3 ul;
-	glm::vec3 lr;
+	const math::Vec3f& ll = mins;
+	const math::Vec3f& ur = maxs;
+	math::Vec3f ul;
+	math::Vec3f lr;
 	if (axis == math::Axis::Y) {
-		ul = glm::vec3(mins.x, mins.y, maxs.z);
-		lr = glm::vec3(maxs.x, maxs.y, mins.z);
+		ul = math::Vec3f(mins.x, mins.y, maxs.z);
+		lr = math::Vec3f(maxs.x, maxs.y, mins.z);
 	} else {
-		ul = glm::vec3(mins.x, maxs.y, mins.z);
-		lr = glm::vec3(maxs.x, mins.y, maxs.z);
+		ul = math::Vec3f(mins.x, maxs.y, mins.z);
+		lr = math::Vec3f(maxs.x, mins.y, maxs.z);
 	}
-	const glm::vec3 vecs[] = {ll, ul, ur, lr};
+	const math::Vec3f vecs[] = {ll, ul, ur, lr};
 	// lower left (0), upper left (1), upper right (2)
 	// lower left (0), upper right (2), lower right (3)
 	const uint32_t indices[] = {0, 1, 2, 0, 2, 3, 2, 1, 0, 3, 2, 0};

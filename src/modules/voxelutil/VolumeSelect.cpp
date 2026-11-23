@@ -3,10 +3,11 @@
  */
 
 #include "VolumeSelect.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
-bool lassoContains(const core::DynamicArray<glm::ivec3> &path, int pu, int pv, int uAxis, int vAxis) {
+bool lassoContains(const core::DynamicArray<math::Vec3i> &path, int pu, int pv, int uAxis, int vAxis) {
 	const int n = (int)path.size();
 	for (int i = 0, j = n - 1; i < n; j = i++) {
 		const int xi = path[i][uAxis];
@@ -16,10 +17,10 @@ bool lassoContains(const core::DynamicArray<glm::ivec3> &path, int pu, int pv, i
 		const long long cross = (long long)(xi - xj) * (long long)(pv - yj) -
 								(long long)(yi - yj) * (long long)(pu - xj);
 		if (cross == 0) {
-			const int minX = glm::min(xi, xj);
-			const int maxX = glm::max(xi, xj);
-			const int minY = glm::min(yi, yj);
-			const int maxY = glm::max(yi, yj);
+			const int minX = math::min(xi, xj);
+			const int maxX = math::max(xi, xj);
+			const int minY = math::min(yi, yj);
+			const int maxY = math::max(yi, yj);
 			if (pu >= minX && pu <= maxX && pv >= minY && pv <= maxY) {
 				return true;
 			}

@@ -11,6 +11,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -40,7 +41,7 @@ TEST_F(VolumeVisitorTest, testVisitFaces) {
 		const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, i);
 		const math::Axis axis = voxel::faceToAxis(faceName);
 		const int idx = math::getIndexForAxis(axis);
-		glm::ivec3 pos;
+		math::Vec3i pos;
 		if (voxel::isNegativeFace(faceName)) {
 			pos[idx] = region.getLowerCorner()[idx];
 		} else {
@@ -181,7 +182,7 @@ TEST_F(VolumeVisitorTest, testVisitFlatSurface) {
 			volume.setVoxel(x, 0, z, solid);
 		}
 	}
-	int cnt = visitFlatSurface(volume, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY);
+	int cnt = visitFlatSurface(volume, math::Vec3i(1, 0, 1), voxel::FaceNames::PositiveY);
 	EXPECT_EQ(9, cnt);
 
 	// With a step of 1 at z=1, deviation=0 should not follow the step.
@@ -192,10 +193,10 @@ TEST_F(VolumeVisitorTest, testVisitFlatSurface) {
 		volume2.setVoxel(x, 0, 2, solid);
 		volume2.setVoxel(x, 1, 2, solid); // one step up at z=2
 	}
-	int cntNoDeviation = visitFlatSurface(volume2, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, 0);
+	int cntNoDeviation = visitFlatSurface(volume2, math::Vec3i(1, 0, 1), voxel::FaceNames::PositiveY, 0);
 	EXPECT_EQ(6, cntNoDeviation); // only the 6 voxels whose PositiveY face is exposed
 
-	int cntWithDeviation = visitFlatSurface(volume2, glm::ivec3(1, 0, 1), voxel::FaceNames::PositiveY, 1);
+	int cntWithDeviation = visitFlatSurface(volume2, math::Vec3i(1, 0, 1), voxel::FaceNames::PositiveY, 1);
 	EXPECT_EQ(9, cntWithDeviation); // all 9, including the 3 at y=1
 }
 

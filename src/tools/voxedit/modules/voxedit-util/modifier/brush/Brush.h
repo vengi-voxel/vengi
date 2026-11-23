@@ -20,6 +20,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -43,7 +45,7 @@ enum class BrushPreviewStyle { Footprint, Changes, Selection };
  * separated by space, colon, or comma ("1 2 3" / "1:2:3").
  * Each component is clamped to 1..64.
  */
-glm::ivec3 parseGridResolution(const core::String &str);
+math::Vec3i parseGridResolution(const core::String &str);
 
 /**
  * @brief Context information passed to brush operations containing all necessary state
@@ -61,9 +63,9 @@ struct BrushContext {
 	voxel::Voxel voxelAtCursor;
 
 	/** Reference/start position for multi-point operations (e.g., line start, AABB first corner) */
-	glm::ivec3 referencePos{0};
+	math::Vec3i referencePos{0};
 	/** Current cursor position in voxel coordinates */
-	glm::ivec3 cursorPosition{0};
+	math::Vec3i cursorPosition{0};
 	/** The face where the raycast hit - determines placement direction */
 	voxel::FaceNames cursorFace = voxel::FaceNames::Max;
 	/** Axis lock constraint for 2D operations (e.g., drawing on a plane) */
@@ -77,7 +79,7 @@ struct BrushContext {
 	bool normalPaint = false;
 	uint8_t normalIndex = NO_NORMAL;
 	/** Grid resolution for snapping operations - voxels are placed at multiples of this value per axis */
-	glm::ivec3 gridResolution{1};
+	math::Vec3i gridResolution{1};
 
 	/** Used for clamping the brush region to stay within the target volume boundaries */
 	voxel::Region targetVolumeRegion;
@@ -85,7 +87,7 @@ struct BrushContext {
 	voxel::Region evaluatedRegion = voxel::Region::InvalidRegion;
 
 	/** The position of the cursor before any clamping or brush execution was applied */
-	glm::ivec3 prevCursorPosition{0};
+	math::Vec3i prevCursorPosition{0};
 
 	/** True while viewport handle interaction owns or blocks brush input */
 	bool brushGizmoActive = false;
@@ -139,7 +141,7 @@ protected:
 	const ModifierType _defaultModifier;	///< Default operation type if none specified
 	const ModifierType _supportedModifiers; ///< Bitfield of supported ModifierTypes
 
-	glm::ivec3 _referencePosition{0}; ///< Cached reference position for mirror commands
+	math::Vec3i _referencePosition{0}; ///< Cached reference position for mirror commands
 
 	core::String _errorReason; ///< Error message shown in UI when brush can't be used
 
@@ -147,9 +149,9 @@ protected:
 	 * The mirror position defines the plane of symmetry. It's based on the reference
 	 * position whenever the mirror axis is set.
 	 */
-	glm::ivec3 _mirrorPos{0};
+	math::Vec3i _mirrorPos{0};
 	math::Axis _mirrorAxis = math::Axis::None; ///< Active mirror axis, or None if disabled
-	void toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
+	void toggleMirrorAxis(math::Axis axis, const math::Vec3i &mirrorPos);
 
 	/**
 	 * Controls whether the brush region is automatically clamped to stay within the
@@ -365,7 +367,7 @@ public:
 		return calcRegion(ctx);
 	}
 	/** Override surface picking while dragging, in model voxel coordinates. */
-	virtual bool projectCursor(const math::Ray &ray, glm::ivec3 &position) const {
+	virtual bool projectCursor(const math::Ray &ray, math::Vec3i &position) const {
 		return false;
 	}
 	/** Map the requested operation to the write policy enforced by ModifierVolumeWrapper. */
@@ -495,7 +497,7 @@ public:
 	}
 
 	/** Cursor position constrained by the active gesture. */
-	virtual glm::ivec3 currentCursorPosition(const BrushContext &ctx) const {
+	virtual math::Vec3i currentCursorPosition(const BrushContext &ctx) const {
 		return ctx.cursorPosition;
 	}
 
@@ -573,7 +575,7 @@ public:
 	 * @sa setMirrorAxis() - enables mirroring
 	 * @sa mirrorAxis() - queries the current mirror state
 	 */
-	bool getMirrorBox(glm::ivec3 &mins, glm::ivec3 &maxs) const;
+	bool getMirrorBox(math::Vec3i &mins, math::Vec3i &maxs) const;
 
 	/**
 	 * @brief Set or change the mirror axis and position
@@ -589,7 +591,7 @@ public:
 	 * @sa mirrorAxis() - queries current axis
 	 * @sa mirrorPos() - queries current position
 	 */
-	bool setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos);
+	bool setMirrorAxis(math::Axis axis, const math::Vec3i &mirrorPos);
 
 	/**
 	 * @return The currently active mirror axis, or Axis::None if mirroring is disabled
@@ -599,7 +601,7 @@ public:
 	/**
 	 * @return The position defining the mirror plane
 	 */
-	const glm::ivec3 &mirrorPos() const;
+	const math::Vec3i &mirrorPos() const;
 
 	/**
 	 * @brief Append the brush's viewport handles and overlays
@@ -628,11 +630,11 @@ public:
 	 * @param[in] operation Active BrushGizmoOperation flags
 	 * @return true if the tool parameters changed
 	 */
-	virtual bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
-								const glm::mat4 &deltaMatrix, uint32_t operation);
+	virtual bool editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix,
+								const math::Mat4f &deltaMatrix, uint32_t operation);
 };
 
-inline const glm::ivec3 &Brush::mirrorPos() const {
+inline const math::Vec3i &Brush::mirrorPos() const {
 	return _mirrorPos;
 }
 

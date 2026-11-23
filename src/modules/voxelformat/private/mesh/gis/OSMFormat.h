@@ -9,6 +9,8 @@
 #include "core/collection/Map.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -133,8 +135,8 @@ private:
 	 * Oriented Bounding Rectangle (OBR)
 	 */
 	struct RoofParams {
-		glm::vec2 ridgeDir2;  ///< Direction along the ridge
-		glm::vec2 perpDir2;	  ///< Direction perpendicular to the ridge
+		math::Vec2f ridgeDir2;  ///< Direction along the ridge
+		math::Vec2f perpDir2;	  ///< Direction perpendicular to the ridge
 		float ocX;			  ///< OBR center X
 		float ocZ;			  ///< OBR center Z
 		float eY;			  ///< Eave Y (roof base)
@@ -149,12 +151,12 @@ private:
 	/**
 	 * @brief Convert oriented (u, v) coordinates to world-space vec3
 	 */
-	static glm::vec3 roofPt(const RoofParams &rp, float u, float v, float y);
+	static math::Vec3f roofPt(const RoofParams &rp, float u, float v, float y);
 
 	/**
 	 * @brief Convert world (x, z) to oriented (u, v) coordinates
 	 */
-	static glm::vec2 toUV(const RoofParams &rp, float wx, float wz);
+	static math::Vec2f toUV(const RoofParams &rp, float wx, float wz);
 
 	/**
 	 * @brief Generate edge-to-ridge roof geometry (pyramidal, gabled, hipped, etc.)
@@ -168,7 +170,7 @@ private:
 	 *   halfU - halfV = hipped (shortened ridge, hip slopes at ends)
 	 * ridgeV controls ridge offset across V (0 = centered, nonzero = saltbox)
 	 */
-	static void edgeToRidgeRoof(const RoofParams &rp, const core::DynamicArray<glm::vec3> &verts, size_t numVerts,
+	static void edgeToRidgeRoof(const RoofParams &rp, const core::DynamicArray<math::Vec3f> &verts, size_t numVerts,
 								color::RGBA roofColor, Mesh &mesh, float ridgeHalfU, float ridgeV);
 
 	/**
@@ -178,13 +180,13 @@ private:
 	 * Also fills gable wall gaps between wall tops and the roof surface.
 	 */
 	template<typename HeightFn>
-	static void perVertexHeightRoof(const RoofParams &rp, const core::DynamicArray<glm::vec3> &verts, size_t numVerts,
+	static void perVertexHeightRoof(const RoofParams &rp, const core::DynamicArray<math::Vec3f> &verts, size_t numVerts,
 									color::RGBA roofColor, color::RGBA wallColor, Mesh &mesh, HeightFn heightFn);
 
 	/**
 	 * @brief Convert lat/lon to local XZ coordinates (Y is up)
 	 */
-	glm::vec3 latLonToLocal(double lat, double lon, double elevation, const CoordSystem &cs) const;
+	math::Vec3f latLonToLocal(double lat, double lon, double elevation, const CoordSystem &cs) const;
 
 	/**
 	 * @brief Estimate building height from tags
@@ -247,7 +249,7 @@ protected:
 						const LoadContext &ctx) override;
 
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-					const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+					const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 		return false;
 	}
 

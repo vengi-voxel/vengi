@@ -5,9 +5,9 @@
 #pragma once
 
 #include "core/collection/Buffer.h"
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -35,10 +35,10 @@ protected:
 		bool isModified;
 		bool isLeftHandClosed;
 		bool isRightHandClosed;
-		core::Buffer<glm::vec3> meshPositions;
-		core::Buffer<glm::quat> meshRotations;
-		core::Buffer<glm::vec3> ikPositions;
-		core::Buffer<glm::quat> ikRotations;
+		core::Buffer<math::Vec3f> meshPositions;
+		core::Buffer<math::Quatf> meshRotations;
+		core::Buffer<math::Vec3f> ikPositions;
+		core::Buffer<math::Quatf> ikRotations;
 		core::Buffer<bool> ikModified;
 	};
 

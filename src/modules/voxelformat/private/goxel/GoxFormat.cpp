@@ -3,6 +3,7 @@
  */
 
 #include "GoxFormat.h"
+#include <float.h>
 #include "color/ColorUtil.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
@@ -29,7 +30,12 @@
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Mat4Ops.h"
 
 namespace voxelformat {
 
@@ -198,7 +204,7 @@ image::ImagePtr GoxFormat::loadScreenshot(const core::String &filename, const io
 
 voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGBA shapeColor, const float box[4][4],
 									   const palette::Palette &palette) {
-	typedef float (*SdfFunc)(const glm::vec3 &, const glm::vec3 &);
+	typedef float (*SdfFunc)(const math::Vec3f &, const math::Vec3f &);
 	SdfFunc sdf = nullptr;
 	core::String resolvedShape = shapeName;
 	// Fork removed the spray shape; treat legacy id as sphere.
@@ -217,16 +223,16 @@ voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGB
 	}
 
 	// Extract size (half-extents) from box column vector lengths
-	const glm::vec3 size(glm::length(glm::vec3(box[0][0], box[0][1], box[0][2])),
-						 glm::length(glm::vec3(box[1][0], box[1][1], box[1][2])),
-						 glm::length(glm::vec3(box[2][0], box[2][1], box[2][2])));
+	const math::Vec3f size(math::length(math::Vec3f(box[0][0], box[0][1], box[0][2])),
+						 math::length(math::Vec3f(box[1][0], box[1][1], box[1][2])),
+						 math::length(math::Vec3f(box[2][0], box[2][1], box[2][2])));
 	if (size.x < 0.5f || size.y < 0.5f || size.z < 0.5f) {
 		Log::warn("Shape box too small");
 		return nullptr;
 	}
 
 	// Build inverse transform: scale box by 1/size then invert
-	glm::mat4 mat;
+	math::Mat4f mat;
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			mat[i][j] = box[i][j];
@@ -235,29 +241,29 @@ voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGB
 	mat[0] /= size.x;
 	mat[1] /= size.y;
 	mat[2] /= size.z;
-	const glm::mat4 invMat = glm::inverse(mat);
+	const math::Mat4f invMat = math::inverse(mat);
 
 	// Compute AABB by transforming the 8 corners of the [-1,1] cube through the box
-	glm::vec3 aabbMin(FLT_MAX);
-	glm::vec3 aabbMax(-FLT_MAX);
-	const glm::vec3 corners[8] = {{-1, -1, -1}, {1, -1, -1}, {-1, 1, -1}, {1, 1, -1},
+	math::Vec3f aabbMin(FLT_MAX);
+	math::Vec3f aabbMax(-FLT_MAX);
+	const math::Vec3f corners[8] = {{-1, -1, -1}, {1, -1, -1}, {-1, 1, -1}, {1, 1, -1},
 								  {-1, -1, 1},	{1, -1, 1},	 {-1, 1, 1},  {1, 1, 1}};
 	for (int i = 0; i < 8; i++) {
-		glm::vec4 wp = glm::vec4(0.0f);
+		math::Vec4f wp = math::Vec4f(0.0f);
 		for (int j = 0; j < 4; j++) {
 			wp[j] = box[0][j] * corners[i].x + box[1][j] * corners[i].y + box[2][j] * corners[i].z + box[3][j];
 		}
-		aabbMin = glm::min(aabbMin, glm::vec3(wp));
-		aabbMax = glm::max(aabbMax, glm::vec3(wp));
+		aabbMin = math::min(aabbMin, math::Vec3f(wp));
+		aabbMax = math::max(aabbMax, math::Vec3f(wp));
 	}
 
 	// Convert goxel AABB (Z-up) to vengi (Y-up) with Y negation
-	const int minX = (int)glm::floor(aabbMin.x);
-	const int minY = (int)glm::floor(aabbMin.z);
-	const int minZ = (int)glm::floor(-aabbMax.y);
-	const int maxX = (int)glm::ceil(aabbMax.x);
-	const int maxY = (int)glm::ceil(aabbMax.z);
-	const int maxZ = (int)glm::ceil(-aabbMin.y);
+	const int minX = (int)math::floor(aabbMin.x);
+	const int minY = (int)math::floor(aabbMin.z);
+	const int minZ = (int)math::floor(-aabbMax.y);
+	const int maxX = (int)math::ceil(aabbMax.x);
+	const int maxY = (int)math::ceil(aabbMax.z);
+	const int maxZ = (int)math::ceil(-aabbMin.y);
 
 	const voxel::Region region(minX, minY, minZ, maxX, maxY, maxZ);
 	if (!region.isValid()) {
@@ -276,8 +282,8 @@ voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGB
 			for (int vx = minX; vx <= maxX; vx++) {
 				// Convert vengi pos back to goxel pos for SDF evaluation
 				// goxX = vengiX, goxY = -vengiZ, goxZ = vengiY
-				const glm::vec3 goxP((float)vx + 0.5f, (float)(-vz) + 0.5f, (float)vy + 0.5f);
-				const glm::vec3 p = glm::vec3(invMat * glm::vec4(goxP, 1.0f));
+				const math::Vec3f goxP((float)vx + 0.5f, (float)(-vz) + 0.5f, (float)vy + 0.5f);
+				const math::Vec3f p = math::Vec3f(invMat * math::Vec4f(goxP, 1.0f));
 				if (sdf(p, size) >= 0.0f) {
 					vol->setVoxel(vx, vy, vz, voxel);
 				}
@@ -445,7 +451,7 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		} else if (!strcmp(dictKey, "mat")) {
 			// "mat" (4x4 matrix) - also used as shape box for shape layers
 			io::MemoryReadStream subStream(dictValue, sizeof(float) * 16);
-			glm::mat4 mat(0.0f);
+			math::Mat4f mat(0.0f);
 			for (int i = 0; i < 16; ++i) {
 				subStream.readFloat(mat[i / 4][i % 4]);
 				shapeMat[i / 4][i % 4] = mat[i / 4][i % 4];
@@ -531,11 +537,11 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 	}
 
 	{
-		const glm::ivec3 mins = modelVolume->region().getLowerCorner();
+		const math::Vec3i mins = modelVolume->region().getLowerCorner();
 		modelVolume->translate(-mins);
 
 		scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
-		transform.setWorldTranslation(glm::vec3(mins) + transform.worldTranslation());
+		transform.setWorldTranslation(math::Vec3f(mins) + transform.worldTranslation());
 
 		node.setVolume(modelVolume);
 	}
@@ -600,8 +606,8 @@ bool GoxFormat::loadChunk_MATE(State &state, const GoxChunk &c, io::SeekableRead
 	core::String name;
 	palette::Material material;
 	bool emissionFound = false;
-	glm::vec4 color(0.0f);
-	glm::vec3 emission(0.0f);
+	math::Vec4f color(0.0f);
+	math::Vec3f emission(0.0f);
 
 	while (loadChunk_DictEntry(c, stream, dictKey, dictValue, valueLength)) {
 		if (!strcmp(dictKey, "name")) {
@@ -638,7 +644,7 @@ bool GoxFormat::loadChunk_MATE(State &state, const GoxChunk &c, io::SeekableRead
 		if (emissionFound) {
 			float emissionFactor = 0.0f;
 			for (int i = 0; i < 3; ++i) {
-				emissionFactor = core_max(emissionFactor, glm::abs(color[i] - emission[i]));
+				emissionFactor = core_max(emissionFactor, math::abs(color[i] - emission[i]));
 			}
 			material.setValue(palette::MaterialProperty::MaterialEmit, emissionFactor);
 		}
@@ -684,7 +690,7 @@ bool GoxFormat::loadChunk_CAMR(State &state, const GoxChunk &c, io::SeekableRead
 			// "mat" 4x4 float
 			scenegraph::SceneGraphTransform transform;
 			io::MemoryReadStream subStream(dictValue, valueLength);
-			glm::mat4 mat(0.0f);
+			math::Mat4f mat(0.0f);
 			// TODO: VOXELFORMAT: axis
 			for (int i = 0; i < 16; ++i) {
 				subStream.readFloat(mat[i / 4][i % 4]);
@@ -915,16 +921,16 @@ bool GoxFormat::saveChunk_DictColor(io::WriteStream &stream, const core::String 
 	if (!saveChunk_DictEntryHeader(stream, key, 4 * sizeof(float))) {
 		return false;
 	}
-	const glm::vec4 &color = color::fromRGBA(value);
+	const math::Vec4f &color = color::fromRGBA(value);
 	return stream.writeFloat(color.r) && stream.writeFloat(color.g) && stream.writeFloat(color.b) &&
 		   stream.writeFloat(color.a);
 }
 
-bool GoxFormat::saveChunk_DictMat4(io::WriteStream &stream, const core::String &key, const glm::mat4 &value) {
+bool GoxFormat::saveChunk_DictMat4(io::WriteStream &stream, const core::String &key, const math::Mat4f &value) {
 	if (!saveChunk_DictEntryHeader(stream, key, 16 * sizeof(float))) {
 		return false;
 	}
-	const float *p = glm::value_ptr(value);
+	const float *p = math::value_ptr(value);
 	// TODO: VOXELFORMAT: axis
 	for (int i = 0; i < 16; ++i) {
 		if (!stream.writeFloat(*p++)) {
@@ -934,7 +940,7 @@ bool GoxFormat::saveChunk_DictMat4(io::WriteStream &stream, const core::String &
 	return true;
 }
 
-bool GoxFormat::saveChunk_DictVec3(io::WriteStream &stream, const core::String &key, const glm::vec3 &value) {
+bool GoxFormat::saveChunk_DictVec3(io::WriteStream &stream, const core::String &key, const math::Vec3f &value) {
 	if (!saveChunk_DictEntryHeader(stream, key, sizeof(value))) {
 		return false;
 	}
@@ -952,7 +958,7 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph
 		const bool ortho = cam.isOrthographic();
 		wrapBool(saveChunk_DictBool(stream, "ortho", ortho))
 		const scenegraph::FrameTransform &transform = sceneGraph.transformForFrame(cam, 0);
-		const glm::mat4 &worldMatrix = transform.worldMatrix();
+		const math::Mat4f &worldMatrix = transform.worldMatrix();
 		wrapBool(saveChunk_DictMat4(stream, "mat", worldMatrix))
 		// GrandyB fork camera fields (ignored by upstream)
 		int32_t mode = GoxCamOrbit;
@@ -983,7 +989,7 @@ bool GoxFormat::saveChunk_CAMR(io::SeekableWriteStream &stream, const scenegraph
 bool GoxFormat::saveChunk_PREV(const scenegraph::SceneGraph &sceneGraph, io::SeekableWriteStream &stream,
 							   const SaveContext &savectx) {
 	ThumbnailContext ctx;
-	ctx.outputSize = glm::ivec2(128);
+	ctx.outputSize = math::Vec2i(128);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, savectx.thumbnailCreator, ctx);
 	if (!image || !image->isLoaded()) {
 		return true;
@@ -1012,8 +1018,8 @@ bool GoxFormat::saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(saveChunk_DictColor(stream, "color", rgba));
 		const palette::Material &material = palette.material(i);
 		const color::RGBA emitRGBA = palette.emitColor(i);
-		const glm::vec3 &emitColor =
-			glm::clamp(color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
+		const math::Vec3f &emitColor =
+			math::clamp(color::fromRGBA(emitRGBA) * material.value(palette::MaterialProperty::MaterialEmit), 0.0f, 1.0f);
 		wrapBool(saveChunk_DictFloat(stream, "metallic", material.value(palette::MaterialProperty::MaterialMetal)))
 		wrapBool(saveChunk_DictFloat(stream, "roughness", material.value(palette::MaterialProperty::MaterialRoughness)))
 		wrapBool(saveChunk_DictVec3(stream, "emission", emitColor))
@@ -1046,13 +1052,13 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		glm::ivec3 mins, maxs;
-		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
+		math::Vec3i mins, maxs;
+		calcMinsMaxs(region, math::Vec3i(BlockSize), mins, maxs);
 
 		GoxScopedChunkWriter scoped(stream, FourCC('L', 'A', 'Y', 'R'));
 		int layerBlocks = 0;
 		auto func = [&](int x, int y, int z, const voxel::Voxel &) {
-			if (isEmptyBlock(sceneGraph.resolveVolume(node), glm::ivec3(BlockSize), x, y, z)) {
+			if (isEmptyBlock(sceneGraph.resolveVolume(node), math::Vec3i(BlockSize), x, y, z)) {
 				return;
 			}
 			++layerBlocks;
@@ -1067,7 +1073,7 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 		for (int y = mins.y; y <= maxs.y; y += BlockSize) {
 			for (int z = mins.z; z <= maxs.z; z += BlockSize) {
 				for (int x = mins.x; x <= maxs.x; x += BlockSize) {
-					if (isEmptyBlock(sceneGraph.resolveVolume(node), glm::ivec3(BlockSize), x, y, z)) {
+					if (isEmptyBlock(sceneGraph.resolveVolume(node), math::Vec3i(BlockSize), x, y, z)) {
 						continue;
 					}
 					Log::debug("Saved LAYR chunk %i at %i:%i:%i", blockUid, x, y, z);
@@ -1089,11 +1095,11 @@ bool GoxFormat::saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph
 		wrapBool(saveChunk_DictString(stream, "name", node.name()))
 		// the load path crops and sets translation = crop lower corner + mat translation
 		// the mat translation needs to be in goxel's Z-up coordinate system
-		glm::mat4 mat(1.0f);
+		math::Mat4f mat(1.0f);
 		{
-			const glm::vec3 &wt = node.transform(0).worldTranslation();
+			const math::Vec3f &wt = node.transform(0).worldTranslation();
 			// vengi Y-up to goxel Z-up: goxX=vengiX, goxY=-vengiZ, goxZ=vengiY
-			mat[3] = glm::vec4(wt.x, -wt.z, wt.y, 1.0f);
+			mat[3] = math::Vec4f(wt.x, -wt.z, wt.y, 1.0f);
 		}
 		wrapBool(saveChunk_DictMat4(stream, "mat", mat))
 		int32_t goxLayerId = 0;
@@ -1143,14 +1149,14 @@ bool GoxFormat::saveChunk_BL16(io::SeekableWriteStream &stream, const scenegraph
 	for (auto iter = sceneGraph.beginAllModels(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		glm::ivec3 mins, maxs;
-		calcMinsMaxs(region, glm::ivec3(BlockSize), mins, maxs);
+		math::Vec3i mins, maxs;
+		calcMinsMaxs(region, math::Vec3i(BlockSize), mins, maxs);
 
 		const voxel::RawVolume *vol = sceneGraph.resolveVolume(node);
 		for (int by = mins.y; by <= maxs.y; by += BlockSize) {
 			for (int bz = mins.z; bz <= maxs.z; bz += BlockSize) {
 				for (int bx = mins.x; bx <= maxs.x; bx += BlockSize) {
-					if (isEmptyBlock(vol, glm::ivec3(BlockSize), bx, by, bz)) {
+					if (isEmptyBlock(vol, math::Vec3i(BlockSize), bx, by, bz)) {
 						continue;
 					}
 					GoxScopedChunkWriter scoped(stream, FourCC('B', 'L', '1', '6'));

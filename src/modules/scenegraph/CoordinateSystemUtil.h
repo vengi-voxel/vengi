@@ -6,6 +6,8 @@
 
 #include "math/CoordinateSystem.h"
 #include "scenegraph/SceneGraphTransform.h"
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
@@ -42,11 +44,11 @@ SceneGraphTransform convertCoordinateSystem(math::CoordinateSystem from, const S
  * Convert a Unity translation into vengi space.
  * Same Z flip as @c math::CoordinateSystem::Unity / DirectX.
  */
-glm::vec3 convertUnityToVengi(const glm::vec3 &unityPos);
+math::Vec3f convertUnityToVengi(const math::Vec3f &unityPos);
 /**
  * Flip handedness of a Unity quaternion: (x, y, -z, -w).
  * Same conversion as @c math::CoordinateSystem::Unity.
  */
-glm::quat convertUnityToVengi(const glm::quat &unityRot);
+math::Quatf convertUnityToVengi(const math::Quatf &unityRot);
 
 } // namespace scenegraph

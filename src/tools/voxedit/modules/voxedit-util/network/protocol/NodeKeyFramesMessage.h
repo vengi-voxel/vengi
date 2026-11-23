@@ -8,7 +8,6 @@
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "voxedit-util/network/ProtocolIds.h"
 
-#include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {
 

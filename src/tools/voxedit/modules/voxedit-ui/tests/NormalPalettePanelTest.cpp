@@ -11,6 +11,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -53,7 +54,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(focusWindow(ctx, id));
 		scenegraph::SceneGraphNode &node = *_sceneMgr->sceneGraphNode(_sceneMgr->activeNode());
 		palette::NormalPalette initial;
-		initial.setNormal(0, glm::vec3(1, 0, 0));
+		initial.setNormal(0, math::Vec3f(1, 0, 0));
 		node.setNormalPalette(initial);
 		_sceneMgr->modifier().setNormalColorIndex(0);
 		_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), node);
@@ -67,7 +68,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK((ctx->ItemInfo("Add normal").ItemFlags & ImGuiItemFlags_Disabled) != 0);
 		IM_CHECK_EQ(initial.hash(), node.normalPalette().hash());
 		ctx->ItemClick("+Z");
-		const color::RGBA z = palette::NormalPalette::toRGBA(glm::vec3(0, 0, 1));
+		const color::RGBA z = palette::NormalPalette::toRGBA(math::Vec3f(0, 0, 1));
 		IM_CHECK_EQ(node.normalPalette().normal(4), z);
 		IM_CHECK_EQ(node.normalPalette().size(), 5u);
 		IM_CHECK_EQ(_selectedIndex, 4);
@@ -94,7 +95,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->Yield(2);
 		ctx->ItemClick("normal-4");
 		ctx->ItemClick("-X");
-		IM_CHECK_EQ(node.normalPalette().normal(4), palette::NormalPalette::toRGBA(glm::vec3(-1, 0, 0)));
+		IM_CHECK_EQ(node.normalPalette().normal(4), palette::NormalPalette::toRGBA(math::Vec3f(-1, 0, 0)));
 		IM_CHECK(_sceneMgr->undo());
 		IM_CHECK_EQ(node.normalPalette().normal(4), z);
 	};
@@ -106,7 +107,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(focusWindow(ctx, id));
 		scenegraph::SceneGraphNode &node = *_sceneMgr->sceneGraphNode(_sceneMgr->activeNode());
 		palette::NormalPalette initial;
-		initial.setNormal(0, glm::vec3(1, 0, 0));
+		initial.setNormal(0, math::Vec3f(1, 0, 0));
 		node.setNormalPalette(initial);
 		_sceneMgr->modifier().setNormalColorIndex(0);
 		_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), node);
@@ -141,7 +142,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		_hasCopiedNormal = false;
 		scenegraph::SceneGraphNode &source = *_sceneMgr->sceneGraphNode(_sceneMgr->activeNode());
 		palette::NormalPalette normals;
-		normals.setNormal(0, glm::vec3(1, 0, 0));
+		normals.setNormal(0, math::Vec3f(1, 0, 0));
 		source.setNormalPalette(normals);
 		_sceneMgr->modifier().setNormalColorIndex(0);
 		ctx->Yield(2);
@@ -150,13 +151,13 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		ctx->ItemClick("//$FOCUSED/Copy normal");
 		const color::RGBA copied = normals.normal(0);
 		IM_CHECK(_hasCopiedNormal);
-		IM_CHECK(_sceneMgr->nodeSetNormal(source.uuid(), 0, palette::NormalPalette::toRGBA(glm::vec3(0, 0, 1))));
+		IM_CHECK(_sceneMgr->nodeSetNormal(source.uuid(), 0, palette::NormalPalette::toRGBA(math::Vec3f(0, 0, 1))));
 		const int targetId = _sceneMgr->addModelChild("normal paste", 8, 8, 8);
 		IM_CHECK(targetId != InvalidNodeId);
 		scenegraph::SceneGraphNode &target = *_sceneMgr->sceneGraphNode(targetId);
 		_sceneMgr->nodeActivate(target.uuid());
 		palette::NormalPalette targetPalette;
-		targetPalette.setNormal(0, glm::vec3(0, 1, 0));
+		targetPalette.setNormal(0, math::Vec3f(0, 1, 0));
 		target.setNormalPalette(targetPalette);
 		_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), target);
 		IM_CHECK(focusWindow(ctx, id));
@@ -188,8 +189,8 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(focusWindow(ctx, id));
 		scenegraph::SceneGraphNode &node = *_sceneMgr->sceneGraphNode(_sceneMgr->activeNode());
 		palette::NormalPalette initial;
-		initial.setNormal(0, glm::vec3(1, 0, 0));
-		initial.setNormal(1, glm::vec3(0, 1, 0));
+		initial.setNormal(0, math::Vec3f(1, 0, 0));
+		initial.setNormal(1, math::Vec3f(0, 1, 0));
 		node.setNormalPalette(initial);
 		_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), node);
 		ctx->Yield(2);
@@ -259,18 +260,18 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
-		const glm::vec3 beforeLon = _targetNormal;
+		const math::Vec3f beforeLon = _targetNormal;
 		changeSlider(ctx, "Longitude", true);
 		ctx->Yield();
-		const glm::vec3 afterLon = _targetNormal;
+		const math::Vec3f afterLon = _targetNormal;
 		IM_CHECK(afterLon.x != beforeLon.x || afterLon.z != beforeLon.z);
 
 		changeSlider(ctx, "Longitude", false);
 
-		const glm::vec3 beforeLat = _targetNormal;
+		const math::Vec3f beforeLat = _targetNormal;
 		changeSlider(ctx, "Latitude", true);
 		ctx->Yield();
-		const glm::vec3 afterLat = _targetNormal;
+		const math::Vec3f afterLat = _targetNormal;
 		IM_CHECK(afterLat.y != beforeLat.y || afterLat.x != beforeLat.x || afterLat.z != beforeLat.z);
 
 		changeSlider(ctx, "Latitude", false);
@@ -281,7 +282,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
-		const glm::vec3 before = _targetNormal;
+		const math::Vec3f before = _targetNormal;
 		ctx->ItemClick("##flipnormal/X");
 		ctx->Yield();
 		IM_CHECK(_targetNormal.x != before.x || _targetNormal.y != before.y || _targetNormal.z != before.z);
@@ -297,7 +298,7 @@ void NormalPalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id
 		IM_CHECK(ensurePanelVisible(ctx, "View/Normal palette", cfg::VoxEditShowNormalPalette));
 		IM_CHECK(focusWindow(ctx, id));
 
-		const glm::vec3 before = _targetNormal;
+		const math::Vec3f before = _targetNormal;
 		ctx->ItemClick("##rotnormal/X");
 		ctx->Yield();
 		IM_CHECK(_targetNormal.x != before.x || _targetNormal.y != before.y || _targetNormal.z != before.z);

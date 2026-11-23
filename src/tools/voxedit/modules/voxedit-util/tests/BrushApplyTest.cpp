@@ -18,6 +18,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -51,7 +52,7 @@ int addModel(scenegraph::SceneGraph &sceneGraph, voxel::RawVolume *volume, uint8
 	return sceneGraph.emplace(core::move(node));
 }
 
-BrushSample placeSample(const glm::ivec3 &position, uint8_t color = 1) {
+BrushSample placeSample(const math::Vec3i &position, uint8_t color = 1) {
 	BrushSample sample;
 	sample.position = position;
 	sample.face = voxel::FaceNames::PositiveY;
@@ -60,7 +61,7 @@ BrushSample placeSample(const glm::ivec3 &position, uint8_t color = 1) {
 	return sample;
 }
 
-BrushSample paintSample(const glm::ivec3 &position, uint8_t color = 1) {
+BrushSample paintSample(const math::Vec3i &position, uint8_t color = 1) {
 	BrushSample sample;
 	sample.position = position;
 	sample.face = voxel::FaceNames::PositiveY;
@@ -92,9 +93,9 @@ TEST_F(BrushApplyTest, testSameSampleIndependentTargets) {
 	ASSERT_NE(InvalidNodeId, firstId);
 	ASSERT_NE(InvalidNodeId, secondId);
 
-	const BrushSample sample = placeSample(glm::ivec3(0));
+	const BrushSample sample = placeSample(math::Vec3i(0));
 	BrushContext settings;
-	settings.cursorPosition = glm::ivec3(7, 0, 0);
+	settings.cursorPosition = math::Vec3i(7, 0, 0);
 	settings.modifierType = ModifierType::Erase;
 
 	BrushApplyTarget first = targetOf(sceneGraph.node(firstId));
@@ -109,7 +110,7 @@ TEST_F(BrushApplyTest, testSameSampleIndependentTargets) {
 	EXPECT_FALSE(voxel::isAir(sceneGraph.node(firstId).volume()->voxel(0, 0, 0).getMaterial()));
 	EXPECT_FALSE(voxel::isAir(sceneGraph.node(secondId).volume()->voxel(0, 0, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(sceneGraph.node(firstId).volume()->voxel(1, 0, 0).getMaterial()));
-	EXPECT_EQ(glm::ivec3(7, 0, 0), settings.cursorPosition);
+	EXPECT_EQ(math::Vec3i(7, 0, 0), settings.cursorPosition);
 	EXPECT_EQ(ModifierType::Erase, settings.modifierType);
 
 	brush.shutdown();
@@ -137,11 +138,11 @@ TEST_F(BrushApplyTest, testPaintRuntimeIndependentPerTarget) {
 	BrushContext settings;
 
 	ASSERT_EQ(BrushApplyStatus::Changed,
-			  applyBrushSample(firstBrush, sceneGraph, paintSample(glm::ivec3(0)), first, settings).status);
+			  applyBrushSample(firstBrush, sceneGraph, paintSample(math::Vec3i(0)), first, settings).status);
 	ASSERT_EQ(BrushApplyStatus::Changed,
-			  applyBrushSample(secondBrush, sceneGraph, paintSample(glm::ivec3(0)), second, settings).status);
+			  applyBrushSample(secondBrush, sceneGraph, paintSample(math::Vec3i(0)), second, settings).status);
 	ASSERT_EQ(BrushApplyStatus::Changed,
-			  applyBrushSample(firstBrush, sceneGraph, paintSample(glm::ivec3(2, 0, 0)), first, settings).status);
+			  applyBrushSample(firstBrush, sceneGraph, paintSample(math::Vec3i(2, 0, 0)), first, settings).status);
 
 	EXPECT_EQ(2u, firstBrush.runtime().blendStroke.size());
 	EXPECT_EQ(1u, secondBrush.runtime().blendStroke.size());
@@ -164,7 +165,7 @@ TEST_F(BrushApplyTest, testUnchangedReportsNoDirtyRegion) {
 	BrushApplyTarget target = targetOf(sceneGraph.node(nodeId));
 	BrushContext settings;
 
-	const BrushApplyResult result = applyBrushSample(brush, sceneGraph, paintSample(glm::ivec3(0), 1), target, settings);
+	const BrushApplyResult result = applyBrushSample(brush, sceneGraph, paintSample(math::Vec3i(0), 1), target, settings);
 	EXPECT_EQ(BrushApplyStatus::Unchanged, result.status);
 	EXPECT_FALSE(result.dirtyRegion.isValid());
 	EXPECT_EQ(1, sceneGraph.node(nodeId).volume()->voxel(0, 0, 0).getColor());
@@ -184,14 +185,14 @@ TEST_F(BrushApplyTest, testInvalidTargetBeforeWrites) {
 	target.volume = &replacement;
 	BrushContext settings;
 
-	const BrushApplyResult result = applyBrushSample(brush, sceneGraph, placeSample(glm::ivec3(0)), target, settings);
+	const BrushApplyResult result = applyBrushSample(brush, sceneGraph, placeSample(math::Vec3i(0)), target, settings);
 	EXPECT_EQ(BrushApplyStatus::InvalidTarget, result.status);
 	EXPECT_FALSE(result.dirtyRegion.isValid());
 	EXPECT_TRUE(voxel::isAir(sceneGraph.node(nodeId).volume()->voxel(0, 0, 0).getMaterial()));
 
 	BrushApplyTarget missing;
 	EXPECT_EQ(BrushApplyStatus::InvalidTarget,
-			  applyBrushSample(brush, sceneGraph, placeSample(glm::ivec3(0)), missing, settings).status);
+			  applyBrushSample(brush, sceneGraph, placeSample(math::Vec3i(0)), missing, settings).status);
 
 	brush.shutdown();
 }
@@ -206,7 +207,7 @@ TEST_F(BrushApplyTest, testFailureKeepsPartialWrites) {
 	BrushApplyTarget target = targetOf(sceneGraph.node(nodeId));
 	BrushContext settings;
 
-	const BrushApplyResult result = applyBrushSample(brush, sceneGraph, placeSample(glm::ivec3(0)), target, settings);
+	const BrushApplyResult result = applyBrushSample(brush, sceneGraph, placeSample(math::Vec3i(0)), target, settings);
 	EXPECT_EQ(BrushApplyStatus::Failed, result.status);
 	EXPECT_TRUE(result.dirtyRegion.isValid());
 	EXPECT_FALSE(voxel::isAir(sceneGraph.node(nodeId).volume()->voxel(0, 0, 0).getMaterial()));
@@ -234,11 +235,11 @@ TEST_F(BrushApplySceneTest, testUnchangedPreservesRedo) {
 	modifier.shapeBrush().setStrokeMode();
 	modifier.setModifierType(ModifierType::Override);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.beginEdit());
 	ASSERT_TRUE(modifier.updateEdit());
 	modifier.finishEdit();
-	modifier.setCursorPosition(glm::ivec3(2, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(2, 0, 0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.beginEdit());
 	ASSERT_TRUE(modifier.updateEdit());
 	modifier.finishEdit();
@@ -249,7 +250,7 @@ TEST_F(BrushApplySceneTest, testUnchangedPreservesRedo) {
 	modifier.paintBrush().setStrokeMode();
 	modifier.paintBrush().setPaintMode(PaintBrush::PaintMode::Replace);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->activeNode());
 	ASSERT_NE(nullptr, node);
 	BrushApplyTarget target = targetOf(*node);
@@ -266,7 +267,7 @@ TEST_F(BrushApplySceneTest, testPreviewDoesNotTouchCommittedState) {
 	modifier.paintBrush().setPaintMode(PaintBrush::PaintMode::Blend);
 	modifier.paintBrush().setBlendOpacity(0.5f);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.beginEdit());
 	ASSERT_TRUE(modifier.updateEdit());
 
@@ -274,7 +275,7 @@ TEST_F(BrushApplySceneTest, testPreviewDoesNotTouchCommittedState) {
 	ASSERT_NE(nullptr, node);
 	const voxel::Voxel committed = node->volume()->voxel(0, 0, 0);
 	const size_t states = _sceneMgr->mementoHandler().stateSize();
-	const glm::ivec3 liveCursor = modifier.brushContext().cursorPosition;
+	const math::Vec3i liveCursor = modifier.brushContext().cursorPosition;
 	const uint8_t paletteSize = node->palette().colorCount();
 
 	voxel::RawVolume scratch(*node->volume());
@@ -288,7 +289,7 @@ TEST_F(BrushApplySceneTest, testPreviewDoesNotTouchCommittedState) {
 
 	for (int i = 0; i < 3; ++i) {
 		BrushSample sample = modifier.currentEditSample();
-		sample.position = glm::ivec3(4, 0, 0);
+		sample.position = math::Vec3i(4, 0, 0);
 		const BrushApplyResult preview = modifier.evaluateSample(sample, previewTarget, true);
 		EXPECT_TRUE(preview.status == BrushApplyStatus::Changed || preview.status == BrushApplyStatus::Unchanged);
 	}
@@ -299,7 +300,7 @@ TEST_F(BrushApplySceneTest, testPreviewDoesNotTouchCommittedState) {
 	EXPECT_EQ(liveCursor, modifier.brushContext().cursorPosition);
 	EXPECT_EQ(paletteSize, node->palette().colorCount());
 
-	modifier.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(4, 0, 0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.updateEdit());
 	modifier.finishEdit();
 	EXPECT_NE(0, node->volume()->voxel(4, 0, 0).getColor());
@@ -314,10 +315,10 @@ TEST_F(BrushApplySceneTest, testPreviewBetweenSamplesMatchesCommittedOnly) {
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	auto committedStroke = [&]() {
-		modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+		modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 		ASSERT_TRUE(modifier.beginEdit());
 		ASSERT_TRUE(modifier.updateEdit());
-		modifier.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+		modifier.setCursorPosition(math::Vec3i(4, 0, 0), voxel::FaceNames::PositiveY);
 		ASSERT_TRUE(modifier.updateEdit());
 		modifier.finishEdit();
 	};
@@ -334,7 +335,7 @@ TEST_F(BrushApplySceneTest, testPreviewBetweenSamplesMatchesCommittedOnly) {
 	modifier.paintBrush().setStrokeMode();
 	modifier.paintBrush().setPaintMode(PaintBrush::PaintMode::Replace);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.beginEdit());
 	ASSERT_TRUE(modifier.updateEdit());
 
@@ -347,10 +348,10 @@ TEST_F(BrushApplySceneTest, testPreviewBetweenSamplesMatchesCommittedOnly) {
 	BrushApplyTarget previewTarget = targetOf(scratchNode);
 	for (int x = 0; x <= 4; ++x) {
 		BrushSample sample = modifier.currentEditSample();
-		sample.position = glm::ivec3(x, 0, 0);
+		sample.position = math::Vec3i(x, 0, 0);
 		modifier.evaluateSample(sample, previewTarget, true);
 	}
-	modifier.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(4, 0, 0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.updateEdit());
 	modifier.finishEdit();
 
@@ -378,7 +379,7 @@ TEST_F(BrushApplyTest, testRandomPreviewDoesNotAdvanceTargetRandomState) {
 	BrushApplyTarget second = targetOf(scene.node(secondId));
 	BrushContext settings;
 	for (int x = 0; x < 8; ++x) {
-		const BrushSample sample = paintSample(glm::ivec3(x, 0, 0));
+		const BrushSample sample = paintSample(math::Vec3i(x, 0, 0));
 		applyBrushSample(firstBrush, scene, sample, first, settings);
 		voxel::RawVolume scratch(*secondVolume);
 		scenegraph::SceneGraphNode scratchNode(scenegraph::SceneGraphNodeType::Model);
@@ -406,7 +407,7 @@ TEST_F(BrushApplySceneTest, testProductionPreviewOwnsBlendPalette) {
 	modifier.paintBrush().setPaintMode(PaintBrush::PaintMode::Blend);
 	modifier.paintBrush().setBlendOpacity(0.5f);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	auto *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->activeNode());
 	ASSERT_NE(nullptr, node);
 	const int colors = node->palette().colorCount();
@@ -447,7 +448,7 @@ TEST_F(BrushApplyTest, testSliceConstrainsAlgorithmsThatWriteTheRawVolume) {
 	target.sliceRegion = voxel::Region(-1, 0, -1, 1, 0, 1);
 	RawFillBrush brush;
 	BrushContext settings;
-	const auto result = applyBrushSample(brush, scene, placeSample(glm::ivec3(0)), target, settings);
+	const auto result = applyBrushSample(brush, scene, placeSample(math::Vec3i(0)), target, settings);
 	ASSERT_TRUE(result.changed());
 	EXPECT_EQ(target.sliceRegion, result.dirtyRegion);
 	for (int y = -1; y <= 1; ++y) {
@@ -472,7 +473,7 @@ TEST_F(BrushApplyTest, testPaintHasStableVoxelOrder) {
 		input.evaluatedRegion = volume->region();
 		auto firstTarget = targetOf(scene.node(firstId));
 		auto secondTarget = targetOf(scene.node(secondId));
-		const auto sample = paintSample(glm::ivec3(0));
+		const auto sample = paintSample(math::Vec3i(0));
 		ASSERT_FALSE(applyBrushSample(first, scene, sample, firstTarget, input).failed());
 		ASSERT_FALSE(applyBrushSample(second, scene, sample, secondTarget, input).failed());
 		bool same = true;

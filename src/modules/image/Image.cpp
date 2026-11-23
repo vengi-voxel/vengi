@@ -20,10 +20,10 @@
 #include "io/MemoryReadStream.h"
 #include "io/Stream.h"
 
-#include <glm/common.hpp>
-#include <glm/ext/scalar_common.hpp>
 
 #include <stb_image_resize2.h>
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace image {
 
@@ -94,8 +94,8 @@ color::RGBA Image::colorAt(int x, int y) const {
 	return color::RGBA{ptr[0], ptr[0], ptr[0], 255};
 }
 
-color::RGBA Image::colorAt(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
-	const glm::ivec2 pc = pixels(uv, wrapS, wrapT, originUpperLeft);
+color::RGBA Image::colorAt(const math::Vec2f &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
+	const math::Vec2i pc = pixels(uv, wrapS, wrapT, originUpperLeft);
 	return colorAt(pc.x, pc.y);
 }
 
@@ -261,9 +261,9 @@ static ImagePtr downscaleToThumbnail(const ImagePtr &image, int maxSize) {
 	int tw = maxSize;
 	int th = maxSize;
 	if (w > h) {
-		th = glm::max(1, (h * maxSize) / w);
+		th = math::max(1, (h * maxSize) / w);
 	} else {
-		tw = glm::max(1, (w * maxSize) / h);
+		tw = math::max(1, (w * maxSize) / h);
 	}
 	if (!image->resize(tw, th)) {
 		Log::warn("Failed to resize image %s to thumbnail %i x %i", image->name().c_str(), tw, th);
@@ -417,16 +417,16 @@ void Image::premultiplyAlpha(uint8_t *pixels, int w, int h) {
 }
 
 // OpenGL Spec 14.8.2 Coordinate Wrapping and Texel Selection
-glm::ivec2 Image::pixels(const glm::vec2 &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
+math::Vec2i Image::pixels(const math::Vec2f &uv, TextureWrap wrapS, TextureWrap wrapT, bool originUpperLeft) const {
 	const int w = width();
 	const int h = height();
 	return pixels(uv, w, h, wrapS, wrapT, originUpperLeft);
 }
 
-glm::ivec2 Image::pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS, TextureWrap wrapT,
+math::Vec2i Image::pixels(const math::Vec2f &uv, int w, int h, TextureWrap wrapS, TextureWrap wrapT,
 						 bool originUpperLeft) {
-	int xint = (int)glm::round(uv.x * (w - 1));
-	int yint = (int)glm::round(uv.y * (h - 1));
+	int xint = (int)math::round(uv.x * (w - 1));
+	int yint = (int)math::round(uv.y * (h - 1));
 	if (!originUpperLeft) {
 		yint = h - 1 - yint;
 	}
@@ -435,35 +435,35 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS, T
 		xint %= w;
 		break;
 	case TextureWrap::MirroredRepeat:
-		xint = glm::abs(xint) % w;
+		xint = math::abs(xint) % w;
 		break;
 	case TextureWrap::ClampToEdge:
-		xint = glm::clamp(xint, 0, w - 1);
+		xint = math::clamp(xint, 0, w - 1);
 		break;
 	case TextureWrap::Max:
-		return glm::ivec2(0);
+		return math::Vec2i(0);
 	}
 	switch (wrapT) {
 	case TextureWrap::Repeat:
 		yint %= h;
 		break;
 	case TextureWrap::MirroredRepeat:
-		yint = glm::abs(yint) % h;
+		yint = math::abs(yint) % h;
 		break;
 	case TextureWrap::ClampToEdge:
-		yint = glm::clamp(yint, 0, h - 1);
+		yint = math::clamp(yint, 0, h - 1);
 		break;
 	case TextureWrap::Max:
-		return glm::ivec2(0);
+		return math::Vec2i(0);
 	}
 
 	while (xint < 0) {
-		xint = glm::abs(xint) % w;
+		xint = math::abs(xint) % w;
 		xint = w - xint;
 	}
 
 	while (yint < 0) {
-		yint = glm::abs(yint) % h;
+		yint = math::abs(yint) % h;
 		yint = h - yint;
 	}
 
@@ -474,14 +474,14 @@ glm::ivec2 Image::pixels(const glm::vec2 &uv, int w, int h, TextureWrap wrapS, T
 	if (yint >= h) {
 		yint %= h;
 	}
-	return glm::ivec2(xint, yint);
+	return math::Vec2i(xint, yint);
 }
 
-glm::vec2 Image::uv(int x, int y, bool originUpperLeft) const {
+math::Vec2f Image::uv(int x, int y, bool originUpperLeft) const {
 	return uv(x, y, _width, _height, originUpperLeft);
 }
 
-glm::vec2 Image::uv(int x, int y, int w, int h, bool originUpperLeft) {
+math::Vec2f Image::uv(int x, int y, int w, int h, bool originUpperLeft) {
 	float u = 0.0f;
 	if (w > 1) {
 		u = ((float)x) / (float)(w - 1);
@@ -494,7 +494,7 @@ glm::vec2 Image::uv(int x, int y, int w, int h, bool originUpperLeft) {
 			v = ((float)h - 1.0f - (float)y) / (float)(h - 1);
 		}
 	}
-	return glm::vec2(u, v);
+	return math::Vec2f(u, v);
 }
 
 bool Image::resize(int w, int h) {
@@ -551,8 +551,8 @@ core::String print(const image::ImagePtr &image, bool limited) {
 		core::String::format("w: %i, h: %i, d: %i\n", image->width(), image->height(), image->components());
 	const int maxWidth = limited ? 64 : image->width();
 	const int maxHeight = limited ? 64 : image->height();
-	const int width = glm::min(image->width(), maxWidth);
-	const int height = glm::min(image->height(), maxHeight);
+	const int width = math::min(image->width(), maxWidth);
+	const int height = math::min(image->height(), maxHeight);
 	str.reserve(40 * width * height);
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < width; ++x) {

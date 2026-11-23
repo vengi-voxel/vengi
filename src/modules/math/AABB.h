@@ -5,8 +5,8 @@
 #pragma once
 
 #include "core/Common.h"
-#include <glm/vec3.hpp>
 #include <limits>
+#include "math/VecOf.h"
 
 namespace math {
 
@@ -17,18 +17,18 @@ template<typename TYPE>
 class AABB {
 public:
 	AABB();
-	AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs);
+	AABB(const typename Vec3Of<TYPE>::Type& mins, const typename Vec3Of<TYPE>::Type& maxs);
 	AABB(TYPE minsX, TYPE minsY, TYPE minsZ, TYPE maxsX, TYPE maxsY, TYPE maxsZ);
 
-	static AABB<TYPE> construct(const glm::tvec3<TYPE>* vertices, size_t size) {
+	static AABB<TYPE> construct(const typename Vec3Of<TYPE>::Type* vertices, size_t size) {
 		static constexpr TYPE max = (std::numeric_limits<TYPE>::max)();
 		static constexpr TYPE min = (std::numeric_limits<TYPE>::min)();
 
-		glm::tvec3<TYPE> mins(max);
-		glm::tvec3<TYPE> maxs(min);
+		typename Vec3Of<TYPE>::Type mins(max);
+		typename Vec3Of<TYPE>::Type maxs(min);
 
 		for (size_t i = 0u; i < size; ++i) {
-			const glm::tvec3<TYPE>& v = vertices[i];
+			const typename Vec3Of<TYPE>::Type& v = vertices[i];
 			if (v.x > maxs.x) {
 				maxs.x = v.x;
 			}
@@ -59,7 +59,7 @@ public:
 	TYPE getWidthX() const;
 	TYPE getWidthY() const;
 	TYPE getWidthZ() const;
-	glm::tvec3<TYPE> getWidth() const;
+	typename Vec3Of<TYPE>::Type getWidth() const;
 
 	/// Gets the 'x' position of the center.
 	TYPE getCenterX() const;
@@ -81,16 +81,16 @@ public:
 	TYPE getUpperZ() const;
 
 	/// Gets the center of the AABB
-	glm::tvec3<TYPE> getCenter() const;
-	glm::tvec3<TYPE> getLowerCenter() const;
+	typename Vec3Of<TYPE>::Type getCenter() const;
+	typename Vec3Of<TYPE>::Type getLowerCenter() const;
 	/// Gets the position of the lower corner.
-	glm::tvec3<TYPE> getLowerCorner() const;
+	typename Vec3Of<TYPE>::Type getLowerCorner() const;
 	/// Gets the position of the upper corner.
-	glm::tvec3<TYPE> getUpperCorner() const;
+	typename Vec3Of<TYPE>::Type getUpperCorner() const;
 	/// Gets the position of the lower corner.
-	glm::tvec3<TYPE> mins() const { return getLowerCorner(); }
+	typename Vec3Of<TYPE>::Type mins() const { return getLowerCorner(); }
 	/// Gets the position of the upper corner.
-	glm::tvec3<TYPE> maxs() const { return getUpperCorner(); }
+	typename Vec3Of<TYPE>::Type maxs() const { return getUpperCorner(); }
 
 	/// Sets the 'x' position of the lower corner.
 	void setLowerX(TYPE iX);
@@ -106,13 +106,13 @@ public:
 	void setUpperZ(TYPE iZ);
 
 	/// Sets the position of the lower corner.
-	void setLowerCorner(const glm::tvec3<TYPE>& v3dLowerCorner);
+	void setLowerCorner(const typename Vec3Of<TYPE>::Type& v3dLowerCorner);
 	/// Sets the position of the upper corner.
-	void setUpperCorner(const glm::tvec3<TYPE>& v3dUpperCorner);
+	void setUpperCorner(const typename Vec3Of<TYPE>::Type& v3dUpperCorner);
 
 	/// Tests whether the given point is contained in this AABB.
 	/// Tests whether the given point is contained in this AABB.
-	bool containsPoint(const glm::tvec3<TYPE>& pos, TYPE boundary = static_cast<TYPE>(0)) const;
+	bool containsPoint(const typename Vec3Of<TYPE>::Type& pos, TYPE boundary = static_cast<TYPE>(0)) const;
 	/// Tests whether the given point is contained in this AABB.
 	bool containsPoint(TYPE iX, TYPE iY, TYPE iZ, TYPE boundary = static_cast<TYPE>(0)) const;
 	/// Tests whether the given position is contained in the 'x' range of this AABB.
@@ -128,7 +128,7 @@ public:
 	/// Enlarges the AABB so that it contains the specified position.
 	void accumulate(TYPE iX, TYPE iY, TYPE iZ);
 	/// Enlarges the AABB so that it contains the specified position.
-	void accumulate(const glm::tvec3<TYPE>& v3dPos);
+	void accumulate(const typename Vec3Of<TYPE>::Type& v3dPos);
 	/// Enlarges the AABB so that it contains the specified AABB.
 	bool accumulate(const AABB& reg);
 
@@ -140,7 +140,7 @@ public:
 	/// Grows this AABB by the amounts specified.
 	void grow(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Grows this AABB by the amounts specified.
-	void grow(const glm::tvec3<TYPE>& v3dAmount);
+	void grow(const typename Vec3Of<TYPE>::Type& v3dAmount);
 
 	/// Tests whether all components of the upper corner are at least
 	/// as great as the corresponding components of the lower corner.
@@ -150,31 +150,31 @@ public:
 	/// Moves the AABB by the amount specified.
 	AABB<TYPE>& shift(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Moves the AABB by the amount specified.
-	AABB<TYPE>& shift(const glm::tvec3<TYPE>& v3dAmount);
+	AABB<TYPE>& shift(const typename Vec3Of<TYPE>::Type& v3dAmount);
 	/// Moves the lower corner of the AABB by the amount specified.
 	void shiftLowerCorner(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Moves the lower corner of the AABB by the amount specified.
-	void shiftLowerCorner(const glm::tvec3<TYPE>& v3dAmount);
+	void shiftLowerCorner(const typename Vec3Of<TYPE>::Type& v3dAmount);
 	/// Moves the upper corner of the AABB by the amount specified.
 	void shiftUpperCorner(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Moves the upper corner of the AABB by the amount specified.
-	void shiftUpperCorner(const glm::tvec3<TYPE>& v3dAmount);
+	void shiftUpperCorner(const typename Vec3Of<TYPE>::Type& v3dAmount);
 
 	/// Shrinks this AABB by the amount specified.
 	void shrink(TYPE iAmount);
 	/// Shrinks this AABB by the amounts specified.
 	void shrink(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ);
 	/// Shrinks this AABB by the amounts specified.
-	void shrink(const glm::tvec3<TYPE>& v3dAmount);
+	void shrink(const typename Vec3Of<TYPE>::Type& v3dAmount);
 
-	bool intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, float rayLength, float& distance) const {
-		glm::vec3 pos1;
-		glm::vec3 pos2;
+	bool intersect(const math::Vec3f& rayOrigin, const math::Vec3f& rayDirection, float rayLength, float& distance) const {
+		math::Vec3f pos1;
+		math::Vec3f pos2;
 		double t_near = -rayLength;
 		double t_far = rayLength;
 
-		glm::vec3 minsV = mins();
-		glm::vec3 maxsV = maxs();
+		math::Vec3f minsV = mins();
+		math::Vec3f maxsV = maxs();
 
 		for (int i = 0; i < 3; i++) {	 // we test slabs in every direction
 			if (rayDirection[i] == 0) { // ray parallel to planes in this direction
@@ -203,12 +203,12 @@ public:
 		return true;
 	}
 private:
-	glm::tvec3<TYPE> _mins {0};
-	glm::tvec3<TYPE> _maxs {0};
+	typename Vec3Of<TYPE>::Type _mins {0};
+	typename Vec3Of<TYPE>::Type _maxs {0};
 };
 
 template<typename TYPE>
-inline glm::tvec3<TYPE> AABB<TYPE>::getWidth() const {
+inline typename Vec3Of<TYPE>::Type AABB<TYPE>::getWidth() const {
 	return _maxs - _mins;
 }
 
@@ -303,20 +303,20 @@ inline TYPE AABB<TYPE>::getUpperZ() const {
  * @return The position of the lower corner.
  */
 template<typename TYPE>
-inline glm::tvec3<TYPE> AABB<TYPE>::getCenter() const {
-	return glm::tvec3<TYPE>(getCenterX(), getCenterY(), getCenterZ());
+inline typename Vec3Of<TYPE>::Type AABB<TYPE>::getCenter() const {
+	return typename Vec3Of<TYPE>::Type(getCenterX(), getCenterY(), getCenterZ());
 }
 
 template<typename TYPE>
-inline glm::tvec3<TYPE> AABB<TYPE>::getLowerCenter() const {
-	return glm::tvec3<TYPE>(getCenterX(), getLowerY(), getCenterZ());
+inline typename Vec3Of<TYPE>::Type AABB<TYPE>::getLowerCenter() const {
+	return typename Vec3Of<TYPE>::Type(getCenterX(), getLowerY(), getCenterZ());
 }
 
 /**
  * @return The position of the lower corner.
  */
 template<typename TYPE>
-inline glm::tvec3<TYPE> AABB<TYPE>::getLowerCorner() const {
+inline typename Vec3Of<TYPE>::Type AABB<TYPE>::getLowerCorner() const {
 	return _mins;
 }
 
@@ -324,7 +324,7 @@ inline glm::tvec3<TYPE> AABB<TYPE>::getLowerCorner() const {
  * @return The position of the upper corner.
  */
 template<typename TYPE>
-inline glm::tvec3<TYPE> AABB<TYPE>::getUpperCorner() const {
+inline typename Vec3Of<TYPE>::Type AABB<TYPE>::getUpperCorner() const {
 	return _maxs;
 }
 
@@ -380,7 +380,7 @@ inline void AABB<TYPE>::setUpperZ(TYPE iZ) {
  * @param v3dLowerCorner The new position of the lower corner.
  */
 template<typename TYPE>
-inline void AABB<TYPE>::setLowerCorner(const glm::tvec3<TYPE>& v3dLowerCorner) {
+inline void AABB<TYPE>::setLowerCorner(const typename Vec3Of<TYPE>::Type& v3dLowerCorner) {
 	_mins.x = v3dLowerCorner.x;
 	_mins.y = v3dLowerCorner.y;
 	_mins.z = v3dLowerCorner.z;
@@ -390,7 +390,7 @@ inline void AABB<TYPE>::setLowerCorner(const glm::tvec3<TYPE>& v3dLowerCorner) {
  * @param v3dUpperCorner The new position of the upper corner.
  */
 template<typename TYPE>
-inline void AABB<TYPE>::setUpperCorner(const glm::tvec3<TYPE>& v3dUpperCorner) {
+inline void AABB<TYPE>::setUpperCorner(const typename Vec3Of<TYPE>::Type& v3dUpperCorner) {
 	_maxs.x = v3dUpperCorner.x;
 	_maxs.y = v3dUpperCorner.y;
 	_maxs.z = v3dUpperCorner.z;
@@ -415,7 +415,7 @@ inline void AABB<TYPE>::accumulate(TYPE iX, TYPE iY, TYPE iZ) {
  * @param v3dPos The position to accumulate.
  */
 template<typename TYPE>
-inline void AABB<TYPE>::accumulate(const glm::tvec3<TYPE>& v3dPos) {
+inline void AABB<TYPE>::accumulate(const typename Vec3Of<TYPE>::Type& v3dPos) {
 	accumulate(v3dPos.x, v3dPos.y, v3dPos.z);
 }
 
@@ -448,7 +448,7 @@ inline bool AABB<TYPE>::accumulate(const AABB& reg) {
  * @param maxs The desired upper corner of the AABB.
  */
 template<typename TYPE>
-inline AABB<TYPE>::AABB(const glm::tvec3<TYPE>& mins, const glm::tvec3<TYPE>& maxs) :
+inline AABB<TYPE>::AABB(const typename Vec3Of<TYPE>::Type& mins, const typename Vec3Of<TYPE>::Type& maxs) :
 		_mins(mins), _maxs(maxs) {
 }
 
@@ -508,7 +508,7 @@ inline bool AABB<TYPE>::containsPoint(TYPE fX, TYPE fY, TYPE fZ, TYPE boundary) 
  * @param boundary The desired boundary value.
  */
 template<typename TYPE>
-inline bool AABB<TYPE>::containsPoint(const glm::tvec3<TYPE>& pos, TYPE boundary) const {
+inline bool AABB<TYPE>::containsPoint(const typename Vec3Of<TYPE>::Type& pos, TYPE boundary) const {
 	return containsPoint(pos.x, pos.y, pos.z, boundary);
 }
 
@@ -616,7 +616,7 @@ inline void AABB<TYPE>::grow(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ) {
  * @param v3dAmount The amount to grow by (one component for each direction).
  */
 template<typename TYPE>
-inline void AABB<TYPE>::grow(const glm::tvec3<TYPE>& v3dAmount) {
+inline void AABB<TYPE>::grow(const typename Vec3Of<TYPE>::Type& v3dAmount) {
 	grow(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
@@ -646,7 +646,7 @@ inline AABB<TYPE>& AABB<TYPE>::shift(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ
  * @param v3dAmount The amount to move the AABB by.
  */
 template<typename TYPE>
-inline AABB<TYPE>& AABB<TYPE>::shift(const glm::tvec3<TYPE>& v3dAmount) {
+inline AABB<TYPE>& AABB<TYPE>::shift(const typename Vec3Of<TYPE>::Type& v3dAmount) {
 	shiftLowerCorner(v3dAmount);
 	shiftUpperCorner(v3dAmount);
 	return *this;
@@ -668,7 +668,7 @@ inline void AABB<TYPE>::shiftLowerCorner(TYPE iAmountX, TYPE iAmountY, TYPE iAmo
  * @param v3dAmount The amount to move the lower corner by.
  */
 template<typename TYPE>
-inline void AABB<TYPE>::shiftLowerCorner(const glm::tvec3<TYPE>& v3dAmount) {
+inline void AABB<TYPE>::shiftLowerCorner(const typename Vec3Of<TYPE>::Type& v3dAmount) {
 	shiftLowerCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
@@ -688,7 +688,7 @@ inline void AABB<TYPE>::shiftUpperCorner(TYPE iAmountX, TYPE iAmountY, TYPE iAmo
  * @param v3dAmount The amount to move the upper corner by.
  */
 template<typename TYPE>
-inline void AABB<TYPE>::shiftUpperCorner(const glm::tvec3<TYPE>& v3dAmount) {
+inline void AABB<TYPE>::shiftUpperCorner(const typename Vec3Of<TYPE>::Type& v3dAmount) {
 	shiftUpperCorner(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 
@@ -732,7 +732,7 @@ inline void AABB<TYPE>::shrink(TYPE iAmountX, TYPE iAmountY, TYPE iAmountZ) {
  * @param v3dAmount The amount to shrink by (one component for each direction).
  */
 template<typename TYPE>
-inline void AABB<TYPE>::shrink(const glm::tvec3<TYPE>& v3dAmount) {
+inline void AABB<TYPE>::shrink(const typename Vec3Of<TYPE>::Type& v3dAmount) {
 	shrink(v3dAmount.x, v3dAmount.y, v3dAmount.z);
 }
 

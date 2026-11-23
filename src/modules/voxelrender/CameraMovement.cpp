@@ -4,11 +4,13 @@
 
 #include "CameraMovement.h"
 #include "app/I18N.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "scenegraph/Physics.h"
 #include "scenegraph/SceneGraph.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Axes.h"
 
 namespace voxelrender {
 
@@ -68,8 +70,8 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		_clipping->markClean();
 		updateBodyPosition(*camera);
 	}
-	glm::vec3 camForward = camera->forward();
-	glm::vec3 camRight = camera->right();
+	math::Vec3f camForward = camera->forward();
+	math::Vec3f camRight = camera->right();
 	if (clipping) {
 		camForward.y = 0.0f;
 		camRight.y = 0.0f;
@@ -78,7 +80,7 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 	_deltaSeconds += _movement.deltaSeconds();
 
 	if (_movement.moving()) {
-		glm::vec3 direction(0);
+		math::Vec3f direction(0);
 		// Translate on all axes (including forward/back). Zooming via WASD would shrink
 		// target distance and make worldUnitsPerPixel()-scaled movement slower over time.
 		if (_movement.forward()) {
@@ -94,14 +96,14 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 			direction += camRight;
 		}
 		if (_movement.up()) {
-			direction += glm::up();
+			direction += math::up();
 		}
 		if (_movement.down()) {
-			direction += glm::down();
+			direction += math::down();
 		}
 
-		if (glm::dot(direction, direction) > 0.0f) {
-			direction = glm::normalize(direction);
+		if (math::dot(direction, direction) > 0.0f) {
+			direction = math::normalize(direction);
 
 			if (clipping) {
 				const bool isColliding = _body.isColliding();
@@ -112,13 +114,13 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 
 				// Apply acceleration in the desired direction
 				const float accelAmount = acceleration * _deltaSeconds;
-				glm::vec3 accelerationVec = direction * accelAmount;
+				math::Vec3f accelerationVec = direction * accelAmount;
 
 				_body.velocity.x += accelerationVec.x;
 				_body.velocity.z += accelerationVec.z;
 
 				// Cap the horizontal velocity to max allowed speed
-				const float currentHorizontalSpeed = glm::length(glm::vec2(_body.velocity.x, _body.velocity.z));
+				const float currentHorizontalSpeed = math::length(math::Vec2f(_body.velocity.x, _body.velocity.z));
 				if (currentHorizontalSpeed > maxSpeed) {
 					const float scale = maxSpeed / currentHorizontalSpeed;
 					_body.velocity.x *= scale;
@@ -161,11 +163,11 @@ void CameraMovement::update(double nowSeconds, video::Camera *camera, const scen
 		}
 		const float bodyHeight = _bodyHeight->floatVal();
 		const float eyePos = bodyHeight * 0.9f;
-		camera->setWorldPosition(_body.position + glm::vec3(0.0f, eyePos, 0.0f));
+		camera->setWorldPosition(_body.position + math::Vec3f(0.0f, eyePos, 0.0f));
 	} else {
 		updateBodyPosition(*camera);
 		// no clipping - just move the camera directly
-		const glm::vec3 delta = (_body.velocity * (float)_deltaSeconds);
+		const math::Vec3f delta = (_body.velocity * (float)_deltaSeconds);
 		_body.position += delta;
 		camera->setTarget(camera->target() + delta);
 		camera->setWorldPosition(camera->worldPosition() + delta);
@@ -199,8 +201,8 @@ void CameraMovement::zoom(video::Camera &camera, float level) {
 	} else {
 		// Move the orbit target too, so wheel navigation can continue through the scene.
 		const float speed = core::getVar(cfg::ClientCameraZoomSpeed)->floatVal();
-		const float distance = camera.targetDistance() * (1.0f - glm::exp(speed * level));
-		const glm::vec3 delta = camera.forward() * distance;
+		const float distance = camera.targetDistance() * (1.0f - math::exp(speed * level));
+		const math::Vec3f delta = camera.forward() * distance;
 		camera.setTarget(camera.target() + delta);
 		camera.setWorldPosition(camera.worldPosition() + delta);
 	}

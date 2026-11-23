@@ -5,11 +5,10 @@
 #include "commonlua/LUAFunctions.h"
 #include "app/tests/AbstractTest.h"
 #include "http/Client.h"
-#include <glm/vector_relational.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/string_cast.hpp>
+#include "math/Quatf.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Print.h"
 
 namespace lua {
 
@@ -24,7 +23,7 @@ public:
 		ASSERT_TRUE(lua.load(script)) << lua.error();
 		ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
 		const T& v = clua_tovec<T>(lua, -1);
-		EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
+		EXPECT_TRUE(math::all(math::equal(expected, v))) << math::to_string(v) << " vs " << math::to_string(expected);
 	}
 
 	void testExec(const char *script) {
@@ -43,7 +42,7 @@ TEST_F(LUAFunctionsTest, testVectorCtor) {
 			return g_ivec3.new(0, 1, 0)
 		end
 	)";
-	test(script, glm::ivec3(0, 1, 0));
+	test(script, math::Vec3i(0, 1, 0));
 }
 
 TEST_F(LUAFunctionsTest, testAsyncHttpFailureAndAbandonedRequest) {
@@ -162,7 +161,7 @@ TEST_F(LUAFunctionsTest, testVectorDistance) {
 		end
 	)";
 	LUA lua;
-	clua_vecregister<glm::vec3>(lua.state());
+	clua_vecregister<math::Vec3f>(lua.state());
 	ASSERT_TRUE(lua.load(script)) << lua.error();
 	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
 	const float distance = lua_tonumber(lua, -1);
@@ -178,7 +177,7 @@ TEST_F(LUAFunctionsTest, testVectorDistanceGlobal) {
 		end
 	)";
 	LUA lua;
-	clua_vecregister<glm::vec3>(lua.state());
+	clua_vecregister<math::Vec3f>(lua.state());
 	ASSERT_TRUE(lua.load(script)) << lua.error();
 	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
 	const float distance = lua_tonumber(lua, -1);
@@ -191,7 +190,7 @@ TEST_F(LUAFunctionsTest, testVectorAddition) {
 			return g_ivec3.new(0, 1, 0) + g_ivec3.new(0, 1, 1)
 		end
 	)";
-	test(script, glm::ivec3(0, 2, 1));
+	test(script, math::Vec3i(0, 2, 1));
 }
 
 TEST_F(LUAFunctionsTest, testVectorAdditionNonVector) {
@@ -200,7 +199,7 @@ TEST_F(LUAFunctionsTest, testVectorAdditionNonVector) {
 			return g_ivec3.new(0, 1, 0) + 1
 		end
 	)";
-	test(script, glm::ivec3(1, 2, 1));
+	test(script, math::Vec3i(1, 2, 1));
 }
 
 TEST_F(LUAFunctionsTest, testQuaternionNew) {
@@ -209,13 +208,13 @@ TEST_F(LUAFunctionsTest, testQuaternionNew) {
 			return g_quat.new(0, 0, 0, 1)
 		end
 	)";
-	const glm::quat expected = glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f);
+	const math::Quatf expected = math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f);
 	LUA lua;
 	clua_mathregister(lua);
 	ASSERT_TRUE(lua.load(script)) << lua.error();
 	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
-	const glm::quat& v = clua_toquat(lua, -1);
-	EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
+	const math::Quatf& v = clua_toquat(lua, -1);
+	EXPECT_TRUE(math::all(math::equal(expected, v))) << math::to_string(v) << " vs " << math::to_string(expected);
 }
 
 TEST_F(LUAFunctionsTest, testQuaternionRotateX) {
@@ -224,13 +223,13 @@ TEST_F(LUAFunctionsTest, testQuaternionRotateX) {
 			return g_quat.rotateX(0)
 		end
 	)";
-	const glm::quat expected = glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f);
+	const math::Quatf expected = math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f);
 	LUA lua;
 	clua_mathregister(lua);
 	ASSERT_TRUE(lua.load(script)) << lua.error();
 	ASSERT_TRUE(lua.execute("test", 1)) << lua.error();
-	const glm::quat& v = clua_toquat(lua, -1);
-	EXPECT_TRUE(glm::all(glm::equal(expected, v))) << glm::to_string(v) << " vs " << glm::to_string(expected);
+	const math::Quatf& v = clua_toquat(lua, -1);
+	EXPECT_TRUE(math::all(math::equal(expected, v))) << math::to_string(v) << " vs " << math::to_string(expected);
 }
 
 TEST_F(LUAFunctionsTest, testQuatMultiplication) {
@@ -248,7 +247,7 @@ TEST_F(LUAFunctionsTest, testVectorMultiplication) {
 			return g_ivec3.new(0, 1, 2) * g_ivec3.new(0, 2, 2)
 		end
 	)";
-	test(script, glm::ivec3(0, 2, 4));
+	test(script, math::Vec3i(0, 2, 4));
 }
 
 TEST_F(LUAFunctionsTest, testVectorMultiplicationNonVector) {
@@ -257,7 +256,7 @@ TEST_F(LUAFunctionsTest, testVectorMultiplicationNonVector) {
 			return g_ivec3.new(0, 1, 2) * 2
 		end
 	)";
-	test(script, glm::ivec3(0, 2, 4));
+	test(script, math::Vec3i(0, 2, 4));
 }
 
 TEST_F(LUAFunctionsTest, testVectorDivision) {
@@ -266,7 +265,7 @@ TEST_F(LUAFunctionsTest, testVectorDivision) {
 			return g_ivec3.new(0, 1, 2) / g_ivec3.new(1, 2, 2)
 		end
 	)";
-	test(script, glm::ivec3(0, 0, 1));
+	test(script, math::Vec3i(0, 0, 1));
 }
 
 TEST_F(LUAFunctionsTest, testVectorDivisionNonVector) {
@@ -275,7 +274,7 @@ TEST_F(LUAFunctionsTest, testVectorDivisionNonVector) {
 			return g_ivec3.new(0, 1, 2) / 2
 		end
 	)";
-	test(script, glm::ivec3(0, 0, 1));
+	test(script, math::Vec3i(0, 0, 1));
 }
 
 TEST_F(LUAFunctionsTest, testVectorComponents) {
@@ -288,7 +287,7 @@ TEST_F(LUAFunctionsTest, testVectorComponents) {
 			return vec
 		end
 	)";
-	test(script, glm::ivec3(1, 2, 3));
+	test(script, math::Vec3i(1, 2, 3));
 }
 
 TEST_F(LUAFunctionsTest, testPushVec3) {
@@ -310,14 +309,14 @@ TEST_F(LUAFunctionsTest, testPushVec3) {
 		end
 	)";
 	LUA lua;
-	clua_vecregister<glm::vec3>(lua);
+	clua_vecregister<math::Vec3f>(lua);
 	ASSERT_EQ(0, luaL_dostring(lua, script));
 	lua_getglobal(lua, "test");
 	ASSERT_TRUE(lua_isfunction(lua, -1));
-	glm::vec3 inputVec(0.0f, 1.0f, 2.0f);
+	math::Vec3f inputVec(0.0f, 1.0f, 2.0f);
 	ASSERT_EQ(1, clua_push(lua, inputVec));
 	ASSERT_EQ(LUA_OK, lua_pcall(lua, 1, 1, 0)) << lua_tostring(lua, -1);
-	const glm::vec3& outputVec = clua_tovec<glm::vec3>(lua, -1);
+	const math::Vec3f& outputVec = clua_tovec<math::Vec3f>(lua, -1);
 	EXPECT_FLOAT_EQ(1.0f, outputVec.x);
 	EXPECT_FLOAT_EQ(1.0f, outputVec.y);
 	EXPECT_FLOAT_EQ(3.0f, outputVec.z);

@@ -10,7 +10,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
 #include <stdint.h>
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -83,7 +83,7 @@ public:
 	 * @param[in] kenPivot KV6 pivot in Ken space (x, y, z)
 	 * @param[in] kenVoxels KV6 voxels in file order with original vis bits (floodsucksprite)
 	 */
-	static bool apply(const Data &data, const voxel::RawVolume *volume, const glm::vec3 &kenPivot,
+	static bool apply(const Data &data, const voxel::RawVolume *volume, const math::Vec3f &kenPivot,
 					  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					  const core::String &nodePrefix, const core::Buffer<KenSpriteVox> &kenVoxels);
 };

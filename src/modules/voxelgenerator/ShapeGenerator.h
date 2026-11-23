@@ -12,11 +12,8 @@
 #include "math/Axis.h"
 #include "voxel/Region.h"
 #include "voxelutil/Raycast.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/norm.hpp>
-#include <glm/trigonometric.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelgenerator {
 namespace shape {
@@ -32,23 +29,23 @@ inline bool useStipplePattern(const Pattern& stipplePattern, int stippleState) {
 	return stipplePattern[stippleState % bits];
 }
 
-inline int chebyshevDistance(const glm::ivec3& a, const glm::ivec3& b) {
-	const glm::ivec3 delta = glm::abs(a - b);
-	return glm::max(delta.x, glm::max(delta.y, delta.z));
+inline int chebyshevDistance(const math::Vec3i& a, const math::Vec3i& b) {
+	const math::Vec3i delta = math::abs(a - b);
+	return math::max(delta.x, math::max(delta.y, delta.z));
 }
 
 inline bool isCollinear(const math::BezierSegment& segment) {
-	const glm::ivec3 startToEnd = segment.end - segment.start;
-	const glm::ivec3 startToControl = segment.control - segment.start;
-	const glm::ivec3 cross = glm::cross(glm::vec3(startToEnd), glm::vec3(startToControl));
-	return glm::abs(cross.x) < 0.0001f && glm::abs(cross.y) < 0.0001f && glm::abs(cross.z) < 0.0001f;
+	const math::Vec3i startToEnd = segment.end - segment.start;
+	const math::Vec3i startToControl = segment.control - segment.start;
+	const math::Vec3i cross = math::cross(math::Vec3f(startToEnd), math::Vec3f(startToControl));
+	return math::abs(cross.x) < 0.0001f && math::abs(cross.y) < 0.0001f && math::abs(cross.z) < 0.0001f;
 }
 
 inline voxel::Region bezierRegion(const math::BezierSegment& segment, int thickness = 1) {
-	glm::ivec3 mins = glm::min(segment.start, segment.end);
-	glm::ivec3 maxs = glm::max(segment.start, segment.end);
-	mins = glm::min(mins, segment.control);
-	maxs = glm::max(maxs, segment.control);
+	math::Vec3i mins = math::min(segment.start, segment.end);
+	math::Vec3i maxs = math::max(segment.start, segment.end);
+	mins = math::min(mins, segment.control);
+	maxs = math::max(maxs, segment.control);
 	if (thickness > 1) {
 		mins -= thickness;
 		maxs += thickness;
@@ -67,7 +64,7 @@ inline voxel::Region bezierRegion(const math::BezierSegment& segment, int thickn
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createEllipsePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, const VoxelType& voxel) {
+void createEllipsePlane(Volume& volume, const math::Vec3i& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, const VoxelType& voxel) {
 	const int halfW = width / 2;
 	const int halfD = depth / 2;
 
@@ -97,7 +94,7 @@ void createEllipsePlane(Volume& volume, const glm::ivec3& center, math::Axis axi
  * @brief Creates a filled circle plane (convenience overload with single radius)
  */
 template<class Volume, class VoxelType>
-void createEllipsePlane(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, const VoxelType& voxel) {
+void createEllipsePlane(Volume& volume, const math::Vec3i& center, math::Axis axis, int width, int depth, double radius, const VoxelType& voxel) {
 	createEllipsePlane(volume, center, axis, width, depth, radius, radius, voxel);
 }
 
@@ -113,7 +110,7 @@ void createEllipsePlane(Volume& volume, const glm::ivec3& center, math::Axis axi
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createCircleOutline(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radius, int thickness, const VoxelType& voxel) {
+void createCircleOutline(Volume& volume, const math::Vec3i& center, math::Axis axis, int width, int depth, double radius, int thickness, const VoxelType& voxel) {
 	const int halfW = width / 2;
 	const int halfD = depth / 2;
 	const double innerRadius = core_max(0.0, radius - thickness);
@@ -122,7 +119,7 @@ void createCircleOutline(Volume& volume, const glm::ivec3& center, math::Axis ax
 		const double z = iz - depth / 2.0 + 0.5;
 		for (int ix = 0; ix < width; ++ix) {
 			const double x = ix - width / 2.0 + 0.5;
-			const double distance = glm::sqrt(x * x + z * z);
+			const double distance = math::sqrt(x * x + z * z);
 			if (distance > radius || distance < innerRadius) {
 				continue;
 			}
@@ -152,7 +149,7 @@ void createCircleOutline(Volume& volume, const glm::ivec3& center, math::Axis ax
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createEllipseOutline(Volume& volume, const glm::ivec3& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, int thickness, const VoxelType& voxel) {
+void createEllipseOutline(Volume& volume, const math::Vec3i& center, math::Axis axis, int width, int depth, double radiusX, double radiusZ, int thickness, const VoxelType& voxel) {
 	const int halfW = width / 2;
 	const int halfD = depth / 2;
 	const double innerRadiusX = core_max(0.0, radiusX - thickness);
@@ -198,7 +195,7 @@ void createEllipseOutline(Volume& volume, const glm::ivec3& center, math::Axis a
  * @sa createCubeNoCenter()
  */
 template<class Volume, class VoxelType>
-void createCube(Volume& volume, const glm::ivec3& center, int width, int height, int depth, const VoxelType& voxel) {
+void createCube(Volume& volume, const math::Vec3i& center, int width, int height, int depth, const VoxelType& voxel) {
 	const int heightLow = height / 2;
 	const int widthLow = width / 2;
 	const int depthLow = depth / 2;
@@ -220,14 +217,14 @@ void createCube(Volume& volume, const glm::ivec3& center, int width, int height,
  * @sa createCube()
  */
 template<class Volume, class VoxelType>
-void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, int width, int height, int depth, const VoxelType& voxel) {
+void createCubeNoCenter(Volume& volume, const math::Vec3i& pos, int width, int height, int depth, const VoxelType& voxel) {
 	core::Vector<voxel::Voxel, MAX_HEIGHT> voxels;
 	voxels.assign(voxel, height);
 	voxel::setVoxels(volume, pos.x, pos.y, pos.z, width, depth, &voxels.front(), height);
 }
 
 template<class Volume, class VoxelType>
-void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, const glm::ivec3& dim, const VoxelType& voxel) {
+void createCubeNoCenter(Volume& volume, const math::Vec3i& pos, const math::Vec3i& dim, const VoxelType& voxel) {
 	createCubeNoCenter(volume, pos, dim.x, dim.y, dim.z, voxel);
 }
 
@@ -241,7 +238,7 @@ void createCubeNoCenter(Volume& volume, const glm::ivec3& pos, const glm::ivec3&
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::Axis axis, int width, int height, int depth, const VoxelType& voxel) {
+void createEllipse(Volume& volume, const math::Vec3i& centerBottom, const math::Axis axis, int width, int height, int depth, const VoxelType& voxel) {
 	if (axis == math::Axis::None) {
 		return;
 	}
@@ -249,12 +246,12 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
 	const double zRadius = core_max(1.0, depth / 2.0);
 	const double halfHeight = core_max(1.0, height / 2.0);
 	const int axisIdx = math::getIndexForAxis(axis);
-	glm::ivec3 circleCenter = centerBottom;
-	glm::ivec3 offset{0};
+	math::Vec3i circleCenter = centerBottom;
+	math::Vec3i offset{0};
 	offset[axisIdx] = 1;
 	for (int i = 0; i < height; ++i) {
 		const double normalizedY = (i - halfHeight + 0.5) / halfHeight;
-		const double scale = glm::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
+		const double scale = math::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
 		createEllipsePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
 		circleCenter += offset;
 	}
@@ -272,7 +269,7 @@ void createEllipse(Volume& volume, const glm::ivec3& centerBottom, const math::A
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis axis, bool negative, int width, int height, int depth, const VoxelType& voxel) {
+void createCone(Volume& volume, const math::Vec3i& centerBottom, const math::Axis axis, bool negative, int width, int height, int depth, const VoxelType& voxel) {
 	if (axis == math::Axis::None) {
 		return;
 	}
@@ -280,8 +277,8 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 	const double zRadius = depth / 2.0;
 	const double dHeight = (double)height;
 	const int axisIdx = math::getIndexForAxis(axis);
-	glm::ivec3 circleCenter = centerBottom;
-	glm::ivec3 offset{0};
+	math::Vec3i circleCenter = centerBottom;
+	math::Vec3i offset{0};
 	offset[axisIdx] = 1;
 	if (negative) {
 		circleCenter += offset * (height - 1);
@@ -295,14 +292,14 @@ void createCone(Volume& volume, const glm::ivec3& centerBottom, const math::Axis
 }
 
 template<class Volume, class VoxelType>
-void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::Axis axis, int radius, int height, const VoxelType& voxel) {
+void createCylinder(Volume& volume, const math::Vec3f& centerBottom, const math::Axis axis, int radius, int height, const VoxelType& voxel) {
 	if (axis == math::Axis::None) {
 		return;
 	}
 
 	const int axisIdx = math::getIndexForAxis(axis);
-	glm::ivec3 circleCenter = centerBottom;
-	glm::ivec3 offset{0};
+	math::Vec3i circleCenter = centerBottom;
+	math::Vec3i offset{0};
 	offset[axisIdx] = 1;
 	for (int i = 0; i < height; ++i) {
 		createEllipsePlane(volume, circleCenter, axis, radius * 2, radius * 2, radius, voxel);
@@ -322,13 +319,13 @@ void createCylinder(Volume& volume, const glm::vec3& centerBottom, const math::A
  * @param[in] voxel The Voxel to build the object with
  */
 template<class Volume, class VoxelType>
-void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis, bool negative, int width, int height, int depth, const VoxelType& voxel) {
+void createDome(Volume& volume, const math::Vec3i& centerBottom, math::Axis axis, bool negative, int width, int height, int depth, const VoxelType& voxel) {
 	const double xRadius = core_max(1.0, width / 2.0);
 	const double zRadius = core_max(1.0, depth / 2.0);
 
 	const int axisIdx = math::getIndexForAxis(axis);
-	glm::ivec3 circleCenter = centerBottom;
-	glm::ivec3 offset{0};
+	math::Vec3i circleCenter = centerBottom;
+	math::Vec3i offset{0};
 	offset[axisIdx] = 1;
 	if (negative) {
 		circleCenter += offset * (height - 1);
@@ -336,14 +333,14 @@ void createDome(Volume& volume, const glm::ivec3& centerBottom, math::Axis axis,
 	}
 	for (int i = 0; i < height; ++i) {
 		const double normalizedY = (double)i / (double)height;
-		const double scale = glm::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
+		const double scale = math::sqrt(core_max(0.0, 1.0 - normalizedY * normalizedY));
 		createEllipsePlane(volume, circleCenter, axis, width, depth, xRadius * scale, zRadius * scale, voxel);
 		circleCenter += offset;
 	}
 }
 
 template<class Volume, class VoxelType>
-void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const VoxelType& voxel, int thickness = 1) {
+void createLine(Volume& volume, const math::Vec3i& start, const math::Vec3i& end, const VoxelType& voxel, int thickness = 1) {
 	if (thickness <= 0) {
 		return;
 	}
@@ -363,30 +360,30 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 	const float y2 = end.y + offset;
 	const float z2 = end.z + offset;
 
-	int i = (int) glm::floor(x1);
-	int j = (int) glm::floor(y1);
-	int k = (int) glm::floor(z1);
+	int i = (int) math::floor(x1);
+	int j = (int) math::floor(y1);
+	int k = (int) math::floor(z1);
 
-	const int iend = (int) glm::floor(x2);
-	const int jend = (int) glm::floor(y2);
-	const int kend = (int) glm::floor(z2);
+	const int iend = (int) math::floor(x2);
+	const int jend = (int) math::floor(y2);
+	const int kend = (int) math::floor(z2);
 
 	const int di = ((x1 < x2) ? 1 : ((x1 > x2) ? -1 : 0));
 	const int dj = ((y1 < y2) ? 1 : ((y1 > y2) ? -1 : 0));
 	const int dk = ((z1 < z2) ? 1 : ((z1 > z2) ? -1 : 0));
 
-	const float deltatx = 1.0f / core_max(1.0f, glm::abs(x2 - x1));
-	const float deltaty = 1.0f / core_max(1.0f, glm::abs(y2 - y1));
-	const float deltatz = 1.0f / core_max(1.0f, glm::abs(z2 - z1));
+	const float deltatx = 1.0f / core_max(1.0f, math::abs(x2 - x1));
+	const float deltaty = 1.0f / core_max(1.0f, math::abs(y2 - y1));
+	const float deltatz = 1.0f / core_max(1.0f, math::abs(z2 - z1));
 
-	const float minx = glm::floor(x1), maxx = minx + 1.0f;
+	const float minx = math::floor(x1), maxx = minx + 1.0f;
 	float tx = ((x1 > x2) ? (x1 - minx) : (maxx - x1)) * deltatx;
-	const float miny = glm::floor(y1), maxy = miny + 1.0f;
+	const float miny = math::floor(y1), maxy = miny + 1.0f;
 	float ty = ((y1 > y2) ? (y1 - miny) : (maxy - y1)) * deltaty;
-	const float minz = glm::floor(z1), maxz = minz + 1.0f;
+	const float minz = math::floor(z1), maxz = minz + 1.0f;
 	float tz = ((z1 > z2) ? (z1 - minz) : (maxz - z1)) * deltatz;
 
-	glm::ivec3 pos(i, j, k);
+	math::Vec3i pos(i, j, k);
 
 	for (;;) {
 		createEllipse(volume, pos, math::Axis::Y, thickness, thickness, thickness, voxel);
@@ -435,12 +432,12 @@ void createLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, 
 }
 
 template<class Volume, class VoxelType, class Pattern>
-bool drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const VoxelType& voxel,
+bool drawStippledLine(Volume& volume, const math::Vec3i& start, const math::Vec3i& end, const VoxelType& voxel,
 						 const Pattern& stipplePattern, int& stippleState, bool skipFirst = false, int thickness = 1) {
 	bool firstPoint = true;
 	bool consumedPoint = false;
 	bool sawVisitedPoint = false;
-	glm::ivec3 lastVisited(0);
+	math::Vec3i lastVisited(0);
 	voxelutil::raycastWithEndpoints(&volume, start, end, [&] (auto& sampler) {
 		if (skipFirst && firstPoint) {
 			firstPoint = false;
@@ -484,9 +481,9 @@ bool drawStippledLine(Volume& volume, const glm::ivec3& start, const glm::ivec3&
  * @sa createBezierFunc()
  */
 template<class Volume, class VoxelType>
-void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const VoxelType& voxel, int steps = 8) {
+void createBezier(Volume& volume, const math::Vec3i& start, const math::Vec3i& end, const math::Vec3i& control, const VoxelType& voxel, int steps = 8) {
 	const math::Bezier<int> b(start, end, control);
-	b.visitPoints(steps, [&] (const glm::ivec3& pos) {
+	b.visitPoints(steps, [&] (const math::Vec3i& pos) {
 		volume.setVoxel(pos, voxel);
 	});
 }
@@ -502,9 +499,9 @@ void createBezier(Volume& volume, const glm::ivec3& start, const glm::ivec3& end
  * @sa createBezier()
  */
 template<class Volume, class F, class VoxelType>
-void createBezierFunc(Volume& volume, const glm::ivec3& start, const glm::ivec3& end, const glm::ivec3& control, const VoxelType& voxel, F&& func, int steps = 8) {
+void createBezierFunc(Volume& volume, const math::Vec3i& start, const math::Vec3i& end, const math::Vec3i& control, const VoxelType& voxel, F&& func, int steps = 8) {
 	const math::Bezier<int> b(start, end, control);
-	b.visitSegments(steps, [&] (const glm::ivec3& lastPos, const glm::ivec3& pos) {
+	b.visitSegments(steps, [&] (const math::Vec3i& lastPos, const math::Vec3i& pos) {
 		func(volume, lastPos, pos, voxel);
 	});
 }
@@ -523,22 +520,22 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 	}
 	using EvalVec = typename math::Bezier<int>::EvalVec;
 	auto roundPoint = [&] (const EvalVec& point) {
-		return glm::ivec3(glm::round(point));
+		return math::Vec3i(math::round(point));
 	};
 	auto curveRegion = [&] (const EvalVec& start, const EvalVec& control, const EvalVec& end) {
-		const glm::ivec3 startPos = roundPoint(start);
-		const glm::ivec3 controlPos = roundPoint(control);
-		const glm::ivec3 endPos = roundPoint(end);
-		glm::ivec3 mins = glm::min(startPos, endPos);
-		glm::ivec3 maxs = glm::max(startPos, endPos);
-		mins = glm::min(mins, controlPos);
-		maxs = glm::max(maxs, controlPos);
+		const math::Vec3i startPos = roundPoint(start);
+		const math::Vec3i controlPos = roundPoint(control);
+		const math::Vec3i endPos = roundPoint(end);
+		math::Vec3i mins = math::min(startPos, endPos);
+		math::Vec3i maxs = math::max(startPos, endPos);
+		mins = math::min(mins, controlPos);
+		maxs = math::max(maxs, controlPos);
 		return voxel::Region(mins, maxs);
 	};
 
 	int stippleState = 0;
 	bool hasLastPoint = false;
-	glm::ivec3 lastPoint(0);
+	math::Vec3i lastPoint(0);
 	constexpr int MaxSubdivisionDepth = 24;
 	const EvalVec start(segment.start);
 	const EvalVec control(segment.control);
@@ -549,8 +546,8 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 		if (!region.cropTo(volume.region())) {
 			return;
 		}
-		const glm::ivec3 startPos = roundPoint(subStart);
-		const glm::ivec3 endPos = roundPoint(subEnd);
+		const math::Vec3i startPos = roundPoint(subStart);
+		const math::Vec3i endPos = roundPoint(subEnd);
 		if (depth >= MaxSubdivisionDepth || chebyshevDistance(startPos, endPos) <= 1) {
 			const bool skipFirst = hasLastPoint && lastPoint == startPos;
 			if (drawStippledLine(volume, startPos, endPos, voxel, stipplePattern, stippleState, skipFirst, thickness)) {
@@ -579,7 +576,7 @@ void drawBezierSegment(Volume& volume, const math::BezierSegment& segment, const
 }
 
 template<class Volume, class VoxelType>
-void createTorus(Volume& volume, const glm::ivec3& center, math::Axis axis, const glm::ivec3& dimensions, int minorRadiusOverride, const VoxelType& voxel) {
+void createTorus(Volume& volume, const math::Vec3i& center, math::Axis axis, const math::Vec3i& dimensions, int minorRadiusOverride, const VoxelType& voxel) {
 	const int halfW = dimensions.x / 2;
 	const int halfH = dimensions.y / 2;
 	const int halfD = dimensions.z / 2;
@@ -631,7 +628,7 @@ void createTorus(Volume& volume, const glm::ivec3& center, math::Axis axis, cons
 				// find closest point on the major ellipse
 				const double na = (majorRadiusA > 0.0) ? (pa / majorRadiusA) : 0.0;
 				const double nb = (majorRadiusB > 0.0) ? (pb / majorRadiusB) : 0.0;
-				const double planeDist = glm::sqrt(na * na + nb * nb);
+				const double planeDist = math::sqrt(na * na + nb * nb);
 				if (planeDist < 0.0001) {
 					const double nh = (minorRadiusH > 0.0) ? (h / minorRadiusH) : 0.0;
 					if (nh * nh <= 1.0) {
@@ -640,14 +637,14 @@ void createTorus(Volume& volume, const glm::ivec3& center, math::Axis axis, cons
 					continue;
 				}
 
-				const double angle = glm::atan(pb * majorRadiusA, pa * majorRadiusB);
-				const double ellipseA = majorRadiusA * glm::cos(angle);
-				const double ellipseB = majorRadiusB * glm::sin(angle);
+				const double angle = math::atan(pb * majorRadiusA, pa * majorRadiusB);
+				const double ellipseA = majorRadiusA * math::cos(angle);
+				const double ellipseB = majorRadiusB * math::sin(angle);
 
 				const double da = pa - ellipseA;
 				const double db = pb - ellipseB;
 				// elliptical tube cross-section check
-				const double inPlaneDist = glm::sqrt(da * da + db * db);
+				const double inPlaneDist = math::sqrt(da * da + db * db);
 				const double np = (minorRadiusP > 0.0) ? (inPlaneDist / minorRadiusP) : 0.0;
 				const double nh = (minorRadiusH > 0.0) ? (h / minorRadiusH) : 0.0;
 

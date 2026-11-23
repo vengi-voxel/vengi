@@ -3,6 +3,12 @@
  */
 
 #include "CoordinateSystemUtil.h"
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/Axes.h"
 
 namespace math {
 
@@ -40,13 +46,13 @@ namespace math {
 //
 // https://mastodon.social/@acegikmo/113313928426095165
 //
-bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
+bool coordinateSystemToMatrix(CoordinateSystem sys, math::Mat4f &matrix) {
 	// Each case defines the basis vectors of the source coordinate system
 	// expressed in vengi's coordinate system.
 	// The resulting matrix columns represent: [right, up, forward, translation]
-	glm::vec3 right;
-	glm::vec3 up;
-	glm::vec3 forward;
+	math::Vec3f right;
+	math::Vec3f up;
+	math::Vec3f forward;
 	switch (sys) {
 	case CoordinateSystem::Vengi:
 	case CoordinateSystem::Maya:
@@ -56,17 +62,17 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 		// Identity - no conversion needed
 		// Note: We use standard basis vectors (1,0,0), (0,1,0), (0,0,1)
 		// The "forward" semantic (-Z direction) is handled by the application logic
-		right = glm::vec3(1.0f, 0.0f, 0.0f);   // X-axis
-		up = glm::vec3(0.0f, 1.0f, 0.0f);	   // Y-axis
-		forward = glm::vec3(0.0f, 0.0f, 1.0f); // Z-axis (not -Z or glm::forward())
+		right = math::Vec3f(1.0f, 0.0f, 0.0f);   // X-axis
+		up = math::Vec3f(0.0f, 1.0f, 0.0f);	   // Y-axis
+		forward = math::Vec3f(0.0f, 0.0f, 1.0f); // Z-axis (not -Z or math::forward())
 		break;
 	case CoordinateSystem::DirectX:
 	case CoordinateSystem::Unity:
 		// DirectX / Unity: Left-handed, Y-up, Z-forward
 		// vengi is right-handed, so we need to flip Z to convert handedness
-		right = glm::vec3(1.0f, 0.0f, 0.0f);	// X-axis unchanged
-		up = glm::vec3(0.0f, 1.0f, 0.0f);		// Y-axis unchanged
-		forward = glm::vec3(0.0f, 0.0f, -1.0f); // Z-axis flipped (left-to-right hand)
+		right = math::Vec3f(1.0f, 0.0f, 0.0f);	// X-axis unchanged
+		up = math::Vec3f(0.0f, 1.0f, 0.0f);		// Y-axis unchanged
+		forward = math::Vec3f(0.0f, 0.0f, -1.0f); // Z-axis flipped (left-to-right hand)
 		break;
 	case CoordinateSystem::Autodesk3dsmax:
 	case CoordinateSystem::MagicaVoxel:
@@ -77,37 +83,37 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix) {
 		//   MV's X (right) -> vengi's X (right): (1, 0, 0)
 		//   MV's Y (forward) -> vengi's -Z (forward): (0, 0, -1)
 		//   MV's Z (up) -> vengi's Y (up): (0, 1, 0)
-		right = glm::vec3(1.0f, 0.0f, 0.0f);   // MV X -> vengi X
-		up = glm::vec3(0.0f, 0.0f, -1.0f);	   // MV Y -> vengi -Z
-		forward = glm::vec3(0.0f, 1.0f, 0.0f); // MV Z -> vengi Y
+		right = math::Vec3f(1.0f, 0.0f, 0.0f);   // MV X -> vengi X
+		up = math::Vec3f(0.0f, 0.0f, -1.0f);	   // MV Y -> vengi -Z
+		forward = math::Vec3f(0.0f, 1.0f, 0.0f); // MV Z -> vengi Y
 		break;
 	case CoordinateSystem::Max:
 	default:
 		return false;
 	}
 	// clang-format off
-	matrix = glm::mat4(
-		glm::vec4(right, 0.0f),
-		glm::vec4(up, 0.0f),
-		glm::vec4(forward, 0.0f),
-		glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
+	matrix = math::Mat4f(
+		math::Vec4f(right, 0.0f),
+		math::Vec4f(up, 0.0f),
+		math::Vec4f(forward, 0.0f),
+		math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f)
 	);
 	// clang-format on
 	return true;
 }
 
-bool coordinateSystemTransformationMatrix(CoordinateSystem from, CoordinateSystem to, glm::mat4 &transformationMatrix1,
-										  glm::mat4 &transformationMatrix2) {
+bool coordinateSystemTransformationMatrix(CoordinateSystem from, CoordinateSystem to, math::Mat4f &transformationMatrix1,
+										  math::Mat4f &transformationMatrix2) {
 	if (from == to) {
 		return false;
 	}
 
-	glm::mat4 fromSystem;
+	math::Mat4f fromSystem;
 	if (!coordinateSystemToMatrix(from, fromSystem)) {
 		return false;
 	}
 
-	glm::mat4 toSystem;
+	math::Mat4f toSystem;
 	if (!coordinateSystemToMatrix(to, toSystem)) {
 		return false;
 	}
@@ -120,26 +126,26 @@ bool coordinateSystemTransformationMatrix(CoordinateSystem from, CoordinateSyste
 	//    - Then convert from vengi to 'to': M'' = inverse(toSystem) * M' * toSystem
 	//    - Combined: M'' = inverse(toSystem) * fromSystem * M * inverse(fromSystem) * toSystem
 	// So: T1 = inverse(toSystem) * fromSystem, T2 = inverse(fromSystem) * toSystem
-	transformationMatrix1 = glm::inverse(toSystem) * fromSystem;
-	transformationMatrix2 = glm::inverse(fromSystem) * toSystem;
+	transformationMatrix1 = math::inverse(toSystem) * fromSystem;
+	transformationMatrix2 = math::inverse(fromSystem) * toSystem;
 	return true;
 }
 
-glm::mat4 convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, const glm::mat4 &fromMatrix) {
-	glm::mat4x4 transformationMatrix1;
-	glm::mat4x4 transformationMatrix2;
+math::Mat4f convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, const math::Mat4f &fromMatrix) {
+	math::Mat4f transformationMatrix1;
+	math::Mat4f transformationMatrix2;
 	if (!coordinateSystemTransformationMatrix(from, to, transformationMatrix1, transformationMatrix2)) {
 		return fromMatrix;
 	}
 	return transformationMatrix1 * fromMatrix * transformationMatrix2;
 }
 
-bool coordinateSystemToRotationMatrix(CoordinateSystem sys, glm::mat3 &matrix) {
-	glm::mat4 mat4;
+bool coordinateSystemToRotationMatrix(CoordinateSystem sys, math::Mat3f &matrix) {
+	math::Mat4f mat4;
 	if (!coordinateSystemToMatrix(sys, mat4)) {
 		return false;
 	}
-	matrix = glm::mat3(mat4);
+	matrix = math::Mat3f(mat4);
 	return true;
 }
 

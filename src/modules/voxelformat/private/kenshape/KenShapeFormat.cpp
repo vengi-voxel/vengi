@@ -15,6 +15,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "json/JSON.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -117,7 +118,7 @@ bool KenShapeFormat::loadGroupsPalette(const core::String &filename, const io::A
 	node.setVolume(volume);
 
 	// fill volume
-	glm::ivec3 pos(0, h, 0);
+	math::Vec3i pos(0, h, 0);
 	int tileIndex = 0;
 	for (const KenTile &tile : kenTiles) {
 		ctx.report("tile", tileIndex++, (int)kenTiles.size());

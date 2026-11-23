@@ -10,10 +10,11 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/matrix.hpp>
+#include "math/Vec3d.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Conversions.h"
+#include "math/Mat3d.h"
 
 // Based on the polyvox implementation of dual contouring
 // https://www.boristhebrave.com/2018/04/15/dual-contouring-tutorial/
@@ -22,13 +23,13 @@
 namespace voxel {
 namespace {
 
-const glm::ivec3 Axis[3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-const glm::ivec3 Corners[8] = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}, {0, 0, 1}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}};
+const math::Vec3i Axis[3] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+const math::Vec3i Corners[8] = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {1, 1, 0}, {0, 0, 1}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}};
 constexpr IndexType InvalidIndex = ~IndexType(0);
 
 struct Cell {
-	glm::vec3 position;
-	glm::vec3 normal;
+	math::Vec3f position;
+	math::Vec3f normal;
 	IndexType first = InvalidIndex;
 };
 
@@ -46,8 +47,8 @@ struct Slice {
 	core::DynamicArray<MaterialVertex> vertices;
 };
 
-glm::vec3 gradient(const RawVolume &volume, const glm::ivec3 &pos, VoxelType outside) {
-	glm::vec3 normal;
+math::Vec3f gradient(const RawVolume &volume, const math::Vec3i &pos, VoxelType outside) {
+	math::Vec3f normal;
 	for (int axis = 0; axis < 3; ++axis) {
 		const bool lower = volume.voxel(pos - Axis[axis]).getMaterial() > outside;
 		const bool upper = volume.voxel(pos + Axis[axis]).getMaterial() > outside;
@@ -56,7 +57,7 @@ glm::vec3 gradient(const RawVolume &volume, const glm::ivec3 &pos, VoxelType out
 	return normal;
 }
 
-void fitCell(const RawVolume &volume, const glm::ivec3 &pos, Cell &cell) {
+void fitCell(const RawVolume &volume, const math::Vec3i &pos, Cell &cell) {
 	VoxelType materials[8];
 	bool hasAir = false;
 	for (int i = 0; i < 8; ++i) {
@@ -65,10 +66,10 @@ void fitCell(const RawVolume &volume, const glm::ivec3 &pos, Cell &cell) {
 	}
 	// At the silhouette, fit the outside of the model. Interior cells fit the opaque/glass interface.
 	const VoxelType outside = hasAir ? VoxelType::Air : VoxelType::Transparent;
-	glm::dmat3 matrix(0.0);
-	glm::dvec3 rhs(0.0);
-	glm::dvec3 massPoint(0.0);
-	glm::vec3 normalSum(0.0f);
+	math::Mat3d matrix(0.0);
+	math::Vec3d rhs(0.0);
+	math::Vec3d massPoint(0.0);
+	math::Vec3f normalSum(0.0f);
 	int crossings = 0;
 
 	for (int i = 0; i < 8; ++i) {
@@ -83,16 +84,16 @@ void fitCell(const RawVolume &volume, const glm::ivec3 &pos, Cell &cell) {
 				continue;
 			}
 
-			glm::vec3 normal =
+			math::Vec3f normal =
 				gradient(volume, pos + Corners[i], outside) + gradient(volume, pos + Corners[other], outside);
-			if (glm::dot(normal, normal) == 0.0f) {
-				normal = glm::vec3(Axis[axis]) * (lowerSolid ? 1.0f : -1.0f);
+			if (math::dot(normal, normal) == 0.0f) {
+				normal = math::Vec3f(Axis[axis]) * (lowerSolid ? 1.0f : -1.0f);
 			}
-			normal = glm::normalize(normal);
-			const glm::dvec3 n(normal);
-			const glm::dvec3 point = glm::dvec3(Corners[i]) + glm::dvec3(Axis[axis]) * 0.5;
-			matrix += glm::outerProduct(n, n);
-			rhs += n * glm::dot(n, point);
+			normal = math::normalize(normal);
+			const math::Vec3d n(normal);
+			const math::Vec3d point = math::Vec3d(Corners[i]) + math::Vec3d(Axis[axis]) * 0.5;
+			matrix += math::outerProduct(n, n);
+			rhs += n * math::dot(n, point);
 			massPoint += point;
 			normalSum += normal;
 			++crossings;
@@ -103,16 +104,16 @@ void fitCell(const RawVolume &volume, const glm::ivec3 &pos, Cell &cell) {
 	massPoint /= double(crossings);
 	// Regularize the QEF towards the mean crossing to handle rank-deficient cells.
 	constexpr double bias = 1e-6;
-	const glm::dvec3 fitted = glm::inverse(matrix + glm::dmat3(bias)) * (rhs + bias * massPoint);
+	const math::Vec3d fitted = math::inverse(matrix + math::Mat3d(bias)) * (rhs + bias * massPoint);
 	// Keep dual vertices inside their cells so adjacent quads cannot collapse at a cell boundary.
 	constexpr float inset = 1.0f / 256.0f;
-	cell.position = glm::clamp(glm::vec3(fitted), glm::vec3(inset), glm::vec3(1.0f - inset));
-	cell.normal = glm::dot(normalSum, normalSum) > 1e-8f ? glm::normalize(normalSum) : glm::vec3(0.0f);
+	cell.position = math::clamp(math::Vec3f(fitted), math::Vec3f(inset), math::Vec3f(1.0f - inset));
+	cell.normal = math::dot(normalSum, normalSum) > 1e-8f ? math::normalize(normalSum) : math::Vec3f(0.0f);
 }
 
-IndexType addVertex(Slice &slice, Cell &cell, Mesh &mesh, const glm::ivec3 &pos, const Voxel &voxel, int axis,
+IndexType addVertex(Slice &slice, Cell &cell, Mesh &mesh, const math::Vec3i &pos, const Voxel &voxel, int axis,
 					bool forward, bool interior) {
-	const bool flatNormal = interior || cell.normal == glm::vec3(0.0f);
+	const bool flatNormal = interior || cell.normal == math::Vec3f(0.0f);
 	const uint8_t normalId = flatNormal ? 1 + 2 * axis + int(forward) : 0;
 	const uint8_t flags = voxel.getFlags() & FlagOutline;
 	const bool transparent = isTransparent(voxel.getMaterial());
@@ -125,12 +126,12 @@ IndexType addVertex(Slice &slice, Cell &cell, Mesh &mesh, const glm::ivec3 &pos,
 	}
 
 	VoxelVertex vertex{};
-	vertex.position = glm::vec3(pos) + (cell.position + 0.5f);
+	vertex.position = math::Vec3f(pos) + (cell.position + 0.5f);
 	vertex.ambientOcclusion = 3;
 	vertex.flags = flags;
 	vertex.colorIndex = voxel.getColor();
 	const IndexType index = mesh.addVertex(vertex);
-	mesh.setNormal(index, flatNormal ? glm::vec3(Axis[axis]) * (forward ? 1.0f : -1.0f) : cell.normal);
+	mesh.setNormal(index, flatNormal ? math::Vec3f(Axis[axis]) * (forward ? 1.0f : -1.0f) : cell.normal);
 
 	const IndexType entry = IndexType(slice.vertices.size());
 	slice.vertices.push_back({index, cell.first, vertex.colorIndex, flags, normalId, transparent});
@@ -146,8 +147,8 @@ void extractDualContouringMesh(const SurfaceExtractionContext &ctx) {
 		return;
 	}
 	const RawVolume &volume = *ctx.volume;
-	const glm::ivec3 lower = ctx.region.getLowerCorner();
-	const glm::ivec3 upper = ctx.region.getUpperCorner();
+	const math::Vec3i lower = ctx.region.getLowerCorner();
+	const math::Vec3i upper = ctx.region.getUpperCorner();
 	const size_t width = size_t(ctx.region.getWidthInVoxels()) + 1;
 	const size_t height = size_t(ctx.region.getHeightInVoxels()) + 1;
 	Slice slices[2];
@@ -163,10 +164,10 @@ void extractDualContouringMesh(const SurfaceExtractionContext &ctx) {
 		current.vertices.clear();
 		for (int y = lower.y; y <= upper.y; ++y) {
 			for (int x = lower.x; x <= upper.x; ++x) {
-				const glm::ivec3 pos(x, y, z);
+				const math::Vec3i pos(x, y, z);
 				const Voxel &upperVoxel = volume.voxel(pos);
 				for (int axis = 0; axis < 3; ++axis) {
-					const glm::ivec3 base = pos - Axis[axis];
+					const math::Vec3i base = pos - Axis[axis];
 					const Voxel &lowerVoxel = volume.voxel(base);
 					if (lowerVoxel.isSameType(upperVoxel)) {
 						continue;
@@ -177,14 +178,14 @@ void extractDualContouringMesh(const SurfaceExtractionContext &ctx) {
 					const bool interior = !isAir(outside.getMaterial());
 					Mesh &mesh = ctx.mesh.mesh[isTransparent(visible.getMaterial()) ? 1 : 0];
 
-					const glm::ivec3 u = Axis[(axis + 1) % 3];
-					const glm::ivec3 v = Axis[(axis + 2) % 3];
-					const glm::ivec3 offsets[4] = {{0, 0, 0}, -u, -u - v, -v};
+					const math::Vec3i u = Axis[(axis + 1) % 3];
+					const math::Vec3i v = Axis[(axis + 2) % 3];
+					const math::Vec3i offsets[4] = {{0, 0, 0}, -u, -u - v, -v};
 					IndexType indices[4];
-					glm::vec3 positions[4];
+					math::Vec3f positions[4];
 					for (int i = 0; i < 4; ++i) {
-						const glm::ivec3 cellPos = base + offsets[i];
-						const glm::ivec3 local = cellPos - lower + 1;
+						const math::Vec3i cellPos = base + offsets[i];
+						const math::Vec3i local = cellPos - lower + 1;
 						Slice &slice = slices[local.z % 2];
 						Cell &cell = slice.cells[size_t(local.y) * width + size_t(local.x)];
 						if (cell.first == InvalidIndex) {
@@ -192,16 +193,16 @@ void extractDualContouringMesh(const SurfaceExtractionContext &ctx) {
 						}
 						indices[i] = addVertex(slice, cell, mesh, cellPos - lower + ctx.translate, visible, axis,
 											   forward, interior);
-						positions[i] = glm::vec3(offsets[i]) + cell.position;
+						positions[i] = math::Vec3f(offsets[i]) + cell.position;
 					}
 
 					const auto triangle = [&](int a, int b, int c) {
 						mesh.addTriangle(indices[a], indices[forward ? b : c], indices[forward ? c : b]);
 					};
 					// In projection a quad can be concave, so choose a diagonal that keeps both triangles facing out.
-					const glm::vec3 diagonal = positions[2] - positions[0];
-					if (glm::cross(positions[1] - positions[0], diagonal)[axis] > 0.0f &&
-						glm::cross(diagonal, positions[3] - positions[0])[axis] > 0.0f) {
+					const math::Vec3f diagonal = positions[2] - positions[0];
+					if (math::cross(positions[1] - positions[0], diagonal)[axis] > 0.0f &&
+						math::cross(diagonal, positions[3] - positions[0])[axis] > 0.0f) {
 						triangle(0, 1, 2);
 						triangle(0, 2, 3);
 					} else {

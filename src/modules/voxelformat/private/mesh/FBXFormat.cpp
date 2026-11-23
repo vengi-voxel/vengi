@@ -30,8 +30,6 @@
 #include "voxel/VoxelVertex.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
-#include <glm/common.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <limits>
 
 #define ufbx_assert core_assert
@@ -39,12 +37,19 @@
 
 #define ufbxw_assert core_assert
 #include "voxelformat/external/ufbx_write.h"
+#include "math/Quatf.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
 bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
 						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+						   const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -72,7 +77,7 @@ bool FBXFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 }
 
 bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &filename,
-								 io::SeekableWriteStream &stream, const glm::vec3 &scale, bool quad, bool withColor,
+								 io::SeekableWriteStream &stream, const math::Vec3f &scale, bool quad, bool withColor,
 								 bool withTexCoords, const scenegraph::SceneGraph &sceneGraph) {
 	ufbxw_scene_opts sceneOpts;
 	core_memset(&sceneOpts, 0, sizeof(sceneOpts));
@@ -135,9 +140,9 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 		const scenegraph::KeyFrameIndex kfIdx = 0;
 		const scenegraph::SceneGraphTransform &transform = sgNode.transform(kfIdx);
 		if (!meshAppliesTransform) {
-			const glm::vec3 &t = transform.localTranslation();
-			const glm::quat &r = transform.localOrientation();
-			const glm::vec3 &s = transform.localScale();
+			const math::Vec3f &t = transform.localTranslation();
+			const math::Quatf &r = transform.localOrientation();
+			const math::Vec3f &s = transform.localScale();
 			ufbxw_node_set_translation(ws, wNode, {t.x, t.y, t.z});
 			ufbxw_node_set_rotation_quat(ws, wNode, {r.x, r.y, r.z, r.w}, UFBXW_ROTATION_ORDER_XYZ);
 			ufbxw_node_set_scaling(ws, wNode, {s.x, s.y, s.z});
@@ -159,7 +164,7 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 					continue;
 				}
 				const voxel::VoxelVertex *vertices = vmesh->getRawVertexData();
-				const glm::mat3 normalMatrix = meshExt.normalMatrix(transform, scale);
+				const math::Mat3f normalMatrix = meshExt.normalMatrix(transform, scale);
 				const voxel::IndexType *indices = vmesh->getRawIndexData();
 
 				ufbxw_mesh wMesh = ufbxw_create_mesh(ws);
@@ -167,7 +172,7 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 
 				core::DynamicArray<ufbxw_vec3> verts(nv);
 				for (int j = 0; j < nv; ++j) {
-					glm::vec3 pos;
+					math::Vec3f pos;
 					if (meshExt.applyTransform) {
 						pos = transform.apply(vertices[j].position, meshExt.pivot * meshExt.size);
 					} else {
@@ -180,7 +185,7 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 				if (!vmesh->getNormalVector().empty()) {
 					core::DynamicArray<ufbxw_vec3> normals(nv);
 					for (int j = 0; j < nv; ++j) {
-						const glm::vec3 normal = glm::normalize(normalMatrix * vmesh->getNormalVector()[j]);
+						const math::Vec3f normal = math::normalize(normalMatrix * vmesh->getNormalVector()[j]);
 						normals[j] = {normal.x, normal.y, normal.z};
 					}
 					ufbxw_mesh_set_normals(ws, wMesh, ufbxw_copy_vec3_array(ws, normals.data(), nv), UFBXW_ATTRIBUTE_MAPPING_VERTEX);
@@ -219,7 +224,7 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 					} else {
 						// Palette UV fallback
 						for (int j = 0; j < nv; ++j) {
-							const glm::vec2 uv = paletteUV(vertices[j].colorIndex);
+							const math::Vec2f uv = paletteUV(vertices[j].colorIndex);
 							uvData[j] = {(double)uv.x, (double)uv.y};
 						}
 					}
@@ -307,12 +312,12 @@ bool FBXFormat::saveMeshesBinary(const ChunkMeshes &meshes, const core::String &
 			ufbxw_anim_prop animS = ufbxw_node_animate_scaling(ws, wNode, layer);
 			for (const scenegraph::SceneGraphKeyFrame &kf : kfs) {
 				const ufbxw_ktime time = (ufbxw_ktime)kf.frameIdx * UFBXW_KTIME_SECOND / fps;
-				const glm::vec3 &kt = kf.transform().localTranslation();
+				const math::Vec3f &kt = kf.transform().localTranslation();
 				ufbxw_anim_add_keyframe_vec3(ws, animT, time, {kt.x, kt.y, kt.z}, UFBXW_KEYFRAME_LINEAR);
-				const glm::quat &kr = kf.transform().localOrientation();
-				const glm::vec3 euler = glm::degrees(glm::eulerAngles(kr));
+				const math::Quatf &kr = kf.transform().localOrientation();
+				const math::Vec3f euler = math::degrees(math::eulerAngles(kr));
 				ufbxw_anim_add_keyframe_vec3(ws, animR, time, {euler.x, euler.y, euler.z}, UFBXW_KEYFRAME_LINEAR);
-				const glm::vec3 &ks = kf.transform().localScale();
+				const math::Vec3f &ks = kf.transform().localScale();
 				ufbxw_anim_add_keyframe_vec3(ws, animS, time, {ks.x, ks.y, ks.z}, UFBXW_KEYFRAME_LINEAR);
 			}
 		}
@@ -400,16 +405,16 @@ static uint64_t _ufbx_size_fn(void *user) {
 	return (uint64_t)stream->size();
 }
 
-static inline glm::vec2 _ufbx_to_vec2(const ufbx_vec2 &v) {
-	return glm::vec2((float)v.x, (float)v.y);
+static inline math::Vec2f _ufbx_to_vec2(const ufbx_vec2 &v) {
+	return math::Vec2f((float)v.x, (float)v.y);
 }
 
-static inline glm::vec3 _ufbx_to_vec3(const ufbx_vec3 &v) {
-	return glm::vec3((float)v.x, (float)v.y, (float)v.z);
+static inline math::Vec3f _ufbx_to_vec3(const ufbx_vec3 &v) {
+	return math::Vec3f((float)v.x, (float)v.y, (float)v.z);
 }
 
-static inline glm::vec4 _ufbx_to_vec4(const ufbx_vec4 &v) {
-	return glm::vec4((float)v.x, (float)v.y, (float)v.z, (float)v.w);
+static inline math::Vec4f _ufbx_to_vec4(const ufbx_vec4 &v) {
+	return math::Vec4f((float)v.x, (float)v.y, (float)v.z, (float)v.w);
 }
 
 static inline core::String _ufbx_to_string(const ufbx_string &s) {
@@ -447,28 +452,28 @@ static inline ufbx_vec3 _ufbx_axes_to_engine(const ufbx_vec3 &v, const ufbx_coor
 	return out;
 }
 
-static inline glm::quat _ufbx_to_quat(const ufbx_quat &v) {
-	return glm::quat::wxyz((float)v.w, (float)v.x, (float)v.y, (float)v.z);
+static inline math::Quatf _ufbx_to_quat(const ufbx_quat &v) {
+	return math::Quatf::wxyz((float)v.w, (float)v.x, (float)v.y, (float)v.z);
 }
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_transform &ufbxTransform,
-									  const glm::vec3 &scale) {
+									  const math::Vec3f &scale) {
 	transform.setLocalTranslation(priv::_ufbx_to_vec3(ufbxTransform.translation) * scale);
 	transform.setLocalOrientation(priv::_ufbx_to_quat(ufbxTransform.rotation));
 	transform.setLocalScale(priv::_ufbx_to_vec3(ufbxTransform.scale));
 }
 
 static inline void _ufbx_to_transform(scenegraph::SceneGraphTransform &transform, const ufbx_scene *ufbxScene,
-									  const ufbx_node *ufbxNode, const glm::vec3 &scale) {
+									  const ufbx_node *ufbxNode, const math::Vec3f &scale) {
 	_ufbx_to_transform(transform, ufbxNode->local_transform, scale);
 }
 
 static color::RGBA _ufbx_to_rgba(const ufbx_material_map &materialMap) {
-	glm::vec4 color(1.0f);
+	math::Vec4f color(1.0f);
 	if (materialMap.value_components == 1) {
-		color = glm::vec4(materialMap.value_real, materialMap.value_real, materialMap.value_real, 1.0f);
+		color = math::Vec4f(materialMap.value_real, materialMap.value_real, materialMap.value_real, 1.0f);
 	} else if (materialMap.value_components == 3) {
-		color = glm::vec4(_ufbx_to_vec3(materialMap.value_vec3), 1.0f);
+		color = math::Vec4f(_ufbx_to_vec3(materialMap.value_vec3), 1.0f);
 	} else if (materialMap.value_components == 4) {
 		color = _ufbx_to_vec4(materialMap.value_vec4);
 	}
@@ -603,7 +608,7 @@ int FBXFormat::addMeshNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNod
 				}
 				if (ufbxMaterial->fbx.specular_exponent.has_value) {
 					const float exponent = (float)ufbxMaterial->fbx.specular_exponent.value_real;
-					const float roughness = 1.0f - glm::clamp(exponent / 100.0f, 0.0f, 1.0f);
+					const float roughness = 1.0f - math::clamp(exponent / 100.0f, 0.0f, 1.0f);
 					mat->material.setValue(palette::MaterialProperty::MaterialRoughness, roughness);
 				}
 				if (ufbxMaterial->fbx.reflection_factor.has_value) {
@@ -727,7 +732,7 @@ static void _insertFrameSorted(core::DynamicArray<scenegraph::FrameIndex> &frame
 }
 
 void FBXFormat::importAnimations(const ufbx_scene *ufbxScene, scenegraph::SceneGraph &sceneGraph,
-								 const core::Map<const ufbx_node *, int> &ufbxNodeMap, const glm::vec3 &scale) const {
+								 const core::Map<const ufbx_node *, int> &ufbxNodeMap, const math::Vec3f &scale) const {
 	const int fps = ufbxScene->settings.frames_per_second > 0 ? (int)ufbxScene->settings.frames_per_second : 30;
 
 	for (const ufbx_anim_stack *stack : ufbxScene->anim_stacks) {
@@ -829,7 +834,7 @@ void FBXFormat::importAnimations(const ufbx_scene *ufbxScene, scenegraph::SceneG
 }
 
 int FBXFormat::addGroupNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, scenegraph::SceneGraph &sceneGraph,
-							int parent, const glm::vec3 &scale) const {
+							int parent, const math::Vec3f &scale) const {
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
 	node.setName(priv::_ufbx_to_string(ufbxNode->name));
 
@@ -842,7 +847,7 @@ int FBXFormat::addGroupNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNo
 }
 
 int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, scenegraph::SceneGraph &sceneGraph,
-							 int parent, const glm::vec3 &scale) const {
+							 int parent, const math::Vec3f &scale) const {
 	Log::debug("Add camera node");
 	const ufbx_camera *ufbxCamera = ufbxNode->camera;
 	core_assert(ufbxCamera != nullptr);
@@ -870,7 +875,7 @@ int FBXFormat::addCameraNode(const ufbx_scene *ufbxScene, const ufbx_node *ufbxN
 
 int FBXFormat::addNode_r(const ufbx_scene *ufbxScene, const ufbx_node *ufbxNode, const core::String &filename,
 						 const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph, int parent,
-						 const glm::vec3 &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap,
+						 const math::Vec3f &scale, core::Map<const ufbx_node *, int> &ufbxNodeMap,
 						 core::IProgress *progress, int meshCount, int &meshIdx) const {
 	int nodeId = parent;
 	if (ufbxNode->attrib_type == UFBX_ELEMENT_MESH) {
@@ -967,18 +972,18 @@ bool FBXFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		sceneGraph.addAnimation(priv::_ufbx_to_string(stack->name));
 	}
 
-	glm::vec3 sceneMins{std::numeric_limits<float>::max()};
-	glm::vec3 sceneMaxs{std::numeric_limits<float>::lowest()};
+	math::Vec3f sceneMins{std::numeric_limits<float>::max()};
+	math::Vec3f sceneMaxs{std::numeric_limits<float>::lowest()};
 	for (size_t mi = 0; mi < ufbxScene->meshes.count; ++mi) {
 		const ufbx_mesh *ufbxMesh = ufbxScene->meshes[mi];
 		for (size_t vi = 0; vi < ufbxMesh->vertex_position.values.count; ++vi) {
 			const ufbx_vec3 v = priv::_ufbx_axes_to_engine(ufbxMesh->vertex_position.values[vi], ufbxScene->settings.axes);
-			const glm::vec3 gv = priv::_ufbx_to_vec3(v);
-			sceneMins = glm::min(sceneMins, gv);
-			sceneMaxs = glm::max(sceneMaxs, gv);
+			const math::Vec3f gv = priv::_ufbx_to_vec3(v);
+			sceneMins = math::min(sceneMins, gv);
+			sceneMaxs = math::max(sceneMaxs, gv);
 		}
 	}
-	const glm::vec3 scale = getInputScale(sceneMins, sceneMaxs);
+	const math::Vec3f scale = getInputScale(sceneMins, sceneMaxs);
 
 	const int nodeMapCapacity = core_max(2, (int)ufbxScene->nodes.count);
 	core::Map<const ufbx_node *, int> ufbxNodeMap(nodeMapCapacity);

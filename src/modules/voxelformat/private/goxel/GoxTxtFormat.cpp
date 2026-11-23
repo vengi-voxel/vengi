@@ -7,7 +7,6 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "engine-config.h"
-#include "glm/vector_relational.hpp"
 #include "palette/ColorPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
@@ -19,7 +18,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/common.hpp>
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -91,8 +90,8 @@ bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 
 	int64_t pos = stream->pos();
 
-	glm::ivec3 mins{0};
-	glm::ivec3 maxs{0};
+	math::Vec3i mins{0};
+	math::Vec3i maxs{0};
 	while (stream->readLine(sizeof(buf), buf)) {
 		if (buf[0] == '\n' || buf[0] == '#') {
 			continue;
@@ -105,8 +104,8 @@ bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 			return false;
 		}
 		const color::RGBA rgba(rgb[0], rgb[1], rgb[2], 255);
-		mins = glm::min(mins, glm::ivec3(x, y, z));
-		maxs = glm::max(maxs, glm::ivec3(x, y, z));
+		mins = math::min(mins, math::Vec3i(x, y, z));
+		maxs = math::max(maxs, math::Vec3i(x, y, z));
 	}
 
 	stream->seek(pos, SEEK_SET);
@@ -115,7 +114,7 @@ bool GoxTxtFormat::loadGroupsRGBA(const core::String &filename, const io::Archiv
 		Log::error("Invalid region");
 		return false;
 	}
-	if (glm::any(glm::lessThan(region.getDimensionsInVoxels(), glm::ivec3(1)))) {
+	if (math::any(math::lessThan(region.getDimensionsInVoxels(), math::Vec3i(1)))) {
 		Log::warn("Size of matrix results in empty space");
 		return false;
 	}

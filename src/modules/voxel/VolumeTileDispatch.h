@@ -11,8 +11,8 @@
 #include "core/concurrent/Lock.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SparseChunk.h"
-#include <glm/common.hpp>
 #include <string.h>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -38,12 +38,12 @@ private:
 	Region _tileRegion;
 	// Contiguous mode fields
 	Voxel *_denseData = nullptr;
-	glm::ivec3 _volLower{0};
+	math::Vec3i _volLower{0};
 	int64_t _denseW = 0;
 	int64_t _denseStride = 0;
 	// Sparse mode fields
 	const RawVolume *_sparseVol = nullptr;
-	glm::ivec3 _localBrickOrigin{0};
+	math::Vec3i _localBrickOrigin{0};
 	uint32_t _defaultBits = 0u;
 	bool _seeded = false;
 	bool _modified = false;
@@ -60,14 +60,14 @@ private:
 	}
 
 public:
-	ParallelTileWriter(const Region &tileRegion, Voxel *denseData, const glm::ivec3 &volLower, int64_t denseW,
+	ParallelTileWriter(const Region &tileRegion, Voxel *denseData, const math::Vec3i &volLower, int64_t denseW,
 					   int64_t denseStride)
 		: _tileRegion(tileRegion), _denseData(denseData), _volLower(volLower), _denseW(denseW),
 		  _denseStride(denseStride) {
 	}
 
-	ParallelTileWriter(const Region &tileRegion, const RawVolume *sparseVol, const glm::ivec3 &volLower,
-					   const glm::ivec3 &localBrickOrigin, const Voxel &defaultVoxel)
+	ParallelTileWriter(const Region &tileRegion, const RawVolume *sparseVol, const math::Vec3i &volLower,
+					   const math::Vec3i &localBrickOrigin, const Voxel &defaultVoxel)
 		: _tileRegion(tileRegion), _volLower(volLower), _sparseVol(sparseVol), _localBrickOrigin(localBrickOrigin),
 		  _defaultBits(priv::tileVoxelBits(defaultVoxel)) {
 	}
@@ -181,7 +181,7 @@ inline void forEachTileWriteParallel(RawVolume &dst, const Region &writeRegion, 
 	if (!r.cropTo(dst.region())) {
 		return;
 	}
-	const glm::ivec3 &volLower = dst.region().getLowerCorner();
+	const math::Vec3i &volLower = dst.region().getLowerCorner();
 	if (dst.isContiguous()) {
 		Voxel *denseData = dst.linearVoxels();
 		const int64_t denseW = dst.width();
@@ -229,7 +229,7 @@ inline void forEachTileWriteParallel(RawVolume &dst, const Region &writeRegion, 
 					const int wx0 = (int)((int64_t)volLower.x + core_max(localX, lx0));
 					const int wx1 = (int)((int64_t)volLower.x + core_min(localX + SparseChunk::BrickSide - 1, lx1));
 					const Region tileReg(wx0, wy0, wz0, wx1, wy1, wz1);
-					ParallelTileWriter writer(tileReg, &dst, volLower, glm::ivec3(localX, localY, localZ),
+					ParallelTileWriter writer(tileReg, &dst, volLower, math::Vec3i(localX, localY, localZ),
 											  defaultVoxel);
 					fn(writer);
 					if (writer.modified()) {
@@ -264,7 +264,7 @@ inline void forEachOccupiedVoxelParallel(RawVolume &vol, const Region &region, V
 	if (!r.cropTo(vol.region())) {
 		return;
 	}
-	const glm::ivec3 &volLower = vol.region().getLowerCorner();
+	const math::Vec3i &volLower = vol.region().getLowerCorner();
 	if (vol.isContiguous()) {
 		Voxel *data = vol.linearVoxels();
 		const int64_t w = vol.width();

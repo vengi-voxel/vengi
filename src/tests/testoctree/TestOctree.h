@@ -9,6 +9,7 @@
 #include "math/Random.h"
 #include "video/ShapeBuilder.h"
 #include "render/ShapeRenderer.h"
+#include "math/Vec3i.h"
 
 class TestOctree: public TestApp {
 private:
@@ -17,7 +18,7 @@ private:
 	private:
 		math::AABB<int> _aabb;
 	public:
-		Wrapper(const glm::ivec3& pos) :
+		Wrapper(const math::Vec3i& pos) :
 				_aabb(pos, pos + 1) {
 		}
 		inline math::AABB<int> aabb() const {
@@ -34,7 +35,7 @@ private:
 
 	Listener _listener;
 
-	Tree _octree { math::AABB<int>(glm::ivec3(-1024, 0, -1024), glm::ivec3(1024, 2048, 1024)), 10 };
+	Tree _octree { math::AABB<int>(math::Vec3i(-1024, 0, -1024), math::Vec3i(1024, 2048, 1024)), 10 };
 	mutable video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	math::Random _random;
@@ -51,8 +52,8 @@ private:
 	Tree::Contents _results;
 
 	math::AABB<int> _queryAABB;
-	glm::ivec3 _queryMins;
-	glm::ivec3 _queryMaxs;
+	math::Vec3i _queryMins;
+	math::Vec3i _queryMaxs;
 
 	void handleDirtyState();
 	void clear();

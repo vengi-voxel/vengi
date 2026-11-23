@@ -13,7 +13,8 @@
 #include "voxel/Region.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/FormatConfig.h"
-#include <glm/geometric.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -36,8 +37,8 @@ TEST_F(TextureSurfaceExtractorTest, testChunkedExtractionDoesNotMaterialize) {
 	palette::Palette palette;
 	palette.nippon();
 	ChunkMesh chunkMesh, denseMesh;
-	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, chunkMesh, glm::ivec3(0));
-	auto denseCtx = createContext(SurfaceExtractionType::GreedyTexture, &dense, extracted, palette, denseMesh, glm::ivec3(0));
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, chunkMesh, math::Vec3i(0));
+	auto denseCtx = createContext(SurfaceExtractionType::GreedyTexture, &dense, extracted, palette, denseMesh, math::Vec3i(0));
 	extractSurface(ctx);
 	extractSurface(denseCtx);
 	EXPECT_EQ(denseMesh.mesh[0].getVertexVector().size(), chunkMesh.mesh[0].getVertexVector().size());
@@ -56,7 +57,7 @@ TEST_F(TextureSurfaceExtractorTest, testAccessorIncludesNeighbourOutsideExtracti
 	palette.nippon();
 	ChunkMesh mesh;
 	const Region extracted(-10, -5);
-	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, glm::ivec3(0));
+	auto ctx = createContext(SurfaceExtractionType::GreedyTexture, &volume, extracted, palette, mesh, math::Vec3i(0));
 	extractSurface(ctx);
 	EXPECT_EQ(30u, mesh.mesh[0].getNoOfIndices());
 	EXPECT_EQ(bytes, volume.allocatedBytes());
@@ -79,7 +80,7 @@ TEST_F(TextureSurfaceExtractorTest, testTextureExtraction) {
 
 	voxel::ChunkMesh mesh;
 	voxel::SurfaceExtractionContext ctx = voxel::createContext(voxel::SurfaceExtractionType::GreedyTexture, &volume,
-															   region, palette, mesh, glm::ivec3(0));
+															   region, palette, mesh, math::Vec3i(0));
 	voxel::extractSurface(ctx);
 
 	EXPECT_GT(ctx.textureWidth, 0);
@@ -118,7 +119,7 @@ TEST_F(TextureSurfaceExtractorTest, testWindingOrder) {
 
 	voxel::ChunkMesh mesh;
 	voxel::SurfaceExtractionContext ctx = voxel::createContext(voxel::SurfaceExtractionType::GreedyTexture, &volume,
-															   region, palette, mesh, glm::ivec3(0));
+															   region, palette, mesh, math::Vec3i(0));
 	voxel::extractSurface(ctx);
 
 	const voxel::Mesh &omesh = mesh.mesh[0];
@@ -135,18 +136,18 @@ TEST_F(TextureSurfaceExtractorTest, testWindingOrder) {
 
 	// Check each triangle has CCW winding when viewed from outside
 	for (size_t i = 0; i < indices.size(); i += 3) {
-		const glm::vec3 &v0 = vertices[indices[i]].position;
-		const glm::vec3 &v1 = vertices[indices[i + 1]].position;
-		const glm::vec3 &v2 = vertices[indices[i + 2]].position;
-		const glm::vec3 &normal = normals[indices[i]];
+		const math::Vec3f &v0 = vertices[indices[i]].position;
+		const math::Vec3f &v1 = vertices[indices[i + 1]].position;
+		const math::Vec3f &v2 = vertices[indices[i + 2]].position;
+		const math::Vec3f &normal = normals[indices[i]];
 
 		// Calculate triangle normal using cross product
-		glm::vec3 edge1 = v1 - v0;
-		glm::vec3 edge2 = v2 - v0;
-		glm::vec3 calculatedNormal = glm::normalize(glm::cross(edge1, edge2));
+		math::Vec3f edge1 = v1 - v0;
+		math::Vec3f edge2 = v2 - v0;
+		math::Vec3f calculatedNormal = math::normalize(math::cross(edge1, edge2));
 
 		// The calculated normal should point in the same direction as the face normal
-		float dot = glm::dot(calculatedNormal, normal);
+		float dot = math::dot(calculatedNormal, normal);
 		EXPECT_GT(dot, 0.9f) << "Triangle " << (i / 3) << " has incorrect winding: "
 							 << "v0=" << v0.x << "," << v0.y << "," << v0.z << " "
 							 << "v1=" << v1.x << "," << v1.y << "," << v1.z << " "
@@ -172,7 +173,7 @@ TEST_F(TextureSurfaceExtractorTest, testTextureDedupeSolidVoxel) {
 		util::ScopedVarChange dedupe(cfg::VoxelTextureDedupe, "true");
 		voxel::ChunkMesh mesh;
 		voxel::SurfaceExtractionContext ctx = voxel::createContext(
-			voxel::SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, glm::ivec3(0));
+			voxel::SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, math::Vec3i(0));
 		voxel::extractSurface(ctx);
 		EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 24u);
 		areaWithDedupe = ctx.textureWidth * ctx.textureHeight;
@@ -184,7 +185,7 @@ TEST_F(TextureSurfaceExtractorTest, testTextureDedupeSolidVoxel) {
 		util::ScopedVarChange dedupe(cfg::VoxelTextureDedupe, "false");
 		voxel::ChunkMesh mesh;
 		voxel::SurfaceExtractionContext ctx = voxel::createContext(
-			voxel::SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, glm::ivec3(0));
+			voxel::SurfaceExtractionType::GreedyTexture, &volume, region, palette, mesh, math::Vec3i(0));
 		voxel::extractSurface(ctx);
 		EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 24u);
 		areaWithoutDedupe = ctx.textureWidth * ctx.textureHeight;

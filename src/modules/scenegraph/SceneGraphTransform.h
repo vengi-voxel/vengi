@@ -6,7 +6,9 @@
 
 #include "SceneGraphAnimation.h"
 #include "math/Axis.h"
-#include <glm/ext/quaternion_float.hpp> // glm::quat pulls mat4 via type_quat.hpp (needed for matrix members)
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
@@ -25,23 +27,23 @@ private:
 	/**
 	 * @brief The model matrix that is assembled by the translation, orientation and scale value
 	 */
-	glm::mat4x4 _worldMat{1.0f};
-	glm::mat4x4 _localMat{1.0f};
+	math::Mat4f _worldMat = math::Mat4f::identity();
+	math::Mat4f _localMat = math::Mat4f::identity();
 
-	glm::quat _worldOrientation;
-	glm::quat _localOrientation;
+	math::Quatf _worldOrientation = math::Quatf::identity();
+	math::Quatf _localOrientation = math::Quatf::identity();
 
-	glm::vec3 _worldTranslation{0.0f};
+	math::Vec3f _worldTranslation{0.0f};
 	/**
 	 * @brief Uniform scale value
 	 */
-	glm::vec3 _worldScale{1.0f};
+	math::Vec3f _worldScale{1.0f};
 
-	glm::vec3 _localTranslation{0.0f};
+	math::Vec3f _localTranslation{0.0f};
 	/**
 	 * @brief Uniform scale value
 	 */
-	glm::vec3 _localScale{1.0f};
+	math::Vec3f _localScale{1.0f};
 
 	// indicated which values were changed
 	uint32_t _dirty = 0u;
@@ -65,19 +67,19 @@ public:
 	 * @brief This method will set all values into the transform without the need to perform any
 	 * @c update() call. It's assumed, that all values for world and local transformations are valid
 	 */
-	void setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation,
-					   const glm::vec3 &worldScale, const glm::vec3 &localTranslation,
-					   const glm::quat &localOrientation, const glm::vec3 &localScale);
+	void setTransforms(const math::Vec3f &worldTranslation, const math::Quatf &worldOrientation,
+					   const math::Vec3f &worldScale, const math::Vec3f &localTranslation,
+					   const math::Quatf &localOrientation, const math::Vec3f &localScale);
 
-	void setWorldMatrix(const glm::mat4x4 &matrix);
-	void setWorldTranslation(const glm::vec3 &translation);
-	void setWorldOrientation(const glm::quat &orientation);
-	void setWorldScale(const glm::vec3 &scale);
+	void setWorldMatrix(const math::Mat4f &matrix);
+	void setWorldTranslation(const math::Vec3f &translation);
+	void setWorldOrientation(const math::Quatf &orientation);
+	void setWorldScale(const math::Vec3f &scale);
 
-	void setLocalMatrix(const glm::mat4x4 &matrix);
-	void setLocalTranslation(const glm::vec3 &translation);
-	void setLocalOrientation(const glm::quat &orientation);
-	void setLocalScale(const glm::vec3 &scale);
+	void setLocalMatrix(const math::Mat4f &matrix);
+	void setLocalTranslation(const math::Vec3f &translation);
+	void setLocalOrientation(const math::Quatf &orientation);
+	void setLocalScale(const math::Vec3f &scale);
 
 	void mirrorX();
 	void mirrorXYZ();
@@ -86,17 +88,17 @@ public:
 
 	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
 
-	const glm::mat4x4 &worldMatrix() const;
-	const glm::vec3 &worldTranslation() const;
-	const glm::quat &worldOrientation() const;
-	const glm::vec3 &worldScale() const;
+	math::Mat4f worldMatrix() const;
+	const math::Vec3f &worldTranslation() const;
+	math::Quatf worldOrientation() const;
+	const math::Vec3f &worldScale() const;
 
-	const glm::mat4x4 &localMatrix() const;
-	const glm::vec3 &localTranslation() const;
-	const glm::quat &localOrientation() const;
-	const glm::vec3 &localScale() const;
+	math::Mat4f localMatrix() const;
+	const math::Vec3f &localTranslation() const;
+	math::Quatf localOrientation() const;
+	const math::Vec3f &localScale() const;
 
-	const glm::mat4x4 calculateLocalMatrix() const;
+	const math::Mat4f calculateLocalMatrix() const;
 
 	bool update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx, bool updateChildren);
 
@@ -107,7 +109,7 @@ public:
 	 * @note The matrix must be up-to-date
 	 * @note The rotation is applied relatively to the given pivot - that's why we need the real size here.
 	 */
-	glm::vec3 apply(const glm::vec3 &pos, const glm::vec3 &pivot) const;
+	math::Vec3f apply(const math::Vec3f &pos, const math::Vec3f &pivot) const;
 };
 
 } // namespace scenegraph

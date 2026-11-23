@@ -6,6 +6,8 @@
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "voxel/Region.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -58,8 +60,8 @@ void RulerBrush::update(const BrushContext &ctx, double nowSeconds) {
 
 void RulerBrush::reset() {
 	_state = State::Idle;
-	_startPos = glm::ivec3(0);
-	_endPos = glm::ivec3(0);
+	_startPos = math::Vec3i(0);
+	_endPos = math::Vec3i(0);
 }
 
 bool RulerBrush::active() const {
@@ -88,18 +90,18 @@ void RulerBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state)
 		return;
 	}
 	state.operations = BrushGizmo_Line;
-	state.positions[0] = glm::vec3(_startPos) + 0.5f;
-	state.positions[1] = glm::vec3(_endPos) + 0.5f;
+	state.positions[0] = math::Vec3f(_startPos) + 0.5f;
+	state.positions[1] = math::Vec3f(_endPos) + 0.5f;
 	state.numPositions = 2;
 }
 
 float RulerBrush::euclideanDistance() const {
-	const glm::vec3 d = glm::vec3(_endPos - _startPos);
-	return glm::length(d);
+	const math::Vec3f d = math::Vec3f(_endPos - _startPos);
+	return math::length(d);
 }
 
 int RulerBrush::manhattanDistance() const {
-	const glm::ivec3 d = glm::abs(_endPos - _startPos);
+	const math::Vec3i d = math::abs(_endPos - _startPos);
 	return d.x + d.y + d.z;
 }
 

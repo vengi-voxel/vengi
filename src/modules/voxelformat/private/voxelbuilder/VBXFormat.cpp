@@ -19,6 +19,7 @@
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/VolumeFormat.h"
 #include <limits.h>
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -63,7 +64,7 @@ static bool loadVoxels(const core::String &voxels, FUNC func) {
 		const int y = core::string::toInt(tokens[1]);
 		const int z = core::string::toInt(tokens[2]);
 		const color::RGBA color = color::fromHex(tokens[3].c_str());
-		const glm::ivec3 pos(x, y, z);
+		const math::Vec3i pos(x, y, z);
 		func(pos, color);
 	}
 	return true;
@@ -104,11 +105,11 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 	}
 	for (auto iter : data->second) {
 		if (iter->first == "voxels") {
-			glm::ivec3 mins(INT_MAX);
-			glm::ivec3 maxs(INT_MIN);
-			if (!loadVoxels(iter->second, [&mins, &maxs](const glm::ivec3 &pos, const color::RGBA &color) {
-					mins = glm::min(mins, pos);
-					maxs = glm::max(maxs, pos);
+			math::Vec3i mins(INT_MAX);
+			math::Vec3i maxs(INT_MIN);
+			if (!loadVoxels(iter->second, [&mins, &maxs](const math::Vec3i &pos, const color::RGBA &color) {
+					mins = math::min(mins, pos);
+					maxs = math::max(maxs, pos);
 				})) {
 				Log::error("Failed to load voxel volume dimensions from: %s", iter->second.c_str());
 				return false;
@@ -120,7 +121,7 @@ bool VBXFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 				continue;
 			}
 			voxel::RawVolume *volume = new voxel::RawVolume(region);
-			if (!loadVoxels(iter->second, [volume, &palette](const glm::ivec3 &pos, const color::RGBA &color) {
+			if (!loadVoxels(iter->second, [volume, &palette](const math::Vec3i &pos, const color::RGBA &color) {
 					volume->setVoxel(pos, voxel::createVoxel(palette, palette.getClosestMatch(color)));
 				})) {
 				Log::error("Failed to load voxel volume from: %s", iter->second.c_str());
@@ -167,7 +168,7 @@ size_t VBXFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		for (auto iter : data->second) {
 			if (iter->first == "voxels") {
 				if (!loadVoxels(iter->second,
-								[&colors](const glm::ivec3 &pos, const color::RGBA &color) { colors.put(color, true); })) {
+								[&colors](const math::Vec3i &pos, const color::RGBA &color) { colors.put(color, true); })) {
 					Log::error("Failed to load voxel volume dimensions from: %s", iter->second.c_str());
 					return 0;
 				}

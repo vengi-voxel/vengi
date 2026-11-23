@@ -10,6 +10,12 @@
 
 #include "RendererInterface.h"
 #include "RenderStats.h"
+#include "math/Vec4i.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace video {
 
@@ -43,28 +49,28 @@ constexpr inline DataType mapType() {
 	}
 }
 
-template <> constexpr inline DataType mapType<glm::ivec2>() {
-	return mapType<typename glm::ivec2::value_type>();
+template <> constexpr inline DataType mapType<math::Vec2i>() {
+	return mapType<typename math::Vec2i::value_type>();
 }
 
-template <> constexpr inline DataType mapType<glm::vec2>() {
-	return mapType<typename glm::vec2::value_type>();
+template <> constexpr inline DataType mapType<math::Vec2f>() {
+	return mapType<typename math::Vec2f::value_type>();
 }
 
-template <> constexpr inline DataType mapType<glm::ivec3>() {
-	return mapType<typename glm::ivec3::value_type>();
+template <> constexpr inline DataType mapType<math::Vec3i>() {
+	return mapType<typename math::Vec3i::value_type>();
 }
 
-template <> constexpr inline DataType mapType<glm::vec3>() {
-	return mapType<typename glm::vec3::value_type>();
+template <> constexpr inline DataType mapType<math::Vec3f>() {
+	return mapType<typename math::Vec3f::value_type>();
 }
 
-template <> constexpr inline DataType mapType<glm::ivec4>() {
-	return mapType<typename glm::ivec4::value_type>();
+template <> constexpr inline DataType mapType<math::Vec4i>() {
+	return mapType<typename math::Vec4i::value_type>();
 }
 
-template <> constexpr inline DataType mapType<glm::vec4>() {
-	return mapType<typename glm::vec4::value_type>();
+template <> constexpr inline DataType mapType<math::Vec4f>() {
+	return mapType<typename math::Vec4f::value_type>();
 }
 
 struct RenderState {
@@ -169,14 +175,14 @@ float currentLineWidth();
  * @param clearColor RGBA clear color.
  * @return @c true if the clear color was changed, @c false if it was already set.
  */
-bool clearColor(const glm::vec4 &clearColor);
+bool clearColor(const math::Vec4f &clearColor);
 
 /**
  * @brief Get the currently configured clear color.
  *
  * @return Reference to the cached RGBA clear color.
  */
-const glm::vec4 &currentClearColor();
+const math::Vec4f &currentClearColor();
 
 /**
  * @brief Set the drawing viewport in window coordinates.
@@ -335,7 +341,7 @@ PolygonMode polygonMode(Face face, PolygonMode mode);
  * @param offset X is factor, Y is units as commonly used by glPolygonOffset.
  * @return @c true if the offset changed, @c false if unchanged.
  */
-bool polygonOffset(const glm::vec2 &offset);
+bool polygonOffset(const math::Vec2f &offset);
 
 /**
  * @brief Set the point size for rendering GL points.
@@ -414,9 +420,9 @@ float getScaleFactor();
 /**
  * @brief Get the current window size in logical pixels.
  *
- * @return A glm::ivec2 containing {width, height}.
+ * @return A math::Vec2i containing {width, height}.
  */
-glm::ivec2 getWindowSize();
+math::Vec2i getWindowSize();
 
 /**
  * @brief Delete a single vertex array and set @p id to InvalidId.

@@ -29,8 +29,8 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 #define sdlCheckError() checkSDLError(__FILE__, __LINE__, "UNKNOWN")
 
@@ -91,8 +91,8 @@ bool WindowedApp::handleSDLEvent(SDL_Event &event) {
 			int frameBufferWidth, frameBufferHeight;
 			SDL_GetWindowSizeInPixels(_window, &frameBufferWidth, &frameBufferHeight);
 			_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
-			_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
-			_windowDimension = glm::ivec2(w, h);
+			_frameBufferDimension = math::Vec2i(frameBufferWidth, frameBufferHeight);
+			_windowDimension = math::Vec2i(w, h);
 			const float scaleFactor = (float)_frameBufferDimension.x / (float)_windowDimension.x;
 			video::resize(w, h, scaleFactor);
 			video::viewport(0, 0, _frameBufferDimension.x, _frameBufferDimension.y);
@@ -284,7 +284,7 @@ float WindowedApp::touchTravelPx(const TouchPoint &point) const {
 	float y1 = 0.0f;
 	touchToPixels(point.originX, point.originY, x0, y0);
 	touchToPixels(point.x, point.y, x1, y1);
-	return glm::length(glm::vec2(x1 - x0, y1 - y0));
+	return math::length(math::Vec2f(x1 - x0, y1 - y0));
 }
 
 bool WindowedApp::pinchSpanPx(float &distance) const {
@@ -310,7 +310,7 @@ bool WindowedApp::pinchSpanPx(float &distance) const {
 	float y1 = 0.0f;
 	touchToPixels(first->x, first->y, x0, y0);
 	touchToPixels(second->x, second->y, x1, y1);
-	distance = glm::length(glm::vec2(x1 - x0, y1 - y0));
+	distance = math::length(math::Vec2f(x1 - x0, y1 - y0));
 	return true;
 }
 
@@ -410,7 +410,7 @@ void WindowedApp::onFingerMotion(void *windowHandle, int64_t finger, float x, fl
 		return;
 	}
 	const float delta = span - _pinchBaselinePx;
-	if (glm::abs(delta) < 40.0f) {
+	if (math::abs(delta) < 40.0f) {
 		return;
 	}
 	const int32_t zoomKey = delta > 0.0f ? util::button::CUSTOM_SDLK_MOUSE_WHEEL_UP : util::button::CUSTOM_SDLK_MOUSE_WHEEL_DOWN;
@@ -622,11 +622,11 @@ app::AppState WindowedApp::onInit() {
 	int frameBufferWidth, frameBufferHeight;
 	SDL_GetWindowSizeInPixels(_window, &frameBufferWidth, &frameBufferHeight);
 	_aspect = (float)frameBufferWidth / (float)frameBufferHeight;
-	_frameBufferDimension = glm::ivec2(frameBufferWidth, frameBufferHeight);
+	_frameBufferDimension = math::Vec2i(frameBufferWidth, frameBufferHeight);
 
 	int windowWidth, windowHeight;
 	SDL_GetWindowSize(_window, &windowWidth, &windowHeight);
-	_windowDimension = glm::ivec2(windowWidth, windowHeight);
+	_windowDimension = math::Vec2i(windowWidth, windowHeight);
 
 	Log::debug("resolution (%i:%i) (pixel)", _frameBufferDimension.x, _frameBufferDimension.y);
 	Log::debug("resolution (%i:%i) (screen)", _windowDimension.x, _windowDimension.y);
@@ -772,7 +772,7 @@ void WindowedApp::setWindowProgress(float progress01) {
 		return;
 	}
 #ifdef SDL_PROGRESS_STATE_NORMAL
-	progress01 = glm::clamp(progress01, 0.0f, 1.0f);
+	progress01 = math::clamp(progress01, 0.0f, 1.0f);
 	SDL_SetWindowProgressState(_window, SDL_PROGRESS_STATE_NORMAL);
 	SDL_SetWindowProgressValue(_window, progress01);
 #else

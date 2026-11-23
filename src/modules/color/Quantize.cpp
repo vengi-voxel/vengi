@@ -12,14 +12,12 @@
 #include "core/collection/DynamicArray.h"
 #include "math/AABB.h"
 #include "math/Octree.h"
-#include <glm/common.hpp>
-#include <glm/ext/scalar_integer.hpp>
 #include <random>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/color_space.hpp>
-#include <glm/gtx/type_aligned.hpp>
+#include "math/AlignedVec4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Scalar.h"
+#include "math/Conversions.h"
 
 namespace color {
 
@@ -190,7 +188,7 @@ static int quantizeMedianCut(RGBA *targetBuf, size_t maxTargetBufColors, const R
 }
 
 static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
-	core_assert(glm::isPowerOfTwo(maxTargetBufColors));
+	core_assert(math::isPowerOfTwo(maxTargetBufColors));
 	using BBox = math::AABB<uint8_t>;
 	struct ColorNode {
 		inline ColorNode(color::RGBA c) : color(c) {};
@@ -206,7 +204,7 @@ static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 		octree.insert(inputBuf[i]);
 	}
 	size_t n = 0;
-	const glm::ivec3 dim(8);
+	const math::Vec3i dim(8);
 	const int rmax = aabb.getWidthX() + 1 - dim.r;
 	const int gmax = aabb.getWidthY() + 1 - dim.g;
 	const int bmax = aabb.getWidthZ() + 1 - dim.b;
@@ -233,13 +231,13 @@ static int quantizeOctree(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	return (int)n;
 }
 
-static inline float getDistance(const glm::vec4 &p1, const glm::vec4 &p2) {
-	const glm::aligned_vec4 v = p1 - p2;
-	return glm::dot(v, v);
+static inline float getDistance(const math::Vec4f &p1, const math::Vec4f &p2) {
+	const math::AlignedVec4f v = p1 - p2;
+	return math::dot(v, v);
 }
 
 static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA *inputBuf, size_t inputBufColors) {
-	core::Buffer<glm::vec4> centers;
+	core::Buffer<math::Vec4f> centers;
 	centers.reserve(maxTargetBufColors);
 	std::random_device rd;
 	std::mt19937 gen(rd());
@@ -249,7 +247,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	}
 
 	struct ClusterSum {
-		glm::vec4 sum{0.0f};
+		math::Vec4f sum{0.0f};
 		int count = 0;
 	};
 
@@ -271,7 +269,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 				}
 				auto &sums = threadSums[c];
 				for (size_t i = start; i < end; ++i) {
-					const glm::vec4 point = color::fromRGBA(inputBuf[i]);
+					const math::Vec4f point = color::fromRGBA(inputBuf[i]);
 					int closest = 0;
 					float closestDistance = getDistance(point, centers[0]);
 					for (int n = 1; n < (int)maxTargetBufColors; n++) {
@@ -288,7 +286,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 		});
 
 		for (int i = 0; i < (int)maxTargetBufColors; i++) {
-			glm::vec4 totalSum(0.0f);
+			math::Vec4f totalSum(0.0f);
 			int totalCount = 0;
 			for (int c = 0; c < numChunks; ++c) {
 				totalSum += threadSums[c][i].sum;
@@ -296,7 +294,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 			}
 
 			if (totalCount > 0) {
-				glm::vec4 newCenter = totalSum / (float)totalCount;
+				math::Vec4f newCenter = totalSum / (float)totalCount;
 				if (getDistance(newCenter, centers[i]) > 0.0001f) {
 					centers[i] = newCenter;
 					changed = true;
@@ -306,7 +304,7 @@ static int quantizeKMeans(RGBA *targetBuf, size_t maxTargetBufColors, const RGBA
 	}
 
 	size_t n = 0;
-	for (const glm::vec4 &c : centers) {
+	for (const math::Vec4f &c : centers) {
 		targetBuf[n++] = color::getRGBA(c);
 	}
 	for (size_t i = n; i < maxTargetBufColors; ++i) {
@@ -347,7 +345,7 @@ static int quantizeNeuQuant(RGBA *targetBuf, size_t maxTargetBufColors, const RG
 	const int alpharadbshift = (alphabiasshift + radbiasshift);
 	const int alpharadbias = (((int)1) << alpharadbshift);
 
-	sample = glm::clamp(sample, 1, 30);
+	sample = math::clamp(sample, 1, 30);
 	int network[256][3];
 	int bias[256] = {}, freq[256];
 	for (int i = 0; i < numColors; ++i) {

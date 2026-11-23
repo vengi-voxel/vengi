@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "math/Axis.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -63,7 +64,7 @@ public:
 		return _volume->region();
 	}
 
-	inline const glm::ivec3 &position() const {
+	inline const math::Vec3i &position() const {
 		return _posInVolume;
 	}
 
@@ -75,7 +76,7 @@ public:
 		return static_cast<const Derived *>(this)->sampledVoxel();
 	}
 
-	inline bool setPosition(const glm::ivec3 &pos) {
+	inline bool setPosition(const math::Vec3i &pos) {
 		return setPosition(pos.x, pos.y, pos.z);
 	}
 
@@ -133,7 +134,7 @@ protected:
 	Volume *_volume;
 
 	// The current position in the volume
-	glm::ivec3 _posInVolume{0, 0, 0};
+	math::Vec3i _posInVolume{0, 0, 0};
 
 	/** Other current position information */
 	Voxel _currentVoxel;

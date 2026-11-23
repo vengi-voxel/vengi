@@ -13,6 +13,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -123,8 +125,8 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		const float nY[6]{ 0.0f, 0.0f, -1.0f, 1.0f,  0.0f, 0.0f};
 		const float nZ[6]{ 0.0f, 0.0f,  0.0f, 0.0f, -1.0f, 1.0f};
 
-		const glm::vec3 forwardVec(nX[forward], nY[forward], nZ[forward]);
-		const glm::vec3 upVec(nX[up], nY[up], nZ[up]);
+		const math::Vec3f forwardVec(nX[forward], nY[forward], nZ[forward]);
+		const math::Vec3f upVec(nX[up], nY[up], nZ[up]);
 #endif
 		const int tileSize = 64; // TODO: VOXELFORMAT: positioning unknown
 		for (int32_t i = idx; i < idx + rle; ++i) {
@@ -133,7 +135,7 @@ bool VXTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			const int32_t z = i % depth;
 			scenegraph::SceneGraphNode tileNode(scenegraph::SceneGraphNodeType::Model);
 			copyNode(*node, tileNode, true);
-			const glm::ivec3 pos(x * tileSize, y * tileSize, z * tileSize);
+			const math::Vec3i pos(x * tileSize, y * tileSize, z * tileSize);
 			tileNode.volume()->translate(pos); // TODO: VOXELFORMAT: positioning unknown
 			// tileNode.transform().position = pos;
 			tileGraph.emplace(core::move(tileNode));

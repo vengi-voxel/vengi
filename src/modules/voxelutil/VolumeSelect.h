@@ -4,13 +4,12 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/common.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -22,13 +21,13 @@ namespace voxelutil {
  * @param uAxis Index of the U axis in ivec3 (0=x,1=y,2=z)
  * @param vAxis Index of the V axis in ivec3
  */
-bool lassoContains(const core::DynamicArray<glm::ivec3> &path, int pu, int pv, int uAxis, int vAxis);
+bool lassoContains(const core::DynamicArray<math::Vec3i> &path, int pu, int pv, int uAxis, int vAxis);
 
 /**
  * @brief A solid (non-air) voxel inside @p region.
  */
 template<typename Volume>
-inline bool selectIsSolid(const Volume &volume, const glm::ivec3 &p, const voxel::Region &region) {
+inline bool selectIsSolid(const Volume &volume, const math::Vec3i &p, const voxel::Region &region) {
 	if (!region.containsPoint(p)) {
 		return false;
 	}
@@ -45,7 +44,7 @@ inline bool selectIsSolid(const Volume &volume, const glm::ivec3 &p, const voxel
 template<typename Volume>
 bool columnFrontSurface(const Volume &volume, int u, int v, int uAxis, int vAxis, int wAxis, bool positiveNormal,
 						const voxel::Region &region, int &outW) {
-	glm::ivec3 pos(0);
+	math::Vec3i pos(0);
 	pos[uAxis] = u;
 	pos[vAxis] = v;
 	const int wLo = region.getLowerCorner()[wAxis];
@@ -72,12 +71,12 @@ bool columnFrontSurface(const Volume &volume, int u, int v, int uAxis, int vAxis
 
 // Forward declarations: these helper templates are defined later in this header.
 template<typename PlotFunc>
-void bresenham3d(const glm::ivec3 &a, const glm::ivec3 &b, PlotFunc &&plot);
+void bresenham3d(const math::Vec3i &a, const math::Vec3i &b, PlotFunc &&plot);
 template<typename Volume, typename MarkFunc>
-void lineMarkSolid(const Volume &volume, const glm::ivec3 &a, const glm::ivec3 &b, int width,
+void lineMarkSolid(const Volume &volume, const math::Vec3i &a, const math::Vec3i &b, int width,
 				   const voxel::Region &region, MarkFunc &&markFunc);
 template<typename Volume, typename MarkFunc>
-void lineDrapeSurface(const Volume &volume, const glm::ivec3 &a, const glm::ivec3 &b, int uAxis, int vAxis, int wAxis,
+void lineDrapeSurface(const Volume &volume, const math::Vec3i &a, const math::Vec3i &b, int uAxis, int vAxis, int wAxis,
 					  bool positiveNormal, int width, const voxel::Region &region, MarkFunc &&markFunc);
 template<typename Volume>
 bool findSurfaceNear(const Volume &volume, int u, int v, int refW, int tolerance, int uAxis, int vAxis, int wAxis,
@@ -92,7 +91,7 @@ static const int LassoRiserNeighbourV[LassoRiserNeighbourCount] = {0, 0, 1, -1, 
  * @brief Select the visible surface inside a lasso polygon, filling its whole interior.
  */
 template<typename Volume, typename MarkFunc>
-void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<glm::ivec3> &path, int uAxis, int vAxis,
+void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<math::Vec3i> &path, int uAxis, int vAxis,
 						   int wAxis, bool positiveNormal, const voxel::Region &region, MarkFunc &&markFunc,
 						   int maxDeviation) {
 	(void)maxDeviation;
@@ -105,7 +104,7 @@ void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<glm::i
 		return columnFrontSurface(volume, u, v, uAxis, vAxis, wAxis, positiveNormal, region, outW);
 	};
 	auto markAt = [&](int u, int v, int w) {
-		glm::ivec3 q(0);
+		math::Vec3i q(0);
 		q[uAxis] = u;
 		q[vAxis] = v;
 		q[wAxis] = w;
@@ -131,7 +130,7 @@ void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<glm::i
 			}
 			if (positiveNormal) {
 				for (int w = d - 1; w > dn; --w) {
-					glm::ivec3 q(0);
+					math::Vec3i q(0);
 					q[uAxis] = u;
 					q[vAxis] = v;
 					q[wAxis] = w;
@@ -141,7 +140,7 @@ void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<glm::i
 				}
 			} else {
 				for (int w = d + 1; w < dn; ++w) {
-					glm::ivec3 q(0);
+					math::Vec3i q(0);
 					q[uAxis] = u;
 					q[vAxis] = v;
 					q[wAxis] = w;
@@ -155,11 +154,11 @@ void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<glm::i
 
 	const int vertexCount = (int)path.size();
 	for (int i = 0; i < vertexCount; ++i) {
-		glm::ivec3 a2 = path[i];
-		glm::ivec3 b2 = path[(i + 1) % vertexCount];
+		math::Vec3i a2 = path[i];
+		math::Vec3i b2 = path[(i + 1) % vertexCount];
 		a2[wAxis] = 0;
 		b2[wAxis] = 0;
-		bresenham3d(a2, b2, [&](const glm::ivec3 &c) { markColumn(c[uAxis], c[vAxis]); });
+		bresenham3d(a2, b2, [&](const math::Vec3i &c) { markColumn(c[uAxis], c[vAxis]); });
 	}
 
 	if (path.size() < 3) {
@@ -170,11 +169,11 @@ void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<glm::i
 	int maxU = path[0][uAxis];
 	int minV = path[0][vAxis];
 	int maxV = path[0][vAxis];
-	for (const glm::ivec3 &p : path) {
-		minU = glm::min(minU, p[uAxis]);
-		maxU = glm::max(maxU, p[uAxis]);
-		minV = glm::min(minV, p[vAxis]);
-		maxV = glm::max(maxV, p[vAxis]);
+	for (const math::Vec3i &p : path) {
+		minU = math::min(minU, p[uAxis]);
+		maxU = math::max(maxU, p[uAxis]);
+		minV = math::min(minV, p[vAxis]);
+		maxV = math::max(maxV, p[vAxis]);
 	}
 	for (int u = minU; u <= maxU; ++u) {
 		for (int v = minV; v <= maxV; ++v) {
@@ -189,10 +188,10 @@ void lassoFloodFillSurface(const Volume &volume, const core::DynamicArray<glm::i
  * @brief Visit every integer cell on the 3D Bresenham line from @p a to @p b (inclusive).
  */
 template<typename PlotFunc>
-void bresenham3d(const glm::ivec3 &a, const glm::ivec3 &b, PlotFunc &&plot) {
-	glm::ivec3 p = a;
-	const glm::ivec3 d = glm::abs(b - a);
-	const glm::ivec3 s(b.x >= a.x ? 1 : -1, b.y >= a.y ? 1 : -1, b.z >= a.z ? 1 : -1);
+void bresenham3d(const math::Vec3i &a, const math::Vec3i &b, PlotFunc &&plot) {
+	math::Vec3i p = a;
+	const math::Vec3i d = math::abs(b - a);
+	const math::Vec3i s(b.x >= a.x ? 1 : -1, b.y >= a.y ? 1 : -1, b.z >= a.z ? 1 : -1);
 	if (d.x >= d.y && d.x >= d.z) {
 		int e1 = 2 * d.y - d.x;
 		int e2 = 2 * d.z - d.x;
@@ -260,15 +259,15 @@ void bresenham3d(const glm::ivec3 &a, const glm::ivec3 &b, PlotFunc &&plot) {
  * @brief Rasterize the straight 3D line @p a -> @p b and mark every solid voxel within @p width of the line.
  */
 template<typename Volume, typename MarkFunc>
-void lineMarkSolid(const Volume &volume, const glm::ivec3 &a, const glm::ivec3 &b, int width,
+void lineMarkSolid(const Volume &volume, const math::Vec3i &a, const math::Vec3i &b, int width,
 				   const voxel::Region &region, MarkFunc &&markFunc) {
-	const int r = glm::max(0, width / 2);
-	core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> marked;
-	auto plot = [&](const glm::ivec3 &c) {
+	const int r = math::max(0, width / 2);
+	core::DynamicSet<math::Vec3i, 1031, math::Vec3iHash> marked;
+	auto plot = [&](const math::Vec3i &c) {
 		for (int dz = -r; dz <= r; ++dz) {
 			for (int dy = -r; dy <= r; ++dy) {
 				for (int dx = -r; dx <= r; ++dx) {
-					const glm::ivec3 q(c.x + dx, c.y + dy, c.z + dz);
+					const math::Vec3i q(c.x + dx, c.y + dy, c.z + dz);
 					if (!region.containsPoint(q)) {
 						continue;
 					}
@@ -292,21 +291,21 @@ void lineMarkSolid(const Volume &volume, const glm::ivec3 &a, const glm::ivec3 &
  * @brief Draw a line that drapes over the visible surface from @p a to @p b.
  */
 template<typename Volume, typename MarkFunc>
-void lineDrapeSurface(const Volume &volume, const glm::ivec3 &a, const glm::ivec3 &b, int uAxis, int vAxis, int wAxis,
+void lineDrapeSurface(const Volume &volume, const math::Vec3i &a, const math::Vec3i &b, int uAxis, int vAxis, int wAxis,
 					  bool positiveNormal, int width, const voxel::Region &region, MarkFunc &&markFunc) {
-	const int r = glm::max(0, width / 2);
+	const int r = math::max(0, width / 2);
 	auto axisPos = [&](int u, int v, int w) {
-		glm::ivec3 c(0);
+		math::Vec3i c(0);
 		c[uAxis] = u;
 		c[vAxis] = v;
 		c[wAxis] = w;
 		return c;
 	};
-	auto markBall = [&](const glm::ivec3 &center) {
+	auto markBall = [&](const math::Vec3i &center) {
 		for (int dz = -r; dz <= r; ++dz) {
 			for (int dy = -r; dy <= r; ++dy) {
 				for (int dx = -r; dx <= r; ++dx) {
-					const glm::ivec3 q(center.x + dx, center.y + dy, center.z + dz);
+					const math::Vec3i q(center.x + dx, center.y + dy, center.z + dz);
 					if (!selectIsSolid(volume, q, region)) {
 						continue;
 					}
@@ -317,15 +316,15 @@ void lineDrapeSurface(const Volume &volume, const glm::ivec3 &a, const glm::ivec
 		}
 	};
 
-	glm::ivec3 a2 = a;
-	glm::ivec3 b2 = b;
+	math::Vec3i a2 = a;
+	math::Vec3i b2 = b;
 	a2[wAxis] = 0;
 	b2[wAxis] = 0;
 	bool havePrev = false;
 	int prevU = 0;
 	int prevV = 0;
 	int prevW = 0;
-	bresenham3d(a2, b2, [&](const glm::ivec3 &c) {
+	bresenham3d(a2, b2, [&](const math::Vec3i &c) {
 		const int u = c[uAxis];
 		const int v = c[vAxis];
 		int d;
@@ -335,8 +334,8 @@ void lineDrapeSurface(const Volume &volume, const glm::ivec3 &a, const glm::ivec
 		}
 		markBall(axisPos(u, v, d));
 		if (havePrev && (u != prevU || v != prevV)) {
-			const int lo = glm::min(d, prevW);
-			const int hi = glm::max(d, prevW);
+			const int lo = math::min(d, prevW);
+			const int hi = math::max(d, prevW);
 			const bool currentTaller = positiveNormal ? (d >= prevW) : (d <= prevW);
 			const int wallU = currentTaller ? u : prevU;
 			const int wallV = currentTaller ? v : prevV;
@@ -357,7 +356,7 @@ void lineDrapeSurface(const Volume &volume, const glm::ivec3 &a, const glm::ivec
 template<typename Volume>
 bool findSurfaceNear(const Volume &volume, int u, int v, int refW, int tolerance, int uAxis, int vAxis, int wAxis,
 					 bool positiveNormal, const voxel::Region &region, int &outW) {
-	glm::ivec3 pos(0);
+	math::Vec3i pos(0);
 	pos[uAxis] = u;
 	pos[vAxis] = v;
 	auto isExposedSurface = [&](int w) {
@@ -368,7 +367,7 @@ bool findSurfaceNear(const Volume &volume, int u, int v, int refW, int tolerance
 		if (voxel::isAir(volume.voxel(pos.x, pos.y, pos.z).getMaterial())) {
 			return false;
 		}
-		glm::ivec3 np = pos;
+		math::Vec3i np = pos;
 		np[wAxis] = positiveNormal ? w + 1 : w - 1;
 		if (!region.containsPoint(np)) {
 			return true;

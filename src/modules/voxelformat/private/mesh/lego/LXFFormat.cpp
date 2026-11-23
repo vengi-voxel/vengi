@@ -23,6 +23,10 @@
 #include "tinyxml2.h"
 #include <SDL3/SDL_stdinc.h>
 #include <cmath>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -125,14 +129,14 @@ static LxfMat4 matMul(const LxfMat4 &a, const LxfMat4 &b) {
 	return result;
 }
 
-static glm::vec3 matMulVec(const LxfMat4 &matrix, const glm::vec3 &vec) {
-	return glm::vec3(vec.x * matrix.m[0][0] + vec.y * matrix.m[1][0] + vec.z * matrix.m[2][0] + matrix.m[3][0],
+static math::Vec3f matMulVec(const LxfMat4 &matrix, const math::Vec3f &vec) {
+	return math::Vec3f(vec.x * matrix.m[0][0] + vec.y * matrix.m[1][0] + vec.z * matrix.m[2][0] + matrix.m[3][0],
 					 vec.x * matrix.m[0][1] + vec.y * matrix.m[1][1] + vec.z * matrix.m[2][1] + matrix.m[3][1],
 					 vec.x * matrix.m[0][2] + vec.y * matrix.m[1][2] + vec.z * matrix.m[2][2] + matrix.m[3][2]);
 }
 
-static glm::vec3 matMulDir(const LxfMat4 &matrix, const glm::vec3 &vec) {
-	return glm::vec3(vec.x * matrix.m[0][0] + vec.y * matrix.m[1][0] + vec.z * matrix.m[2][0],
+static math::Vec3f matMulDir(const LxfMat4 &matrix, const math::Vec3f &vec) {
+	return math::Vec3f(vec.x * matrix.m[0][0] + vec.y * matrix.m[1][0] + vec.z * matrix.m[2][0],
 					 vec.x * matrix.m[0][1] + vec.y * matrix.m[1][1] + vec.z * matrix.m[2][1],
 					 vec.x * matrix.m[0][2] + vec.y * matrix.m[1][2] + vec.z * matrix.m[2][2]);
 }
@@ -226,51 +230,51 @@ static const LxfMat4 &lddAxesMatrix() {
 	return axes;
 }
 
-// Same layout as LegoUtil::parseLine type-1: LDraw row vectors map to glm columns for R * v
-static glm::mat3 ldrawRotationToGlm(const LxfMat4 &rotation) {
-	return glm::mat3(rotation.m[0][0], rotation.m[1][0], rotation.m[2][0], rotation.m[0][1], rotation.m[1][1],
+// Same layout as LegoUtil::parseLine type-1: LDraw row vectors map to columns for R * v
+static math::Mat3f ldrawRotation(const LxfMat4 &rotation) {
+	return math::Mat3f(rotation.m[0][0], rotation.m[1][0], rotation.m[2][0], rotation.m[0][1], rotation.m[1][1],
 					 rotation.m[2][1], rotation.m[0][2], rotation.m[1][2], rotation.m[2][2]);
 }
 
 // Convert LDD bone matrix to LDraw sub-file placement (lxf2ldr.js ldr(), without part xml offsets)
-static void lddTransformToLdrawSubFileRef(const LxfMat4 &ldd, glm::vec3 &pos, glm::mat3 &rot) {
+static void lddTransformToLdrawSubFileRef(const LxfMat4 &ldd, math::Vec3f &pos, math::Mat3f &rot) {
 	const LxfMat4 &axes = lddAxesMatrix();
 	const LxfMat4 ldrRot = matMul(matMul(axes, ldd), axes);
-	const glm::vec3 lddPos(ldd.m[3][0], ldd.m[3][1], ldd.m[3][2]);
+	const math::Vec3f lddPos(ldd.m[3][0], ldd.m[3][1], ldd.m[3][2]);
 	pos = kLddToLdu * matMulVec(axes, lddPos);
-	rot = ldrawRotationToGlm(ldrRot);
+	rot = ldrawRotation(ldrRot);
 }
 
 // Convert LDD bone matrix with ldraw.xml part correction (x2l_tr in lxf2ldr.js).
-static void lddTransformToLdrawSubFileRef(const LxfMat4 &ldd, const LxfMat4 &x2lTransform, glm::vec3 &pos,
-										  glm::mat3 &rot) {
+static void lddTransformToLdrawSubFileRef(const LxfMat4 &ldd, const LxfMat4 &x2lTransform, math::Vec3f &pos,
+										  math::Mat3f &rot) {
 	LxfMat4 x2lRot = x2lTransform;
 	x2lRot.m[3][0] = 0.0f;
 	x2lRot.m[3][1] = 0.0f;
 	x2lRot.m[3][2] = 0.0f;
 	LxfMat4 adjusted = matMul(ldd, x2lRot);
-	const glm::vec3 move(x2lTransform.m[3][0], x2lTransform.m[3][1], x2lTransform.m[3][2]);
-	const glm::vec3 moved = matMulDir(adjusted, move);
+	const math::Vec3f move(x2lTransform.m[3][0], x2lTransform.m[3][1], x2lTransform.m[3][2]);
+	const math::Vec3f moved = matMulDir(adjusted, move);
 	adjusted.m[3][0] = ldd.m[3][0] + moved.x;
 	adjusted.m[3][1] = ldd.m[3][1] + moved.y;
 	adjusted.m[3][2] = ldd.m[3][2] + moved.z;
 	lddTransformToLdrawSubFileRef(adjusted, pos, rot);
 }
 
-static glm::mat4 lddToLdrawMatrix(const LxfMat4 &ldd) {
-	glm::vec3 pos;
-	glm::mat3 rot;
+static math::Mat4f lddToLdrawMatrix(const LxfMat4 &ldd) {
+	math::Vec3f pos;
+	math::Mat3f rot;
 	lddTransformToLdrawSubFileRef(ldd, pos, rot);
-	glm::mat4 result(1.0f);
-	result[0] = glm::vec4(rot[0], 0.0f);
-	result[1] = glm::vec4(rot[1], 0.0f);
-	result[2] = glm::vec4(rot[2], 0.0f);
-	result[3] = glm::vec4(pos, 1.0f);
+	math::Mat4f result(1.0f);
+	result[0] = math::Vec4f(rot[0], 0.0f);
+	result[1] = math::Vec4f(rot[1], 0.0f);
+	result[2] = math::Vec4f(rot[2], 0.0f);
+	result[3] = math::Vec4f(pos, 1.0f);
 	return result;
 }
 
-static glm::mat4 applyImportScale(const glm::mat4 &matrix, const glm::vec3 &scale) {
-	glm::mat4 result = matrix;
+static math::Mat4f applyImportScale(const math::Mat4f &matrix, const math::Vec3f &scale) {
+	math::Mat4f result = matrix;
 	result[3][0] *= scale.x;
 	result[3][1] *= scale.y;
 	result[3][2] *= scale.z;
@@ -429,9 +433,9 @@ static void applyRootProperties(scenegraph::SceneGraph &sceneGraph,
 }
 
 static void addCameras(scenegraph::SceneGraph &sceneGraph, const core::DynamicArray<LxfCamera> &cameras,
-					   int defaultCameraRef, const glm::vec3 &importScale) {
+					   int defaultCameraRef, const math::Vec3f &importScale) {
 	const float farPlaneScale =
-		core_max(core_max(glm::abs(importScale.x), glm::abs(importScale.y)), glm::abs(importScale.z));
+		core_max(core_max(math::abs(importScale.x), math::abs(importScale.y)), math::abs(importScale.z));
 	int activeCameraId = InvalidNodeId;
 	for (const LxfCamera &lxfCamera : cameras) {
 		scenegraph::SceneGraphNodeCamera camNode;

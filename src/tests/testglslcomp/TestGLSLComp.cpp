@@ -7,6 +7,8 @@
 #include "video/ScopedViewPort.h"
 #include "core/Log.h"
 #include "video/Types.h"
+#include "math/Vec3u.h"
+#include "math/Conversions.h"
 
 TestGLSLComp::TestGLSLComp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
@@ -57,7 +59,7 @@ app::AppState TestGLSLComp::onCleanup() {
 
 void TestGLSLComp::doRender() {
 	_testShader.activate();
-	_testShader.run(glm::uvec3(_texture->width(), _texture->height(), 1), video::MemoryBarrierType::ShaderImageAccess);
+	_testShader.run(math::Vec3u(_texture->width(), _texture->height(), 1), video::MemoryBarrierType::ShaderImageAccess);
 
 	video::ScopedTexture texture(_texture, video::TextureUnit::Zero);
 	video::ScopedViewPort viewPort(0, 0, frameBufferDimension().x, frameBufferDimension().y);

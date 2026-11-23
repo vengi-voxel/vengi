@@ -6,14 +6,14 @@
 #include "math/Axis.h"
 #include "voxelutil/VolumeSelect.h"
 #include <limits>
-#include <glm/common.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/trigonometric.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxedit {
 
-void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const glm::ivec3 &center, voxel::FaceNames face,
-							   int radius, core::Buffer<glm::vec3> &out) {
+void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const math::Vec3i &center, voxel::FaceNames face,
+							   int radius, core::Buffer<math::Vec3f> &out) {
 	out.clear();
 	if (volume == nullptr || radius < 0) {
 		return;
@@ -29,22 +29,22 @@ void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const glm::ivec3 
 	const bool positiveNormal = voxel::isPositiveFace(outlineFace);
 	const voxel::Region &region = volume->region();
 	const int refW = center[wAxis];
-	const int tolerance = glm::max(radius * 2 + 4, 8);
-	const int segments = glm::clamp(radius * 8 + 24, 24, 96);
+	const int tolerance = math::max(radius * 2 + 4, 8);
+	const int segments = math::clamp(radius * 8 + 24, 24, 96);
 	const float r = (float)radius + 0.5f;
-	const glm::vec3 faceN = voxel::faceNormal(outlineFace);
+	const math::Vec3f faceN = voxel::faceNormal(outlineFace);
 
-	glm::ivec3 lastVoxel(std::numeric_limits<int>::min());
+	math::Vec3i lastVoxel(std::numeric_limits<int>::min());
 	for (int i = 0; i < segments; ++i) {
-		const float angle = (float)i / (float)segments * glm::two_pi<float>();
-		const int u = center[uAxis] + (int)glm::round(glm::cos(angle) * r);
-		const int v = center[vAxis] + (int)glm::round(glm::sin(angle) * r);
+		const float angle = (float)i / (float)segments * math::twoPi;
+		const int u = center[uAxis] + (int)math::round(math::cos(angle) * r);
+		const int v = center[vAxis] + (int)math::round(math::sin(angle) * r);
 		int w = refW;
 		if (!voxelutil::findSurfaceNear(*volume, u, v, refW, tolerance, uAxis, vAxis, wAxis, positiveNormal, region,
 										w)) {
 			w = refW;
 		}
-		glm::ivec3 voxelPos(0);
+		math::Vec3i voxelPos(0);
 		voxelPos[uAxis] = u;
 		voxelPos[vAxis] = v;
 		voxelPos[wAxis] = w;
@@ -52,7 +52,7 @@ void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const glm::ivec3 
 			continue;
 		}
 		lastVoxel = voxelPos;
-		out.push_back(glm::vec3(voxelPos) + 0.5f + faceN * 0.51f);
+		out.push_back(math::Vec3f(voxelPos) + 0.5f + faceN * 0.51f);
 	}
 }
 

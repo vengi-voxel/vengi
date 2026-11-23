@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include "core/collection/Set.h"
+#include "math/Vec3i.h"
 
 struct ogt_vox_scene;
 
@@ -40,7 +40,7 @@ struct MVModelToNode;
  */
 class VoxFormat : public PaletteFormat {
 protected:
-	glm::ivec3 maxSize() const override;
+	math::Vec3i maxSize() const override;
 	int emptyPaletteIndex() const override;
 	bool supportsReferences() const override {
 		return true;

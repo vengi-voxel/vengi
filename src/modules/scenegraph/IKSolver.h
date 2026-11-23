@@ -6,8 +6,7 @@
 
 #include "IKConstraint.h"
 #include "scenegraph/SceneGraphAnimation.h"
-#include <glm/gtc/quaternion.hpp>
-#include <glm/vec3.hpp>
+#include "math/Quatf.h"
 
 namespace scenegraph {
 
@@ -55,7 +54,7 @@ public:
 	 * @param constraint The IK constraint defining the limits
 	 * @return The clamped orientation
 	 */
-	static glm::quat clampOrientation(const glm::quat &localOrientation, const IKConstraint &constraint);
+	static math::Quatf clampOrientation(const math::Quatf &localOrientation, const IKConstraint &constraint);
 };
 
 } // namespace scenegraph

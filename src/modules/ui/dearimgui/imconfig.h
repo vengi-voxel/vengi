@@ -15,9 +15,9 @@
 #pragma once
 
 #include "core/Assert.h"
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
+#include "math/Vec4i.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
 
 //---- Define assertion handler. Defaults to calling assert().
 // - If your macro uses multiple statements, make sure is enclosed in a 'do { .. } while (0)' block so it can be used as a single statement.
@@ -114,14 +114,14 @@
 // This will be inlined as part of ImVec2 and ImVec4 class declarations.
 #define IM_VEC2_CLASS_EXTRA                                                                     \
         IM_NODEBUGSTEP inline ImVec2(float v) : x(v), y(v) {}                                   \
-        IM_NODEBUGSTEP inline ImVec2(const glm::ivec2& f) : x(f.x), y(f.y) {}                   \
-        IM_NODEBUGSTEP inline operator glm::ivec2() const { return glm::ivec2(x,y); }
+        IM_NODEBUGSTEP inline ImVec2(const math::Vec2i& f) : x(f.x), y(f.y) {}                   \
+        IM_NODEBUGSTEP inline operator math::Vec2i() const { return math::Vec2i(x,y); }
 
 #define IM_VEC4_CLASS_EXTRA                                                                     \
-        IM_NODEBUGSTEP inline ImVec4(const glm::ivec4& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}   \
-        IM_NODEBUGSTEP inline ImVec4(const glm::vec4& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}    \
-        IM_NODEBUGSTEP inline operator glm::ivec4() const { return glm::ivec4(x,y,z,w); }       \
-        IM_NODEBUGSTEP inline operator glm::vec4() const { return glm::vec4(x,y,z,w); }
+        IM_NODEBUGSTEP inline ImVec4(const math::Vec4i& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}   \
+        IM_NODEBUGSTEP inline ImVec4(const math::Vec4f& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}    \
+        IM_NODEBUGSTEP inline operator math::Vec4i() const { return math::Vec4i(x,y,z,w); }       \
+        IM_NODEBUGSTEP inline operator math::Vec4f() const { return math::Vec4f(x,y,z,w); }
 /*
 #define IM_VEC2_CLASS_EXTRA                                                     \
         IM_NODEBUGSTEP constexpr inline ImVec2(const MyVec2& f) : x(f.x), y(f.y) {}    \

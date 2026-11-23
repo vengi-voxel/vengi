@@ -9,6 +9,7 @@
 #include "core/ProgressBar.h"
 #include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
+#include "math/Vec3i.h"
 
 /**
  * @brief This tool is able to convert voxel volumes between different formats
@@ -52,7 +53,7 @@ private:
 	}
 
 protected:
-	glm::ivec3 getArgIvec3(const core::String &name);
+	math::Vec3i getArgIvec3(const core::String &name);
 	core::String getFilenameForModelName(const core::String &inputfile, const core::String &modelName,
 										 const core::String &outExt, int id, bool uniqueNames);
 	bool handleInputFile(const core::String &infile, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
@@ -66,9 +67,9 @@ protected:
 	void mirror(const core::String &axisStr, scenegraph::SceneGraph &sceneGraph);
 	void rotate(const core::String &axisStr, scenegraph::SceneGraph &sceneGraph);
 	void scale(scenegraph::SceneGraph &sceneGraph);
-	void resize(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGraph);
+	void resize(const math::Vec3i &size, scenegraph::SceneGraph &sceneGraph);
 	void script(const core::String &scriptParameters, scenegraph::SceneGraph &sceneGraph, uint8_t color);
-	void translate(const glm::ivec3 &pos, scenegraph::SceneGraph &sceneGraph);
+	void translate(const math::Vec3i &pos, scenegraph::SceneGraph &sceneGraph);
 	void crop(scenegraph::SceneGraph &sceneGraph);
 	void removeNonSurfaceVoxels(scenegraph::SceneGraph &sceneGraph);
 	void filterModels(scenegraph::SceneGraph &sceneGraph);
@@ -76,7 +77,7 @@ protected:
 								const core::String &value);
 	void exportModelsIntoSingleObjects(scenegraph::SceneGraph &sceneGraph, const core::String &inputfile,
 									   const core::String &ext);
-	void split(const glm::ivec3 &size, scenegraph::SceneGraph &sceneGraph);
+	void split(const math::Vec3i &size, scenegraph::SceneGraph &sceneGraph);
 
 public:
 	VoxConvert(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider);

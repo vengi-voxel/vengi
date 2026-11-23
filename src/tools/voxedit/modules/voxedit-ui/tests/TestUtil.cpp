@@ -17,6 +17,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -242,7 +243,7 @@ bool activateViewportEditMode(ImGuiTestContext *ctx, ui::IMGUIApp *app) {
 	return true;
 }
 
-bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node, const glm::ivec3 &pos,
+bool setVoxel(const SceneManagerPtr &sceneMgr, scenegraph::SceneGraphNode *node, const math::Vec3i &pos,
 			  const voxel::Voxel &voxel) {
 	voxel::RawVolume *volume = node->volume();
 	IM_CHECK_RETV(volume != nullptr, false);

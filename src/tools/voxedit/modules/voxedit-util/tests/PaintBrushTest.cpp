@@ -13,8 +13,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -134,12 +133,12 @@ TEST_F(PaintBrushTest, testBlendFalloff) {
 	EXPECT_EQ((int)centerVoxel.getColor(), (int)paintColorIndex) << "Center should be fully painted";
 	EXPECT_EQ((int)centerVoxel.getNormal(), (int)existingNormalIndex);
 
-	const glm::ivec3 edgePos = brushContext.cursorPosition + glm::ivec3(5, 0, 0);
+	const math::Vec3i edgePos = brushContext.cursorPosition + math::Vec3i(5, 0, 0);
 	const voxel::Voxel edgeVoxel = wrapper.voxel(edgePos);
 	EXPECT_EQ((int)edgeVoxel.getColor(), (int)existingVoxelColorIndex)
 		<< "Voxel at exact radius should remain unchanged (smoothstep edge is 0)";
 
-	const glm::ivec3 midPos = brushContext.cursorPosition + glm::ivec3(3, 0, 0);
+	const math::Vec3i midPos = brushContext.cursorPosition + math::Vec3i(3, 0, 0);
 	const voxel::Voxel midVoxel = wrapper.voxel(midPos);
 	const color::RGBA midColor = palette.color(midVoxel.getColor());
 	EXPECT_NE((int)midVoxel.getColor(), (int)existingVoxelColorIndex);
@@ -147,7 +146,7 @@ TEST_F(PaintBrushTest, testBlendFalloff) {
 	EXPECT_GT((int)midColor.r, 0);
 	EXPECT_LT((int)midColor.r, 255);
 
-	const glm::ivec3 outsidePos = brushContext.cursorPosition + glm::ivec3(6, 0, 0);
+	const math::Vec3i outsidePos = brushContext.cursorPosition + math::Vec3i(6, 0, 0);
 	const voxel::Voxel outsideVoxel = wrapper.voxel(outsidePos);
 	EXPECT_EQ((int)outsideVoxel.getColor(), (int)existingVoxelColorIndex);
 
@@ -217,7 +216,7 @@ TEST_F(PaintBrushTest, testBlendStrokeUpgradesWeakEdge) {
 	BrushContext brushContext;
 	prepareBrushContext(brushContext);
 	brushContext.cursorPosition = wrapper.region().getLowerCenter();
-	const glm::ivec3 target = brushContext.cursorPosition + glm::ivec3(3, 0, 0);
+	const math::Vec3i target = brushContext.cursorPosition + math::Vec3i(3, 0, 0);
 
 	ASSERT_TRUE(brush.beginBrush(brushContext));
 	ASSERT_TRUE(brush.execute(sceneGraph, wrapper, brushContext));
@@ -263,9 +262,9 @@ TEST_F(PaintBrushTest, testBlendStrokePath) {
 
 	StrokeGesture stroke;
 	stroke.begin();
-	stroke.visit(brushContext.cursorPosition, [](const glm::ivec3 &) {});
+	stroke.visit(brushContext.cursorPosition, [](const math::Vec3i &) {});
 	brushContext.cursorPosition.x += 4;
-	stroke.visit(brushContext.cursorPosition, [&](const glm::ivec3 &position) {
+	stroke.visit(brushContext.cursorPosition, [&](const math::Vec3i &position) {
 		BrushContext dab = brushContext;
 		dab.cursorPosition = position;
 		brush.executeSample(sceneGraph, wrapper, dab);
@@ -303,10 +302,10 @@ TEST_F(PaintBrushTest, testBlurUsesNeighborColors) {
 	pal.setColor(0, color::RGBA(0, 0, 0));
 	pal.setColor(1, color::RGBA(255, 255, 255));
 	voxel::RawVolume *volume = node.volume();
-	const glm::ivec3 center = volume->region().getLowerCenter();
+	const math::Vec3i center = volume->region().getLowerCenter();
 	volume->setVoxel(center, voxel::Voxel(voxel::VoxelType::Generic, 0, existingNormalIndex));
-	volume->setVoxel(center + glm::ivec3(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 1, existingNormalIndex));
-	volume->setVoxel(center + glm::ivec3(-1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 1, existingNormalIndex));
+	volume->setVoxel(center + math::Vec3i(1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 1, existingNormalIndex));
+	volume->setVoxel(center + math::Vec3i(-1, 0, 0), voxel::Voxel(voxel::VoxelType::Generic, 1, existingNormalIndex));
 
 	ModifierVolumeWrapper wrapper(node, brush.modifierType());
 	BrushContext brushContext;
@@ -385,9 +384,9 @@ TEST_F(PaintBrushTest, testBlendPreviewDoesNotBlockContinuousStroke) {
 
 	StrokeGesture stroke;
 	stroke.begin();
-	stroke.visit(brushContext.cursorPosition, [](const glm::ivec3 &) {});
+	stroke.visit(brushContext.cursorPosition, [](const math::Vec3i &) {});
 	brushContext.cursorPosition.x += 3;
-	stroke.visit(brushContext.cursorPosition, [&](const glm::ivec3 &position) {
+	stroke.visit(brushContext.cursorPosition, [&](const math::Vec3i &position) {
 		BrushContext dab = brushContext;
 		dab.cursorPosition = position;
 		brush.executeSample(sceneGraph, wrapper, dab);
@@ -432,7 +431,7 @@ TEST_F(PaintBrushTest, testPaletteChangingModesMatchSerialEvaluation) {
 		ModifierVolumeWrapper expectedOutput(expected, ModifierType::Paint);
 		// Establish a serial reference by evaluating one voxel at a time.
 		voxelutil::visitVolume(original, [&](int x, int y, int z, const voxel::Voxel &) {
-			const glm::ivec3 pos(x, y, z);
+			const math::Vec3i pos(x, y, z);
 			brush.generate(scene, expectedOutput, input, voxel::Region(pos, pos));
 		});
 		ModifierVolumeWrapper actualOutput(actual, ModifierType::Paint);

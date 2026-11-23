@@ -17,6 +17,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "util/Console.h"
+#include <float.h>
 
 namespace ui {
 

@@ -8,8 +8,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicStringMap.h"
 #include "core/collection/List.h"
-#include <glm/fwd.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 enum PassBy {
 	Value,
@@ -124,7 +123,7 @@ struct Layout {
 	bool originUpperLeft = false; // 4.0
 	bool pixelCenterInteger = false; // 4.0
 	bool earlyFragmentTests = false; // 4.2
-	glm::ivec3 localSize { -1 };
+	math::Vec3i localSize { -1 };
 	video::Primitive primitiveType = video::Primitive::Max;
 	BlockLayout blockLayout = BlockLayout::unknown;
 	video::ImageFormat imageFormat = video::ImageFormat::Max;

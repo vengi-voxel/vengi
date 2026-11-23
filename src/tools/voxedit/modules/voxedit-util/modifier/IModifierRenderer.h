@@ -15,7 +15,9 @@
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace palette {
 class Palette;
@@ -48,15 +50,15 @@ struct ModifierRendererContext {
 	voxel::Voxel cursorVoxel;
 	voxel::Voxel voxelAtCursor;
 	voxel::FaceNames cursorFace = voxel::FaceNames::Max;
-	glm::ivec3 cursorPosition{0};
-	glm::ivec3 gridResolution{1};
+	math::Vec3i cursorPosition{0};
+	math::Vec3i gridResolution{1};
 
 	// Reference point
-	glm::ivec3 referencePosition{0};
+	math::Vec3i referencePosition{0};
 
 	// Mirror plane
 	math::Axis mirrorAxis = math::Axis::None;
-	glm::ivec3 mirrorPos{0};
+	math::Vec3i mirrorPos{0};
 
 	// Locked planes
 	math::Axis lockedAxis = math::Axis::None;
@@ -70,8 +72,8 @@ struct ModifierRendererContext {
 	voxel::Region simpleMirrorPreviewRegion = voxel::Region::InvalidRegion;
 	color::RGBA simplePreviewColor{0};
 	/** Thin surface-following radius outline polyline (paint brush) */
-	core::Buffer<glm::vec3> outlinePreviewPoints;
-	core::Buffer<glm::vec3> outlineMirrorPreviewPoints;
+	core::Buffer<math::Vec3f> outlinePreviewPoints;
+	core::Buffer<math::Vec3f> outlineMirrorPreviewPoints;
 	color::RGBA outlinePreviewColor{0};
 	palette::Palette *palette = nullptr;
 	palette::NormalPalette *normalPalette = nullptr;
@@ -169,7 +171,7 @@ public:
 	 * @param camera The camera for rendering.
 	 * @param modelMatrix The model transformation matrix.
 	 */
-	virtual void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) {
+	virtual void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const math::Mat4f &modelMatrix) {
 	}
 };
 

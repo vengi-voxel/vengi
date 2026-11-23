@@ -16,6 +16,7 @@
 #include "voxelutil/VolumeMover.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <limits.h>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -105,10 +106,10 @@ TEST_F(RawVolumeSparseTest, HollowShellMemoryAndSolidBounds) {
 	// Two 201x201 faces = 80,802 voxels in a 64 MiB volume: SparseChunk packs 64-voxel face bricks!
 	EXPECT_LT(vol.allocatedBytes(), 4u * 1024u * 1024u);
 
-	glm::ivec3 mins, maxs;
+	math::Vec3i mins, maxs;
 	ASSERT_TRUE(voxelutil::computeSolidBounds(&vol, mins, maxs));
-	EXPECT_EQ(mins, glm::ivec3(-100, -100, -100));
-	EXPECT_EQ(maxs, glm::ivec3(100, 100, 100));
+	EXPECT_EQ(mins, math::Vec3i(-100, -100, -100));
+	EXPECT_EQ(maxs, math::Vec3i(100, 100, 100));
 	EXPECT_TRUE(vol.isSparse());
 }
 
@@ -386,8 +387,8 @@ TEST_F(RawVolumeSparseTest, ParallelTileDispatchMergeMoveAndCopyMatchDense) {
 	RawVolume sparseMoved(Region(-16, -16, -16, 47, 47, 47));
 	RawVolume::setChunkedStorageThreshold(256);
 	RawVolume denseMoved(Region(-16, -16, -16, 47, 47, 47));
-	voxelutil::moveVolume(&sparseMoved, &sparseSrc, glm::ivec3(5, 3, 7));
-	voxelutil::moveVolume(&denseMoved, &denseSrc, glm::ivec3(5, 3, 7));
+	voxelutil::moveVolume(&sparseMoved, &sparseSrc, math::Vec3i(5, 3, 7));
+	voxelutil::moveVolume(&denseMoved, &denseSrc, math::Vec3i(5, 3, 7));
 	EXPECT_TRUE(sparseMoved.equals(denseMoved));
 	EXPECT_TRUE(sparseMoved.isSparse());
 
@@ -468,8 +469,8 @@ TEST_F(RawVolumeSparseTest, OccupancyGuidedVisitorAndInPlaceParallelMatchDense) 
 
 	// 1. Full region countVoxels & ZYX visitVolume exact order match
 	EXPECT_EQ(voxelutil::countVoxels(sparse), voxelutil::countVoxels(dense));
-	core::DynamicArray<glm::ivec3> sparseOrder;
-	core::DynamicArray<glm::ivec3> denseOrder;
+	core::DynamicArray<math::Vec3i> sparseOrder;
+	core::DynamicArray<math::Vec3i> denseOrder;
 	voxelutil::visitVolume(sparse, [&](int x, int y, int z, const Voxel &) { sparseOrder.push_back({x, y, z}); });
 	voxelutil::visitVolume(dense, [&](int x, int y, int z, const Voxel &) { denseOrder.push_back({x, y, z}); });
 	ASSERT_EQ(sparseOrder.size(), denseOrder.size());

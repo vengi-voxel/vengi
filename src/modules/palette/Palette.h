@@ -13,8 +13,8 @@
 #include "palette/PaletteView.h"
 #include "image/ImageFwd.h"
 #include "palette/Material.h"
-#include <glm/vec4.hpp>
 #include <stdint.h>
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -60,7 +60,7 @@ public:
 
 	const Material &material(uint8_t paletteColorIdx) const;
 	color::RGBA color(uint8_t paletteColorIdx) const;
-	glm::vec4 color4(uint8_t paletteColorIdx) const;
+	math::Vec4f color4(uint8_t paletteColorIdx) const;
 	void setColor(uint8_t paletteColorIdx, const color::RGBA &rgba);
 	void setMaterial(uint8_t i, const Material &material);
 
@@ -71,7 +71,7 @@ public:
 	 * @brief Combined conversion of palette colors and emit colors in a single pass for better cache locality
 	 * @note Both target buffers must at least have space for 256 entries
 	 */
-	void toVec4f(glm::highp_vec4 *materialColors, glm::highp_vec4 *emitColors) const;
+	void toVec4f(math::Vec4f *materialColors, math::Vec4f *emitColors) const;
 	bool hasAlpha(uint8_t paletteColorIdx) const;
 	bool hasEmit(uint8_t paletteColorIdx) const;
 	/** @return true if any used palette entry has MaterialEmit set. */

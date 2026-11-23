@@ -9,6 +9,11 @@
 #include "video/ScopedBlendMode.h"
 #include "video/ScopedState.h"
 #include "video/Types.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace render {
 
@@ -75,20 +80,20 @@ void ShapeRenderer::fillVertices(const video::ShapeBuilder &shapeBuilder) {
 	_vertices.clear();
 	_vertices.reserve(shapeBuilder.getVertices().size());
 	shapeBuilder.iterate(
-		[&](const glm::vec3 &pos, const glm::vec2 &uv, const glm::vec4 &color, const glm::vec3 &normal) {
-			_vertices.emplace_back(Vertex{glm::vec4(pos, 1.0f), color, uv, normal});
+		[&](const math::Vec3f &pos, const math::Vec2f &uv, const math::Vec4f &color, const math::Vec3f &normal) {
+			_vertices.emplace_back(Vertex{math::Vec4f(pos, 1.0f), color, uv, normal});
 		});
 }
 
 void ShapeRenderer::emitLineQuad(const Vertex &a, const Vertex &b) {
-	const glm::vec3 d = glm::vec3(b.pos) - glm::vec3(a.pos);
-	if (glm::dot(d, d) < 1.0e-12f) {
+	const math::Vec3f d = math::Vec3f(b.pos) - math::Vec3f(a.pos);
+	if (math::dot(d, d) < 1.0e-12f) {
 		return;
 	}
 	const uint32_t base = (uint32_t)_lineVertices.size();
 	LineVertex v;
-	v.end = glm::vec4(glm::vec3(b.pos), 0.0f);
-	v.start = glm::vec4(glm::vec3(a.pos), 0.0f);
+	v.end = math::Vec4f(math::Vec3f(b.pos), 0.0f);
+	v.start = math::Vec4f(math::Vec3f(a.pos), 0.0f);
 	v.color = a.color;
 	_lineVertices.push_back(v);
 	v.start.w = 1.0f;
@@ -274,7 +279,7 @@ bool ShapeRenderer::hiddenState(int32_t meshIndex) const {
 	return _hidden[meshIndex];
 }
 
-void ShapeRenderer::activateColorShader(const video::Camera &camera, const glm::mat4 &model) const {
+void ShapeRenderer::activateColorShader(const video::Camera &camera, const math::Mat4f &model) const {
 	if (_lineShader.isActive()) {
 		_lineShader.deactivate();
 	}
@@ -286,15 +291,15 @@ void ShapeRenderer::activateColorShader(const video::Camera &camera, const glm::
 	_uniformBlockData.viewprojection = camera.viewProjectionMatrix();
 	// TODO: RENDERER: allow to configure lighting
 	// the fourth component is the light intensity - set it to something greater than 0 to active shading
-	_uniformBlockData.lightcolor = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	_uniformBlockData.lightpos = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	_uniformBlockData.lightcolor = math::Vec4f(0.0f, 0.0f, 0.0f, 0.0f);
+	_uniformBlockData.lightpos = math::Vec4f(0.0f, 0.0f, 1.0f, 0.0f);
 	core_assert_always(_uniformBlock.update(_uniformBlockData));
 	if (!wasActive) {
 		core_assert_always(_colorShader.setUniformblock(_uniformBlock.getUniformblockUniformBuffer()));
 	}
 }
 
-void ShapeRenderer::activateLineShader(const video::Camera &camera, const glm::mat4 &model) const {
+void ShapeRenderer::activateLineShader(const video::Camera &camera, const math::Mat4f &model) const {
 	if (_colorShader.isActive()) {
 		_colorShader.deactivate();
 	}
@@ -302,18 +307,18 @@ void ShapeRenderer::activateLineShader(const video::Camera &camera, const glm::m
 	if (!wasActive) {
 		_lineShader.activate();
 	}
-	const glm::ivec2 &vp = camera.size();
+	const math::Vec2i &vp = camera.size();
 	_lineVertData.viewprojection = camera.viewProjectionMatrix();
 	_lineVertData.model = model;
 	_lineVertData.viewport =
-		glm::vec4((float)core_max(vp.x, 1), (float)core_max(vp.y, 1), _lineWidth, 0.0f);
+		math::Vec4f((float)core_max(vp.x, 1), (float)core_max(vp.y, 1), _lineWidth, 0.0f);
 	core_assert_always(_lineData.update(_lineVertData));
 	if (!wasActive) {
 		core_assert_always(_lineShader.setVert(_lineData.getVertUniformBuffer()));
 	}
 }
 
-int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model) const {
+int ShapeRenderer::renderAll(const video::Camera &camera, const math::Mat4f &model) const {
 	int cnt = 0;
 	for (uint32_t meshIndex = 0u; meshIndex < _currentMeshIndex; ++meshIndex) {
 		if (_vertexIndex[meshIndex] == -1) {
@@ -352,7 +357,7 @@ int ShapeRenderer::renderAll(const video::Camera &camera, const glm::mat4 &model
 	return cnt;
 }
 
-bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera &camera, const glm::mat4 &model) const {
+bool ShapeRenderer::render(uint32_t meshIndex, const video::Camera &camera, const math::Mat4f &model) const {
 	if (meshIndex == (uint32_t)-1) {
 		return false;
 	}

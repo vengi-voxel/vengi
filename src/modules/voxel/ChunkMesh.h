@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/Mesh.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -16,7 +17,7 @@ struct ChunkMesh {
 	ChunkMesh() : ChunkMesh(128, 128, true) {}
 	voxel::Mesh mesh[Meshes];
 
-	void setOffset(const glm::ivec3& offset) {
+	void setOffset(const math::Vec3i& offset) {
 		for (int i = 0; i < Meshes; ++i) {
 			mesh[i].setOffset(offset);
 		}

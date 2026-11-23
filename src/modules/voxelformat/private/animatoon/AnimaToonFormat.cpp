@@ -3,7 +3,7 @@
  */
 
 #include "AnimaToonFormat.h"
-#include "core/GLMConst.h"
+#include "math/Axes.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/collection/DynamicArray.h"
@@ -20,16 +20,14 @@
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/RawVolume.h"
 #include "json/JSON.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
 
 namespace voxelformat {
 
-#ifdef GLM_FORCE_QUAT_DATA_WXYZ
-#error "GLM_FORCE_QUAT_DATA_WXYZ is not supported here"
-#endif
 
 bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
 									 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
@@ -57,11 +55,11 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	// well as the child/parent relationship. This definition is hard-coded in animatoon
 	struct SceneDefinition {
 		core::String name;
-		glm::ivec3 size;
+		math::Vec3i size;
 		core::DynamicArray<core::String> nodeNames;
 		core::DynamicArray<core::String> parentNames;
 	} sceneDefinitions[] = {
-		{"Bird", glm::ivec3(40, 30, 60),
+		{"Bird", math::Vec3i(40, 30, 60),
 			{
 				"Body", "Wing1", "Wing2"
 			},
@@ -69,7 +67,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"", "Body", "Body"
 			}
 		},
-		{"Multiped", glm::ivec3(30, 30, 30),
+		{"Multiped", math::Vec3i(30, 30, 30),
 			{
 				"Body", "Head", "LegUpper1", "LegLower1", "Foot1", "LegUpper2", "LegLower2",
 				"Foot2", "LegUpper3", "LegLower3", "Foot3", "LegUpper4", "LegLower4", "Foot4",
@@ -81,7 +79,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"Body", "LegUpper5", "LegUpper5", "Body", "LegUpper6", "LegUpper6"
 			}
 		},
-		{"Quad_Simple", glm::ivec3(16),
+		{"Quad_Simple", math::Vec3i(16),
 			{
 				"Body", "Head", "Front Left Leg", "Front Right Leg", "Back Left Leg", "Back Right Leg"
 			},
@@ -89,7 +87,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"", "Body", "Body", "Body", "Body", "Body"
 			}
 		},
-		{"Quadruped", glm::ivec3(70, 70, 70),
+		{"Quadruped", math::Vec3i(70, 70, 70),
 			{
 				"Right Back Leg 1", "Right Back Leg 2", "Right Back Leg 3", "Right Back Foot", "Right Back Toe",
 				"Left Back Leg 1", "Left Back Leg 2", "Left Back Leg 3", "Left Back Foot", "Left Back Toe",
@@ -105,7 +103,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"Shoulder", "Right Front Leg 1", "Right Front Leg 2", "Right Front Leg 3", "Right Front Foot"
 			}
 		},
-		{"Biped_Full", glm::ivec3(70, 70, 70),
+		{"Biped_Full", math::Vec3i(70, 70, 70),
 			{
 				"Hip", "Body", "Shoulder",
 				"Right Arm 1", "Right Arm 2", "Right Hand", "Right Finger", "Right Thumb",
@@ -123,7 +121,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"Body", "Right Leg 1", "Right Leg 2", "Right Foot"
 			}
 		},
-		{"Biped_FatGuy", glm::ivec3(70, 70, 70),
+		{"Biped_FatGuy", math::Vec3i(70, 70, 70),
 			{
 				"Hip", "Body",
 				"Right Arm 1", "Right Arm 2", "Right Hand", "Right Finger", "Right Thumb",
@@ -141,7 +139,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"Hip", "Right Leg 1", "Right Leg 2", "Right Foot"
 			}
 		},
-		{"Tall_guy", glm::ivec3(70, 80, 70),
+		{"Tall_guy", math::Vec3i(70, 80, 70),
 			{
 				"Hip", "Body",
 				"Shoulder",
@@ -161,7 +159,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"Body"
 			}
 		},
-		{"Red_Guy", glm::ivec3(40, 40, 40),
+		{"Red_Guy", math::Vec3i(40, 40, 40),
 			{
 				"Hip", "Body",
 				"Right Arm 1", "Right Arm 2", "Right Hand", "Right Finger", "Right Thumb",
@@ -181,7 +179,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 				"Hip", "Right Leg 1", "Right Leg 2", "Right Foot",
 			}
 		},
-		{"Biped_Boy", glm::ivec3(40, 40, 40),
+		{"Biped_Boy", math::Vec3i(40, 40, 40),
 			{
 				"Torso", "Chest",
 				"Arm Right 1", "Arm Right 2", "Hand Right", "Finger Right", "empty",
@@ -213,7 +211,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		Log::error("Unknown scene type: %s", sceneName.c_str());
 		return false;
 	}
-	glm::ivec3 regionSize = sceneDefinition->size;
+	math::Vec3i regionSize = sceneDefinition->size;
 	Log::debug("scene size: %d %d %d", regionSize.x, regionSize.y, regionSize.z);
 
 	core::Buffer<int> modelNodeIds;
@@ -222,7 +220,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		regionSize = sceneDefinition->size;
 		if (sceneName == "Quad_Simple") {
 			if (modelIdx == 5 || modelIdx == 7) {
-				regionSize = glm::ivec3(11);
+				regionSize = math::Vec3i(11);
 			}
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
@@ -299,28 +297,28 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 		}
 	}
 
-	glm::vec3 cameraPos(0.0f);
-	glm::quat cameraRot = glm::quat_identity<float, glm::defaultp>();
-	glm::vec3 cameraTarget(0.0f);
+	math::Vec3f cameraPos(0.0f);
+	math::Quatf cameraRot = math::Quatf::identity();
+	math::Vec3f cameraTarget(0.0f);
 	if (json.contains("MainCamPosition")) {
 		json::Json mainCamPos = json.get("MainCamPosition");
-		cameraPos = glm::vec3(mainCamPos.floatVal("x", 0.0f), mainCamPos.floatVal("y", 0.0f),
+		cameraPos = math::Vec3f(mainCamPos.floatVal("x", 0.0f), mainCamPos.floatVal("y", 0.0f),
 							  mainCamPos.floatVal("z", 0.0f));
 	}
 	if (json.contains("MainCamRotation")) {
 		json::Json mainCamRot = json.get("MainCamRotation");
-		cameraRot = glm::quat(mainCamRot.floatVal("x", 0.0f), mainCamRot.floatVal("y", 0.0f),
+		cameraRot = math::Quatf(mainCamRot.floatVal("x", 0.0f), mainCamRot.floatVal("y", 0.0f),
 							  mainCamRot.floatVal("z", 0.0f), mainCamRot.floatVal("w", 0.0f));
 	}
 	if (json.contains("CamTargetPostion")) {
 		json::Json camTargetPos = json.get("CamTargetPostion");
-		cameraTarget = glm::vec3(camTargetPos.floatVal("x", 0.0f), camTargetPos.floatVal("y", 0.0f),
+		cameraTarget = math::Vec3f(camTargetPos.floatVal("x", 0.0f), camTargetPos.floatVal("y", 0.0f),
 								 camTargetPos.floatVal("z", 0.0f));
 	}
 
 	{
-		const glm::mat4 &orientation = glm::mat4_cast(cameraRot);
-		const glm::mat4 &viewMatrix = glm::translate(orientation, cameraPos);
+		const math::Mat4f &orientation = math::mat4_cast(cameraRot);
+		const math::Mat4f &viewMatrix = math::translate(orientation, cameraPos);
 		scenegraph::SceneGraphNodeCamera camNode;
 		camNode.setName("Camera");
 		scenegraph::SceneGraphTransform transform;
@@ -344,27 +342,27 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 			const float x = meshPos.floatVal("x", 0.0f);
 			const float y = meshPos.floatVal("y", 0.0f);
 			const float z = meshPos.floatVal("z", 0.0f);
-			pos.meshPositions.push_back(glm::vec3(x, y, z));
+			pos.meshPositions.push_back(math::Vec3f(x, y, z));
 		}
 		for (const auto &meshRot : inner.get("meshRotations")) {
 			const float x = meshRot.floatVal("x", 0.0f);
 			const float y = meshRot.floatVal("y", 0.0f);
 			const float z = meshRot.floatVal("z", 0.0f);
 			const float w = meshRot.floatVal("w", 0.0f);
-			pos.meshRotations.push_back(glm::quat::wxyz(w, x, y, z));
+			pos.meshRotations.push_back(math::Quatf::wxyz(w, x, y, z));
 		}
 		for (const auto &ikPos : inner.get("IKPositions")) {
 			const float x = ikPos.floatVal("x", 0.0f);
 			const float y = ikPos.floatVal("y", 0.0f);
 			const float z = ikPos.floatVal("z", 0.0f);
-			pos.ikPositions.push_back(glm::vec3(x, y, z));
+			pos.ikPositions.push_back(math::Vec3f(x, y, z));
 		}
 		for (const auto &ikRot : inner.get("IKRotations")) {
 			const float x = ikRot.floatVal("x", 0.0f);
 			const float y = ikRot.floatVal("y", 0.0f);
 			const float z = ikRot.floatVal("z", 0.0f);
 			const float w = ikRot.floatVal("w", 0.0f);
-			pos.ikRotations.push_back(glm::quat::wxyz(w, x, y, z));
+			pos.ikRotations.push_back(math::Quatf::wxyz(w, x, y, z));
 		}
 		for (const auto &ikMod : inner.get("IKModified")) {
 			pos.ikModified.push_back(ikMod);

@@ -13,9 +13,10 @@
 #include "io/FileStream.h"
 #include "palette/Palette.h"
 #include "palette/private/PaletteFormat.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
-#include <glm/geometric.hpp>
-#include <glm/vec3.hpp>
 
 namespace palette {
 namespace priv {
@@ -129,7 +130,7 @@ const char *NormalPalette::getDefaultPaletteName() {
 	return builtIn[0];
 }
 
-color::RGBA NormalPalette::toRGBA(const glm::vec3 &normal) {
+color::RGBA NormalPalette::toRGBA(const math::Vec3f &normal) {
 	// Map the normal components back to [0, 1] range
 	const float rf = (normal.x + 1.0f) / 2.0f; // X component to [0, 1]
 	const float gf = (normal.y + 1.0f) / 2.0f; // Y component to [0, 1]
@@ -142,7 +143,7 @@ color::RGBA NormalPalette::toRGBA(const glm::vec3 &normal) {
 	return color::RGBA(r, g, b);
 }
 
-glm::vec3 NormalPalette::toVec3(const color::RGBA &rgba) {
+math::Vec3f NormalPalette::toVec3(const color::RGBA &rgba) {
 	// Normalize RGB values to the range [0, 1]
 	const float r = rgba.r / 255.0f;
 	const float g = rgba.g / 255.0f;
@@ -153,23 +154,23 @@ glm::vec3 NormalPalette::toVec3(const color::RGBA &rgba) {
 	const float ny = 2.0f * g - 1.0f;
 	const float nz = 2.0f * b - 1.0f;
 
-	return glm::vec3(nx, ny, nz);
+	return math::Vec3f(nx, ny, nz);
 }
 
-int NormalPalette::getClosestMatch(const glm::vec3 &normal) const {
-	const float lengthSquared = glm::dot(normal, normal);
-	if (glm::any(glm::isnan(normal)) || glm::any(glm::isinf(normal)) ||
-		(glm::isnan(lengthSquared) || glm::isinf(lengthSquared)) || lengthSquared <= 0.000001f) {
+int NormalPalette::getClosestMatch(const math::Vec3f &normal) const {
+	const float lengthSquared = math::dot(normal, normal);
+	if (math::any(math::isnan(normal)) || math::any(math::isinf(normal)) ||
+		(math::isnan(lengthSquared) || math::isinf(lengthSquared)) || lengthSquared <= 0.000001f) {
 		return PaletteNormalNotFound;
 	}
-	const glm::vec3 direction = glm::normalize(normal);
+	const math::Vec3f direction = math::normalize(normal);
 	int closestIndex = PaletteNormalNotFound;
 	float maxDot = -2.0f;
 	for (int i = 0; i < _size; ++i) {
 		if (_normals[i].a == 0) {
 			continue;
 		}
-		const float dot = glm::dot(direction, glm::normalize(toVec3(_normals[i])));
+		const float dot = math::dot(direction, math::normalize(toVec3(_normals[i])));
 		if (dot > maxDot) {
 			maxDot = dot;
 			closestIndex = i;
@@ -206,16 +207,16 @@ void NormalPalette::setNormal(uint8_t index, const color::RGBA &normal) {
 	markDirty();
 }
 
-void NormalPalette::setNormal(uint8_t index, const glm::vec3 &normal) {
-	const float lengthSquared = glm::dot(normal, normal);
-	if (glm::any(glm::isnan(normal)) || glm::any(glm::isinf(normal)) ||
-		(glm::isnan(lengthSquared) || glm::isinf(lengthSquared)) || lengthSquared <= 0.000001f) {
+void NormalPalette::setNormal(uint8_t index, const math::Vec3f &normal) {
+	const float lengthSquared = math::dot(normal, normal);
+	if (math::any(math::isnan(normal)) || math::any(math::isinf(normal)) ||
+		(math::isnan(lengthSquared) || math::isinf(lengthSquared)) || lengthSquared <= 0.000001f) {
 		return;
 	}
-	setNormal(index, toRGBA(glm::normalize(normal)));
+	setNormal(index, toRGBA(math::normalize(normal)));
 }
 
-void NormalPalette::loadNormalMap(const glm::vec3 *normals, int size) {
+void NormalPalette::loadNormalMap(const math::Vec3f *normals, int size) {
 	size = core_min(size, NormalPaletteMaxNormals);
 	for (int i = 0; i < size; i++) {
 		_normals[i] = toRGBA(normals[i]);
@@ -272,12 +273,12 @@ bool NormalPalette::isBuiltIn() const {
 	return false;
 }
 
-glm::vec3 NormalPalette::normal3f(uint8_t index) const {
+math::Vec3f NormalPalette::normal3f(uint8_t index) const {
 	return toVec3(_normals[index]);
 }
 
-void NormalPalette::toVec4f(glm::highp_vec4 *vec4f) const {
-	core_memset(vec4f, 0, sizeof(glm::highp_vec4) * NormalPaletteMaxNormals);
+void NormalPalette::toVec4f(math::Vec4f *vec4f) const {
+	core_memset(vec4f, 0, sizeof(math::Vec4f) * NormalPaletteMaxNormals);
 	constexpr float scale = 2.0f / 255.0f;
 	for (int i = 0; i < _size; ++i) {
 		const color::RGBA &rgba = _normals[i];

@@ -7,7 +7,8 @@
 #include "color/Distance.h"
 #include "color/RGBA.h"
 #include "core/String.h"
-#include <glm/fwd.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 namespace color {
 
@@ -36,7 +37,15 @@ double srgbToLinear(uint8_t c);
 /**
  * @brief Converts an sRGB color (0-1) to linear space (IEC 61966-2-1).
  */
-glm::vec3 srgbToLinear(const glm::vec3 &srgb);
+math::Vec3f srgbToLinear(const math::Vec3f &srgb);
+/**
+ * @brief Converts a linear component (0-1) to sRGB (IEC 61966-2-1).
+ */
+float linearToSrgb(float c);
+/**
+ * @brief Converts a linear color (0-1) to sRGB (IEC 61966-2-1).
+ */
+math::Vec3f linearToSrgb(const math::Vec3f &linear);
 
 /**
  * @brief Converts RGB to XYZ color space.
@@ -76,12 +85,12 @@ color::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t f);
 /**
  * @brief Converts RGBA components to a vec4.
  */
-glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+math::Vec4f fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 
 /**
  * @brief Converts RGBA struct to a vec4.
  */
-glm::vec4 fromRGBA(const RGBA rgba);
+math::Vec4f fromRGBA(const RGBA rgba);
 
 /**
  * @brief Creates a color from HSB values.
@@ -106,15 +115,15 @@ bool parseColor(const core::String &str, RGBA &outColor);
 /**
  * @brief Converts vec4 to RGBA.
  */
-RGBA getRGBA(const glm::vec4 &);
+RGBA getRGBA(const math::Vec4f &);
 /**
  * @brief Converts vec3 to RGBA.
  */
-RGBA getRGB(const glm::vec3 &);
+RGBA getRGB(const math::Vec3f &);
 /**
  * @brief Calculate the Hue, Saturation, and Brightness (HSB) of the given color.
  */
-void getHSB(const glm::vec4 &, float &hue, float &saturation, float &brightness);
+void getHSB(const math::Vec4f &, float &hue, float &saturation, float &brightness);
 /**
  * @brief Calculate the Hue, Saturation, and Brightness (HSB) of the given color.
  */
@@ -129,7 +138,7 @@ void getHSB(color::RGBA color, float &hue, float &saturation, float &brightness)
  * @param[out] b position between yellow and blue (negative values indicate blue and positive values indicate
  * yellow)
  */
-void getCIELab(const glm::vec4 &, float &L, float &a, float &b);
+void getCIELab(const math::Vec4f &, float &L, float &a, float &b);
 /**
  * @brief Converts color to CIELab color space.
  */
@@ -137,20 +146,20 @@ void getCIELab(color::RGBA color, float &L, float &a, float &b);
 /**
  * @brief Converts CIELab to RGBA.
  */
-color::RGBA fromCIELab(const glm::vec4 &in);
+color::RGBA fromCIELab(const math::Vec4f &in);
 
 /**
  * @brief Converts color to grayscale.
  */
-glm::vec3 gray(const glm::vec3 &);
+math::Vec3f gray(const math::Vec3f &);
 /**
  * @brief Converts color to grayscale.
  */
-glm::vec4 gray(const glm::vec4 &);
+math::Vec4f gray(const math::Vec4f &);
 /**
  * @brief Sets the alpha component of a color.
  */
-glm::vec4 alpha(const glm::vec4 &, float alpha);
+math::Vec4f alpha(const math::Vec4f &, float alpha);
 /**
  * @brief Sets the alpha component of a color.
  */
@@ -158,7 +167,7 @@ RGBA alpha(const RGBA rgba, uint8_t alpha);
 /**
  * @brief Calculates the brightness of a color.
  */
-float brightness(const glm::vec4 &);
+float brightness(const math::Vec4f &);
 /**
  * @brief Calculates the brightness of a color.
  */
@@ -166,20 +175,20 @@ uint8_t brightness(const color::RGBA &color);
 /**
  * @brief Calculates the intensity of a color.
  */
-float intensity(const glm::vec4 &);
+float intensity(const math::Vec4f &);
 
 /**
  * @brief Returns a contrasting text color (black or white) for the given background.
  */
-const glm::vec4 &contrastTextColor(const glm::vec4 &background);
+const math::Vec4f &contrastTextColor(const math::Vec4f &background);
 /**
  * @brief Returns a darker version of the color.
  */
-glm::vec4 darker(const glm::vec4 &color, float f = 1.0f);
+math::Vec4f darker(const math::Vec4f &color, float f = 1.0f);
 /**
  * @brief Returns a brighter version of the color.
  */
-glm::vec4 brighter(const glm::vec4 &color, float f = 1.0f);
+math::Vec4f brighter(const math::Vec4f &color, float f = 1.0f);
 /**
  * @brief Returns a brighter version of the color.
  */

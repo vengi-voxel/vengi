@@ -15,6 +15,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -40,8 +41,8 @@ struct TroveVoxel {
 
 struct DecodedBlueprint {
 	uint32_t version = 0;
-	glm::ivec3 size{0};
-	glm::ivec3 pos{0};
+	math::Vec3i size{0};
+	math::Vec3i pos{0};
 	core::DynamicArray<TroveVoxel> voxels;
 };
 
@@ -134,8 +135,8 @@ static bool decodeV34(io::SeekableReadStream &stream, uint32_t version, DecodedB
 	}
 
 	out.version = version;
-	out.size = glm::ivec3(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1);
-	out.pos = glm::ivec3(-(out.size.x / 2), -(out.size.y / 2), -(out.size.z / 2));
+	out.size = math::Vec3i(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1);
+	out.pos = math::Vec3i(-(out.size.x / 2), -(out.size.y / 2), -(out.size.z / 2));
 	out.voxels.reserve(raw.size());
 	for (const TroveVoxel &src : raw) {
 		TroveVoxel v = src;
@@ -201,8 +202,8 @@ static bool decodeV5(io::SeekableReadStream &stream, DecodedBlueprint &out) {
 	}
 
 	out.version = VersionV5;
-	out.size = glm::ivec3(sx, sy, sz);
-	out.pos = glm::ivec3(px, py, pz);
+	out.size = math::Vec3i(sx, sy, sz);
+	out.pos = math::Vec3i(px, py, pz);
 	out.voxels.reserve((size_t)count);
 	const int32_t plane = sx * sz;
 	for (int32_t i = 0; i < count; ++i) {
@@ -270,7 +271,7 @@ static bool encodeV5(io::WriteStream &stream, const voxel::RawVolume &volume, co
 		uint8_t w;
 	};
 	core::DynamicArray<Cell> cells;
-	const glm::ivec3 mins = region.getLowerCorner();
+	const math::Vec3i mins = region.getLowerCorner();
 	const int32_t plane = sx * sz;
 	voxel::RawVolume::Sampler sampler(volume);
 	for (int32_t y = 0; y < sy; ++y) {

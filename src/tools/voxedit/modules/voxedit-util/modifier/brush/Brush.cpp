@@ -10,25 +10,26 @@
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/AxisUtil.h"
 #include "voxel/Region.h"
-#include <glm/common.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
-glm::ivec3 parseGridResolution(const core::String &str) {
+math::Vec3i parseGridResolution(const core::String &str) {
 	core::DynamicArray<core::String> tokens;
 	tokens.reserve(3);
 	core::string::splitString(str, tokens, " :,\t");
 	if (tokens.empty()) {
-		return glm::ivec3(1);
+		return math::Vec3i(1);
 	}
 	if (tokens.size() == 1) {
-		const int n = glm::clamp(tokens[0].toInt(), 1, 64);
-		return glm::ivec3(n);
+		const int n = math::clamp(tokens[0].toInt(), 1, 64);
+		return math::Vec3i(n);
 	}
-	glm::ivec3 out(1);
+	math::Vec3i out(1);
 	const size_t n = core_min(tokens.size(), (size_t)3);
 	for (size_t i = 0; i < n; ++i) {
-		out[(int)i] = glm::clamp(tokens[i].toInt(), 1, 64);
+		out[(int)i] = math::clamp(tokens[i].toInt(), 1, 64);
 	}
 	return out;
 }
@@ -39,9 +40,9 @@ void Brush::onSceneChange() {
 
 void Brush::reset() {
 	_clampToVolume = false;
-	_referencePosition = glm::ivec3(0);
+	_referencePosition = math::Vec3i(0);
 	_mirrorAxis = math::Axis::None;
-	_mirrorPos = glm::ivec3(0);
+	_mirrorPos = math::Vec3i(0);
 	resetRuntime();
 }
 
@@ -66,7 +67,7 @@ bool Brush::clampToVolume() const {
 	return _clampToVolume;
 }
 
-void Brush::toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
+void Brush::toggleMirrorAxis(math::Axis axis, const math::Vec3i &mirrorPos) {
 	if (_mirrorAxis == axis) {
 		setMirrorAxis(math::Axis::None, mirrorPos);
 	} else {
@@ -74,7 +75,7 @@ void Brush::toggleMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
 	}
 }
 
-bool Brush::setMirrorAxis(math::Axis axis, const glm::ivec3 &mirrorPos) {
+bool Brush::setMirrorAxis(math::Axis axis, const math::Vec3i &mirrorPos) {
 	if (_mirrorAxis == axis && _mirrorPos == mirrorPos) {
 		return false;
 	}
@@ -95,8 +96,8 @@ void Brush::preExecute(const BrushContext &ctx, const voxel::RawVolume *volume) 
 bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx) {
 	setErrorReason("");
 	voxel::Region region = calcRegion(ctx);
-	glm::ivec3 minsMirror = region.getLowerCorner();
-	glm::ivec3 maxsMirror = region.getUpperCorner();
+	math::Vec3i minsMirror = region.getLowerCorner();
+	math::Vec3i maxsMirror = region.getUpperCorner();
 	if (!getMirrorBox(minsMirror, maxsMirror)) {
 		generate(sceneGraph, wrapper, ctx, region);
 	} else {
@@ -115,7 +116,7 @@ bool Brush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &w
 void Brush::endBrush(BrushContext &ctx) {
 }
 
-bool Brush::getMirrorBox(glm::ivec3 &mins, glm::ivec3 &maxs) const {
+bool Brush::getMirrorBox(math::Vec3i &mins, math::Vec3i &maxs) const {
 	math::Axis mirrorAxis = _mirrorAxis;
 	if (mirrorAxis == math::Axis::None) {
 		return false;
@@ -185,8 +186,8 @@ void Brush::shutdown() {
 void Brush::handles(const BrushContext &, core::DynamicArray<BrushGizmoState> &) const {
 }
 
-bool Brush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
-							const glm::mat4 &deltaMatrix, uint32_t operation) {
+bool Brush::editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix,
+							const math::Mat4f &deltaMatrix, uint32_t operation) {
 	return false;
 }
 

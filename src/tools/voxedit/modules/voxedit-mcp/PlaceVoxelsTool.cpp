@@ -5,6 +5,7 @@
 #include "PlaceVoxelsTool.h"
 #include "Authoring.h"
 #include "palette/Palette.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -58,7 +59,7 @@ bool PlaceVoxelsTool::execute(const json::Json &id, const json::Json &args, Tool
 			if (voxelData.size() < 4) {
 				return ctx.result(id, "Every voxel array must be [x, y, z, color]", true);
 			}
-			cell.pos = glm::ivec3(voxelData.get(0).intVal(), voxelData.get(1).intVal(), voxelData.get(2).intVal());
+			cell.pos = math::Vec3i(voxelData.get(0).intVal(), voxelData.get(1).intVal(), voxelData.get(2).intVal());
 			AuthoringColor color;
 			if (!resolveAuthoringColor(ctx, *node, voxelData.get(3), use, color, error)) {
 				return ctx.result(id, error, true);
@@ -67,7 +68,7 @@ bool PlaceVoxelsTool::execute(const json::Json &id, const json::Json &args, Tool
 			cell.index = color.index;
 			approximated = approximated || color.approximated;
 		} else if (voxelData.isObject()) {
-			cell.pos = glm::ivec3(voxelData.intVal("x", 0), voxelData.intVal("y", 0), voxelData.intVal("z", 0));
+			cell.pos = math::Vec3i(voxelData.intVal("x", 0), voxelData.intVal("y", 0), voxelData.intVal("z", 0));
 			if (voxelData.contains("color")) {
 				AuthoringColor color;
 				if (!resolveAuthoringColor(ctx, *node, voxelData.get("color"), use, color, error)) {

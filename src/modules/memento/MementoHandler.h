@@ -21,6 +21,7 @@
 #include "voxel/Voxel.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "math/Vec3f.h"
 
 namespace voxel {
 class RawVolume;
@@ -343,7 +344,7 @@ struct MementoState {
 	/**
 	 * @brief Pivot point for transformations and rotations
 	 */
-	glm::vec3 pivot;
+	math::Vec3f pivot;
 	palette::Palette palette;
 	palette::NormalPalette normalPalette;
 
@@ -365,12 +366,12 @@ struct MementoState {
 	MementoState &operator=(const MementoState &other);
 	MementoState(MementoType _type, const MementoData &_data, const core::UUID &_parentId,
 				 const core::UUID &_nodeId, const core::UUID &_referenceId, const core::String &_name,
-				 scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
+				 scenegraph::SceneGraphNodeType _nodeType, const math::Vec3f &_pivot,
 				 const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
 				 const palette::NormalPalette &_normalPalette, const scenegraph::SceneGraphNodeProperties &_properties);
 	MementoState(MementoType _type, MementoData &&_data, core::UUID &&_parentId, core::UUID &&_nodeId,
 				 core::UUID &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
-				 glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
+				 math::Vec3f &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames, palette::Palette &&_palette,
 				 palette::NormalPalette &&_normalPalette, scenegraph::SceneGraphNodeProperties &&_properties);
 	MementoState(MementoType _type, const core::DynamicArray<core::String> &stringList);
 
@@ -498,7 +499,7 @@ protected:
 				  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion);
 	bool markUndo(const core::UUID &parentId, const core::UUID &nodeId, const core::UUID &referenceId,
 				  const core::String &name, scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume,
-				  MementoType type, const voxel::Region &modifiedRegion, const glm::vec3 &pivot,
+				  MementoType type, const voxel::Region &modifiedRegion, const math::Vec3f &pivot,
 				  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames, const palette::Palette &palette,
 				  const palette::NormalPalette &normalPalette, const scenegraph::SceneGraphNodeProperties &properties);
 

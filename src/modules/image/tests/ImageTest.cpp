@@ -10,6 +10,8 @@
 #include "io/File.h"
 #include "io/MemoryReadStream.h"
 #include "math/tests/TestMathHelper.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace image {
 
@@ -103,30 +105,30 @@ TEST_F(ImageTest, testGet) {
 }
 
 TEST_F(ImageTest, testUV) {
-	EXPECT_VEC_NEAR(glm::vec2(0.0f, 0.0f), image::Image::uv(0, 0, 256, 1, false), 0.000001f)
+	EXPECT_VEC_NEAR(math::Vec2f(0.0f, 0.0f), image::Image::uv(0, 0, 256, 1, false), 0.000001f)
 		<< "lower left corner of the image";
-	EXPECT_VEC_NEAR(glm::vec2(1.0f, 1.0f), image::Image::uv(255, 0, 256, 2, false), 0.000001f)
+	EXPECT_VEC_NEAR(math::Vec2f(1.0f, 1.0f), image::Image::uv(255, 0, 256, 2, false), 0.000001f)
 		<< "lower left corner of the image";
-	EXPECT_VEC_NEAR(glm::vec2(1.0f, 0.0f), image::Image::uv(255, 1, 256, 2, false), 0.000001f)
+	EXPECT_VEC_NEAR(math::Vec2f(1.0f, 0.0f), image::Image::uv(255, 1, 256, 2, false), 0.000001f)
 		<< "lower left corner of the image";
 
-	EXPECT_VEC_NEAR(glm::vec2(0.0f, 0.6666667f), image::Image::uv(0, 1, 4, 4, false), 0.000001f)
+	EXPECT_VEC_NEAR(math::Vec2f(0.0f, 0.6666667f), image::Image::uv(0, 1, 4, 4, false), 0.000001f)
 		<< "lower left corner of the image";
-	EXPECT_VEC_NEAR(glm::vec2(0.0f, 0.25f), image::Image::uv(0, 1, 4, 4, true), 0.000001f)
+	EXPECT_VEC_NEAR(math::Vec2f(0.0f, 0.25f), image::Image::uv(0, 1, 4, 4, true), 0.000001f)
 		<< "upper left corner of the image";
 }
 
 TEST_F(ImageTest, testUVPixelConversionManual) {
-	EXPECT_EQ(glm::ivec2(0, 1), image::Image::pixels(image::Image::uv(0, 1, 4, 4, false), 4, 4, Repeat, Repeat, false));
-	EXPECT_EQ(glm::ivec2(0, 1), image::Image::pixels(image::Image::uv(0, 1, 4, 4, true), 4, 4, Repeat, Repeat, true));
+	EXPECT_EQ(math::Vec2i(0, 1), image::Image::pixels(image::Image::uv(0, 1, 4, 4, false), 4, 4, Repeat, Repeat, false));
+	EXPECT_EQ(math::Vec2i(0, 1), image::Image::pixels(image::Image::uv(0, 1, 4, 4, true), 4, 4, Repeat, Repeat, true));
 }
 
 TEST_F(ImageTest, testUVPixelConversion) {
 	const image::ImagePtr &img = image::loadImage("test-palette-in.png");
 	for (int x = 0; x < img->width(); ++x) {
 		for (int y = 0; y < img->height(); ++y) {
-			const glm::vec2 &uv = img->uv(x, y);
-			const glm::ivec2 &pixels = img->pixels(uv);
+			const math::Vec2f &uv = img->uv(x, y);
+			const math::Vec2i &pixels = img->pixels(uv);
 			ASSERT_EQ(x, pixels.x) << "Failed to convert " << x << ":" << y << " to uv and back to pixels (uv: " << uv
 								   << ", pixels: " << pixels << ") image: (w: " << img->width()
 								   << ", h: " << img->height() << ")";

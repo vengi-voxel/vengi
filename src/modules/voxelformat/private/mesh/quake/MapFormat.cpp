@@ -19,36 +19,39 @@
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/Polygon.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
 // Convert from Quake coordinates (X, Y, Z where Z is up) to Vengi coordinates (X, Y, Z where Y is up)
-static inline glm::vec3 quakeToVengi(const glm::vec3 &quakePos) {
-	return glm::vec3(quakePos.x, quakePos.z, -quakePos.y);
+static inline math::Vec3f quakeToVengi(const math::Vec3f &quakePos) {
+	return math::Vec3f(quakePos.x, quakePos.z, -quakePos.y);
 }
 
 // clip plane
 struct QFace {
-	glm::vec3 planePoints[3];
+	math::Vec3f planePoints[3];
 	core::String texture;
-	glm::vec2 offset;
+	math::Vec2f offset;
 	float rotation;
-	glm::vec2 texscale;
+	math::Vec2f texscale;
 	int contentFlags;
 	int surfaceFlags;
 	int value;
 
-	glm::vec3 edge1;
-	glm::vec3 edge2;
-	glm::vec3 normal;
+	math::Vec3f edge1;
+	math::Vec3f edge2;
+	math::Vec3f normal;
 	float d;
 	math::Plane plane;
 
 	void finish() {
 		edge1 = planePoints[1] - planePoints[0];
 		edge2 = planePoints[2] - planePoints[0];
-		normal = glm::normalize(glm::cross(edge1, edge2));
-		d = glm::dot(normal, planePoints[0]);
+		normal = math::normalize(math::cross(edge1, edge2));
+		d = math::dot(normal, planePoints[0]);
 		plane = math::Plane(normal, d);
 	}
 };
@@ -57,7 +60,7 @@ struct QBrush {
 	core::DynamicArray<QFace> faces;
 };
 
-static glm::vec3 parsePlane(core::Tokenizer &tok) {
+static math::Vec3f parsePlane(core::Tokenizer &tok) {
 	if (!tok.hasNext()) {
 		Log::error("Invalid plane line - expected ( - but got nothing");
 		return {};
@@ -67,7 +70,7 @@ static glm::vec3 parsePlane(core::Tokenizer &tok) {
 		Log::error("Invalid plane line - expected ( - got %s", begin.c_str());
 		return {};
 	}
-	glm::vec3 v{0};
+	math::Vec3f v{0};
 	int component = 0;
 	while (tok.hasNext()) {
 		const core::String &t = tok.next();
@@ -85,8 +88,8 @@ static glm::vec3 parsePlane(core::Tokenizer &tok) {
 	return {};
 }
 
-static glm::vec3 parsePlaneWithConversion(core::Tokenizer &tok) {
-	const glm::vec3 quakePos = parsePlane(tok);
+static math::Vec3f parsePlaneWithConversion(core::Tokenizer &tok) {
+	const math::Vec3f quakePos = parsePlane(tok);
 	return quakeToVengi(quakePos);
 }
 
@@ -132,23 +135,23 @@ static bool skipFace(const core::String &texture) {
 	return false;
 }
 
-static void planeBasis(const glm::vec3 &n, glm::vec3 &u, glm::vec3 &v) {
-	if (glm::abs(n.z) > 0.9f) {
-		u = glm::normalize(glm::cross(n, glm::vec3(0, 1, 0)));
+static void planeBasis(const math::Vec3f &n, math::Vec3f &u, math::Vec3f &v) {
+	if (math::abs(n.z) > 0.9f) {
+		u = math::normalize(math::cross(n, math::Vec3f(0, 1, 0)));
 	} else {
-		u = glm::normalize(glm::cross(n, glm::vec3(0, 0, 1)));
+		u = math::normalize(math::cross(n, math::Vec3f(0, 0, 1)));
 	}
-	v = glm::normalize(glm::cross(u, n));
+	v = math::normalize(math::cross(u, n));
 }
 
-static core::DynamicArray<glm::vec3> createBasePolygon(const math::Plane &plane) {
-	glm::vec3 u, v;
+static core::DynamicArray<math::Vec3f> createBasePolygon(const math::Plane &plane) {
+	math::Vec3f u, v;
 	planeBasis(plane.norm(), u, v);
 
 	const float EXTENT = 8192.0f; // larger than any map
-	const glm::vec3 origin = plane.norm() * -plane.dist();
+	const math::Vec3f origin = plane.norm() * -plane.dist();
 
-	core::DynamicArray<glm::vec3> poly;
+	core::DynamicArray<math::Vec3f> poly;
 	poly.emplace_back(origin + u * EXTENT + v * EXTENT);
 	poly.emplace_back(origin - u * EXTENT + v * EXTENT);
 	poly.emplace_back(origin - u * EXTENT - v * EXTENT);
@@ -157,16 +160,16 @@ static core::DynamicArray<glm::vec3> createBasePolygon(const math::Plane &plane)
 	return poly;
 }
 
-static core::DynamicArray<glm::vec3> clipPolygon(const core::DynamicArray<glm::vec3> &in, const math::Plane &plane) {
-	core::DynamicArray<glm::vec3> out;
+static core::DynamicArray<math::Vec3f> clipPolygon(const core::DynamicArray<math::Vec3f> &in, const math::Plane &plane) {
+	core::DynamicArray<math::Vec3f> out;
 	if (in.empty()) {
 		return out;
 	}
 
-	glm::vec3 prev = in.back();
+	math::Vec3f prev = in.back();
 	float prevDist = plane.distanceToPlane(prev);
 
-	for (const glm::vec3 &curr : in) {
+	for (const math::Vec3f &curr : in) {
 		float currDist = plane.distanceToPlane(curr);
 
 		const bool currIn = currDist >= 0.0f;
@@ -187,8 +190,8 @@ static core::DynamicArray<glm::vec3> clipPolygon(const core::DynamicArray<glm::v
 	return out;
 }
 
-static core::DynamicArray<glm::vec3> buildFacePolygon(const QFace &face, const QBrush &brush) {
-	core::DynamicArray<glm::vec3> poly = createBasePolygon(face.plane);
+static core::DynamicArray<math::Vec3f> buildFacePolygon(const QFace &face, const QBrush &brush) {
+	core::DynamicArray<math::Vec3f> poly = createBasePolygon(face.plane);
 
 	for (const QFace &clip : brush.faces) {
 		if (&clip == &face) {
@@ -204,20 +207,20 @@ static core::DynamicArray<glm::vec3> buildFacePolygon(const QFace &face, const Q
 	return poly;
 }
 
-static glm::vec2 computeUV(const QFace &face, const glm::vec3 &worldPos) {
+static math::Vec2f computeUV(const QFace &face, const math::Vec3f &worldPos) {
 	// 1 stable basis for the plane
-	glm::vec3 u, v;
+	math::Vec3f u, v;
 	planeBasis(face.normal, u, v);
 
 	// 2 Projection onto basis
-	float s = glm::dot(worldPos, u);
-	float t = glm::dot(worldPos, v);
+	float s = math::dot(worldPos, u);
+	float t = math::dot(worldPos, v);
 
 	// 3 rotation (Quake: degrees, CCW)
 	if (face.rotation != 0.0f) {
-		const float rad = glm::radians(face.rotation);
-		const float cs = glm::cos(rad);
-		const float sn = glm::sin(rad);
+		const float rad = math::radians(face.rotation);
+		const float cs = math::cos(rad);
+		const float sn = math::sin(rad);
 
 		const float sRot = cs * s - sn * t;
 		const float tRot = sn * s + cs * t;
@@ -237,7 +240,7 @@ static glm::vec2 computeUV(const QFace &face, const glm::vec3 &worldPos) {
 	s += face.offset.x;
 	t += face.offset.y;
 
-	return glm::vec2(s, t);
+	return math::Vec2f(s, t);
 }
 
 bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &archive, io::SeekableReadStream &stream,
@@ -337,18 +340,18 @@ bool MapFormat::parseBrush(const core::String &filename, const io::ArchivePtr &a
 			continue;
 		}
 
-		for (const glm::vec3 &p : polyVerts) {
-			glm::vec2 uv = computeUV(qface, p);
-			glm::vec3 snapped = p;
+		for (const math::Vec3f &p : polyVerts) {
+			math::Vec2f uv = computeUV(qface, p);
+			math::Vec3f snapped = p;
 			const float epsilon = 0.001f;
-			if (glm::abs(snapped.x - glm::round(snapped.x)) < epsilon) {
-				snapped.x = glm::round(snapped.x);
+			if (math::abs(snapped.x - math::round(snapped.x)) < epsilon) {
+				snapped.x = math::round(snapped.x);
 			}
-			if (glm::abs(snapped.y - glm::round(snapped.y)) < epsilon) {
-				snapped.y = glm::round(snapped.y);
+			if (math::abs(snapped.y - math::round(snapped.y)) < epsilon) {
+				snapped.y = math::round(snapped.y);
 			}
-			if (glm::abs(snapped.z - glm::round(snapped.z)) < epsilon) {
-				snapped.z = glm::round(snapped.z);
+			if (math::abs(snapped.z - math::round(snapped.z)) < epsilon) {
+				snapped.z = math::round(snapped.z);
 			}
 			polygon.addVertex(snapped, uv);
 		}
@@ -440,7 +443,7 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 				core::String classname;
 				if (props.get("classname", classname)) {
 					core::String originStr;
-					glm::vec3 origin(0.0f);
+					math::Vec3f origin(0.0f);
 					if (props.get("origin", originStr)) {
 						core::Tokenizer tok(originStr, " ");
 						float x = 0.0f;
@@ -455,7 +458,7 @@ bool MapFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 						if (tok.hasNext()) {
 							z = tok.next().toFloat();
 						}
-						origin = quakeToVengi(glm::vec3(x, y, z));
+						origin = quakeToVengi(math::Vec3f(x, y, z));
 					}
 					scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
 					node.setName(core::String::format("%s %i", classname.c_str(), entity));

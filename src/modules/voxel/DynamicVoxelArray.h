@@ -6,12 +6,12 @@
 
 #include "core/collection/DynamicArray.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
 struct VoxelPosition {
-	glm::ivec3 pos{0};
+	math::Vec3i pos{0};
 	Voxel voxel;
 };
 
@@ -26,7 +26,7 @@ public:
 	 * hasVoxel() to check for existence before adding if needed.
 	 * Runtime is O(1)
 	 */
-	void setVoxel(const glm::ivec3 &pos, const Voxel &voxel);
+	void setVoxel(const math::Vec3i &pos, const Voxel &voxel);
 
 	/**
 	 * @brief Runtime is O(1)
@@ -36,21 +36,21 @@ public:
 	/**
 	 * @brief Runtime is O(N)
 	 */
-	bool hasVoxel(const glm::ivec3 &pos) const;
+	bool hasVoxel(const math::Vec3i &pos) const;
 
 	/**
 	 * @brief Runtime is O(N)
 	 */
-	const Voxel &voxel(const glm::ivec3 &pos) const;
+	const Voxel &voxel(const math::Vec3i &pos) const;
 	const Voxel &voxel(int x, int y, int z) const;
 };
 
 inline void DynamicVoxelArray::setVoxel(int x, int y, int z, const Voxel &voxel) {
-	setVoxel(glm::ivec3(x, y, z), voxel);
+	setVoxel(math::Vec3i(x, y, z), voxel);
 }
 
 inline const Voxel &DynamicVoxelArray::voxel(int x, int y, int z) const {
-	return voxel(glm::ivec3(x, y, z));
+	return voxel(math::Vec3i(x, y, z));
 }
 
 } // namespace voxel

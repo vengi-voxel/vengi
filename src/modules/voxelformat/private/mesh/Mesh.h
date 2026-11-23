@@ -6,14 +6,16 @@
 
 #include "voxel/Mesh.h"
 #include "voxelformat/private/mesh/MeshTri.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
 struct MeshVertex {
-	glm::vec3 pos{0.0f};
-	glm::vec2 uv{0.0f};
+	math::Vec3f pos{0.0f};
+	math::Vec2f uv{0.0f};
 	color::RGBA color{0};
-	glm::vec3 normal{0.0f};
+	math::Vec3f normal{0.0f};
 	MeshMaterialIndex materialIdx = -1;
 };
 struct Mesh {
@@ -40,7 +42,7 @@ struct Mesh {
 	 * @param[out] maxs The maximum corner of the AABB
 	 * @return @c true if the AABB was calculated, @c false if the mesh has no vertices
 	 */
-	bool calculateAABB(glm::vec3 &mins, glm::vec3 &maxs) const;
+	bool calculateAABB(math::Vec3f &mins, math::Vec3f &maxs) const;
 };
 
 } // namespace voxelformat

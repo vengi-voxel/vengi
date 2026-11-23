@@ -13,6 +13,10 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/SurfaceExtractor.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -61,36 +65,36 @@ void MeshState::construct() {
 	_meshAlloc = core::Var::registerVar(voxMeshAlloc);
 }
 
-glm::vec3 MeshState::VolumeData::centerPos(bool applyModel) const {
-	const glm::vec4 center((_mins + _maxs) * 0.5f, 1.0f);
-	const glm::vec3 pos = applyModel ? _model * center : center;
+math::Vec3f MeshState::VolumeData::centerPos(bool applyModel) const {
+	const math::Vec4f center((_mins + _maxs) * 0.5f, 1.0f);
+	const math::Vec3f pos = applyModel ? _model * center : center;
 	return pos;
 }
 
-const glm::vec3 &MeshState::mins(int idx) const {
+const math::Vec3f &MeshState::mins(int idx) const {
 	return _volumeData[idx]._mins;
 }
 
-const glm::vec3 &MeshState::maxs(int idx) const {
+const math::Vec3f &MeshState::maxs(int idx) const {
 	return _volumeData[idx]._maxs;
 }
 
-glm::vec3 MeshState::centerPos(int idx, bool applyModel) const {
+math::Vec3f MeshState::centerPos(int idx, bool applyModel) const {
 	return _volumeData[idx].centerPos(applyModel);
 }
 
-const glm::mat4 &MeshState::model(int idx) const {
+const math::Mat4f &MeshState::model(int idx) const {
 	return _volumeData[idx]._model;
 }
 
-bool MeshState::sameModelMatrix(int idx, const glm::mat4 &model) const {
+bool MeshState::sameModelMatrix(int idx, const math::Mat4f &model) const {
 	if (idx < 0 || idx >= (int)_volumeData.size()) {
 		return false;
 	}
 	return _volumeData[idx]._model == model;
 }
 
-bool MeshState::setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &maxs) {
+bool MeshState::setModelMatrix(int idx, const math::Mat4f &model, const math::Vec3f &mins, const math::Vec3f &maxs) {
 	if (idx < 0) {
 		Log::error("Given id %i is out of bounds", idx);
 		return false;
@@ -161,7 +165,7 @@ void MeshState::deferPendingMesh(int idx) {
 	}
 }
 
-bool MeshState::deleteMeshes(const glm::ivec3 &pos, int idx) {
+bool MeshState::deleteMeshes(const math::Vec3i &pos, int idx) {
 	bool d = false;
 	for (int i = 0; i < MeshType_Max; ++i) {
 		auto &meshes = _meshes[i];
@@ -234,9 +238,9 @@ const palette::NormalPalette &MeshState::normalsPalette(int idx) const {
 	return *_volumeData[idx]._normalPalette.value();
 }
 
-voxel::Region MeshState::calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const {
-	const glm::ivec3 mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
-	const glm::ivec3 maxs = mins + meshSize - 1;
+voxel::Region MeshState::calculateExtractRegion(int x, int y, int z, const math::Vec3i &meshSize) const {
+	const math::Vec3i mins(x * meshSize.x, y * meshSize.y, z * meshSize.z);
+	const math::Vec3i maxs = mins + meshSize - 1;
 	return voxel::Region{mins, maxs};
 }
 
@@ -293,14 +297,14 @@ bool MeshState::runScheduledExtractions(size_t maxExtraction) {
 				// faces. Check the expanded region to catch this case.
 				const voxel::Region expandedRegion(finalRegion.getLowerCorner() - 1, finalRegion.getUpperCorner() + 1);
 				if (v->isEmpty(expandedRegion)) {
-					const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
+					const math::Vec3i &mins = extractRegion.region.getLowerCorner();
 					results[i] = {mins, idx, voxel::ChunkMesh(0, 0, false)};
 					continue;
 				}
 			}
 
 			const palette::Palette &pal = palette(resolveIdx(idx));
-			const glm::ivec3 &mins = extractRegion.region.getLowerCorner();
+			const math::Vec3i &mins = extractRegion.region.getLowerCorner();
 			const int meshVertices = meshAllocSmall ? SmallAllocVertices : FullAllocVertices;
 			const int meshIndices = meshAllocSmall ? SmallAllocIndices : FullAllocIndices;
 			voxel::ChunkMesh mesh(meshVertices, meshIndices, true);
@@ -359,7 +363,7 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 	}
 
 	const int s = _meshSize->intVal();
-	const glm::ivec3 meshSize(s);
+	const math::Vec3i meshSize(s);
 	voxel::Region completeRegion = v->region();
 	completeRegion.shiftUpperCorner(1, 1, 1);
 
@@ -374,10 +378,10 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 	auto floorDiv = [](int a, int b) { return (a / b) - (a % b != 0 && (a ^ b) < 0); };
 	// Dual contouring also samples the gradient at each corner of the neighboring cells.
 	const int halo = meshMode() == SurfaceExtractionType::DualContouring ? 2 : 1;
-	const glm::ivec3 lv = region.getLowerCorner() - halo;
-	const glm::ivec3 uv = region.getUpperCorner() + halo;
-	const glm::ivec3 l(floorDiv(lv.x, s), floorDiv(lv.y, s), floorDiv(lv.z, s));
-	const glm::ivec3 u(floorDiv(uv.x, s), floorDiv(uv.y, s), floorDiv(uv.z, s));
+	const math::Vec3i lv = region.getLowerCorner() - halo;
+	const math::Vec3i uv = region.getUpperCorner() + halo;
+	const math::Vec3i l(floorDiv(lv.x, s), floorDiv(lv.y, s), floorDiv(lv.z, s));
+	const math::Vec3i u(floorDiv(uv.x, s), floorDiv(uv.y, s), floorDiv(uv.z, s));
 
 	bool deletedMesh = false;
 	Log::debug("modified region: %s", region.toString().c_str());
@@ -385,7 +389,7 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 		for (int y = l.y; y <= u.y; ++y) {
 			for (int z = l.z; z <= u.z; ++z) {
 				const voxel::Region &finalRegion = calculateExtractRegion(x, y, z, meshSize);
-				const glm::ivec3 &mins = finalRegion.getLowerCorner();
+				const math::Vec3i &mins = finalRegion.getLowerCorner();
 
 				if (!voxel::intersects(completeRegion, finalRegion)) {
 					deleteMeshes(mins, bufferIndex);
@@ -606,7 +610,7 @@ void MeshState::setOpacity(int idx, float opacity) {
 		return;
 	}
 	ensureSize(idx);
-	_volumeData[idx]._opacity = glm::clamp(opacity, 0.0f, 1.0f);
+	_volumeData[idx]._opacity = math::clamp(opacity, 0.0f, 1.0f);
 }
 
 } // namespace voxel

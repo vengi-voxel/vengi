@@ -4,14 +4,14 @@
 
 #include "SparseVolume.h"
 #include "DynamicVoxelArray.h"
-#include <glm/common.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
 SparseVolume::SparseVolume(const voxel::Region &region) : _region(region), _isRegionValid(_region.isValid()) {
 }
 
-SparseVolume::Chunk *SparseVolume::findChunk(const glm::ivec3 &chunkPos) const {
+SparseVolume::Chunk *SparseVolume::findChunk(const math::Vec3i &chunkPos) const {
 	if (_cachedChunkPosition == chunkPos && _cachedChunkPtr) {
 		return _cachedChunkPtr.get();
 	}
@@ -24,7 +24,7 @@ SparseVolume::Chunk *SparseVolume::findChunk(const glm::ivec3 &chunkPos) const {
 	return nullptr;
 }
 
-SparseVolume::Chunk *SparseVolume::findOrCreateChunk(const glm::ivec3 &chunkPos) {
+SparseVolume::Chunk *SparseVolume::findOrCreateChunk(const math::Vec3i &chunkPos) {
 	ChunkCacheEntry &entry = _writeChunkCache[writeChunkCacheSlot(chunkPos)];
 	if (entry.chunk != nullptr && entry.pos == chunkPos) {
 		return entry.chunk;
@@ -42,11 +42,11 @@ SparseVolume::Chunk *SparseVolume::findOrCreateChunk(const glm::ivec3 &chunkPos)
 	return entry.chunk;
 }
 
-void SparseVolume::removeChunkIfEmpty(const glm::ivec3 &chunkPos, Chunk *chunk) {
+void SparseVolume::removeChunkIfEmpty(const math::Vec3i &chunkPos, Chunk *chunk) {
 	if (chunk->empty()) {
 		if (_cachedChunkPosition == chunkPos) {
 			_cachedChunkPtr = ChunkPtr();
-			_cachedChunkPosition = glm::ivec3(INT32_MAX, INT32_MAX, INT32_MAX);
+			_cachedChunkPosition = math::Vec3i(INT32_MAX, INT32_MAX, INT32_MAX);
 		}
 		ChunkCacheEntry &entry = _writeChunkCache[writeChunkCacheSlot(chunkPos)];
 		if (entry.chunk == chunk) {
@@ -57,7 +57,7 @@ void SparseVolume::removeChunkIfEmpty(const glm::ivec3 &chunkPos, Chunk *chunk) 
 	}
 }
 
-bool SparseVolume::removeVoxel(Chunk *chunk, const glm::ivec3 &localPos) {
+bool SparseVolume::removeVoxel(Chunk *chunk, const math::Vec3i &localPos) {
 	if (!chunk->removeVoxel(localPos.x, localPos.y, localPos.z)) {
 		return false;
 	}
@@ -69,14 +69,14 @@ bool SparseVolume::removeVoxel(Chunk *chunk, const glm::ivec3 &localPos) {
 	return true;
 }
 
-bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
+bool SparseVolume::setVoxel(const math::Vec3i &pos, const voxel::Voxel &voxel) {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
 
 	const bool isEmptyVoxel = !_storeEmptyVoxels && isAir(voxel.getMaterial());
 	if (isEmptyVoxel) {
-		const glm::ivec3 &chunkPos = sparse::chunkPosition(pos);
+		const math::Vec3i &chunkPos = sparse::chunkPosition(pos);
 		Chunk *chunk = findChunk(chunkPos);
 		if (!chunk) {
 			return true;
@@ -86,10 +86,10 @@ bool SparseVolume::setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel) {
 		return true;
 	}
 
-	const glm::ivec3 brickPos(pos.x >> SparseChunk::BrickShift, pos.y >> SparseChunk::BrickShift,
+	const math::Vec3i brickPos(pos.x >> SparseChunk::BrickShift, pos.y >> SparseChunk::BrickShift,
 							  pos.z >> SparseChunk::BrickShift);
 	if (_cachedBrick == nullptr || brickPos != _cachedBrickPosition) {
-		const glm::ivec3 &localPos = sparse::localPosition(pos);
+		const math::Vec3i &localPos = sparse::localPosition(pos);
 		_cachedBrickChunk = findOrCreateChunk(sparse::chunkPosition(pos));
 		_cachedBrick = _cachedBrickChunk->findOrCreateBrick(localPos.x, localPos.y, localPos.z);
 		_cachedBrickPosition = brickPos;
@@ -108,26 +108,26 @@ void SparseVolume::insertBatch(core::DynamicArray<VoxelPosition> &voxels) {
 	}
 	// Sort by chunk position for optimal cache utilization
 	voxels.sort([](const VoxelPosition &a, const VoxelPosition &b) {
-		const glm::ivec3 ca = sparse::chunkPosition(a.pos);
-		const glm::ivec3 cb = sparse::chunkPosition(b.pos);
+		const math::Vec3i ca = sparse::chunkPosition(a.pos);
+		const math::Vec3i cb = sparse::chunkPosition(b.pos);
 		if (ca.z != cb.z) return ca.z < cb.z;
 		if (ca.y != cb.y) return ca.y < cb.y;
 		return ca.x < cb.x;
 	});
 
-	glm::ivec3 currentChunkPos(INT32_MAX);
+	math::Vec3i currentChunkPos(INT32_MAX);
 	Chunk *currentChunk = nullptr;
 
 	for (const VoxelPosition &vp : voxels) {
 		if (_isRegionValid && !_region.containsPoint(vp.pos)) {
 			continue;
 		}
-		const glm::ivec3 cp = sparse::chunkPosition(vp.pos);
+		const math::Vec3i cp = sparse::chunkPosition(vp.pos);
 		if (cp != currentChunkPos) {
 			currentChunkPos = cp;
 			currentChunk = findOrCreateChunk(cp);
 		}
-		const glm::ivec3 lp = sparse::localPosition(vp.pos);
+		const math::Vec3i lp = sparse::localPosition(vp.pos);
 		if (currentChunk->setVoxel(lp.x, lp.y, lp.z, vp.voxel)) {
 			++_size;
 			++_rowGeneration;
@@ -149,9 +149,9 @@ void SparseVolume::setVoxelsRow(int x, int y, int z, int count, const Voxel &vox
 	const int endX = x + count;
 	int currentX = x;
 	while (currentX < endX) {
-		const glm::ivec3 pos(currentX, y, z);
-		const glm::ivec3 chunkPos = sparse::chunkPosition(pos);
-		const glm::ivec3 localPos = sparse::localPosition(pos);
+		const math::Vec3i pos(currentX, y, z);
+		const math::Vec3i chunkPos = sparse::chunkPosition(pos);
+		const math::Vec3i localPos = sparse::localPosition(pos);
 		const int chunkEndX = sparse::chunkBase(chunkPos).x + sparse::ChunkSide;
 		const int processUntilX = (endX < chunkEndX) ? endX : chunkEndX;
 		Chunk *chunk = findOrCreateChunk(chunkPos);
@@ -164,7 +164,7 @@ void SparseVolume::setVoxelsRow(int x, int y, int z, int count, const Voxel &vox
 	}
 }
 
-const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
+const Voxel &SparseVolume::voxel(const math::Vec3i &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return _emptyVoxel;
 	}
@@ -172,7 +172,7 @@ const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
 	if (!chunk) {
 		return _emptyVoxel;
 	}
-	const glm::ivec3 &localPos = sparse::localPosition(pos);
+	const math::Vec3i &localPos = sparse::localPosition(pos);
 	const Voxel *v = chunk->voxel(localPos.x, localPos.y, localPos.z);
 	if (v == nullptr) {
 		return _emptyVoxel;
@@ -180,7 +180,7 @@ const Voxel &SparseVolume::voxel(const glm::ivec3 &pos) const {
 	return *v;
 }
 
-bool SparseVolume::hasVoxel(const glm::ivec3 &pos) const {
+bool SparseVolume::hasVoxel(const math::Vec3i &pos) const {
 	if (_isRegionValid && !_region.containsPoint(pos)) {
 		return false;
 	}
@@ -188,16 +188,16 @@ bool SparseVolume::hasVoxel(const glm::ivec3 &pos) const {
 	if (!chunk) {
 		return false;
 	}
-	const glm::ivec3 &localPos = sparse::localPosition(pos);
+	const math::Vec3i &localPos = sparse::localPosition(pos);
 	return chunk->hasVoxel(localPos.x, localPos.y, localPos.z);
 }
 
 const Voxel &SparseVolume::voxel(int32_t x, int32_t y, int32_t z) const {
-	return voxel(glm::ivec3(x, y, z));
+	return voxel(math::Vec3i(x, y, z));
 }
 
 bool SparseVolume::hasVoxel(int x, int y, int z) const {
-	return hasVoxel(glm::ivec3(x, y, z));
+	return hasVoxel(math::Vec3i(x, y, z));
 }
 
 void SparseVolume::clear() {
@@ -209,10 +209,10 @@ void SparseVolume::clear() {
 	_chunks.clear();
 	_size = 0;
 	_cachedChunkPtr = ChunkPtr();
-	_cachedChunkPosition = glm::ivec3(INT32_MAX, INT32_MAX, INT32_MAX);
+	_cachedChunkPosition = math::Vec3i(INT32_MAX, INT32_MAX, INT32_MAX);
 }
 
-CORE_FORCE_INLINE void SparseVolume::Sampler::sampleVoxel(const glm::ivec3 &pos, bool cacheRow) {
+CORE_FORCE_INLINE void SparseVolume::Sampler::sampleVoxel(const math::Vec3i &pos, bool cacheRow) {
 	static constexpr Voxel emptyBrick[SparseChunk::BrickVoxels]{};
 	constexpr int mask = SparseChunk::BrickSide - 1;
 	const int idx = SparseChunk::voxelIndex(pos.x, pos.y, pos.z);
@@ -222,8 +222,8 @@ CORE_FORCE_INLINE void SparseVolume::Sampler::sampleVoxel(const glm::ivec3 &pos,
 		_cachedLower = pos & ~mask;
 		_cachedUpper = pos | mask;
 		if (_volume->_isRegionValid) {
-			_cachedLower = glm::max(_cachedLower, region().getLowerCorner());
-			_cachedUpper = glm::min(_cachedUpper, region().getUpperCorner());
+			_cachedLower = math::max(_cachedLower, region().getLowerCorner());
+			_cachedUpper = math::min(_cachedUpper, region().getUpperCorner());
 		}
 		_cachedUpperX = _cachedUpper.x;
 	} else {
@@ -243,7 +243,7 @@ CORE_FORCE_INLINE void SparseVolume::Sampler::sampleVoxel(const glm::ivec3 &pos,
 void SparseVolume::Sampler::updateCurrentVoxel(bool cacheRow) {
 	int x, y, z;
 	readPosition(x, y, z);
-	const glm::ivec3 chunkPos(x >> SparseChunk::SideShift, y >> SparseChunk::SideShift, z >> SparseChunk::SideShift);
+	const math::Vec3i chunkPos(x >> SparseChunk::SideShift, y >> SparseChunk::SideShift, z >> SparseChunk::SideShift);
 	if (_cachedChunk == nullptr || _cachedChunkPos != chunkPos || _cachedGeneration != _volume->_releaseGeneration) {
 		_cachedChunk = _volume->findChunk(chunkPos);
 		_cachedChunkPos = chunkPos;
@@ -263,7 +263,7 @@ bool SparseVolume::Sampler::setVoxel(const Voxel &voxel) {
 	// Fast path: the caches are updated on every position change
 	if (_cachedChunk && _cachedGeneration == _volume->_releaseGeneration) {
 		const bool isEmptyVoxel = !_volume->_storeEmptyVoxels && isAir(voxel.getMaterial());
-		const glm::ivec3 localPos = sparse::localPosition(_posInVolume);
+		const math::Vec3i localPos = sparse::localPosition(_posInVolume);
 		if (isEmptyVoxel) {
 			// releasing the brick bumps the release generation - the next access resolves the brick again
 			_volume->removeVoxel(_cachedChunk, localPos);
@@ -306,7 +306,7 @@ Region SparseVolume::calculateRegion() const {
 	if (_size == 0) {
 		return Region::InvalidRegion;
 	}
-	return sparse::calculateRegion(_chunks, [](const Chunk &chunk, glm::ivec3 &mins, glm::ivec3 &maxs) {
+	return sparse::calculateRegion(_chunks, [](const Chunk &chunk, math::Vec3i &mins, math::Vec3i &maxs) {
 		return chunk.calculateBounds(mins, maxs);
 	});
 }

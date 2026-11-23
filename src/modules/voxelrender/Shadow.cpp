@@ -6,14 +6,19 @@
 #include "core/TraceScoped.h"
 #include "math/Frustum.h"
 #include "video/Camera.h"
-#include "core/GLM.h"
 #include "video/Trace.h"
 #include "core/Var.h"
 #include "core/Log.h"
 #include "video/Renderer.h"
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Conversions.h"
+#include "math/Mat4Ops.h"
+#include "math/Axes.h"
 
 namespace voxelrender {
 
@@ -29,10 +34,10 @@ bool Shadow::init(const ShadowParameters& parameters) {
 		return false;
 	}
 	_parameters = parameters;
-	const glm::vec3 sunPos(25.0f, 100.0f, 25.0f);
-	setPosition(sunPos, glm::vec3(0.0f), glm::up());
+	const math::Vec3f sunPos(25.0f, 100.0f, 25.0f);
+	setPosition(sunPos, math::Vec3f(0.0f), math::up());
 
-	const glm::ivec2 smSize(core::getVar(cfg::ClientShadowMapSize)->intVal());
+	const math::Vec2i smSize(core::getVar(cfg::ClientShadowMapSize)->intVal());
 	const video::FrameBufferConfig& cfg = video::defaultDepthBufferConfig(smSize, _parameters.maxDepthBuffers);
 	if (!_depthBuffer.init(cfg)) {
 		Log::error("Failed to init the depthbuffer");
@@ -49,29 +54,29 @@ void Shadow::shutdown() {
 
 namespace {
 
-void lightSpaceAABB(const glm::mat4 &lightView, const glm::vec3 *worldPts, int n, glm::vec3 &mins, glm::vec3 &maxs) {
-	mins = glm::vec3(1.0e8f);
-	maxs = glm::vec3(-1.0e8f);
+void lightSpaceAABB(const math::Mat4f &lightView, const math::Vec3f *worldPts, int n, math::Vec3f &mins, math::Vec3f &maxs) {
+	mins = math::Vec3f(1.0e8f);
+	maxs = math::Vec3f(-1.0e8f);
 	for (int i = 0; i < n; ++i) {
-		const glm::vec3 lp(lightView * glm::vec4(worldPts[i], 1.0f));
-		mins = glm::min(mins, lp);
-		maxs = glm::max(maxs, lp);
+		const math::Vec3f lp(lightView * math::Vec4f(worldPts[i], 1.0f));
+		mins = math::min(mins, lp);
+		maxs = math::max(maxs, lp);
 	}
 }
 
-void worldAABBToLightSpace(const glm::mat4 &lightView, const glm::vec3 &wmins, const glm::vec3 &wmaxs, glm::vec3 &mins,
-						   glm::vec3 &maxs) {
-	glm::vec3 pts[8];
+void worldAABBToLightSpace(const math::Mat4f &lightView, const math::Vec3f &wmins, const math::Vec3f &wmaxs, math::Vec3f &mins,
+						   math::Vec3f &maxs) {
+	math::Vec3f pts[8];
 	for (int i = 0; i < 8; ++i) {
-		pts[i] = glm::vec3((i & 1) ? wmaxs.x : wmins.x, (i & 2) ? wmaxs.y : wmins.y, (i & 4) ? wmaxs.z : wmins.z);
+		pts[i] = math::Vec3f((i & 1) ? wmaxs.x : wmins.x, (i & 2) ? wmaxs.y : wmins.y, (i & 4) ? wmaxs.z : wmins.z);
 	}
 	lightSpaceAABB(lightView, pts, 8, mins, maxs);
 }
 
-glm::mat4 lightOrtho(const glm::mat4 &lightView, const glm::vec3 &lightMins, const glm::vec3 &lightMaxs,
-					 const glm::ivec2 &dim) {
-	glm::vec3 center = (lightMins + lightMaxs) * 0.5f;
-	const glm::vec3 extent = (lightMaxs - lightMins) * 0.5f;
+math::Mat4f lightOrtho(const math::Mat4f &lightView, const math::Vec3f &lightMins, const math::Vec3f &lightMaxs,
+					 const math::Vec2i &dim) {
+	math::Vec3f center = (lightMins + lightMaxs) * 0.5f;
+	const math::Vec3f extent = (lightMaxs - lightMins) * 0.5f;
 	float radius = core_max(extent.x, extent.y);
 	radius = core_max(radius, 8.0f);
 	radius += 2.0f;
@@ -80,8 +85,8 @@ glm::mat4 lightOrtho(const glm::mat4 &lightView, const glm::vec3 &lightMins, con
 		const float xRound = radius * 2.0f / (float)dim.x;
 		const float yRound = radius * 2.0f / (float)dim.y;
 		if (xRound > 0.0f && yRound > 0.0f) {
-			center.x = glm::round(center.x / xRound) * xRound;
-			center.y = glm::round(center.y / yRound) * yRound;
+			center.x = math::round(center.x / xRound) * xRound;
+			center.y = math::round(center.y / yRound) * yRound;
 		}
 	}
 
@@ -91,35 +96,35 @@ glm::mat4 lightOrtho(const glm::mat4 &lightView, const glm::vec3 &lightMins, con
 	if (zFar < zNear + 1.0f) {
 		zFar = zNear + 1.0f;
 	}
-	const glm::mat4 lightProjection = video::clipDepthZeroToOne()
-		? glm::orthoRH_ZO(center.x - radius, center.x + radius, center.y - radius, center.y + radius, zNear, zFar)
-		: glm::ortho(center.x - radius, center.x + radius, center.y - radius, center.y + radius, zNear, zFar);
+	const math::Mat4f lightProjection = video::clipDepthZeroToOne()
+		? math::orthoRH_ZO(center.x - radius, center.x + radius, center.y - radius, center.y + radius, zNear, zFar)
+		: math::ortho(center.x - radius, center.x + radius, center.y - radius, center.y + radius, zNear, zFar);
 	return lightProjection * lightView;
 }
 
 } // namespace
 
-void Shadow::update(const video::Camera& camera, bool active, const glm::vec3& sceneMins, const glm::vec3& sceneMaxs) {
+void Shadow::update(const video::Camera& camera, bool active, const math::Vec3f& sceneMins, const math::Vec3f& sceneMaxs) {
 	core_trace_scoped(ShadowCalculate);
 
 	if (!active) {
 		for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
-			_cascades[i] = glm::mat4(1.0f);
+			_cascades[i] = math::Mat4f(1.0f);
 			_distances[i] = camera.farPlane();
 		}
 		return;
 	}
 
 	const bool hasScene = sceneMins.x < sceneMaxs.x && sceneMins.y < sceneMaxs.y && sceneMins.z < sceneMaxs.z;
-	const glm::ivec2 &dim = dimension();
+	const math::Vec2i &dim = dimension();
 	float near = camera.isOrthographic() ? camera.nearPlane() : core_max(camera.nearPlane(), 0.01f);
 	float far = camera.farPlane();
-	glm::vec3 sceneLightMins(0.0f);
-	glm::vec3 sceneLightMaxs(0.0f);
+	math::Vec3f sceneLightMins(0.0f);
+	math::Vec3f sceneLightMaxs(0.0f);
 	if (hasScene) {
 		worldAABBToLightSpace(_lightView, sceneMins, sceneMaxs, sceneLightMins, sceneLightMaxs);
-		glm::vec3 sceneViewMins;
-		glm::vec3 sceneViewMaxs;
+		math::Vec3f sceneViewMins;
+		math::Vec3f sceneViewMaxs;
 		worldAABBToLightSpace(camera.viewMatrix(), sceneMins, sceneMaxs, sceneViewMins, sceneViewMaxs);
 		const float sceneNear = core_max(near, -sceneViewMaxs.z);
 		const float sceneFar = core_min(far, -sceneViewMins.z);
@@ -132,19 +137,19 @@ void Shadow::update(const video::Camera& camera, bool active, const glm::vec3& s
 	float sliceNear = near;
 	for (int i = 0; i < _parameters.maxDepthBuffers; ++i) {
 		const float fraction = (float)(i + 1) / (float)_parameters.maxDepthBuffers;
-		float sliceFar = glm::mix(near, far, fraction);
+		float sliceFar = math::mix(near, far, fraction);
 		if (!camera.isOrthographic()) {
-			const float logarithmic = near * glm::pow(far / near, fraction);
-			sliceFar = glm::mix(sliceFar, logarithmic, glm::clamp(_parameters.sliceWeight, 0.0f, 1.0f));
+			const float logarithmic = near * math::pow(far / near, fraction);
+			sliceFar = math::mix(sliceFar, logarithmic, math::clamp(_parameters.sliceWeight, 0.0f, 1.0f));
 		}
-		glm::vec3 corners[math::FRUSTUM_VERTICES_MAX];
+		math::Vec3f corners[math::FRUSTUM_VERTICES_MAX];
 		camera.splitFrustum(sliceNear, sliceFar, corners);
-		glm::vec3 lightMins;
-		glm::vec3 lightMaxs;
+		math::Vec3f lightMins;
+		math::Vec3f lightMaxs;
 		lightSpaceAABB(_lightView, corners, math::FRUSTUM_VERTICES_MAX, lightMins, lightMaxs);
 		if (hasScene) {
-			const glm::vec2 clippedMins = glm::max(glm::vec2(lightMins), glm::vec2(sceneLightMins));
-			const glm::vec2 clippedMaxs = glm::min(glm::vec2(lightMaxs), glm::vec2(sceneLightMaxs));
+			const math::Vec2f clippedMins = math::max(math::Vec2f(lightMins), math::Vec2f(sceneLightMins));
+			const math::Vec2f clippedMaxs = math::min(math::Vec2f(lightMaxs), math::Vec2f(sceneLightMaxs));
 			if (clippedMins.x < clippedMaxs.x && clippedMins.y < clippedMaxs.y) {
 				lightMins.x = clippedMins.x;
 				lightMins.y = clippedMins.y;
@@ -180,7 +185,7 @@ void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	video::cullFace(video::Face::Back);
 
 	video::enable(video::State::PolygonOffsetFill);
-	video::polygonOffset(glm::vec2(1.0f, 2.0f));
+	video::polygonOffset(math::Vec2f(1.0f, 2.0f));
 
 	video::colorMask(false, false, false, false);
 	_depthBuffer.bind(false);
@@ -195,7 +200,7 @@ void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	video::colorMask(true, true, true, true);
 
 	// Restore polygon offset state
-	video::polygonOffset(glm::vec2(0.0f));
+	video::polygonOffset(math::Vec2f(0.0f));
 	video::disable(video::State::PolygonOffsetFill);
 
 	video::cullFace(video::Face::Back);
@@ -204,22 +209,22 @@ void Shadow::render(const funcRender& renderCallback, bool clearDepthBuffer) {
 	}
 }
 
-const glm::ivec2& Shadow::dimension() const {
+const math::Vec2i& Shadow::dimension() const {
 	return _depthBuffer.dimension();
 }
 
-void Shadow::setPosition(const glm::vec3& eye, const glm::vec3& center, const glm::vec3& up) {
-	setLightViewMatrix(glm::lookAt(eye, center, up));
+void Shadow::setPosition(const math::Vec3f& eye, const math::Vec3f& center, const math::Vec3f& up) {
+	setLightViewMatrix(math::lookAt(eye, center, up));
 }
 
-void Shadow::setLightViewMatrix(const glm::mat4& lightView) {
+void Shadow::setLightViewMatrix(const math::Mat4f& lightView) {
 	_lightView = lightView;
-	_sunDirection = glm::vec3(glm::column(glm::inverse(_lightView), 2));
+	_sunDirection = math::Vec3f(math::column(math::inverse(_lightView), 2));
 }
 
-glm::vec3 Shadow::sunPosition() const {
-	const glm::mat3 rotMat(_lightView);
-	const glm::vec3 d(_lightView[3]);
+math::Vec3f Shadow::sunPosition() const {
+	const math::Mat3f rotMat(_lightView);
+	const math::Vec3f d(_lightView[3]);
 	return -d * rotMat;
 }
 

@@ -6,6 +6,7 @@
 #include "core/collection/Vector.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
+#include "math/Vec3i.h"
 
 class SparseVolumeBenchmark : public app::AbstractBenchmark {
 protected:
@@ -231,7 +232,7 @@ static void sparseChunkRead(benchmark::State &state, ChunkRead read) {
 			memcpy((void *)output.voxels(), linear.data(), Cells * sizeof(voxel::Voxel));
 			break;
 		case ChunkRead::RegionCopy:
-			chunk.readRegion(glm::ivec3(0), glm::ivec3(Side), output.voxels());
+			chunk.readRegion(math::Vec3i(0), math::Vec3i(Side), output.voxels());
 			break;
 		}
 		benchmark::DoNotOptimize(sum);

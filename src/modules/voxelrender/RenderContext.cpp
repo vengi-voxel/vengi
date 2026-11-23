@@ -11,6 +11,8 @@
 #include "video/Renderer.h"
 #include "video/TextureConfig.h"
 #include "video/Types.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
 
 namespace voxelrender {
 
@@ -40,7 +42,7 @@ static void addDepthBuffer(video::FrameBufferConfig &cfg) {
 	cfg.depthBuffer(true);
 }
 
-static bool initOitFrameBuffer(video::FrameBuffer &oitFrameBuffer, const glm::ivec2 &size) {
+static bool initOitFrameBuffer(video::FrameBuffer &oitFrameBuffer, const math::Vec2i &size) {
 	oitFrameBuffer.shutdown();
 	if (size.x <= 0 || size.y <= 0) {
 		return false;
@@ -70,7 +72,7 @@ static bool multisamplingRequested(int requestedSamples) {
 	return !core::isWebPlatform() && requestedSamples > 1;
 }
 
-bool RenderContext::init(const glm::ivec2 &size) {
+bool RenderContext::init(const math::Vec2i &size) {
 	video::FrameBufferConfig cfg;
 	cfg.dimension(size);
 
@@ -88,7 +90,7 @@ bool RenderContext::init(const glm::ivec2 &size) {
 			enableMultisampling = false;
 			multisampleSamples = 0;
 		} else {
-			multisampleSamples = glm::clamp(multisampleSamples, 2, maxSamples);
+			multisampleSamples = math::clamp(multisampleSamples, 2, maxSamples);
 
 			// Ensure it's a power of 2 (common requirement)
 			if ((multisampleSamples & (multisampleSamples - 1)) != 0) {
@@ -171,7 +173,7 @@ bool RenderContext::init(const glm::ivec2 &size) {
 		Log::debug("Successfully created resolve framebuffer for multisampling");
 	}
 
-	const glm::vec4 &fbUv = video::framebufferUV();
+	const math::Vec4f &fbUv = video::framebufferUV();
 	if (!bloomRenderer.init(fbUv.y > fbUv.w, size.x, size.y)) {
 		Log::error("Failed to initialize the bloom renderer");
 		return false;
@@ -182,7 +184,7 @@ bool RenderContext::init(const glm::ivec2 &size) {
 	return true;
 }
 
-bool RenderContext::resize(const glm::ivec2 &size) {
+bool RenderContext::resize(const math::Vec2i &size) {
 	if (frameBuffer.dimension() == size) {
 		return true;
 	}
@@ -263,7 +265,7 @@ bool RenderContext::updateMultisampling() {
 		enableMultisampling = newEnableMultisampling;
 		multisampleSamples = newMultisampleSamples;
 		// Recreate the framebuffer with new multisampling settings
-		const glm::ivec2 currentSize = frameBuffer.dimension();
+		const math::Vec2i currentSize = frameBuffer.dimension();
 		return resize(currentSize);
 	}
 	return true;
@@ -284,7 +286,7 @@ void RenderContext::resolveMultisampling() {
 	if (!enableMultisampling) {
 		return;
 	}
-	const glm::ivec2 &dim = frameBuffer.dimension();
+	const math::Vec2i &dim = frameBuffer.dimension();
 	const video::Id src = frameBuffer.handle();
 	const video::Id dst = resolveFrameBuffer.handle();
 	video::blitFramebuffer(src, dst, video::FrameBufferAttachment::Color0, dim.x, dim.y);
@@ -304,7 +306,7 @@ void RenderContext::applyBloom() {
 	if (!color0 || !color1) {
 		return;
 	}
-	const glm::ivec2 &dim = display.dimension();
+	const math::Vec2i &dim = display.dimension();
 	const video::Id prev = video::bindFramebuffer(display.handle());
 	int viewport[4];
 	video::getViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
@@ -316,10 +318,10 @@ void RenderContext::applyBloom() {
 
 void RenderContext::beginFrame() {
 	frameBuffer.bind(true);
-	const glm::vec4 clearColor = video::currentClearColor();
+	const math::Vec4f clearColor = video::currentClearColor();
 	const video::FrameBufferAttachment glow[] = {video::FrameBufferAttachment::Color1};
 	video::drawBuffers(1, glow);
-	video::clearColor(glm::vec4(0));
+	video::clearColor(math::Vec4f(0));
 	video::clear(video::ClearFlag::Color);
 	video::clearColor(clearColor);
 	const video::FrameBufferAttachment colors[] = {video::FrameBufferAttachment::Color0, video::FrameBufferAttachment::Color1};

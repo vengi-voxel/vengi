@@ -10,7 +10,7 @@
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -38,11 +38,11 @@ enum class BrushApplyStatus { Unchanged, Changed, InvalidTarget, Failed };
  * which is private to a target or preview.
  */
 struct BrushSample {
-	glm::ivec3 position{0};
+	math::Vec3i position{0};
 	voxel::FaceNames face = voxel::FaceNames::Max;
 	ModifierType operation = ModifierType::Place;
 	math::Axis lockedAxis = math::Axis::None;
-	glm::ivec3 gridResolution{1};
+	math::Vec3i gridResolution{1};
 	voxel::Voxel cursorVoxel;
 	voxel::Voxel hitCursorVoxel;
 	voxel::Voxel voxelAtCursor;
@@ -106,8 +106,8 @@ struct BrushApplyOptions {
 /**
  * @brief Clamp a brush region that would leave the volume, matching the legacy cursor shift.
  */
-glm::ivec3 clampBrushCursor(const voxel::Region &volumeRegion, const voxel::Region &brushRegion,
-							const glm::ivec3 &cursor);
+math::Vec3i clampBrushCursor(const voxel::Region &volumeRegion, const voxel::Region &brushRegion,
+							const math::Vec3i &cursor);
 
 /**
  * @brief Evaluate one sample on one target without mutating @p settings.

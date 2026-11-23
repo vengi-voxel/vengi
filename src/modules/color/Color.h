@@ -1,10 +1,10 @@
+#include "math/Vec4f.h"
 /**
  * @file
  */
 
 #pragma once
 
-#include <glm/vec4.hpp>
 
 namespace color {
 
@@ -12,33 +12,33 @@ constexpr const uint32_t magnitude = 255;
 constexpr const float magnitudef = 255.0f;
 constexpr const float scaleFactor = 0.7f;
 
-const glm::vec4 &Clear();
-const glm::vec4 &White();
-const glm::vec4 &Black();
-const glm::vec4 &LightGray();
-const glm::vec4 &Gray();
-const glm::vec4 &DarkGray();
-const glm::vec4 &LightRed();
-const glm::vec4 &Red();
-const glm::vec4 &DarkRed();
-const glm::vec4 &LightGreen();
-const glm::vec4 &Green();
-const glm::vec4 &DarkGreen();
-const glm::vec4 &Lime();
-const glm::vec4 &LightBlue();
-const glm::vec4 &Blue();
-const glm::vec4 &DarkBlue();
-const glm::vec4 &SteelBlue();
-const glm::vec4 &Olive();
-const glm::vec4 &Pink();
-const glm::vec4 &Purple();
-const glm::vec4 &Yellow();
-const glm::vec4 &LightYellow();
-const glm::vec4 &Sandy();
-const glm::vec4 &Cyan();
-const glm::vec4 &Orange();
-const glm::vec4 &Brown();
-const glm::vec4 &LightBrown();
-const glm::vec4 &DarkBrown();
+const math::Vec4f &Clear();
+const math::Vec4f &White();
+const math::Vec4f &Black();
+const math::Vec4f &LightGray();
+const math::Vec4f &Gray();
+const math::Vec4f &DarkGray();
+const math::Vec4f &LightRed();
+const math::Vec4f &Red();
+const math::Vec4f &DarkRed();
+const math::Vec4f &LightGreen();
+const math::Vec4f &Green();
+const math::Vec4f &DarkGreen();
+const math::Vec4f &Lime();
+const math::Vec4f &LightBlue();
+const math::Vec4f &Blue();
+const math::Vec4f &DarkBlue();
+const math::Vec4f &SteelBlue();
+const math::Vec4f &Olive();
+const math::Vec4f &Pink();
+const math::Vec4f &Purple();
+const math::Vec4f &Yellow();
+const math::Vec4f &LightYellow();
+const math::Vec4f &Sandy();
+const math::Vec4f &Cyan();
+const math::Vec4f &Orange();
+const math::Vec4f &Brown();
+const math::Vec4f &LightBrown();
+const math::Vec4f &DarkBrown();
 
 }; // namespace color

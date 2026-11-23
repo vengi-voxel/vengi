@@ -11,11 +11,10 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
 
 namespace voxelformat {
 
@@ -49,7 +48,7 @@ TEST_F(VXLFormatTest, testNormalIndicesAndCoordinates) {
 		ASSERT_TRUE(model->hasNormalPalette());
 		ASSERT_EQ(palette.size(), model->normalPalette().size());
 		for (size_t i = 0; i < palette.size(); ++i) {
-			const glm::vec3 original = palette.normal3f(i);
+			const math::Vec3f original = palette.normal3f(i);
 			EXPECT_VEC_NEAR(original, model->normalPalette().normal3f(i), 0.00001f);
 		}
 	}
@@ -81,9 +80,9 @@ TEST_F(VXLFormatTest, testRemapNormalPalettes) {
 			const uint8_t index = model->volume()->voxel(i, 0, 0).getNormal();
 			ASSERT_NE(NO_NORMAL, index);
 			ASSERT_LE(index, target.size());
-			const glm::vec3 sourceNormal = glm::normalize(palette.normal3f(i));
-			const glm::vec3 writtenNormal = glm::normalize(target.normal3f(index - NORMAL_PALETTE_OFFSET));
-			EXPECT_GE(glm::dot(sourceNormal, writtenNormal), glm::cos(glm::radians(20.0f))) << name << " " << i;
+			const math::Vec3f sourceNormal = math::normalize(palette.normal3f(i));
+			const math::Vec3f writtenNormal = math::normalize(target.normal3f(index - NORMAL_PALETTE_OFFSET));
+			EXPECT_GE(math::dot(sourceNormal, writtenNormal), math::cos(math::radians(20.0f))) << name << " " << i;
 			if (palette.hash() == target.hash()) {
 				EXPECT_EQ(i + NORMAL_PALETTE_OFFSET, index);
 			}
@@ -120,10 +119,10 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	const scenegraph::SceneGraphNode &node1 = sceneGraph.node(1);
 	ASSERT_EQ(1, node1.id());
 	EXPECT_EQ("FOOT R REAR", node1.name());
-	EXPECT_VEC_NEAR(glm::vec3(0.5136022f, 0.1523392f, 0.5000000f), node1.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5136022f, 0.1523392f, 0.5000000f), node1.pivot(), 0.001f);
 	const scenegraph::SceneGraphKeyFrame *keyframe1 = node1.keyFrame(0);
 	ASSERT_NE(nullptr, keyframe1);
-	const glm::mat4 expected = {{0.9719197f, 0.0f, 0.0f, 0.0f},
+	const math::Mat4f expected = {{0.9719197f, 0.0f, 0.0f, 0.0f},
 								{0.0f, 0.9770997f, 0.0f, 0.0f},
 								{0.0f, 0.0f, 0.9375476f, 0.0f},
 								{-14.9761734f, 0.8904828f, 7.3924913f, 1.0f}};
@@ -132,8 +131,8 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	const scenegraph::SceneGraphNode &node2 = sceneGraph.node(2);
 	ASSERT_EQ(2, node2.id());
 	EXPECT_EQ("LEG R REAR LOWE", node2.name());
-	EXPECT_VEC_NEAR(glm::vec3(0.3476858f, 0.8018382f, 0.5000001f), node2.pivot(), 0.001f);
-	const glm::mat4 expected2 = {{0.9359073f, 0.0f, 0.0f, 0.0f},
+	EXPECT_VEC_NEAR(math::Vec3f(0.3476858f, 0.8018382f, 0.5000001f), node2.pivot(), 0.001f);
+	const math::Mat4f expected2 = {{0.9359073f, 0.0f, 0.0f, 0.0f},
 								 {0.0f, 0.9246235f, 0.0f, 0.0f},
 								 {0.0f, 0.0f, 0.9485235f, 0.0f},
 								 {-18.2648506f, 9.9278526f, 6.7404451f, 1.0f}};
@@ -144,8 +143,8 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 	const scenegraph::SceneGraphNode &node3 = sceneGraph.node(3);
 	ASSERT_EQ(3, node3.id());
 	EXPECT_EQ("LEG R REAR UPPE", node3.name());
-	EXPECT_VEC_NEAR(glm::vec3(0.6807217f, 0.7823251f, 0.5000000f), node3.pivot(), 0.001f);
-	const glm::mat4 expected3 = {{1.0f, 0.0f, 0.0f, 0.0f},
+	EXPECT_VEC_NEAR(math::Vec3f(0.6807217f, 0.7823251f, 0.5000000f), node3.pivot(), 0.001f);
+	const math::Mat4f expected3 = {{1.0f, 0.0f, 0.0f, 0.0f},
 								 {0.0f, 0.9430657f, 0.0f, 0.0f},
 								 {0.0f, 0.0f, 0.8768717f, 0.0f},
 								 {-13.6222296f, 16.6269493f, 5.8894053f, 1.0f}};
@@ -155,43 +154,43 @@ TEST_F(VXLFormatTest, testHMECVXLAndHVA) {
 
 	const scenegraph::SceneGraphNode &node4 = sceneGraph.node(4);
 	ASSERT_EQ(4, node4.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.5063228f, 0.1407128f, 0.5), node4.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5063228f, 0.1407128f, 0.5), node4.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node5 = sceneGraph.node(5);
 	ASSERT_EQ(5, node5.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.4745446f, 0.7694066f, 0.5f), node5.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.4745446f, 0.7694066f, 0.5f), node5.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node6 = sceneGraph.node(6);
 	ASSERT_EQ(6, node6.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.3289936f, 0.8072720f, 0.5f), node6.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.3289936f, 0.8072720f, 0.5f), node6.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node7 = sceneGraph.node(7);
 	ASSERT_EQ(7, node7.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.5145851f, 0.1433197f, 0.5f), node7.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5145851f, 0.1433197f, 0.5f), node7.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node8 = sceneGraph.node(8);
 	ASSERT_EQ(8, node8.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.3238616f, 0.7899737f, 0.5f), node8.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.3238616f, 0.7899737f, 0.5f), node8.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node9 = sceneGraph.node(9);
 	ASSERT_EQ(9, node9.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.3545019f, 0.7885991f, 0.5f), node9.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.3545019f, 0.7885991f, 0.5f), node9.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node10 = sceneGraph.node(10);
 	ASSERT_EQ(10, node10.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.5174056f, 0.1425452f, 0.5f), node10.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5174056f, 0.1425452f, 0.5f), node10.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node11 = sceneGraph.node(11);
 	ASSERT_EQ(11, node11.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.5406196f, 0.7914940f, 0.5f), node11.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5406196f, 0.7914940f, 0.5f), node11.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node12 = sceneGraph.node(12);
 	ASSERT_EQ(12, node12.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.6362115f, 0.7923990f, 0.5f), node12.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.6362115f, 0.7923990f, 0.5f), node12.pivot(), 0.001f);
 
 	const scenegraph::SceneGraphNode &node13 = sceneGraph.node(13);
 	ASSERT_EQ(13, node13.id());
-	EXPECT_VEC_NEAR(glm::vec3(0.5f, 0.4826846f, 0.5054069f), node13.pivot(), 0.001f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.5f, 0.4826846f, 0.5054069f), node13.pivot(), 0.001f);
 }
 
 // https://github.com/vengi-voxel/vengi/issues/636
@@ -201,15 +200,15 @@ TEST_F(VXLFormatTest, testLegsVXLAndHVAIssue636) {
 	testLoad(sceneGraph, "bug636/legs.vxl", expectedModels);
 	const scenegraph::SceneGraphNode *ul4 = sceneGraph.findNodeByName("UL 4");
 	ASSERT_NE(nullptr, ul4);
-	EXPECT_VEC_NEAR(ul4->transform().worldTranslation(), glm::vec3(-34.042f, 27.143f, -16.714f), 0.001f);
+	EXPECT_VEC_NEAR(ul4->transform().worldTranslation(), math::Vec3f(-34.042f, 27.143f, -16.714f), 0.001f);
 
 	const scenegraph::SceneGraphNode *ml4 = sceneGraph.findNodeByName("ML 4");
 	ASSERT_NE(nullptr, ml4);
-	EXPECT_VEC_NEAR(ml4->transform().worldTranslation(), glm::vec3(-47.143f, 35.714f, -21.714f), 0.001f);
+	EXPECT_VEC_NEAR(ml4->transform().worldTranslation(), math::Vec3f(-47.143f, 35.714f, -21.714f), 0.001f);
 
 	const scenegraph::SceneGraphNode *ll4 = sceneGraph.findNodeByName("LL 4");
 	ASSERT_NE(nullptr, ll4);
-	EXPECT_VEC_NEAR(ll4->transform().worldTranslation(), glm::vec3(-71.429f, 24.286f, -31.143f), 0.001f);
+	EXPECT_VEC_NEAR(ll4->transform().worldTranslation(), math::Vec3f(-71.429f, 24.286f, -31.143f), 0.001f);
 }
 
 TEST_F(VXLFormatTest, testSaveSmallVoxel) {

@@ -6,7 +6,9 @@
 
 #include "core/String.h"
 #include "core/collection/Buffer.h"
-#include <glm/matrix.hpp>
+#include "math/Mat4x3f.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 namespace vxl {
@@ -27,11 +29,11 @@ static constexpr float Scale = 1.0f / 12.0f;
 // vxl stores row major matrices of 3 rows with 4 columns in each row
 // but we are using column major matrices
 struct VXLMatrix {
-	using Type = glm::mat4x3;
+	using Type = math::Mat4x3f;
 	VXLMatrix() : matrix(1.0f) {
 	}
-	void fromVengi(const glm::mat4 &in);
-	glm::mat4 toVengi() const;
+	void fromVengi(const math::Mat4f &in);
+	math::Mat4f toVengi() const;
 	Type matrix;
 };
 
@@ -85,8 +87,8 @@ struct VXLLayerInfo {
 	 * @sa calcScale()
 	 * @sa offset()
 	 */
-	glm::vec3 mins;
-	glm::vec3 maxs;
+	math::Vec3f mins;
+	math::Vec3f maxs;
 
 	uint8_t xsize;		/**< Width of the voxel section */
 	uint8_t ysize;		/**< Breadth of the voxel section (in-engine Z) */
@@ -101,19 +103,19 @@ struct VXLLayerInfo {
 	 * Each section can have a different scale!
 	 * @note y and z are flipped to bring it into vengi space.
 	 */
-	glm::vec3 calcScale() const;
+	math::Vec3f calcScale() const;
 	/**
 	 * @brief Calculates the offset of the voxel data from the origin.
 	 * @note y and z are flipped to bring it into vengi space.
 	 */
-	glm::vec3 offset() const;
+	math::Vec3f offset() const;
 	/**
 	 * @brief The pivot is the normalized position within the bounding box where the origin (0,0,0) is located.
 	 * Formula: pivot = -mins / (maxs - mins)
 	 * This gives values typically around 0.5 (centered) but can vary if mins/maxs is adjusted.
 	 * @note y and z are flipped to bring it into vengi space.
 	 */
-	glm::vec3 pivot() const;
+	math::Vec3f pivot() const;
 };
 
 struct VXLModel {
@@ -151,10 +153,10 @@ struct HVAModel {
 	HVAFrames frames[MaxLayers];
 };
 
-glm::mat4 convertVXLRead(const VXLMatrix &matrix, const VXLLayerInfo &footer);
-VXLMatrix convertVXLWrite(const glm::mat4 &vengiMatrix);
-glm::mat4 convertHVARead(const VXLMatrix &matrix, const VXLLayerInfo &footer);
-VXLMatrix convertHVAWrite(const glm::mat4 &vengiMatrix);
+math::Mat4f convertVXLRead(const VXLMatrix &matrix, const VXLLayerInfo &footer);
+VXLMatrix convertVXLWrite(const math::Mat4f &vengiMatrix);
+math::Mat4f convertHVARead(const VXLMatrix &matrix, const VXLLayerInfo &footer);
+VXLMatrix convertHVAWrite(const math::Mat4f &vengiMatrix);
 
 } // namespace vxl
 } // namespace voxelformat

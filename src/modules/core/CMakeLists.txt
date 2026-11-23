@@ -45,7 +45,7 @@ set(SRCS
 	ArrayLength.h
 	Assert.cpp Assert.h
 	BindingContext.cpp BindingContext.h
-	Bits.h
+	Bits.h BitsHelper.h
 	Common.cpp Common.h
 	DirtyState.h
 	Endian.h
@@ -53,8 +53,6 @@ set(SRCS
 	FixedString.h
 	FourCC.h
 	ConfigVar.h
-	GLM.cpp GLM.h
-	GLMConst.h
 	Hash.cpp Hash.h
 	IComponent.h
 	Log.cpp Log.h
@@ -99,10 +97,9 @@ else()
 endif()
 
 engine_source_optimize(Algorithm.cpp)
-engine_source_optimize(GLM.cpp)
 
 set(LIB core)
-set(LIBS sdl3 glm ${CMAKE_DL_LIBS})
+set(LIBS sdl3 ${CMAKE_DL_LIBS})
 
 if (USE_STACKTRACES)
 	list(APPEND LIBS backward)
@@ -142,7 +139,6 @@ set(TEST_SRCS
 	tests/DynamicListTest.cpp
 	tests/DynamicStackTest.cpp
 	tests/FunctionTest.cpp
-	tests/GLMTest.cpp
 	tests/HashTest.cpp
 	tests/ListTest.cpp
 	tests/MapTest.cpp
@@ -179,7 +175,6 @@ gtest_suite_end(tests-${LIB})
 if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
 		benchmarks/CollectionBenchmark.cpp
-		benchmarks/GLMBenchmark.cpp
 		benchmarks/StringBenchmark.cpp
 		benchmarks/UUIDBenchmark.cpp
 	)

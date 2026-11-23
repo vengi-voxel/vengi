@@ -7,7 +7,7 @@
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
-#include <glm/common.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -34,7 +34,7 @@ static inline bool hasAnyFlag(const Voxel &v, uint8_t flags) {
 	return (v.getFlags() & (flags & 0x3u)) != 0u;
 }
 
-SparseRawVolumeStorage::SparseRawVolumeStorage(const glm::ivec3 &dimensions) : _dimensions(dimensions) {
+SparseRawVolumeStorage::SparseRawVolumeStorage(const math::Vec3i &dimensions) : _dimensions(dimensions) {
 	if (dimensions.x <= 0 || dimensions.y <= 0 || dimensions.z <= 0) {
 		return;
 	}
@@ -202,11 +202,11 @@ void SparseRawVolumeStorage::setVoxelsRow(int lx, int ly, int lz, int count, con
 	}
 }
 
-void SparseRawVolumeStorage::readRegion(const glm::ivec3 &localMins, const glm::ivec3 &size, Voxel *target) const {
+void SparseRawVolumeStorage::readRegion(const math::Vec3i &localMins, const math::Vec3i &size, Voxel *target) const {
 	if (target == nullptr || size.x <= 0 || size.y <= 0 || size.z <= 0) {
 		return;
 	}
-	const glm::ivec3 end = localMins + size;
+	const math::Vec3i end = localMins + size;
 	const int64_t rowStride = size.x;
 	const int64_t planeStride = (int64_t)size.x * size.y;
 
@@ -295,7 +295,7 @@ void SparseRawVolumeStorage::readRegion(const glm::ivec3 &localMins, const glm::
 }
 
 void SparseRawVolumeStorage::copyTo(Voxel *destination) const {
-	readRegion(glm::ivec3(0), _dimensions, destination);
+	readRegion(math::Vec3i(0), _dimensions, destination);
 }
 
 void SparseRawVolumeStorage::fill(const Voxel &value) {
@@ -311,7 +311,7 @@ void SparseRawVolumeStorage::fill(const Voxel &value) {
 	bumpGeneration();
 }
 
-bool SparseRawVolumeStorage::isEmpty(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs) const {
+bool SparseRawVolumeStorage::isEmpty(const math::Vec3i &localMins, const math::Vec3i &localMaxs) const {
 	if (localMins.x > localMaxs.x || localMins.y > localMaxs.y || localMins.z > localMaxs.z) {
 		return true;
 	}
@@ -394,7 +394,7 @@ bool SparseRawVolumeStorage::isEmpty(const glm::ivec3 &localMins, const glm::ive
 	return true;
 }
 
-bool SparseRawVolumeStorage::hasFlags(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs, uint8_t flags) const {
+bool SparseRawVolumeStorage::hasFlags(const math::Vec3i &localMins, const math::Vec3i &localMaxs, uint8_t flags) const {
 	if ((flags & 0x3u) == 0u || localMins.x > localMaxs.x || localMins.y > localMaxs.y || localMins.z > localMaxs.z) {
 		return false;
 	}
@@ -484,13 +484,13 @@ bool SparseRawVolumeStorage::hasFlags(const glm::ivec3 &localMins, const glm::iv
 	return false;
 }
 
-bool SparseRawVolumeStorage::regionForFlag(uint8_t flag, glm::ivec3 &outMins, glm::ivec3 &outMaxs) const {
+bool SparseRawVolumeStorage::regionForFlag(uint8_t flag, math::Vec3i &outMins, math::Vec3i &outMaxs) const {
 	if ((flag & 0x3u) == 0u) {
 		return false;
 	}
 	bool found = false;
-	glm::ivec3 mins(_dimensions);
-	glm::ivec3 maxs(-1);
+	math::Vec3i mins(_dimensions);
+	math::Vec3i maxs(-1);
 
 	if (!hasAnyFlag(_default, flag)) {
 		for (int cz = 0; cz < _chunkCounts.z; ++cz) {
@@ -507,14 +507,14 @@ bool SparseRawVolumeStorage::regionForFlag(uint8_t flag, glm::ivec3 &outMins, gl
 						if (!hasAnyFlag(v, flag)) {
 							return;
 						}
-						const glm::ivec3 p(xBase + vx, yBase + vy, zBase + vz);
+						const math::Vec3i p(xBase + vx, yBase + vy, zBase + vz);
 						if (!found) {
 							mins = p;
 							maxs = p;
 							found = true;
 						} else {
-							mins = (glm::min)(mins, p);
-							maxs = (glm::max)(maxs, p);
+							mins = (math::min)(mins, p);
+							maxs = (math::max)(maxs, p);
 						}
 					});
 				}
@@ -534,14 +534,14 @@ bool SparseRawVolumeStorage::regionForFlag(uint8_t flag, glm::ivec3 &outMins, gl
 				if (!hasAnyFlag(voxel(x, y, z), flag)) {
 					continue;
 				}
-				const glm::ivec3 p(x, y, z);
+				const math::Vec3i p(x, y, z);
 				if (!found) {
 					mins = p;
 					maxs = p;
 					found = true;
 				} else {
-					mins = (glm::min)(mins, p);
-					maxs = (glm::max)(maxs, p);
+					mins = (math::min)(mins, p);
+					maxs = (math::max)(maxs, p);
 				}
 			}
 		}
@@ -553,7 +553,7 @@ bool SparseRawVolumeStorage::regionForFlag(uint8_t flag, glm::ivec3 &outMins, gl
 	return found;
 }
 
-void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs, uint8_t flags,
+void SparseRawVolumeStorage::modifyFlags(const math::Vec3i &localMins, const math::Vec3i &localMaxs, uint8_t flags,
 										 int operation) {
 	if ((flags & 0x3u) == 0u || localMins.x > localMaxs.x || localMins.y > localMaxs.y || localMins.z > localMaxs.z) {
 		return;
@@ -590,7 +590,7 @@ void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm:
 					const int xBase = cx << ChunkShift;
 					const int lx0 = core_max(localMins.x - xBase, 0);
 					const int lx1 = core_min(localMaxs.x - xBase, ChunkMask);
-					core::DynamicArray<glm::ivec3> toRemove;
+					core::DynamicArray<math::Vec3i> toRemove;
 					chunk->visitBricksMutable([&](int bx, int by, int bz, SparseChunk::Brick &b) {
 						if (bx + BrickMask < lx0 || bx > lx1 || by + BrickMask < ly0 || by > ly1 ||
 							bz + BrickMask < lz0 || bz > lz1) {
@@ -615,7 +615,7 @@ void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm:
 									}
 									const Voxel updated = applyFlagOp(*vp, flags, operation);
 									if (voxelEqualsRaw(updated, _default)) {
-										toRemove.push_back(glm::ivec3(bx + x, by + y, bz + z));
+										toRemove.push_back(math::Vec3i(bx + x, by + y, bz + z));
 									} else {
 										vp->overwrite(updated);
 									}
@@ -623,7 +623,7 @@ void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm:
 							}
 						}
 					});
-					for (const glm::ivec3 &rp : toRemove) {
+					for (const math::Vec3i &rp : toRemove) {
 						chunk->removeVoxel(rp.x, rp.y, rp.z, true);
 					}
 					if (!toRemove.empty()) {
@@ -647,7 +647,7 @@ void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm:
 			if (chunk == nullptr || chunk->empty()) {
 				continue;
 			}
-			core::DynamicArray<glm::ivec3> toRemove;
+			core::DynamicArray<math::Vec3i> toRemove;
 			chunk->visitBricksMutable([&](int bx, int by, int bz, SparseChunk::Brick &b) {
 				for (int z = 0; z < BrickSide; ++z) {
 					uint64_t bits = b.mask[z];
@@ -661,14 +661,14 @@ void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm:
 						}
 						const Voxel updated = applyFlagOp(*vp, flags, operation);
 						if (voxelEqualsRaw(updated, _default)) {
-							toRemove.push_back(glm::ivec3(bx + (bit & 7), by + (bit >> 3), bz + z));
+							toRemove.push_back(math::Vec3i(bx + (bit & 7), by + (bit >> 3), bz + z));
 						} else {
 							vp->overwrite(updated);
 						}
 					}
 				}
 			});
-			for (const glm::ivec3 &rp : toRemove) {
+			for (const math::Vec3i &rp : toRemove) {
 				chunk->removeVoxel(rp.x, rp.y, rp.z, true);
 			}
 			if (!toRemove.empty()) {
@@ -690,11 +690,11 @@ void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm:
 	}
 }
 
-bool SparseRawVolumeStorage::computeSolidBounds(glm::ivec3 &outMins, glm::ivec3 &outMaxs) const {
+bool SparseRawVolumeStorage::computeSolidBounds(math::Vec3i &outMins, math::Vec3i &outMaxs) const {
 	if (isAir(_default.getMaterial())) {
 		bool found = false;
-		glm::ivec3 mins(_dimensions);
-		glm::ivec3 maxs(-1);
+		math::Vec3i mins(_dimensions);
+		math::Vec3i maxs(-1);
 		for (int cz = 0; cz < _chunkCounts.z; ++cz) {
 			const int zBase = cz << ChunkShift;
 			for (int cy = 0; cy < _chunkCounts.y; ++cy) {
@@ -725,14 +725,14 @@ bool SparseRawVolumeStorage::computeSolidBounds(glm::ivec3 &outMins, glm::ivec3 
 								if (isAir(v.getMaterial())) {
 									continue;
 								}
-								const glm::ivec3 p(wx0 + (bit & 7), wy0 + (bit >> 3), wz0 + w);
+								const math::Vec3i p(wx0 + (bit & 7), wy0 + (bit >> 3), wz0 + w);
 								if (!found) {
 									mins = p;
 									maxs = p;
 									found = true;
 								} else {
-									mins = (glm::min)(mins, p);
-									maxs = (glm::max)(maxs, p);
+									mins = (math::min)(mins, p);
+									maxs = (math::max)(maxs, p);
 								}
 							}
 						}
@@ -757,28 +757,28 @@ bool SparseRawVolumeStorage::computeSolidBounds(glm::ivec3 &outMins, glm::ivec3 
 		}
 	}
 	if (!anyChunk) {
-		outMins = glm::ivec3(0);
+		outMins = math::Vec3i(0);
 		outMaxs = _dimensions - 1;
 		return true;
 	}
 
 	bool found = false;
-	glm::ivec3 mins(_dimensions);
-	glm::ivec3 maxs(-1);
+	math::Vec3i mins(_dimensions);
+	math::Vec3i maxs(-1);
 	for (int z = 0; z < _dimensions.z; ++z) {
 		for (int y = 0; y < _dimensions.y; ++y) {
 			for (int x = 0; x < _dimensions.x; ++x) {
 				if (isAir(voxel(x, y, z).getMaterial())) {
 					continue;
 				}
-				const glm::ivec3 p(x, y, z);
+				const math::Vec3i p(x, y, z);
 				if (!found) {
 					mins = p;
 					maxs = p;
 					found = true;
 				} else {
-					mins = (glm::min)(mins, p);
-					maxs = (glm::max)(maxs, p);
+					mins = (math::min)(mins, p);
+					maxs = (math::max)(maxs, p);
 				}
 			}
 		}
@@ -905,7 +905,7 @@ bool SparseRawVolumeStorage::equalsDense(const Voxel *denseData) const {
 	return true;
 }
 
-bool SparseRawVolumeStorage::hasOccupiedVoxelsInBox(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs) const {
+bool SparseRawVolumeStorage::hasOccupiedVoxelsInBox(const math::Vec3i &localMins, const math::Vec3i &localMaxs) const {
 	if (localMins.x > localMaxs.x || localMins.y > localMaxs.y || localMins.z > localMaxs.z) {
 		return false;
 	}
@@ -1035,7 +1035,7 @@ const SparseChunk::Brick *SparseRawVolumeStorage::brickAt(int lx, int ly, int lz
 	return chunk != nullptr ? chunk->brick(lx & ChunkMask, ly & ChunkMask, lz & ChunkMask) : nullptr;
 }
 
-void SparseRawVolumeStorage::collectOccupiedBricks(const glm::ivec3 &localMins, const glm::ivec3 &localMaxs,
+void SparseRawVolumeStorage::collectOccupiedBricks(const math::Vec3i &localMins, const math::Vec3i &localMaxs,
 												   core::DynamicArray<OccupiedBrickInfo> &out) const {
 	out.clear();
 	if (localMins.x > localMaxs.x || localMins.y > localMaxs.y || localMins.z > localMaxs.z) {
@@ -1083,18 +1083,18 @@ void SparseRawVolumeStorage::collectOccupiedBricks(const glm::ivec3 &localMins, 
 						bz > lz1) {
 						return;
 					}
-					out.push_back(OccupiedBrickInfo{glm::ivec3(xBase + bx, yBase + by, zBase + bz), &b});
+					out.push_back(OccupiedBrickInfo{math::Vec3i(xBase + bx, yBase + by, zBase + bz), &b});
 				});
 			}
 		}
 	}
 }
 
-bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
+bool SparseRawVolumeStorage::move(const math::Vec3i &shift) {
 	const int w = _dimensions.x;
 	const int h = _dimensions.y;
 	const int d = _dimensions.z;
-	glm::ivec3 t;
+	math::Vec3i t;
 	t.x = (shift.x % w + w) % w;
 	t.y = (shift.y % h + h) % h;
 	t.z = (shift.z % d + d) % d;
@@ -1289,7 +1289,7 @@ bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 
 void SparseRawVolumeStorage::sampleAt(int lx, int ly, int lz, const SparseChunk *&outChunk,
 									  const SparseChunk::Brick *&outBrick, const Voxel *&outRow, bool &outWholeBrick,
-									  glm::ivec3 &outLower, glm::ivec3 &outUpper, Voxel &outFallbackVoxel,
+									  math::Vec3i &outLower, math::Vec3i &outUpper, Voxel &outFallbackVoxel,
 									  uint32_t &outGen) const {
 	outGen = (uint32_t)_generation;
 	outChunk = _slots[chunkIndexForLocal(lx, ly, lz)].chunk.load();
@@ -1299,8 +1299,8 @@ void SparseRawVolumeStorage::sampleAt(int lx, int ly, int lz, const SparseChunk 
 	outBrick = outChunk != nullptr ? outChunk->brick(clx, cly, clz) : nullptr;
 	if (outChunk == nullptr) {
 		// Entire 256^3 chunk is uniform default!
-		outLower = glm::ivec3(lx & ~ChunkMask, ly & ~ChunkMask, lz & ~ChunkMask);
-		outUpper = glm::ivec3(core_min(lx | ChunkMask, _dimensions.x - 1),
+		outLower = math::Vec3i(lx & ~ChunkMask, ly & ~ChunkMask, lz & ~ChunkMask);
+		outUpper = math::Vec3i(core_min(lx | ChunkMask, _dimensions.x - 1),
 							  core_min(ly | ChunkMask, _dimensions.y - 1),
 							  core_min(lz | ChunkMask, _dimensions.z - 1));
 		outWholeBrick = true;
@@ -1308,8 +1308,8 @@ void SparseRawVolumeStorage::sampleAt(int lx, int ly, int lz, const SparseChunk 
 		outFallbackVoxel.overwrite(_default);
 		return;
 	}
-	outLower = glm::ivec3(lx & ~BrickMask, ly & ~BrickMask, lz & ~BrickMask);
-	outUpper = glm::ivec3(core_min(lx | BrickMask, _dimensions.x - 1), core_min(ly | BrickMask, _dimensions.y - 1),
+	outLower = math::Vec3i(lx & ~BrickMask, ly & ~BrickMask, lz & ~BrickMask);
+	outUpper = math::Vec3i(core_min(lx | BrickMask, _dimensions.x - 1), core_min(ly | BrickMask, _dimensions.y - 1),
 						  core_min(lz | BrickMask, _dimensions.z - 1));
 
 	if (outBrick == nullptr) {

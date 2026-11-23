@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/SelectBrush.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -89,8 +90,8 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	}
 	json::Json region = args.get("region");
 
-	const glm::ivec3 mins(region.intVal("minX", 0), region.intVal("minY", 0), region.intVal("minZ", 0));
-	const glm::ivec3 maxs(region.intVal("maxX", 0), region.intVal("maxY", 0), region.intVal("maxZ", 0));
+	const math::Vec3i mins(region.intVal("minX", 0), region.intVal("minY", 0), region.intVal("minZ", 0));
+	const math::Vec3i maxs(region.intVal("maxX", 0), region.intVal("maxY", 0), region.intVal("maxZ", 0));
 
 	const core::String selectModeStr = args.strVal("selectMode", "all").c_str();
 	const SelectMode selectMode = parseSelectMode(selectModeStr);
@@ -115,7 +116,7 @@ bool SelectBrushTool::execute(const json::Json &id, const json::Json &args, Tool
 	brushContext.referencePos = mins;
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = glm::ivec3(1);
+	brushContext.gridResolution = math::Vec3i(1);
 
 	// Create the modifier wrapper
 

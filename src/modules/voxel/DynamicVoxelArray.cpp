@@ -3,14 +3,15 @@
  */
 
 #include "DynamicVoxelArray.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
-void DynamicVoxelArray::setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
+void DynamicVoxelArray::setVoxel(const math::Vec3i &pos, const Voxel &voxel) {
 	push_back({pos, voxel});
 }
 
-bool DynamicVoxelArray::hasVoxel(const glm::ivec3 &pos) const {
+bool DynamicVoxelArray::hasVoxel(const math::Vec3i &pos) const {
 	for (const VoxelPosition &vp : *this) {
 		if (vp.pos == pos) {
 			return true;
@@ -19,7 +20,7 @@ bool DynamicVoxelArray::hasVoxel(const glm::ivec3 &pos) const {
 	return false;
 }
 
-const Voxel &DynamicVoxelArray::voxel(const glm::ivec3 &pos) const {
+const Voxel &DynamicVoxelArray::voxel(const math::Vec3i &pos) const {
 	for (const VoxelPosition &vp : *this) {
 		if (vp.pos == pos) {
 			return vp.voxel;

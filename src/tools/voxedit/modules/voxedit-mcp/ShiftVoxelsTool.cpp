@@ -4,6 +4,7 @@
 
 #include "ShiftVoxelsTool.h"
 #include "Authoring.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -34,7 +35,7 @@ bool ShiftVoxelsTool::execute(const json::Json &id, const json::Json &args, Tool
 	if (!args.contains("offset")) {
 		return ctx.result(id, "offset is required", true);
 	}
-	glm::ivec3 offset(0);
+	math::Vec3i offset(0);
 	if (!parseCell(args.get("offset"), offset, "offset", error)) {
 		return ctx.result(id, error, true);
 	}

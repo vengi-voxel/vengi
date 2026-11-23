@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Brush.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -16,9 +17,9 @@ namespace voxedit {
  * brush knows it needs to regenerate its preview.
  */
 struct LineState {
-	glm::ivec3 cursorPosition{0}; ///< Current cursor position in voxel space
-	glm::ivec3 referencePos{0};	  ///< Reference/start position for the line
-	glm::ivec3 controlPoint{0};	  ///< Quadratic bezier control point in voxel space
+	math::Vec3i cursorPosition{0}; ///< Current cursor position in voxel space
+	math::Vec3i referencePos{0};	  ///< Reference/start position for the line
+	math::Vec3i controlPoint{0};	  ///< Quadratic bezier control point in voxel space
 	voxel::Voxel cursorVoxel;	  ///< The voxel type that will be placed
 	bool bezier = false;
 
@@ -26,7 +27,7 @@ struct LineState {
 	 * @brief Check if the brush context has changed from the cached state
 	 * @return true if any tracked parameter differs from the context
 	 */
-	bool hasChanges(const BrushContext &ctx, bool bezierMode, const glm::ivec3 &control) const {
+	bool hasChanges(const BrushContext &ctx, bool bezierMode, const math::Vec3i &control) const {
 		return cursorPosition != ctx.cursorPosition || referencePos != ctx.referencePos ||
 			   !cursorVoxel.isSame(ctx.cursorVoxel) || bezier != bezierMode || controlPoint != control;
 	}
@@ -34,7 +35,7 @@ struct LineState {
 	/**
 	 * @brief Update the cached state from the brush context
 	 */
-	void update(const BrushContext &ctx, bool bezierMode, const glm::ivec3 &control) {
+	void update(const BrushContext &ctx, bool bezierMode, const math::Vec3i &control) {
 		cursorPosition = ctx.cursorPosition;
 		referencePos = ctx.referencePos;
 		controlPoint = control;

@@ -11,6 +11,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Mat4f.h"
 
 namespace voxedit {
 
@@ -432,9 +433,9 @@ TEST_F(ExtrudeBrushTest, testApplyGizmoKeepsFace) {
 	ASSERT_TRUE(brush.beginBrush(ctx));
 	brush.endBrush(ctx);
 
-	glm::mat4 delta(1.0f);
+	math::Mat4f delta(1.0f);
 	delta[3][0] = 2.0f;
-	EXPECT_TRUE(brush.editHandle(0, ctx, glm::mat4(1.0f), delta, BrushGizmo_TranslateX));
+	EXPECT_TRUE(brush.editHandle(0, ctx, math::Mat4f(1.0f), delta, BrushGizmo_TranslateX));
 	EXPECT_EQ(brush.depth(), 2);
 	EXPECT_EQ(brush.face(), voxel::FaceNames::PositiveX);
 	brush.shutdown();

@@ -16,6 +16,8 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "scenegraph/IKConstraint.h"
 #include "voxel/Region.h"
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 class RawVolume;
@@ -70,7 +72,7 @@ protected:
 	color::RGBA _color{255, 255, 255, 255};
 	/** Whole-node render fade in 0..1 (1 = fully opaque). Does not alter voxel data. */
 	float _opacity = 1.0f;
-	glm::vec3 _pivot {0.0f};
+	math::Vec3f _pivot {0.0f};
 
 	core::UUID _uuid;
 	/** Target Model UUID when @c type is ModelReference (stable across undo/re-add). */
@@ -155,25 +157,25 @@ public:
 	bool removeUnusedColors(bool reindexPalette);
 
 	// normalized pivot of [0-1] to be somewhere inside the volume region
-	bool setPivot(const glm::vec3 &pivot);
+	bool setPivot(const math::Vec3f &pivot);
 	// normalized pivot of [0-1] to be somewhere inside the volume region
-	const glm::vec3 &pivot() const;
+	const math::Vec3f &pivot() const;
 	// world pivot of the node, which is the pivot applied to the world matrix and the region mins
-	glm::vec3 worldPivot() const;
+	math::Vec3f worldPivot() const;
 
 	/**
 	 * @brief Apply the given @c localTranslation vector to all keyframe transform of this node
 	 */
-	void localTranslate(const glm::vec3 &localTranslation);
+	void localTranslate(const math::Vec3f &localTranslation);
 	/**
 	 * @brief Set the given @c translation vector to all keyframe transform of this node
 	 */
-	void setTranslation(const glm::vec3 &translation, bool world = false);
-	void setScale(const glm::vec3 &scale, bool world = false);
+	void setTranslation(const math::Vec3f &translation, bool world = false);
+	void setScale(const math::Vec3f &scale, bool world = false);
 	/**
 	 * @brief Set the given @c rotation to all keyframe transform of this node
 	 */
-	void setRotation(const glm::quat &rotation, bool world = false);
+	void setRotation(const math::Quatf &rotation, bool world = false);
 
 	SceneGraphNodeType type() const;
 
@@ -449,7 +451,7 @@ inline float SceneGraphNode::opacity() const {
 }
 
 inline void SceneGraphNode::setOpacity(float opacity) {
-	_opacity = glm::clamp(opacity, 0.0f, 1.0f);
+	_opacity = math::clamp(opacity, 0.0f, 1.0f);
 }
 
 } // namespace scenegraph

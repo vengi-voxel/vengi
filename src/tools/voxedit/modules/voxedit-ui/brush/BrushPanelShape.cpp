@@ -12,6 +12,7 @@
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/ShapeType.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -63,7 +64,7 @@ void BrushPanelShape::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		int radius = brush.radius();
 		ImGui::TextUnformatted(_("Brush radius"));
 		ImGui::SetNextItemWidth(-1);
-		if (ImGui::SliderIntWithButtons("##radius", &radius, 0, glm::max(32, radius), false)) {
+		if (ImGui::SliderIntWithButtons("##radius", &radius, 0, math::max(32, radius), false)) {
 			brush.setRadius(radius);
 		}
 		ImGui::TextWrappedUnformatted(_("Hold and drag to draw with the selected shape."));
@@ -81,12 +82,12 @@ void BrushPanelShape::update(BrushPanelContext &ctx, command::CommandExecutionLi
 		ImGui::TextWrappedUnformatted(_("Drag to define the shape's size."));
 		if (brush.boxActive()) {
 			const voxel::Region region = modifier.calcBrushRegion();
-			glm::ivec3 lower = region.getLowerCorner();
-			glm::ivec3 upper = region.getUpperCorner();
+			math::Vec3i lower = region.getLowerCorner();
+			math::Vec3i upper = region.getUpperCorner();
 			bool changed = ImGui::InputInt3(_("Minimum"), &lower.x);
 			changed |= ImGui::InputInt3(_("Maximum"), &upper.x);
 			if (changed) {
-				modifier.updateBoxRegion(voxel::Region(glm::min(lower, upper), glm::max(lower, upper)));
+				modifier.updateBoxRegion(voxel::Region(math::min(lower, upper), math::max(lower, upper)));
 			}
 		}
 	}

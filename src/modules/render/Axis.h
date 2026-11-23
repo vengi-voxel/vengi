@@ -8,6 +8,7 @@
 #include "render/ShapeRenderer.h"
 #include "core/IComponent.h"
 #include "math/Axis.h"
+#include "math/Vec3f.h"
 
 namespace video {
 class Camera;
@@ -49,8 +50,8 @@ private:
 	int32_t _coneYIndex = -1;
 	int32_t _coneZIndex = -1;
 	float _lineWidth = 4.0f;
-	glm::vec3 _pos { 0.0f };
-	glm::vec3 _size { 1.0f };
+	math::Vec3f _pos { 0.0f };
+	math::Vec3f _size { 1.0f };
 	const bool _flipZ;
 
 	void createCones();
@@ -59,7 +60,7 @@ public:
 	Axis(bool flipZ = true);
 
 	void setSize(float x, float y, float z);
-	void setPosition(const glm::vec3& pos);
+	void setPosition(const math::Vec3f& pos);
 
 	void render(const video::Camera& camera, uint32_t renderMask = AxisMask::RenderAll);
 

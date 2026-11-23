@@ -15,7 +15,7 @@
 #include "palette/PaletteView.h"
 #include "ui/Panel.h"
 #include "ui/dearimgui/imgui.h"
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
 
 namespace scenegraph {
 class SceneGraphNode;
@@ -41,7 +41,7 @@ private:
 	float _intensityChange = 0.0f;
 	int _quantizeTargetCount = 2;
 	int _closestMatchPaletteColorIdx = -1;
-	glm::vec4 _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
+	math::Vec4f _closestColor{0.0f, 0.0f, 0.0f, 1.0f};
 	bool _colorHovered = false; // caching the hover state per frame
 	bool _hasFocus = false;
 	bool _searchFittingColors = false;

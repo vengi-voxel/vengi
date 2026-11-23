@@ -3,7 +3,7 @@
  */
 
 #include "SculptBrush.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
@@ -22,6 +22,7 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeSculpt.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -42,7 +43,7 @@ void SculptBrush::onSceneChange() {
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
 	_planeFitted = false;
-	_lastPaintPos = glm::ivec3(INT_MIN);
+	_lastPaintPos = math::Vec3i(INT_MIN);
 }
 
 void SculptBrush::onActivated() {
@@ -62,7 +63,7 @@ void SculptBrush::reset() {
 	_snapshotRegion = voxel::Region::InvalidRegion;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_cachedRegionValid = false;
-	_capturedVolumeLower = glm::ivec3(0);
+	_capturedVolumeLower = math::Vec3i(0);
 	_parameters.strength = 0.5f;
 	_parameters.iterations = 1;
 	_parameters.heightThreshold = 1;
@@ -82,7 +83,7 @@ void SculptBrush::reset() {
 	_planeFitted = false;
 	_planeGradU = 0.0f;
 	_planeGradV = 0.0f;
-	_lastPaintPos = glm::ivec3(INT_MIN);
+	_lastPaintPos = math::Vec3i(INT_MIN);
 	_parameters.reskin.preview = true;
 }
 
@@ -112,7 +113,7 @@ bool SculptBrush::beginBrush(const BrushContext &ctx) {
 
 void SculptBrush::endBrush(BrushContext &) {
 	_active = false;
-	_lastPaintPos = glm::ivec3(INT_MIN);
+	_lastPaintPos = math::Vec3i(INT_MIN);
 }
 
 bool SculptBrush::active() const {
@@ -126,8 +127,8 @@ void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vo
 			captureSnapshot(volume, ctx.targetVolumeRegion);
 		}
 	} else if (_hasSnapshot) {
-		const glm::ivec3 delta = ctx.targetVolumeRegion.getLowerCorner() - _capturedVolumeLower;
-		if (delta != glm::ivec3(0)) {
+		const math::Vec3i delta = ctx.targetVolumeRegion.getLowerCorner() - _capturedVolumeLower;
+		if (delta != math::Vec3i(0)) {
 			adjustSnapshotForRegionShift(delta);
 		}
 	}
@@ -145,13 +146,13 @@ void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vo
 		_cachedRegion = _snapshotRegion;
 		if (_parameters.mode == SculptMode::Reskin) {
 			// Expand along face normal for z offset + skin layers growing outward
-			const int expand = glm::abs(_parameters.reskin.zOffset) + _parameters.reskin.skinDepth;
+			const int expand = math::abs(_parameters.reskin.zOffset) + _parameters.reskin.skinDepth;
 			_cachedRegion.grow(expand);
 		} else if (_parameters.mode == SculptMode::ExtendPlane && _planeFitted) {
 			// Show brush preview around cursor position
 			const int r = _parameters.radius;
-			glm::ivec3 lo = ctx.cursorPosition;
-			glm::ivec3 hi = ctx.cursorPosition;
+			math::Vec3i lo = ctx.cursorPosition;
+			math::Vec3i hi = ctx.cursorPosition;
 			lo[_planeUAxis] -= r;
 			lo[_planeVAxis] -= r;
 			hi[_planeUAxis] += r;
@@ -169,10 +170,10 @@ void SculptBrush::preExecute(const BrushContext &ctx, const voxel::RawVolume *vo
 			const float h10 = static_cast<float>(_planeSeedH) +
 							  _planeGradU * static_cast<float>(hi[_planeUAxis] - _planeSeedU) +
 							  _planeGradV * static_cast<float>(lo[_planeVAxis] - _planeSeedV);
-			const float minH = glm::min(glm::min(h00, h11), glm::min(h01, h10));
-			const float maxH = glm::max(glm::max(h00, h11), glm::max(h01, h10));
-			lo[_planeHeightAxis] = static_cast<int>(glm::floor(minH)) - 1;
-			hi[_planeHeightAxis] = static_cast<int>(glm::ceil(maxH)) + 1;
+			const float minH = math::min(math::min(h00, h11), math::min(h01, h10));
+			const float maxH = math::max(math::max(h00, h11), math::max(h01, h10));
+			lo[_planeHeightAxis] = static_cast<int>(math::floor(minH)) - 1;
+			hi[_planeHeightAxis] = static_cast<int>(math::ceil(maxH)) + 1;
 			_cachedRegion = voxel::Region(lo, hi);
 		} else if (_parameters.mode == SculptMode::ExtendPlane) {
 			// Plane not yet fitted - show snapshot region
@@ -214,7 +215,7 @@ void SculptBrush::setSculptMode(SculptMode mode) {
 	}
 	if (mode == SculptMode::ExtendPlane && _parameters.mode != SculptMode::ExtendPlane) {
 		_planeFitted = false;
-		_lastPaintPos = glm::ivec3(INT_MIN);
+		_lastPaintPos = math::Vec3i(INT_MIN);
 	}
 	_parameters.mode = mode;
 	_paramsDirty = true;
@@ -228,7 +229,7 @@ void SculptBrush::setSkinVolume(const voxel::RawVolume *skinVolume) {
 		skinVolume ? core::make_shared<voxel::RawVolume>(*skinVolume) : core::SharedPtr<voxel::RawVolume>();
 	if (skinVolume != nullptr) {
 		const voxel::Region &sr = skinVolume->region();
-		const glm::ivec3 extents = sr.getUpperCorner() - sr.getLowerCorner() + 1;
+		const math::Vec3i extents = sr.getUpperCorner() - sr.getLowerCorner() + 1;
 		// Auto-detect depth axis from thinnest dimension (positive face = outward)
 		if (extents.x <= extents.y && extents.x <= extents.z) {
 			_parameters.reskin.skinFace = voxel::FaceNames::PositiveX;
@@ -239,7 +240,7 @@ void SculptBrush::setSkinVolume(const voxel::RawVolume *skinVolume) {
 		}
 		const int upIdx = math::getIndexForAxis(voxel::faceToAxis(_parameters.reskin.skinFace));
 		const int depthExtent = extents[upIdx];
-		_parameters.reskin.skinDepth = glm::clamp(depthExtent, 1, MaxReskinDepth);
+		_parameters.reskin.skinDepth = math::clamp(depthExtent, 1, MaxReskinDepth);
 	}
 	_paramsDirty = true;
 	markDirty();

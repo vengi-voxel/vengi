@@ -9,6 +9,7 @@
 #include "core/Var.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -49,8 +50,8 @@ private:
 protected:
 	core::ScopedPtr<voxel::RawVolume> _volume;
 	palette::Palette _palette;
-	glm::ivec3 _lastCursorPosition{0};
-	glm::ivec3 _offset{0};
+	math::Vec3i _lastCursorPosition{0};
+	math::Vec3i _offset{0};
 	bool _center = true;
 	bool _continuous = false;
 	SceneManager *_sceneMgr;
@@ -88,9 +89,9 @@ public:
 	void setVoxel(const voxel::Voxel &voxel, const palette::Palette &palette);
 	void convertToPalette(const palette::Palette &palette);
 
-	void setSize(const glm::ivec3 &size);
-	void setOffset(const glm::ivec3 &offset);
-	const glm::ivec3 &offset() const;
+	void setSize(const math::Vec3i &size);
+	void setOffset(const math::Vec3i &offset);
+	const math::Vec3i &offset() const;
 
 	bool load(const core::String &filename);
 };
@@ -124,7 +125,7 @@ inline bool StampBrush::active() const {
 	return _volume != nullptr;
 }
 
-inline void StampBrush::setOffset(const glm::ivec3 &offset) {
+inline void StampBrush::setOffset(const math::Vec3i &offset) {
 	markSettingsChanged();
 	if (offset == _offset) {
 		return;
@@ -133,7 +134,7 @@ inline void StampBrush::setOffset(const glm::ivec3 &offset) {
 	markDirty();
 }
 
-inline const glm::ivec3 &StampBrush::offset() const {
+inline const math::Vec3i &StampBrush::offset() const {
 	return _offset;
 }
 

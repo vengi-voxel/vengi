@@ -5,10 +5,12 @@
 #include "voxelutil/Picking.h"
 #include "core/TraceScoped.h"
 #include "app/tests/AbstractTest.h"
-#include "core/GLM.h"
 #include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/Raycast.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Axes.h"
 
 namespace voxelutil {
 
@@ -52,7 +54,7 @@ protected:
 
 	/** Pick the first solid voxel along a vector */
 	template<typename VolumeType>
-	PickResult pickVoxel(const VolumeType *volData, const glm::vec3 &v3dStart, const glm::vec3 &v3dDirectionAndLength) {
+	PickResult pickVoxel(const VolumeType *volData, const math::Vec3f &v3dStart, const math::Vec3f &v3dDirectionAndLength) {
 		core_trace_scoped(pickVoxel);
 		RaycastPickingFunctor<VolumeType> functor;
 		raycastWithDirection(volData, v3dStart, v3dDirectionAndLength, functor);
@@ -62,12 +64,12 @@ protected:
 
 TEST_F(PickingTest, testPicking) {
 	voxel::RawVolume v(voxel::Region::fromSize(11));
-	ASSERT_TRUE(v.setVoxel(glm::ivec3(0), voxel::createVoxel(voxel::VoxelType::Generic, 0)));
-	const glm::vec3 start(0.0f, 3.0f, 0.0f);
-	const glm::vec3 direction = glm::down() * 100.0f;
+	ASSERT_TRUE(v.setVoxel(math::Vec3i(0), voxel::createVoxel(voxel::VoxelType::Generic, 0)));
+	const math::Vec3f start(0.0f, 3.0f, 0.0f);
+	const math::Vec3f direction = math::down() * 100.0f;
 	const PickResult &result = pickVoxel(&v, start, direction);
 	ASSERT_TRUE(result.didHit) << "Expected to hit the voxel at (0, 0, 0)";
-	ASSERT_EQ(glm::ivec3(0), result.hitVoxel)
+	ASSERT_EQ(math::Vec3i(0), result.hitVoxel)
 		<< "Expected to hit the voxel at (0, 0, 0) - but got " << result.hitVoxel.x << ", " << result.hitVoxel.y << ", "
 		<< result.hitVoxel.z;
 	ASSERT_TRUE(result.validPreviousPosition);

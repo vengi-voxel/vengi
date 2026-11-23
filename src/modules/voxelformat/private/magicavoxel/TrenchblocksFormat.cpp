@@ -21,6 +21,13 @@
 #include "voxel/SparseVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <limits.h>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec3d.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -51,7 +58,7 @@ bool TrenchblocksFormat::isTrenchblocksScene(const ogt_vox_scene *scene) {
 			return false;
 		}
 	}
-	glm::mat4 first(1.0f);
+	math::Mat4f first(1.0f);
 	const ogt_vox_model *firstModel = nullptr;
 	for (uint32_t i = 0; i < 4; ++i) {
 		const ogt_vox_instance &instance = scene->instances[i];
@@ -70,11 +77,11 @@ bool TrenchblocksFormat::isTrenchblocksScene(const ogt_vox_scene *scene) {
 		} else if (model->size_z != firstModel->size_z) {
 			return false;
 		}
-		const glm::mat4 transform = ogtInstanceBakeMatrix(instance, 0, scene, model);
+		const math::Mat4f transform = ogtInstanceBakeMatrix(instance, 0, scene, model);
 		// Leave room for tile extents before converting world coordinates to integers.
-		const glm::vec3 translation(transform[3]);
-		if (glm::mat3(transform) != glm::mat3(1.0f) ||
-			!glm::all(glm::lessThan(glm::abs(translation), glm::vec3((float)(INT_MAX - 1024))))) {
+		const math::Vec3f translation(transform[3]);
+		if (math::Mat3f(transform) != math::Mat3f(1.0f) ||
+			!math::all(math::lessThan(math::abs(translation), math::Vec3f((float)(INT_MAX - 1024))))) {
 			return false;
 		}
 		if (i == 0) {
@@ -106,16 +113,16 @@ bool TrenchblocksFormat::loadScene(const ogt_vox_scene *scene, scenegraph::Scene
 		const ogt_vox_instance &instance = scene->instances[i];
 		const uint32_t modelIndex = instance.model_index;
 		const ogt_vox_model *ogtModel = scene->models[modelIndex];
-		const glm::mat4 bake = ogtInstanceBakeMatrix(instance, 0, scene, ogtModel);
-		const glm::ivec3 corner = calcTransform(bake, glm::vec3(255, 0, 0));
-		const glm::ivec3 shift(-1 - corner.x, corner.z, corner.y);
+		const math::Mat4f bake = ogtInstanceBakeMatrix(instance, 0, scene, ogtModel);
+		const math::Vec3i corner = calcTransform(bake, math::Vec3f(255, 0, 0));
+		const math::Vec3i shift(-1 - corner.x, corner.z, corner.y);
 		const bool visible = !instanceHidden(scene, instance);
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setName(instance.name);
 		node.setPalette(palette);
 		node.setVisible(visible);
-		node.setPivot(glm::vec3(0.0f));
-		node.transform().setLocalTranslation(glm::vec3(shift));
+		node.setPivot(math::Vec3f(0.0f));
+		node.transform().setLocalTranslation(math::Vec3f(shift));
 		// Shared ogt models (merged duplicates) need a per-tile volume so marker extraction
 		// can clear voxels without affecting other tiles.
 		voxel::RawVolume *volume = models[modelIndex].volume;
@@ -137,7 +144,7 @@ bool TrenchblocksFormat::loadScene(const ogt_vox_scene *scene, scenegraph::Scene
 			scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
 			point.setName(MarkerTypes[voxel.getColor()].name);
 			point.setVisible(visible);
-			point.transform().setLocalTranslation(glm::vec3(shift + glm::ivec3(x, y, z)));
+			point.transform().setLocalTranslation(math::Vec3f(shift + math::Vec3i(x, y, z)));
 			success = sceneGraph.emplace(core::move(point)) != InvalidNodeId;
 			volume->setVoxel(x, y, z, voxel::Voxel());
 		});
@@ -158,16 +165,16 @@ bool TrenchblocksFormat::loadGroups(const core::String &filename, const io::Arch
 bool TrenchblocksFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 									const io::ArchivePtr &archive, const SaveContext &ctx) {
 	palette::Palette palette;
-	core::ScopedPtr<voxel::RawVolume> volume(mergeVolumes(sceneGraph, glm::ivec3(512, 256, 512), palette));
+	core::ScopedPtr<voxel::RawVolume> volume(mergeVolumes(sceneGraph, math::Vec3i(512, 256, 512), palette));
 	if (!volume) {
 		return false;
 	}
 	const voxel::Region &bounds = volume->region();
-	const glm::ivec3 size = bounds.getDimensionsInVoxels();
-	const glm::ivec3 mins = bounds.getLowerCorner();
-	const glm::ivec3 maxs = bounds.getUpperCorner();
+	const math::Vec3i size = bounds.getDimensionsInVoxels();
+	const math::Vec3i mins = bounds.getLowerCorner();
+	const math::Vec3i maxs = bounds.getUpperCorner();
 	// MagicaVoxel uses Z up and mirrors vengi X.
-	const glm::ivec3 origin(-1 - maxs.x, mins.z, mins.y);
+	const math::Vec3i origin(-1 - maxs.x, mins.z, mins.y);
 	int height = size.y;
 	core::DynamicArray<core::String> spawnLayers;
 	core::string::splitString(sceneGraph.root().property("LayersPlayerSpawn"), spawnLayers, ",");
@@ -214,14 +221,14 @@ bool TrenchblocksFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, co
 	const int solid = voxelutil::visitVolume(*volume, bounds, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		used[voxel.getColor()] = true;
 		int &top = heights[x - mins.x + (z - mins.z) * size.x];
-		top = glm::max(top, y + 1);
+		top = math::max(top, y + 1);
 	});
 	if (solid == 0) {
 		Log::error("Trenchblocks maps require at least one solid terrain voxel");
 		return false;
 	}
 	struct Stamp {
-		glm::ivec3 pos;
+		math::Vec3i pos;
 		uint8_t index;
 	};
 	core::Buffer<Stamp> stamps;
@@ -236,8 +243,8 @@ bool TrenchblocksFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, co
 			if (name != MarkerTypes[i].name) {
 				continue;
 			}
-			glm::dvec3 position = glm::floor(glm::dvec3(node.transform().worldTranslation()));
-			if (glm::any(glm::isnan(position)) || glm::any(glm::isinf(position))) {
+			math::Vec3d position = math::floor(math::Vec3d(node.transform().worldTranslation()));
+			if (math::any(math::isnan(position)) || math::any(math::isinf(position))) {
 				Log::error("Invalid Trenchblocks marker position");
 				return false;
 			}
@@ -252,7 +259,7 @@ bool TrenchblocksFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, co
 				Log::error("Trenchblocks marker exceeds map height");
 				return false;
 			}
-			const glm::ivec3 p(position);
+			const math::Vec3i p(position);
 			bool blocked = false;
 			if (filterSpawns && (i == 1 || i == 3)) {
 				if (point2D) {
@@ -269,8 +276,8 @@ bool TrenchblocksFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, co
 			if (blocked) {
 				continue;
 			}
-			const glm::ivec3 local(maxs.x - p.x, p.z - mins.z, p.y - mins.y);
-			height = glm::max(height, local.z + 1);
+			const math::Vec3i local(maxs.x - p.x, p.z - mins.z, p.y - mins.y);
+			height = math::max(height, local.z + 1);
 			stamps.push_back({local, (uint8_t)(i + 1)});
 			break;
 		}
@@ -324,12 +331,12 @@ bool TrenchblocksFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, co
 		instances[i].transform.m31 = origin.y + (i < 2 ? 256 : 0) + 128;
 		instances[i].transform.m32 = origin.z + height / 2;
 	}
-	auto put = [&](const glm::ivec3 &p, uint8_t index) {
+	auto put = [&](const math::Vec3i &p, uint8_t index) {
 		const int tile = (p.y >= 256 ? 0 : 2) + p.x / 256;
 		data[tile][p.x % 256 + (p.y % 256) * 256 + p.z * 256 * 256] = index;
 	};
 	voxelutil::visitVolumeParallel(*volume, bounds, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-		put(glm::ivec3(maxs.x - x, z - mins.z, y - mins.y), remap[voxel.getColor()]);
+		put(math::Vec3i(maxs.x - x, z - mins.z, y - mins.y), remap[voxel.getColor()]);
 	});
 	for (const Stamp &stamp : stamps) {
 		put(stamp.pos, stamp.index);

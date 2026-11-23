@@ -4,6 +4,7 @@
 
 #include "DrawSlicesTool.h"
 #include "Authoring.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -60,7 +61,7 @@ bool DrawSlicesTool::execute(const json::Json &id, const json::Json &args, ToolC
 	if (!args.contains("origin") || !args.contains("slices") || !args.contains("legend")) {
 		return ctx.result(id, "origin, slices and legend are required", true);
 	}
-	glm::ivec3 origin(0);
+	math::Vec3i origin(0);
 	if (!parseCell(args.get("origin"), origin, "origin", error)) {
 		return ctx.result(id, error, true);
 	}
@@ -133,9 +134,9 @@ bool DrawSlicesTool::execute(const json::Json &id, const json::Json &args, ToolC
 				}
 				PaintCell cell;
 				if (planeXY) {
-					cell.pos = glm::ivec3(origin.x + (int)column, origin.y + (rows.size() - 1 - row), origin.z + slice);
+					cell.pos = math::Vec3i(origin.x + (int)column, origin.y + (rows.size() - 1 - row), origin.z + slice);
 				} else {
-					cell.pos = glm::ivec3(origin.x + (int)column, origin.y + slice, origin.z + row);
+					cell.pos = math::Vec3i(origin.x + (int)column, origin.y + slice, origin.z + row);
 				}
 				cell.erase = legendErase[ch];
 				cell.index = legendIndex[ch];

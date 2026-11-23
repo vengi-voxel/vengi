@@ -5,7 +5,6 @@
 #pragma once
 
 #include "SelectStrategy.h"
-#include <glm/common.hpp>
 
 namespace voxedit {
 namespace select {
@@ -25,7 +24,7 @@ public:
 		return _flatDeviation;
 	}
 	void setDeviation(int d) {
-		_flatDeviation = glm::clamp(d, 0, MaxDeviation);
+		_flatDeviation = math::clamp(d, 0, MaxDeviation);
 	}
 };
 

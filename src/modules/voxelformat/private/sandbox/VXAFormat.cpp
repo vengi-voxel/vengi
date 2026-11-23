@@ -6,7 +6,6 @@
 #include "color/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/MD5.h"
 #include "core/ScopedPtr.h"
@@ -20,8 +19,9 @@
 #include "io/StreamUtilQuat.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
-#include <glm/common.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -236,8 +236,8 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 			}
 		}
 
-		glm::vec3 translation(0.0f);
-		glm::vec3 eulerAngles(0.0f);
+		math::Vec3f translation(0.0f);
+		math::Vec3f eulerAngles(0.0f);
 		float scale = 1.0f;
 
 		for (int ch = 0; ch < 7; ++ch) {
@@ -253,8 +253,8 @@ bool VXAFormat::recursiveImportNodeSince3(const core::String &filename, io::Seek
 
 		scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 		transform.setLocalTranslation(translation);
-		transform.setLocalOrientation(glm::quat(eulerAngles));
-		transform.setLocalScale(glm::vec3(scale));
+		transform.setLocalOrientation(math::Quatf(eulerAngles));
+		transform.setLocalScale(math::Vec3f(scale));
 	}
 
 	int32_t children;
@@ -300,11 +300,11 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 
 		scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 
-		glm::vec3 localTranslation;
-		glm::quat localOrientation;
+		math::Vec3f localTranslation;
+		math::Quatf localOrientation;
 		float localScale;
-		glm::vec3 ignoredTranslation;
-		glm::quat ignoredOrientation;
+		math::Vec3f ignoredTranslation;
+		math::Quatf ignoredOrientation;
 		float ignoredScale;
 
 		wrapBool(io::readVec3(stream, localTranslation))
@@ -314,7 +314,7 @@ bool VXAFormat::recursiveImportNodeBefore3(const core::String &filename, io::See
 		wrap(stream.readFloat(localScale))
 		wrap(stream.readFloat(ignoredScale))
 
-		transform.setLocalScale(glm::vec3(localScale));
+		transform.setLocalScale(math::Vec3f(localScale));
 		transform.setLocalOrientation(localOrientation);
 		transform.setLocalTranslation(localTranslation);
 	}
@@ -344,8 +344,8 @@ void VXAFormat::applyPivotFixV1(scenegraph::SceneGraph &sceneGraph, scenegraph::
 		}
 		// the parent node must have a model volume for pivot correction
 		if (node.isAnyModelNode() && node.volume() != nullptr) {
-			const glm::vec3 volumesize = node.region().getDimensionsInVoxels();
-			const glm::vec3 pivotTranslation = (node.pivot() * 2.0f - 1.0f) * 0.5f * volumesize;
+			const math::Vec3f volumesize = node.region().getDimensionsInVoxels();
+			const math::Vec3f pivotTranslation = (node.pivot() * 2.0f - 1.0f) * 0.5f * volumesize;
 			scenegraph::SceneGraphKeyFrames *kfs = child->keyFrames();
 			if (kfs != nullptr) {
 				for (scenegraph::SceneGraphKeyFrame &kf : *kfs) {

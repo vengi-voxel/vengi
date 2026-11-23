@@ -6,6 +6,7 @@
 #include "VoxelPrinter.h"
 #include "app/tests/AbstractTest.h"
 #include "math/tests/TestMathHelper.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -34,16 +35,16 @@ TEST_F(RawVolumeViewTest, testOperator) {
 			}
 		}
 	}
-	const glm::ivec3 pos{viewRegion.getLowerX(), viewRegion.getUpperY() - 1, viewRegion.getLowerZ()};
+	const math::Vec3i pos{viewRegion.getLowerX(), viewRegion.getUpperY() - 1, viewRegion.getLowerZ()};
 	const voxel::Voxel expectedVoxel = voxel::createVoxel(VoxelType::Generic, 1);
 	ASSERT_TRUE(v.setVoxel(pos, expectedVoxel));
 
 	RawVolumeView view(&v, viewRegion);
 
-	ASSERT_EQ(view.viewPosFromIndex(0), glm::ivec3(0, 0, 0));
-	ASSERT_EQ(view.viewPosFromIndex(1), glm::ivec3(1, 0, 0));
-	ASSERT_EQ(view.viewPosFromIndex(2), glm::ivec3(2, 0, 0));
-	ASSERT_EQ(view.viewPosFromIndex(3), glm::ivec3(3, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(0), math::Vec3i(0, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(1), math::Vec3i(1, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(2), math::Vec3i(2, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(3), math::Vec3i(3, 0, 0));
 
 	ASSERT_TRUE(voxel::isAir(view[0].getMaterial()));
 	ASSERT_TRUE(voxel::isAir(view[1].getMaterial()));
@@ -58,7 +59,7 @@ TEST_F(RawVolumeViewTest, testOperator) {
 	ASSERT_TRUE(voxel::isAir(view[11].getMaterial()));
 	ASSERT_TRUE(voxel::isAir(view[12].getMaterial()));
 
-	const glm::ivec3 expectedPos(0, 1, 0);
+	const math::Vec3i expectedPos(0, 1, 0);
 	ASSERT_EQ(view.viewPosFromIndex(4), expectedPos);
 	ASSERT_EQ(viewRegion.getLowerCorner() + view.viewPosFromIndex(4), pos);
 	const voxel::Voxel& actualVoxel = v.voxel(viewRegion.getLowerCorner() + view.viewPosFromIndex(4));
@@ -77,16 +78,16 @@ TEST_F(RawVolumeViewTest, testOperatorWithNegativeRegion) {
 			}
 		}
 	}
-	const glm::ivec3 pos{viewRegion.getLowerX(), viewRegion.getUpperY() - 1, viewRegion.getLowerZ()};
+	const math::Vec3i pos{viewRegion.getLowerX(), viewRegion.getUpperY() - 1, viewRegion.getLowerZ()};
 	const voxel::Voxel expectedVoxel = voxel::createVoxel(VoxelType::Generic, 1);
 	ASSERT_TRUE(v.setVoxel(pos, expectedVoxel));
 
 	RawVolumeView view(&v, viewRegion);
 
-	ASSERT_EQ(view.viewPosFromIndex(0), glm::ivec3(0, 0, 0));
-	ASSERT_EQ(view.viewPosFromIndex(1), glm::ivec3(1, 0, 0));
-	ASSERT_EQ(view.viewPosFromIndex(2), glm::ivec3(2, 0, 0));
-	ASSERT_EQ(view.viewPosFromIndex(3), glm::ivec3(3, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(0), math::Vec3i(0, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(1), math::Vec3i(1, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(2), math::Vec3i(2, 0, 0));
+	ASSERT_EQ(view.viewPosFromIndex(3), math::Vec3i(3, 0, 0));
 
 	ASSERT_TRUE(voxel::isAir(view[0].getMaterial()));
 	ASSERT_TRUE(voxel::isAir(view[1].getMaterial()));
@@ -101,7 +102,7 @@ TEST_F(RawVolumeViewTest, testOperatorWithNegativeRegion) {
 	ASSERT_TRUE(voxel::isAir(view[11].getMaterial()));
 	ASSERT_TRUE(voxel::isAir(view[12].getMaterial()));
 
-	const glm::ivec3 expectedPos(0, 1, 0);
+	const math::Vec3i expectedPos(0, 1, 0);
 	ASSERT_EQ(view.viewPosFromIndex(4), expectedPos);
 	ASSERT_EQ(viewRegion.getLowerCorner() + view.viewPosFromIndex(4), pos);
 	const voxel::Voxel& actualVoxel = v.voxel(viewRegion.getLowerCorner() + view.viewPosFromIndex(4));

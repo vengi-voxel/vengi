@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MeshFormat.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 struct VoxelVertex;
@@ -37,7 +38,7 @@ namespace voxelformat {
 class STLFormat : public MeshFormat {
 private:
 	bool writeVertex(io::SeekableWriteStream &stream, const ChunkMeshExt &meshExt, const voxel::VoxelVertex &v1,
-					 const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale);
+					 const scenegraph::SceneGraphTransform &transform, const math::Vec3f &scale);
 
 	bool parseBinary(io::SeekableReadStream &stream, Mesh &mesh);
 	bool parseAscii(io::SeekableReadStream &stream, Mesh &mesh);
@@ -47,7 +48,7 @@ private:
 
 public:
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
-					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
+					const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale, bool quad,
 					bool withColor, bool withTexCoords) override;
 
 	static const io::FormatDescription &format() {

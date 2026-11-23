@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 /**
@@ -20,11 +21,11 @@ public:
 	struct MDLHeader {
 		uint32_t magic = 0;
 		uint32_t version = 0;
-		glm::vec3 scale{};
-		glm::vec3 origin{};
+		math::Vec3f scale{};
+		math::Vec3f origin{};
 		float radius = 0.0f; /* the radius of a sphere covering the whole model (collision detection) */
 
-		glm::vec3 eye{}; /* where the eyes are located in the model */
+		math::Vec3f eye{}; /* where the eyes are located in the model */
 
 		uint32_t numSkins = 0;
 		// all textures must have the same dimensions
@@ -49,7 +50,7 @@ private:
 public:
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-					const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
+					const math::Vec3f &scale = math::Vec3f(1.0f), bool quad = false, bool withColor = true,
 					bool withTexCoords = true) override {
 		return false;
 	}

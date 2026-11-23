@@ -8,8 +8,8 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
-#include <glm/mat3x3.hpp>
-#include <glm/vec3.hpp>
+#include "math/Mat3f.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -17,8 +17,8 @@ struct AddNodePreview {
 	bool active = false;
 	int sourceNodeId = InvalidNodeId;
 	voxel::FaceNames hoverFace = voxel::FaceNames::Max;
-	math::OBBF highlightObb = math::OBBF(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3(1.0f));
-	math::OBBF previewObb = math::OBBF(glm::vec3(0.0f), glm::vec3(1.0f), glm::mat3(1.0f));
+	math::OBBF highlightObb = math::OBBF(math::Vec3f(0.0f), math::Vec3f(1.0f), math::Mat3f(1.0f));
+	math::OBBF previewObb = math::OBBF(math::Vec3f(0.0f), math::Vec3f(1.0f), math::Mat3f(1.0f));
 	voxel::Region previewRegion;
 	bool previewValid = false;
 

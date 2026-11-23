@@ -14,6 +14,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/private/mesh/quake/QuakeBSPFormat.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -434,7 +435,7 @@ void expectHollowCube(const scenegraph::SceneGraph &sceneGraph) {
 	const scenegraph::SceneGraphNode &node = *sceneGraph.beginModel();
 	const voxel::RawVolume *volume = node.volume();
 	ASSERT_NE(nullptr, volume);
-	const glm::ivec3 origin(glm::round(node.transform(0).localTranslation()));
+	const math::Vec3i origin(math::round(node.transform(0).localTranslation()));
 	auto at = [&](int x, int y, int z) {
 		return volume->voxel(x - origin.x, y - origin.y, z - origin.z);
 	};
@@ -467,7 +468,7 @@ TEST_F(QuakeBSPFormatTest, testQuake1SolidShell) {
 	const scenegraph::SceneGraphNode &node = *sceneGraph.beginModel();
 	const voxel::RawVolume *volume = node.volume();
 	ASSERT_NE(nullptr, volume);
-	const glm::ivec3 origin(glm::round(node.transform(0).localTranslation()));
+	const math::Vec3i origin(math::round(node.transform(0).localTranslation()));
 	auto at = [&](int x, int y, int z) {
 		return volume->voxel(x - origin.x, y - origin.y, z - origin.z);
 	};

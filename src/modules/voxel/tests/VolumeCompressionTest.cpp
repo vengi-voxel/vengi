@@ -10,6 +10,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -22,7 +23,7 @@ TEST_F(VoxelCompressionTest, testToVolume) {
 	for (int x = region.getLowerX() + 1; x <= region.getUpperX(); ++x) {
 		for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {
 			for (int z = region.getLowerZ(); z <= region.getUpperZ(); ++z) {
-				v.setVoxel(glm::ivec3(x, y, z), voxel);
+				v.setVoxel(math::Vec3i(x, y, z), voxel);
 			}
 		}
 	}

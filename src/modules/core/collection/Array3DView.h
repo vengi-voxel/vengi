@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
 #include <stddef.h>
+#include "math/Vec3i.h"
 
 namespace core {
 
@@ -60,17 +60,17 @@ public:
 		_data[idx] = t;
 	}
 
-	constexpr const T &get(const glm::ivec3& v) const {
+	constexpr const T &get(const math::Vec3i& v) const {
 		const int64_t idx = index(v.x, v.y, v.z);
 		return _data[idx];
 	}
 
-	constexpr T &get(const glm::ivec3& v) {
+	constexpr T &get(const math::Vec3i& v) {
 		const int64_t idx = index(v.x, v.y, v.z);
 		return _data[idx];
 	}
 
-	constexpr void set(const glm::ivec3& v, const T &t) {
+	constexpr void set(const math::Vec3i& v, const T &t) {
 		const int64_t idx = index(v.x, v.y, v.z);
 		_data[idx] = t;
 	}

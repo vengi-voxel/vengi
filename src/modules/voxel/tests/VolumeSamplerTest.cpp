@@ -7,6 +7,7 @@
 #include "app/tests/AbstractTest.h"
 #include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -110,7 +111,7 @@ TEST_F(VolumeSamplerTest, testSampleCubicSamplerMatchesVolume) {
 	v.setVoxel(3, 3, 3, voxel::createVoxel(voxel::VoxelType::Generic, 11));
 	v.setVoxel(4, 3, 3, voxel::createVoxel(voxel::VoxelType::Generic, 22));
 	voxel::VolumeSampler sampler(&v);
-	const glm::vec3 pos{3.4f, 3.0f, 3.0f};
+	const math::Vec3f pos{3.4f, 3.0f, 3.0f};
 	EXPECT_EQ(sampleCubic(sampler, pos).getColor(), sampleCubic(sampler, pos).getColor());
 }
 

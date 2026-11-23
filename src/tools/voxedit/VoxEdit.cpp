@@ -391,7 +391,7 @@ app::AppState VoxEdit::onConstruct() {
 			}
 			const float current = camera->isOrthographic() ? camera->orthoZoom() : camera->targetDistance();
 			if (current > 0.0f) {
-				camera->zoom(glm::log(value / current) / speed);
+				camera->zoom(math::log(value / current) / speed);
 				camera->update(0.0);
 			}
 		}).setHelp(_("Set camera zoom for repeatable framing, respecting configured zoom limits"));

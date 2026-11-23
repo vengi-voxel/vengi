@@ -8,9 +8,8 @@
 #include "core/collection/BitSet.h"
 #include "core/collection/Map.h"
 #include "video/Types.h"
-#include <glm/fwd.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec2f.h"
 
 namespace video {
 
@@ -21,8 +20,8 @@ namespace video {
  */
 struct RendererState {
 	core::DynamicSet<Id> textures;
-	glm::vec4 clearColor {0.0f};
-	glm::vec4 pendingClearColor {0.0f};
+	math::Vec4f clearColor {0.0f};
+	math::Vec4f pendingClearColor {0.0f};
 	Face cullFace = Face::Back;
 	Face pendingCullFace = Face::Back;
 	CompareFunc depthFunc = CompareFunc::Less;
@@ -37,8 +36,8 @@ struct RendererState {
 	Id pendingProgramHandle = InvalidId;
 	bool needValidation = false;
 	Id vertexArrayHandle = InvalidId;
-	glm::vec2 polygonOffset {0.0f};
-	glm::vec2 pendingPolygonOffset {0.0f};
+	math::Vec2f polygonOffset {0.0f};
+	math::Vec2f pendingPolygonOffset {0.0f};
 	float pointSize = 1.0f;
 	float pendingPointSize = 1.0f;
 	Face polygonModeFace = Face::Max;
@@ -102,8 +101,8 @@ struct RendererState {
 	Id framebufferHandle = InvalidId;
 	FrameBufferMode framebufferMode = FrameBufferMode::Default;
 	Id renderBufferHandle = InvalidId;
-	glm::vec2 smoothedLineWidth = glm::vec2(-1.0f);
-	glm::vec2 aliasedLineWidth = glm::vec2(-1.0f);
+	math::Vec2f smoothedLineWidth = math::Vec2f(-1.0f);
+	math::Vec2f aliasedLineWidth = math::Vec2f(-1.0f);
 	float lineWidth = 1.0f;
 	float pendingLineWidth = 1.0f;
 	core::BitSet<core::enumVal(Vendor::Max)> vendor;

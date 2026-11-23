@@ -23,9 +23,12 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/external/ogt_vox.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/gtc/quaternion.hpp>
 #include "MagicaVoxel.h"
 #include "palette/Palette.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
 
 namespace voxelformat {
 
@@ -35,8 +38,8 @@ VoxFormat::VoxFormat() {
 	ogt_vox_set_memory_allocator(_ogt_alloc, _ogt_free);
 }
 
-glm::ivec3 VoxFormat::maxSize() const {
-	return glm::ivec3(256);
+math::Vec3i VoxFormat::maxSize() const {
+	return math::Vec3i(256);
 }
 
 int VoxFormat::emptyPaletteIndex() const {
@@ -147,15 +150,15 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 			}
 
 			if (applyTransform) {
-				const glm::mat4 bakeMat = ogtInstanceBakeMatrix(ogtInstance, kfModel.frame_index, scene, frameModel);
-				glm::ivec3 shift(0);
+				const math::Mat4f bakeMat = ogtInstanceBakeMatrix(ogtInstance, kfModel.frame_index, scene, frameModel);
+				math::Vec3i shift(0);
 				voxel::RawVolume *fv = bakeOgtModel(frameModel, bakeMat, palette, shift);
 				cropOnLoad(fv);
 				scenegraph::SceneGraphNode frameNode(scenegraph::SceneGraphNodeType::Model);
 				scenegraph::SceneGraphTransform fTransform;
-				fTransform.setWorldTranslation(glm::vec3(shift));
+				fTransform.setWorldTranslation(math::Vec3f(shift));
 				frameNode.setTransform(0, fTransform);
-				frameNode.setPivot(glm::vec3(0.0f));
+				frameNode.setPivot(math::Vec3f(0.0f));
 				frameNode.setName(core::String::format("%s_frame_%u", name, kfModel.frame_index));
 				frameNode.setVisible(!hidden);
 				frameNode.setColor(color);
@@ -202,16 +205,16 @@ bool VoxFormat::loadInstance(const ogt_vox_scene *scene, uint32_t ogt_instanceId
 	}
 
 	if (applyTransform) {
-		const glm::mat4 bakeMat = ogtInstanceBakeMatrix(ogtInstance, 0, scene, ogtModel);
-		glm::ivec3 shift(0);
+		const math::Mat4f bakeMat = ogtInstanceBakeMatrix(ogtInstance, 0, scene, ogtModel);
+		math::Vec3i shift(0);
 		voxel::RawVolume *v = bakeOgtModel(ogtModel, bakeMat, palette, shift);
 		cropOnLoad(v);
 
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(shift));
+		transform.setWorldTranslation(math::Vec3f(shift));
 		node.setTransform(0, transform);
-		node.setPivot(glm::vec3(0.0f));
+		node.setPivot(math::Vec3f(0.0f));
 		applyInstanceMetadata(node, scene, ogtInstance);
 		node.setVolume(v);
 		node.setPalette(palette);
@@ -343,15 +346,15 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 	if (applyTransform && !animAsNodes && groupInstances.size() > 1) {
 		struct UniqueBake {
 			uint32_t modelIndex = 0;
-			glm::mat4 bakeMat{1.0f};
+			math::Mat4f bakeMat{1.0f};
 			voxel::RawVolume *volume = nullptr;
 			bool transferred = false;
 		};
 		struct BakedInstance {
 			voxel::RawVolume *volume = nullptr;
-			glm::ivec3 shift{0};
+			math::Vec3i shift{0};
 			int uniqueIdx = -1;
-			glm::mat4 bakeMat{1.0f};
+			math::Mat4f bakeMat{1.0f};
 			const ogt_vox_model *model = nullptr;
 		};
 		core::DynamicArray<UniqueBake> uniques;
@@ -370,7 +373,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 			if (ogtModel == nullptr) {
 				continue;
 			}
-			const glm::mat4 bakeMat = ogtInstanceBakeMatrix(ogtInstance, 0, scene, ogtModel);
+			const math::Mat4f bakeMat = ogtInstanceBakeMatrix(ogtInstance, 0, scene, ogtModel);
 			baked[i].bakeMat = bakeMat;
 			baked[i].model = ogtModel;
 			const BakeAffine affine = extractBakeAffine(bakeMat);
@@ -396,7 +399,7 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 		auto bakeFn = [scene, &uniques, &palette, &bakeLut](int start, int end) {
 			for (int i = start; i < end; ++i) {
 				const ogt_vox_model *ogtModel = scene->models[uniques[i].modelIndex];
-				glm::ivec3 shift(0);
+				math::Vec3i shift(0);
 				uniques[i].volume = bakeOgtModel(ogtModel, uniques[i].bakeMat, palette, shift, false, bakeLut);
 			}
 		};
@@ -444,9 +447,9 @@ bool VoxFormat::loadGroup(const ogt_vox_scene *scene, uint32_t ogt_groupIdx, sce
 			cropOnLoad(baked[i].volume);
 			scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 			scenegraph::SceneGraphTransform transform;
-			transform.setWorldTranslation(glm::vec3(baked[i].shift));
+			transform.setWorldTranslation(math::Vec3f(baked[i].shift));
 			modelNode.setTransform(0, transform);
-			modelNode.setPivot(glm::vec3(0.0f));
+			modelNode.setPivot(math::Vec3f(0.0f));
 			applyInstanceMetadata(modelNode, scene, scene->instances[instanceIdx]);
 			modelNode.setVolume(baked[i].volume);
 			modelNode.setPalette(palette);
@@ -772,11 +775,11 @@ void VoxFormat::saveNode(const scenegraph::SceneGraph &sceneGraph, scenegraph::S
 			ogt_vox_cam ogt_cam;
 			core_memset(&ogt_cam, 0, sizeof(ogt_cam));
 			ogt_cam.camera_id = (uint32_t)ctx.cameras.size();
-			const glm::vec3 &euler = glm::eulerAngles(transform.worldOrientation());
+			const math::Vec3f &euler = math::eulerAngles(transform.worldOrientation());
 			ogt_cam.angle[0] = euler[0];
 			ogt_cam.angle[1] = euler[2];
 			ogt_cam.angle[2] = euler[1];
-			const glm::vec3 &pos = transform.worldTranslation();
+			const math::Vec3f &pos = transform.worldTranslation();
 			ogt_cam.focus[0] = pos[0];
 			ogt_cam.focus[1] = pos[2];
 			ogt_cam.focus[2] = pos[1];

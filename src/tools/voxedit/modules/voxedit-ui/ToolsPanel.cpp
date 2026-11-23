@@ -20,8 +20,9 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/brush/Brush.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
 
-#include <glm/common.hpp>
 
 namespace voxedit {
 
@@ -157,8 +158,8 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_ARROW_UP, _("Move voxels"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ui::ScopedID id("##movevoxels");
-		static glm::ivec3 translate{0};
-		const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		static math::Vec3i translate{0};
+		const math::Vec3i gridRes = parseGridResolution(_gridSize->strVal());
 		ImGui::InputAxisInt(math::Axis::X, _("X"), &translate.x, gridRes.x);
 		ImGui::InputAxisInt(math::Axis::X, _("Y"), &translate.y, gridRes.y);
 		ImGui::InputAxisInt(math::Axis::X, _("Z"), &translate.z, gridRes.z);
@@ -170,14 +171,14 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_BOX, _("Cursor"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ui::ScopedID id("##cursor");
-		glm::ivec3 cursorPosition = _sceneMgr->modifier().cursorPosition();
+		math::Vec3i cursorPosition = _sceneMgr->modifier().cursorPosition();
 		math::Axis lockedAxis = _sceneMgr->modifier().lockedAxis();
 		if (ImGui::AxisCheckboxFlags(math::Axis::X, _("X"), &lockedAxis)) {
 			command::executeCommands("lockx", &listener);
 		}
 		ImGui::TooltipCommand("lockx");
 		ImGui::SameLine();
-		const glm::ivec3 cursorGridRes = parseGridResolution(_gridSize->strVal());
+		const math::Vec3i cursorGridRes = parseGridResolution(_gridSize->strVal());
 		if (ImGui::InputAxisInt(math::Axis::X, "##cursorx", &cursorPosition.x, cursorGridRes.x)) {
 			char commandLine[64];
 			core::String::formatBuf(commandLine, sizeof(commandLine), "cursor %i %i %i", cursorPosition.x,
@@ -219,7 +220,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 
 	if (ImGui::IconCollapsingHeader(ICON_LC_GRID_3X3, _("Grid size"), ImGuiTreeNodeFlags_DefaultOpen)) {
 		ui::ScopedID gridSizeId("##gridsize");
-		glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+		math::Vec3i gridRes = parseGridResolution(_gridSize->strVal());
 		bool gridChanged = false;
 		const auto syncAxis = [&](int src) {
 			gridRes[(src + 1) % 3] = gridRes[src];
@@ -229,7 +230,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		const auto drawSyncButton = [](math::Axis axis, const char *buttonId) {
 			const bool clicked = ImGui::SmallButton(buttonId);
 			if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) {
-				const glm::vec4 &axisColor = style::color(axis == math::Axis::X   ? style::ColorAxisX
+				const math::Vec4f &axisColor = style::color(axis == math::Axis::X   ? style::ColorAxisX
 														  : axis == math::Axis::Y ? style::ColorAxisY
 																				  : style::ColorAxisZ);
 				ImGui::BeginTooltip();
@@ -271,7 +272,7 @@ void ToolsPanel::updateEditMode(command::CommandExecutionListener &listener) {
 		gridChanged |= ImGui::InputAxisInt(math::Axis::Z, "##gridsizez", &gridRes.z, 1);
 
 		if (gridChanged) {
-			gridRes = glm::clamp(gridRes, glm::ivec3(1), glm::ivec3(64));
+			gridRes = math::clamp(gridRes, math::Vec3i(1), math::Vec3i(64));
 			if (gridRes.x == gridRes.y && gridRes.y == gridRes.z) {
 				_gridSize->setVal(core::String::format("%i", gridRes.x));
 			} else {

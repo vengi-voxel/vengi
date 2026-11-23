@@ -15,8 +15,10 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/mat4x4.hpp>
-#include <glm/vec4.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelpathtracer {
 
@@ -85,10 +87,10 @@ void collectScenePalettes(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 }
 
 bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer<const palette::Palette *> &palettes,
-						  const glm::ivec3 &worldMin, const glm::ivec3 &volumeSize, int maxTextureAxis,
+						  const math::Vec3i &worldMin, const math::Vec3i &volumeSize, int maxTextureAxis,
 						  SparseGpuVolume &out, uint8_t *transmissive) {
 	freeSparseGpuVolume(out);
-	out.coarseSize = glm::ivec3(volumeSize.x / BrickSize, volumeSize.y / BrickSize, volumeSize.z / BrickSize);
+	out.coarseSize = math::Vec3i(volumeSize.x / BrickSize, volumeSize.y / BrickSize, volumeSize.z / BrickSize);
 	const size_t coarseCount = (size_t)out.coarseSize.x * (size_t)out.coarseSize.y * (size_t)out.coarseSize.z;
 	uint8_t *occupancy = (uint8_t *)core_malloc(coarseCount);
 	if (occupancy == nullptr) {
@@ -108,13 +110,13 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 		if (v == nullptr) {
 			continue;
 		}
-		const glm::mat4 &world = sceneGraph.worldMatrix(node);
+		const math::Mat4f &world = sceneGraph.worldMatrix(node);
 		voxelutil::visitVolumeParallel(
 			*v,
 			[&](int x, int y, int z, const voxel::Voxel &) {
-				const glm::vec3 worldPos =
-					glm::vec3(world * glm::vec4((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, 1.0f));
-				const glm::ivec3 dest = glm::ivec3(glm::floor(worldPos)) - worldMin;
+				const math::Vec3f worldPos =
+					math::Vec3f(world * math::Vec4f((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, 1.0f));
+				const math::Vec3i dest = math::Vec3i(math::floor(worldPos)) - worldMin;
 				if (!packedRegion.containsPoint(dest)) {
 					return;
 				}
@@ -154,7 +156,7 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 	}
 
 	out.brickCount = 0;
-	out.brickCoords = (glm::ivec3 *)core_malloc((size_t)core_max(1, occupiedBricks) * sizeof(glm::ivec3));
+	out.brickCoords = (math::Vec3i *)core_malloc((size_t)core_max(1, occupiedBricks) * sizeof(math::Vec3i));
 	out.bricks =
 		(uint32_t *)core_malloc((size_t)core_max(1, occupiedBricks) * (size_t)VoxelsPerBrick * sizeof(uint32_t));
 	if (out.brickCoords == nullptr || out.bricks == nullptr) {
@@ -178,7 +180,7 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 					continue;
 				}
 				brickIndexOfCell[cell] = (uint32_t)out.brickCount;
-				out.brickCoords[out.brickCount] = glm::ivec3(cx, cy, cz);
+				out.brickCoords[out.brickCount] = math::Vec3i(cx, cy, cz);
 				++out.brickCount;
 			}
 		}
@@ -196,13 +198,13 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 		}
 		const palette::Palette &nodePalette = sceneGraph.resolvePalette(node);
 		const int slot = findOrAddPalette(palettes, nodePalette);
-		const glm::mat4 &world = sceneGraph.worldMatrix(node);
+		const math::Mat4f &world = sceneGraph.worldMatrix(node);
 		voxelutil::visitVolumeParallel(
 			*v,
 			[&](int x, int y, int z, const voxel::Voxel &voxel) {
-				const glm::vec3 worldPos =
-					glm::vec3(world * glm::vec4((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, 1.0f));
-				const glm::ivec3 dest = glm::ivec3(glm::floor(worldPos)) - worldMin;
+				const math::Vec3f worldPos =
+					math::Vec3f(world * math::Vec4f((float)x + 0.5f, (float)y + 0.5f, (float)z + 0.5f, 1.0f));
+				const math::Vec3i dest = math::Vec3i(math::floor(worldPos)) - worldMin;
 				if (!packedRegion.containsPoint(dest)) {
 					return;
 				}
@@ -249,14 +251,14 @@ bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer
 	if (out.brickCount <= 0) {
 		out.bricksPerRow = 1;
 		out.bricksPerCol = 1;
-		out.atlasSize = glm::ivec3(BrickSize, BrickSize, BrickSize);
+		out.atlasSize = math::Vec3i(BrickSize, BrickSize, BrickSize);
 	} else {
 		// Compact grid: fill X, then Y, then Z within the max-per-axis cube.
 		out.bricksPerRow = core_min(out.brickCount, maxBricksPerAxis);
 		out.bricksPerCol = core_min((out.brickCount + out.bricksPerRow - 1) / out.bricksPerRow, maxBricksPerAxis);
 		const int bricksPerSlice = out.bricksPerRow * out.bricksPerCol;
 		const int brickLayers = (out.brickCount + bricksPerSlice - 1) / bricksPerSlice;
-		out.atlasSize = glm::ivec3(out.bricksPerRow * BrickSize, out.bricksPerCol * BrickSize, brickLayers * BrickSize);
+		out.atlasSize = math::Vec3i(out.bricksPerRow * BrickSize, out.bricksPerCol * BrickSize, brickLayers * BrickSize);
 	}
 	return true;
 }
@@ -375,7 +377,7 @@ void gatherSceneEmitLights(const SparseGpuVolume &volume, int materialCount, con
 	core_memset(emitLights, 0, (size_t)MaxEmitLights * sizeof(GpuEmitLight));
 	int seen = 0;
 	for (int brickIndex = 0; brickIndex < volume.brickCount; ++brickIndex) {
-		const glm::ivec3 brick = volume.brickCoords[brickIndex];
+		const math::Vec3i brick = volume.brickCoords[brickIndex];
 		const uint32_t *brickVoxels = volume.bricks + (size_t)brickIndex * (size_t)VoxelsPerBrick;
 		for (int lz = 0; lz < BrickSize; ++lz) {
 			for (int ly = 0; ly < BrickSize; ++ly) {
@@ -403,8 +405,8 @@ void gatherSceneEmitLights(const SparseGpuVolume &volume, int materialCount, con
 						}
 					}
 					const uint8_t *rgba = albedoRgba + materialIndex * 4u;
-					const glm::vec3 srgb = glm::vec3(rgba[0], rgba[1], rgba[2]) / 255.0f;
-					const glm::ivec3 cell(brick.x * BrickSize + lx, brick.y * BrickSize + ly, brick.z * BrickSize + lz);
+					const math::Vec3f srgb = math::Vec3f(rgba[0], rgba[1], rgba[2]) / 255.0f;
+					const math::Vec3i cell(brick.x * BrickSize + lx, brick.y * BrickSize + ly, brick.z * BrickSize + lz);
 					emitLights[dest] = packGpuEmitLight(cell, srgb, materials[materialIndex]);
 				}
 			}
@@ -443,8 +445,8 @@ PreparedGpuScene &PreparedGpuScene::operator=(PreparedGpuScene &&other) noexcept
 void PreparedGpuScene::free() {
 	freeSparseGpuVolume(sparse);
 	freeGpuMaterialAtlas(materials);
-	worldMin = glm::ivec3(0);
-	volumeSize = glm::ivec3(0);
+	worldMin = math::Vec3i(0);
+	volumeSize = math::Vec3i(0);
 	empty = true;
 	volumeTruncated = false;
 	success = false;

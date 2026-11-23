@@ -14,6 +14,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "TestUtil.h"
 #include "../WindowTitles.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -233,7 +234,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		{
 			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNodeUUID());
 			IM_CHECK(v != nullptr);
-			const glm::ivec3 center = v->region().getCenter();
+			const math::Vec3i center = v->region().getCenter();
 			IM_CHECK_EQ(center.x, 0);
 			IM_CHECK_EQ(center.y, 0);
 			IM_CHECK_EQ(center.z, 0);
@@ -245,7 +246,7 @@ void SceneGraphPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		{
 			const voxel::RawVolume *v = _sceneMgr->volume(sceneGraph.activeNodeUUID());
 			IM_CHECK(v != nullptr);
-			const glm::ivec3 center = v->region().getCenter();
+			const math::Vec3i center = v->region().getCenter();
 			IM_CHECK_EQ(center.x, 0);
 			IM_CHECK_EQ(center.y, 0);
 			IM_CHECK_EQ(center.z, 0);

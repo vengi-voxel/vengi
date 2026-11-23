@@ -5,10 +5,13 @@
 #include "Plane.h"
 #include "core/ArrayLength.h"
 #include "video/Camera.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 namespace render {
 
-void Plane::render(const video::Camera& camera, const glm::mat4& model) const {
+void Plane::render(const video::Camera& camera, const math::Mat4f& model) const {
 	const bool disabled = video::disable(video::State::CullFace);
 	_shapeRenderer.renderAll(camera, model);
 	if (disabled) {
@@ -38,7 +41,7 @@ void Plane::clear() {
 	}
 }
 
-bool Plane::plane(const glm::vec3& position, int tesselation, const glm::vec4& color) {
+bool Plane::plane(const math::Vec3f& position, int tesselation, const math::Vec4f& color) {
 	_shapeBuilder.setColor(color);
 	_shapeBuilder.setPosition(position);
 	_shapeBuilder.plane(tesselation);
@@ -49,7 +52,7 @@ bool Plane::plane(const glm::vec3& position, int tesselation, const glm::vec4& c
 	return id >= 0;
 }
 
-bool Plane::plane(const glm::vec3& position, const math::Plane& plane, const glm::vec4& color) {
+bool Plane::plane(const math::Vec3f& position, const math::Plane& plane, const math::Vec4f& color) {
 	_shapeBuilder.setColor(color);
 	_shapeBuilder.setPosition(position);
 	_shapeBuilder.plane(plane, false);

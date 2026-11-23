@@ -14,6 +14,10 @@
 #include "ColorShader.h"
 #include "LineShader.h"
 #include "LineData.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace render {
 
@@ -31,15 +35,15 @@ public:
 	static constexpr int MAX_MESHES = 2048;
 private:
 	struct Vertex {
-		glm::vec4 pos;
-		glm::vec4 color;
-		glm::vec2 uv;
-		glm::vec3 normal;
+		math::Vec4f pos;
+		math::Vec4f color;
+		math::Vec2f uv;
+		math::Vec3f normal;
 	};
 	struct LineVertex {
-		glm::vec4 start;
-		glm::vec4 end;
-		glm::vec4 color;
+		math::Vec4f start;
+		math::Vec4f end;
+		math::Vec4f color;
 	};
 
 	video::Buffer _vbo[MAX_MESHES];
@@ -68,8 +72,8 @@ private:
 	void configureAttributes(uint32_t meshIndex, bool lines);
 	const void *vertexData(bool lines, size_t &bytes) const;
 	const void *indexData(bool lines, const video::ShapeBuilder &shapeBuilder, size_t &bytes) const;
-	void activateColorShader(const video::Camera &camera, const glm::mat4 &model) const;
-	void activateLineShader(const video::Camera &camera, const glm::mat4 &model) const;
+	void activateColorShader(const video::Camera &camera, const math::Mat4f &model) const;
+	void activateLineShader(const video::Camera &camera, const math::Mat4f &model) const;
 
 public:
 	ShapeRenderer();
@@ -97,9 +101,9 @@ public:
 
 	void update(uint32_t meshIndex, const video::ShapeBuilder& shapeBuilder);
 
-	bool render(uint32_t meshIndex, const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
+	bool render(uint32_t meshIndex, const video::Camera& camera, const math::Mat4f& model = math::Mat4f(1.0f)) const;
 
-	int renderAll(const video::Camera& camera, const glm::mat4& model = glm::mat4(1.0f)) const;
+	int renderAll(const video::Camera& camera, const math::Mat4f& model = math::Mat4f(1.0f)) const;
 };
 
 inline void ShapeRenderer::setLineWidth(float width) {

@@ -15,8 +15,10 @@
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "voxelformat/private/mesh/MeshTri.h"
 #include "voxelformat/private/mesh/TextureLookup.h"
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -802,7 +804,7 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 
 	// 3dsmax is using z-up axis - so let's correct this
 	// TODO: SCENEGRAPH: Use scenegraph::convertCoordinateSystem()
-	const glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	const math::Mat4f rotationMatrix = math::rotate(math::Mat4f(1.0f), math::radians(-90.0f), math::Vec3f(1.0f, 0.0f, 0.0f));
 
 	MeshMaterialMap meshMaterials;
 	MeshMaterialArray meshMaterialArray;
@@ -846,9 +848,9 @@ bool Autodesk3DSFormat::voxelizeGroups(const core::String &filename, const io::A
 					continue;
 				}
 				MeshTri meshTri;
-				const glm::vec3 &vertex0 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx0], 1.0f);
-				const glm::vec3 &vertex1 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx1], 1.0f);
-				const glm::vec3 &vertex2 = rotationMatrix * glm::vec4(mesh3ds.vertices[idx2], 1.0f);
+				const math::Vec3f &vertex0 = rotationMatrix * math::Vec4f(mesh3ds.vertices[idx0], 1.0f);
+				const math::Vec3f &vertex1 = rotationMatrix * math::Vec4f(mesh3ds.vertices[idx1], 1.0f);
+				const math::Vec3f &vertex2 = rotationMatrix * math::Vec4f(mesh3ds.vertices[idx2], 1.0f);
 				meshTri.setVertices(vertex0, vertex1, vertex2);
 				if (mesh3ds.colors.size() > idx0 && mesh3ds.colors.size() > idx1 && mesh3ds.colors.size() > idx2) {
 					meshTri.setColor(mesh3ds.colors[idx0], mesh3ds.colors[idx1], mesh3ds.colors[idx2]);

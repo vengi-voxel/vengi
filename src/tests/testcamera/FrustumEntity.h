@@ -9,6 +9,8 @@
 #include "video/ShapeBuilder.h"
 #include "video/Camera.h"
 #include "core/Log.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 class FrustumEntity {
 private:
@@ -16,22 +18,22 @@ private:
 	render::ShapeRenderer _shapeRenderer;
 
 	int32_t _sphereMesh = 0;
-	glm::vec4 _color;
-	glm::vec3 _position;
+	math::Vec4f _color;
+	math::Vec3f _position;
 	float _radius;
 	bool _result = false;
 
 public:
-	FrustumEntity(const glm::vec4& color = color::Red(), float radius = 5.0f) :
+	FrustumEntity(const math::Vec4f& color = color::Red(), float radius = 5.0f) :
 			_color(color), _radius(radius) {
 	}
 
-	FrustumEntity& setPosition(const glm::vec3& position) {
+	FrustumEntity& setPosition(const math::Vec3f& position) {
 		_position = position;
 		return *this;
 	}
 
-	FrustumEntity& setColor(const glm::vec4& color) {
+	FrustumEntity& setColor(const math::Vec4f& color) {
 		_color = color;
 		return *this;
 	}
@@ -66,7 +68,7 @@ public:
 		_result = result;
 
 		Log::debug("culling result changed to %i", (int)result);
-		const glm::vec4& color = result ? color::Green() : _color;
+		const math::Vec4f& color = result ? color::Green() : _color;
 
 		_shapeBuilder.clear();
 		_shapeBuilder.setPosition(_position);

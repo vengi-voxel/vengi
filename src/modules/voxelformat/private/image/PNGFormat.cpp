@@ -88,8 +88,8 @@ bool PNGFormat::importSlices(scenegraph::SceneGraph &sceneGraph, const palette::
 			Log::error("Failed to extract layer from filename %s", layerFilename.c_str());
 			continue;
 		}
-		minsZ = glm::min(minsZ, layer);
-		maxsZ = glm::max(maxsZ, layer);
+		minsZ = math::min(minsZ, layer);
+		maxsZ = math::max(maxsZ, layer);
 		filteredEntites.push_back(&entity);
 	}
 

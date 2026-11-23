@@ -3,7 +3,6 @@
 *:*/backward/*
 *:*/benchmark/*
 *:*/CL/*
-*:*/glm/*
 *:*/gtest/*
 *:*/lua54/*
 *:*/sdl3/*

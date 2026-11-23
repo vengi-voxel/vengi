@@ -1,27 +1,24 @@
+#include "math/VecOf.h"
 /**
  * @file
  */
 
 #pragma once
 
-#include <glm/common.hpp>
-#include <glm/fwd.hpp>
-#include <glm/geometric.hpp>
-#include <glm/vec3.hpp>
 
 namespace math {
 
 struct BezierSegment {
-	glm::ivec3 start{0};
-	glm::ivec3 end{0};
-	glm::ivec3 control{0};
+	math::Vec3i start{0};
+	math::Vec3i end{0};
+	math::Vec3i control{0};
 };
 
-template<typename TYPE = float, glm::qualifier P = glm::defaultp>
+template<typename TYPE = float>
 class Bezier {
 public:
-	using Vec = glm::vec<3, TYPE, P>;
-	using EvalVec = glm::vec<3, float, P>;
+	using Vec = typename Vec3Of<TYPE>::Type;
+	using EvalVec = math::Vec3f;
 
 private:
 	Vec _start;
@@ -53,11 +50,11 @@ public:
 		const EvalVec start(_start);
 		const EvalVec end(_end);
 		const EvalVec control(_control);
-		return glm::length(control - start) + glm::length(end - control);
+		return math::length(control - start) + math::length(end - control);
 	}
 
 	inline int estimateSteps() const {
-		int steps = glm::max(1, (int)glm::ceil(estimateLength()));
+		int steps = math::max(1, (int)math::ceil(estimateLength()));
 		if ((steps & 1) != 0) {
 			++steps;
 		}
@@ -66,7 +63,7 @@ public:
 
 	template<typename FUNC>
 	inline void visitPoints(int steps, FUNC&& func) const {
-		const int clampedSteps = glm::max(1, steps <= 0 ? estimateSteps() : steps);
+		const int clampedSteps = math::max(1, steps <= 0 ? estimateSteps() : steps);
 		const float stepSize = 1.0f / (float)clampedSteps;
 		for (int i = 0; i <= clampedSteps; ++i) {
 			const float t = stepSize * (float)i;
@@ -76,7 +73,7 @@ public:
 
 	template<typename FUNC>
 	inline void visitSegments(int steps, FUNC&& func) const {
-		const int clampedSteps = glm::max(1, steps <= 0 ? estimateSteps() : steps);
+		const int clampedSteps = math::max(1, steps <= 0 ? estimateSteps() : steps);
 		const float stepSize = 1.0f / (float)clampedSteps;
 		Vec lastPos = getPoint(0.0f);
 		for (int i = 1; i <= clampedSteps; ++i) {

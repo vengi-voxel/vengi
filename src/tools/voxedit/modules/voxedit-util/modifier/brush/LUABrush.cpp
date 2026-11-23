@@ -15,12 +15,14 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/LUAIconMapping.h"
 #include "voxelgenerator/LUAApi.h"
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 #include "ui/IconsLucide.h"
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace voxedit {
 
@@ -647,7 +649,7 @@ voxel::Region LUABrush::calcRegion(const BrushContext &ctx) const {
 		return Super::calcRegion(ctx);
 	}
 
-	const glm::ivec3 &pos = ctx.cursorPosition;
+	const math::Vec3i &pos = ctx.cursorPosition;
 	if (!_hasCalcRegion || !_scriptLoaded) {
 		if (_wantBox) {
 			return Super::calcRegion(ctx);
@@ -709,7 +711,7 @@ voxel::Region LUABrush::calcRegion(const BrushContext &ctx) const {
 	const int maxZ = (int)lua_tointeger(s, -1);
 	lua_settop(s, top);
 
-	return voxel::Region(glm::ivec3(minX, minY, minZ), glm::ivec3(maxX, maxY, maxZ));
+	return voxel::Region(math::Vec3i(minX, minY, minZ), math::Vec3i(maxX, maxY, maxZ));
 }
 
 void LUABrush::recordScriptFailure(ModifierVolumeWrapper &wrapper, int nodeId) {
@@ -913,7 +915,7 @@ void LUABrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state) c
 		const float py = (float)lua_tonumber(s, -2);
 		const float pz = (float)lua_tonumber(s, -1);
 		lua_pop(s, 3);
-		state.matrix = glm::translate(glm::mat4(1.0f), glm::vec3(px, py, pz));
+		state.matrix = math::translate(math::Mat4f(1.0f), math::Vec3f(px, py, pz));
 	}
 	lua_pop(s, 1); // pop position
 
@@ -987,7 +989,7 @@ void LUABrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state) c
 	lua_settop(s, top);
 }
 
-bool LUABrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+bool LUABrush::editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &deltaMatrix,
 							   uint32_t operation) {
 	if (!_hasApplyGizmo || !_scriptLoaded) {
 		return false;
@@ -1003,16 +1005,16 @@ bool LUABrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 
 	}
 
 	// Extract translation from delta matrix
-	const glm::vec3 translation(deltaMatrix[3]);
+	const math::Vec3f translation(deltaMatrix[3]);
 
 	// Extract rotation (euler angles in degrees) from delta matrix
 	// Use the rotation part of the delta matrix (upper-left 3x3)
-	const glm::mat3 rotMat(deltaMatrix);
-	const glm::vec3 rotation = glm::degrees(glm::eulerAngles(glm::quat_cast(rotMat)));
+	const math::Mat3f rotMat(deltaMatrix);
+	const math::Vec3f rotation = math::degrees(math::eulerAngles(math::quat_cast(rotMat)));
 
 	// Extract scale from delta matrix columns
-	const glm::vec3 scale(glm::length(glm::vec3(deltaMatrix[0])), glm::length(glm::vec3(deltaMatrix[1])),
-						  glm::length(glm::vec3(deltaMatrix[2])));
+	const math::Vec3f scale(math::length(math::Vec3f(deltaMatrix[0])), math::length(math::Vec3f(deltaMatrix[1])),
+						  math::length(math::Vec3f(deltaMatrix[2])));
 
 	// Push translation table
 	lua_createtable(s, 0, 3);

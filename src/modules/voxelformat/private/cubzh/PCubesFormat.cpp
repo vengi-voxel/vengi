@@ -8,6 +8,8 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -58,14 +60,14 @@ bool PCubesFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const co
 		WriteChunkStream ws(priv::CHUNK_ID_SHAPE_V6, *stream);
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_SIZE_V6, ws);
-			const glm::ivec3 &dimensions = node->region().getDimensionsInVoxels();
+			const math::Vec3i &dimensions = node->region().getDimensionsInVoxels();
 			wrapBool(sub.writeUInt16(dimensions.x))
 			wrapBool(sub.writeUInt16(dimensions.y))
 			wrapBool(sub.writeUInt16(dimensions.z))
 		}
 		{
 			WriteSubChunkStream sub(priv::CHUNK_ID_SHAPE_PIVOT_V6, ws);
-			const glm::vec3 &pivot = node->worldPivot();
+			const math::Vec3f &pivot = node->worldPivot();
 			// mirror X to convert back from vengi's coordinate system to cubzh's
 			wrapBool(sub.writeFloat((float)node->region().getDimensionsInVoxels().x - pivot.x))
 			wrapBool(sub.writeFloat(pivot.y))

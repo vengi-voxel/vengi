@@ -6,6 +6,7 @@
 
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -41,7 +42,7 @@ public:
 		return _volume.region();
 	}
 
-	inline const Voxel &voxel(const glm::ivec3 &pos) const {
+	inline const Voxel &voxel(const math::Vec3i &pos) const {
 		if (_modifications.hasVoxel(pos)) {
 			return _modifications.voxel(pos);
 		}
@@ -55,7 +56,7 @@ public:
 		return _volume.voxel(x, y, z);
 	}
 
-	inline bool setVoxel(const glm::ivec3 &pos, const Voxel &voxel) {
+	inline bool setVoxel(const math::Vec3i &pos, const Voxel &voxel) {
 		return _modifications.setVoxel(pos, voxel);
 	}
 

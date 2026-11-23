@@ -4,10 +4,14 @@
 
 #include "app/tests/AbstractTest.h"
 #include "math/Frustum.h"
-#include "core/GLM.h"
 #include "core/StringUtil.h"
 #include "math/AABB.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/Axes.h"
+#include "math/Scalar.h"
 
 namespace math {
 
@@ -17,14 +21,14 @@ protected:
 	const float _nearPlane = 0.1f;
 	Frustum _frustum;
 	math::AABB<float> _aabb;
-	glm::mat4 _view = glm::mat4(1.0f);
-	glm::mat4 _projection = glm::mat4(1.0f);
+	math::Mat4f _view = math::Mat4f(1.0f);
+	math::Mat4f _projection = math::Mat4f(1.0f);
 public:
 	FrustumTest() :
-			_aabb(glm::vec3(0.0f), glm::vec3(1.0f)) {
+			_aabb(math::Vec3f(0.0f), math::Vec3f(1.0f)) {
 	}
 
-	const char *toString(const glm::vec3 &v) {
+	const char *toString(const math::Vec3f &v) {
 		static char buf[128];
 		core::String::formatBuf(buf, sizeof(buf), "%f:%f:%f", v.x, v.y, v.z);
 		return buf;
@@ -33,123 +37,123 @@ public:
 	void SetUp() override {
 		app::AbstractTest::SetUp();
 		/* Looking from origin to 1,0,0 (right) */
-		_view = glm::lookAt(glm::vec3(0.0f), glm::right(), glm::up());
-		_projection = glm::perspective(glm::radians(45.0f), 0.75f, _nearPlane, _farPlane);
+		_view = math::lookAt(math::Vec3f(0.0f), math::right(), math::up());
+		_projection = math::perspective(math::radians(45.0f), 0.75f, _nearPlane, _farPlane);
 		updateVP(_view, _projection);
 	}
 
-	void updateVP(const glm::mat4& view, const glm::mat4& projection) {
+	void updateVP(const math::Mat4f& view, const math::Mat4f& projection) {
 		_frustum.update(view, projection);
 		_aabb = _frustum.aabb();
 	}
 
-	void updateV(const glm::mat4& view) {
+	void updateV(const math::Mat4f& view) {
 		_frustum.update(view, _projection);
 		_aabb = _frustum.aabb();
 	}
 
-	void updateP(const glm::mat4& projection) {
+	void updateP(const math::Mat4f& projection) {
 		_frustum.update(_view, projection);
 		_aabb = _frustum.aabb();
 	}
 };
 
 TEST_F(FrustumTest, testAABBOrtho) {
-	updateVP(glm::mat4(1.0f), glm::ortho(0.0f, 50.0f, 0.0f, 100.0f, _nearPlane, -_farPlane));
+	updateVP(math::Mat4f(1.0f), math::ortho(0.0f, 50.0f, 0.0f, 100.0f, _nearPlane, -_farPlane));
 	EXPECT_FLOAT_EQ(_aabb.getWidthX(), 50.0f) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
 	EXPECT_FLOAT_EQ(_aabb.getWidthY(), 100.0f) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
 	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
-	EXPECT_TRUE(_frustum.isVisible(glm::vec3(1.0f), 1.0f));
-	EXPECT_EQ(FrustumResult::Inside, _frustum.test(glm::vec3(1.0f), glm::vec3(2.0f)));
-	EXPECT_TRUE(_frustum.isVisible(glm::vec3(1.0f), glm::vec3(2.0f)));
-	EXPECT_TRUE(_frustum.isVisible(glm::vec3(48.0f), 1.0f));
-	EXPECT_EQ(FrustumResult::Inside, _frustum.test(glm::vec3(48.0f), glm::vec3(50.0f)));
-	EXPECT_TRUE(_frustum.isVisible(glm::vec3(48.0f), glm::vec3(50.0f)));
+	EXPECT_TRUE(_frustum.isVisible(math::Vec3f(1.0f), 1.0f));
+	EXPECT_EQ(FrustumResult::Inside, _frustum.test(math::Vec3f(1.0f), math::Vec3f(2.0f)));
+	EXPECT_TRUE(_frustum.isVisible(math::Vec3f(1.0f), math::Vec3f(2.0f)));
+	EXPECT_TRUE(_frustum.isVisible(math::Vec3f(48.0f), 1.0f));
+	EXPECT_EQ(FrustumResult::Inside, _frustum.test(math::Vec3f(48.0f), math::Vec3f(50.0f)));
+	EXPECT_TRUE(_frustum.isVisible(math::Vec3f(48.0f), math::Vec3f(50.0f)));
 }
 
 TEST_F(FrustumTest, testAABBPerspective) {
-	updateV(glm::mat4(1.0f));
+	updateV(math::Mat4f(1.0f));
 	EXPECT_NEAR(_aabb.getWidthZ(), _farPlane, _nearPlane) << toString(_aabb.getLowerCorner()) << toString(_aabb.getUpperCorner());
 }
 
 TEST_F(FrustumTest, testCullingSphere) {
-	EXPECT_FALSE(_frustum.isVisible(glm::vec3(0.0f), 0.01f));
-	EXPECT_TRUE(_frustum.isVisible(glm::right() * _farPlane / 2.0f + _nearPlane, 1.0f));
+	EXPECT_FALSE(_frustum.isVisible(math::Vec3f(0.0f), 0.01f));
+	EXPECT_TRUE(_frustum.isVisible(math::right() * _farPlane / 2.0f + _nearPlane, 1.0f));
 }
 
 TEST_F(FrustumTest, testCullingAABBPositive) {
-	const math::AABB<float> aabb(glm::vec3(0.0f), glm::vec3(100.0f));
+	const math::AABB<float> aabb(math::Vec3f(0.0f), math::Vec3f(100.0f));
 	EXPECT_TRUE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "AABB is not visible but should be";
 }
 
 TEST_F(FrustumTest, testCullingAABBNegative) {
-	const math::AABB<float> aabb(glm::vec3(-200.0f), glm::vec3(-100.0f));
+	const math::AABB<float> aabb(math::Vec3f(-200.0f), math::Vec3f(-100.0f));
 	EXPECT_FALSE(_frustum.isVisible(aabb.getLowerCorner(), aabb.getUpperCorner())) << "AABB is not visible but should be";
 }
 
 TEST_F(FrustumTest, testInsideOutsidePoint) {
-	EXPECT_EQ(math::FrustumResult::Inside, _frustum.test(glm::vec3(_nearPlane, 0.0, 0.0)));
-	EXPECT_EQ(math::FrustumResult::Outside, _frustum.test(glm::vec3(0.0, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Inside, _frustum.test(math::Vec3f(_nearPlane, 0.0, 0.0)));
+	EXPECT_EQ(math::FrustumResult::Outside, _frustum.test(math::Vec3f(0.0, 0.0, 0.0)));
 }
 
 TEST_F(FrustumTest, testIntersectionInsideOutsideAABB) {
-	EXPECT_EQ(math::FrustumResult::Inside, _frustum.test(glm::vec3(_farPlane / 2.0f - 0.5f, -0.5, -0.5), glm::vec3(_farPlane / 2.0f + 0.5f, 0.5, 0.5)));
-	EXPECT_EQ(math::FrustumResult::Outside, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(-0.5, -0.5, -0.5)));
-	EXPECT_EQ(math::FrustumResult::Intersect, _frustum.test(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(0.5, 0.5, 0.5)));
+	EXPECT_EQ(math::FrustumResult::Inside, _frustum.test(math::Vec3f(_farPlane / 2.0f - 0.5f, -0.5, -0.5), math::Vec3f(_farPlane / 2.0f + 0.5f, 0.5, 0.5)));
+	EXPECT_EQ(math::FrustumResult::Outside, _frustum.test(math::Vec3f(-1.0, -1.0, -1.0), math::Vec3f(-0.5, -0.5, -0.5)));
+	EXPECT_EQ(math::FrustumResult::Intersect, _frustum.test(math::Vec3f(-1.0, -1.0, -1.0), math::Vec3f(0.5, 0.5, 0.5)));
 }
 
 TEST_F(FrustumTest, testCullingPoint) {
 	if (_nearPlane > 0.0f) {
-		EXPECT_FALSE(_aabb.containsPoint(glm::vec3(0.0f)));
-		EXPECT_FALSE(_frustum.isVisible(glm::vec3(0.0f))) << "Point behind the near plane is still visible";
-		EXPECT_FALSE(_aabb.containsPoint(glm::right() * (_nearPlane - _nearPlane / 2.0f)));
-		EXPECT_FALSE(_frustum.isVisible(glm::right() * (_nearPlane - _nearPlane / 2.0f)));
+		EXPECT_FALSE(_aabb.containsPoint(math::Vec3f(0.0f)));
+		EXPECT_FALSE(_frustum.isVisible(math::Vec3f(0.0f))) << "Point behind the near plane is still visible";
+		EXPECT_FALSE(_aabb.containsPoint(math::right() * (_nearPlane - _nearPlane / 2.0f)));
+		EXPECT_FALSE(_frustum.isVisible(math::right() * (_nearPlane - _nearPlane / 2.0f)));
 	}
-	EXPECT_TRUE(_aabb.containsPoint(glm::right()));
-	EXPECT_TRUE(_frustum.isVisible(glm::right()));
-	EXPECT_TRUE(_aabb.containsPoint(glm::right() * _nearPlane)) << toString(glm::right()) << " is not visible but should be";
-	EXPECT_TRUE(_frustum.isVisible(glm::right() * _nearPlane)) << toString(glm::right() * _nearPlane) << " is not visible but should be";
-	EXPECT_FALSE(_aabb.containsPoint(glm::up()));
-	EXPECT_FALSE(_frustum.isVisible(glm::up()));
-	EXPECT_FALSE(_aabb.containsPoint(glm::down()));
-	EXPECT_FALSE(_frustum.isVisible(glm::down()));
-	EXPECT_FALSE(_aabb.containsPoint(glm::forward()));
-	EXPECT_FALSE(_frustum.isVisible(glm::forward()));
-	EXPECT_FALSE(_aabb.containsPoint(glm::backward()));
-	EXPECT_FALSE(_frustum.isVisible(glm::backward()));
-	EXPECT_FALSE(_aabb.containsPoint(glm::left()));
-	EXPECT_FALSE(_frustum.isVisible(glm::left()));
-	EXPECT_FALSE(_aabb.containsPoint(glm::right() * _farPlane + 1.0f));
-	EXPECT_FALSE(_frustum.isVisible(glm::right() * _farPlane + 1.0f)) << toString(glm::right() * _farPlane + 1.0f) << " should be culled because it's outside the frustum";
+	EXPECT_TRUE(_aabb.containsPoint(math::right()));
+	EXPECT_TRUE(_frustum.isVisible(math::right()));
+	EXPECT_TRUE(_aabb.containsPoint(math::right() * _nearPlane)) << toString(math::right()) << " is not visible but should be";
+	EXPECT_TRUE(_frustum.isVisible(math::right() * _nearPlane)) << toString(math::right() * _nearPlane) << " is not visible but should be";
+	EXPECT_FALSE(_aabb.containsPoint(math::up()));
+	EXPECT_FALSE(_frustum.isVisible(math::up()));
+	EXPECT_FALSE(_aabb.containsPoint(math::down()));
+	EXPECT_FALSE(_frustum.isVisible(math::down()));
+	EXPECT_FALSE(_aabb.containsPoint(math::forward()));
+	EXPECT_FALSE(_frustum.isVisible(math::forward()));
+	EXPECT_FALSE(_aabb.containsPoint(math::backward()));
+	EXPECT_FALSE(_frustum.isVisible(math::backward()));
+	EXPECT_FALSE(_aabb.containsPoint(math::left()));
+	EXPECT_FALSE(_frustum.isVisible(math::left()));
+	EXPECT_FALSE(_aabb.containsPoint(math::right() * _farPlane + 1.0f));
+	EXPECT_FALSE(_frustum.isVisible(math::right() * _farPlane + 1.0f)) << toString(math::right() * _farPlane + 1.0f) << " should be culled because it's outside the frustum";
 }
 
 TEST_F(FrustumTest, testStaticFrustumCheck) {
-	EXPECT_TRUE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 1.0f), glm::radians(10.0f)));
-	EXPECT_FALSE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(-1.0f, 0.0f, 1.0f), glm::radians(10.0f)));
-	EXPECT_FALSE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(10.0f)));
-	EXPECT_FALSE(Frustum::isVisible(glm::vec3(0.0, 0.0, 0.0f), glm::radians(45.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(10.0f)));
+	EXPECT_TRUE(Frustum::isVisible(math::Vec3f(0.0, 0.0, 0.0f), math::radians(45.0f), math::Vec3f(1.0f, 0.0f, 1.0f), math::radians(10.0f)));
+	EXPECT_FALSE(Frustum::isVisible(math::Vec3f(0.0, 0.0, 0.0f), math::radians(45.0f), math::Vec3f(-1.0f, 0.0f, 1.0f), math::radians(10.0f)));
+	EXPECT_FALSE(Frustum::isVisible(math::Vec3f(0.0, 0.0, 0.0f), math::radians(45.0f), math::Vec3f(0.0f, 0.0f, 1.0f), math::radians(10.0f)));
+	EXPECT_FALSE(Frustum::isVisible(math::Vec3f(0.0, 0.0, 0.0f), math::radians(45.0f), math::Vec3f(1.0f, 0.0f, 0.0f), math::radians(10.0f)));
 }
 
 TEST_F(FrustumTest, testOrthoFrustum) {
-	const glm::ivec3 mins(-64, -32, -32);
-	const glm::ivec3 maxs(64, 32, 96);
+	const math::Vec3i mins(-64, -32, -32);
+	const math::Vec3i maxs(64, 32, 96);
 	math::Frustum frustum(mins, maxs);
 	EXPECT_EQ(frustum.aabb(), math::AABB<float>(mins, maxs));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, -32, 64), glm::ivec3(-32, 0, 96)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-64, 0, 64), glm::ivec3(-32, 32, 96)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-32, -32, 64), glm::ivec3(0, 0, 96)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(-32, 0, 64), glm::ivec3(0, 32, 96)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(0, -32, 64), glm::ivec3(32, 0, 96)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(0, 0, 64), glm::ivec3(32, 32, 96)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, -32), glm::ivec3(64, 0, 0)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, 0), glm::ivec3(64, 0, 32)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, 32), glm::ivec3(64, 0, 64)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, -32, 64), glm::ivec3(64, 0, 96)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, -32), glm::ivec3(64, 32, 0)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, 0), glm::ivec3(64, 32, 32)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, 32), glm::ivec3(64, 32, 64)));
-	EXPECT_TRUE(frustum.isVisible(glm::ivec3(32, 0, 64), glm::ivec3(64, 32, 96)));
-	EXPECT_FALSE(frustum.isVisible(glm::ivec3(-66, -32, 64), glm::ivec3(-65, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(-64, -32, 64), math::Vec3i(-32, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(-64, 0, 64), math::Vec3i(-32, 32, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(-32, -32, 64), math::Vec3i(0, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(-32, 0, 64), math::Vec3i(0, 32, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(0, -32, 64), math::Vec3i(32, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(0, 0, 64), math::Vec3i(32, 32, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, -32, -32), math::Vec3i(64, 0, 0)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, -32, 0), math::Vec3i(64, 0, 32)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, -32, 32), math::Vec3i(64, 0, 64)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, -32, 64), math::Vec3i(64, 0, 96)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, 0, -32), math::Vec3i(64, 32, 0)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, 0, 0), math::Vec3i(64, 32, 32)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, 0, 32), math::Vec3i(64, 32, 64)));
+	EXPECT_TRUE(frustum.isVisible(math::Vec3i(32, 0, 64), math::Vec3i(64, 32, 96)));
+	EXPECT_FALSE(frustum.isVisible(math::Vec3i(-66, -32, 64), math::Vec3i(-65, 0, 96)));
 }
 
 }

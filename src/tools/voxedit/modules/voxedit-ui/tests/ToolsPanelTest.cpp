@@ -15,6 +15,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -62,7 +63,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(5, 5, 5), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(5, 5, 5), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 
 		const voxel::Region regionBefore = node->region();
 		IM_CHECK(focusWindow(ctx, id));
@@ -126,8 +127,8 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 
 		IM_CHECK(focusWindow(ctx, id));
 		// click the X rotate button inside the "Rotate on axis" section
@@ -146,7 +147,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 
 		IM_CHECK(focusWindow(ctx, id));
 		// click the X flip button inside the "Flip on axis" section
@@ -165,7 +166,7 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 
 		IM_CHECK(focusWindow(ctx, id));
 		// set X translate to 1 via the input field, then click Move
@@ -196,8 +197,8 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
 		// place two separate voxel clusters
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(20, 20, 20), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(20, 20, 20), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 
 		const int modelsBefore = (int)_sceneMgr->sceneGraph().size(scenegraph::SceneGraphNodeType::Model);
 		IM_CHECK(focusWindow(ctx, id));
@@ -274,8 +275,8 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		const int nodeId = _sceneMgr->sceneGraph().activeNode();
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 		IM_CHECK(node != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, node, math::Vec3i(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 
 		_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
@@ -312,23 +313,23 @@ void ToolsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemInputValue("##gridsize/##gridsizey", 3);
 		ctx->ItemInputValue("##gridsize/##gridsizez", 4);
 		ctx->Yield(3);
-		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(2, 3, 4));
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), math::Vec3i(2, 3, 4));
 
 		// Sync X to Y and Z
 		ctx->ItemClick("##gridsize/###syncx");
 		ctx->Yield(3);
 		IM_CHECK_EQ(gridSize->strVal(), "2");
-		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(2));
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), math::Vec3i(2));
 
 		ctx->ItemInputValue("##gridsize/##gridsizey", 5);
 		ctx->Yield(3);
-		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(2, 5, 2));
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), math::Vec3i(2, 5, 2));
 
 		// Sync Y to X and Z
 		ctx->ItemClick("##gridsize/###syncy");
 		ctx->Yield(3);
 		IM_CHECK_EQ(gridSize->strVal(), "5");
-		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), glm::ivec3(5));
+		IM_CHECK_EQ(parseGridResolution(gridSize->strVal()), math::Vec3i(5));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "resize to selection")->TestFunc = [=](ImGuiTestContext *ctx) {

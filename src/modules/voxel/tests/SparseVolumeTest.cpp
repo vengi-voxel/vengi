@@ -10,6 +10,7 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/tests/TestHelper.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -68,7 +69,7 @@ TEST_F(SparseVolumeTest, testSetVoxels) {
 }
 
 TEST_F(SparseVolumeTest, testFullSamplerLoop) {
-	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(64));
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i(64));
 	SparseVolume v(region);
 	v.setVoxel(1, 2, 1, voxel::createVoxel(VoxelType::Generic, 0));
 
@@ -335,8 +336,8 @@ TEST_F(SparseVolumeTest, testSetVoxelsRowAcrossChunks) {
 	v.setVoxelsRow(-10, -1, 257, 20, voxel);
 	EXPECT_EQ(600u, v.size());
 	const Region region = v.calculateRegion();
-	EXPECT_EQ(glm::ivec3(-300, -1, 257), region.getLowerCorner());
-	EXPECT_EQ(glm::ivec3(299, -1, 257), region.getUpperCorner());
+	EXPECT_EQ(math::Vec3i(-300, -1, 257), region.getLowerCorner());
+	EXPECT_EQ(math::Vec3i(299, -1, 257), region.getUpperCorner());
 
 	v.setVoxelsRow(-300, -1, 257, 600, voxel::Voxel());
 	EXPECT_TRUE(v.empty());
@@ -610,7 +611,7 @@ TEST_F(SparseVolumeTest, testSamplerDenseBrickMixedMoves) {
 	SparseVolume::Sampler sampler(v);
 	ASSERT_TRUE(sampler.setPosition(-4, -4, -4));
 	const auto expectAt = [&](int x, int y, int z) {
-		EXPECT_EQ(glm::ivec3(x, y, z), sampler.position());
+		EXPECT_EQ(math::Vec3i(x, y, z), sampler.position());
 		EXPECT_EQ(v.voxel(x, y, z), sampler.voxel());
 	};
 	sampler.movePositiveX(2);

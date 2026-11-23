@@ -82,7 +82,7 @@ detail message line 2
 | http             | Http download module                                                       |
 | image            | Image loading and writing                                                  |
 | io               | Stream and file handling                                                   |
-| math             | Based on glm                                                               |
+| math             | Vectors, matrices and quaternions                                          |
 | memento          | The undo/redo states for a scene graph instance                            |
 | metric           | telegraf, influx and other metrics                                         |
 | network          | Network util functions used for voxedit network mode                       |

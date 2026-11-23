@@ -50,16 +50,18 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelui/DragAndDropPayload.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Mat4Ops.h"
+#include "math/QuatOps.h"
+#include <float.h>
 
-#include <glm/ext/quaternion_common.hpp>
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/vector_relational.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/transform.hpp>
 
 namespace voxedit {
 
@@ -218,7 +220,7 @@ bool Viewport::init() {
 
 // delay the resize a few frames to avoid performance issues while
 // the user is resizing the window
-void Viewport::delayResize(const glm::ivec2 &frameBufferSize) {
+void Viewport::delayResize(const math::Vec2i &frameBufferSize) {
 	if (_resizeRequestSize == frameBufferSize) {
 		return;
 	}
@@ -228,25 +230,25 @@ void Viewport::delayResize(const glm::ivec2 &frameBufferSize) {
 	resizeCamera(frameBufferSize);
 }
 
-glm::vec2 Viewport::dpiScale() const {
-	const glm::vec2 &windowSize = _app->windowDimension();
-	const glm::vec2 &windowFrameBufferSize = _app->frameBufferDimension();
+math::Vec2f Viewport::dpiScale() const {
+	const math::Vec2f &windowSize = _app->windowDimension();
+	const math::Vec2f &windowFrameBufferSize = _app->frameBufferDimension();
 	return windowFrameBufferSize / windowSize;
 }
 
-void Viewport::resizeCamera(const glm::ivec2 &contentSize) {
-	const glm::vec2 scale = dpiScale();
-	const glm::ivec2 cameraSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
+void Viewport::resizeCamera(const math::Vec2i &contentSize) {
+	const math::Vec2f scale = dpiScale();
+	const math::Vec2i cameraSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
 	_camera.setSize(cameraSize);
 }
 
-void Viewport::resize(const glm::ivec2 &contentSize) {
+void Viewport::resize(const math::Vec2i &contentSize) {
 	resizeCamera(contentSize);
 	// Apply DPI scaling so that the framebuffer matches the actual pixel resolution.
 	// Without this, HiDPI displays create a framebuffer at logical (window) coordinates
 	// that is smaller than what the camera expects, causing a pixelated/blurry viewport.
-	const glm::vec2 scale = dpiScale();
-	const glm::ivec2 pixelSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
+	const math::Vec2f scale = dpiScale();
+	const math::Vec2i pixelSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
 	_renderContext.resize(pixelSize);
 	_modifierRenderContext.resize(pixelSize);
 }
@@ -263,7 +265,7 @@ void Viewport::updateViewportInput(float headerSize) {
 	const int mouseY = (int)((ImGui::GetIO().MousePos.y - windowPos.y) - headerSize);
 	_sceneMgr->setMousePos(mouseX, mouseY);
 	_sceneMgr->setActiveCamera(&camera(), isFixedCamera());
-	const glm::mat4 &worldToModel = glm::inverse(_sceneMgr->worldMatrix(_renderContext.frame, _renderContext.applyTransforms()));
+	const math::Mat4f &worldToModel = math::inverse(_sceneMgr->worldMatrix(_renderContext.frame, _renderContext.applyTransforms()));
 	_sceneMgr->trace(_renderContext.isSceneMode(), false, worldToModel);
 	if (_renderContext.isSceneMode() && _sceneMgr->isAddNodeModeActive()) {
 		_sceneMgr->updateAddNodeHover(_renderContext.frame);
@@ -308,7 +310,7 @@ void Viewport::dragAndDrop(float headerSize) {
 	}
 }
 
-void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
+void Viewport::renderViewportImage(const math::Vec2i &contentSize) {
 	core_trace_scoped(ViewportImage);
 
 	// Choose the correct framebuffer based on multisampling
@@ -317,9 +319,9 @@ void Viewport::renderViewportImage(const glm::ivec2 &contentSize) {
 											  _renderContext.frameBuffer;
 
 	// use the uv coords here to take a potential fb flip into account
-	const glm::vec4 &uv = displayFrameBuffer.uv();
-	const glm::vec2 uva(uv.x, uv.y);
-	const glm::vec2 uvc(uv.z, uv.w);
+	const math::Vec4f &uv = displayFrameBuffer.uv();
+	const math::Vec2f uva(uv.x, uv.y);
+	const math::Vec2f uvc(uv.z, uv.w);
 	const video::TexturePtr &texture = displayFrameBuffer.texture(video::FrameBufferAttachment::Color0);
 	ImGui::Image(texture->handle(), contentSize, uva, uvc);
 }
@@ -335,7 +337,7 @@ void Viewport::renderCursorDetails() const {
 	}
 
 	const bool sliceActive = _sceneMgr->isSliceModeActive();
-	const glm::ivec3 &cursorPos = modifier.cursorPosition();
+	const math::Vec3i &cursorPos = modifier.cursorPosition();
 	if (sliceActive) {
 		ImGui::TooltipText(_("Slice at %s: %i"), math::getCharForAxis(_sliceAxis),
 						   cursorPos[math::getIndexForAxis(_sliceAxis)]);
@@ -350,18 +352,18 @@ void Viewport::renderCursorDetails() const {
 		return;
 	}
 	if (cursorDetailsLevel == 2) {
-		const glm::ivec3 &mins = v->region().getLowerCorner();
-		const glm::ivec3 &size = v->region().getDimensionsInVoxels();
+		const math::Vec3i &mins = v->region().getLowerCorner();
+		const math::Vec3i &size = v->region().getDimensionsInVoxels();
 		ImGui::TooltipText(_("pos: %i:%i:%i"), mins.x, mins.y, mins.z);
 		ImGui::TooltipText(_("size: %i:%i:%i"), size.x, size.y, size.z);
 		ImGui::TooltipText(_("cursor: %i:%i:%i"), cursorPos.x, cursorPos.y, cursorPos.z);
 		if (mins.x != 0 || mins.y != 0 || mins.z != 0) {
-			const glm::ivec3 relativePos = cursorPos - mins;
+			const math::Vec3i relativePos = cursorPos - mins;
 			ImGui::TooltipText(_("rel cursor: %i:%i:%i"), relativePos.x, relativePos.y, relativePos.z);
 		}
 	} else if (cursorDetailsLevel == 3) {
-		const glm::ivec3 &refPos = modifier.referencePosition();
-		const glm::ivec3 delta = glm::abs(cursorPos - refPos);
+		const math::Vec3i &refPos = modifier.referencePosition();
+		const math::Vec3i delta = math::abs(cursorPos - refPos);
 		ImGui::TooltipText(_("dist: %i:%i:%i"), delta.x, delta.y, delta.z);
 	}
 }
@@ -391,7 +393,7 @@ void Viewport::renderCursor() {
 	renderCursorDetails();
 }
 
-bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
+bool Viewport::renderSlicer(const math::Vec2i &contentSize) {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	const int axis = math::getIndexForAxis(_sliceAxis);
 	bool changed = false;
@@ -403,8 +405,8 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 				_sceneMgr->setSliceRegion(voxel::Region::InvalidRegion);
 			} else {
 				const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
-				glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
-				glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
+				math::Vec3i nodeMaxs = nodeRegion.getUpperCorner();
+				math::Vec3i nodeMins = nodeRegion.getLowerCorner();
 				nodeMaxs[axis] = nodeMins[axis];
 				_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
 			}
@@ -418,7 +420,7 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 			const ImVec2 cursorEnd = ImGui::GetCursorScreenPos();
 			const float usedHeight = cursorEnd.y - cursorStart.y;
 			const voxel::Region &sliceRegion = _sceneMgr->sliceRegion();
-			glm::ivec3 mins = sliceRegion.getLowerCorner();
+			math::Vec3i mins = sliceRegion.getLowerCorner();
 			const voxel::Region &nodeRegion = sceneGraph.resolveRegion(*node);
 			if (ImGui::VSliderInt("##slicepos", {ImGui::Size(3.0f), (float)contentSize.y - usedHeight}, &mins[axis],
 								  nodeRegion.getLowerY(), nodeRegion.getUpperY())) {
@@ -427,8 +429,8 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 			if (ImGui::IsItemHovered()) {
 				_viewportUIElementHovered = true;
 			}
-			glm::ivec3 nodeMaxs = nodeRegion.getUpperCorner();
-			glm::ivec3 nodeMins = nodeRegion.getLowerCorner();
+			math::Vec3i nodeMaxs = nodeRegion.getUpperCorner();
+			math::Vec3i nodeMins = nodeRegion.getLowerCorner();
 			nodeMaxs[axis] = mins[axis];
 			nodeMins[axis] = mins[axis];
 			_sceneMgr->setSliceRegion({nodeMins, nodeMaxs});
@@ -439,7 +441,7 @@ bool Viewport::renderSlicer(const glm::ivec2 &contentSize) {
 
 void Viewport::renderViewport() {
 	core_trace_scoped(Viewport);
-	glm::ivec2 contentSize = ImGui::GetContentRegionAvail();
+	math::Vec2i contentSize = ImGui::GetContentRegionAvail();
 	ImVec2 cursorPos = ImGui::GetCursorPos();
 	const float headerSize = cursorPos.y;
 	if (setupFrameBuffer(contentSize)) {
@@ -508,7 +510,7 @@ void Viewport::toggleVideoRecording() {
 		return;
 	}
 	auto callback = [this](const core::String &file, const io::FormatDescription *desc) {
-		const glm::ivec2 &dim = _renderContext.frameBuffer.dimension();
+		const math::Vec2i &dim = _renderContext.frameBuffer.dimension();
 		_captureTool.startRecording(file.c_str(), dim.x, dim.y);
 	};
 	const char *filename = "video.avi";
@@ -807,17 +809,17 @@ void Viewport::resetCamera() {
 	voxelrender::configureCamera(_camera, region, cameraMode, _viewDistance->floatVal());
 	_camera.setRotationType(rotationType);
 	_sceneMgr->cameraMovement().updateBodyPosition(_camera);
-	_sceneMgr->cameraMovement().body().velocity = glm::vec3(0.0f);
+	_sceneMgr->cameraMovement().body().velocity = math::Vec3f(0.0f);
 }
 
 
-bool Viewport::setupFrameBuffer(const glm::ivec2 &contentSize) {
+bool Viewport::setupFrameBuffer(const math::Vec2i &contentSize) {
 	if (contentSize.x <= 0 || contentSize.y <= 0) {
 		return false;
 	}
 	// Compare against the DPI-scaled pixel size (the framebuffer is now stored at pixel resolution)
-	const glm::vec2 scale = dpiScale();
-	const glm::ivec2 pixelSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
+	const math::Vec2f scale = dpiScale();
+	const math::Vec2i pixelSize((float)contentSize.x * scale.x, (float)contentSize.y * scale.y);
 	if (_renderContext.frameBuffer.dimension() == pixelSize) {
 		return true;
 	}
@@ -851,10 +853,10 @@ void Viewport::unlock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFra
 		// there is no valid key frame idx given in edit mode
 		mementoHandler.markModification(_sceneMgr->sceneGraph(), node, node.region());
 	} else {
-		if (!glm::equal(_transformLocalMatrix, node.transform(keyFrameIdx).localMatrix())) {
+		if (!math::equal(_transformLocalMatrix, node.transform(keyFrameIdx).localMatrix())) {
 			// we have a valid key frame idx in scene mode
 			mementoHandler.markNodeTransform(_sceneMgr->sceneGraph(), node);
-			_transformLocalMatrix = glm::mat4(1.0f);
+			_transformLocalMatrix = math::Mat4f(1.0f);
 		}
 	}
 	_transformMementoLocked = false;
@@ -870,23 +872,23 @@ void Viewport::lock(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrame
 	_sceneMgr->modifier().lock();
 	_transformMementoLocked = true;
 	if (keyFrameIdx == InvalidKeyFrame) {
-		_transformLocalMatrix = glm::mat4(1.0f);
+		_transformLocalMatrix = math::Mat4f(1.0f);
 	} else {
 		_transformLocalMatrix = node.transform(keyFrameIdx).localMatrix();
 	}
 }
 
 void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex keyFrameIdx,
-								 const glm::mat4 &matrix) {
+								 const math::Mat4f &matrix) {
 	if (ImGuizmo::IsUsing()) {
 		lock(node, keyFrameIdx);
-		glm::vec3 scale;
-		glm::vec3 translation;
-		glm::quat orientation;
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(matrix, scale, orientation, translation, skew, perspective);
-		if (glm::all(glm::greaterThan(scale, glm::vec3(0)))) {
+		math::Vec3f scale;
+		math::Vec3f translation;
+		math::Quatf orientation;
+		math::Vec3f skew;
+		math::Vec4f perspective;
+		math::decompose(matrix, scale, orientation, translation, skew, perspective);
+		if (math::all(math::greaterThan(scale, math::Vec3f(0)))) {
 			_bounds.maxs = _boundsNode.maxs * scale;
 		}
 	} else if (_transformMementoLocked) {
@@ -896,7 +898,7 @@ void Viewport::updateGizmoValues(const scenegraph::SceneGraphNode &node, scenegr
 		}
 		const voxel::Region &region = node.region();
 		const voxel::Region newRegion(region.getLowerCorner(),
-									  region.getLowerCorner() + glm::ivec3(glm::ceil(_bounds.maxs)) - 1);
+									  region.getLowerCorner() + math::Vec3i(math::ceil(_bounds.maxs)) - 1);
 		if (newRegion.isValid() && region != newRegion) {
 			_sceneMgr->nodeResize(node.uuid(), newRegion);
 			updateBounds(node);
@@ -947,11 +949,11 @@ uint32_t Viewport::gizmoOperation(const scenegraph::SceneGraphNode &node) const 
 	return ImGuizmo::TRANSLATE;
 }
 
-glm::mat4 Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {
+math::Mat4f Viewport::gizmoMatrix(const scenegraph::SceneGraphNode &node, scenegraph::KeyFrameIndex &keyFrameIdx) const {
 	const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
 	if (!isSceneMode() && node.isAnyModelNode()) {
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		return glm::translate(region.getLowerCornerf());
+		return math::translate(region.getLowerCornerf());
 	}
 	keyFrameIdx = node.keyFrameForFrame(_sceneMgr->currentFrame());
 	const scenegraph::SceneGraphTransform &transform = node.transform(keyFrameIdx);
@@ -975,60 +977,60 @@ const float *Viewport::gizmoBounds(const scenegraph::SceneGraphNode &node) {
 		if (!ImGuizmo::IsUsing()) {
 			updateBounds(node);
 		}
-		boundsPtr = glm::value_ptr(_bounds.mins);
+		boundsPtr = math::value_ptr(_bounds.mins);
 	}
 	return boundsPtr;
 }
 
-bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsPtr, glm::mat4 &matrix,
-							   glm::mat4 &deltaMatrix, uint32_t operation) const {
+bool Viewport::gizmoManipulate(const video::Camera &camera, const float *boundsPtr, math::Mat4f &matrix,
+							   math::Mat4f &deltaMatrix, uint32_t operation) const {
 	static const float boundsSnap[] = {1.0f, 1.0f, 1.0f};
-	float *mPtr = glm::value_ptr(matrix);
-	float *dMatPtr = glm::value_ptr(deltaMatrix);
+	float *mPtr = math::value_ptr(matrix);
+	float *dMatPtr = math::value_ptr(deltaMatrix);
 	const ImGuizmo::OPERATION op = (ImGuizmo::OPERATION)operation;
 	const ImGuizmo::MODE mode = (ImGuizmo::MODE)gizmoMode();
-	const float *vMatPtr = glm::value_ptr(camera.viewMatrix());
-	const float *pMatPtr = glm::value_ptr(camera.projectionMatrix());
-	const glm::ivec3 gridRes = parseGridResolution(_gridSize->strVal());
+	const float *vMatPtr = math::value_ptr(camera.viewMatrix());
+	const float *pMatPtr = math::value_ptr(camera.projectionMatrix());
+	const math::Vec3i gridRes = parseGridResolution(_gridSize->strVal());
 	const float snap[]{(float)gridRes.x, (float)gridRes.y, (float)gridRes.z};
 	const float *snapPtr = _gizmoSnap->boolVal() ? snap : nullptr;
 	return ImGuizmo::Manipulate(vMatPtr, pMatPtr, op, mode, mPtr, dMatPtr, snapPtr, boundsPtr, boundsSnap);
 }
 
-static glm::mat4 parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
+static math::Mat4f parentWorldMatrix(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node,
 								   scenegraph::KeyFrameIndex keyFrameIdx) {
 	const scenegraph::SceneGraphNode *parentNode = sceneGraph.parentNode(node);
 	if (parentNode == nullptr || keyFrameIdx == InvalidKeyFrame) {
-		return glm::mat4(1.0f);
+		return math::Mat4f(1.0f);
 	}
 	if (const scenegraph::SceneGraphKeyFrame *keyFrame = node.keyFrame(keyFrameIdx)) {
 		const scenegraph::KeyFrameIndex parentKeyFrameIdx = parentNode->keyFrameForFrame(keyFrame->frameIdx);
 		if (parentKeyFrameIdx == InvalidKeyFrame) {
-			return glm::mat4(1.0f);
+			return math::Mat4f(1.0f);
 		}
 		return parentNode->transform(parentKeyFrameIdx).worldMatrix();
 	}
-	return glm::mat4(1.0f);
+	return math::Mat4f(1.0f);
 }
 
 // https://github.com/vengi-voxel/vengi/issues/611
-void Viewport::manipulatePivot(scenegraph::SceneGraphNode &node, const glm::mat4 &deltaMatrix) {
+void Viewport::manipulatePivot(scenegraph::SceneGraphNode &node, const math::Mat4f &deltaMatrix) {
 	const voxel::Region &region = _sceneMgr->sceneGraph().resolveRegion(node);
-	const glm::vec3 size = region.getDimensionsInVoxels();
-	const glm::vec3 worldDelta(deltaMatrix[3]);
+	const math::Vec3f size = region.getDimensionsInVoxels();
+	const math::Vec3f worldDelta(deltaMatrix[3]);
 	// The delta from ImGuizmo is in world space. The pivot is in the node's local
 	// (unrotated) space, so we need to undo the node's rotation to get the correct
 	// axis-aligned delta for the pivot adjustment.
 	const scenegraph::KeyFrameIndex keyFrameIdx = node.keyFrameForFrame(_sceneMgr->currentFrame());
-	const glm::mat4 &worldMat = node.transform(keyFrameIdx).worldMatrix();
-	const glm::mat3 rotation(worldMat);
-	const glm::vec3 localDelta = glm::inverse(rotation) * worldDelta;
-	const glm::vec3 pivot = localDelta / size;
+	const math::Mat4f &worldMat = node.transform(keyFrameIdx).worldMatrix();
+	const math::Mat3f rotation(worldMat);
+	const math::Vec3f localDelta = math::inverse(rotation) * worldDelta;
+	const math::Vec3f pivot = localDelta / size;
 	_sceneMgr->nodeUpdatePivot(node.uuid(), node.pivot() + pivot);
 }
 
 void Viewport::manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node,
-									   scenegraph::KeyFrameIndex &keyFrameIdx, const glm::mat4 &worldMatrix) {
+									   scenegraph::KeyFrameIndex &keyFrameIdx, const math::Mat4f &worldMatrix) {
 	const bool autoKeyFrame = _autoKeyFrame->boolVal();
 	// check if a new keyframe should get generated automatically
 	const scenegraph::FrameIndex frameIdx = _sceneMgr->currentFrame();
@@ -1040,28 +1042,28 @@ void Viewport::manipulateNodeTransform(const scenegraph::SceneGraph &sceneGraph,
 			keyFrameIdx = newKeyFrameIdx;
 		}
 	}
-	const glm::mat4 &worldParentMatrix = parentWorldMatrix(sceneGraph, node, keyFrameIdx);
-	glm::mat4 newLocalMatrix = glm::inverse(worldParentMatrix) * worldMatrix;
+	const math::Mat4f &worldParentMatrix = parentWorldMatrix(sceneGraph, node, keyFrameIdx);
+	math::Mat4f newLocalMatrix = math::inverse(worldParentMatrix) * worldMatrix;
 
 	// Apply IK constraint clamping if the node has an IK constraint
 	const scenegraph::IKConstraint *constraint = node.ikConstraint();
 	if (constraint != nullptr) {
-		glm::vec3 scale;
-		glm::vec3 translation;
-		glm::quat orientation;
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(newLocalMatrix, scale, orientation, translation, skew, perspective);
+		math::Vec3f scale;
+		math::Vec3f translation;
+		math::Quatf orientation;
+		math::Vec3f skew;
+		math::Vec4f perspective;
+		math::decompose(newLocalMatrix, scale, orientation, translation, skew, perspective);
 
 		orientation = scenegraph::IKSolver::clampOrientation(orientation, *constraint);
-		newLocalMatrix = glm::translate(translation) * glm::mat4_cast(orientation) * glm::scale(scale);
+		newLocalMatrix = math::translate(translation) * math::mat4_cast(orientation) * math::scale(scale);
 	}
 
 	_sceneMgr->nodeUpdateTransform(node.uuid(), newLocalMatrix, keyFrameIdx, true);
 }
 
-void Viewport::manipulateNodeVolumeRegion(scenegraph::SceneGraphNode &node, const glm::mat4 &worldMatrix) {
-	const glm::ivec3 shift = glm::vec3(worldMatrix[3]) - node.region().getLowerCornerf();
+void Viewport::manipulateNodeVolumeRegion(scenegraph::SceneGraphNode &node, const math::Mat4f &worldMatrix) {
+	const math::Vec3i shift = math::Vec3f(worldMatrix[3]) - node.region().getLowerCornerf();
 	_sceneMgr->nodeShift(node.uuid(), shift);
 }
 
@@ -1085,8 +1087,8 @@ bool Viewport::runGizmo(const video::Camera &camera) {
 	}
 
 	scenegraph::KeyFrameIndex keyFrameIdx = InvalidKeyFrame;
-	glm::mat4 worldMatrix = gizmoMatrix(node, keyFrameIdx);
-	glm::mat4 deltaMatrix(1.0f);
+	math::Mat4f worldMatrix = gizmoMatrix(node, keyFrameIdx);
+	math::Mat4f deltaMatrix(1.0f);
 	const float *boundsPtr = gizmoBounds(node);
 	const uint32_t operation = gizmoOperation(node);
 	const bool manipulated = gizmoManipulate(camera, boundsPtr, worldMatrix, deltaMatrix, operation);
@@ -1128,16 +1130,16 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 	const ImU32 backgroundColor = 0;
 	const float length = camera.targetDistance();
 
-	glm::mat4 viewMatrix = camera.viewMatrix();
-	float *viewPtr = glm::value_ptr(viewMatrix);
+	math::Mat4f viewMatrix = camera.viewMatrix();
+	float *viewPtr = math::value_ptr(viewMatrix);
 
 	if (isSceneMode()) {
 		ImGuizmo::ViewManipulate(viewPtr, length, position, size, backgroundColor);
 	} else {
-		const float *projPtr = glm::value_ptr(camera.projectionMatrix());
+		const float *projPtr = math::value_ptr(camera.projectionMatrix());
 		const ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)0;
-		glm::mat4 transformMatrix = glm::mat4(1.0f); // not used
-		float *matrixPtr = glm::value_ptr(transformMatrix);
+		math::Mat4f transformMatrix = math::Mat4f(1.0f); // not used
+		float *matrixPtr = math::value_ptr(transformMatrix);
 		const ImGuizmo::MODE mode = ImGuizmo::MODE::LOCAL;
 		ImGuizmo::ViewManipulate(viewPtr, projPtr, operation, mode, matrixPtr, length, position, size, backgroundColor);
 	}
@@ -1145,12 +1147,12 @@ void Viewport::renderCameraManipulator(video::Camera &camera, float headerSize) 
 		_cameraManipulated = true;
 	}
 	if (viewMatrix != camera.viewMatrix()) {
-		glm::vec3 scale;
-		glm::vec3 translation;
-		glm::quat orientation;
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
+		math::Vec3f scale;
+		math::Vec3f translation;
+		math::Quatf orientation;
+		math::Vec3f skew;
+		math::Vec4f perspective;
+		math::decompose(viewMatrix, scale, orientation, translation, skew, perspective);
 		camera.setOrientation(orientation);
 	}
 }

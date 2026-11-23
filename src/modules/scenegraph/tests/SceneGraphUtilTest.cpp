@@ -7,7 +7,10 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
-#include <glm/ext/quaternion_trigonometric.hpp>
+#include "math/Quatf.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
@@ -17,15 +20,15 @@ TEST_F(SceneGraphUtilTest, testSampleLocalTransform) {
 	SceneGraphKeyFrames keys{SceneGraphKeyFrame{}, SceneGraphKeyFrame{}};
 	keys[0].frameIdx = 4;
 	keys[1].frameIdx = 24;
-	keys[1].transform().setLocalTranslation(glm::vec3(8, 0, 0));
-	keys[1].transform().setLocalScale(glm::vec3(3));
-	keys[1].transform().setLocalOrientation(glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)));
-	EXPECT_EQ(glm::vec3(0), sampleLocalTransform(keys, 0).localTranslation());
-	EXPECT_EQ(glm::vec3(8, 0, 0), sampleLocalTransform(keys, 30).localTranslation());
+	keys[1].transform().setLocalTranslation(math::Vec3f(8, 0, 0));
+	keys[1].transform().setLocalScale(math::Vec3f(3));
+	keys[1].transform().setLocalOrientation(math::angleAxis(math::radians(90.0f), math::Vec3f(0, 1, 0)));
+	EXPECT_EQ(math::Vec3f(0), sampleLocalTransform(keys, 0).localTranslation());
+	EXPECT_EQ(math::Vec3f(8, 0, 0), sampleLocalTransform(keys, 30).localTranslation());
 	const auto midpoint = sampleLocalTransform(keys, 14);
-	EXPECT_EQ(glm::vec3(4, 0, 0), midpoint.localTranslation());
-	EXPECT_EQ(glm::vec3(2), midpoint.localScale());
-	EXPECT_NEAR(glm::sin(glm::radians(22.5f)), midpoint.localOrientation().y, 0.0001f);
+	EXPECT_EQ(math::Vec3f(4, 0, 0), midpoint.localTranslation());
+	EXPECT_EQ(math::Vec3f(2), midpoint.localScale());
+	EXPECT_NEAR(math::sin(math::radians(22.5f)), midpoint.localOrientation().y, 0.0001f);
 	keys[0].interpolation = InterpolationType::QuadEaseIn;
 	EXPECT_FLOAT_EQ(2.0f, sampleLocalTransform(keys, 14).localTranslation().x);
 	keys[0].interpolation = InterpolationType::Instant;
@@ -35,7 +38,7 @@ TEST_F(SceneGraphUtilTest, testSampleLocalTransform) {
 	EXPECT_FLOAT_EQ(8.0f, sampleLocalTransform(keys, 15).localTranslation().x);
 	EXPECT_FLOAT_EQ(8.0f, sampleLocalTransform(keys, 24).localTranslation().x);
 	keys.resize(1);
-	EXPECT_EQ(glm::vec3(0), sampleLocalTransform(keys, 24).localTranslation());
+	EXPECT_EQ(math::Vec3f(0), sampleLocalTransform(keys, 24).localTranslation());
 }
 
 TEST_F(SceneGraphUtilTest, testSampleLocalTransformCatmullRom) {
@@ -43,8 +46,8 @@ TEST_F(SceneGraphUtilTest, testSampleLocalTransformCatmullRom) {
 		SceneGraphKeyFrame kf;
 		kf.frameIdx = frame;
 		kf.interpolation = type;
-		kf.transform().setLocalTranslation(glm::vec3(x, 0.0f, 0.0f));
-		kf.transform().setLocalScale(glm::vec3(1.0f + x * 0.1f, 1.0f, 1.0f));
+		kf.transform().setLocalTranslation(math::Vec3f(x, 0.0f, 0.0f));
+		kf.transform().setLocalScale(math::Vec3f(1.0f + x * 0.1f, 1.0f, 1.0f));
 		return kf;
 	};
 
@@ -91,15 +94,15 @@ TEST_F(SceneGraphUtilTest, testLongRotation) {
 		SceneGraphKeyFrames keys{SceneGraphKeyFrame{}, SceneGraphKeyFrame{}};
 		keys[1].frameIdx = 20;
 		keys[1].transform().setLocalOrientation(
-			glm::angleAxis(glm::radians(90.0f), glm::vec3(0, 1, 0)) * (float)sign);
+			math::angleAxis(math::radians(90.0f), math::Vec3f(0, 1, 0)) * (float)sign);
 		for (int frame = 0; frame <= 20; ++frame) {
 			const float t = frame / 20.0f;
 			for (bool longRotation : {false, true}) {
 				keys[0].longRotation = longRotation;
-				const glm::quat actual = sampleLocalTransform(keys, frame).localOrientation();
-				const glm::quat expected = glm::angleAxis(glm::radians(longRotation ? -270.0f : 90.0f) * t,
-														glm::vec3(0, 1, 0));
-				EXPECT_NEAR(1.0f, glm::abs(glm::dot(actual, expected)), 0.00001f) << frame;
+				const math::Quatf actual = sampleLocalTransform(keys, frame).localOrientation();
+				const math::Quatf expected = math::angleAxis(math::radians(longRotation ? -270.0f : 90.0f) * t,
+														math::Vec3f(0, 1, 0));
+				EXPECT_NEAR(1.0f, math::abs(math::dot(actual, expected)), 0.00001f) << frame;
 			}
 		}
 	}
@@ -109,13 +112,13 @@ TEST_F(SceneGraphUtilTest, testLongRotationIdenticalOrientations) {
 	for (int sign = -1; sign <= 1; sign += 2) {
 		SceneGraphKeyFrames keys{SceneGraphKeyFrame{}, SceneGraphKeyFrame{}};
 		keys[0].longRotation = true;
-		const glm::quat orientation = glm::angleAxis(0.7f, glm::normalize(glm::vec3(1, 2, 3)));
+		const math::Quatf orientation = math::angleAxis(0.7f, math::normalize(math::Vec3f(1, 2, 3)));
 		keys[0].transform().setLocalOrientation(orientation);
 		keys[1].transform().setLocalOrientation(orientation * (float)sign);
 		keys[1].frameIdx = 20;
 		for (int frame = 0; frame <= 20; ++frame) {
-			const glm::quat actual = sampleLocalTransform(keys, frame).localOrientation();
-			EXPECT_NEAR(1.0f, glm::abs(glm::dot(actual, orientation)), 0.00001f);
+			const math::Quatf actual = sampleLocalTransform(keys, frame).localOrientation();
+			EXPECT_NEAR(1.0f, math::abs(math::dot(actual, orientation)), 0.00001f);
 		}
 	}
 }
@@ -293,7 +296,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesWithReferences) {
 	}
 
 	SceneGraph target;
-	glm::ivec3 maxSize(1, 1, 1);
+	math::Vec3i maxSize(1, 1, 1);
 	splitVolumes(source, target, false, false, false, maxSize);
 
 	int modelCount = 0;
@@ -439,7 +442,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesSkipHidden) {
 	}
 
 	SceneGraph target;
-	glm::ivec3 maxSize(1, 1, 1);
+	math::Vec3i maxSize(1, 1, 1);
 	splitVolumes(source, target, false, false, true, maxSize);
 
 	EXPECT_EQ(1u, target.size()); // Root + Visible
@@ -484,7 +487,7 @@ TEST_F(SceneGraphUtilTest, testSplitVolumesPreservesNodeTypes) {
 	}
 
 	SceneGraph target;
-	glm::ivec3 maxSize(1, 1, 1);
+	math::Vec3i maxSize(1, 1, 1);
 	splitVolumes(source, target, false, false, false, maxSize);
 
 	int groupCount = 0;

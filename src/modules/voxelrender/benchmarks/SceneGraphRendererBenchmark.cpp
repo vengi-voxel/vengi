@@ -10,7 +10,8 @@
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
 #include "voxelrender/SceneGraphRenderer.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 /**
  * @brief Benchmark-only class that inherits from SceneGraphRenderer to access protected methods
@@ -71,7 +72,7 @@ public:
 
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.setUnownedVolume(vol);
-			node.setPivot(glm::vec3(0.5f));
+			node.setPivot(math::Vec3f(0.5f));
 			int nodeId = _sceneGraph.emplace(core::move(node), 0);
 			_nodeIds.push_back(nodeId);
 
@@ -92,7 +93,7 @@ BENCHMARK_DEFINE_F(SceneGraphRendererBenchmark, PrepareMeshStateTransform)(bench
 			const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 			const int idx = _renderer.getVolumeIdx(node);
 			// Force AABB rebuild to measure the dirty path
-			_meshState->setModelMatrix(idx, glm::mat4(1.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+			_meshState->setModelMatrix(idx, math::Mat4f(1.0f), math::Vec3f(0.0f), math::Vec3f(1.0f));
 			_renderer.prepareMeshStateTransform(_meshState, _sceneGraph, frame, node, idx);
 		}
 	}

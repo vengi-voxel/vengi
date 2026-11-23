@@ -6,7 +6,7 @@
 
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -26,12 +26,12 @@ protected:
 
 	bool saveNode(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 				  const scenegraph::SceneGraphNode &node, io::SeekableWriteStream &stream, const ChunkMeshes &meshes,
-				  int &subResourceId, WriterStage stage, const glm::vec3 &scale,
+				  int &subResourceId, WriterStage stage, const math::Vec3f &scale,
 				  const core::Map<int, core::String> &paths) const;
 
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-					const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
+					const math::Vec3f &scale = math::Vec3f(1.0f), bool quad = false, bool withColor = true,
 					bool withTexCoords = true) override;
 
 public:

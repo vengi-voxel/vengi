@@ -7,6 +7,7 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 namespace select {
@@ -16,7 +17,7 @@ void FlatSurface::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 	if (ctx.cursorFace == voxel::FaceNames::Max) {
 		return;
 	}
-	const glm::ivec3 &startPos = ctx.cursorPosition;
+	const math::Vec3i &startPos = ctx.cursorPosition;
 	if (voxel::isAir(wrapper.voxel(startPos).getMaterial())) {
 		return;
 	}

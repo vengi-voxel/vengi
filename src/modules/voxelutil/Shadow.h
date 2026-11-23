@@ -16,12 +16,13 @@
 #include "voxel/VolumeTileDispatch.h"
 #include "voxel/Voxel.h"
 #include <type_traits>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
 // fill the LightVolume with setValue after the BFS is done
 struct LightNode {
-	glm::ivec3 pos;
+	math::Vec3i pos;
 	int value;
 };
 
@@ -44,8 +45,8 @@ static void propagateSunlight(VOLUME &volume, LightQueue &lightQueue, LightVolum
 		}
 
 		uint8_t nextLight = node.value >= lightStep ? node.value - lightStep : 0u;
-		for (const glm::ivec3 &dir : voxel::arrayPathfinderCorners) {
-			const glm::ivec3 &nextPos = node.pos + dir;
+		for (const math::Vec3i &dir : voxel::arrayPathfinderCorners) {
+			const math::Vec3i &nextPos = node.pos + dir;
 			if (!region.containsPoint(nextPos)) {
 				continue;
 			}
@@ -85,7 +86,7 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 						break;
 					}
 					lightVolume.setValue(x, y, z, MAX_SHADOW);
-					lightQueue.push({glm::ivec3(x, y, z), MAX_SHADOW});
+					lightQueue.push({math::Vec3i(x, y, z), MAX_SHADOW});
 					sampler3.moveNegativeY();
 				}
 				sampler2.movePositiveX();
@@ -102,8 +103,8 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 		if (volume.isSparse()) {
 			voxel::forEachOccupiedVoxelParallel(volume, volume.region(), [&](int x, int y, int z, voxel::Voxel &voxel) {
 				uint8_t maxLight = 0u;
-				for (const glm::ivec3 &dir : voxel::arrayPathfinderCorners) {
-					const glm::ivec3 neighborPos(x + dir.x, y + dir.y, z + dir.z);
+				for (const math::Vec3i &dir : voxel::arrayPathfinderCorners) {
+					const math::Vec3i neighborPos(x + dir.x, y + dir.y, z + dir.z);
 					if (voxel::isAir(volume.voxel(neighborPos).getMaterial())) {
 						maxLight = core_max(maxLight, lightVolume.value(neighborPos));
 					}
@@ -134,8 +135,8 @@ void shadow(VOLUME &volume, const palette::Palette &palette, uint8_t lightStep =
 						continue;
 					}
 					uint8_t maxLight = 0u;
-					for (const glm::ivec3 &dir : voxel::arrayPathfinderCorners) {
-						const glm::ivec3 neighborPos(x + dir.x, y + dir.y, z + dir.z);
+					for (const math::Vec3i &dir : voxel::arrayPathfinderCorners) {
+						const math::Vec3i neighborPos(x + dir.x, y + dir.y, z + dir.z);
 						if (voxel::isAir(volume.voxel(neighborPos).getMaterial())) {
 							maxLight = core_max(maxLight, lightVolume.value(neighborPos));
 						}

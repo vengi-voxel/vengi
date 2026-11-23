@@ -7,6 +7,9 @@
 #include "math/AABB.h"
 #include "video/Camera.h"
 #include "video/ShapeBuilder.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace render {
 
@@ -17,21 +20,21 @@ TEST_F(ShapeRendererTest, testAabbLinesAndCubeTriangles) {
 	ASSERT_TRUE(renderer.init());
 
 	video::ShapeBuilder builder;
-	builder.setColor(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	builder.aabb(math::AABB<float>(glm::vec3(-8.0f), glm::vec3(8.0f)));
+	builder.setColor(math::Vec4f(1.0f, 1.0f, 1.0f, 1.0f));
+	builder.aabb(math::AABB<float>(math::Vec3f(-8.0f), math::Vec3f(8.0f)));
 	const int32_t aabbMesh = renderer.create(builder);
 	ASSERT_GE(aabbMesh, 0);
 
 	builder.clear();
-	builder.setColor(glm::vec4(0.2f, 0.8f, 0.2f, 1.0f));
-	builder.cube(glm::vec3(-1.0f), glm::vec3(1.0f));
+	builder.setColor(math::Vec4f(0.2f, 0.8f, 0.2f, 1.0f));
+	builder.cube(math::Vec3f(-1.0f), math::Vec3f(1.0f));
 	const int32_t cubeMesh = renderer.create(builder);
 	ASSERT_GE(cubeMesh, 0);
 
 	video::Camera camera;
-	camera.setSize(glm::ivec2(640, 480));
-	camera.setWorldPosition(glm::vec3(20.0f, 20.0f, 20.0f));
-	camera.lookAt(glm::vec3(0.0f));
+	camera.setSize(math::Vec2i(640, 480));
+	camera.setWorldPosition(math::Vec3f(20.0f, 20.0f, 20.0f));
+	camera.lookAt(math::Vec3f(0.0f));
 	camera.update(0.0);
 
 	EXPECT_TRUE(renderer.render(aabbMesh, camera));
@@ -39,8 +42,8 @@ TEST_F(ShapeRendererTest, testAabbLinesAndCubeTriangles) {
 	EXPECT_GE(renderer.renderAll(camera), 2);
 
 	builder.clear();
-	builder.setColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	builder.arrow(glm::vec3(-4.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(4.0f, 0.0f, 0.0f));
+	builder.setColor(math::Vec4f(1.0f, 0.0f, 0.0f, 1.0f));
+	builder.arrow(math::Vec3f(-4.0f, 0.0f, 0.0f), math::Vec3f(0.0f, 0.0f, 4.0f), math::Vec3f(4.0f, 0.0f, 0.0f));
 	renderer.update((uint32_t)cubeMesh, builder);
 	EXPECT_TRUE(renderer.render(cubeMesh, camera));
 

@@ -13,6 +13,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Vec2i.h"
 
 namespace voxelui {
 
@@ -98,7 +99,7 @@ TEST_F(ScenePreviewTest, testMultisampleResolve) {
 	ASSERT_GT(sceneGraph.emplace(core::move(node)), 0);
 
 	ASSERT_TRUE(preview.setSceneGraph(core::move(sceneGraph)));
-	preview.render(0.016, glm::ivec2(64, 64));
+	preview.render(0.016, math::Vec2i(64, 64));
 
 	const image::ImagePtr img = preview.image();
 	ASSERT_TRUE(img);

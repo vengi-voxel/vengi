@@ -8,7 +8,9 @@
 #include "palette/Palette.h"
 #include "voxel/MaterialColor.h"
 #include "voxel/SurfaceExtractor.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -105,11 +107,11 @@ TEST_F(MeshStateTest, testSameModelMatrix) {
 	pal.nippon();
 	bool deleted = false;
 	(void)meshState.setVolume(0, &v, &pal, nullptr, true, deleted);
-	const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+	const math::Mat4f model = math::translate(math::Mat4f(1.0f), math::Vec3f(1.0f, 2.0f, 3.0f));
 	EXPECT_FALSE(meshState.sameModelMatrix(0, model));
-	ASSERT_TRUE(meshState.setModelMatrix(0, model, glm::vec3(0.0f), glm::vec3(1.0f)));
+	ASSERT_TRUE(meshState.setModelMatrix(0, model, math::Vec3f(0.0f), math::Vec3f(1.0f)));
 	EXPECT_TRUE(meshState.sameModelMatrix(0, model));
-	EXPECT_FALSE(meshState.sameModelMatrix(0, glm::mat4(1.0f)));
+	EXPECT_FALSE(meshState.sameModelMatrix(0, math::Mat4f(1.0f)));
 	(void)meshState.shutdown();
 }
 
@@ -418,7 +420,7 @@ static int countDuplicateTriangles(const voxel::Mesh &mesh) {
 
 	for (size_t i = 0; i < numTris; ++i) {
 		// Get sorted positions for triangle i
-		glm::vec3 pi[3] = {
+		math::Vec3f pi[3] = {
 			vertices[indices[i * 3 + 0]].position,
 			vertices[indices[i * 3 + 1]].position,
 			vertices[indices[i * 3 + 2]].position
@@ -432,7 +434,7 @@ static int countDuplicateTriangles(const voxel::Mesh &mesh) {
 			core::exchange(pi[0], pi[1]);
 
 		for (size_t j = i + 1; j < numTris; ++j) {
-			glm::vec3 pj[3] = {
+			math::Vec3f pj[3] = {
 				vertices[indices[j * 3 + 0]].position,
 				vertices[indices[j * 3 + 1]].position,
 				vertices[indices[j * 3 + 2]].position
@@ -471,7 +473,7 @@ static int countAllDuplicateTriangles(const MeshState &meshState, int idx) {
 // duplicate triangles (which cause z-fighting).
 TEST_F(MeshStateTest, testCubicNoDuplicateTriangles_SingleVoxel) {
 	// Test at position (32, 4, 48) which was reported to have artifacts
-	const glm::ivec3 positions[] = {
+	const math::Vec3i positions[] = {
 		{32, 4, 48}, {0, 0, 0}, {15, 15, 15}, {61, 0, 0}, {0, 61, 0}, {0, 0, 61}
 	};
 
@@ -560,8 +562,8 @@ TEST_F(MeshStateTest, testDualContouringChunkSeams) {
 
 	// Pair triangle edges by position across all chunks to check the surface for cracks or duplicate faces.
 	struct Edge {
-		glm::vec3 a;
-		glm::vec3 b;
+		math::Vec3f a;
+		math::Vec3f b;
 	};
 	core::DynamicArray<Edge> edges;
 	for (const MeshState::MeshesMap::KeyValue *chunk : meshState.meshes(MeshType_Opaque)) {
@@ -571,8 +573,8 @@ TEST_F(MeshStateTest, testDualContouringChunkSeams) {
 		}
 		for (IndexType i = 0; i < mesh->getNoOfIndices(); i += 3) {
 			for (IndexType e = 0; e < 3; ++e) {
-				const glm::vec3 &a = mesh->getVertex(mesh->getIndex(i + e)).position;
-				const glm::vec3 &b = mesh->getVertex(mesh->getIndex(i + (e + 1) % 3)).position;
+				const math::Vec3f &a = mesh->getVertex(mesh->getIndex(i + e)).position;
+				const math::Vec3f &b = mesh->getVertex(mesh->getIndex(i + (e + 1) % 3)).position;
 				EXPECT_NE(a, b);
 				edges.push_back({a, b});
 			}

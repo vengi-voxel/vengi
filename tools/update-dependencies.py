@@ -295,13 +295,6 @@ def update_imgui_markdown():
         ]
     )
 
-def update_glm():
-    update_target(
-        "glm",
-        "https://github.com/g-truc/glm.git",
-        [(f"glm", "contrib/libs/glm/glm")]
-    )
-
 def update_opengametools():
     update_target(
         "opengametools",
@@ -533,7 +526,6 @@ def main():
         update_im_neo_sequencer,
         update_dearimgui,
         update_dearimgui_testengine,
-        update_glm,
         update_sdl3,
         update_tinyobjloader,
         update_simplecpp,

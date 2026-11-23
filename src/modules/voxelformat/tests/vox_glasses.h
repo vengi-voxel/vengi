@@ -8,11 +8,12 @@
 
 #include "core/SharedPtr.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 struct glasses_0 {
 	static core::SharedPtr<voxel::RawVolume> create() {
-		glm::ivec3 mins(-7, 48, -2);
-		glm::ivec3 maxs(6, 51, 6);
+		math::Vec3i mins(-7, 48, -2);
+		math::Vec3i maxs(6, 51, 6);
 		voxel::Region region(mins, maxs);
 		core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 		v->setVoxel(-7, 50, -2, voxel::createVoxel(voxel::VoxelType::Generic,  193));

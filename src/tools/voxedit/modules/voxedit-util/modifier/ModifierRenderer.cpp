@@ -16,11 +16,12 @@
 #include "video/ScopedState.h"
 #include "video/ShapeBuilder.h"
 #include "video/Types.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
 #include "ui/Style.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxedit {
 
@@ -136,7 +137,7 @@ void ModifierRenderer::updateCursor(const voxel::Voxel& voxel, voxel::FaceNames 
 		return;
 	}
 	_shapeBuilder.setColor(color::alpha(color::Red(), 0.6f));
-	_shapeBuilder.cube(glm::vec3(0.0f), glm::vec3(1.0f), flags);
+	_shapeBuilder.cube(math::Vec3f(0.0f), math::Vec3f(1.0f), flags);
 	_shapeRenderer.createOrUpdate(_voxelCursorMesh, _shapeBuilder);
 }
 
@@ -173,7 +174,7 @@ void ModifierRenderer::updateBrushVolume(int idx, const voxel::Region &region, c
 	core_assert(idx >= 0 && idx < lengthof(_aabbMeshes));
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(color::fromRGBA(color));
-	_shapeBuilder.cube(region.getLowerCorner(), region.getUpperCorner() + glm::one<glm::ivec3>());
+	_shapeBuilder.cube(region.getLowerCorner(), region.getUpperCorner() + 1);
 	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
 }
 
@@ -185,7 +186,7 @@ void ModifierRenderer::updateBrushOutline(int idx, const voxel::Region &region, 
 	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
 }
 
-void ModifierRenderer::updateBrushPolylineOutline(int idx, const core::Buffer<glm::vec3> &points, color::RGBA color) {
+void ModifierRenderer::updateBrushPolylineOutline(int idx, const core::Buffer<math::Vec3f> &points, color::RGBA color) {
 	core_assert(idx >= 0 && idx < lengthof(_aabbMeshes));
 	_shapeBuilder.clear();
 	if (points.size() < 2) {
@@ -196,26 +197,26 @@ void ModifierRenderer::updateBrushPolylineOutline(int idx, const core::Buffer<gl
 	_shapeBuilder.setColor(color::fromRGBA(color));
 	// thickness <= 1 keeps real line primitives; > 1 wrongly builds cubes in ShapeBuilder::line
 	for (size_t i = 0; i < points.size(); ++i) {
-		const glm::vec3 &a = points[i];
-		const glm::vec3 &b = points[(i + 1) % points.size()];
+		const math::Vec3f &a = points[i];
+		const math::Vec3f &b = points[(i + 1) % points.size()];
 		_shapeBuilder.line(a, b);
 	}
 	_shapeRenderer.createOrUpdate(_aabbMeshes[idx], _shapeBuilder);
 }
 
-void ModifierRenderer::renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &model) {
+void ModifierRenderer::renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const math::Mat4f &model) {
 	_meshState->extractAllPending();
 	if (_meshState->volume(0) != nullptr) {
-		_meshState->setModelMatrix(0, model, glm::vec3(0.0f), glm::vec3(0.0f));
+		_meshState->setModelMatrix(0, model, math::Vec3f(0.0f), math::Vec3f(0.0f));
 	}
 	if (_meshState->volume(1) != nullptr) {
-		_meshState->setModelMatrix(1, model, glm::vec3(0.0f), glm::vec3(0.0f));
+		_meshState->setModelMatrix(1, model, math::Vec3f(0.0f), math::Vec3f(0.0f));
 	}
 	_volumeRenderer.update(_meshState);
 	_volumeRenderer.render(_meshState, renderContext, camera, false);
 }
 
-void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &region) {
+void ModifierRenderer::updateMirrorPlane(math::Axis axis, const math::Vec3i &mirrorPos, const voxel::Region &region) {
 	if (axis == math::Axis::None) {
 		if (_mirrorMeshIndex != -1) {
 			_shapeRenderer.deleteMesh(_mirrorMeshIndex);
@@ -224,12 +225,12 @@ void ModifierRenderer::updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirr
 		return;
 	}
 
-	const glm::vec4 color = color::alpha(color::LightGray(), 0.3f);
+	const math::Vec4f color = color::alpha(color::LightGray(), 0.3f);
 	updateShapeBuilderForPlane(_shapeBuilder, region, true, mirrorPos, axis, color);
 	_shapeRenderer.createOrUpdate(_mirrorMeshIndex, _shapeBuilder);
 }
 
-void ModifierRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const glm::ivec3 &cursorPosition, const voxel::Region &region) {
+void ModifierRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const math::Vec3i &cursorPosition, const voxel::Region &region) {
 	if (axis == math::Axis::None) {
 		return;
 	}
@@ -243,7 +244,7 @@ void ModifierRenderer::updateLockedPlane(math::Axis lockedAxis, math::Axis axis,
 		return;
 	}
 
-	glm::vec4 color{0.0f};
+	math::Vec4f color{0.0f};
 	if (axis == math::Axis::X) {
 		color = style::color(style::ColorAxisX);
 	} else if (axis == math::Axis::Y) {
@@ -261,9 +262,9 @@ void ModifierRenderer::handleCommandBuffer() {
 		switch (cmd.type) {
 		case CommandType::HighlightRegion: {
 			const voxel::Region region(
-				glm::ivec3(cmd.highlightRegion.regionMins[0], cmd.highlightRegion.regionMins[1],
+				math::Vec3i(cmd.highlightRegion.regionMins[0], cmd.highlightRegion.regionMins[1],
 						   cmd.highlightRegion.regionMins[2]),
-				glm::ivec3(cmd.highlightRegion.regionMaxs[0], cmd.highlightRegion.regionMaxs[1],
+				math::Vec3i(cmd.highlightRegion.regionMaxs[0], cmd.highlightRegion.regionMaxs[1],
 						   cmd.highlightRegion.regionMaxs[2]));
 			const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 			_highlightRegion = TimedRegion(region, timeProvider->tickNow(), cmd.highlightRegion.renderRegionMillis);
@@ -309,7 +310,7 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	_activeRegion = ctx.activeRegion;
 	_cursorPosition = ctx.cursorPosition;
 	_gridResolution = ctx.gridResolution;
-	_referencePoint = glm::vec3(ctx.referencePosition) + 0.5f;
+	_referencePoint = math::Vec3f(ctx.referencePosition) + 0.5f;
 	_gridRenderer.setRenderAABB(_showAABB->boolVal());
 	_gridRenderer.setRenderGrid(_showGrid->boolVal());
 	_gridRenderer.setGridResolution(_gridResolution);
@@ -359,7 +360,7 @@ void ModifierRenderer::update(const ModifierRendererContext &ctx) {
 	}
 }
 
-void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) {
+void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const math::Mat4f &modelMatrix) {
 	_gridRenderer.setColor(style::color(style::ColorGridBorder));
 	video::ScopedState scopedDepth(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
@@ -379,23 +380,23 @@ void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const v
 	{
 		const video::ScopedState depthTest(video::State::DepthTest, false);
 		const video::ScopedState cullFace(video::State::CullFace, false);
-		_shapeRenderer.render(_referencePointMesh, camera, glm::translate(modelMatrix, _referencePoint));
+		_shapeRenderer.render(_referencePointMesh, camera, math::translate(modelMatrix, _referencePoint));
 
-		const glm::mat4 &translate = glm::translate(modelMatrix, glm::vec3(_cursorPosition));
-		const glm::mat4 cursorMatrix = glm::scale(translate, glm::vec3(_gridResolution));
+		const math::Mat4f &translate = math::translate(modelMatrix, math::Vec3f(_cursorPosition));
+		const math::Mat4f cursorMatrix = math::scale(translate, math::Vec3f(_gridResolution));
 		_shapeRenderer.render(_voxelCursorMesh, camera, cursorMatrix);
 	}
 
 	const core::TimeProviderPtr &timeProvider = app::App::getInstance()->timeProvider();
 	const uint64_t highlightMillis = _highlightRegion.remaining(timeProvider->tickNow());
 	if (highlightMillis > 0u && _highlightRegion.value().isValid()) {
-		video::ScopedPolygonMode solid(video::PolygonMode::Solid, glm::vec2(1.0f, 1.0f));
+		video::ScopedPolygonMode solid(video::PolygonMode::Solid, math::Vec2f(1.0f, 1.0f));
 		_shapeBuilder.clear();
 		_shapeBuilder.setColor(style::color(style::ColorHighlightArea));
 		_shapeBuilder.cube(_highlightRegion.value().getLowerCornerf(), _highlightRegion.value().getUpperCornerf() + 1.0f);
 		_shapeRenderer.createOrUpdate(_highlightMesh, _shapeBuilder);
 		_shapeRenderer.render(_highlightMesh, camera, modelMatrix);
-		video::polygonOffset(glm::vec2(0.0f));
+		video::polygonOffset(math::Vec2f(0.0f));
 	}
 
 	const bool hasPreview = _meshState->volume(0) != nullptr || _meshState->volume(1) != nullptr ||
@@ -407,7 +408,7 @@ void ModifierRenderer::render(voxelrender::RenderContext &renderContext, const v
 			_shapeRenderer.render(_aabbMeshes[i], camera, modelMatrix);
 		}
 		renderBrushVolume(renderContext, camera, modelMatrix);
-		renderContext.surfaceOverlay.end(_previewErase ? glm::vec4(0.95f, 0.12f, 0.08f, 0.75f) : glm::vec4(0.0f));
+		renderContext.surfaceOverlay.end(_previewErase ? math::Vec4f(0.95f, 0.12f, 0.08f, 0.75f) : math::Vec4f(0.0f));
 	}
 
 	const video::ScopedState blend(video::State::Blend, true);

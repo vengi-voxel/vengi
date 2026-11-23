@@ -7,7 +7,8 @@
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include <array>
-#include <glm/geometric.hpp>
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -16,19 +17,19 @@ Polygon &Polygon::setMaterialIndex(MeshMaterialIndex materialIdx) {
 	return *this;
 }
 
-Polygon &Polygon::addVertex(const glm::vec3 &vertex, const glm::vec2 &uv, color::RGBA color) {
+Polygon &Polygon::addVertex(const math::Vec3f &vertex, const math::Vec2f &uv, color::RGBA color) {
 	_vertices.push_back(vertex);
 	_uvs.push_back(uv);
 	_colors.push_back(color);
 	return *this;
 }
 
-static void projectPoints(const core::Buffer<glm::vec3> &vertexCoords, core::Buffer<glm::vec2> &pointsProjected,
-						  const glm::vec3 &normal, const glm::vec3 &axis, const glm::vec3 &origin) {
-	const glm::vec3 &perpendicularAxis = glm::cross(normal, axis);
-	for (const glm::vec3 &vc : vertexCoords) {
-		const glm::vec3 &dir = vc - origin;
-		pointsProjected.emplace_back(glm::dot(dir, axis), glm::dot(dir, perpendicularAxis));
+static void projectPoints(const core::Buffer<math::Vec3f> &vertexCoords, core::Buffer<math::Vec2f> &pointsProjected,
+						  const math::Vec3f &normal, const math::Vec3f &axis, const math::Vec3f &origin) {
+	const math::Vec3f &perpendicularAxis = math::cross(normal, axis);
+	for (const math::Vec3f &vc : vertexCoords) {
+		const math::Vec3f &dir = vc - origin;
+		pointsProjected.emplace_back(math::dot(dir, axis), math::dot(dir, perpendicularAxis));
 	}
 }
 
@@ -64,19 +65,19 @@ bool Polygon::toTris(MeshTriCollection &tris) const {
 		return true;
 	}
 
-	glm::vec3 normal{0.0f};
+	math::Vec3f normal{0.0f};
 	for (size_t i = 0; i < _vertices.size(); ++i) {
 		const size_t j = (i + 1) % _vertices.size();
 		const size_t k = (i + 2) % _vertices.size();
-		const glm::vec3 &enter = _vertices[i];
-		const glm::vec3 &cone = _vertices[j];
-		const glm::vec3 &leave = _vertices[k];
-		normal += glm::normalize(glm::cross(cone - enter, leave - enter));
+		const math::Vec3f &enter = _vertices[i];
+		const math::Vec3f &cone = _vertices[j];
+		const math::Vec3f &leave = _vertices[k];
+		normal += math::normalize(math::cross(cone - enter, leave - enter));
 	}
-	normal = glm::normalize(normal);
+	normal = math::normalize(normal);
 
-	const glm::vec3 &axis = glm::normalize(_vertices[1] - _vertices[0]);
-	core::Buffer<glm::vec2> projectedPoints;
+	const math::Vec3f &axis = math::normalize(_vertices[1] - _vertices[0]);
+	core::Buffer<math::Vec2f> projectedPoints;
 	projectedPoints.reserve(_vertices.size());
 	projectPoints(_vertices, projectedPoints, normal, axis, _vertices[0]);
 
@@ -85,7 +86,7 @@ bool Polygon::toTris(MeshTriCollection &tris) const {
 	Points border;
 	std::vector<Points> polygons;
 	border.reserve(projectedPoints.size());
-	for (const glm::vec2 &v : projectedPoints) {
+	for (const math::Vec2f &v : projectedPoints) {
 		border.emplace_back(Point{v.x, v.y});
 	}
 	polygons.emplace_back(core::move(border));
@@ -103,24 +104,24 @@ size_t Polygon::size() const {
 	return _vertices.size();
 }
 
-glm::vec3 Polygon::vertex(int idx) const {
+math::Vec3f Polygon::vertex(int idx) const {
 	return _vertices[idx];
 }
 
-void Polygon::setVertex(int idx, const glm::vec3 &vertex) {
+void Polygon::setVertex(int idx, const math::Vec3f &vertex) {
 	_vertices[idx] = vertex;
 }
 
-glm::vec3 Polygon::center() const {
+math::Vec3f Polygon::center() const {
 	if (_vertices.empty()) {
-		return glm::vec3(0.0f);
+		return math::Vec3f(0.0f);
 	}
 
-	glm::vec3 center = _vertices[0];
+	math::Vec3f center = _vertices[0];
 	for (int i = 1; i < (int)_vertices.size(); ++i) {
 		center += _vertices[i];
 	}
-	center /= glm::vec3(_vertices.size());
+	center /= math::Vec3f(_vertices.size());
 	return center;
 }
 

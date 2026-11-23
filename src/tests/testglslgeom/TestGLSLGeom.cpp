@@ -5,6 +5,8 @@
 #include "testcore/TestAppMain.h"
 #include "video/Camera.h"
 #include "core/Log.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 TestGLSLGeom::TestGLSLGeom(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
@@ -34,8 +36,8 @@ app::AppState TestGLSLGeom::onInit() {
 	}
 
 	struct Buf {
-		glm::vec4 pos{0, 0, 0, 1};
-		glm::vec3 color{1, 1, 1};
+		math::Vec4f pos{0, 0, 0, 1};
+		math::Vec3f color{1, 1, 1};
 	};
 	alignas(32) Buf buf;
 	const int32_t bufIndex = _buffer.create(&buf, sizeof(buf));

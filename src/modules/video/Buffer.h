@@ -5,9 +5,9 @@
 #pragma once
 
 #include "Types.h"
-#include <glm/vec2.hpp>
 #include "core/NonCopyable.h"
 #include "core/collection/DynamicArray.h"
+#include "math/Vec2i.h"
 
 #define VIDEO_BUFFER_HASH_COMPARE 0
 
@@ -98,13 +98,13 @@ public:
 	/**
 	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
 	 */
-	glm::ivec2 createFullscreenTexturedQuad3d(bool yFlipped = false);
-	glm::ivec2 createFullscreenTexturedQuad(bool yFlipped = false);
+	math::Vec2i createFullscreenTexturedQuad3d(bool yFlipped = false);
+	math::Vec2i createFullscreenTexturedQuad(bool yFlipped = false);
 	/**
 	 * @brief Screen coordinate buffer with 2 float components for vertices and 2 float components for texcoords
 	 * @return Two vertex buffers, the first one contains the vertices, the second contains the texcoords
 	 */
-	glm::ivec2 createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension, bool yFlipped = false);
+	math::Vec2i createTexturedQuad(const math::Vec2i& xy, const math::Vec2i& dimension, bool yFlipped = false);
 	int32_t createWhiteColorForQuad();
 	/**
 	 * @brief Bind the underlying gl buffers

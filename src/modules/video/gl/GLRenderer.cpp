@@ -30,14 +30,13 @@
 #include "video/Types.h"
 #include "video/gl/GLVersion.h"
 #include "video/gl/flextGL.h"
-#include <glm/common.hpp>
-#include <glm/fwd.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec4.hpp>
 #ifdef TRACY_ENABLE
 #include "core/tracy/public/tracy/TracyOpenGL.hpp"
+#include "math/Vec4f.h"
+#include "math/Vec3u.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
+#include "math/Conversions.h"
 #endif
 
 namespace video {
@@ -833,7 +832,7 @@ float _priv::GLRenderer::lineWidth(float width) {
 		return rs.lineWidth;
 	}
 	video_trace_scoped(LineWidth);
-	if (glm::abs(rs.pendingLineWidth - width) < glm::epsilon<float>()) {
+	if (math::abs(rs.pendingLineWidth - width) < math::epsilonf) {
 		return rs.pendingLineWidth;
 	}
 	const float oldWidth = rs.pendingLineWidth;
@@ -951,10 +950,10 @@ static void syncState() {
 		} else {
 			bottom = rs.scissorY;
 		}
-		bottom = (GLint)glm::round(bottom * rs.scaleFactor);
-		const GLint left = (GLint)glm::round(rs.scissorX * rs.scaleFactor);
-		const GLsizei width = (GLsizei)glm::round(rs.scissorW * rs.scaleFactor);
-		const GLsizei height = (GLsizei)glm::round(rs.scissorH * rs.scaleFactor);
+		bottom = (GLint)math::round(bottom * rs.scaleFactor);
+		const GLint left = (GLint)math::round(rs.scissorX * rs.scaleFactor);
+		const GLsizei width = (GLsizei)math::round(rs.scissorW * rs.scaleFactor);
+		const GLsizei height = (GLsizei)math::round(rs.scissorH * rs.scaleFactor);
 		core_assert(glScissor != nullptr);
 		glScissor(left, bottom, width, height);
 		checkError();
@@ -1054,12 +1053,12 @@ static void syncState() {
 		checkError();
 	}
 
-	if (glm::abs(rs.lineWidth - rs.pendingLineWidth) >= glm::epsilon<float>()) {
+	if (math::abs(rs.lineWidth - rs.pendingLineWidth) >= math::epsilonf) {
 		float width = rs.pendingLineWidth;
 		if (rs.states[core::enumVal(State::LineSmooth)]) {
-			width = glm::clamp(width, rs.smoothedLineWidth.x, rs.smoothedLineWidth.y);
+			width = math::clamp(width, rs.smoothedLineWidth.x, rs.smoothedLineWidth.y);
 		} else {
-			width = glm::clamp(width, rs.aliasedLineWidth.x, rs.aliasedLineWidth.y);
+			width = math::clamp(width, rs.aliasedLineWidth.x, rs.aliasedLineWidth.y);
 		}
 		core_assert(glLineWidth != nullptr);
 		glLineWidth((GLfloat)width);
@@ -2155,12 +2154,12 @@ bool _priv::GLRenderer::copyBufferSubData(Id readBuffer, intptr_t readOffset, Id
 }
 
 // FBO color sampling: lower-left clip stores rows bottom-up; upper-left matches Vulkan.
-const glm::vec4 &_priv::GLRenderer::framebufferUV() {
+const math::Vec4f &_priv::GLRenderer::framebufferUV() {
 	if (renderState().clipOriginLowerLeft) {
-		static const glm::vec4 uv(0.0f, 1.0f, 1.0f, 0.0f);
+		static const math::Vec4f uv(0.0f, 1.0f, 1.0f, 0.0f);
 		return uv;
 	}
-	static const glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
+	static const math::Vec4f uv(0.0f, 0.0f, 1.0f, 1.0f);
 	return uv;
 }
 
@@ -2379,12 +2378,12 @@ void _priv::GLRenderer::setupTexture(Id texture, const TextureConfig &config) {
 			}
 			if (!core::isWebPlatform()) {
 				if (config.useBorderColor()) {
-					glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+					glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR, math::value_ptr(config.borderColor()));
 				}
 				if (config.lodBias() != 0.0f) {
 					const GLfloat requested = config.lodBias();
 					const GLfloat maxLodBias = limit(Limit::MaxLodBias);
-					const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+					const GLfloat clamped = (maxLodBias > 0.0f) ? math::clamp(requested, -maxLodBias, maxLodBias) : requested;
 					core_assert(glTextureParameterf != nullptr);
 					glTextureParameterf(texture, GL_TEXTURE_LOD_BIAS, clamped);
 					checkError();
@@ -2448,12 +2447,12 @@ void _priv::GLRenderer::setupTexture(Id texture, const TextureConfig &config) {
 			}
 			if (!core::isWebPlatform()) {
 				if (config.useBorderColor()) {
-					glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+					glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, math::value_ptr(config.borderColor()));
 				}
 				if (config.lodBias() != 0.0f) {
 					const GLfloat requested = config.lodBias();
 					const GLfloat maxLodBias = limit(Limit::MaxLodBias);
-					const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+					const GLfloat clamped = (maxLodBias > 0.0f) ? math::clamp(requested, -maxLodBias, maxLodBias) : requested;
 					core_assert(glTexParameterf != nullptr);
 					glTexParameterf(glType, GL_TEXTURE_LOD_BIAS, clamped);
 					checkError();
@@ -2516,7 +2515,7 @@ void _priv::GLRenderer::uploadTexture(Id texture, int width, int height, const u
 	}
 
 	const int levels =
-		wantMipmaps && width > 0 && height > 0 ? (int)glm::floor(glm::log2((float)core_max(width, height))) + 1 : 1;
+		wantMipmaps && width > 0 && height > 0 ? (int)math::floor(math::log2((float)core_max(width, height))) + 1 : 1;
 	if (useFeature(Feature::DirectStateAccess)) {
 		core_assert(glTextureStorage2D != nullptr);
 		core_assert(glTextureStorage3D != nullptr);
@@ -2613,7 +2612,7 @@ void _priv::GLRenderer::uploadTexture(Id texture, int width, int height, const u
 		}
 	}
 	const size_t uploadBytes =
-		(size_t)glm::max(width, 0) * (size_t)glm::max(height, 1) * (size_t)glm::max(f.bits / 8, 1);
+		(size_t)math::max(width, 0) * (size_t)math::max(height, 1) * (size_t)math::max(f.bits / 8, 1);
 	statsBufferUpdate(uploadBytes);
 	statsUploadScopeEnd();
 }
@@ -2899,7 +2898,7 @@ void _priv::GLRenderer::waitShader(MemoryBarrierType wait) {
 	video::checkError();
 }
 
-bool _priv::GLRenderer::runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait) {
+bool _priv::GLRenderer::runShader(Id program, const math::Vec3u &workGroups, MemoryBarrierType wait) {
 	video_trace_scoped(RunShader);
 	if (workGroups.x <= 0 || workGroups.y <= 0 || workGroups.z <= 0) {
 		return false;
@@ -3219,8 +3218,8 @@ bool _priv::GLRenderer::init(int windowWidth, int windowHeight, float scaleFacto
 		// WebGL rejects GL_POINT_SIZE (0x0B11) and GL_LINE_WIDTH_RANGE (0x0B22). Width is fixed at 1.
 		rs.pointSize = 1.0f;
 		rs.pendingPointSize = 1.0f;
-		rs.smoothedLineWidth = glm::vec2(1.0f);
-		rs.aliasedLineWidth = glm::vec2(1.0f);
+		rs.smoothedLineWidth = math::Vec2f(1.0f);
+		rs.aliasedLineWidth = math::Vec2f(1.0f);
 	} else {
 		glGetFloatv(GL_POINT_SIZE, &rs.pointSize);
 		if (rs.smoothedLineWidth.x < 0.0f) {

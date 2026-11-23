@@ -10,6 +10,8 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/AlignedVec4i.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -34,7 +36,7 @@ private:
 	voxel::Region _box3DSelectionRegion;
 
 	// if we have a selection, we only handle voxels inside the selection
-	bool skip(const glm::aligned_ivec4 &pos) const {
+	bool skip(const math::AlignedVec4i &pos) const {
 		if (!_hasSelection) {
 			return false;
 		}
@@ -54,7 +56,7 @@ private:
 				return true;
 			}
 			for (const auto &off : voxel::arrayPathfinderFaces) {
-				const glm::ivec3 n(pos.x + off.x, pos.y + off.y, pos.z + off.z);
+				const math::Vec3i n(pos.x + off.x, pos.y + off.y, pos.z + off.z);
 				const voxel::Voxel &nv = _volume->voxel(n.x, n.y, n.z);
 				if (!voxel::isAir(nv.getMaterial()) && (nv.getFlags() & voxel::FlagOutline)) {
 					return false;
@@ -125,7 +127,7 @@ public:
 			} else {
 				writeCurrentSparse(updatedVoxel, true);
 			}
-			_volume->addToDirtyRegion(glm::ivec3(_posInVolume));
+			_volume->addToDirtyRegion(math::Vec3i(_posInVolume));
 			return true;
 		}
 	};
@@ -210,7 +212,7 @@ public:
 		}
 		v.setFlags(v.getFlags() | flags);
 		sampler.setVoxel(v);
-		addToDirtyRegion(glm::ivec3(x, y, z));
+		addToDirtyRegion(math::Vec3i(x, y, z));
 		return true;
 	}
 
@@ -233,7 +235,7 @@ public:
 		}
 		v.setFlags(v.getFlags() & ~flags);
 		sampler.setVoxel(v);
-		addToDirtyRegion(glm::ivec3(x, y, z));
+		addToDirtyRegion(math::Vec3i(x, y, z));
 		return true;
 	}
 

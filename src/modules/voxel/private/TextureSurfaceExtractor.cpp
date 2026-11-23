@@ -16,8 +16,9 @@
 #include "voxel/Region.h"
 #include "voxel/VoxelVertex.h"
 #include "voxel/external/stb_rect_pack.h"
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxel {
 
@@ -29,7 +30,7 @@ struct PendingQuad {
 	int u1, v1, u2, v2;
 	int sOffset;
 	int axesX, axesY, axesZ;
-	glm::vec3 normal;
+	math::Vec3f normal;
 	bool flip;
 	int packIndex;
 	int colorW, colorH;
@@ -37,7 +38,7 @@ struct PendingQuad {
 
 using DedupeMap = core::DynamicMap<uint32_t, int, 1021>;
 
-static inline VoxelVertex makeV(const glm::vec3 &p) {
+static inline VoxelVertex makeV(const math::Vec3f &p) {
 	VoxelVertex v;
 	v.position = p;
 	v.info = 0;
@@ -48,8 +49,8 @@ static inline VoxelVertex makeV(const glm::vec3 &p) {
 }
 
 // Extract greedy rectangles from mask, save per-rect colors, record quads and pack rects
-static void greedyExtract(color::RGBA *mask, int uDim, int vDim, int sOffset, const glm::ivec3 &axes,
-						  const glm::vec3 &normal, bool flip, core::Buffer<PendingQuad> &quads,
+static void greedyExtract(color::RGBA *mask, int uDim, int vDim, int sOffset, const math::Vec3i &axes,
+						  const math::Vec3f &normal, bool flip, core::Buffer<PendingQuad> &quads,
 						  core::Buffer<color::RGBA> &allColors, core::Buffer<stbrp_rect> &packRects,
 						  core::Buffer<int> &packColorOffsets, DedupeMap *dedupeMap) {
 	for (int u = 0; u < uDim; ++u) {
@@ -177,26 +178,26 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 	const int rh = region.getHeightInVoxels();
 	const int rd = region.getDepthInVoxels();
 
-	glm::ivec3 axes;
+	math::Vec3i axes;
 
 	switch (posFace) {
 	case FaceNames::Right:
 		sDim = rw;
 		uDim = rh;
 		vDim = rd;
-		axes = glm::ivec3(1, 2, 0);
+		axes = math::Vec3i(1, 2, 0);
 		break;
 	case FaceNames::Up:
 		sDim = rh;
 		uDim = rw;
 		vDim = rd;
-		axes = glm::ivec3(0, 2, 1);
+		axes = math::Vec3i(0, 2, 1);
 		break;
 	case FaceNames::Back:
 		sDim = rd;
 		uDim = rw;
 		vDim = rh;
-		axes = glm::ivec3(0, 1, 2);
+		axes = math::Vec3i(0, 1, 2);
 		break;
 	default:
 		return;
@@ -241,8 +242,8 @@ static void collectFacePair(SurfaceExtractionContext &ctx, core::Buffer<PendingQ
 	const int uIterMax = core_min(uDim, volUpperArr[axes.x] - rOrigin[axes.x] + 1);
 	const int vIterMax = core_min(vDim, volUpperArr[axes.y] - rOrigin[axes.y] + 1);
 
-	const glm::vec3 nPos = faceNormal(posFace);
-	const glm::vec3 nNeg = faceNormal(negFace);
+	const math::Vec3f nPos = faceNormal(posFace);
+	const math::Vec3f nNeg = faceNormal(negFace);
 	// The (u,v) axes for Y faces form a left-handed pair (X,Z), so the
 	// non-flipped cross product points -Y. For X and Z faces the pair is
 	// right-handed and the cross points in the positive axis direction.
@@ -469,20 +470,20 @@ void extractTextureMesh(SurfaceExtractionContext &ctx) {
 		const float tu2 = (float)(px + w) * invTexW;
 		const float tv2 = (float)(py + h) * invTexH;
 
-		const glm::vec2 tex[]{glm::vec2(tu1, tv1), glm::vec2(tu2, tv1), glm::vec2(tu2, tv2), glm::vec2(tu1, tv2)};
+		const math::Vec2f tex[]{math::Vec2f(tu1, tv1), math::Vec2f(tu2, tv1), math::Vec2f(tu2, tv2), math::Vec2f(tu1, tv2)};
 
 		auto makeVert = [&](int mu, int mv) {
-			glm::ivec3 pos;
+			math::Vec3i pos;
 			pos[q.axesX] = mu;
 			pos[q.axesY] = mv;
 			pos[q.axesZ] = q.sOffset;
-			return glm::vec3(pos);
+			return math::Vec3f(pos);
 		};
 
-		const glm::vec3 p0 = makeVert(q.u1, q.v1);
-		const glm::vec3 p1 = makeVert(q.u2, q.v1);
-		const glm::vec3 p2 = makeVert(q.u2, q.v2);
-		const glm::vec3 p3 = makeVert(q.u1, q.v2);
+		const math::Vec3f p0 = makeVert(q.u1, q.v1);
+		const math::Vec3f p1 = makeVert(q.u2, q.v1);
+		const math::Vec3f p2 = makeVert(q.u2, q.v2);
+		const math::Vec3f p3 = makeVert(q.u1, q.v2);
 
 		const int idx = (int)mesh.getNoOfVertices();
 

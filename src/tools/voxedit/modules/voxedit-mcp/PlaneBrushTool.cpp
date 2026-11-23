@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/PlaneBrush.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -95,7 +96,7 @@ bool PlaneBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	}
 	json::Json posJson = args.get("position");
 
-	const glm::ivec3 position(posJson.intVal("x", 0), posJson.intVal("y", 0), posJson.intVal("z", 0));
+	const math::Vec3i position(posJson.intVal("x", 0), posJson.intVal("y", 0), posJson.intVal("z", 0));
 	const int colorIndex = args.intVal("colorIndex", 0);
 	const core::String modifierTypeStr = args.strVal("modifierType", "place").c_str();
 	const ModifierType modifierType = parseModifierType(modifierTypeStr);
@@ -128,7 +129,7 @@ bool PlaneBrushTool::execute(const json::Json &id, const json::Json &args, ToolC
 	brushContext.referencePos = position;
 	brushContext.cursorFace = face;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = glm::ivec3(thickness);
+	brushContext.gridResolution = math::Vec3i(thickness);
 
 	// Create the modifier wrapper
 

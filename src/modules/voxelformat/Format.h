@@ -13,7 +13,7 @@
 #include "io/FormatDescription.h"
 #include "voxelformat/FormatThumbnailFwd.h"
 #include "core/IProgress.h"
-#include <glm/fwd.hpp>
+#include "math/Vec3i.h"
 
 namespace palette {
 class Palette;
@@ -132,21 +132,21 @@ protected:
 	 * @note @c singleVolume() and @c maxSize() don't work well together as the first would merge everything, and the
 	 * latter would split it again if the max size was exceeded.
 	 */
-	virtual glm::ivec3 maxSize() const;
+	virtual math::Vec3i maxSize() const;
 
 	/**
 	 * @brief Merge and crop the scene on export instead of splitting it. Nonpositive sizes disable cropping.
 	 * The retained box starts at the lower corner of the scene. Only formats that export a single volume
 	 * should override this; formats that also need point nodes can call mergeVolumes() in saveGroups().
 	 */
-	virtual glm::ivec3 cropSize() const;
+	virtual math::Vec3i cropSize() const;
 
 	/**
 	 * @brief Merge models within a box of at most @p maxSize voxels, anchored at the scene's lower corner.
 	 * Transforms are baked and palette indices are remapped. The caller owns the returned volume.
 	 * Returns nullptr for an empty scene, invalid size or allocation/transform failure.
 	 */
-	voxel::RawVolume *mergeVolumes(const scenegraph::SceneGraph &sceneGraph, const glm::ivec3 &maxSize,
+	voxel::RawVolume *mergeVolumes(const scenegraph::SceneGraph &sceneGraph, const math::Vec3i &maxSize,
 								   palette::Palette &palette, bool skipHidden = true) const;
 
 	/**
@@ -158,7 +158,7 @@ protected:
 	 * @param y The chunk position
 	 * @param z The chunk position
 	 */
-	bool isEmptyBlock(const voxel::RawVolume *v, const glm::ivec3 &maxSize, int x, int y, int z) const;
+	bool isEmptyBlock(const voxel::RawVolume *v, const math::Vec3i &maxSize, int x, int y, int z) const;
 	/**
 	 * @brief Calculate the boundaries while aligning them to the given @c maxSize. This ensures that the
 	 * calculated extends are exactly @c maxSize when iterating over them (and align relative to 0,0,0 and
@@ -169,7 +169,7 @@ protected:
 	 * @param[out] mins The extends of the aabb aligned with @c maxSize
 	 * @param[out] maxs The extends of the aabb aligned with @c maxSize
 	 */
-	void calcMinsMaxs(const voxel::Region &region, const glm::ivec3 &maxSize, glm::ivec3 &mins, glm::ivec3 &maxs) const;
+	void calcMinsMaxs(const voxel::Region &region, const math::Vec3i &maxSize, math::Vec3i &mins, math::Vec3i &maxs) const;
 
 	color::RGBA flattenRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) const;
 	color::RGBA flattenRGB(color::RGBA rgba) const;

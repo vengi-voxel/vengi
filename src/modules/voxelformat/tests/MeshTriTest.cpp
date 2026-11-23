@@ -7,6 +7,8 @@
 #include "color/ColorUtil.h"
 #include "image/Image.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -16,10 +18,10 @@ TEST_F(MeshTriTest, testVertexColorInterpolation) {
 	MeshTri tri;
 	tri.setColor(color::RGBA(255, 0, 0, 255), color::RGBA(0, 255, 0, 128), color::RGBA(0, 0, 255, 0));
 	MeshMaterialArray materials;
-	const glm::vec3 weights[] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0.25f, 0.25f, 0.5f}};
+	const math::Vec3f weights[] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0.25f, 0.25f, 0.5f}};
 	const color::RGBA expected[] = {tri.color0(), tri.color1(), tri.color2(), {64, 64, 128, 96}};
 	for (int i = 0; i < 4; ++i) {
-		EXPECT_EQ(expected[i], colorAt(tri, materials, glm::vec2(0), false, &weights[i]));
+		EXPECT_EQ(expected[i], colorAt(tri, materials, math::Vec2f(0), false, &weights[i]));
 	}
 }
 
@@ -50,8 +52,8 @@ TEST_F(MeshTriTest, testColorAt4x4) {
 				meshTri.setUVs(image::Image::uv(x, y, w, h, originUpperLeft),
 							  image::Image::uv(x, y + 1, w, h, originUpperLeft),
 							  image::Image::uv(x + 1, y, w, h, originUpperLeft));
-				const glm::vec2 &uv = meshTri.centerUV();
-				const glm::vec3 weights(1.0f, 0.0f, 0.0f);
+				const math::Vec2f &uv = meshTri.centerUV();
+				const math::Vec3f weights(1.0f, 0.0f, 0.0f);
 				const color::RGBA color = colorAt(meshTri, meshMaterialArray, uv, originUpperLeft, &weights);
 				const int texIndex = y * w + x;
 				ASSERT_EQ(buffer[texIndex], color)

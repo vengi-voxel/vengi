@@ -26,6 +26,8 @@
 #include "voxelrender/RenderFrame.h"
 #include "voxelrender/RenderState.h"
 #include "video/ShaderStorageBuffer.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 namespace video {
 class Camera;
@@ -154,7 +156,7 @@ protected:
 	void renderOpaque(const voxel::MeshStatePtr &meshState, const video::Camera &camera,
 					  const core::Buffer<int> &sorted);
 	void renderShadowVolumes(const voxel::MeshStatePtr &meshState, const core::Buffer<int> &sorted,
-							 const glm::mat4 &lightViewProjection);
+							 const math::Mat4f &lightViewProjection);
 	void renderTransparency(const voxel::MeshStatePtr &meshState, RenderContext &renderContext, const video::Camera &camera,
 							const core::Buffer<int> &sorted);
 	void renderTransparencyOIT(const voxel::MeshStatePtr &meshState, RenderContext &renderContext,
@@ -196,9 +198,9 @@ public:
 	 */
 	[[nodiscard]] voxel::RawVolume *resetVolume(const voxel::MeshStatePtr &meshState, int idx);
 
-	void setAmbientColor(const glm::vec3 &color);
-	void setDiffuseColor(const glm::vec3 &color);
-	void setSunAngle(const glm::vec3 &angle);
+	void setAmbientColor(const math::Vec3f &color);
+	void setDiffuseColor(const math::Vec3f &color);
+	void setSunAngle(const math::Vec3f &angle);
 
 	uint32_t indexCount(int idx, voxel::MeshType type) const;
 

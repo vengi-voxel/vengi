@@ -11,6 +11,10 @@
 #include "core/Platform.h"
 #if VIDEO_BUFFER_HASH_COMPARE
 #include "core/Hash.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 #endif
 
 namespace video {
@@ -322,7 +326,7 @@ int32_t Buffer::createSkyboxQuad() {
 	 *  -----------------
 	 *  -1/-1/1          1/-1/1
 	 */
-	alignas(16) static const glm::vec3 vecs[] = {
+	alignas(16) static const math::Vec3f vecs[] = {
 		// side: right
 		{ 1.0f, -1.0f, -1.0f}, // tri(1): right, bottom, front
 		{ 1.0f, -1.0f,  1.0f}, // tri(1): right, bottom, back
@@ -387,11 +391,11 @@ int32_t Buffer::createFullscreenQuad3d() {
 	// -------------
 	// -1/-1    1/-1
 	//
-	alignas(16) static const glm::vec3 vecs[] = {
+	alignas(16) static const math::Vec3f vecs[] = {
 		// left bottom, right bottom, right top
-		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f),
+		math::Vec3f(-1.0f, -1.0f, 0.0f), math::Vec3f( 1.0f, -1.0f, 0.0f), math::Vec3f( 1.0f,  1.0f, 0.0f),
 		// left bottom, right top, left top
-		glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3( 1.0f,  1.0f, 0.0f), glm::vec3(-1.0f,  1.0f, 0.0f)
+		math::Vec3f(-1.0f, -1.0f, 0.0f), math::Vec3f( 1.0f,  1.0f, 0.0f), math::Vec3f(-1.0f,  1.0f, 0.0f)
 	};
 	return create(vecs, sizeof(vecs));
 }
@@ -409,11 +413,11 @@ int32_t Buffer::createFullscreenQuad() {
 	// -------------
 	// -1/-1    1/-1
 	//
-	alignas(16) static const glm::vec2 vecs[] = {
+	alignas(16) static const math::Vec2f vecs[] = {
 		// left bottom, right bottom, right top
-		glm::vec2(-1.0f, -1.0f), glm::vec2( 1.0f, -1.0f), glm::vec2( 1.0f,  1.0f),
+		math::Vec2f(-1.0f, -1.0f), math::Vec2f( 1.0f, -1.0f), math::Vec2f( 1.0f,  1.0f),
 		// left bottom, right top, left top
-		glm::vec2(-1.0f, -1.0f), glm::vec2( 1.0f,  1.0f), glm::vec2(-1.0f,  1.0f)
+		math::Vec2f(-1.0f, -1.0f), math::Vec2f( 1.0f,  1.0f), math::Vec2f(-1.0f,  1.0f)
 	};
 	return create(vecs, sizeof(vecs));
 }
@@ -429,11 +433,11 @@ int32_t Buffer::createFullscreenTextureBuffer(int32_t idx) {
 	// ----------
 	// 0/1    1/1
 	//
-	alignas(16) static const glm::vec2 vecs[] = {
+	alignas(16) static const math::Vec2f vecs[] = {
 		// left bottom, right bottom, right top
-		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 1.0f), glm::vec2(1.0f, 0.0f),
+		math::Vec2f(0.0f, 1.0f), math::Vec2f(1.0f, 1.0f), math::Vec2f(1.0f, 0.0f),
 		// left bottom, right top, left top
-		glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec2(0.0f, 0.0f)
+		math::Vec2f(0.0f, 1.0f), math::Vec2f(1.0f, 0.0f), math::Vec2f(0.0f, 0.0f)
 	};
 	if (idx == -1) {
 		return create(vecs, sizeof(vecs));
@@ -453,11 +457,11 @@ int32_t Buffer::createFullscreenTextureBufferYFlipped(int32_t idx) {
 	// ----------
 	// 0/0    1/0
 	//
-	alignas(16) static const glm::vec2 vecs[] = {
+	alignas(16) static const math::Vec2f vecs[] = {
 		// left bottom, right bottom, right top
-		glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.0f), glm::vec2(1.0f, 1.0f),
+		math::Vec2f(0.0f, 0.0f), math::Vec2f(1.0f, 0.0f), math::Vec2f(1.0f, 1.0f),
 		// left bottom, right top, left top
-		glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 1.0f), glm::vec2(0.0f, 1.0f)
+		math::Vec2f(0.0f, 0.0f), math::Vec2f(1.0f, 1.0f), math::Vec2f(0.0f, 1.0f)
 	};
 	if (idx == -1) {
 		return create(vecs, sizeof(vecs));
@@ -467,7 +471,7 @@ int32_t Buffer::createFullscreenTextureBufferYFlipped(int32_t idx) {
 }
 
 int32_t Buffer::createFullscreenTextureBufferForFramebuffer(int32_t idx) {
-	const glm::vec4 &uv = framebufferUV();
+	const math::Vec4f &uv = framebufferUV();
 	if (uv.y > uv.w) {
 		return createFullscreenTextureBufferYFlipped(idx);
 	}
@@ -475,13 +479,13 @@ int32_t Buffer::createFullscreenTextureBufferForFramebuffer(int32_t idx) {
 }
 
 int32_t Buffer::createWhiteColorForQuad() {
-	alignas(16) static const glm::vec4 color[] = {
-		glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f)
+	alignas(16) static const math::Vec4f color[] = {
+		math::Vec4f(1.0f), math::Vec4f(1.0f), math::Vec4f(1.0f), math::Vec4f(1.0f), math::Vec4f(1.0f), math::Vec4f(1.0f)
 	};
 	return create(color, sizeof(color));
 }
 
-glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& dimension, bool yFlipped) {
+math::Vec2i Buffer::createTexturedQuad(const math::Vec2i& xy, const math::Vec2i& dimension, bool yFlipped) {
 	// counter clock wise winding
 	//
 	// -1/1    1/1
@@ -494,13 +498,13 @@ glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& di
 	// -------------
 	// -1/-1    1/-1
 	//
-	alignas(16) const glm::vec2 vecs[] = {
+	alignas(16) const math::Vec2f vecs[] = {
 		// left bottom, right bottom, right top
-		glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y),
+		math::Vec2f(xy.x, xy.y + dimension.y), math::Vec2f(xy.x + dimension.x, xy.y + dimension.y), math::Vec2f(xy.x + dimension.x, xy.y),
 		// left bottom, right top, left top
-		glm::vec2(xy.x, xy.y + dimension.y), glm::vec2(xy.x + dimension.x, xy.y), glm::vec2(xy.x, xy.y)
+		math::Vec2f(xy.x, xy.y + dimension.y), math::Vec2f(xy.x + dimension.x, xy.y), math::Vec2f(xy.x, xy.y)
 	};
-	glm::ivec2 indices;
+	math::Vec2i indices;
 	indices.x = create(vecs, sizeof(vecs));
 	if (yFlipped) {
 		indices.y = createFullscreenTextureBufferYFlipped();
@@ -510,8 +514,8 @@ glm::ivec2 Buffer::createTexturedQuad(const glm::ivec2& xy, const glm::ivec2& di
 	return indices;
 }
 
-glm::ivec2 Buffer::createFullscreenTexturedQuad3d(bool yFlipped) {
-	glm::ivec2 indices;
+math::Vec2i Buffer::createFullscreenTexturedQuad3d(bool yFlipped) {
+	math::Vec2i indices;
 	indices.x = createFullscreenQuad3d();
 	if (yFlipped) {
 		indices.y = createFullscreenTextureBufferYFlipped();
@@ -521,8 +525,8 @@ glm::ivec2 Buffer::createFullscreenTexturedQuad3d(bool yFlipped) {
 	return indices;
 }
 
-glm::ivec2 Buffer::createFullscreenTexturedQuad(bool yFlipped) {
-	glm::ivec2 indices;
+math::Vec2i Buffer::createFullscreenTexturedQuad(bool yFlipped) {
+	math::Vec2i indices;
 	indices.x = createFullscreenQuad();
 	if (yFlipped) {
 		indices.y = createFullscreenTextureBufferYFlipped();

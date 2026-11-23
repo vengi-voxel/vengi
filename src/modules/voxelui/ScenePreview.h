@@ -14,7 +14,8 @@
 #include "voxel/MeshState.h"
 #include "voxelrender/RenderContext.h"
 #include "voxelrender/SceneGraphRenderer.h"
-#include <glm/vec2.hpp>
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace io {
 struct FilesystemEntry;
@@ -38,17 +39,17 @@ private:
 	voxelrender::RenderContext _renderContext;
 	video::Camera _camera;
 	core::String _loadedPath;
-	glm::ivec2 _fbSize{0};
+	math::Vec2i _fbSize{0};
 	bool _initialized = false;
 	bool _cameraDirty = true;
 
 	bool ensureInit();
 	void resetCamera();
-	void resize(const glm::ivec2 &pixelSize);
+	void resize(const math::Vec2i &pixelSize);
 	void renderFrame(double deltaSeconds);
-	void handleOrbitInput(const glm::vec2 &size);
-	void drawImage(const glm::vec2 &size) const;
-	glm::ivec2 pixelSizeFor(const glm::vec2 &widgetSize) const;
+	void handleOrbitInput(const math::Vec2f &size);
+	void drawImage(const math::Vec2f &size) const;
+	math::Vec2i pixelSizeFor(const math::Vec2f &widgetSize) const;
 	const video::FrameBuffer &displayFrameBuffer() const;
 
 public:
@@ -75,7 +76,7 @@ public:
 	/**
 	 * @brief Render the current scene into the preview framebuffer (no ImGui).
 	 */
-	void render(double deltaSeconds, const glm::ivec2 &pixelSize);
+	void render(double deltaSeconds, const math::Vec2i &pixelSize);
 	/**
 	 * @brief Color attachment shown in the preview (resolve FBO when MSAA is on).
 	 */
@@ -85,7 +86,7 @@ public:
 	/**
 	 * @brief Draw an interactive preview of the given size (logical ImGui units).
 	 */
-	void updateAndRender(double deltaSeconds, const glm::vec2 &size, bool interactive = true);
+	void updateAndRender(double deltaSeconds, const math::Vec2f &size, bool interactive = true);
 
 	/**
 	 * @brief File-dialog hook: load selected voxel file (if any) and draw a preview child.

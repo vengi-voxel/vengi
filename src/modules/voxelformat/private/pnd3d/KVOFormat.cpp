@@ -14,7 +14,8 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/private/slab6/SLABShared.h"
-#include <math.h>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 namespace {
@@ -75,13 +76,13 @@ static const uint8_t hsolind[256] =
 	0, 0, 0, 0, 0, 0, 2, 0, 0, 5, 0, 0, 0, 0, 0, 0,
 };
 
-uint8_t importNormal(palette::NormalPalette &palette, glm::vec3 normal) {
+uint8_t importNormal(palette::NormalPalette &palette, math::Vec3f normal) {
 	// KVO uses a downward Y axis, just like its voxel coordinates.
 	normal.y = -normal.y;
-	if (glm::dot(normal, normal) <= 0.000001f) {
+	if (math::dot(normal, normal) <= 0.000001f) {
 		return NO_NORMAL;
 	}
-	const color::RGBA encoded = palette::NormalPalette::toRGBA(glm::normalize(normal));
+	const color::RGBA encoded = palette::NormalPalette::toRGBA(math::normalize(normal));
 	for (size_t i = 0; i < palette.size(); ++i) {
 		if (palette.normal(i) == encoded) {
 			return i + NORMAL_PALETTE_OFFSET;
@@ -96,19 +97,19 @@ uint8_t importNormal(palette::NormalPalette &palette, glm::vec3 normal) {
 }
 
 struct Node {
-	glm::ivec3 pos{0};
+	math::Vec3i pos{0};
 	int size = 0;
 	uint8_t chi = 0;
 	uint8_t sol = 0;
 };
 
-glm::ivec3 childPos(const glm::ivec3 &pos, int child, int size) {
-	return pos + glm::ivec3(child & 1, (child >> 1) & 1, (child >> 2) & 1) * size;
+math::Vec3i childPos(const math::Vec3i &pos, int child, int size) {
+	return pos + math::Vec3i(child & 1, (child >> 1) & 1, (child >> 2) & 1) * size;
 }
 
 // Surface colors are stored in depth-first octree order (x, y, z child bits).
-void surfaces(const voxel::RawVolume &volume, const glm::ivec3 &pos, int size, int side,
-			  uint8_t wrap, uint8_t solid, core::Buffer<glm::ivec3> &positions) {
+void surfaces(const voxel::RawVolume &volume, const math::Vec3i &pos, int size, int side,
+			  uint8_t wrap, uint8_t solid, core::Buffer<math::Vec3i> &positions) {
 	if (size > 1) {
 		for (int i = 0; i < 8; ++i) {
 			surfaces(volume, childPos(pos, i, size / 2), size / 2, side, wrap, solid, positions);
@@ -120,7 +121,7 @@ void surfaces(const voxel::RawVolume &volume, const glm::ivec3 &pos, int size, i
 	}
 	for (int axis = 0; axis < 3; ++axis) {
 		for (int direction = -1; direction <= 1; direction += 2) {
-			glm::ivec3 p = pos;
+			math::Vec3i p = pos;
 			p[axis] += direction;
 			if (p[axis] < 0 || p[axis] >= side) {
 				const int bit = axis + (direction > 0 ? 3 : 0);
@@ -159,7 +160,7 @@ bool KVOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		stream->readUInt8(reserved) != 0) {
 		return false;
 	}
-	glm::vec3 pivot;
+	math::Vec3f pivot;
 	if (stream->readFloat(pivot.x) != 0 || stream->readFloat(pivot.y) != 0 || stream->readFloat(pivot.z) != 0 ||
 		stream->skip(40) < 0 || stream->readUInt32(prenodes) != 0 || stream->readUInt32(surfaceCount) != 0 ||
 		stream->readUInt32(nodeCount) != 0 || prenodes > (uint64_t)(stream->size() - stream->pos())) {
@@ -171,7 +172,7 @@ bool KVOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		return false;
 	}
 	core::Buffer<Node> nodes;
-	nodes.push_back(Node{glm::ivec3(0), side / 2, 0, 0});
+	nodes.push_back(Node{math::Vec3i(0), side / 2, 0, 0});
 	for (uint32_t i = 0; i < prenodes; ++i) {
 		if (i >= nodes.size() || nodes[i].size <= 1 || stream->readUInt8(nodes[i].chi) != 0) {
 			return false;
@@ -260,7 +261,7 @@ bool KVOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 			if (!(node.sol & (1 << child))) {
 				continue;
 			}
-			const glm::ivec3 p = childPos(node.pos, child, node.size);
+			const math::Vec3i p = childPos(node.pos, child, node.size);
 			for (int z = p.z; z < p.z + node.size; ++z) {
 				for (int y = p.y; y < p.y + node.size; ++y) {
 					for (int x = p.x; x < p.x + node.size; ++x) {
@@ -270,9 +271,9 @@ bool KVOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 			}
 		}
 	}
-	core::Buffer<glm::ivec3> positions;
+	core::Buffer<math::Vec3i> positions;
 	if (mode == 0) {
-		surfaces(volume, glm::ivec3(0), side, side, wrap, solid, positions);
+		surfaces(volume, math::Vec3i(0), side, side, wrap, solid, positions);
 	} else {
 		for (size_t i = prenodes; i < nodes.size(); ++i) {
 			for (int child = 0; child < 8; ++child) {
@@ -304,15 +305,15 @@ bool KVOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 		if (!data.read(normalFormat == 1 ? normalBits : normalFormat == 2 ? 24 : 0, value)) {
 			return false;
 		}
-		glm::vec3 normal(0.0f);
+		math::Vec3f normal(0.0f);
 		if (normalFormat == 1) {
 			// Equivec distributes directions on a spherical Fibonacci spiral.
 			const double z = (2.0 * value + 1.0) / (double)(1u << normalBits) - 1.0;
-			const double radius = std::sqrt(1.0 - z * z);
+			const double radius = math::sqrt(1.0 - z * z);
 			const double angle = (double)value * 0.3819660112501052 * 6.283185307179586;
-			normal = glm::vec3(std::cos(angle) * radius, std::sin(angle) * radius, z);
+			normal = math::Vec3f(math::cos(angle) * radius, math::sin(angle) * radius, z);
 		} else if (normalFormat == 2) {
-			normal = glm::vec3((int8_t)(value & 255), (int8_t)((value >> 8) & 255), (int8_t)((value >> 16) & 255));
+			normal = math::Vec3f((int8_t)(value & 255), (int8_t)((value >> 8) & 255), (int8_t)((value >> 16) & 255));
 		}
 		surfaceNormals.push_back(importNormal(normalPalette, normal));
 		if (flags & 16) {
@@ -334,7 +335,7 @@ bool KVOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 	palette::PaletteLookup lookup(palette);
 	for (size_t i = 0; i < positions.size(); ++i) {
-		const glm::ivec3 &p = positions[i];
+		const math::Vec3i &p = positions[i];
 		volume.setVoxel(p.x, side - 1 - p.y, p.z,
 						voxel::createVoxel(voxel::VoxelType::Generic, lookup.findClosestIndex(surfaceColors[i]),
 										   surfaceNormals[i]));
@@ -345,7 +346,7 @@ bool KVOFormat::loadGroups(const core::String &filename, const io::ArchivePtr &a
 	}
 	model.setName(core::string::extractFilename(filename));
 	if (!(flags & 1)) {
-		model.setPivot(glm::vec3(pivot.x, (float)side - pivot.y, pivot.z) / (float)side);
+		model.setPivot(math::Vec3f(pivot.x, (float)side - pivot.y, pivot.z) / (float)side);
 	}
 	return sceneGraph.emplace(core::move(model)) != InvalidNodeId;
 }
@@ -357,9 +358,9 @@ bool KVOFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 	const voxel::Region &sourceRegion = model->region();
-	const glm::ivec3 dims = sourceRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = sourceRegion.getDimensionsInVoxels();
 	int depth = 1;
-	while ((1 << depth) < glm::max(dims.x, glm::max(dims.y, dims.z))) {
+	while ((1 << depth) < math::max(dims.x, math::max(dims.y, dims.z))) {
 		if (++depth > 12) {
 			return false;
 		}
@@ -370,17 +371,17 @@ bool KVOFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 	voxel::RawVolume volume(region);
-	const glm::ivec3 lower = sourceRegion.getLowerCorner();
+	const math::Vec3i lower = sourceRegion.getLowerCorner();
 	for (int z = 0; z < dims.z; ++z) {
 		for (int y = 0; y < dims.y; ++y) {
 			for (int x = 0; x < dims.x; ++x) {
-				volume.setVoxel(x, y, z, model->volume()->voxel(lower + glm::ivec3(x, y, z)));
+				volume.setVoxel(x, y, z, model->volume()->voxel(lower + math::Vec3i(x, y, z)));
 			}
 		}
 	}
 	// Build the mixed nodes breadth first. Uniform child blocks need only one solid/air bit.
 	core::Buffer<Node> nodes;
-	nodes.push_back(Node{glm::ivec3(0), side / 2, 0, 0});
+	nodes.push_back(Node{math::Vec3i(0), side / 2, 0, 0});
 	uint32_t prenodes = 0;
 	for (size_t i = 0; i < nodes.size(); ++i) {
 		const Node parent = nodes[i];
@@ -388,7 +389,7 @@ bool KVOFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			++prenodes;
 		}
 		for (int child = 0; child < 8; ++child) {
-			const glm::ivec3 p = childPos(parent.pos, child, parent.size);
+			const math::Vec3i p = childPos(parent.pos, child, parent.size);
 			const bool solid = voxel::isBlocked(volume.voxel(p.x, side - 1 - p.y, p.z).getMaterial());
 			bool mixed = false;
 			for (int z = p.z; z < p.z + parent.size && !mixed; ++z) {
@@ -409,8 +410,8 @@ bool KVOFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 			}
 		}
 	}
-	core::Buffer<glm::ivec3> positions;
-	surfaces(volume, glm::ivec3(0), side, side, 0, 0, positions);
+	core::Buffer<math::Vec3i> positions;
+	surfaces(volume, math::Vec3i(0), side, side, 0, 0, positions);
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		return false;
@@ -420,7 +421,7 @@ bool KVOFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		!stream->writeUInt16(26) || !stream->writeUInt32(0)) {
 		return false;
 	}
-	const glm::vec3 pivot = model->pivot() * glm::vec3(dims) - priv::nodeTranslation(sceneGraph, *model);
+	const math::Vec3f pivot = model->pivot() * math::Vec3f(dims) - priv::nodeTranslation(sceneGraph, *model);
 	if (!stream->writeFloat(pivot.x) || !stream->writeFloat((float)side - pivot.y) || !stream->writeFloat(pivot.z)) {
 		return false;
 	}
@@ -458,19 +459,19 @@ bool KVOFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	if (bit != 0 && !stream->writeUInt8(byte)) {
 		return false;
 	}
-	for (const glm::ivec3 &p : positions) {
+	for (const math::Vec3i &p : positions) {
 		const voxel::Voxel &v = volume.voxel(p.x, side - 1 - p.y, p.z);
 		const color::RGBA c = model->palette().color(v.getColor());
-		glm::vec3 normal(0.0f);
+		math::Vec3f normal(0.0f);
 		if (model->hasNormalPalette() && v.getNormal() != NO_NORMAL &&
 			v.getNormal() - NORMAL_PALETTE_OFFSET < (int)model->normalPalette().size()) {
-			normal = glm::normalize(model->normalPalette().normal3f(v.getNormal() - NORMAL_PALETTE_OFFSET));
+			normal = math::normalize(model->normalPalette().normal3f(v.getNormal() - NORMAL_PALETTE_OFFSET));
 			normal.y = -normal.y;
 		}
 		if (!stream->writeUInt8(c.b) || !stream->writeUInt8(c.g) || !stream->writeUInt8(c.r) ||
-			!stream->writeInt8((int8_t)std::round(normal.x * 127.0f)) ||
-			!stream->writeInt8((int8_t)std::round(normal.y * 127.0f)) ||
-			!stream->writeInt8((int8_t)std::round(normal.z * 127.0f)) || !stream->writeUInt8(c.a)) {
+			!stream->writeInt8((int8_t)math::round(normal.x * 127.0f)) ||
+			!stream->writeInt8((int8_t)math::round(normal.y * 127.0f)) ||
+			!stream->writeInt8((int8_t)math::round(normal.z * 127.0f)) || !stream->writeUInt8(c.a)) {
 			return false;
 		}
 	}

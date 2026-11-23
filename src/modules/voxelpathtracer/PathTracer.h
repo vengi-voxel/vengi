@@ -17,7 +17,7 @@
 #include "video/Camera.h"
 #include "video/FrameBuffer.h"
 #include "video/Texture.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace image {
 class Image;
@@ -63,8 +63,8 @@ private:
 	alignas(16) shader::VoxelpathtracerDisplayData::DisplayData _displayUniforms;
 	int _writeAccum = 0;
 	int _targetResolution = 0;
-	glm::ivec3 _volumeMin{0};
-	glm::ivec3 _volumeSize{0};
+	math::Vec3i _volumeMin{0};
+	math::Vec3i _volumeSize{0};
 	bool _hasVolume = false;
 	bool _displayDirty = true;
 	bool _bloomDirty = true;

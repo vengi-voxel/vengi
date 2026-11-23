@@ -20,10 +20,11 @@
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
 
-#include "core/GLM.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
-#include <glm/mat4x4.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -40,7 +41,7 @@ enum class MeshAllocStrategy { FullPrealloc, SmallGrow, Max };
 class MeshState {
 public:
 	typedef core::DynamicArray<voxel::Mesh *> Meshes;
-	typedef core::DynamicMap<glm::ivec3, Meshes, 531, glm::hash<glm::ivec3>> MeshesMap;
+	typedef core::DynamicMap<math::Vec3i, Meshes, 531, math::Vec3iHash> MeshesMap;
 
 private:
 	struct VolumeData {
@@ -56,24 +57,24 @@ private:
 		// if one or three axes are negative, then cull the front face
 		video::Face _cullFace = video::Face::Back;
 		int _reference = -1;
-		glm::mat4 _model{1.0f};
-		glm::vec3 _mins{0.0f};
-		glm::vec3 _maxs{0.0f};
+		math::Mat4f _model{1.0f};
+		math::Vec3f _mins{0.0f};
+		math::Vec3f _maxs{0.0f};
 		/**
 		 * @brief Applies the model matrix
 		 * @note Used for sorting (for transparency)
 		 */
-		glm::vec3 centerPos(bool applyModel = true) const;
+		math::Vec3f centerPos(bool applyModel = true) const;
 	};
 	typedef core::DynamicArray<VolumeData> Volumes;
 
 	struct ExtractionResult {
 		ExtractionResult() {
 		}
-		ExtractionResult(const glm::ivec3 &_mins, int _idx, voxel::ChunkMesh &&_mesh)
+		ExtractionResult(const math::Vec3i &_mins, int _idx, voxel::ChunkMesh &&_mesh)
 			: mins(_mins), idx(_idx), mesh(core::move(_mesh)) {
 		}
-		glm::ivec3 mins{};
+		math::Vec3i mins{};
 		int idx = -1;
 		voxel::ChunkMesh mesh{0, 0, true};
 
@@ -104,7 +105,7 @@ private:
 	using RegionQueue = core::PriorityQueue<ExtractRegion>;
 	RegionQueue _extractRegions;
 
-	voxel::Region calculateExtractRegion(int x, int y, int z, const glm::ivec3 &meshSize) const;
+	voxel::Region calculateExtractRegion(int x, int y, int z, const math::Vec3i &meshSize) const;
 	// Queue of volume indices that need GPU buffer re-upload. Each index appears
 	// at most once thanks to _pendingMeshDirty deduplication: N extracted chunks
 	// for the same volume cause only ONE re-upload instead of N re-uploads of
@@ -116,7 +117,7 @@ private:
 	core::VarPtr _meshMode;
 	core::VarPtr _meshAlloc;
 	void ensureSize(int idx);
-	bool deleteMeshes(const glm::ivec3 &pos, int idx);
+	bool deleteMeshes(const math::Vec3i &pos, int idx);
 	bool runScheduledExtractions(size_t maxExtraction = 0);
 	bool deleteMeshes(int idx);
 	void addOrReplaceMeshes(MeshState::ExtractionResult &result, MeshType type);
@@ -163,19 +164,19 @@ public:
 	bool init();
 	void construct();
 
-	const glm::vec3 &mins(int idx) const;
-	const glm::vec3 &maxs(int idx) const;
+	const math::Vec3f &mins(int idx) const;
+	const math::Vec3f &maxs(int idx) const;
 	/**
 	 * @brief Applies the model matrix
 	 * @note Used for sorting (for transparency)
 	 */
-	glm::vec3 centerPos(int idx, bool applyModel) const;
-	const glm::mat4 &model(int idx) const;
+	math::Vec3f centerPos(int idx, bool applyModel) const;
+	const math::Mat4f &model(int idx) const;
 	/**
 	 * @return @c true if @p model already matches the stored model matrix (exact float compare).
 	 */
-	bool sameModelMatrix(int idx, const glm::mat4 &model) const;
-	bool setModelMatrix(int idx, const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &maxs);
+	bool sameModelMatrix(int idx, const math::Mat4f &model) const;
+	bool setModelMatrix(int idx, const math::Mat4f &model, const math::Vec3f &mins, const math::Vec3f &maxs);
 
 	/**
 	 * @return @c true if the mesh mode was changed and the consumer should be aware that all meshes should get cleaned

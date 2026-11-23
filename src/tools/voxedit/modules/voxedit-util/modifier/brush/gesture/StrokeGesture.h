@@ -6,6 +6,7 @@
 
 #include "voxel/Region.h"
 #include "voxelutil/VolumeSelect.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -16,7 +17,7 @@ namespace voxedit {
  */
 class StrokeGesture {
 private:
-	glm::ivec3 _lastPosition{0};
+	math::Vec3i _lastPosition{0};
 	bool _hasLastPosition = false;
 	bool _active = false;
 
@@ -27,16 +28,16 @@ public:
 	bool active() const {
 		return _active;
 	}
-	bool sampled(const glm::ivec3 &position) const {
+	bool sampled(const math::Vec3i &position) const {
 		return _hasLastPosition && _lastPosition == position;
 	}
-	static voxel::Region region(const glm::ivec3 &position, int radius, const glm::ivec3 &gridResolution);
+	static voxel::Region region(const math::Vec3i &position, int radius, const math::Vec3i &gridResolution);
 
 	template<class Visitor>
-	void visit(const glm::ivec3 &position, Visitor &&visitor) {
+	void visit(const math::Vec3i &position, Visitor &&visitor) {
 		if (_hasLastPosition && _lastPosition != position) {
 			bool skipFirst = true;
-			voxelutil::bresenham3d(_lastPosition, position, [&](const glm::ivec3 &p) {
+			voxelutil::bresenham3d(_lastPosition, position, [&](const math::Vec3i &p) {
 				if (skipFirst) {
 					skipFirst = false;
 					return;

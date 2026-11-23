@@ -5,6 +5,7 @@
 #pragma once
 
 #include "color/Color.h"
+#include "math/Vec4f.h"
 
 namespace style {
 
@@ -32,6 +33,6 @@ enum StyleColor {
 	ColorAddNodePreview,
 };
 
-const glm::vec4 &color(StyleColor color);
+const math::Vec4f &color(StyleColor color);
 
 } // namespace style

@@ -4,7 +4,8 @@
 #include "TextEditor.h"
 #include "core/Common.h"
 #include "core/Unicode.h"
-#include <glm/common.hpp>
+#include <float.h>
+#include <limits>
 
 const core::Map<char, char> TextEditor::OPEN_TO_CLOSE_CHAR {{
 	{'{', '}'},
@@ -214,7 +215,7 @@ TextEditor::Coordinates TextEditor::ScreenPosToCoordinates(const ImVec2 &aPositi
 	ImVec2 origin = ImGui::GetCursorScreenPos();
 	ImVec2 local(aPosition.x - origin.x, aPosition.y - origin.y);
 
-	int lineNo = core_max(0, (int)glm::floor(local.y / _charAdvance.y));
+	int lineNo = core_max(0, (int)math::floor(local.y / _charAdvance.y));
 
 	int columnCoord = 0;
 
@@ -230,7 +231,7 @@ TextEditor::Coordinates TextEditor::ScreenPosToCoordinates(const ImVec2 &aPositi
 			if (line[columnIndex].mChar == '\t') {
 				float spaceSize = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, -1.0f, " ").x;
 				float oldX = columnX;
-				float newColumnX = (1.0f + glm::floor((1.0f + columnX) / (float(_tabSize) * spaceSize))) *
+				float newColumnX = (1.0f + math::floor((1.0f + columnX) / (float(_tabSize) * spaceSize))) *
 								   (float(_tabSize) * spaceSize);
 				columnWidth = newColumnX - oldX;
 				if (_textStart + columnX + columnWidth * 0.5f > local.x)
@@ -804,10 +805,10 @@ void TextEditor::Render() {
 	float scrollX = ImGui::GetScrollX();
 	float scrollY = ImGui::GetScrollY();
 
-	auto lineNo = (int)glm::floor(scrollY / _charAdvance.y);
+	auto lineNo = (int)math::floor(scrollY / _charAdvance.y);
 	auto globalLineMax = (int)_lines.size();
 	auto lineMax = core_max(
-		0, core_min((int)_lines.size() - 1, lineNo + (int)glm::floor((scrollY + contentSize.y) / _charAdvance.y)));
+		0, core_min((int)_lines.size() - 1, lineNo + (int)math::floor((scrollY + contentSize.y) / _charAdvance.y)));
 
 	// Deduce _textStart by evaluating _lines size (global lineMax) plus two spaces as text width
 	char buf[16];
@@ -911,7 +912,7 @@ void TextEditor::Render() {
 						if (_overwrite && cindex < (int)line.size()) {
 							Char c = line[cindex].mChar;
 							if (c == '\t') {
-								const float x = (1.0f + glm::floor((1.0f + cx) / (float(_tabSize) * spaceSize))) *
+								const float x = (1.0f + math::floor((1.0f + cx) / (float(_tabSize) * spaceSize))) *
 												(float(_tabSize) * spaceSize);
 								width = x - cx;
 							} else {
@@ -967,7 +968,7 @@ void TextEditor::Render() {
 
 				if (glyph.mChar == '\t') {
 					float oldX = bufferOffset.x;
-					bufferOffset.x = (1.0f + glm::floor((1.0f + bufferOffset.x) / (float(_tabSize) * spaceSize))) *
+					bufferOffset.x = (1.0f + math::floor((1.0f + bufferOffset.x) / (float(_tabSize) * spaceSize))) *
 									 (float(_tabSize) * spaceSize);
 					++i;
 
@@ -2147,7 +2148,7 @@ float TextEditor::TextDistanceToLineStart(const Coordinates &aFrom) const {
 	for (size_t it = 0u; it < line.size() && it < (size_t)colIndex;) {
 		if (line[it].mChar == '\t') {
 			distance =
-				(1.0f + glm::floor((1.0f + distance) / (float(_tabSize) * spaceSize))) * (float(_tabSize) * spaceSize);
+				(1.0f + math::floor((1.0f + distance) / (float(_tabSize) * spaceSize))) * (float(_tabSize) * spaceSize);
 			++it;
 		} else {
 			auto d = core::unicode::byteLengthInt((int)line[it].mChar);
@@ -2177,11 +2178,11 @@ void TextEditor::EnsureCursorVisible() {
 	float height = ImGui::GetWindowHeight();
 	float width = ImGui::GetWindowWidth();
 
-	int top = 1 + (int)glm::ceil(scrollY / _charAdvance.y);
-	int bottom = (int)glm::ceil((scrollY + height) / _charAdvance.y);
+	int top = 1 + (int)math::ceil(scrollY / _charAdvance.y);
+	int bottom = (int)math::ceil((scrollY + height) / _charAdvance.y);
 
-	int left = (int)glm::ceil(scrollX / _charAdvance.x);
-	int right = (int)glm::ceil((scrollX + width) / _charAdvance.x);
+	int left = (int)math::ceil(scrollX / _charAdvance.x);
+	int right = (int)math::ceil((scrollX + width) / _charAdvance.x);
 
 	auto pos = GetActualCursorCoordinates();
 	float len = TextDistanceToLineStart(pos);
@@ -2198,7 +2199,7 @@ void TextEditor::EnsureCursorVisible() {
 
 int TextEditor::GetPageSize() const {
 	float height = ImGui::GetWindowHeight() - 20.0f;
-	return (int)glm::floor(height / _charAdvance.y);
+	return (int)math::floor(height / _charAdvance.y);
 }
 
 TextEditor::UndoRecord::UndoRecord(const core::String &aAdded, const TextEditor::Coordinates aAddedStart,

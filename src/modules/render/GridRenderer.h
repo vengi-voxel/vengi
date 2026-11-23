@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "math/AABB.h"
 #include "render/ShapeRenderer.h"
@@ -12,6 +11,10 @@
 #include "video/ShapeBuilder.h"
 #include "GridShader.h"
 #include "GridData.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace video {
 class Camera;
@@ -30,7 +33,7 @@ protected:
 	video::ShapeBuilder _shapeBuilder;
 	render::ShapeRenderer _shapeRenderer;
 	math::AABB<float> _aabb;
-	glm::vec4 _color{1.0f, 1.0f, 1.0f, 1.0f};
+	math::Vec4f _color{1.0f, 1.0f, 1.0f, 1.0f};
 
 	shader::GridShader &_gridShader;
 	shader::GridData _gridData;
@@ -48,9 +51,9 @@ protected:
 	void createPlane();
 	bool uploadMesh(video::Buffer &vbo, int32_t &vertexIndex, int32_t &indexIndex, const video::ShapeBuilder &builder);
 	void drawMesh(video::Buffer &vbo, int32_t vertexIndex, int32_t indexIndex, const video::Camera &camera,
-				  const glm::mat4 &model, const glm::vec3 &mins, const glm::vec3 &step, float majorStride);
+				  const math::Mat4f &model, const math::Vec3f &mins, const math::Vec3f &step, float majorStride);
 	int _planeGridSize = -1;
-	glm::ivec3 _resolution{-1};
+	math::Vec3i _resolution{-1};
 	bool _renderAABB;
 	bool _renderGrid;
 	bool _renderPlane;
@@ -59,16 +62,16 @@ protected:
 public:
 	GridRenderer(bool renderAABB = false, bool renderGrid = true, bool renderPlane = false);
 
-	bool setGridResolution(const glm::ivec3 &resolution);
+	bool setGridResolution(const math::Vec3i &resolution);
 	bool setGridResolution(int resolution);
-	const glm::ivec3 &gridResolution() const;
+	const math::Vec3i &gridResolution() const;
 
 	/**
 	 * @param aabb The region to do the plane culling with
 	 */
-	void render(const video::Camera &camera, const math::AABB<float> &aabb, const glm::mat4 &model = glm::mat4(1.0f));
-	void renderForwardArrow(const video::Camera &camera, const glm::mat4 &model = glm::mat4(1.0f));
-	void renderPlane(const video::Camera &camera, const glm::mat4 &model = glm::mat4(1.0f));
+	void render(const video::Camera &camera, const math::AABB<float> &aabb, const math::Mat4f &model = math::Mat4f(1.0f));
+	void renderForwardArrow(const video::Camera &camera, const math::Mat4f &model = math::Mat4f(1.0f));
+	void renderPlane(const video::Camera &camera, const math::Mat4f &model = math::Mat4f(1.0f));
 
 	void setPlaneGridSize(int planeGridSize);
 	int planeGridSize() const;
@@ -88,7 +91,7 @@ public:
 	 */
 	void update(const math::AABB<float> &region);
 	void clear();
-	void setColor(const glm::vec4 &color);
+	void setColor(const math::Vec4f &color);
 
 	/**
 	 * @sa shutdown()

@@ -8,7 +8,7 @@
 #include "core/TraceScoped.h"
 #include "color/ColorUtil.h"
 #include "core/Common.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/ProgressScope.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
@@ -23,6 +23,7 @@
 #include "voxel/Voxel.h"
 #include <type_traits>
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -893,7 +894,7 @@ static int visitSparseRawVolumeZYX(const voxel::RawVolume &volume, const voxel::
 	const int32_t yMax = r.getUpperY();
 	const int32_t zMin = r.getLowerZ();
 	const int32_t zMax = r.getUpperZ();
-	const glm::ivec3 &volLower = volume.region().getLowerCorner();
+	const math::Vec3i &volLower = volume.region().getLowerCorner();
 	constexpr int BrickSide = voxel::SparseChunk::BrickSide;
 	constexpr int BrickMask = BrickSide - 1;
 
@@ -1375,18 +1376,18 @@ int countVoxelsByColor(const Volume &volume, const voxel::Voxel &voxel) {
 	return voxelutil::visitVolumeParallel(volume, voxelutil::EmptyVisitor(), voxelutil::VisitVoxelColor(voxel.getColor()));
 }
 
-typedef core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>> VisitedSet;
+typedef core::DynamicSet<math::Vec3i, 1031, math::Vec3iHash> VisitedSet;
 
 template<class Volume, class Visitor, class Condition>
-static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &voxel, const glm::ivec3 &position, Visitor &visitor, Condition &condition, VisitedSet &visited) {
+static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &voxel, const math::Vec3i &position, Visitor &visitor, Condition &condition, VisitedSet &visited) {
 	typename Volume::Sampler sampler(volume);
 	if (!sampler.setPosition(position)) {
 		return 0;
 	}
 	int n = 0;
 	// visit all connected voxels of the same color
-	for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-		const glm::ivec3 &volPos = position + offset;
+	for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+		const math::Vec3i &volPos = position + offset;
 		if (!sampler.setPosition(volPos)) {
 			continue;
 		}
@@ -1404,7 +1405,7 @@ static int visitConnectedByVoxel_r(const Volume &volume, const voxel::Voxel &vox
 }
 
 template<class Volume, class Visitor = EmptyVisitor>
-int visitConnectedByVoxel(const Volume &volume, const glm::ivec3 &position, Visitor &&visitor = Visitor()) {
+int visitConnectedByVoxel(const Volume &volume, const math::Vec3i &position, Visitor &&visitor = Visitor()) {
 	const voxel::Voxel voxel = volume.voxel(position);
 	VisitedSet visited;
 	VisitVoxelColor condition(voxel);
@@ -1412,7 +1413,7 @@ int visitConnectedByVoxel(const Volume &volume, const glm::ivec3 &position, Visi
 }
 
 template<class Volume, class Visitor = EmptyVisitor, class Condition = VisitSolid>
-int visitConnectedByCondition(const Volume &volume, const glm::ivec3 &position, Visitor &&visitor = Visitor(), Condition &&condition = Condition()) {
+int visitConnectedByCondition(const Volume &volume, const math::Vec3i &position, Visitor &&visitor = Visitor(), Condition &&condition = Condition()) {
 	const voxel::Voxel voxel = volume.voxel(position);
 	VisitedSet visited;
 	return visitConnectedByVoxel_r(volume, voxel, position, visitor, condition, visited);
@@ -1431,7 +1432,7 @@ struct VisitFlatSurface {
 	int _startCoord;  ///< start position coordinate on the face axis
 	int _deviation;   ///< max allowed distance from start along the face axis
 
-	VisitFlatSurface(voxel::FaceNames face, const glm::ivec3 &startPos, int deviation = 0)
+	VisitFlatSurface(voxel::FaceNames face, const math::Vec3i &startPos, int deviation = 0)
 		: _faceBit(voxel::faceBits(face)),
 		  _faceAxis(math::getIndexForAxis(voxel::faceToAxis(face))),
 		  _startCoord(startPos[_faceAxis]),
@@ -1442,7 +1443,7 @@ struct VisitFlatSurface {
 		if (voxel::isAir(sampler.voxel().getMaterial())) {
 			return false;
 		}
-		if (glm::abs(sampler.position()[_faceAxis] - _startCoord) > _deviation) {
+		if (math::abs(sampler.position()[_faceAxis] - _startCoord) > _deviation) {
 			return false;
 		}
 		return (voxel::visibleFaces(sampler) & _faceBit) != voxel::FaceBits::None;
@@ -1466,7 +1467,7 @@ struct VisitFlatSurface {
  * @return Number of voxels visited
  */
 template<class Volume, class Visitor, class Condition>
-int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::FaceNames face,
+int visitFlatSurface(const Volume &volume, const math::Vec3i &position, voxel::FaceNames face,
 					 int deviation, Visitor &&visitor, Condition &&condition) {
 	if (face == voxel::FaceNames::Max) {
 		return 0;
@@ -1483,7 +1484,7 @@ int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::Fa
 	// 4 directions perpendicular to the face normal
 	const int perpAxis1 = (faceAxis + 1) % 3;
 	const int perpAxis2 = (faceAxis + 2) % 3;
-	glm::ivec3 perpOffsets[4] = {};
+	math::Vec3i perpOffsets[4] = {};
 	perpOffsets[0][perpAxis1] =  1;
 	perpOffsets[1][perpAxis1] = -1;
 	perpOffsets[2][perpAxis2] =  1;
@@ -1493,22 +1494,22 @@ int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::Fa
 	visitor(position.x, position.y, position.z, startSampler.voxel());
 	int n = 1;
 	constexpr size_t InitialQueueReserve = 64u;
-	core::DynamicArray<glm::ivec3> queue;
+	core::DynamicArray<math::Vec3i> queue;
 	queue.reserve(InitialQueueReserve);
 	queue.push_back(position);
 	typename Volume::Sampler sampler(volume);
 	while (!queue.empty()) {
-		const glm::ivec3 current = queue.back();
+		const math::Vec3i current = queue.back();
 		queue.pop();
 		for (int i = 0; i < 4; ++i) {
-			const glm::ivec3 neighborBase = current + perpOffsets[i];
+			const math::Vec3i neighborBase = current + perpOffsets[i];
 			// Probe same level first, then +/-1, +/-2 ... up to deviation from start.
 			for (int step = 0; step <= deviation; ++step) {
 				bool claimedAtStep = false;
 				const int ds[2] = {step, -step};
 				const int count  = (step == 0) ? 1 : 2;
 				for (int j = 0; j < count; ++j) {
-					glm::ivec3 neighbor = neighborBase;
+					math::Vec3i neighbor = neighborBase;
 					neighbor[faceAxis]  = startCoord + ds[j];
 					if (!visited.insert(neighbor)) {
 						claimedAtStep = true;
@@ -1537,7 +1538,7 @@ int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::Fa
 
 /// Convenience overload: constructs a VisitFlatSurface condition with the given deviation.
 template<class Volume, class Visitor = EmptyVisitor>
-int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::FaceNames face,
+int visitFlatSurface(const Volume &volume, const math::Vec3i &position, voxel::FaceNames face,
 					 int deviation = 0, Visitor &&visitor = Visitor()) {
 	return visitFlatSurface(volume, position, face, deviation,
 							core::forward<Visitor>(visitor),
@@ -1567,7 +1568,7 @@ int visitFlatSurface(const Volume &volume, const glm::ivec3 &position, voxel::Fa
  * @return Number of voxels visited
  */
 template<class Volume, class Visitor = EmptyVisitor>
-int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::FaceNames face,
+int visitSlopeSurface(const Volume &volume, const math::Vec3i &position, voxel::FaceNames face,
 					  int maxDeviation, int sampleDistance, Visitor &&visitor = Visitor()) {
 	if (face == voxel::FaceNames::Max) {
 		return 0;
@@ -1598,7 +1599,7 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 		const int endH = expectedHeight + (positiveNormal ? -searchRange : searchRange);
 		const int stepH = positiveNormal ? -1 : 1;
 		for (int scanH = startH; (positiveNormal ? (scanH >= endH) : (scanH <= endH)); scanH += stepH) {
-			glm::ivec3 probe;
+			math::Vec3i probe;
 			probe[heightAxis] = scanH;
 			probe[uAxis] = uCoord;
 			probe[vAxis] = vCoord;
@@ -1608,7 +1609,7 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 			if (voxel::isAir(volume.voxel(probe).getMaterial())) {
 				continue;
 			}
-			glm::ivec3 above = probe;
+			math::Vec3i above = probe;
 			above[heightAxis] += positiveNormal ? 1 : -1;
 			if (!volRegion.containsPoint(above) || voxel::isAir(volume.voxel(above).getMaterial())) {
 				outHeight = scanH;
@@ -1669,7 +1670,7 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 		const double suh = sumDUDH - sampleCount * meanDU * meanDH;
 		const double svh = sumDVDH - sampleCount * meanDV * meanDH;
 		const double det = suu * svv - suv * suv;
-		if (glm::abs(det) > MinDeterminant) {
+		if (math::abs(det) > MinDeterminant) {
 			gradU = static_cast<float>((svv * suh - suv * svh) / det);
 			gradV = static_cast<float>((suu * svh - suv * suh) / det);
 		}
@@ -1701,17 +1702,17 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 	int nVisited = 1;
 
 	constexpr size_t InitialQueueReserve = 64u;
-	core::DynamicArray<glm::ivec3> queue;
+	core::DynamicArray<math::Vec3i> queue;
 	queue.reserve(InitialQueueReserve);
 	queue.push_back(position);
 
 	// 26-connectivity: staircase steps are edge/corner-connected, not face-connected.
 	// Uses face/edge/corner offset arrays from voxel::Connectivity.h
 	while (!queue.empty()) {
-		const glm::ivec3 current = queue.back();
+		const math::Vec3i current = queue.back();
 		queue.pop();
-		auto visitNeighbor = [&](const glm::ivec3 &offset) {
-			const glm::ivec3 neighborPos = current + offset;
+		auto visitNeighbor = [&](const math::Vec3i &offset) {
+			const math::Vec3i neighborPos = current + offset;
 			if (!visited.insert(neighborPos)) {
 				return;
 			}
@@ -1722,7 +1723,7 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 				return;
 			}
 			// Must be a surface voxel (has the clicked face exposed)
-			glm::ivec3 above = neighborPos;
+			math::Vec3i above = neighborPos;
 			above[heightAxis] += positiveNormal ? 1 : -1;
 			if (volRegion.containsPoint(above) && !voxel::isAir(volume.voxel(above).getMaterial())) {
 				return;
@@ -1730,7 +1731,7 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 			// Check if this voxel's height fits the slope plane (frozen after bootstrap)
 			const float predicted = predictHeight(neighborPos[uAxis], neighborPos[vAxis]);
 			const float actual = static_cast<float>(neighborPos[heightAxis]);
-			if (glm::abs(actual - predicted) > maxDev) {
+			if (math::abs(actual - predicted) > maxDev) {
 				return;
 			}
 			if (!sampler.setPosition(neighborPos)) {
@@ -1740,13 +1741,13 @@ int visitSlopeSurface(const Volume &volume, const glm::ivec3 &position, voxel::F
 			++nVisited;
 			queue.push_back(neighborPos);
 		};
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+		for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
 			visitNeighbor(offset);
 		}
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
+		for (const math::Vec3i &offset : voxel::arrayPathfinderEdges) {
 			visitNeighbor(offset);
 		}
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderCorners) {
+		for (const math::Vec3i &offset : voxel::arrayPathfinderCorners) {
 			visitNeighbor(offset);
 		}
 	}

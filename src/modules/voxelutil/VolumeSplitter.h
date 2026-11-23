@@ -6,7 +6,7 @@
 
 #include "core/collection/Buffer.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/fwd.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 class RawVolume;
@@ -19,7 +19,7 @@ namespace voxelutil {
  * they will be ignored.
  */
 [[nodiscard]] core::Buffer<voxel::RawVolume *> splitVolume(const voxel::RawVolume *volume,
-																 const glm::ivec3 &maxSize, bool createEmpty = false);
+																 const math::Vec3i &maxSize, bool createEmpty = false);
 
 /**
  * @param order This defines the order in which the splitted objects are returned.

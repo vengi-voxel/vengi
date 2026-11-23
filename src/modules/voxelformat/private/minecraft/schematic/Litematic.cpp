@@ -7,11 +7,12 @@
 #include "Util.h"
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 namespace litematic {
 
-static bool readLitematicBlockStates(const glm::ivec3 &size, int nbtPaletteSize,
+static bool readLitematicBlockStates(const math::Vec3i &size, int nbtPaletteSize,
 									 const priv::NamedBinaryTag &blockStates, scenegraph::SceneGraphNode &node,
 									 const schematic::SchematicPalette &mcpal,
 									 const schematic::SchematicWaterPalette &waterPal,
@@ -95,8 +96,8 @@ bool loadGroupsPalette(const priv::NamedBinaryTag &schematic, scenegraph::SceneG
 		for (const auto &regionEntry : regionsCompound) {
 			const priv::NamedBinaryTag &regionCompound = regionEntry->second;
 			const core::String &name = regionEntry->first;
-			const glm::ivec3 &pos = schematic::parsePosList(regionCompound, "Position");
-			const glm::ivec3 &size = glm::abs(schematic::parsePosList(regionCompound, "Size"));
+			const math::Vec3i &pos = schematic::parsePosList(regionCompound, "Position");
+			const math::Vec3i &size = math::abs(schematic::parsePosList(regionCompound, "Size"));
 			const voxel::Region region({0, 0, 0}, size - 1);
 			if (!region.isValid()) {
 				Log::error("Invalid region mins: %i %i %i maxs: %i %i %i", pos.x, pos.y, pos.z, size.x, size.y, size.z);

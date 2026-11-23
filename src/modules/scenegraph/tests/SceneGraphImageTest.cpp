@@ -10,8 +10,9 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <glm/gtc/quaternion.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
@@ -20,9 +21,9 @@ class SceneGraphImageTest : public app::AbstractTest {};
 TEST_F(SceneGraphImageTest, testRenderToImageLimitsToNodeAndChildren) {
 	voxel::RawVolume parentVol(voxel::Region(0, 0));
 	parentVol.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	voxel::RawVolume childVol(voxel::Region(glm::ivec3(2, 0, 0), glm::ivec3(2, 0, 0)));
+	voxel::RawVolume childVol(voxel::Region(math::Vec3i(2, 0, 0), math::Vec3i(2, 0, 0)));
 	childVol.setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	voxel::RawVolume siblingVol(voxel::Region(glm::ivec3(10, 0, 0), glm::ivec3(10, 0, 0)));
+	voxel::RawVolume siblingVol(voxel::Region(math::Vec3i(10, 0, 0), math::Vec3i(10, 0, 0)));
 	siblingVol.setVoxel(10, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	palette::Palette parentPalette;
@@ -81,7 +82,7 @@ TEST_F(SceneGraphImageTest, testRenderToImageLimitsToNodeAndChildren) {
 TEST_F(SceneGraphImageTest, testRenderToImageKeepsPaletteAlpha) {
 	voxel::RawVolume solid(voxel::Region(0, 0));
 	solid.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	voxel::RawVolume glass(voxel::Region(glm::ivec3(2, 0, 0), glm::ivec3(2, 0, 0)));
+	voxel::RawVolume glass(voxel::Region(math::Vec3i(2, 0, 0), math::Vec3i(2, 0, 0)));
 	glass.setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 	palette::Palette opaque;
@@ -118,9 +119,9 @@ TEST_F(SceneGraphImageTest, testRenderToImageKeepsPaletteAlpha) {
 TEST_F(SceneGraphImageTest, testRenderIsometricImageSubtreeIsSmaller) {
 	voxel::RawVolume parentVol(voxel::Region(0, 0));
 	parentVol.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	voxel::RawVolume childVol(voxel::Region(glm::ivec3(2, 0, 0), glm::ivec3(2, 0, 0)));
+	voxel::RawVolume childVol(voxel::Region(math::Vec3i(2, 0, 0), math::Vec3i(2, 0, 0)));
 	childVol.setVoxel(2, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	voxel::RawVolume siblingVol(voxel::Region(glm::ivec3(10, 0, 0), glm::ivec3(10, 0, 0)));
+	voxel::RawVolume siblingVol(voxel::Region(math::Vec3i(10, 0, 0), math::Vec3i(10, 0, 0)));
 	siblingVol.setVoxel(10, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	palette::Palette palette;
@@ -208,7 +209,7 @@ TEST_F(SceneGraphImageTest, testRenderIsometricUsesNodeNormalPalette) {
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA(200, 200, 200, 255));
 	palette::NormalPalette normals;
-	normals.setNormal(0, glm::vec3(0.0f, 1.0f, 0.0f));
+	normals.setNormal(0, math::Vec3f(0.0f, 1.0f, 0.0f));
 
 	voxel::RawVolume volume(voxel::Region(0, 0));
 	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -246,7 +247,7 @@ TEST_F(SceneGraphImageTest, testRenderIsometricMergesNodeNormals) {
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA(200, 200, 200, 255));
 	palette::NormalPalette normals;
-	normals.setNormal(0, glm::vec3(0.0f, 1.0f, 0.0f));
+	normals.setNormal(0, math::Vec3f(0.0f, 1.0f, 0.0f));
 
 	voxel::RawVolume plain(voxel::Region(0, 0));
 	voxel::RawVolume litVol(voxel::Region(0, 0));
@@ -285,7 +286,7 @@ TEST_F(SceneGraphImageTest, testRenderIsometricRotatesVoxelNormal) {
 	palette::Palette palette;
 	palette.setColor(1, color::RGBA(200, 200, 200, 255));
 	palette::NormalPalette normals;
-	normals.setNormal(0, glm::vec3(1.0f, 0.0f, 0.0f));
+	normals.setNormal(0, math::Vec3f(1.0f, 0.0f, 0.0f));
 
 	voxel::RawVolume volume(voxel::Region(0, 0));
 	voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
@@ -305,7 +306,7 @@ TEST_F(SceneGraphImageTest, testRenderIsometricRotatesVoxelNormal) {
 		node.setUnownedVolume(&volume);
 		node.setPalette(palette);
 		node.setNormalPalette(normals);
-		node.setPivot(glm::vec3(0.5f));
+		node.setPivot(math::Vec3f(0.5f));
 		ASSERT_NE(InvalidNodeId, upright.emplace(core::move(node)));
 	}
 	upright.updateTransforms();
@@ -320,8 +321,8 @@ TEST_F(SceneGraphImageTest, testRenderIsometricRotatesVoxelNormal) {
 		node.setUnownedVolume(&volume);
 		node.setPalette(palette);
 		node.setNormalPalette(normals);
-		node.setPivot(glm::vec3(0.5f));
-		node.setRotation(glm::angleAxis(glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f)), false);
+		node.setPivot(math::Vec3f(0.5f));
+		node.setRotation(math::angleAxis(math::radians(180.0f), math::Vec3f(0.0f, 1.0f, 0.0f)), false);
 		ASSERT_NE(InvalidNodeId, turned.emplace(core::move(node)));
 	}
 	turned.updateTransforms();

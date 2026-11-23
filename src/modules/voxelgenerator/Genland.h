@@ -5,8 +5,8 @@
 #pragma once
 
 #include "color/RGBA.h"
+#include "math/Vec2i.h"
 
-#include <glm/vec2.hpp>
 
 namespace voxel {
 class RawVolume;
@@ -57,7 +57,7 @@ struct GenlandSettings {
 	bool ambience = true;
 	// Ambient color scale applied to material colors
 	double ambienceFactor = 0.3;
-	glm::ivec2 offset{0, 0};
+	math::Vec2i offset{0, 0};
 };
 
 voxel::RawVolume *genland(GenlandSettings &settings);

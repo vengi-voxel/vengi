@@ -9,6 +9,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -140,7 +141,7 @@ bool CubFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	const voxel::Region &region = node->region();
 	voxel::RawVolume::Sampler sampler(node->volume());
-	const glm::ivec3 &lower = region.getLowerCorner();
+	const math::Vec3i &lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();

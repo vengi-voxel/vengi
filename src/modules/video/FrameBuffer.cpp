@@ -10,6 +10,8 @@
 #include "core/ArrayLength.h"
 #include "Renderer.h"
 #include "image/Image.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
 
 namespace video {
 
@@ -42,7 +44,7 @@ bool FrameBuffer::hasBufferAttachment(FrameBufferAttachment attachment) {
 
 bool FrameBuffer::prepareAttachments(const FrameBufferConfig& cfg) {
 	_samples = cfg.samples();
-	const glm::ivec2& dim = cfg.dimension();
+	const math::Vec2i& dim = cfg.dimension();
 	for (const auto& a : cfg.textureAttachments()) {
 		const FrameBufferAttachment key = a->key;
 		const TextureConfig& textureConfig = a->value;
@@ -104,7 +106,7 @@ bool FrameBuffer::init(const FrameBufferConfig& cfg) {
 	return retVal;
 }
 
-glm::vec4 FrameBuffer::uv() const {
+math::Vec4f FrameBuffer::uv() const {
 	return video::framebufferUV();
 }
 
@@ -128,7 +130,7 @@ void FrameBuffer::shutdown() {
 	for (int i = 0; i < lengthof(_viewport); ++i) {
 		_viewport[i] = 0;
 	}
-	_dimension = glm::ivec2(0);
+	_dimension = math::Vec2i(0);
 }
 
 TexturePtr FrameBuffer::texture(FrameBufferAttachment attachment) const {

@@ -9,6 +9,7 @@
 #include "scenegraph/SceneUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3f.h"
 
 class PhysicsBenchmark : public app::AbstractBenchmark {
 protected:
@@ -115,9 +116,9 @@ BENCHMARK_DEFINE_F(PhysicsBenchmark, UpdateGravityOnly)(benchmark::State &state)
 	createGroundPlane();
 
 	scenegraph::KinematicBody body;
-	body.position = glm::vec3(15.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(15.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(0.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016;
@@ -132,9 +133,9 @@ BENCHMARK_DEFINE_F(PhysicsBenchmark, UpdateWithHorizontalMovement)(benchmark::St
 	createGroundPlane();
 
 	scenegraph::KinematicBody body;
-	body.position = glm::vec3(15.0f, 3.0f, 15.0f);
-	body.velocity = glm::vec3(5.0f, 0.0f, 3.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(15.0f, 3.0f, 15.0f);
+	body.velocity = math::Vec3f(5.0f, 0.0f, 3.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016;
@@ -150,9 +151,9 @@ BENCHMARK_DEFINE_F(PhysicsBenchmark, UpdateWithStairClimbing)(benchmark::State &
 	createComplexScene();
 
 	scenegraph::KinematicBody body;
-	body.position = glm::vec3(11.0f, 3.0f, 8.0f);
-	body.velocity = glm::vec3(0.0f, 0.0f, 2.0f);
-	body.extents = glm::vec3(0.2f, 1.0f, 0.2f);
+	body.position = math::Vec3f(11.0f, 3.0f, 8.0f);
+	body.velocity = math::Vec3f(0.0f, 0.0f, 2.0f);
+	body.extents = math::Vec3f(0.2f, 1.0f, 0.2f);
 
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016;
@@ -171,9 +172,9 @@ BENCHMARK_DEFINE_F(PhysicsBenchmark, UpdateWithFriction)(benchmark::State &state
 	createGroundPlane();
 
 	scenegraph::KinematicBody body;
-	body.position = glm::vec3(15.0f, 3.0f, 15.0f);
-	body.velocity = glm::vec3(5.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(15.0f, 3.0f, 15.0f);
+	body.velocity = math::Vec3f(5.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 	body.frictionDecay = 0.1f;
 
 	const float gravity = 9.81f;
@@ -190,13 +191,13 @@ BENCHMARK_DEFINE_F(PhysicsBenchmark, RepeatedFall)(benchmark::State &state) {
 	createGroundPlane();
 
 	scenegraph::KinematicBody body;
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016;
 
 	for (auto _ : state) {
-		body.position = glm::vec3(15.0f, 12.0f, 15.0f);
-		body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+		body.position = math::Vec3f(15.0f, 12.0f, 15.0f);
+		body.velocity = math::Vec3f(0.0f, 0.0f, 0.0f);
 		body.collidedX = body.collidedY = body.collidedZ = false;
 		for (int i = 0; i < 45; ++i) {
 			_physics.update(deltaTime, _nodes, body, gravity);
@@ -210,9 +211,9 @@ BENCHMARK_DEFINE_F(PhysicsBenchmark, WallSlide)(benchmark::State &state) {
 	createComplexScene();
 
 	scenegraph::KinematicBody body;
-	body.position = glm::vec3(2.0f, 3.0f, 15.0f);
-	body.velocity = glm::vec3(-5.0f, 0.0f, 4.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(2.0f, 3.0f, 15.0f);
+	body.velocity = math::Vec3f(-5.0f, 0.0f, 4.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016;
 
@@ -232,16 +233,16 @@ BENCHMARK_DEFINE_F(PhysicsBenchmark, PillarFieldTraverse)(benchmark::State &stat
 	createPillarField();
 
 	scenegraph::KinematicBody body;
-	body.position = glm::vec3(4.0f, 3.0f, 4.0f);
-	body.velocity = glm::vec3(6.0f, 0.0f, 5.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(4.0f, 3.0f, 4.0f);
+	body.velocity = math::Vec3f(6.0f, 0.0f, 5.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016;
 
 	for (auto _ : state) {
 		if (body.position.x > 58.0f || body.position.z > 58.0f) {
-			body.position = glm::vec3(4.0f, 3.0f, 4.0f);
-			body.velocity = glm::vec3(6.0f, 0.0f, 5.0f);
+			body.position = math::Vec3f(4.0f, 3.0f, 4.0f);
+			body.velocity = math::Vec3f(6.0f, 0.0f, 5.0f);
 			body.collidedX = body.collidedY = body.collidedZ = false;
 		}
 		_physics.update(deltaTime, _nodes, body, gravity);

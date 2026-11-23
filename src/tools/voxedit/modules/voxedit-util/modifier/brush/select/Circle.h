@@ -7,8 +7,7 @@
 #include "SelectStrategy.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/Face.h"
-#include <glm/common.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 namespace select {
@@ -16,14 +15,14 @@ namespace select {
 class Circle : public Strategy {
 private:
 	using Super = Strategy;
-	glm::ivec3 _ellipseCenter{0};
+	math::Vec3i _ellipseCenter{0};
 	int _ellipseRadiusU = 0;
 	int _ellipseRadiusV = 0;
 	int _ellipseDepth = 1;
 	bool _ellipse3D = false;
 	voxel::FaceNames _ellipseFace = voxel::FaceNames::Max;
 	bool _ellipseValid = false;
-	core::DynamicArray<glm::ivec3> _ellipseHistory;
+	core::DynamicArray<math::Vec3i> _ellipseHistory;
 
 public:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -38,7 +37,7 @@ public:
 		return _ellipseValid;
 	}
 
-	const glm::ivec3 &center() const {
+	const math::Vec3i &center() const {
 		return _ellipseCenter;
 	}
 
@@ -62,24 +61,24 @@ public:
 		return _ellipseFace;
 	}
 
-	core::DynamicArray<glm::ivec3> &history() {
+	core::DynamicArray<math::Vec3i> &history() {
 		return _ellipseHistory;
 	}
 
-	void setCenter(const glm::ivec3 &center) {
+	void setCenter(const math::Vec3i &center) {
 		_ellipseCenter = center;
 	}
 
 	void setRadiusU(int r) {
-		_ellipseRadiusU = glm::max(r, 0);
+		_ellipseRadiusU = math::max(r, 0);
 	}
 
 	void setRadiusV(int r) {
-		_ellipseRadiusV = glm::max(r, 0);
+		_ellipseRadiusV = math::max(r, 0);
 	}
 
 	void setDepth(int d) {
-		_ellipseDepth = glm::max(d, 1);
+		_ellipseDepth = math::max(d, 1);
 	}
 
 	void set3D(bool v) {
@@ -87,9 +86,9 @@ public:
 	}
 
 	static void ellipseAxes(voxel::FaceNames face, int &uAxis, int &vAxis);
-	static bool insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int uAxis,
+	static bool insideEllipse(const math::Vec3i &pos, const math::Vec3i &center, int radiusU, int radiusV, int uAxis,
 							  int vAxis);
-	static bool insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int depth,
+	static bool insideSelection(const math::Vec3i &pos, const math::Vec3i &center, int radiusU, int radiusV, int depth,
 								bool is3D, int uAxis, int vAxis, int faceAxisIdx, bool positiveNormal);
 };
 

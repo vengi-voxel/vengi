@@ -18,7 +18,8 @@
 #include "voxel/Region.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/gtc/epsilon.hpp>
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -76,9 +77,9 @@ TEST_F(KV6FormatTest, testRemapNormalPalettes) {
 			const uint8_t index = model->volume()->voxel(i, 0, 0).getNormal();
 			ASSERT_NE(NO_NORMAL, index);
 			ASSERT_LE(index, target.size());
-			const glm::vec3 sourceNormal = glm::normalize(palette.normal3f(i));
-			const glm::vec3 writtenNormal = glm::normalize(target.normal3f(index - NORMAL_PALETTE_OFFSET));
-			EXPECT_GE(glm::dot(sourceNormal, writtenNormal), glm::cos(glm::radians(20.0f))) << name << " " << i;
+			const math::Vec3f sourceNormal = math::normalize(palette.normal3f(i));
+			const math::Vec3f writtenNormal = math::normalize(target.normal3f(index - NORMAL_PALETTE_OFFSET));
+			EXPECT_GE(math::dot(sourceNormal, writtenNormal), math::cos(math::radians(20.0f))) << name << " " << i;
 			if (palette.hash() == target.hash()) {
 				EXPECT_EQ(i + NORMAL_PALETTE_OFFSET, index);
 			}
@@ -167,27 +168,27 @@ TEST_F(KV6FormatTest, testAnasplit) {
 
 TEST_F(KV6FormatTest, testSaveLoadTranslationBakedIntoPivot) {
 	KV6Format f;
-	const glm::vec3 translation(4.0f, 8.0f, -2.0f);
-	const glm::vec3 dims(8.0f);
-	testSaveLoadBakedPivot("kv6-translation-pivot.kv6", &f, glm::vec3(0.0f), translation, -translation / dims);
+	const math::Vec3f translation(4.0f, 8.0f, -2.0f);
+	const math::Vec3f dims(8.0f);
+	testSaveLoadBakedPivot("kv6-translation-pivot.kv6", &f, math::Vec3f(0.0f), translation, -translation / dims);
 }
 
 TEST_F(KV6FormatTest, testSaveLoadRaisedCenterPivot) {
 	KV6Format f;
-	testSaveLoadBakedPivot("kv6-raised-center-pivot.kv6", &f, glm::vec3(0.5f), glm::vec3(0.0f, 4.0f, 0.0f),
-						   glm::vec3(0.5f, 0.0f, 0.5f));
+	testSaveLoadBakedPivot("kv6-raised-center-pivot.kv6", &f, math::Vec3f(0.5f), math::Vec3f(0.0f, 4.0f, 0.0f),
+						   math::Vec3f(0.5f, 0.0f, 0.5f));
 }
 
 TEST_F(KV6FormatTest, testSaveLoadCenteredAabbTranslation) {
 	KV6Format f;
-	testSaveLoadBakedPivot("kv6-centered-aabb.kv6", &f, glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f),
-						   glm::vec3(0.5f, 0.0f, 0.5f));
+	testSaveLoadBakedPivot("kv6-centered-aabb.kv6", &f, math::Vec3f(0.0f), math::Vec3f(-4.0f, 0.0f, -4.0f),
+						   math::Vec3f(0.5f, 0.0f, 0.5f));
 }
 
 TEST_F(KV6FormatTest, testSaveLoadDirtyWorldTranslation) {
 	KV6Format f;
-	testSaveLoadBakedPivot("kv6-dirty-translation.kv6", &f, glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f),
-						   glm::vec3(0.5f, 0.0f, 0.5f), false);
+	testSaveLoadBakedPivot("kv6-dirty-translation.kv6", &f, math::Vec3f(0.0f), math::Vec3f(-4.0f, 0.0f, -4.0f),
+						   math::Vec3f(0.5f, 0.0f, 0.5f), false);
 }
 
 static bool writeTestKfa(io::SeekableWriteStream &stream, const core::String &kv6Name, int16_t frame1ChildAngle,
@@ -331,7 +332,7 @@ TEST_F(KV6FormatTest, testKfaTwoLimbs) {
 	EXPECT_TRUE(childLimb->hasKeyFrame(12));
 	EXPECT_TRUE(childLimb->hasKeyFrame(24));
 	// Velcro is on the child at Ken (5,0,0); origin must not stay at volume (0,0,0)
-	EXPECT_FALSE(glm::all(glm::epsilonEqual(childLimb->pivot(), glm::vec3(0.0f), 0.0001f)));
+	EXPECT_FALSE(math::all(math::epsilonEqual(childLimb->pivot(), math::Vec3f(0.0f), 0.0001f)));
 }
 
 TEST_F(KV6FormatTest, testKfaStopMarkerAtZero) {
@@ -413,7 +414,7 @@ TEST_F(KV6FormatTest, testAnasplitKfa) {
 	int pivotedModels = 0;
 	for (const auto &e : sceneGraph.nodes()) {
 		const scenegraph::SceneGraphNode &node = e->value;
-		if (node.isModelNode() && !glm::all(glm::epsilonEqual(node.pivot(), glm::vec3(0.0f), 0.0001f))) {
+		if (node.isModelNode() && !math::all(math::epsilonEqual(node.pivot(), math::Vec3f(0.0f), 0.0001f))) {
 			++pivotedModels;
 		}
 		if (node.property("kfa.hinge") == "2") {

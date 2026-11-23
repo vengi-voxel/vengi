@@ -35,6 +35,7 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #endif
 #include "voxelformat/external/cute_aseprite.h"
+#include "math/Vec3i.h"
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
@@ -73,7 +74,7 @@ bool AsepriteFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::St
 		}
 	};
 	app::for_parallel(0, ase->w, fn);
-	glm::ivec3 sliceOffset(0);
+	math::Vec3i sliceOffset(0);
 	sliceOffset[math::getIndexForAxis(axis)] = offset;
 	sliceOffset *= frameIndex;
 	node.volume()->translate(sliceOffset);

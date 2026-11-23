@@ -8,19 +8,18 @@
 #include "math/AABB.h"
 #include "testcore/TestAppMain.h"
 #include "video/ScopedState.h"
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/euler_angles.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 
 TestShapeBuilder::TestShapeBuilder(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider), _color(color::DarkGreen()) {
 	init(ORGANISATION, "testshapebuilder");
 	setCameraMotion(false);
-	setRenderPlane(true, glm::vec4(1.0f, 1.0f, 1.0f, 0.8f));
+	setRenderPlane(true, math::Vec4f(1.0f, 1.0f, 1.0f, 0.8f));
 	setRenderAxis(true);
 }
 
@@ -36,14 +35,14 @@ app::AppState TestShapeBuilder::onInit() {
 	}
 
 	for (int i = 0; i < lengthof(_position); ++i) {
-		_scale[i] = glm::one<glm::vec3>();
-		_position[i] = glm::zero<glm::ivec3>();
+		_scale[i] = 1.0f;
+		_position[i] = math::Vec3i(0);
 	}
 
 	_shapeBuilder.clear();
-	_shapeBuilder.setPosition(glm::vec3(0.0f));
+	_shapeBuilder.setPosition(math::Vec3f(0.0f));
 	_shapeBuilder.setColor(color::Red());
-	_shapeBuilder.cube(glm::vec3(-0.5f), glm::vec3(0.5f));
+	_shapeBuilder.cube(math::Vec3f(-0.5f), math::Vec3f(0.5f));
 	_meshUnitCube = _shapeRenderer.create(_shapeBuilder);
 	_shapeBuilder.clear();
 
@@ -53,7 +52,7 @@ app::AppState TestShapeBuilder::onInit() {
 void TestShapeBuilder::doRender() {
 	video::ScopedState scoped(video::State::CullFace, true);
 	for (int i = 0; i < _meshCount; ++i) {
-		const glm::mat4 &model = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(_position[i])), _scale[i]);
+		const math::Mat4f &model = math::scale(math::translate(math::Mat4f(1.0f), math::Vec3f(_position[i])), _scale[i]);
 		_shapeRenderer.render(_meshes[i], camera(), model);
 	}
 }
@@ -63,22 +62,22 @@ void TestShapeBuilder::onRenderUI() {
 	bool buildMesh = false;
 	_shapeBuilder.clear();
 	_shapeBuilder.setColor(_color);
-	glm::ivec3 &pos = _position[_meshCount];
-	glm::vec3 &scale = _scale[_meshCount];
-	glm::vec3 &rotation = _rotation[_meshCount];
+	math::Vec3i &pos = _position[_meshCount];
+	math::Vec3f &scale = _scale[_meshCount];
+	math::Vec3f &rotation = _rotation[_meshCount];
 	_shapeBuilder.setPosition(pos);
-	const glm::vec3 radians = glm::radians(rotation);
-	_shapeBuilder.setRotation(glm::eulerAngleXYZ(radians.x, radians.y, radians.z));
+	const math::Vec3f radians = math::radians(rotation);
+	_shapeBuilder.setRotation(math::eulerAngleXYZ(radians.x, radians.y, radians.z));
 
 	ImGui::Begin("Actions and Settings");
 
 	ImGui::Text("General settings");
 	ImGui::Indent();
-	ImGui::ColorEdit4("color", glm::value_ptr(_color));
+	ImGui::ColorEdit4("color", math::value_ptr(_color));
 	ImGui::InputVec3("pos", pos);
 	ImGui::InputVec3("scale", scale);
 	if (ImGui::InputVec3("rotation (degree)", rotation)) {
-		rotation = glm::clamp(rotation, 0.0f, 360.0f);
+		rotation = math::clamp(rotation, 0.0f, 360.0f);
 	}
 	ImGui::TooltipText("Applies rendering only scale");
 	ImGui::Unindent();

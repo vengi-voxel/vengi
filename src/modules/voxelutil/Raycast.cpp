@@ -4,24 +4,25 @@
 
 #include "Raycast.h"
 #include "core/Common.h"
-#include <glm/common.hpp>
-#include <glm/gtc/epsilon.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelutil {
 
-bool clipRaySegmentToAABB(const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &mins, const glm::vec3 &maxs,
-						  float &tEnter, float &tExit, glm::ivec3 *entryNormal) {
-	const glm::vec3 dir = end - start;
+bool clipRaySegmentToAABB(const math::Vec3f &start, const math::Vec3f &end, const math::Vec3f &mins, const math::Vec3f &maxs,
+						  float &tEnter, float &tExit, math::Vec3i *entryNormal) {
+	const math::Vec3f dir = end - start;
 	tEnter = 0.0f;
 	tExit = 1.0f;
 	if (entryNormal != nullptr) {
-		*entryNormal = glm::ivec3(0);
+		*entryNormal = math::Vec3i(0);
 	}
 
 	for (int axis = 0; axis < 3; ++axis) {
 		const float d = dir[axis];
 		const float o = start[axis];
-		if (glm::abs(d) <= glm::epsilon<float>()) {
+		if (math::abs(d) <= math::epsilonf) {
 			// Ray parallel to this slab - must start inside the slab.
 			if (o < mins[axis] || o > maxs[axis]) {
 				return false;
@@ -41,7 +42,7 @@ bool clipRaySegmentToAABB(const glm::vec3 &start, const glm::vec3 &end, const gl
 		if (t1 > tEnter) {
 			tEnter = t1;
 			if (entryNormal != nullptr) {
-				*entryNormal = glm::ivec3(0);
+				*entryNormal = math::Vec3i(0);
 				// Entering through the near face: -axis when traveling positive.
 				(*entryNormal)[axis] = nearSign;
 			}
@@ -75,7 +76,7 @@ RaycastResult RaycastResult::completed(float length) {
 	return r;
 }
 
-RaycastResult RaycastResult::interrupted(float length, float fract, const glm::ivec3 &normal) {
+RaycastResult RaycastResult::interrupted(float length, float fract, const math::Vec3i &normal) {
 	RaycastResult r;
 	r.type = Interrupted;
 	r.length = length;
@@ -84,25 +85,25 @@ RaycastResult RaycastResult::interrupted(float length, float fract, const glm::i
 	return r;
 }
 
-glm::vec3 RaycastResult::adjustPoint(const glm::vec3 &point, float offset) const {
-	return point - glm::vec3(normal) * (offset + 0.001f);
+math::Vec3f RaycastResult::adjustPoint(const math::Vec3f &point, float offset) const {
+	return point - math::Vec3f(normal) * (offset + 0.001f);
 }
 
-glm::vec3 RaycastResult::projectOnPlane(const glm::vec3 &v) const {
-	glm::vec3 n = glm::normalize(glm::vec3(normal));
-	return v - glm::dot(v, n) * n;
+math::Vec3f RaycastResult::projectOnPlane(const math::Vec3f &v) const {
+	math::Vec3f n = math::normalize(math::Vec3f(normal));
+	return v - math::dot(v, n) * n;
 }
 
-RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &hitPos, float offsetMins,
+RaycastHit raycastFaceDetection(const math::Vec3f &rayOrigin, const math::Vec3f &hitPos, float offsetMins,
 								float offsetMaxs) {
-	const glm::vec3 &rayDirection = glm::normalize(hitPos - rayOrigin);
+	const math::Vec3f &rayDirection = math::normalize(hitPos - rayOrigin);
 	return raycastFaceDetection(rayOrigin, rayDirection, hitPos, offsetMins, offsetMaxs);
 }
 
-RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &rayDirection, const glm::vec3 &hitPos,
+RaycastHit raycastFaceDetection(const math::Vec3f &rayOrigin, const math::Vec3f &rayDirection, const math::Vec3f &hitPos,
 								float offsetMins, float offsetMaxs) {
-	const glm::vec3 mins = hitPos + offsetMins;
-	const glm::vec3 maxs = hitPos + offsetMaxs;
+	const math::Vec3f mins = hitPos + offsetMins;
+	const math::Vec3f maxs = hitPos + offsetMaxs;
 
 	/*
 	 * Ray-box intersection using IEEE numerical properties to ensure that the
@@ -116,8 +117,8 @@ RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &ray
 
 	float tmin; // entry point
 	float tmax; // exit point
-	const float divx = glm::abs(rayDirection.x) <= glm::epsilon<float>()
-						   ? (rayDirection.x < 0.0f ? -INFINITY : INFINITY)
+	const float divx = math::abs(rayDirection.x) <= math::epsilonf
+						   ? (rayDirection.x < 0.0f ? -math::Infinity : math::Infinity)
 						   : 1.0f / rayDirection.x;
 	if (divx >= 0.0f) {
 		tmin = (mins.x - rayOrigin.x) * divx;
@@ -129,8 +130,8 @@ RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &ray
 
 	float tymin;
 	float tymax;
-	const float divy = glm::abs(rayDirection.y) <= glm::epsilon<float>()
-						   ? (rayDirection.y < 0.0f ? -INFINITY : INFINITY)
+	const float divy = math::abs(rayDirection.y) <= math::epsilonf
+						   ? (rayDirection.y < 0.0f ? -math::Infinity : math::Infinity)
 						   : 1.0f / rayDirection.y;
 	if (divy >= 0.0f) {
 		tymin = (mins.y - rayOrigin.y) * divy;
@@ -141,7 +142,7 @@ RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &ray
 	}
 
 	if ((tmin > tymax) || (tymin > tmax)) {
-		return {voxel::FaceNames::Max, -1.0f, glm::vec3(0)};
+		return {voxel::FaceNames::Max, -1.0f, math::Vec3f(0)};
 	}
 
 	if (tymin > tmin) {
@@ -154,8 +155,8 @@ RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &ray
 
 	float tzmin;
 	float tzmax;
-	const float divz = glm::abs(rayDirection.z) <= glm::epsilon<float>()
-						   ? (rayDirection.z < 0.0f ? -INFINITY : INFINITY)
+	const float divz = math::abs(rayDirection.z) <= math::epsilonf
+						   ? (rayDirection.z < 0.0f ? -math::Infinity : math::Infinity)
 						   : 1.0f / rayDirection.z;
 	if (divz >= 0.0f) {
 		tzmin = (mins.z - rayOrigin.z) * divz;
@@ -166,7 +167,7 @@ RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &ray
 	}
 
 	if ((tmin > tzmax) || (tzmin > tmax)) {
-		return {voxel::FaceNames::Max, -1.0f, glm::vec3(0)};
+		return {voxel::FaceNames::Max, -1.0f, math::Vec3f(0)};
 	}
 
 	if (tzmin > tmin) {
@@ -184,40 +185,40 @@ RaycastHit raycastFaceDetection(const glm::vec3 &rayOrigin, const glm::vec3 &ray
 
 	float delta = (std::numeric_limits<float>::max)();
 	voxel::FaceNames face = voxel::FaceNames::Max;
-	glm::vec3 hitPoint = rayOrigin + rayDirection * rayLength;
+	math::Vec3f hitPoint = rayOrigin + rayDirection * rayLength;
 
-	float frac = rayLength / glm::length(rayDirection); // normalize into [0,1]
-	float current = glm::abs(x - mins.x);
+	float frac = rayLength / math::length(rayDirection); // normalize into [0,1]
+	float current = math::abs(x - mins.x);
 	if (delta > current) {
 		delta = current;
 		face = voxel::FaceNames::NegativeX;
 	}
 
-	current = glm::abs(x - maxs.x);
+	current = math::abs(x - maxs.x);
 	if (delta > current) {
 		delta = current;
 		face = voxel::FaceNames::PositiveX;
 	}
 
-	current = glm::abs(y - mins.y);
+	current = math::abs(y - mins.y);
 	if (delta > current) {
 		delta = current;
 		face = voxel::FaceNames::NegativeY;
 	}
 
-	current = glm::abs(y - maxs.y);
+	current = math::abs(y - maxs.y);
 	if (delta > current) {
 		delta = current;
 		face = voxel::FaceNames::PositiveY;
 	}
 
-	current = glm::abs(z - mins.z);
+	current = math::abs(z - mins.z);
 	if (delta > current) {
 		delta = current;
 		face = voxel::FaceNames::NegativeZ;
 	}
 
-	current = glm::abs(z - maxs.z);
+	current = math::abs(z - maxs.z);
 	if (delta > current) {
 		face = voxel::FaceNames::PositiveZ;
 	}

@@ -11,6 +11,7 @@
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
+#include "math/Vec3f.h"
 
 class MeshFormatBenchmark : public app::AbstractBenchmark {
 private:
@@ -42,7 +43,7 @@ protected:
 		}
 
 		bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &,
-						const core::String &, const io::ArchivePtr &, const glm::vec3 &, bool, bool, bool) override {
+						const core::String &, const io::ArchivePtr &, const math::Vec3f &, bool, bool, bool) override {
 			return false;
 		}
 	};

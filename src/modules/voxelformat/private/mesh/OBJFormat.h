@@ -7,6 +7,7 @@
 #include "MeshFormat.h"
 #include "io/Stream.h"
 #include "palette/Palette.h"
+#include "math/Vec3f.h"
 
 namespace tinyobj {
 struct mesh_t;
@@ -47,10 +48,10 @@ protected:
 
 public:
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
-					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
+					const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale, bool quad,
 					bool withColor, bool withTexCoords) override;
 	bool savePointCloud(const scenegraph::SceneGraph &sceneGraph, const PointCloud &pointCloud,
-						const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
+						const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale,
 						bool withColor) const override;
 
 	static const io::FormatDescription &format() {

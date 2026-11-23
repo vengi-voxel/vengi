@@ -29,10 +29,11 @@
 #include "voxelformat/FormatThumbnail.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include <glm/common.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace voxelformat {
 
@@ -102,11 +103,11 @@ static bool skipBytes(io::SeekableReadStream &stream, int64_t n) {
 	return stream.skip(n) != -1;
 }
 
-static bool readVec3i(io::ReadStream &stream, glm::ivec3 &v) {
+static bool readVec3i(io::ReadStream &stream, math::Vec3i &v) {
 	return stream.readInt32(v.x) == 0 && stream.readInt32(v.y) == 0 && stream.readInt32(v.z) == 0;
 }
 
-static bool writeVec3i(io::WriteStream &stream, const glm::ivec3 &v) {
+static bool writeVec3i(io::WriteStream &stream, const math::Vec3i &v) {
 	return stream.writeInt32(v.x) && stream.writeInt32(v.y) && stream.writeInt32(v.z);
 }
 
@@ -119,8 +120,8 @@ static bool skipVec3f(io::ReadStream &stream) {
 	return stream.readFloat(dummy) == 0 && stream.readFloat(dummy) == 0 && stream.readFloat(dummy) == 0;
 }
 
-static glm::ivec3 chunkCoord(int x, int y, int z) {
-	return glm::ivec3(x >> 5, y >> 5, z >> 5);
+static math::Vec3i chunkCoord(int x, int y, int z) {
+	return math::Vec3i(x >> 5, y >> 5, z >> 5);
 }
 
 static int chunkIndex(int x, int y, int z) {
@@ -450,30 +451,30 @@ static bool writeEmptyRig(io::WriteStream &stream, int layerCount) {
 	return stream.writeBool(false) && stream.writeDotNetString("");
 }
 
-static void expandWorldAabb(glm::ivec3 &mins, glm::ivec3 &maxs, bool &haveBounds, const voxel::Region &region,
-							const glm::mat4 &worldMat) {
-	const glm::ivec3 rmin = region.getLowerCorner();
-	const glm::ivec3 rmax = region.getUpperCorner();
+static void expandWorldAabb(math::Vec3i &mins, math::Vec3i &maxs, bool &haveBounds, const voxel::Region &region,
+							const math::Mat4f &worldMat) {
+	const math::Vec3i rmin = region.getLowerCorner();
+	const math::Vec3i rmax = region.getUpperCorner();
 	for (int i = 0; i < 8; ++i) {
-		const glm::vec3 corner((i & 1) ? (float)rmax.x : (float)rmin.x, (i & 2) ? (float)rmax.y : (float)rmin.y,
+		const math::Vec3f corner((i & 1) ? (float)rmax.x : (float)rmin.x, (i & 2) ? (float)rmax.y : (float)rmin.y,
 							   (i & 4) ? (float)rmax.z : (float)rmin.z);
-		const glm::ivec3 world(glm::round(glm::vec3(worldMat * glm::vec4(corner, 1.0f))));
+		const math::Vec3i world(math::round(math::Vec3f(worldMat * math::Vec4f(corner, 1.0f))));
 		if (!haveBounds) {
 			mins = maxs = world;
 			haveBounds = true;
 		} else {
-			mins = glm::min(mins, world);
-			maxs = glm::max(maxs, world);
+			mins = math::min(mins, world);
+			maxs = math::max(maxs, world);
 		}
 	}
 }
 
 static bool writeLayerVolume(io::WriteStream &stream, const voxel::RawVolume *volume) {
-	core::DynamicArray<glm::ivec3> coords;
+	core::DynamicArray<math::Vec3i> coords;
 	const voxel::Region region = volume != nullptr ? volume->region() : voxel::Region(0, 0);
 	if (volume != nullptr) {
 		voxelutil::visitVolume(*volume, [&](int x, int y, int z, const voxel::Voxel &) {
-			const glm::ivec3 c = chunkCoord(x, y, z);
+			const math::Vec3i c = chunkCoord(x, y, z);
 			for (size_t i = 0; i < coords.size(); ++i) {
 				if (coords[i] == c) {
 					return;
@@ -481,7 +482,7 @@ static bool writeLayerVolume(io::WriteStream &stream, const voxel::RawVolume *vo
 			}
 			coords.push_back(c);
 		});
-		coords.sort([](const glm::ivec3 &a, const glm::ivec3 &b) {
+		coords.sort([](const math::Vec3i &a, const math::Vec3i &b) {
 			if (a.z != b.z) {
 				return a.z > b.z;
 			}
@@ -494,7 +495,7 @@ static bool writeLayerVolume(io::WriteStream &stream, const voxel::RawVolume *vo
 	if (!stream.writeInt32((int32_t)coords.size())) {
 		return false;
 	}
-	for (const glm::ivec3 &coord : coords) {
+	for (const math::Vec3i &coord : coords) {
 		uint16_t voxels[ChunkVoxels];
 		core_memset(voxels, 0, sizeof(voxels));
 		const int x0 = coord.x * ChunkSize;
@@ -529,7 +530,7 @@ static bool writeLayerVolume(io::WriteStream &stream, const voxel::RawVolume *vo
 	return true;
 }
 
-static bool writeInfoJson(io::WriteStream &stream, int models, int64_t voxels, const glm::ivec3 &size,
+static bool writeInfoJson(io::WriteStream &stream, int models, int64_t voxels, const math::Vec3i &size,
 						  const core::DynamicArray<core::String> &names) {
 	io::BufferedReadWriteStream json(512);
 	if (!json.writeString("{\"models\":", false) || !json.writeString(core::string::toString(models), false) ||
@@ -719,11 +720,11 @@ image::ImagePtr VCdxFormat::loadScreenshot(const core::String &filename, const i
 }
 
 static bool loadLayerVoxels(io::SeekableReadStream &stream, int32_t chunkCount, bool eightBit,
-							core::DynamicArray<glm::ivec3> &positions, core::DynamicArray<uint16_t> &indices,
-							glm::ivec3 &mins, glm::ivec3 &maxs, bool &hasVoxel) {
+							core::DynamicArray<math::Vec3i> &positions, core::DynamicArray<uint16_t> &indices,
+							math::Vec3i &mins, math::Vec3i &maxs, bool &hasVoxel) {
 	uint8_t raw[priv::ChunkBytes];
 	for (int32_t c = 0; c < chunkCount; ++c) {
-		glm::ivec3 coord;
+		math::Vec3i coord;
 		if (!priv::readVec3i(stream, coord)) {
 			return false;
 		}
@@ -743,14 +744,14 @@ static bool loadLayerVoxels(io::SeekableReadStream &stream, int32_t chunkCount, 
 			const int lx = i & 31;
 			const int ly = (i >> 5) & 31;
 			const int lz = (i >> 10) & 31;
-			const glm::ivec3 pos(coord.x * priv::ChunkSize + lx, coord.y * priv::ChunkSize + ly,
+			const math::Vec3i pos(coord.x * priv::ChunkSize + lx, coord.y * priv::ChunkSize + ly,
 								 coord.z * priv::ChunkSize + lz);
 			if (!hasVoxel) {
 				mins = maxs = pos;
 				hasVoxel = true;
 			} else {
-				mins = glm::min(mins, pos);
-				maxs = glm::max(maxs, pos);
+				mins = math::min(mins, pos);
+				maxs = math::max(maxs, pos);
 			}
 			positions.push_back(pos);
 			indices.push_back(idx);
@@ -849,18 +850,18 @@ bool VCdxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 
 	wrapBool(priv::fillPalette(palette, allColors, allMats, paletteSize))
 
-	auto addLayerNode = [&](const core::String &name, bool visible, bool locked, const core::DynamicArray<glm::ivec3> &positions,
-							const core::DynamicArray<uint16_t> &indices, bool hasVoxel, const glm::ivec3 &mins,
-							const glm::ivec3 &maxs, const glm::ivec3 *canvasMin, const glm::ivec3 *canvasSize,
+	auto addLayerNode = [&](const core::String &name, bool visible, bool locked, const core::DynamicArray<math::Vec3i> &positions,
+							const core::DynamicArray<uint16_t> &indices, bool hasVoxel, const math::Vec3i &mins,
+							const math::Vec3i &maxs, const math::Vec3i *canvasMin, const math::Vec3i *canvasSize,
 							int parent) -> bool {
-		glm::ivec3 rmin(0);
-		glm::ivec3 rmax(0);
+		math::Vec3i rmin(0);
+		math::Vec3i rmax(0);
 		if (hasVoxel) {
 			rmin = mins;
 			rmax = maxs;
 		} else if (canvasMin != nullptr && canvasSize != nullptr) {
 			rmin = *canvasMin;
-			rmax = *canvasMin + *canvasSize - glm::ivec3(1);
+			rmax = *canvasMin + *canvasSize - math::Vec3i(1);
 		}
 		const voxel::Region region(rmin, rmax);
 		if (!checkValidRegion(region)) {
@@ -899,10 +900,10 @@ bool VCdxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 			const bool locked = body.readBool();
 			int32_t chunkCount;
 			wrap(body.readInt32(chunkCount))
-			core::DynamicArray<glm::ivec3> positions;
+			core::DynamicArray<math::Vec3i> positions;
 			core::DynamicArray<uint16_t> indices;
-			glm::ivec3 mins(0);
-			glm::ivec3 maxs(0);
+			math::Vec3i mins(0);
+			math::Vec3i maxs(0);
 			bool hasVoxel = false;
 			wrapBool(loadLayerVoxels(body, chunkCount, true, positions, indices, mins, maxs, hasVoxel))
 			if (layerName.empty()) {
@@ -929,10 +930,10 @@ bool VCdxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 		core::String modelName;
 		wrapBool(body.readDotNetString(modelName))
 		const bool hasCanvas = body.readBool();
-		glm::ivec3 canvasMin(0);
-		glm::ivec3 canvasSize(0);
-		const glm::ivec3 *canvasMinPtr = nullptr;
-		const glm::ivec3 *canvasSizePtr = nullptr;
+		math::Vec3i canvasMin(0);
+		math::Vec3i canvasSize(0);
+		const math::Vec3i *canvasMinPtr = nullptr;
+		const math::Vec3i *canvasSizePtr = nullptr;
 		if (hasCanvas) {
 			wrapBool(priv::readVec3i(body, canvasMin))
 			wrapBool(priv::readVec3i(body, canvasSize))
@@ -963,10 +964,10 @@ bool VCdxFormat::loadGroupsPalette(const core::String &filename, const io::Archi
 			const bool locked = body.readBool();
 			int32_t chunkCount;
 			wrap(body.readInt32(chunkCount))
-			core::DynamicArray<glm::ivec3> positions;
+			core::DynamicArray<math::Vec3i> positions;
 			core::DynamicArray<uint16_t> indices;
-			glm::ivec3 mins(0);
-			glm::ivec3 maxs(0);
+			math::Vec3i mins(0);
+			math::Vec3i maxs(0);
 			bool hasVoxel = false;
 			wrapBool(loadLayerVoxels(body, chunkCount, false, positions, indices, mins, maxs, hasVoxel))
 			core::String nodeName = layerName;
@@ -1006,9 +1007,9 @@ bool VCdxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 
 	const palette::Palette &palette = sceneGraph.firstPalette();
 	int64_t totalVoxels = 0;
-	glm::ivec3 size(0);
-	glm::ivec3 mins(0);
-	glm::ivec3 maxs(0);
+	math::Vec3i size(0);
+	math::Vec3i mins(0);
+	math::Vec3i maxs(0);
 	bool haveBounds = false;
 	core::String modelName = core::string::extractFilename(filename);
 	if (models.size() == 1 && !models[0]->name().empty()) {
@@ -1028,7 +1029,7 @@ bool VCdxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 		priv::expandWorldAabb(mins, maxs, haveBounds, volume->region(), transform.worldMatrix());
 	}
 	if (haveBounds) {
-		size = maxs - mins + glm::ivec3(1);
+		size = maxs - mins + math::Vec3i(1);
 	}
 
 	wrapSave(stream->writeUInt32(FourCC('V', 'C', 'D', 'X')))
@@ -1036,7 +1037,7 @@ bool VCdxFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 	wrapSave(priv::writeInfoJson(*stream, 1, totalVoxels, size, names))
 
 	ThumbnailContext thumbCtx;
-	thumbCtx.outputSize = glm::ivec2(192, 192);
+	thumbCtx.outputSize = math::Vec2i(192, 192);
 	const image::ImagePtr &image = createThumbnail(sceneGraph, ctx.thumbnailCreator, thumbCtx);
 	if (image && image->isLoaded()) {
 		io::BufferedReadWriteStream png(192 * 192 * 4);

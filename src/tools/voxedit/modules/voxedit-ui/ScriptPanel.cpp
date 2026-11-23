@@ -19,8 +19,6 @@
 #include "voxelui/ScriptBrowserPanel.h"
 #include "WindowTitles.h"
 
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 namespace voxedit {
 

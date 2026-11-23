@@ -6,23 +6,24 @@
 
 #include "CollisionNode.h"
 #include "math/Axis.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
 struct ContactListener {
 	virtual ~ContactListener() = default;
-	virtual void onContact(const glm::vec3& point) = 0;
+	virtual void onContact(const math::Vec3f& point) = 0;
 };
 
 /**
  * @brief Represents a physical body that can move and collide with the environment.
  */
 struct KinematicBody {
-	glm::vec3 position{0.0f};
-	glm::vec3 velocity{0.0f};
+	math::Vec3f position{0.0f};
+	math::Vec3f velocity{0.0f};
 	// this should not be higher than 0.4998 - otherwise the collision detection can fail because the voxel cell would be off by one
-	glm::vec3 extents{0.2f, 0.8f, 0.2f};
-	glm::vec3 contactPoint{0.0f};
+	math::Vec3f extents{0.2f, 0.8f, 0.2f};
+	math::Vec3f contactPoint{0.0f};
 	bool collidedX = false;
 	bool collidedY = false;
 	bool collidedZ = false;
@@ -77,7 +78,7 @@ protected:
 	 * @param[in] axis The axis to check for collision.
 	 * @return @c true if a collision occurred on the given axis, @c false otherwise.
 	 */
-	bool checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &nextPos,
+	bool checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &body, const math::Vec3f &nextPos,
 							  math::Axis axis) const;
 	/**
 	 * @brief Checks for collision at a given position.
@@ -86,7 +87,7 @@ protected:
 	 * @param[in] body The kinematic body to check for collision.
 	 * @return @c true if a collision occurred at the given position, @c false otherwise.
 	 */
-	bool checkCollision(const CollisionNodes &nodes, const glm::vec3 &pos, const KinematicBody &body) const;
+	bool checkCollision(const CollisionNodes &nodes, const math::Vec3f &pos, const KinematicBody &body) const;
 
 	/**
 	 * @brief Attempts to step up when horizontal movement is blocked by a low obstacle.
@@ -101,7 +102,7 @@ protected:
 	 * @param[in] desiredHorizontalPos The desired horizontal position (X/Z) before collision.
 	 * @return @c true if a step was successfully performed, @c false otherwise.
 	 */
-	bool tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &desiredHorizontalPos) const;
+	bool tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const math::Vec3f &desiredHorizontalPos) const;
 
 public:
 	/** A finite limit bounds collision-node visits and voxel samples across updates. */

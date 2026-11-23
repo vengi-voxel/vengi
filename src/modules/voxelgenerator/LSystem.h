@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "core/GLM.h"
 #include "core/String.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
@@ -12,15 +11,14 @@
 #include "math/Random.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Axes.h"
+#include "math/Scalar.h"
 
 namespace palette {
 class Palette;
 }
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/vec3.hpp>
 
 /**
  * Voxel generators
@@ -34,8 +32,8 @@ namespace voxelgenerator {
 namespace lsystem {
 
 struct TurtleStep {
-	glm::vec3 pos{0.0f};
-	glm::vec3 rotation = glm::up();
+	math::Vec3f pos{0.0f};
+	math::Vec3f rotation = math::up();
 	float width;
 	float length = 1.0f;
 	voxel::Voxel voxel;
@@ -56,10 +54,10 @@ extern const core::DynamicArray<LSystemCommand> &getLSystemCommands();
 extern bool parseRules(const core::String &rulesStr, core::DynamicArray<Rule> &rules);
 
 struct LSystemConfig {
-	glm::ivec3 position{0};
+	math::Vec3i position{0};
 	core::String axiom;
 	core::DynamicArray<Rule> rules;
-	float angle = glm::radians(25.0f);
+	float angle = math::radians(25.0f);
 	float length = 1.0f;
 	float width = 1.0f;
 	float widthIncrement = 0.5f;
@@ -76,8 +74,8 @@ struct LSystemConfig {
 
 struct LSystemState {
 	core::String sentence;
-	glm::ivec3 position{0};
-	float angle = glm::radians(25.0f);
+	math::Vec3i position{0};
+	float angle = math::radians(25.0f);
 	float length = 1.0f;
 	float width = 1.0f;
 	float widthIncrement = 0.5f;
@@ -146,7 +144,7 @@ bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, 
 	}
 	if (!execState.initialized) {
 		execState.step.width = state.width;
-		execState.step.length = glm::max(0.0f, state.length);
+		execState.step.length = math::max(0.0f, state.length);
 		execState.random.setSeed((unsigned int)state.seed);
 		execState.step.voxel = voxel;
 		execState.initialized = true;
@@ -169,18 +167,18 @@ bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, 
 		if (length <= 0.0f) {
 			break;
 		}
-		const glm::vec3 start = execState.step.pos;
-		const glm::vec3 end = start + length * execState.step.rotation;
+		const math::Vec3f start = execState.step.pos;
+		const math::Vec3f end = start + length * execState.step.rotation;
 		// Subvoxel sampling connects diagonal segments and preserves fractional endpoints.
-		const int samples = (int)glm::ceil(length * 2.0f);
-		const int diameter = glm::max(1, (int)glm::ceil(execState.step.width));
+		const int samples = (int)math::ceil(length * 2.0f);
+		const int diameter = math::max(1, (int)math::ceil(execState.step.width));
 		const int lower = -(diameter / 2);
 		for (int j = 0; j <= samples; ++j) {
-			const glm::ivec3 center(glm::round(glm::mix(start, end, (float)j / (float)samples)));
+			const math::Vec3i center(math::round(math::mix(start, end, (float)j / (float)samples)));
 			for (int x = 0; x < diameter; ++x) {
 				for (int y = 0; y < diameter; ++y) {
 					for (int z = 0; z < diameter; ++z) {
-						const glm::ivec3 dest = center + glm::ivec3(x + lower, y + lower, z + lower);
+						const math::Vec3i dest = center + math::Vec3i(x + lower, y + lower, z + lower);
 						volume.setVoxel(state.position + dest, execState.step.voxel);
 					}
 				}
@@ -188,7 +186,7 @@ bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, 
 		}
 		execState.step.pos = end;
 		if (state.lengthScale != 1.0f) {
-			execState.step.length = glm::max(state.minLength, length * state.lengthScale);
+			execState.step.length = math::max(state.minLength, length * state.lengthScale);
 		}
 		break;
 	}
@@ -219,21 +217,21 @@ bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, 
 
 	case 'L': {
 		// Oversample the sphere to close potential holes.
-		const float leafDistance = glm::round(2.0f * state.leafRadius);
-		const int leavesVoxelCnt = (int)(glm::pow(leafDistance, 3) * 2.0f);
+		const float leafDistance = math::round(2.0f * state.leafRadius);
+		const int leavesVoxelCnt = (int)(math::pow(leafDistance, 3) * 2.0f);
 		const voxel::Voxel leaf = state.leafColor >= 0 && state.leafColor < 256
 			? voxel::createVoxel(voxel::VoxelType::Generic, state.leafColor)
 			: execState.step.voxel;
 		for (int j = 0; j < leavesVoxelCnt; j++) {
-			glm::vec3 r;
+			math::Vec3f r;
 			do {
 				const float x = execState.random.randomf(-1.0f, 1.0f);
 				const float y = execState.random.randomf(-1.0f, 1.0f);
 				const float z = execState.random.randomf(-1.0f, 1.0f);
-				r = glm::vec3(x, y, z);
-			} while (glm::dot(r, r) > 1.0f);
+				r = math::Vec3f(x, y, z);
+			} while (math::dot(r, r) > 1.0f);
 			r *= state.leafRadius;
-			const glm::ivec3 p = state.position + glm::ivec3(glm::round(execState.step.pos + r));
+			const math::Vec3i p = state.position + math::Vec3i(math::round(execState.step.pos + r));
 			volume.setVoxel(p, leaf);
 		}
 		break;
@@ -241,22 +239,22 @@ bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, 
 
 	case '+':
 		// Rotate right
-		execState.step.rotation = glm::rotateZ(execState.step.rotation, angle);
+		execState.step.rotation = math::rotateZ(execState.step.rotation, angle);
 		break;
 
 	case '-':
 		// Rotate left
-		execState.step.rotation = glm::rotateZ(execState.step.rotation, -angle);
+		execState.step.rotation = math::rotateZ(execState.step.rotation, -angle);
 		break;
 
 	case '>':
 		// Rotate forward
-		execState.step.rotation = glm::rotateX(execState.step.rotation, angle);
+		execState.step.rotation = math::rotateX(execState.step.rotation, angle);
 		break;
 
 	case '<':
 		// Rotate back
-		execState.step.rotation = glm::rotateX(execState.step.rotation, -angle);
+		execState.step.rotation = math::rotateX(execState.step.rotation, -angle);
 		break;
 
 	case '#':
@@ -267,7 +265,7 @@ bool step(Volume &volume, const voxel::Voxel &voxel, const LSystemState &state, 
 	case '!':
 		// Decrement width
 		execState.step.width -= state.widthIncrement;
-		execState.step.width = glm::max(1.0f, execState.step.width);
+		execState.step.width = math::max(1.0f, execState.step.width);
 		break;
 
 	case '[':

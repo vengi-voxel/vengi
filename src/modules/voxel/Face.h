@@ -7,7 +7,8 @@
 #include "core/Enum.h"
 #include "math/Axis.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -40,7 +41,7 @@ enum class FaceNames : uint8_t {
 FaceNames toFaceNames(const core::String &in, FaceNames defaultFace = FaceNames::Max);
 const char *faceNameString(FaceNames face);
 math::Axis faceToAxis(FaceNames face);
-glm::vec3 faceNormal(FaceNames face);
+math::Vec3f faceNormal(FaceNames face);
 
 inline constexpr FaceNames oppositeFace(FaceNames face) {
 	switch (face) {
@@ -212,7 +213,7 @@ static FaceBits visibleFaces(const Volume &v, int x, int y, int z, bool skipEmpt
 }
 
 template<class Volume>
-static FaceBits visibleFaces(const Volume &v, const glm::ivec3 &pos, bool skipEmpty = true) {
+static FaceBits visibleFaces(const Volume &v, const math::Vec3i &pos, bool skipEmpty = true) {
 	return visibleFaces(v, pos.x, pos.y, pos.z, skipEmpty);
 }
 

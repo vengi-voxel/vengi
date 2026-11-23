@@ -14,6 +14,7 @@
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelutil/VolumeSelect.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -24,7 +25,7 @@ protected:
 		return _testApp->filesystem()->registerPath("selectionmodes/");
 	}
 
-	void prepare(SelectBrush &brush, BrushContext &ctx, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	void prepare(SelectBrush &brush, BrushContext &ctx, const math::Vec3i &mins, const math::Vec3i &maxs) {
 		ctx.cursorPosition = mins;
 		ctx.cursorFace = voxel::FaceNames::PositiveX;
 		EXPECT_TRUE(brush.beginBrush(ctx));
@@ -62,10 +63,10 @@ TEST_F(SelectBrushTest, testSelectModeAll) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.referencePos = glm::ivec3(-2, -2, -2);
+	ctx.referencePos = math::Vec3i(-2, -2, -2);
 
 	// Select the entire volume region which includes all solid voxels
-	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	prepare(brush, ctx, math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	// SelectMode::All uses VisitSolid, so ALL solid voxels should be selected (including interior)
@@ -105,11 +106,11 @@ TEST_F(SelectBrushTest, testSelectModeSameColor) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.referencePos = glm::ivec3(-2, -2, -2);
+	ctx.referencePos = math::Vec3i(-2, -2, -2);
 	// Set the hit cursor voxel to color 1 (even x voxels)
 	ctx.hitCursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
-	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	prepare(brush, ctx, math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	// Only voxels with color 1 (even x) should be selected
@@ -147,14 +148,14 @@ TEST_F(SelectBrushTest, testSelectModeConnected) {
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
 	// Start from center of the pillar
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
-	ctx.referencePos = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
+	ctx.referencePos = math::Vec3i(0, 0, 0);
 	// Set the hit cursor voxel to the pillar color
 	ctx.hitCursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
 	// Reset cursor position to the starting voxel for connected flood fill
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	// The pillar voxels should be selected (connected)
@@ -188,9 +189,9 @@ TEST_F(SelectBrushTest, testSelectModeVisible) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.referencePos = glm::ivec3(-2, -2, -2);
+	ctx.referencePos = math::Vec3i(-2, -2, -2);
 
-	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	prepare(brush, ctx, math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	// Interior voxels should NOT be selected (they are invisible)
@@ -235,10 +236,10 @@ TEST_F(SelectBrushTest, testSelectRemove) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.referencePos = glm::ivec3(-2, -2, -2);
+	ctx.referencePos = math::Vec3i(-2, -2, -2);
 
 	// Deselect the entire volume region
-	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	prepare(brush, ctx, math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Erase);
 
 	// SelectMode::All uses VisitSolid, so ALL solid voxels should be deselected (including interior)
@@ -272,8 +273,8 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -307,8 +308,8 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_stopsAtCoveredVoxel) {
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
 	// Start from the left end of the line
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(-3, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(-3, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -349,8 +350,8 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_deviation) {
 
 	// With deviation=0: only the lower floor (y=0) should be selected
 	brush.flatSurface().setDeviation(0);
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -372,8 +373,8 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_deviation) {
 
 	// With deviation=1: both floors should be reachable (step of 1 in Y from start)
 	brush.flatSurface().setDeviation(1);
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -401,8 +402,8 @@ TEST_F(SelectBrushTest, testSelectModeFlatSurface_invalidFace) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::Max; // invalid face
 	executeSelect(brush, node, ctx);
 
@@ -433,10 +434,10 @@ TEST_F(SelectBrushTest, testSelectModeCircle) {
 	// Click at center (0,0,0), drag to (3,0,0) -> radius = 3
 	// Set cursorFace before prepare() so _aabbFace locks to PositiveY
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	EXPECT_TRUE(brush.active());
-	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	ctx.cursorPosition = math::Vec3i(3, 0, 0);
 	brush.step(ctx);
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
@@ -488,16 +489,16 @@ TEST_F(SelectBrushTest, testSelectModeCircle_ellipseParams) {
 	ctx.targetVolumeRegion = volume.region();
 	// Set cursorFace before beginBrush so _aabbFace locks to PositiveY
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	EXPECT_TRUE(brush.active());
-	ctx.cursorPosition = glm::ivec3(3, 0, 0);
+	ctx.cursorPosition = math::Vec3i(3, 0, 0);
 	brush.step(ctx);
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	// After execution, ellipse params should be cached
 	EXPECT_TRUE(brush.circle().valid());
-	EXPECT_EQ(brush.circle().center(), glm::ivec3(0, 0, 0));
+	EXPECT_EQ(brush.circle().center(), math::Vec3i(0, 0, 0));
 	EXPECT_EQ(brush.circle().radiusU(), 3);
 	EXPECT_EQ(brush.circle().radiusV(), 3);
 	EXPECT_EQ(brush.circle().face(), voxel::FaceNames::PositiveY);
@@ -523,9 +524,9 @@ TEST_F(SelectBrushTest, testSelectModeCircle_invalidFace) {
 	ctx.targetVolumeRegion = volume.region();
 	// Set invalid face before beginBrush so _aabbFace locks to Max
 	ctx.cursorFace = voxel::FaceNames::Max;
-	ctx.cursorPosition = glm::ivec3(-5, -5, -5);
+	ctx.cursorPosition = math::Vec3i(-5, -5, -5);
 	EXPECT_TRUE(brush.beginBrush(ctx));
-	ctx.cursorPosition = glm::ivec3(5, 5, 5);
+	ctx.cursorPosition = math::Vec3i(5, 5, 5);
 	brush.step(ctx);
 	executeSelect(brush, node, ctx);
 
@@ -556,10 +557,10 @@ TEST_F(SelectBrushTest, testSelectModeCircle_onlySurface) {
 	ctx.targetVolumeRegion = volume.region();
 	// Set cursorFace before beginBrush so _aabbFace locks to PositiveY
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	EXPECT_TRUE(brush.active());
-	ctx.cursorPosition = glm::ivec3(5, 0, 0);
+	ctx.cursorPosition = math::Vec3i(5, 0, 0);
 	brush.step(ctx);
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
@@ -597,8 +598,8 @@ TEST_F(SelectBrushTest, testSelectModeSlope_flatSurface) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -644,8 +645,8 @@ TEST_F(SelectBrushTest, testSelectModeSlope_stopsAtWall) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -693,8 +694,8 @@ TEST_F(SelectBrushTest, testSelectModeSlope_staircase) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(10, 10, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(10, 10, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -734,8 +735,8 @@ TEST_F(SelectBrushTest, testSelectModeSlope_disconnectedNotSelected) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-5, -5, -5), glm::ivec3(5, 5, 5));
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	prepare(brush, ctx, math::Vec3i(-5, -5, -5), math::Vec3i(5, 5, 5));
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	executeSelect(brush, node, ctx);
 
@@ -779,7 +780,7 @@ TEST_F(SelectBrushTest, testSelectModeLuaLine_straight) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	prepare(brush, ctx, math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	for (int k = -2; k <= 2; ++k) {
@@ -816,11 +817,11 @@ TEST_F(SelectBrushTest, testSelectModeLuaLine_gizmo) {
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
-	ctx.cursorPosition = glm::ivec3(-2, -2, -2);
+	ctx.cursorPosition = math::Vec3i(-2, -2, -2);
 	EXPECT_FALSE(brush.hasHandle(ctx));
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
-	ctx.cursorPosition = glm::ivec3(2, 2, 2);
+	ctx.cursorPosition = math::Vec3i(2, 2, 2);
 	brush.step(ctx);
 
 	EXPECT_TRUE(brush.hasHandle(ctx));
@@ -860,7 +861,7 @@ TEST_F(SelectBrushTest, testSelectModeLuaRectangle_outline) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	prepare(brush, ctx, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2));
+	prepare(brush, ctx, math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2));
 	executeSelect(brush, node, ctx, ModifierType::Override);
 
 	EXPECT_TRUE((volume.voxel(2, 2, 0).getFlags() & voxel::FlagOutline) != 0);
@@ -901,11 +902,11 @@ TEST_F(SelectBrushTest, testSelectModeLuaRectangle_gizmo) {
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
-	ctx.cursorPosition = glm::ivec3(-2, -2, -2);
+	ctx.cursorPosition = math::Vec3i(-2, -2, -2);
 	EXPECT_FALSE(brush.hasHandle(ctx));
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
-	ctx.cursorPosition = glm::ivec3(2, 2, 2);
+	ctx.cursorPosition = math::Vec3i(2, 2, 2);
 	brush.step(ctx);
 
 	EXPECT_TRUE(brush.hasHandle(ctx));
@@ -945,10 +946,10 @@ TEST_F(SelectBrushTest, testHoleRim2D_wellOpening) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click the top face (+Y) of a rim voxel at (2,0,4) - left edge of hole
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(2, 0, 4);
+	ctx.cursorPosition = math::Vec3i(2, 0, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1005,10 +1006,10 @@ TEST_F(SelectBrushTest, testHoleRim2D_tubeWallRadialClick) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click left wall at (3,4,4) using +X face (pointing into the hollow)
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
-	ctx.cursorPosition = glm::ivec3(3, 4, 4);
+	ctx.cursorPosition = math::Vec3i(3, 4, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1052,10 +1053,10 @@ TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 	// Click a voxel bordering the open notch
-	ctx.cursorPosition = glm::ivec3(2, 0, 2);
+	ctx.cursorPosition = math::Vec3i(2, 0, 2);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1070,11 +1071,11 @@ TEST_F(SelectBrushTest, testHoleRim2D_openEdgeNotSelected) {
 
 TEST_F(SelectBrushTest, testLassoContains_insideSquare) {
 	// 4-vertex square polygon on the XZ plane (uAxis=X, vAxis=Z)
-	core::DynamicArray<glm::ivec3> path;
-	path.push_back(glm::ivec3(0, 0, 0));
-	path.push_back(glm::ivec3(4, 0, 0));
-	path.push_back(glm::ivec3(4, 0, 4));
-	path.push_back(glm::ivec3(0, 0, 4));
+	core::DynamicArray<math::Vec3i> path;
+	path.push_back(math::Vec3i(0, 0, 0));
+	path.push_back(math::Vec3i(4, 0, 0));
+	path.push_back(math::Vec3i(4, 0, 4));
+	path.push_back(math::Vec3i(0, 0, 4));
 	const int uAxis = 0; // X
 	const int vAxis = 2; // Z
 
@@ -1085,10 +1086,10 @@ TEST_F(SelectBrushTest, testLassoContains_insideSquare) {
 }
 
 TEST_F(SelectBrushTest, testLassoContains_insideTriangle) {
-	core::DynamicArray<glm::ivec3> path;
-	path.push_back(glm::ivec3(0, 0, 0));
-	path.push_back(glm::ivec3(6, 0, 0));
-	path.push_back(glm::ivec3(3, 0, 6));
+	core::DynamicArray<math::Vec3i> path;
+	path.push_back(math::Vec3i(0, 0, 0));
+	path.push_back(math::Vec3i(6, 0, 0));
+	path.push_back(math::Vec3i(3, 0, 6));
 	const int uAxis = 0; // X
 	const int vAxis = 2; // Z
 
@@ -1103,7 +1104,7 @@ TEST_F(SelectBrushTest, testLassoScreenSpaceStateManagement) {
 	brush.setSelectMode(SelectMode::Lasso);
 
 	BrushContext ctx;
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
 
 	// beginBrush starts the screen-space drag
@@ -1151,10 +1152,10 @@ TEST_F(SelectBrushTest, testColumnRim2D_pillar) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click the top face (+Y) of the center pillar voxel
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(4, 4, 4);
+	ctx.cursorPosition = math::Vec3i(4, 4, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1202,10 +1203,10 @@ TEST_F(SelectBrushTest, testColumnRim2D_largeFloor) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click the top face (+Y) of a center floor voxel
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(4, 0, 4);
+	ctx.cursorPosition = math::Vec3i(4, 0, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1245,10 +1246,10 @@ TEST_F(SelectBrushTest, testColumnRim2D_sideClick) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click the +X side face of the column at mid-height
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
-	ctx.cursorPosition = glm::ivec3(5, 4, 4);
+	ctx.cursorPosition = math::Vec3i(5, 4, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1290,9 +1291,9 @@ TEST_F(SelectBrushTest, testColumnRim2D_singleVoxel) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(4, 4, 4);
+	ctx.cursorPosition = math::Vec3i(4, 4, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1329,10 +1330,10 @@ TEST_F(SelectBrushTest, testHoleRim3D_wellOpening) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click +Y face of a cardinal rim voxel adjacent to the hole
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(3, 0, 4);
+	ctx.cursorPosition = math::Vec3i(3, 0, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1383,10 +1384,10 @@ TEST_F(SelectBrushTest, testHoleRim3D_hollowTube) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click inner +X face of left wall at (3,4,4)
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
-	ctx.cursorPosition = glm::ivec3(3, 4, 4);
+	ctx.cursorPosition = math::Vec3i(3, 4, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1436,10 +1437,10 @@ TEST_F(SelectBrushTest, testHoleRim3D_solidVoxelNoSelect) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click +X face of center voxel (4,4,4): air seed at (5,4,4) is inside the solid block
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
-	ctx.cursorPosition = glm::ivec3(4, 4, 4);
+	ctx.cursorPosition = math::Vec3i(4, 4, 4);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1498,10 +1499,10 @@ TEST_F(SelectBrushTest, testHoleRim3D_thinWall) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.gridResolution = glm::ivec3(1);
+	ctx.gridResolution = math::Vec3i(1);
 	// Click +Z face of a rim voxel at Z=5, air seed at (2,2,5) inside air column
 	ctx.cursorFace = voxel::FaceNames::PositiveZ;
-	ctx.cursorPosition = glm::ivec3(2, 1, 5);
+	ctx.cursorPosition = math::Vec3i(2, 1, 5);
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
 	executeSelect(brush, node, ctx);
@@ -1547,7 +1548,7 @@ TEST_F(SelectBrushTest, testSelectModePaint) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
@@ -1600,7 +1601,7 @@ TEST_F(SelectBrushTest, testSelectModePaintDeselect) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
@@ -1647,7 +1648,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegion) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
 	EXPECT_TRUE(brush.beginBrush(ctx));
@@ -1696,7 +1697,7 @@ TEST_F(SelectBrushTest, testSelectModePaintGrowRegionNoSelection) {
 
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 
 	EXPECT_TRUE(brush.beginBrush(ctx));

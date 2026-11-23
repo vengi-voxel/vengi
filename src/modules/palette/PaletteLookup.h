@@ -6,7 +6,7 @@
 
 #include "color/RGBA.h"
 #include "core/collection/Buffer.h"
-#include <glm/fwd.hpp>
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -40,7 +40,7 @@ public:
 	 * @param color Normalized color value [0.0-1.0]
 	 * @sa color::getClosestMatch()
 	 */
-	uint8_t findClosestIndex(const glm::vec4 &color);
+	uint8_t findClosestIndex(const math::Vec4f &color);
 
 	/**
 	 * @brief Find the closed index in the currently in-use palette for the given color

@@ -12,6 +12,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxel/Mesh.h"
 #include "io/StreamUtil.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -33,7 +34,7 @@ bool STLFormat::parseAscii(io::SeekableReadStream &stream, Mesh &mesh) {
 					break;
 				}
 				if (!strncmp(ptr, "facet normal ", 13)) {
-					glm::vec3 faceNormal;
+					math::Vec3f faceNormal;
 					ptr += 13;
 					core::string::parseReal3(&faceNormal.x, &faceNormal.y, &faceNormal.z, &ptr);
 					if (!stream.readLine(sizeof(line), line)) {
@@ -102,7 +103,7 @@ bool STLFormat::parseBinary(io::SeekableReadStream &stream, Mesh &mesh) {
 	mesh.indices.reserve(3 * numFaces);
 	mesh.vertices.reserve(3 * numFaces);
 	for (uint32_t fn = 0; fn < numFaces; ++fn) {
-		glm::vec3 faceNormal;
+		math::Vec3f faceNormal;
 		wrapBool(io::readVec3(stream, faceNormal))
 		for (int i = 0; i < 3; ++i) {
 			MeshVertex vert;
@@ -152,8 +153,8 @@ bool STLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 #undef wrapBool
 
 bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const ChunkMeshExt &meshExt, const voxel::VoxelVertex &v1,
-							const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) {
-	glm::vec3 pos;
+							const scenegraph::SceneGraphTransform &transform, const math::Vec3f &scale) {
+	math::Vec3f pos;
 	if (meshExt.applyTransform) {
 		pos = transform.apply(v1.position, meshExt.pivot * meshExt.size);
 	} else {
@@ -173,7 +174,7 @@ bool STLFormat::writeVertex(io::SeekableWriteStream &stream, const ChunkMeshExt 
 }
 
 bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph, const ChunkMeshes &meshes,
-						   const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale,
+						   const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale,
 						   bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
@@ -232,9 +233,9 @@ bool STLFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				const voxel::VoxelVertex &v3 = vertices[three];
 
 				// normal
-				const glm::vec3 edge1 = glm::vec3(v2.position - v1.position);
-				const glm::vec3 edge2 = glm::vec3(v3.position - v1.position);
-				const glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+				const math::Vec3f edge1 = math::Vec3f(v2.position - v1.position);
+				const math::Vec3f edge2 = math::Vec3f(v3.position - v1.position);
+				const math::Vec3f normal = math::normalize(math::cross(edge1, edge2));
 				for (int k = 0; k < 3; ++k) {
 					if (!stream->writeFloat(normal[k])) {
 						return false;

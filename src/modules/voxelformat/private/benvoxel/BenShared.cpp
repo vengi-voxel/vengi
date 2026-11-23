@@ -11,6 +11,8 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/private/benvoxel/SparseVoxelOctree.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 namespace benv {
@@ -73,7 +75,7 @@ Chunk::~Chunk() {
 	_stream.seek(endPos);
 }
 
-bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, const glm::vec3 &pointPos, int parent) {
+bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, const math::Vec3f &pointPos, int parent) {
 	scenegraph::SceneGraphNode pointNode(scenegraph::SceneGraphNodeType::Point);
 	pointNode.setName(name);
 	scenegraph::SceneGraphTransform transform;
@@ -88,15 +90,15 @@ Metadata createMetadata(const scenegraph::SceneGraph &sceneGraph, const scenegra
 		const scenegraph::SceneGraphNode *child = sceneGraph.findNodeByUUID(childUUID);
 		if (child != nullptr && child->isPointNode()) {
 			const core::String &name = node.name();
-			const glm::vec3 &pointPos = node.transform(0).localTranslation();
-			metadata.points.emplace_back(name, glm::ivec3{pointPos.x, pointPos.y, pointPos.z});
+			const math::Vec3f &pointPos = node.transform(0).localTranslation();
+			metadata.points.emplace_back(name, math::Vec3i(pointPos));
 		}
 	}
 
 	// point nodes are used to model negative space
 	if (node.isModelNode()) {
 		const voxel::Region &region = sceneGraph.resolveRegion(node);
-		if (region.getLowerCorner() != glm::ivec3(0)) {
+		if (region.getLowerCorner() != math::Vec3i(0)) {
 			// empty name is for modelling a region offset
 			metadata.points.emplace_back("", region.getLowerCorner());
 		}
@@ -119,7 +121,7 @@ bool saveModel(const scenegraph::SceneGraph &sceneGraph, const scenegraph::Scene
 	}
 
 	const voxel::Region &region = volume->region();
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 	Log::debug("Saving model with size: %d:%d:%d", dim.x, dim.y, dim.z);
 
 	BenVoxel::SparseVoxelOctree svo(dim.x, dim.z, dim.y);

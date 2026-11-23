@@ -2,6 +2,7 @@ set(SRCS
 	AABB.h
 	Axis.cpp Axis.h
 	Bezier.h
+	Constants.h
 	CoordinateSystem.h
 	CoordinateSystemUtil.cpp CoordinateSystemUtil.h
 	Easing.h
@@ -16,8 +17,11 @@ set(SRCS
 	Rect.h
 	SDF.h SDF.cpp
 	Tri.h Tri.cpp
-	Math.h Math.cpp
+	TriangleAABB.h TriangleAABB.cpp
+	Polar.h
+	Math.cpp
 )
+engine_source_optimize(TriangleAABB.cpp)
 set(LIB math)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES core color)
 
@@ -35,6 +39,7 @@ set(TEST_SRCS
 	tests/QuadTreeTest.cpp
 	tests/RandomTest.cpp
 	tests/RayTest.cpp
+	tests/TriangleAABBTest.cpp
 	tests/RectTest.cpp
 	tests/TriTest.cpp
 )
@@ -48,6 +53,7 @@ if (USE_BENCHMARKS)
 	set(BENCHMARK_SRCS
 		benchmarks/OBBBenchmark.cpp
 		benchmarks/TriBenchmark.cpp
+		benchmarks/TriangleAABBBenchmark.cpp
 	)
 	engine_add_executable(TARGET benchmarks-${LIB} SRCS ${BENCHMARK_SRCS} NOINSTALL)
 	engine_target_link_libraries(TARGET benchmarks-${LIB} DEPENDENCIES benchmark-app ${LIB})

@@ -10,6 +10,7 @@
 #include "scenegraph/SceneUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
@@ -43,16 +44,16 @@ TEST_F(PhysicsTest, testGravityAndGroundCollision) {
 
 	// Create a body above the ground
 	KinematicBody body;
-	body.position = glm::vec3(8.0f, 10.0f, 8.0f);
-	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(8.0f, 10.0f, 8.0f);
+	body.velocity = math::Vec3f(0.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	Physics physics;
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016; // ~60 FPS
 
 	// Simulate falling for multiple frames
-	const glm::vec3 startPosition = body.position;
+	const math::Vec3f startPosition = body.position;
 
 	// First frame - body should start falling
 	physics.update(deltaTime, nodes, body, gravity);
@@ -106,9 +107,9 @@ TEST_F(PhysicsTest, testWallCollision) {
 
 	// Create a body moving toward the wall
 	KinematicBody body;
-	body.position = glm::vec3(15.0f, 5.0f, 15.0f);
-	body.velocity = glm::vec3(5.0f, 0.0f, 0.0f); // Moving in +X direction
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(15.0f, 5.0f, 15.0f);
+	body.velocity = math::Vec3f(5.0f, 0.0f, 0.0f); // Moving in +X direction
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	Physics physics;
 	const float gravity = 9.81f;
@@ -144,15 +145,15 @@ TEST_F(PhysicsTest, testNoCollisionInEmptySpace) {
 
 	// Create a body
 	KinematicBody body;
-	body.position = glm::vec3(8.0f, 8.0f, 8.0f);
-	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(8.0f, 8.0f, 8.0f);
+	body.velocity = math::Vec3f(0.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	Physics physics;
 	const float gravity = 9.81f;
 	const double deltaTime = 0.016;
 
-	const glm::vec3 startPosition = body.position;
+	const math::Vec3f startPosition = body.position;
 
 	// Update once
 	physics.update(deltaTime, nodes, body, gravity);
@@ -187,9 +188,9 @@ TEST_F(PhysicsTest, testFriction) {
 
 	// Create a body on the ground with horizontal velocity
 	KinematicBody body;
-	body.position = glm::vec3(15.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(5.0f, 0.0f, 0.0f); // Moving in +X direction
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(15.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(5.0f, 0.0f, 0.0f); // Moving in +X direction
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 	body.frictionDecay = 0.1f; // High friction for testing
 
 	Physics physics;
@@ -216,7 +217,7 @@ TEST_F(PhysicsTest, testFriction) {
 	}
 
 	// Velocity should have decreased due to friction
-	EXPECT_LT(glm::abs(body.velocity.x), startVelocityX) << "Friction should have reduced velocity";
+	EXPECT_LT(math::abs(body.velocity.x), startVelocityX) << "Friction should have reduced velocity";
 }
 
 TEST_F(PhysicsTest, testStairWalking_SingleStep) {
@@ -254,9 +255,9 @@ TEST_F(PhysicsTest, testStairWalking_SingleStep) {
 
 	// Create a body with height 2 (extents.y = 1.0) which should allow 1 voxel steps
 	KinematicBody body;
-	body.position = glm::vec3(10.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(2.0f, 0.0f, 0.0f); // Moving toward the step
-	body.extents = glm::vec3(0.4f, 1.0f, 0.4f);	 // Height = 2.0, can step 1 voxel
+	body.position = math::Vec3f(10.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(2.0f, 0.0f, 0.0f); // Moving toward the step
+	body.extents = math::Vec3f(0.4f, 1.0f, 0.4f);	 // Height = 2.0, can step 1 voxel
 	body.frictionDecay = 0.9f;					 // Reduce friction so body maintains movement
 
 	Physics physics;
@@ -329,9 +330,9 @@ TEST_F(PhysicsTest, testStairWalking_TwoVoxelStep) {
 
 	// Create a body with height 4 (extents.y = 2.0) which should allow 2 voxel steps
 	KinematicBody body;
-	body.position = glm::vec3(10.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(2.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 2.0f, 0.4f); // Height = 4.0, can step 2 voxels
+	body.position = math::Vec3f(10.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(2.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 2.0f, 0.4f); // Height = 4.0, can step 2 voxels
 	body.frictionDecay = 0.9f;					// Reduce friction
 
 	Physics physics;
@@ -403,9 +404,9 @@ TEST_F(PhysicsTest, testStairWalking_TooHighStep) {
 	// Create a body with height 2 (extents.y = 1.0) - can only step 1 voxel
 	// But the step is 3 voxels high, so it should NOT be able to climb
 	KinematicBody body;
-	body.position = glm::vec3(10.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(2.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 1.0f, 0.4f); // Height = 2.0, can only step 1 voxel
+	body.position = math::Vec3f(10.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(2.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 1.0f, 0.4f); // Height = 2.0, can only step 1 voxel
 	body.frictionDecay = 0.9f;					// Reduce friction
 
 	Physics physics;
@@ -472,9 +473,9 @@ TEST_F(PhysicsTest, testStairWalking_VelocityPreservation) {
 	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	KinematicBody body;
-	body.position = glm::vec3(10.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(2.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 1.0f, 0.4f);
+	body.position = math::Vec3f(10.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(2.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 1.0f, 0.4f);
 	body.frictionDecay = 0.9f; // Reduce friction
 
 	Physics physics;
@@ -553,9 +554,9 @@ TEST_F(PhysicsTest, testStairWalking_MultipleSteps) {
 	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	KinematicBody body;
-	body.position = glm::vec3(4.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(3.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 1.0f, 0.4f); // Can step 1 voxel at a time
+	body.position = math::Vec3f(4.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(3.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 1.0f, 0.4f); // Can step 1 voxel at a time
 	body.frictionDecay = 0.9f;					// Reduce friction
 
 	Physics physics;
@@ -621,9 +622,9 @@ TEST_F(PhysicsTest, testStairWalking_NoStepInAir) {
 	sceneGraph.getCollisionNodes(nodes, 0, scenegraph::toAABB(v.region()));
 
 	KinematicBody body;
-	body.position = glm::vec3(9.0f, 10.0f, 15.0f);
-	body.velocity = glm::vec3(5.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 1.0f, 0.4f);
+	body.position = math::Vec3f(9.0f, 10.0f, 15.0f);
+	body.velocity = math::Vec3f(5.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 1.0f, 0.4f);
 
 	Physics physics;
 	const float gravity = 9.81f;
@@ -661,7 +662,7 @@ TEST_F(PhysicsTest, testCollisionWithParentGroupTransform) {
 		SceneGraphNode groupNode(SceneGraphNodeType::Group);
 		groupNode.setName("group");
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(50.0f, 0.0f, 50.0f));
+		transform.setWorldTranslation(math::Vec3f(50.0f, 0.0f, 50.0f));
 		groupNode.setTransform(0, transform);
 		groupId = sceneGraph.emplace(core::move(groupNode));
 	}
@@ -688,7 +689,7 @@ TEST_F(PhysicsTest, testCollisionWithParentGroupTransform) {
 	// The model should be at world position (50, 0, 50) due to the group transform
 	// Query with a large AABB around the world position
 	CollisionNodes nodes;
-	const math::AABB<float> aabb(glm::vec3(40.0f, -10.0f, 40.0f), glm::vec3(70.0f, 30.0f, 70.0f));
+	const math::AABB<float> aabb(math::Vec3f(40.0f, -10.0f, 40.0f), math::Vec3f(70.0f, 30.0f, 70.0f));
 	sceneGraph.getCollisionNodes(nodes, 0, aabb);
 
 	int validNodes = 0;
@@ -701,9 +702,9 @@ TEST_F(PhysicsTest, testCollisionWithParentGroupTransform) {
 
 	// Create a body above the ground at the world-space position of the model
 	KinematicBody body;
-	body.position = glm::vec3(58.0f, 10.0f, 58.0f);
-	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(58.0f, 10.0f, 58.0f);
+	body.velocity = math::Vec3f(0.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	Physics physics;
 	const float gravity = 9.81f;
@@ -733,7 +734,7 @@ TEST_F(PhysicsTest, testCollisionAtEdgeOfThinGroundPlane) {
 		SceneGraphNode groupNode(SceneGraphNodeType::Group);
 		groupNode.setName("group");
 		SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(10.0f, 0.0f, 10.0f));
+		transform.setWorldTranslation(math::Vec3f(10.0f, 0.0f, 10.0f));
 		groupNode.setTransform(0, transform);
 		groupId = sceneGraph.emplace(core::move(groupNode));
 	}
@@ -757,7 +758,7 @@ TEST_F(PhysicsTest, testCollisionAtEdgeOfThinGroundPlane) {
 	sceneGraph.updateTransforms();
 
 	CollisionNodes nodes;
-	const math::AABB<float> aabb(glm::vec3(0.0f, -20.0f, 0.0f), glm::vec3(30.0f, 20.0f, 30.0f));
+	const math::AABB<float> aabb(math::Vec3f(0.0f, -20.0f, 0.0f), math::Vec3f(30.0f, 20.0f, 30.0f));
 	sceneGraph.getCollisionNodes(nodes, 0, aabb);
 
 	int validNodes = 0;
@@ -775,9 +776,9 @@ TEST_F(PhysicsTest, testCollisionAtEdgeOfThinGroundPlane) {
 	// This means containsPoint(mins) fails (x < 0) and containsPoint(maxs) fails (y > 1),
 	// but the body AABB still overlaps the region - so the old check would miss the collision.
 	KinematicBody body;
-	body.position = glm::vec3(10.2f, 10.0f, 18.0f);
-	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(10.2f, 10.0f, 18.0f);
+	body.velocity = math::Vec3f(0.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	Physics physics;
 	const float gravity = 9.81f;
@@ -812,23 +813,23 @@ TEST_F(PhysicsTest, testScaledCollisionSamplesTransformedBodyAABB) {
 	}
 
 	modelNode.setVolume(v);
-	modelNode.setPivot(glm::vec3(0.0f));
+	modelNode.setPivot(math::Vec3f(0.0f));
 	SceneGraphTransform transform;
-	transform.setLocalScale(glm::vec3(0.25f));
+	transform.setLocalScale(math::Vec3f(0.25f));
 	modelNode.setTransform(0, transform);
 	sceneGraph.emplace(core::move(modelNode));
 	sceneGraph.updateTransforms();
 
 	CollisionNodes nodes;
-	const math::AABB<float> aabb(glm::vec3(-2.0f, -2.0f, -2.0f), glm::vec3(4.0f, 4.0f, 4.0f));
+	const math::AABB<float> aabb(math::Vec3f(-2.0f, -2.0f, -2.0f), math::Vec3f(4.0f, 4.0f, 4.0f));
 	sceneGraph.getCollisionNodes(nodes, 0, aabb);
 	ASSERT_EQ(1u, nodes.size());
 
 	KinematicBody body;
 	// Model x=2 maps to world x=0.5 with scale 0.25; body spans the gap to the solids at 0 and 4.
-	body.position = glm::vec3(0.5f, 2.0f, 0.5f);
-	body.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
-	body.extents = glm::vec3(0.4f, 0.8f, 0.4f);
+	body.position = math::Vec3f(0.5f, 2.0f, 0.5f);
+	body.velocity = math::Vec3f(0.0f, 0.0f, 0.0f);
+	body.extents = math::Vec3f(0.4f, 0.8f, 0.4f);
 
 	Physics physics;
 	const float gravity = 9.81f;

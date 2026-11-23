@@ -14,14 +14,9 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/VoxelVertex.h"
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/norm.hpp>
-#include <glm/vec3.hpp>
 #include <stdint.h>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -50,7 +45,7 @@ static inline Voxel blendMaterials(const palette::Palette &palette, const Voxel 
 }
 
 // Gradient estimation
-static glm::vec3 computeCentralDifferenceGradient(const RawVolume::Sampler &volIter) {
+static math::Vec3f computeCentralDifferenceGradient(const RawVolume::Sampler &volIter) {
 	const float voxel1nx = convertToDensity(volIter.peekVoxel1nx0py0pz());
 	const float voxel1px = convertToDensity(volIter.peekVoxel1px0py0pz());
 
@@ -60,26 +55,26 @@ static glm::vec3 computeCentralDifferenceGradient(const RawVolume::Sampler &volI
 	const float voxel1nz = convertToDensity(volIter.peekVoxel0px0py1nz());
 	const float voxel1pz = convertToDensity(volIter.peekVoxel0px0py1pz());
 
-	return glm::vec3(voxel1nx - voxel1px, voxel1ny - voxel1py, voxel1nz - voxel1pz);
+	return math::Vec3f(voxel1nx - voxel1px, voxel1ny - voxel1py, voxel1nz - voxel1pz);
 }
 
 static void generateVertex(math::Axis axis, const palette::Palette &palette, RawVolume::Sampler &sampler,
-				   ChunkMesh *result, core::Array2DView<glm::ivec3> &indicesView,
-				   const Voxel &v111, const glm::vec3 &n111, float v111Density, int x, int y) {
+				   ChunkMesh *result, core::Array2DView<math::Vec3i> &indicesView,
+				   const Voxel &v111, const math::Vec3f &n111, float v111Density, int x, int y) {
 	sampler.moveNegative(axis);
 	const Voxel v110 = sampler.voxel();
 	const float v110Density = convertToDensity(v110);
 	const float interpolate = (DensityThreshold - v110Density) / (v111Density - v110Density);
 
 	// Compute the normal
-	const glm::vec3 n110 = computeCentralDifferenceGradient(sampler);
-	glm::vec3 normal = (n111 * interpolate) + (n110 * (1 - interpolate));
+	const math::Vec3f n110 = computeCentralDifferenceGradient(sampler);
+	math::Vec3f normal = (n111 * interpolate) + (n110 * (1 - interpolate));
 
 	// The gradient for a voxel can be zero (e.g. solid voxel surrounded by empty ones) and so
 	// the interpolated normal can also be zero (e.g. a grid of alternating solid and empty voxels).
-	const float normLen = glm::length2(normal);
+	const float normLen = math::length2(normal);
 	if (normLen > 0.000001f) {
-		normal *= glm::inversesqrt(normLen);
+		normal *= math::inversesqrt(normLen);
 	}
 
 	const Voxel blendedVoxel = blendMaterials(palette, v110, v111, interpolate);
@@ -122,8 +117,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 
 	// A given vertex may be shared by multiple triangles, so we need to keep track of the indices into the vertex
 	// array.
-	core::Buffer<glm::ivec3> indicesBuf((size_t)(w * h));
-	core::Buffer<glm::ivec3> previousIndicesBuf((size_t)(w * h));
+	core::Buffer<math::Vec3i> indicesBuf((size_t)(w * h));
+	core::Buffer<math::Vec3i> previousIndicesBuf((size_t)(w * h));
 
 	// A sampler pointing at the beginning of the region, which gets incremented to always point at the beginning of a
 	// slice.
@@ -135,8 +130,8 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 		// a row.
 		RawVolume::Sampler startOfRow = startOfSlice;
 
-		core::Array2DView<glm::ivec3> indicesView(indicesBuf.data(), w, h);
-		core::Array2DView<glm::ivec3> previousIndicesView(previousIndicesBuf.data(), w, h);
+		core::Array2DView<math::Vec3i> indicesView(indicesBuf.data(), w, h);
+		core::Array2DView<math::Vec3i> previousIndicesView(previousIndicesBuf.data(), w, h);
 
 		for (int32_t y = 0; y < h; y++) {
 			// Copying a sampler which is already pointing at the correct location seems (slightly) faster than
@@ -208,7 +203,7 @@ void extractMarchingCubesMesh(const RawVolume *volume, const palette::Palette &p
 					// Alternatively, we could compute vertex normals from adjacent face normals instead of via central
 					// differencing, but not for vertices on the edge of the region (as this causes visual
 					// discontinuities).
-					const glm::vec3 n111 = computeCentralDifferenceGradient(sampler);
+					const math::Vec3f n111 = computeCentralDifferenceGradient(sampler);
 
 					/* Find the vertices where the surface intersects the cube */
 					if ((edge & 64) && x > 0) {

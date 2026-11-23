@@ -9,6 +9,9 @@
 #include "video/FrameBufferConfig.h"
 #include "video/ScopedState.h"
 #include "video/tests/AbstractGLTest.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace render {
 
@@ -27,22 +30,22 @@ protected:
 			return;
 		}
 		video::FrameBufferConfig cfg;
-		cfg.dimension(glm::ivec2(64))
+		cfg.dimension(math::Vec2i(64))
 			.colorTexture(true)
 			.depthTexture(true)
 			.depthTextureFormat(video::TextureFormat::D32F);
 		ASSERT_TRUE(_scene.init(cfg));
 		ASSERT_TRUE(_shapes.init());
-		_camera.setSize(glm::ivec2(64));
-		_camera.setWorldPosition(glm::vec3(0, 0, 10));
-		_camera.lookAt(glm::vec3(0));
+		_camera.setSize(math::Vec2i(64));
+		_camera.setWorldPosition(math::Vec3f(0, 0, 10));
+		_camera.lookAt(math::Vec3f(0));
 		_camera.update(0.0);
 		video::enable(video::State::DepthTest);
 		video::enable(video::State::DepthMask);
 		video::disable(video::State::CullFace);
 		video::disable(video::State::Scissor);
 		video::depthFunc(video::CompareFunc::LessEqual);
-		video::clearColor(glm::vec4(0));
+		video::clearColor(math::Vec4f(0));
 	}
 
 	void TearDown() override {
@@ -53,10 +56,10 @@ protected:
 		video::AbstractGLTest::TearDown();
 	}
 
-	void box(const glm::vec4 &color, float z = 0.0f) {
+	void box(const math::Vec4f &color, float z = 0.0f) {
 		video::ShapeBuilder builder;
 		builder.setColor(color);
-		builder.cube(glm::vec3(-2, -2, z - 1), glm::vec3(2, 2, z + 1));
+		builder.cube(math::Vec3f(-2, -2, z - 1), math::Vec3f(2, 2, z + 1));
 		_shapes.createOrUpdate(_box, builder);
 		EXPECT_TRUE(_shapes.render(_box, _camera));
 	}
@@ -64,9 +67,9 @@ protected:
 
 TEST_F(SurfaceOverlayRendererTest, testCoincidentReplacementAndCancellation) {
 	_scene.bind(true);
-	box(glm::vec4(0, 1, 0, 1));
-	ASSERT_TRUE(_overlay.begin(glm::ivec2(64)));
-	box(glm::vec4(0, 0, 1, 1));
+	box(math::Vec4f(0, 1, 0, 1));
+	ASSERT_TRUE(_overlay.begin(math::Vec2i(64)));
+	box(math::Vec4f(0, 0, 1, 1));
 	_overlay.end();
 	EXPECT_EQ(_scene.handle(), video::currentFramebuffer());
 	image::ImagePtr image = _scene.image("replacement");
@@ -76,7 +79,7 @@ TEST_F(SurfaceOverlayRendererTest, testCoincidentReplacementAndCancellation) {
 	_scene.unbind();
 
 	_scene.bind(true);
-	box(glm::vec4(0, 1, 0, 1));
+	box(math::Vec4f(0, 1, 0, 1));
 	image = _scene.image("cancelled");
 	ASSERT_TRUE(image);
 	EXPECT_GT(image->colorAt(32, 32).g, 240);
@@ -86,10 +89,10 @@ TEST_F(SurfaceOverlayRendererTest, testCoincidentReplacementAndCancellation) {
 
 TEST_F(SurfaceOverlayRendererTest, testDeletionHatchAndOcclusion) {
 	_scene.bind(true);
-	box(glm::vec4(0, 1, 0, 1));
-	ASSERT_TRUE(_overlay.begin(glm::ivec2(64)));
-	box(glm::vec4(0, 1, 0, 1));
-	_overlay.end(glm::vec4(1, 0, 0, 0.8f));
+	box(math::Vec4f(0, 1, 0, 1));
+	ASSERT_TRUE(_overlay.begin(math::Vec2i(64)));
+	box(math::Vec4f(0, 1, 0, 1));
+	_overlay.end(math::Vec4f(1, 0, 0, 0.8f));
 	const image::ImagePtr hatched = _scene.image("deletion");
 	ASSERT_TRUE(hatched);
 	EXPECT_GT(hatched->colorAt(32, 32).r, 190);
@@ -98,10 +101,10 @@ TEST_F(SurfaceOverlayRendererTest, testDeletionHatchAndOcclusion) {
 	_scene.unbind();
 
 	_scene.bind(true);
-	box(glm::vec4(0, 1, 0, 1), 3.0f);
-	ASSERT_TRUE(_overlay.begin(glm::ivec2(64)));
-	box(glm::vec4(0, 1, 0, 1));
-	_overlay.end(glm::vec4(1, 0, 0, 0.8f));
+	box(math::Vec4f(0, 1, 0, 1), 3.0f);
+	ASSERT_TRUE(_overlay.begin(math::Vec2i(64)));
+	box(math::Vec4f(0, 1, 0, 1));
+	_overlay.end(math::Vec4f(1, 0, 0, 0.8f));
 	const image::ImagePtr occluded = _scene.image("occluded");
 	ASSERT_TRUE(occluded);
 	EXPECT_EQ(0, occluded->colorAt(32, 32).r);
@@ -113,13 +116,13 @@ TEST_F(SurfaceOverlayRendererTest, testRestoresTargetAndResizes) {
 	for (int size : {64, 32, 64}) {
 		video::FrameBuffer target;
 		video::FrameBufferConfig cfg;
-		cfg.dimension(glm::ivec2(size))
+		cfg.dimension(math::Vec2i(size))
 			.colorTexture(true)
 			.depthTexture(true)
 			.depthTextureFormat(video::TextureFormat::D32F);
 		ASSERT_TRUE(target.init(cfg));
 		target.bind(true);
-		ASSERT_TRUE(_overlay.begin(glm::ivec2(size)));
+		ASSERT_TRUE(_overlay.begin(math::Vec2i(size)));
 		_overlay.end();
 		EXPECT_EQ(target.handle(), video::currentFramebuffer());
 		int x, y, width, height;
@@ -137,26 +140,26 @@ TEST_F(SurfaceOverlayRendererTest, testCoincidentSlopedSurfaceWithResolvedMsaaDe
 	video::TextureConfig depth = color;
 	depth.format(video::TextureFormat::D32F);
 	video::FrameBufferConfig cfg;
-	cfg.dimension(glm::ivec2(64)).samples(4);
+	cfg.dimension(math::Vec2i(64)).samples(4);
 	cfg.addTextureAttachment(color);
 	cfg.addTextureAttachment(depth, video::FrameBufferAttachment::Depth);
 	ASSERT_TRUE(_multisample.init(cfg));
 	for (video::CameraMode mode : {video::CameraMode::Perspective, video::CameraMode::Orthogonal}) {
 		SCOPED_TRACE((int)mode);
 		_camera.setMode(mode);
-		_camera.setWorldPosition(glm::vec3(18, 2, 18));
-		_camera.lookAt(glm::vec3(0));
+		_camera.setWorldPosition(math::Vec3f(18, 2, 18));
+		_camera.lookAt(math::Vec3f(0));
 		_camera.update(0.0);
 		_multisample.bind(true);
-		box(glm::vec4(0, 1, 0, 1));
+		box(math::Vec4f(0, 1, 0, 1));
 		video::blitFramebuffer(_multisample.handle(), _scene.handle(), video::FrameBufferAttachment::Color0, 64, 64);
 		video::blitFramebuffer(_multisample.handle(), _scene.handle(), video::ClearFlag::Depth, 64, 64);
 		_multisample.unbind();
 		_scene.bind(false);
 		const image::ImagePtr original = _scene.image("resolved scene");
-		ASSERT_TRUE(_overlay.begin(glm::ivec2(64)));
-		box(glm::vec4(0, 1, 0, 1));
-		_overlay.end(glm::vec4(1, 0, 0, 0.8f));
+		ASSERT_TRUE(_overlay.begin(math::Vec2i(64)));
+		box(math::Vec4f(0, 1, 0, 1));
+		_overlay.end(math::Vec4f(1, 0, 0, 0.8f));
 		const image::ImagePtr preview = _scene.image("resolved deletion preview");
 		ASSERT_TRUE(original && preview);
 		int covered = 0;

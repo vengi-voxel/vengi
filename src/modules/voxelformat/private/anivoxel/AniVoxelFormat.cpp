@@ -19,7 +19,11 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -134,9 +138,9 @@ bool AniVoxelFormat::readBuffers(io::SeekableReadStream &stream, scenegraph::Sce
 			int32_t vertexCnt;
 			wrap(stream.readInt32(vertexCnt));
 			for (int32_t k = 0; k < vertexCnt; ++k) {
-				glm::vec3 pos;
+				math::Vec3f pos;
 				wrapBool(io::readVec3(stream, pos));
-				glm::vec3 normal;
+				math::Vec3f normal;
 				wrapBool(io::readVec3(stream, normal));
 				color::RGBA color;
 				wrapBool(io::readColor(stream, color));
@@ -458,7 +462,7 @@ bool AniVoxelFormat::createBoneHierarchy(scenegraph::SceneGraph &sceneGraph) {
 		node.setProperty("boneId", core::string::toString(bone.id));
 		node.setProperty("boneLength", core::string::toString(bone.length));
 
-		glm::vec3 boneOffset = bone.offset;
+		math::Vec3f boneOffset = bone.offset;
 		if (bone.parentId != -1) {
 			auto parentIter = _bones.find(bone.parentId);
 			if (parentIter != _bones.end()) {
@@ -466,8 +470,8 @@ bool AniVoxelFormat::createBoneHierarchy(scenegraph::SceneGraph &sceneGraph) {
 			}
 		}
 
-		const glm::vec3 rad = glm::radians(bone.rotation);
-		const glm::quat orientation = glm::quat(glm::vec3(rad.x, rad.y, rad.z));
+		const math::Vec3f rad = math::radians(bone.rotation);
+		const math::Quatf orientation = math::Quatf(math::Vec3f(rad.x, rad.y, rad.z));
 
 		scenegraph::SceneGraphTransform &transform = node.transform(0);
 		transform.setLocalTranslation(boneOffset);
@@ -505,14 +509,14 @@ bool AniVoxelFormat::applyAnimations(scenegraph::SceneGraph &sceneGraph) {
 			node.addAnimation(animName);
 			node.setAnimation(animName);
 
-			glm::vec3 boneOffset = bone.offset;
+			math::Vec3f boneOffset = bone.offset;
 			if (bone.parentId != -1) {
 				auto pIt = _bones.find(bone.parentId);
 				if (pIt != _bones.end())
 					boneOffset.y += pIt->value.length;
 			}
-			const glm::vec3 restRad = glm::radians(bone.rotation);
-			const glm::quat restOri = glm::quat(glm::vec3(restRad.x, restRad.y, restRad.z));
+			const math::Vec3f restRad = math::radians(bone.rotation);
+			const math::Quatf restOri = math::Quatf(math::Vec3f(restRad.x, restRad.y, restRad.z));
 
 			auto graphIter = anim.boneGraphs.find(bone.id);
 			if (graphIter == anim.boneGraphs.end()) {
@@ -521,7 +525,7 @@ bool AniVoxelFormat::applyAnimations(scenegraph::SceneGraph &sceneGraph) {
 				kf.interpolation = scenegraph::InterpolationType::Linear;
 				kf.transform().setLocalTranslation(boneOffset);
 				kf.transform().setLocalOrientation(restOri);
-				kf.transform().setLocalScale(glm::vec3(1.0f));
+				kf.transform().setLocalScale(math::Vec3f(1.0f));
 				continue;
 			}
 
@@ -538,17 +542,17 @@ bool AniVoxelFormat::applyAnimations(scenegraph::SceneGraph &sceneGraph) {
 				const float sY = sampleGraphSeries(series.channels[7], frame, anim.frameLength, 1.0f);
 				const float sZ = sampleGraphSeries(series.channels[8], frame, anim.frameLength, 1.0f);
 
-				const glm::vec3 animTrans = boneOffset + glm::vec3(tX, tY, tZ);
-				const glm::vec3 animRad = glm::radians(glm::vec3(rX, rY, rZ));
-				const glm::quat animRot = glm::quat(glm::vec3(animRad.x, animRad.y, animRad.z));
-				const glm::quat combinedOri = animRot * restOri;
+				const math::Vec3f animTrans = boneOffset + math::Vec3f(tX, tY, tZ);
+				const math::Vec3f animRad = math::radians(math::Vec3f(rX, rY, rZ));
+				const math::Quatf animRot = math::Quatf(math::Vec3f(animRad.x, animRad.y, animRad.z));
+				const math::Quatf combinedOri = animRot * restOri;
 
 				scenegraph::SceneGraphKeyFrame &kf = node.keyFrame(node.addKeyFrame(f));
 				kf.frameIdx = f;
 				kf.interpolation = scenegraph::InterpolationType::Linear;
 				kf.transform().setLocalTranslation(animTrans);
 				kf.transform().setLocalOrientation(combinedOri);
-				kf.transform().setLocalScale(glm::vec3(sX, sY, sZ));
+				kf.transform().setLocalScale(math::Vec3f(sX, sY, sZ));
 			}
 		}
 	}
@@ -889,7 +893,7 @@ bool AniVoxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const 
 			const voxel::Region &region = v->region();
 			const palette::Palette &originalPalette = node->palette();
 			// TODO: VOXELFORMAT: not empty bounds - but we aren't cropping here yet
-			const glm::ivec3 &bounds = region.getDimensionsInVoxels();
+			const math::Vec3i &bounds = region.getDimensionsInVoxels();
 			wrapBool(stream->writeInt32(bounds.x))
 			wrapBool(stream->writeInt32(bounds.y))
 			wrapBool(stream->writeInt32(bounds.z))

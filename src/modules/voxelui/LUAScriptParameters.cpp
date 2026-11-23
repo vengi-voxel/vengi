@@ -10,7 +10,7 @@
 #include "palette/Palette.h"
 #include "ui/IMGUIEx.h"
 #include "voxelgenerator/LUAApi.h"
-#include <glm/ext/scalar_constants.hpp>
+#include "math/Scalar.h"
 
 namespace voxelui {
 
@@ -26,8 +26,8 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 			case voxelgenerator::LUAParameterType::Integer: {
 				int val = core::string::toInt(str);
 				if (p.shouldClamp()) {
-					int maxVal = (int)(p.maxValue + glm::epsilon<double>());
-					int minVal = (int)(p.minValue + glm::epsilon<double>());
+					int maxVal = (int)(p.maxValue + math::epsilond);
+					int minVal = (int)(p.minValue + math::epsilond);
 					if (ImGui::DragInt(p.name.c_str(), &val, 1.0f, minVal, maxVal)) {
 						str = core::string::toString(val);
 					}
@@ -41,7 +41,7 @@ void renderScriptParameters(const core::DynamicArray<voxelgenerator::LUAParamete
 				if (p.shouldClamp()) {
 					const float maxVal = (float)p.maxValue;
 					const float minVal = (float)p.minValue;
-					const char *format = glm::abs(maxVal - minVal) <= 10.0f ? "%.6f" : "%.3f";
+					const char *format = math::abs(maxVal - minVal) <= 10.0f ? "%.6f" : "%.3f";
 					if (ImGui::DragFloat(p.name.c_str(), &val, 0.005f, minVal, maxVal, format)) {
 						str = core::string::toString(val);
 					}

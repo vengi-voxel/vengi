@@ -7,6 +7,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -18,7 +19,7 @@ TEST_F(PNGFormatTest, testLoadPlane) {
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_TRUE(node != nullptr);
 	const voxel::Region &region = node->region();
-	EXPECT_EQ(region.getDimensionsInVoxels(), glm::ivec3(128, 128, 1));
+	EXPECT_EQ(region.getDimensionsInVoxels(), math::Vec3i(128, 128, 1));
 }
 
 TEST_F(PNGFormatTest, testLoadVolume) {
@@ -28,7 +29,7 @@ TEST_F(PNGFormatTest, testLoadVolume) {
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_TRUE(node != nullptr);
 	const voxel::Region &region = node->region();
-	EXPECT_EQ(region.getDimensionsInVoxels(), glm::ivec3(8, 8, 3));
+	EXPECT_EQ(region.getDimensionsInVoxels(), math::Vec3i(8, 8, 3));
 }
 
 TEST_F(PNGFormatTest, testLoadHeightmap) {
@@ -38,7 +39,7 @@ TEST_F(PNGFormatTest, testLoadHeightmap) {
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_TRUE(node != nullptr);
 	const voxel::Region &region = node->region();
-	EXPECT_EQ(region.getDimensionsInVoxels(), glm::ivec3(8, 255, 8));
+	EXPECT_EQ(region.getDimensionsInVoxels(), math::Vec3i(8, 255, 8));
 }
 
 } // namespace voxelformat

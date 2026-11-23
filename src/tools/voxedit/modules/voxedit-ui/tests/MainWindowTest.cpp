@@ -12,6 +12,7 @@
 #include "util/VarUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -272,8 +273,8 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(_sceneMgr->isRecording());
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(2, 2, 2), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(2, 2, 2), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 		const core::String recordingFile = _sceneMgr->recorder().filename();
 		IM_CHECK(focusWindow(ctx, id));
 		ctx->MenuClick("File/Record/Stop recording");
@@ -292,8 +293,8 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(!_sceneMgr->isPlaying());
 		scenegraph::SceneGraphNode *model2 = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model2 != nullptr);
-		IM_CHECK(model2->volume()->voxel(glm::ivec3(1, 1, 1)).getColor() == 1);
-		IM_CHECK(model2->volume()->voxel(glm::ivec3(2, 2, 2)).getColor() == 2);
+		IM_CHECK(model2->volume()->voxel(math::Vec3i(1, 1, 1)).getColor() == 1);
+		IM_CHECK(model2->volume()->voxel(math::Vec3i(2, 2, 2)).getColor() == 2);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "select menu")->TestFunc = [=](ImGuiTestContext *ctx) {

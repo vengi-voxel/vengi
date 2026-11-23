@@ -78,7 +78,6 @@ void popupAbout(const core::Function<void()> &customTabs, bool isNewVersionAvail
 #ifdef __EMSCRIPTEN__
 					ImGui::URLItem("emscripten-browser-file", "https://github.com/Armchair-Software/emscripten-browser-file", urlIconWidth);
 #endif
-					ImGui::URLItem("glm", "https://github.com/g-truc/glm", urlIconWidth);
 					ImGui::URLItem("gif-h", "https://github.com/charlietangora/gif-h.git", urlIconWidth);
 					ImGui::URLItem("IconFontCppHeaders", "https://github.com/juliettef/IconFontCppHeaders",
 								   urlIconWidth);

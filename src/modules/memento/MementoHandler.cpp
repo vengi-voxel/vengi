@@ -26,6 +26,9 @@
 #include "voxelutil/VoxelUtil.h"
 #include <inttypes.h>
 #include <limits.h>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace memento {
 
@@ -109,7 +112,7 @@ MementoState &MementoState::operator=(const MementoState &other) {
 
 MementoState::MementoState(MementoType _type, const MementoData &_data, const core::UUID &_parentId,
 						   const core::UUID &_nodeId, const core::UUID &_referenceId, const core::String &_name,
-						   scenegraph::SceneGraphNodeType _nodeType, const glm::vec3 &_pivot,
+						   scenegraph::SceneGraphNodeType _nodeType, const math::Vec3f &_pivot,
 						   const scenegraph::SceneGraphKeyFramesMap &_keyFrames, const palette::Palette &_palette,
 						   const palette::NormalPalette &_normalPalette,
 						   const scenegraph::SceneGraphNodeProperties &_properties)
@@ -120,7 +123,7 @@ MementoState::MementoState(MementoType _type, const MementoData &_data, const co
 
 MementoState::MementoState(MementoType _type, MementoData &&_data, core::UUID &&_parentId, core::UUID &&_nodeId,
 						   core::UUID &&_referenceId, core::String &&_name, scenegraph::SceneGraphNodeType _nodeType,
-						   glm::vec3 &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames,
+						   math::Vec3f &&_pivot, scenegraph::SceneGraphKeyFramesMap &&_keyFrames,
 						   palette::Palette &&_palette, palette::NormalPalette &&_normalPalette,
 						   scenegraph::SceneGraphNodeProperties &&_properties)
 	: type(_type), data(core::move(_data)), parentUUID(core::move(_parentId)), nodeUUID(core::move(_nodeId)),
@@ -522,12 +525,12 @@ void MementoHandler::printState(const MementoState &state) const {
 	Log::info(" - parent: %s", parentUUIDStr.c_str());
 	Log::info(" - name: %s", state.name.c_str());
 	Log::info(" - volume: %s", state.data._buffer == nullptr ? "empty" : "volume");
-	const glm::ivec3 &dataMins = state.dataRegion().getLowerCorner();
-	const glm::ivec3 &dataMaxs = state.dataRegion().getUpperCorner();
+	const math::Vec3i &dataMins = state.dataRegion().getLowerCorner();
+	const math::Vec3i &dataMaxs = state.dataRegion().getUpperCorner();
 	Log::info(" - dataregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", dataMins.x, dataMins.y, dataMins.z, dataMaxs.x,
 			  dataMaxs.y, dataMaxs.z);
-	const glm::ivec3 &volumeMins = state.volumeRegion().getLowerCorner();
-	const glm::ivec3 &volumeMaxs = state.volumeRegion().getUpperCorner();
+	const math::Vec3i &volumeMins = state.volumeRegion().getLowerCorner();
+	const math::Vec3i &volumeMaxs = state.volumeRegion().getUpperCorner();
 	Log::info(" - volumeregion: mins(%i:%i:%i)/maxs(%i:%i:%i)", volumeMins.x, volumeMins.y, volumeMins.z, volumeMaxs.x,
 			  volumeMaxs.y, volumeMaxs.z);
 	Log::info(" - size: %ib", (int)state.data.size());
@@ -544,7 +547,7 @@ void MementoHandler::printState(const MementoState &state) const {
 			Log::info("       - interpolation: %s", scenegraph::InterpolationTypeStr[(int)f.interpolation]);
 			Log::info("       - long rotation: %s", f.longRotation ? "true" : "false");
 			Log::info("       - transform");
-			const glm::mat4 &m = f.transform().localMatrix();
+			const math::Mat4f &m = f.transform().localMatrix();
 			Log::info("         - %f:%f:%f:%f", m[0][0], m[0][1], m[0][2], m[0][3]);
 			Log::info("         - %f:%f:%f:%f", m[1][0], m[1][1], m[1][2], m[1][3]);
 			Log::info("         - %f:%f:%f:%f", m[2][0], m[2][1], m[2][2], m[2][3]);
@@ -950,7 +953,7 @@ MementoState MementoHandler::createNodeState(const scenegraph::SceneGraphNode &n
 	voxel::logRegion("MarkUndo", modifiedRegion);
 	MementoData data = MementoData::fromVolume(volume, modifiedRegion);
 	MementoState state(type, core::move(data), core::UUID(node.parentUUID()), core::UUID(node.uuid()),
-					   core::UUID(node.referenceUUID()), core::String(node.name()), node.type(), glm::vec3(node.pivot()),
+					   core::UUID(node.referenceUUID()), core::String(node.name()), node.type(), math::Vec3f(node.pivot()),
 					   scenegraph::SceneGraphKeyFramesMap(node.allKeyFrames()), palette::Palette(node.palette()),
 					   palette::NormalPalette(node.normalPalette()),
 					   scenegraph::SceneGraphNodeProperties(node.properties()));
@@ -969,7 +972,7 @@ bool MementoHandler::markUndo(const scenegraph::SceneGraph &sceneGraph, const sc
 bool MementoHandler::markUndo(const core::UUID &parentId, const core::UUID &nodeId, const core::UUID &referenceId,
 							  const core::String &name, scenegraph::SceneGraphNodeType nodeType,
 							  const voxel::RawVolume *volume, MementoType type, const voxel::Region &modifiedRegion,
-							  const glm::vec3 &pivot, const scenegraph::SceneGraphKeyFramesMap &allKeyFrames,
+							  const math::Vec3f &pivot, const scenegraph::SceneGraphKeyFramesMap &allKeyFrames,
 							  const palette::Palette &palette, const palette::NormalPalette &normalPalette,
 							  const scenegraph::SceneGraphNodeProperties &properties) {
 	Log::debug("New memento state for node %s with name '%s'", nodeId.str().c_str(), name.c_str());

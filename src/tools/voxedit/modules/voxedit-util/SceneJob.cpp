@@ -6,7 +6,7 @@
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/ProgressScope.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -209,8 +209,8 @@ voxel::RawVolume *SceneJobResult::releaseVolume() {
 }
 
 voxel::Region sceneJobModifiedRegionForResize(const voxel::Region &oldRegion, const voxel::Region &newRegion) {
-	return voxel::Region(glm::min(oldRegion.getLowerCorner(), newRegion.getLowerCorner()),
-						 glm::max(oldRegion.getUpperCorner(), newRegion.getUpperCorner()));
+	return voxel::Region(math::min(oldRegion.getLowerCorner(), newRegion.getLowerCorner()),
+						 math::max(oldRegion.getUpperCorner(), newRegion.getUpperCorner()));
 }
 
 SceneJobResult makeVolumeOperationSceneJobResult(SceneJobType type, const core::UUID &nodeUUID, voxel::RawVolume *snapshot,

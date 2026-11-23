@@ -8,6 +8,7 @@
 #include "io/Stream.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -42,10 +43,10 @@ public:
 };
 
 struct PointNode {
-	PointNode(const core::String &n, const glm::vec3 &pos) : name(n), pointPos(pos) {
+	PointNode(const core::String &n, const math::Vec3f &pos) : name(n), pointPos(pos) {
 	}
 	core::String name;
-	glm::vec3 pointPos;
+	math::Vec3f pointPos;
 };
 
 struct Metadata {
@@ -54,7 +55,7 @@ struct Metadata {
 	core::DynamicArray<PointNode> points; // coordinates in vengi coordinate system
 };
 
-bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, const glm::vec3 &pointPos,
+bool addPointNode(scenegraph::SceneGraph &sceneGraph, const core::String &name, const math::Vec3f &pointPos,
 				  int parent = -1);
 
 int createModelNode(scenegraph::SceneGraph &sceneGraph, palette::Palette &palette, const core::String &name, int width,

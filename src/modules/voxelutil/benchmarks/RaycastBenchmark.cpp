@@ -9,14 +9,15 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/Raycast.h"
+#include "math/Vec3f.h"
 
 class RaycastBenchmark : public app::AbstractBenchmark {};
 
 BENCHMARK_DEFINE_F(RaycastBenchmark, DistantHit)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region{0, 63});
 	volume.setVoxel(32, 32, 32, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	const glm::vec3 start(-5000.0f, 32.5f, 32.5f);
-	const glm::vec3 end(5000.0f, 32.5f, 32.5f);
+	const math::Vec3f start(-5000.0f, 32.5f, 32.5f);
+	const math::Vec3f end(5000.0f, 32.5f, 32.5f);
 	auto stopOnSolid = [](voxel::RawVolume::Sampler &sampler) {
 		return voxel::isAir(sampler.voxel().getMaterial());
 	};
@@ -28,8 +29,8 @@ BENCHMARK_DEFINE_F(RaycastBenchmark, DistantHit)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(RaycastBenchmark, DistantMiss)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region{0, 63});
-	const glm::vec3 start(-5000.0f, 32.5f, 32.5f);
-	const glm::vec3 end(5000.0f, 32.5f, 32.5f);
+	const math::Vec3f start(-5000.0f, 32.5f, 32.5f);
+	const math::Vec3f end(5000.0f, 32.5f, 32.5f);
 	auto alwaysContinue = [](voxel::RawVolume::Sampler &) { return true; };
 	for (auto _ : state) {
 		auto result = voxelutil::raycastWithEndpoints(&volume, start, end, alwaysContinue);
@@ -39,8 +40,8 @@ BENCHMARK_DEFINE_F(RaycastBenchmark, DistantMiss)(benchmark::State &state) {
 
 BENCHMARK_DEFINE_F(RaycastBenchmark, DistantAABBMiss)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region{0, 63});
-	const glm::vec3 start(-5000.0f, 200.5f, 32.5f);
-	const glm::vec3 end(5000.0f, 200.5f, 32.5f);
+	const math::Vec3f start(-5000.0f, 200.5f, 32.5f);
+	const math::Vec3f end(5000.0f, 200.5f, 32.5f);
 	auto alwaysContinue = [](voxel::RawVolume::Sampler &) { return true; };
 	for (auto _ : state) {
 		auto result = voxelutil::raycastWithEndpoints(&volume, start, end, alwaysContinue);
@@ -51,8 +52,8 @@ BENCHMARK_DEFINE_F(RaycastBenchmark, DistantAABBMiss)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(RaycastBenchmark, InsideHit)(benchmark::State &state) {
 	voxel::RawVolume volume(voxel::Region{0, 63});
 	volume.setVoxel(40, 32, 32, voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	const glm::vec3 start(0.5f, 32.5f, 32.5f);
-	const glm::vec3 end(63.5f, 32.5f, 32.5f);
+	const math::Vec3f start(0.5f, 32.5f, 32.5f);
+	const math::Vec3f end(63.5f, 32.5f, 32.5f);
 	auto stopOnSolid = [](voxel::RawVolume::Sampler &sampler) {
 		return voxel::isAir(sampler.voxel().getMaterial());
 	};
@@ -65,8 +66,8 @@ BENCHMARK_DEFINE_F(RaycastBenchmark, InsideHit)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(RaycastBenchmark, CursorFarPlaneMiss)(benchmark::State &state) {
 	// Mirrors SceneManager cursor rays: camera far outside an empty volume with a long far plane.
 	voxel::RawVolume volume(voxel::Region{0, 127});
-	const glm::vec3 origin(64.0f, 64.0f, -4000.0f);
-	const glm::vec3 direction = glm::vec3(0.0f, 0.0f, 8000.0f);
+	const math::Vec3f origin(64.0f, 64.0f, -4000.0f);
+	const math::Vec3f direction = math::Vec3f(0.0f, 0.0f, 8000.0f);
 	auto alwaysContinue = [](voxel::RawVolume::Sampler &) { return true; };
 	for (auto _ : state) {
 		auto result = voxelutil::raycastWithDirection(&volume, origin, direction, alwaysContinue);

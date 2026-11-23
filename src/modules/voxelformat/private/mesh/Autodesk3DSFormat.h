@@ -9,8 +9,10 @@
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/StringMap.h"
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
+#include "math/U16Vec3.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -24,19 +26,19 @@ namespace voxelformat {
 class Autodesk3DSFormat : public MeshFormat {
 private:
 	struct Face3ds {
-		glm::u16vec3 indices{};
+		math::U16Vec3 indices{};
 		uint16_t flags = 0;
 		int32_t smoothingGroup = -1;
-		glm::vec3 normal{};
+		math::Vec3f normal{};
 		core::String material;
 	};
 
 	struct Mesh3ds {
 		core::String name;
-		glm::mat4 matrix{1.0f};
-		core::Buffer<glm::vec3> vertices;
-		core::Buffer<glm::vec3> normals;
-		core::Buffer<glm::vec2> texcoords;
+		math::Mat4f matrix{1.0f};
+		core::Buffer<math::Vec3f> vertices;
+		core::Buffer<math::Vec3f> normals;
+		core::Buffer<math::Vec2f> texcoords;
 		core::DynamicArray<Face3ds> faces;
 		core::Buffer<color::RGBA> colors;
 	};
@@ -73,8 +75,8 @@ private:
 
 	struct Camera3ds {
 		core::String name;
-		glm::vec3 position;
-		glm::vec3 target;
+		math::Vec3f position;
+		math::Vec3f target;
 		float roll;
 		float fieldOfView;
 		uint8_t unknown;
@@ -87,13 +89,13 @@ private:
 		int16_t parentId = -1;
 		core::String name;
 		core::String instanceName;
-		glm::vec3 pivot{0.0f};
+		math::Vec3f pivot{0.0f};
 		uint32_t meshVersion = 0;
 		float scale = 1.0f; // global scaling factor
 		uint16_t flags1 = 0;
 		uint16_t flags2 = 0;
-		glm::vec3 min{0.0f};
-		glm::vec3 max{0.0f};
+		math::Vec3f min{0.0f};
+		math::Vec3f max{0.0f};
 		core::StringMap<Material3ds> materials;
 		core::DynamicArray<Mesh3ds> meshes;
 		core::DynamicArray<Camera3ds> cameras;
@@ -132,7 +134,7 @@ protected:
 						const LoadContext &ctx) override;
 	bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 					const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-					const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) override {
+					const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords) override {
 		return false;
 	}
 

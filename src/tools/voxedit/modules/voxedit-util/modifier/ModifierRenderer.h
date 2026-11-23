@@ -12,7 +12,9 @@
 #include "video/ShapeBuilder.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxelrender/RawVolumeRenderer.h"
-#include <glm/vec3.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -32,36 +34,36 @@ private:
 	int32_t _highlightMesh = -1;
 	int32_t _voxelCursorMesh = -1; // TODO: remove me - should be a brush - see issue #130
 	int32_t _referencePointMesh = -1;
-	glm::vec3 _referencePoint{0.0f};
+	math::Vec3f _referencePoint{0.0f};
 	int32_t _aabbMeshes[2]{-1, -1};
 	int32_t _lockedAxisIndices[3] = {-1, -1, -1};
 
 	// State tracking to avoid redundant updates
 	math::Axis _lastMirrorAxis = math::Axis::None;
 	math::Axis _lastLockedAxis = math::Axis::None;
-	glm::ivec3 _lastMirrorPos{0};
+	math::Vec3i _lastMirrorPos{0};
 	voxel::Region _lastMirrorRegion;
 	voxel::Region _lastLockedAxisRegion;
 
 	// Cursor state for rendering
-	glm::ivec3 _cursorPosition{0};
-	glm::ivec3 _gridResolution{1};
+	math::Vec3i _cursorPosition{0};
+	math::Vec3i _gridResolution{1};
 	voxel::Region _activeRegion;
 	bool _previewErase = false;
 	using TimedRegion = core::TimedValue<voxel::Region>;
 	TimedRegion _highlightRegion;
 
 	void updateCursor(const voxel::Voxel &voxel, voxel::FaceNames face, bool flip);
-	void updateMirrorPlane(math::Axis axis, const glm::ivec3 &mirrorPos, const voxel::Region &sceneRegion);
-	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const glm::ivec3 &cursorPosition, const voxel::Region &region);
+	void updateMirrorPlane(math::Axis axis, const math::Vec3i &mirrorPos, const voxel::Region &sceneRegion);
+	void updateLockedPlane(math::Axis lockedAxis, math::Axis axis, const math::Vec3i &cursorPosition, const voxel::Region &region);
 	void updateBrushVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette, palette::NormalPalette *normalPalette = nullptr);
 	void updateBrushVolume(int idx, const voxel::Region &region, color::RGBA color);
 	void updateBrushOutline(int idx, const voxel::Region &region, color::RGBA color);
-	void updateBrushPolylineOutline(int idx, const core::Buffer<glm::vec3> &points, color::RGBA color);
+	void updateBrushPolylineOutline(int idx, const core::Buffer<math::Vec3f> &points, color::RGBA color);
 	void clear();
 	void handleCommandBuffer();
 
-	void renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &model);
+	void renderBrushVolume(voxelrender::RenderContext &renderContext, const video::Camera &camera, const math::Mat4f &model);
 
 public:
 	ModifierRenderer(const core::TimeProviderPtr &timeProvider);
@@ -71,7 +73,7 @@ public:
 
 	void clearBrushVolumes() override;
 	void update(const ModifierRendererContext &ctx) override;
-	void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const glm::mat4 &modelMatrix) override;
+	void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, const math::Mat4f &modelMatrix) override;
 	void waitForPendingExtractions() override;
 };
 

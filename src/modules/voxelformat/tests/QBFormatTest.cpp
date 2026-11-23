@@ -6,6 +6,7 @@
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "io/MemoryArchive.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -48,7 +49,7 @@ TEST_F(QBFormatTest, testSavePivotedGridWithParentAndNonzeroLowerCorner) {
 	scenegraph::SceneGraph graph;
 	scenegraph::SceneGraphNode parent(scenegraph::SceneGraphNodeType::Group);
 	scenegraph::SceneGraphTransform parentTransform;
-	parentTransform.setLocalTranslation(glm::vec3(10, 20, 30));
+	parentTransform.setLocalTranslation(math::Vec3f(10, 20, 30));
 	parent.setTransform(0, parentTransform);
 	const int parentId = graph.emplace(core::move(parent));
 	ASSERT_NE(InvalidNodeId, parentId);
@@ -60,9 +61,9 @@ TEST_F(QBFormatTest, testSavePivotedGridWithParentAndNonzeroLowerCorner) {
 	volume->setVoxel(1, 0, -1, voxel::createVoxel(palette, 0));
 	node.setVolume(volume);
 	node.setPalette(palette);
-	node.setPivot(glm::vec3(0.5f));
+	node.setPivot(math::Vec3f(0.5f));
 	scenegraph::SceneGraphTransform transform;
-	transform.setLocalTranslation(glm::vec3(2, 3, 4));
+	transform.setLocalTranslation(math::Vec3f(2, 3, 4));
 	node.setTransform(0, transform);
 	ASSERT_NE(InvalidNodeId, graph.emplace(core::move(node), parentId));
 	graph.updateTransforms();
@@ -73,7 +74,7 @@ TEST_F(QBFormatTest, testSavePivotedGridWithParentAndNonzeroLowerCorner) {
 	ASSERT_TRUE(format.load("pivot.qb", archive, loaded, testLoadCtx));
 	loaded.updateTransforms();
 	ASSERT_NE(nullptr, loaded.firstModelNode());
-	EXPECT_VEC_NEAR(glm::vec3(8, 18, 28), loaded.firstModelNode()->transform(0).worldTranslation(), 0.0001f);
+	EXPECT_VEC_NEAR(math::Vec3f(8, 18, 28), loaded.firstModelNode()->transform(0).worldTranslation(), 0.0001f);
 	voxel::occupiedWorldComparator(graph, loaded, false);
 }
 

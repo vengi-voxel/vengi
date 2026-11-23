@@ -9,7 +9,7 @@
 #include "render/SurfaceOverlayRenderer.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "video/FrameBuffer.h"
-#include <glm/vec2.hpp>
+#include "math/Vec2i.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -49,9 +49,9 @@ struct RenderContext : public core::NonCopyable {
 	bool applyTransforms() const;
 	bool hasOit() const;
 
-	bool init(const glm::ivec2 &size);
+	bool init(const math::Vec2i &size);
 	void shutdown();
-	bool resize(const glm::ivec2 &size);
+	bool resize(const math::Vec2i &size);
 	bool updateMultisampling();
 	/** Bind and clear the scene target, keeping the emission attachment black. */
 	void beginFrame();

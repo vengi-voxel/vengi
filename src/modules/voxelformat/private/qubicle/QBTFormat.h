@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -28,7 +28,7 @@ private:
 		uint8_t versionMajor = 0;
 		uint8_t versionMinor = 0;
 		ColorFormat colorFormat = ColorFormat::RGBA;
-		glm::vec3 globalScale{0};
+		math::Vec3f globalScale{0};
 	};
 
 	bool loadHeader(io::SeekableReadStream &stream, Header &state);

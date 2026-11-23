@@ -16,8 +16,8 @@
 #include "voxel/ClipboardData.h"
 #include "voxel/Face.h"
 #include "voxelformat/VolumeFormat.h"
+#include "math/Vec4f.h"
 
-#include <glm/trigonometric.hpp>
 
 namespace voxedit {
 
@@ -84,7 +84,7 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 	if (needsFace) {
 		const voxel::FaceNames flattenFace = brush.flattenFace();
 		if (flattenFace == voxel::FaceNames::Max) {
-			const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
+			const math::Vec4f &warningTextColor = style::color(style::StyleColor::ColorWarningText);
 			ImGui::TextColored(warningTextColor, "%s", _("Click a voxel face in the viewport to set the direction"));
 			return;
 		}
@@ -151,7 +151,7 @@ void BrushPanelSculpt::update(BrushPanelContext &ctx, command::CommandExecutionL
 		ImGui::SetItemTooltipUnformatted(_("How many voxels above the smoothed surface to clear (0 = none)"));
 	} else if (currentMode == SculptMode::Reskin) {
 		if (brush.skinVolume() == nullptr) {
-			const glm::vec4 &warningTextColor = style::color(style::StyleColor::ColorWarningText);
+			const math::Vec4f &warningTextColor = style::color(style::StyleColor::ColorWarningText);
 			ImGui::TextColored(warningTextColor, "%s", _("Copy voxels to clipboard or load a skin file"));
 		}
 

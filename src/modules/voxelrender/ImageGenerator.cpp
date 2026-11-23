@@ -21,6 +21,8 @@
 #include "voxelrender/RenderContext.h"
 #include "voxelrender/RenderUtil.h"
 #include "voxelrender/SceneGraphRenderer.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelrender {
 
@@ -106,7 +108,7 @@ image::ImagePtr volumeThumbnail(const scenegraph::SceneGraph &sceneGraph, const 
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
-	sceneGraphRenderer.setSunAngle(glm::vec3(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
+	sceneGraphRenderer.setSunAngle(math::Vec3f(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
 
 	const image::ImagePtr &image = volumeThumbnail(meshState, renderContext, sceneGraphRenderer, ctx);
 	sceneGraphRenderer.shutdown();
@@ -133,7 +135,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 		Log::error("Failed to initialize the renderer");
 		return image::ImagePtr();
 	}
-	sceneGraphRenderer.setSunAngle(glm::vec3(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
+	sceneGraphRenderer.setSunAngle(math::Vec3f(ctx.sunElevation, ctx.sunAzimuth, 0.0f));
 
 	const core::String ext = core::string::extractExtension(imageFile);
 	const core::String baseFilePath = core::string::stripExtension(imageFile);
@@ -161,7 +163,7 @@ bool volumeTurntable(const scenegraph::SceneGraph &sceneGraph, const core::Strin
 			(void)meshState->shutdown();
 			return false;
 		}
-		ctx.omega = glm::vec3(0.0f, glm::two_pi<float>() / (float)loops, 0.0f);
+		ctx.omega = math::Vec3f(0.0f, math::twoPi / (float)loops, 0.0f);
 		ctx.deltaFrameSeconds += 1000.0 / (double)loops;
 	}
 	sceneGraphRenderer.shutdown();

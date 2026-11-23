@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
 #include "voxel/DynamicVoxelArray.h"
@@ -12,7 +12,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -38,11 +38,11 @@ protected:
 	// Cleared by ExtrudeBrush::clearOperation() when the draft is discarded.
 	voxel::DynamicVoxelArray _history;
 
-	using PositionSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
+	using PositionSet = core::DynamicSet<math::Vec3i, 1031, math::Vec3iHash>;
 
 	// Cached selected voxel positions, captured once on first prepare() call.
 	// Re-used for all subsequent depth/offset changes to prevent selection bleeding.
-	core::DynamicArray<glm::ivec3> _cachedSelectedPositions;
+	core::DynamicArray<math::Vec3i> _cachedSelectedPositions;
 	voxel::Region _cachedSelectedBBox;
 	bool _hasCachedSelection = false;
 
@@ -52,8 +52,8 @@ protected:
 	// candidates are cached to be able to analyze the final wall configuration after evaluate() and adjust the wall
 	// filling logic if necessary.
 	struct WallCandidate {
-		glm::ivec3 basePos;
-		glm::ivec3 perpOffset;
+		math::Vec3i basePos;
+		math::Vec3i perpOffset;
 	};
 	core::DynamicArray<WallCandidate> _cachedWallCandidates;
 
@@ -63,11 +63,11 @@ protected:
 	bool _cachedSelBBoxValid = false;
 
 	// Volume region lower corner when cache was captured (to detect region shifts)
-	glm::ivec3 _capturedVolumeLower{0};
+	math::Vec3i _capturedVolumeLower{0};
 
 	void cacheSelection(const voxel::RawVolume *volume, const voxel::Region &region);
-	void adjustCacheForRegionShift(const glm::ivec3 &delta);
-	void writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &saved, const glm::ivec3 &pos,
+	void adjustCacheForRegionShift(const math::Vec3i &delta);
+	void writeVoxel(ModifierVolumeWrapper &wrapper, PositionSet &saved, const math::Vec3i &pos,
 					const voxel::Voxel &voxel);
 	void prune(ModifierVolumeWrapper &wrapper, PositionSet &saved);
 

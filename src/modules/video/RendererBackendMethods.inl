@@ -1,3 +1,5 @@
+#include "math/Vec4f.h"
+#include "math/Vec3u.h"
 // Included with RENDERER_METHOD and RENDERER_DEFAULT defined.
 RENDERER_METHOD(RendererState &, rendererState, (), ())
 RENDERER_METHOD(void *, mapBufferRange,
@@ -72,7 +74,7 @@ RENDERER_METHOD(bool, bufferStorage,
 RENDERER_METHOD(bool, copyBufferSubData,
 	(Id readBuffer, intptr_t readOffset, Id writeBuffer, intptr_t writeOffset, size_t size),
 	(readBuffer, readOffset, writeBuffer, writeOffset, size))
-RENDERER_METHOD(const glm::vec4 &, framebufferUV, (), ())
+RENDERER_METHOD(const math::Vec4f &, framebufferUV, (), ())
 RENDERER_METHOD(bool, bindFrameBufferAttachment,
 	(Id fbo, Id texture, FrameBufferAttachment attachment, int layerIndex, bool clear),
 	(fbo, texture, attachment, layerIndex, clear))
@@ -116,7 +118,7 @@ RENDERER_METHOD(bool, linkComputeShader,
 RENDERER_METHOD(bool, bindImage, (Id handle, AccessMode mode, ImageFormat format), (handle, mode, format))
 RENDERER_METHOD(void, setObjectName, (Id handle, ObjectNameType type, const core::String &name), (handle, type, name))
 RENDERER_METHOD(bool, runShader,
-	(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait RENDERER_DEFAULT(MemoryBarrierType::None)),
+	(Id program, const math::Vec3u &workGroups, MemoryBarrierType wait RENDERER_DEFAULT(MemoryBarrierType::None)),
 	(program, workGroups, wait))
 RENDERER_METHOD(bool, runShaderIndirect,
 	(Id program, Id buffer, size_t offset, MemoryBarrierType wait RENDERER_DEFAULT(MemoryBarrierType::None)),

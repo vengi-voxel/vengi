@@ -27,7 +27,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Voxel.h"
 #include "voxelui/DragAndDropPayload.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/Vec4f.h"
 
 namespace voxedit {
 
@@ -290,7 +290,7 @@ void PalettePanel::handleDragAndDrop(uint8_t paletteColorIdx, scenegraph::SceneG
 			_sceneMgr->mementoHandler().markPaletteChange(_sceneMgr->sceneGraph(), node);
 		}
 		if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(voxelui::dragdrop::RGBAPayload)) {
-			const glm::vec4 color = *(const glm::vec4 *)payload->Data;
+			const math::Vec4f color = *(const math::Vec4f *)payload->Data;
 			_sceneMgr->nodeSetColor(node.uuid(), paletteColorIdx, color::getRGBA(color));
 		}
 
@@ -502,7 +502,7 @@ void PalettePanel::paletteSelectionMenu(scenegraph::SceneGraphNode &node) {
 		memento::ScopedMementoGroup group(_sceneMgr->mementoHandler(), "randomizecolors");
 		math::Random random;
 		for (uint8_t idx : selected) {
-			const glm::vec4 randomColor(random.randomf(), random.randomf(), random.randomf(), 1.0f);
+			const math::Vec4f randomColor(random.randomf(), random.randomf(), random.randomf(), 1.0f);
 			_sceneMgr->nodeSetColor(node.uuid(), idx, color::getRGBA(randomColor));
 		}
 	}
@@ -620,7 +620,7 @@ void PalettePanel::paletteMenuBar(scenegraph::SceneGraphNode &node, command::Com
 void PalettePanel::closestColor(scenegraph::SceneGraphNode &node, command::CommandExecutionListener &listener) {
 	core_trace_scoped(ClosestColor);
 	palette::Palette &palette = node.palette();
-	if (ImGui::ColorEdit4(_("Color closest match"), glm::value_ptr(_closestColor),
+	if (ImGui::ColorEdit4(_("Color closest match"), math::value_ptr(_closestColor),
 						  ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_NoInputs)) {
 		const color::RGBA rgba = color::getRGBA(_closestColor);
 		_closestMatchPaletteColorIdx = palette.getClosestMatch(rgba);
@@ -740,11 +740,11 @@ bool PalettePanel::showColorPicker(uint8_t paletteColorIdx, scenegraph::SceneGra
 	} else {
 		flags |= ImGuiColorEditFlags_PickerHueBar;
 	}
-	glm::vec4 color = color::fromRGBA(palette.color(paletteColorIdx));
+	math::Vec4f color = color::fromRGBA(palette.color(paletteColorIdx));
 	const int maxPaletteEntries = palette.colorCount();
 	const bool existingColor = paletteColorIdx < maxPaletteEntries;
 
-	if (ImGui::ColorPicker4(_("Color"), glm::value_ptr(color), flags)) {
+	if (ImGui::ColorPicker4(_("Color"), math::value_ptr(color), flags)) {
 		const bool hasAlpha = palette.color(paletteColorIdx).a != 255;
 		palette.setColor(paletteColorIdx, color::getRGBA(color));
 		if (existingColor) {

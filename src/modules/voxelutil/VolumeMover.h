@@ -13,11 +13,12 @@
 #include "voxel/Voxel.h"
 #include "voxel/Region.h"
 #include <type_traits>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
 template<class Volume1, class Volume2>
-int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& offsets) {
+int moveVolume(Volume1* destination, const Volume2* source, const math::Vec3i& offsets) {
 	core_trace_scoped(MoveVolume);
 	core::AtomicInt cnt = 0;
 
@@ -26,7 +27,7 @@ int moveVolume(Volume1* destination, const Volume2* source, const glm::ivec3& of
 
 	if constexpr (std::is_same_v<Volume1, voxel::RawVolume>) {
 		if (destination->isSparse()) {
-			const glm::ivec3 delta(destReg.getLowerX() + offsets.x - sourceReg.getLowerX(),
+			const math::Vec3i delta(destReg.getLowerX() + offsets.x - sourceReg.getLowerX(),
 								   destReg.getLowerY() + offsets.y - sourceReg.getLowerY(), offsets.z);
 			const voxel::Region targetReg(sourceReg.getLowerCorner() + delta, sourceReg.getUpperCorner() + delta);
 			voxel::forEachTileWriteParallel(*destination, targetReg, [&](voxel::ParallelTileWriter &tile) {

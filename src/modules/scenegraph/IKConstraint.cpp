@@ -3,12 +3,12 @@
  */
 
 #include "IKConstraint.h"
-#include <glm/gtc/constants.hpp>
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
 IKConstraint::IKConstraint()
-	: rollMin(0.0f), rollMax(glm::two_pi<float>()), visible(true),
+	: rollMin(0.0f), rollMax(math::twoPi), visible(true),
 	  anchor(false) {
 }
 

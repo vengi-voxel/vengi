@@ -31,6 +31,9 @@
 #include "voxedit-util/network/protocol/LuaScriptCreateMessage.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 class ProtocolMessageFactoryTest : public app::AbstractTest {
 protected:
@@ -41,7 +44,7 @@ protected:
 		state.referenceUUID = core::UUID::generate();
 		state.name = "Test Node";
 		state.nodeType = scenegraph::SceneGraphNodeType::Model;
-		state.pivot = glm::vec3(1.0f, 2.0f, 3.0f);
+		state.pivot = math::Vec3f(1.0f, 2.0f, 3.0f);
 
 		// Add some properties
 		state.properties.put("prop1", "value1");
@@ -73,9 +76,9 @@ protected:
 		kf1.frameIdx = 0;
 		kf1.longRotation = false;
 		kf1.interpolation = scenegraph::InterpolationType::Linear;
-		kf1.transform().setLocalTranslation(glm::vec3(10.0f, 20.0f, 30.0f));
-		kf1.transform().setLocalOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
-		kf1.transform().setLocalScale(glm::vec3(1.0f, 1.0f, 1.0f));
+		kf1.transform().setLocalTranslation(math::Vec3f(10.0f, 20.0f, 30.0f));
+		kf1.transform().setLocalOrientation(math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
+		kf1.transform().setLocalScale(math::Vec3f(1.0f, 1.0f, 1.0f));
 		kf1.transform().markClean();
 		keyFrames.push_back(kf1);
 
@@ -83,9 +86,9 @@ protected:
 		kf2.frameIdx = 10;
 		kf2.longRotation = true;
 		kf2.interpolation = scenegraph::InterpolationType::QuadEaseIn;
-		kf2.transform().setLocalTranslation(glm::vec3(40.0f, 50.0f, 60.0f));
-		kf2.transform().setLocalOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
-		kf2.transform().setLocalScale(glm::vec3(1.0f, 1.0f, 1.0f));
+		kf2.transform().setLocalTranslation(math::Vec3f(40.0f, 50.0f, 60.0f));
+		kf2.transform().setLocalOrientation(math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
+		kf2.transform().setLocalScale(math::Vec3f(1.0f, 1.0f, 1.0f));
 		kf2.transform().markClean();
 		keyFrames.push_back(kf2);
 
@@ -314,8 +317,8 @@ protected:
 					<< messageName << ": Interpolation mismatch";
 
 				// Compare transformation matrices
-				const glm::mat4 stateMatrix = stateFrame.transform().calculateLocalMatrix();
-				const glm::mat4 deserializedMatrix = deserializedFrame.transform().calculateLocalMatrix();
+				const math::Mat4f stateMatrix = stateFrame.transform().calculateLocalMatrix();
+				const math::Mat4f deserializedMatrix = deserializedFrame.transform().calculateLocalMatrix();
 				for (int row = 0; row < 4; ++row) {
 					for (int col = 0; col < 4; ++col) {
 						EXPECT_FLOAT_EQ(stateMatrix[row][col], deserializedMatrix[row][col])

@@ -14,6 +14,8 @@
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <SDL3/SDL.h>
+#include "math/Vec3i.h"
+#include "math/Vec2i.h"
 
 namespace voxedit {
 
@@ -30,7 +32,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			ctx->MouseMove(canvases[viewIdx]);
 			ctx->Yield();
 			const TargetView &targetView = _targetViews[viewIdx];
-			const glm::ivec3 pos = voxelPosition(view, voxel::Region(0, 7), _slices[viewIdx], 2, 3);
+			const math::Vec3i pos = voxelPosition(view, voxel::Region(0, 7), _slices[viewIdx], 2, 3);
 			scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(_sceneMgr->activeNode());
 			IM_CHECK(setVoxel(_sceneMgr, node, pos, voxel::createVoxel(voxel::VoxelType::Generic, 42)));
 			ctx->MouseMoveToPos(
@@ -72,9 +74,9 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 				ctx->Yield();
 				const TargetView targetView = _targetViews[viewIdx];
 				scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(_sceneMgr->activeNode());
-				const glm::ivec3 first = voxelPosition(view, region, _slices[viewIdx], 2, 3);
-				const glm::ivec3 second = voxelPosition(view, region, _slices[viewIdx], 3, 3);
-				glm::ivec3 otherSlice = first;
+				const math::Vec3i first = voxelPosition(view, region, _slices[viewIdx], 2, 3);
+				const math::Vec3i second = voxelPosition(view, region, _slices[viewIdx], 3, 3);
+				math::Vec3i otherSlice = first;
 				++otherSlice[depthAxes[viewIdx]];
 				const voxel::Voxel value = voxel::createVoxel(voxel::VoxelType::Generic, 42);
 				IM_CHECK(setVoxel(_sceneMgr, node, first, value));
@@ -92,7 +94,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 				IM_CHECK(node->volume()->voxel(second).getFlags() & voxel::FlagOutline);
 				IM_CHECK_EQ(node->volume()->voxel(otherSlice).getFlags(), 0);
 				const voxel::Region selected = sliceSelection(*node, view);
-				const glm::ivec2 uv = viewPosition(view, region, selected.getCenter());
+				const math::Vec2i uv = viewPosition(view, region, selected.getCenter());
 				const ImVec2 handle(targetView.origin.x + (uv.x + 0.5f) * targetView.cell + ImGui::Size(3.5f),
 									targetView.origin.y + (uv.y + 0.5f) * targetView.cell);
 				ctx->MouseMoveToPos(handle);
@@ -106,7 +108,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 				IM_CHECK_EQ(_gizmoAxis, horizontalAxes[viewIdx]);
 				ctx->MouseMoveToPos(ImVec2(handle.x + 2.0f * targetView.cell, handle.y));
 				ctx->Yield();
-				const glm::ivec3 offset =
+				const math::Vec3i offset =
 					voxelPosition(view, region, _slices[viewIdx], 2, 0) - voxelPosition(view, region, _slices[viewIdx], 0, 0);
 				IM_CHECK(_gizmoPreview != nullptr);
 				IM_CHECK_EQ(node->volume()->voxel(first).getColor(), 42);
@@ -126,14 +128,14 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 					}
 					IM_CHECK(!targetGuide);
 				}
-				const glm::ivec2 destination = viewPosition(view, region, first + offset);
+				const math::Vec2i destination = viewPosition(view, region, first + offset);
 				const color::RGBA color = node->palette().color(42);
 				bool previewDrawn = false;
 				for (const ImDrawVert &vertex : _targetViews[viewIdx].draw->VtxBuffer) {
 					previewDrawn |=
 						vertex.col == IM_COL32(color.r, color.g, color.b, 255) &&
-						glm::abs(vertex.pos.x - (targetView.origin.x + destination.x * targetView.cell)) < 1.0f &&
-						glm::abs(vertex.pos.y - (targetView.origin.y + destination.y * targetView.cell)) < 1.0f;
+						math::abs(vertex.pos.x - (targetView.origin.x + destination.x * targetView.cell)) < 1.0f &&
+						math::abs(vertex.pos.y - (targetView.origin.y + destination.y * targetView.cell)) < 1.0f;
 				}
 				IM_CHECK(previewDrawn);
 				command::executeCommands("-actionexecute 1 1");
@@ -187,7 +189,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 				for (int z = 0; z < 8; ++z) {
 					for (int y = 0; y < 8; ++y) {
 						for (int x = 0; x < 8; ++x) {
-							const glm::ivec3 pos(x, y, z);
+							const math::Vec3i pos(x, y, z);
 							if (!voxel::isAir(node->volume()->voxel(pos).getMaterial())) {
 								IM_CHECK_EQ(pos[depthAxes[viewIdx]], _slices[viewIdx]);
 							}
@@ -199,9 +201,9 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 				modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 42));
 				command::executeCommands("+actionexecute 1 1;-actionexecute 1 1");
 				ctx->Yield();
-				const glm::ivec3 pos = voxelPosition(view, region, _slices[viewIdx], 3, 3);
+				const math::Vec3i pos = voxelPosition(view, region, _slices[viewIdx], 3, 3);
 				IM_CHECK_EQ(node->volume()->voxel(pos).getColor(), 42);
-				glm::ivec3 otherSlice = pos;
+				math::Vec3i otherSlice = pos;
 				++otherSlice[depthAxes[viewIdx]];
 				IM_CHECK(setVoxel(_sceneMgr, node, otherSlice, voxel::createVoxel(voxel::VoxelType::Generic, 42)));
 				modifier.setBrushType(BrushType::Select);
@@ -221,7 +223,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		[=](ImGuiTestContext *ctx) {
 			IM_CHECK(prepareUITest(ctx));
 			util::ScopedVarChange visible(cfg::VoxEditShowSlices, "true");
-			const voxel::Region region(glm::ivec3(-3, -4, -5), glm::ivec3(4, 3, 2));
+			const voxel::Region region(math::Vec3i(-3, -4, -5), math::Vec3i(4, 3, 2));
 			IM_CHECK(_sceneMgr->newScene(true, "slice targets", region));
 			ctx->Yield();
 			IM_CHECK(focusWindow(ctx, id));
@@ -240,7 +242,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 					const SliceView projectedView = (SliceView)projectedIdx;
 					const TargetView &targetView = _targetViews[projectedIdx];
 					IM_CHECK(targetView.draw != nullptr);
-					const glm::ivec2 projected = viewPosition(projectedView, region, _target);
+					const math::Vec2i projected = viewPosition(projectedView, region, _target);
 					const int depthAxes[] = {2, 0, 1};
 					IM_CHECK(voxelPosition(projectedView, region, _target[depthAxes[projectedIdx]], projected.x,
 										   projected.y) == _target);
@@ -257,7 +259,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 					IM_CHECK(left && right && top && bottom);
 				}
 			}
-			const glm::ivec3 lastTarget = _target;
+			const math::Vec3i lastTarget = _target;
 			ctx->MouseMoveToPos(ImVec2(0, 0));
 			ctx->Yield();
 			IM_CHECK(_target == lastTarget);
@@ -268,7 +270,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(prepareUITest(ctx));
 		util::ScopedVarChange visible(cfg::VoxEditShowSlices, "false");
 		IM_CHECK(ensurePanelVisible(ctx, "View/2D Views", cfg::VoxEditShowSlices));
-		const voxel::Region region(glm::ivec3(-3, -4, -5), glm::ivec3(4, 3, 2));
+		const voxel::Region region(math::Vec3i(-3, -4, -5), math::Vec3i(4, 3, 2));
 		IM_CHECK(_sceneMgr->newScene(true, "slices", region));
 		ctx->Yield();
 		IM_CHECK(focusWindow(ctx, id));
@@ -282,7 +284,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 			const ImVec2 max = info.RectFull.Max;
 			const float cell = core_min((max.x - min.x) / 8.0f, (max.y - min.y) / 8.0f);
 			const ImVec2 origin((min.x + max.x - 8.0f * cell) * 0.5f, (min.y + max.y - 8.0f * cell) * 0.5f);
-			const glm::ivec3 pos = voxelPosition(view, region, _slices[viewIdx], 2, 3);
+			const math::Vec3i pos = voxelPosition(view, region, _slices[viewIdx], 2, 3);
 			ctx->MouseMoveToPos(ImVec2(origin.x + 2.5f * cell, origin.y + 3.5f * cell));
 			ctx->MouseDown(ImGuiMouseButton_Left);
 			command::executeCommands("+actionexecute 1 1");
@@ -349,15 +351,15 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 	IM_REGISTER_TEST(engine, testCategory(), "coordinates and locked model")->TestFunc = [=](ImGuiTestContext *ctx) {
 		IM_CHECK(prepareUITest(ctx));
-		const voxel::Region region(glm::ivec3(-3, -4, -5), glm::ivec3(4, 3, 2));
-		IM_CHECK(voxelPosition(SliceView::Back, region, -2, 1, 2) == glm::ivec3(-2, 1, -2));
-		IM_CHECK(voxelPosition(SliceView::Right, region, -1, 1, 2) == glm::ivec3(-1, 1, 1));
-		IM_CHECK(voxelPosition(SliceView::Top, region, 0, 1, 2) == glm::ivec3(-2, 0, -3));
+		const voxel::Region region(math::Vec3i(-3, -4, -5), math::Vec3i(4, 3, 2));
+		IM_CHECK(voxelPosition(SliceView::Back, region, -2, 1, 2) == math::Vec3i(-2, 1, -2));
+		IM_CHECK(voxelPosition(SliceView::Right, region, -1, 1, 2) == math::Vec3i(-1, 1, 1));
+		IM_CHECK(voxelPosition(SliceView::Top, region, 0, 1, 2) == math::Vec3i(-2, 0, -3));
 		IM_CHECK(_sceneMgr->newScene(true, "locked slices", region));
 		scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(_sceneMgr->activeNode());
 		IM_CHECK(node != nullptr);
 		node->setLocked(true);
-		const glm::ivec3 pos = region.getLowerCorner();
+		const math::Vec3i pos = region.getLowerCorner();
 		_sceneMgr->modifier().setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 42));
 		_sceneMgr->modifier().setSliceMode(true);
 		_sceneMgr->modifier().setSliceRegion(voxel::Region(pos, pos));
@@ -367,7 +369,7 @@ void SlicePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		node->setLocked(false);
 		const voxel::Voxel selected = voxel::createVoxel(voxel::VoxelType::Generic, 7, NO_NORMAL, voxel::FlagOutline);
 		IM_CHECK(node->volume()->setVoxel(pos, selected));
-		const glm::ivec3 otherPos = pos + glm::ivec3(1, 0, 0);
+		const math::Vec3i otherPos = pos + math::Vec3i(1, 0, 0);
 		IM_CHECK(node->volume()->setVoxel(otherPos, voxel::createVoxel(voxel::VoxelType::Generic, 8)));
 		_sceneMgr->modified(node->uuid(), region);
 		_sceneMgr->modifier().setSliceRegion(voxel::Region(pos, otherPos));

@@ -36,6 +36,10 @@
 #include "voxelrender/ImageGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <gtest/gtest.h>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 #define WRITE_TO_FILE 1
 
@@ -63,7 +67,7 @@ image::ImagePtr AbstractFormatTest::helper_testThumbnailCreator(const scenegraph
 void AbstractFormatTest::testFirstAndLastPaletteIndex(const core::String &filename, Format *format,
 													  voxel::ValidateFlags flags) {
 	SCOPED_TRACE(filename.c_str());
-	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(2));
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i(2));
 	voxel::RawVolume volume(region);
 	EXPECT_TRUE(volume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0)));
 	EXPECT_TRUE(volume.setVoxel(0, 0, 1, voxel::createVoxel(voxel::VoxelType::Generic, 255)));
@@ -125,14 +129,14 @@ void AbstractFormatTest::testTransform(scenegraph::SceneGraph &sceneGraph, const
 	scenegraph::SceneGraphNode *node = sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
 	EXPECT_EQ("original", node->name());
-	EXPECT_EQ(node->region().getLowerCorner(), glm::ivec3(0, 0, 0));
-	EXPECT_EQ(node->region().getUpperCorner(), glm::ivec3(39, 29, 39));
+	EXPECT_EQ(node->region().getLowerCorner(), math::Vec3i(0, 0, 0));
+	EXPECT_EQ(node->region().getUpperCorner(), math::Vec3i(39, 29, 39));
 	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(0, 0, 0).getMaterial())) << *node->volume();
 	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(0, 20, 0).getMaterial())) << *node->volume();
 	sceneGraph.updateTransforms();
 	// World position of the volume's lower corner (works for baked pivot=0 and MagicaVoxel pivot+TRS).
-	const glm::mat4 worldMat = sceneGraph.worldMatrix(*node, 0);
-	const glm::vec3 lowerWorld = glm::vec3(worldMat * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	const math::Mat4f worldMat = sceneGraph.worldMatrix(*node, 0);
+	const math::Vec3f lowerWorld = math::Vec3f(worldMat * math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f));
 	// MagicaVoxel floor(M*(p+0.5-pivot)) can leave a half-voxel residual vs continuous node TRS.
 	EXPECT_NEAR(23.0f, lowerWorld.x, 1.0f);
 	EXPECT_NEAR(-2.0f, lowerWorld.y, 1.0f);
@@ -143,7 +147,7 @@ void AbstractFormatTest::testFirstAndLastPaletteIndexConversion(Format &srcForma
 																Format &destFormat, const core::String &destFilename,
 																voxel::ValidateFlags flags) {
 	SCOPED_TRACE(destFilename.c_str());
-	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(2));
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i(2));
 	voxel::RawVolume original(region);
 	const palette::Palette pal1 = voxel::getPalette();
 	EXPECT_TRUE(original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 0u)));
@@ -427,7 +431,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 	SCOPED_TRACE(filename.c_str());
 	palette::Palette pal;
 	pal.magicaVoxel();
-	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(1, 2, 2));
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i(1, 2, 2));
 	voxel::RawVolume original(region);
 	ASSERT_TRUE(original.setVoxel(0, 0, 1, voxel::createVoxel(pal, 200)));
 	ASSERT_TRUE(original.setVoxel(0, 1, 1, voxel::createVoxel(pal, 201)));
@@ -446,7 +450,7 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 		node.setPalette(pal);
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::ivec3(2, 0, 0));
+		transform.setWorldTranslation(math::Vec3i(2, 0, 0));
 		node.setTransform(keyFrameIdx, transform);
 		ASSERT_NE(InvalidNodeId, sceneGraphsave.emplace(core::move(node)));
 	}
@@ -542,8 +546,8 @@ void AbstractFormatTest::testSaveLoadVoxel(const core::String &filename, Format 
 void AbstractFormatTest::testSaveLoadCube(const core::String &filename, Format *format, voxel::ValidateFlags flags,
 										  float maxDelta) {
 	SCOPED_TRACE(filename.c_str());
-	glm::ivec3 mins(0, 0, 0);
-	glm::ivec3 maxs(9, 9, 9);
+	math::Vec3i mins(0, 0, 0);
+	math::Vec3i maxs(9, 9, 9);
 	voxel::Region region(mins, maxs);
 	voxel::RawVolume original(region);
 	original.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
@@ -581,8 +585,8 @@ void AbstractFormatTest::testSaveLoadCube(const core::String &filename, Format *
 	testSaveLoadVolumes(filename, original, format, flags, maxDelta);
 }
 
-void AbstractFormatTest::testSaveLoadBakedPivot(const core::String &filename, Format *format, const glm::vec3 &pivot,
-												const glm::vec3 &translation, const glm::vec3 &expectedPivot,
+void AbstractFormatTest::testSaveLoadBakedPivot(const core::String &filename, Format *format, const math::Vec3f &pivot,
+												const math::Vec3f &translation, const math::Vec3f &expectedPivot,
 												bool updateTransforms) {
 	SCOPED_TRACE(filename.c_str());
 	palette::Palette pal;
@@ -619,7 +623,7 @@ void AbstractFormatTest::testSaveLoadBakedPivot(const core::String &filename, Fo
 	ASSERT_NE(nullptr, src);
 	ASSERT_NE(nullptr, dst);
 	EXPECT_VEC_NEAR(expectedPivot, dst->pivot(), 0.01f);
-	EXPECT_VEC_NEAR(glm::vec3(0.0f), dst->transform(0).worldTranslation(), 0.01f);
+	EXPECT_VEC_NEAR(math::Vec3f(0.0f), dst->transform(0).worldTranslation(), 0.01f);
 	if (updateTransforms) {
 		voxel::occupiedWorldComparator(sceneGraph, loaded, false);
 	}
@@ -681,7 +685,7 @@ void AbstractFormatTest::testSaveLoadPointCloud(const core::String &filename, Fo
 	scenegraph::SceneGraph sceneGraph;
 	{
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), glm::ivec3(1, 0, 0)));
+		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(math::Vec3i(0), math::Vec3i(1, 0, 0)));
 		volume->setVoxel(0, 0, 0, voxel::createVoxel(palette, 37));
 		volume->setVoxel(1, 0, 0, voxel::createVoxel(palette, 149));
 		node.setVolume(volume);

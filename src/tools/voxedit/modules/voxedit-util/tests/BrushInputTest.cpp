@@ -17,6 +17,7 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -47,7 +48,7 @@ protected:
 		}
 	}
 
-	void strokeShape(const glm::ivec3 &from, const glm::ivec3 &to) {
+	void strokeShape(const math::Vec3i &from, const math::Vec3i &to) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.setBrushType(BrushType::Shape);
 		modifier.currentAABBBrush()->setStrokeMode();
@@ -70,7 +71,7 @@ TEST_F(BrushInputTest, testHoverPreviewDoesNotChangeCommittedStroke) {
 	modifier.currentAABBBrush()->setStrokeMode();
 	modifier.setModifierType(ModifierType::Override);
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(_sceneMgr->activeNode());
@@ -79,7 +80,7 @@ TEST_F(BrushInputTest, testHoverPreviewDoesNotChangeCommittedStroke) {
 	preview.setVolume(new voxel::RawVolume(*node->volume()));
 	preview.setPalette(node->palette());
 	modifier.executeBrush(_sceneMgr->sceneGraph(), preview, modifier.modifierType(), modifier.cursorVoxel(), {}, true);
-	modifier.setCursorPosition(glm::ivec3(3, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(3, 0, 0), voxel::FaceNames::PositiveY);
 	modifier.update(1.0, nullptr);
 	command::executeCommands("-actionexecute 1 1.0");
 
@@ -101,9 +102,9 @@ TEST_F(BrushInputTest, testPersistentSettingsSurviveEdit) {
 	ASSERT_TRUE(b != nullptr);
 	b->setStrokeMode();
 	b->setRadius(2);
-	b->setMirrorAxis(math::Axis::X, glm::ivec3(4, 0, 0));
+	b->setMirrorAxis(math::Axis::X, math::Vec3i(4, 0, 0));
 	modifier.shapeBrush().setThickness(3);
-	strokeShape(glm::ivec3(0), glm::ivec3(1, 0, 0));
+	strokeShape(math::Vec3i(0), math::Vec3i(1, 0, 0));
 	EXPECT_TRUE(b->strokeMode());
 	EXPECT_EQ(2, b->radius());
 	EXPECT_EQ(math::Axis::X, b->mirrorAxis());
@@ -116,7 +117,7 @@ TEST_F(BrushInputTest, testHiddenTargetIsNotWritten) {
 	int secondId = InvalidNodeId;
 	lockTwoModels(firstId, secondId);
 	ASSERT_TRUE(_sceneMgr->nodeSetVisible(_sceneMgr->sceneGraph().uuid(secondId), false));
-	strokeShape(glm::ivec3(0), glm::ivec3(2, 0, 0));
+	strokeShape(math::Vec3i(0), math::Vec3i(2, 0, 0));
 	for (int x = 0; x <= 2; ++x) {
 		EXPECT_FALSE(voxel::isAir(volumeOf(firstId)->voxel(x, 0, 0).getMaterial())) << x;
 		EXPECT_TRUE(voxel::isAir(volumeOf(secondId)->voxel(x, 0, 0).getMaterial())) << x;
@@ -156,7 +157,7 @@ TEST_F(BrushInputTest, testSliceStrokeWritesModelPlane) {
 	m.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	m.setSliceMode(true);
 	m.setSliceRegion(voxel::Region(0, 0, 0, 8, 0, 2));
-	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
 	command::executeCommands("-actionexecute 1 0.05");
@@ -174,10 +175,10 @@ TEST_F(BrushInputTest, testReleaseAppliesUnsampledEndpoint) {
 	ASSERT_NE(nullptr, b);
 	b->setStrokeMode();
 	m.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
-	m.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(4, 0, 0), voxel::FaceNames::PositiveY);
 	command::executeCommands("-actionexecute 1 0.05");
 	voxel::RawVolume *v = volumeOf(_sceneMgr->activeNode());
 	ASSERT_NE(nullptr, v);
@@ -186,13 +187,13 @@ TEST_F(BrushInputTest, testReleaseAppliesUnsampledEndpoint) {
 
 TEST_F(BrushInputTest, testTemporaryEraseSamplesWhileHeld) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "erase", voxel::Region(0, 0, 0, 8, 2, 2)));
-	strokeShape(glm::ivec3(0), glm::ivec3(4, 0, 0));
+	strokeShape(math::Vec3i(0), math::Vec3i(4, 0, 0));
 	Modifier &m = _sceneMgr->modifier();
 	m.setModifierType(ModifierType::Place);
-	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecutedelete 2 2.0");
-	m.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(4, 0, 0), voxel::FaceNames::PositiveY);
 	m.update(3.0, nullptr);
 	voxel::RawVolume *v = volumeOf(_sceneMgr->activeNode());
 	ASSERT_NE(nullptr, v);
@@ -218,14 +219,14 @@ TEST_F(BrushInputTest, testBoxAppliesOnceOnRelease) {
 	b->setBoxMode();
 	m.setModifierType(ModifierType::Override);
 	m.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
 	ASSERT_TRUE(m.isEditActive());
 	ASSERT_NE(nullptr, volumeOf(firstId));
 	ASSERT_NE(nullptr, volumeOf(secondId));
 	EXPECT_TRUE(voxel::isAir(volumeOf(firstId)->voxel(0, 0, 0).getMaterial()));
-	m.setCursorPosition(glm::ivec3(2, 2, 2), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(2, 2, 2), voxel::FaceNames::PositiveY);
 	command::executeCommands("-actionexecute 1 0.05");
 	EXPECT_FALSE(m.isEditActive());
 	for (int id : {firstId, secondId}) {
@@ -252,18 +253,18 @@ TEST_F(BrushInputTest, testBoxWaitsForDepthThenApplies) {
 	b->setBoxMode();
 	m.setModifierType(ModifierType::Override);
 	m.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
 	ASSERT_TRUE(m.isEditActive());
-	m.setCursorPosition(glm::ivec3(2, 0, 2), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(2, 0, 2), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(m.needsAdditionalAction());
 	command::executeCommands("-actionexecute 1 0.05");
 	ASSERT_TRUE(m.isEditActive());
 	voxel::RawVolume *v = volumeOf(_sceneMgr->activeNode());
 	ASSERT_NE(nullptr, v);
 	EXPECT_TRUE(voxel::isAir(v->voxel(0, 0, 0).getMaterial()));
-	m.setCursorPosition(glm::ivec3(2, 3, 2), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(2, 3, 2), voxel::FaceNames::PositiveY);
 	command::executeCommands("+actionexecute 1 0.1");
 	command::executeCommands("-actionexecute 1 0.15");
 	EXPECT_FALSE(m.isEditActive());
@@ -280,10 +281,10 @@ TEST_F(BrushInputTest, testCenterAppliesOnRelease) {
 	b->setCenterMode();
 	m.setModifierType(ModifierType::Override);
 	m.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	m.setCursorPosition(glm::ivec3(4, 2, 4), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(4, 2, 4), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
-	m.setCursorPosition(glm::ivec3(6, 4, 6), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(6, 4, 6), voxel::FaceNames::PositiveY);
 	command::executeCommands("-actionexecute 1 0.05");
 	EXPECT_FALSE(m.isEditActive());
 	voxel::RawVolume *v = volumeOf(_sceneMgr->activeNode());
@@ -304,10 +305,10 @@ TEST_F(BrushInputTest, testPaintBoxAppliesExistingVoxels) {
 	b->setBoxMode();
 	m.paintBrush().setPaintMode(PaintBrush::PaintMode::Replace);
 	m.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1));
-	m.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
-	m.setCursorPosition(glm::ivec3(2, 2, 2), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(2, 2, 2), voxel::FaceNames::PositiveY);
 	command::executeCommands("-actionexecute 1 0.05");
 	EXPECT_FALSE(m.isEditActive());
 	voxel::RawVolume *v = volumeOf(nodeId);
@@ -327,7 +328,7 @@ TEST_F(BrushInputTest, testPlaneReleaseResetsTraceForNextClick) {
 	const voxel::Voxel placed = voxel::createVoxel(voxel::VoxelType::Generic, 2);
 	m.setCursorVoxel(placed);
 	m.setHitCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 1));
-	m.setCursorPosition(glm::ivec3(1, 1, 1), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(1, 1, 1), voxel::FaceNames::PositiveY);
 	sceneMgr()->testSetLastRaytrace(12, 34);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
@@ -343,7 +344,7 @@ TEST_F(BrushInputTest, testPlaneReleaseResetsTraceForNextClick) {
 	EXPECT_EQ(-1, sceneMgr()->testLastRaytraceY());
 
 	m.setHitCursorVoxel(v->voxel(1, 1, 1));
-	m.setCursorPosition(glm::ivec3(1, 2, 1), voxel::FaceNames::PositiveY);
+	m.setCursorPosition(math::Vec3i(1, 2, 1), voxel::FaceNames::PositiveY);
 	command::executeCommands("+actionexecute 1 0.1");
 	ASSERT_TRUE(m.isEditActive());
 	command::executeCommands("-actionexecute 1 0.15");

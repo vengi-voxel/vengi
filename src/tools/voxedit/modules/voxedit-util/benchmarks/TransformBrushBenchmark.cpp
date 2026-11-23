@@ -4,6 +4,8 @@
 
 #include "BrushBenchmark.h"
 #include "voxedit-util/modifier/brush/TransformBrush.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 class TransformBrushBenchmark : public BrushBenchmark {
 protected:
@@ -15,16 +17,16 @@ protected:
 
 		switch (mode) {
 		case voxedit::TransformMode::Move:
-			brush.setMoveOffset(glm::ivec3(3, 0, 2));
+			brush.setMoveOffset(math::Vec3i(3, 0, 2));
 			break;
 		case voxedit::TransformMode::Shear:
-			brush.setShearOffset(glm::ivec3(2, 0, 0));
+			brush.setShearOffset(math::Vec3i(2, 0, 0));
 			break;
 		case voxedit::TransformMode::Scale:
-			brush.setScale(glm::vec3(1.5f));
+			brush.setScale(math::Vec3f(1.5f));
 			break;
 		case voxedit::TransformMode::Rotate:
-			brush.setRotationDegrees(glm::vec3(0.0f, 45.0f, 0.0f));
+			brush.setRotationDegrees(math::Vec3f(0.0f, 45.0f, 0.0f));
 			break;
 		default:
 			break;

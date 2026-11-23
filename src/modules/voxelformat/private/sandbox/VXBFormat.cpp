@@ -20,6 +20,7 @@
 #define VXB_PRINT_IMAGES 0
 #if VXB_PRINT_IMAGES
 #include "io/MemoryReadStream.h"
+#include "math/Vec3i.h"
 #endif
 
 namespace voxelformat {
@@ -191,7 +192,7 @@ void VXBFormat::faceTexture(voxel::RawVolume &volume, const palette::Palette &pa
 				return; // invalid face, do nothing
 			}
 			// we are running in a different x-direction compared to the original
-			const glm::ivec3 posFromIndex(width - (voxelIdx % width) - 1, (voxelIdx / width) % width, voxelIdx / area);
+			const math::Vec3i posFromIndex(width - (voxelIdx % width) - 1, (voxelIdx / width) % width, voxelIdx / area);
 			const color::RGBA color = diffuse->colorAt(x, y);
 			const color::RGBA emit = emissive->colorAt(x, y);
 

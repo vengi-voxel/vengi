@@ -9,6 +9,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -19,8 +20,8 @@ static int countSolid(const voxel::RawVolume &volume) {
 }
 
 static void fillRegion(voxel::RawVolume &volume, const voxel::Region &region, const voxel::Voxel &voxel) {
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
@@ -226,7 +227,7 @@ TEST_F(VolumeSculptTest, testSetLevelErode) {
 		}
 	}
 	// Protrusion on top of center
-	const glm::ivec3 protrusion(1, 1, 1);
+	const math::Vec3i protrusion(1, 1, 1);
 	solid.setVoxel(protrusion, true);
 	voxelMap.setVoxel(protrusion, v);
 
@@ -1339,7 +1340,7 @@ TEST_F(VolumeSculptTest, testReskinNoClipboardNoChange) {
 	}
 
 	// Empty skin (1x1x1 all-air volume)
-	voxel::Region skinRegion(glm::ivec3(0), glm::ivec3(0));
+	voxel::Region skinRegion(math::Vec3i(0), math::Vec3i(0));
 	voxel::RawVolume skin(skinRegion);
 
 	ReskinConfig config;
@@ -1360,7 +1361,7 @@ TEST_F(VolumeSculptTest, testReskinStretchMode) {
 	for (int x = 0; x < 4; ++x) {
 		for (int z = 0; z < 4; ++z) {
 			solid.setVoxel(x, 0, z, true);
-			voxelMap.setVoxel(glm::ivec3(x, 0, z), surface);
+			voxelMap.setVoxel(math::Vec3i(x, 0, z), surface);
 		}
 	}
 
@@ -1383,10 +1384,10 @@ TEST_F(VolumeSculptTest, testReskinStretchMode) {
 	// With PositiveY face: U=Z, V=X. Stretch maps V(X) 0..3 to skin V(Z) 0..1.
 	// Nearest-neighbor: X=0,1,2 -> skinV=0, X=3 -> skinV=1.
 	// Corner (X=0,Z=0) and corner (X=3,Z=3) should have different colors.
-	const voxel::Voxel v00 = voxelMap.voxel(glm::ivec3(0, 0, 0));
-	const voxel::Voxel v30 = voxelMap.voxel(glm::ivec3(3, 0, 0));
-	const voxel::Voxel v03 = voxelMap.voxel(glm::ivec3(0, 0, 3));
-	const voxel::Voxel v33 = voxelMap.voxel(glm::ivec3(3, 0, 3));
+	const voxel::Voxel v00 = voxelMap.voxel(math::Vec3i(0, 0, 0));
+	const voxel::Voxel v30 = voxelMap.voxel(math::Vec3i(3, 0, 0));
+	const voxel::Voxel v03 = voxelMap.voxel(math::Vec3i(0, 0, 3));
+	const voxel::Voxel v33 = voxelMap.voxel(math::Vec3i(3, 0, 3));
 	// X=0 and X=3 should differ (different V mapping)
 	EXPECT_NE(v00.getColor(), v30.getColor());
 	// Z=0 and Z=3 should differ (different U mapping)
@@ -1465,7 +1466,7 @@ TEST_F(VolumeSculptTest, testReskinFollowMedianSharedCorners) {
 	}
 	EXPECT_GE(heightV3, 0);
 	EXPECT_GE(heightV4, 0);
-	EXPECT_LE(glm::abs(heightV3 - heightV4), 1);
+	EXPECT_LE(math::abs(heightV3 - heightV4), 1);
 }
 
 TEST_F(VolumeSculptTest, testReskinAnchorTopRightCorner) {
@@ -1630,10 +1631,10 @@ TEST_F(VolumeSculptTest, testSmoothWallFlatWallUnchanged) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// Fill a flat slab: X=[1,6], Z=[1,6], Y=3 (face=PositiveY, height is uniform)
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6)), solid);
 
 	const int beforeCount = countSolid(volume);
-	const int changed = sculptSmoothWall(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)),
+	const int changed = sculptSmoothWall(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6)),
 										 voxel::FaceNames::PositiveY, 1, solid);
 	EXPECT_EQ(changed, 0);
 	EXPECT_EQ(countSolid(volume), beforeCount);
@@ -1646,12 +1647,12 @@ TEST_F(VolumeSculptTest, testSmoothWallTrimsProtrusion) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// Flat slab at Y=3, X=[1,8], Z=[1,8]
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 3, 8)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(8, 3, 8)), solid);
 	// Add a bump at center (4,4,4) and (4,5,4) -- 2 voxels high above the slab
 	volume.setVoxel(4, 4, 4, solid);
 	volume.setVoxel(4, 5, 4, solid);
 
-	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8));
+	const voxel::Region selRegion(math::Vec3i(1, 3, 1), math::Vec3i(8, 5, 8));
 	const int clearDepth = 256;
 	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid, clearDepth);
 	EXPECT_GT(changed, 0);
@@ -1666,12 +1667,12 @@ TEST_F(VolumeSculptTest, testSmoothWallFillsValley) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// Fill full slab at Y=[3,5], X=[1,8], Z=[1,8] (height 3 everywhere)
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(8, 5, 8)), solid);
 	// Dig a valley at center columns: remove Y=5 and Y=4 at (4,*,4)
 	volume.setVoxel(4, 5, 4, voxel::Voxel());
 	volume.setVoxel(4, 4, 4, voxel::Voxel());
 
-	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 5, 8));
+	const voxel::Region selRegion(math::Vec3i(1, 3, 1), math::Vec3i(8, 5, 8));
 	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid);
 	EXPECT_GT(changed, 0);
 	// Center column should have been filled back up toward Y=5
@@ -1685,13 +1686,13 @@ TEST_F(VolumeSculptTest, testSmoothWallPreservesEdges) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// Fill slab Y=[3,5], X=[1,5], Z=[1,5]
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(5, 5, 5)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(5, 5, 5)), solid);
 
 	// Record edge column heights before smoothing
 	const bool edgeTopBefore = voxel::isBlocked(volume.voxel(1, 5, 1).getMaterial());
 	const bool edgeBotBefore = voxel::isBlocked(volume.voxel(1, 3, 1).getMaterial());
 
-	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(5, 5, 5));
+	const voxel::Region selRegion(math::Vec3i(1, 3, 1), math::Vec3i(5, 5, 5));
 	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 10, solid);
 
 	// Edge columns (1,*,1) should be unchanged
@@ -1706,12 +1707,12 @@ TEST_F(VolumeSculptTest, testSmoothWallClearsFloatingVoxels) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// Flat slab at Y=3, X=[1,8], Z=[1,8]
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(8, 3, 8)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(8, 3, 8)), solid);
 	// Add floating voxels at Y=6 in the center (disconnected from the slab)
 	volume.setVoxel(4, 6, 4, solid);
 	volume.setVoxel(5, 6, 5, solid);
 
-	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(8, 7, 8));
+	const voxel::Region selRegion(math::Vec3i(1, 3, 1), math::Vec3i(8, 7, 8));
 	const int clearDepth = 256;
 	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, clearDepth);
 	EXPECT_GT(changed, 0);
@@ -1734,15 +1735,15 @@ TEST_F(VolumeSculptTest, testSmoothWallInverseDistanceReducesEdgeJump) {
 	for (int zz = 1; zz <= 10; ++zz) {
 		for (int xx = 1; xx <= 10; ++xx) {
 			// Base height at Y=1..3 everywhere
-			fillRegion(volumeLinear, voxel::Region(glm::ivec3(xx, 1, zz), glm::ivec3(xx, 3, zz)), solid);
+			fillRegion(volumeLinear, voxel::Region(math::Vec3i(xx, 1, zz), math::Vec3i(xx, 3, zz)), solid);
 		}
 		// Right edge columns taller (Y up to 8)
-		fillRegion(volumeLinear, voxel::Region(glm::ivec3(10, 1, zz), glm::ivec3(10, 8, zz)), solid);
+		fillRegion(volumeLinear, voxel::Region(math::Vec3i(10, 1, zz), math::Vec3i(10, 8, zz)), solid);
 	}
 	// Copy for IDW test
 	voxel::RawVolume volumeIDW(volumeLinear);
 
-	const voxel::Region selRegion(glm::ivec3(1, 1, 1), glm::ivec3(10, 9, 10));
+	const voxel::Region selRegion(math::Vec3i(1, 1, 1), math::Vec3i(10, 9, 10));
 	sculptSmoothWall(volumeLinear, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
 					 voxelutil::SmoothWallInterp::Linear);
 	sculptSmoothWall(volumeIDW, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
@@ -1774,9 +1775,9 @@ TEST_F(VolumeSculptTest, testSmoothWallEdgeAwareFlatWallUnchanged) {
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6)), solid);
 
-	const int changed = sculptSmoothWall(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)),
+	const int changed = sculptSmoothWall(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6)),
 										 voxel::FaceNames::PositiveY, 1, solid, 0,
 										 voxelutil::SmoothWallInterp::EdgeAware);
 	EXPECT_EQ(changed, 0);
@@ -1791,13 +1792,13 @@ TEST_F(VolumeSculptTest, testSmoothWallEdgeAwareFollowsCorner) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// Left half: X=[1,5], Z=[1,10], height Y=1..3
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 1, 1), glm::ivec3(5, 3, 10)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 1, 1), math::Vec3i(5, 3, 10)), solid);
 	// Right half: X=[6,10], Z=[1,10], height Y=1..6
-	fillRegion(volume, voxel::Region(glm::ivec3(6, 1, 1), glm::ivec3(10, 6, 10)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(6, 1, 1), math::Vec3i(10, 6, 10)), solid);
 
 	voxel::RawVolume volumeIDW(volume);
 
-	const voxel::Region selRegion(glm::ivec3(1, 1, 1), glm::ivec3(10, 7, 10));
+	const voxel::Region selRegion(math::Vec3i(1, 1, 1), math::Vec3i(10, 7, 10));
 	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
 					 voxelutil::SmoothWallInterp::EdgeAware);
 	sculptSmoothWall(volumeIDW, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
@@ -1828,9 +1829,9 @@ TEST_F(VolumeSculptTest, testSmoothWallTooSmallSelection) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// 2-wide slab (too narrow for interior columns)
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(2, 5, 2)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(2, 5, 2)), solid);
 
-	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(2, 5, 2));
+	const voxel::Region selRegion(math::Vec3i(1, 3, 1), math::Vec3i(2, 5, 2));
 	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 5, solid);
 	EXPECT_EQ(changed, 0);
 }
@@ -1845,13 +1846,13 @@ TEST_F(VolumeSculptTest, testSmoothWallFillHolesFilledInteriorHole) {
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	// Fill the full slab first, then punch a 2x2 hole in the middle
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6)), solid);
 	volume.setVoxel(3, 3, 3, voxel::Voxel());
 	volume.setVoxel(3, 3, 4, voxel::Voxel());
 	volume.setVoxel(4, 3, 3, voxel::Voxel());
 	volume.setVoxel(4, 3, 4, voxel::Voxel());
 
-	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6));
+	const voxel::Region selRegion(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6));
 	// fillHoles=true: hole should be filled
 	const int changed = sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
 										 voxelutil::SmoothWallInterp::InverseDistance, true);
@@ -1870,13 +1871,13 @@ TEST_F(VolumeSculptTest, testSmoothWallSkipHolesLeavesInteriorHole) {
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
-	fillRegion(volume, voxel::Region(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6)), solid);
+	fillRegion(volume, voxel::Region(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6)), solid);
 	volume.setVoxel(3, 3, 3, voxel::Voxel());
 	volume.setVoxel(3, 3, 4, voxel::Voxel());
 	volume.setVoxel(4, 3, 3, voxel::Voxel());
 	volume.setVoxel(4, 3, 4, voxel::Voxel());
 
-	const voxel::Region selRegion(glm::ivec3(1, 3, 1), glm::ivec3(6, 3, 6));
+	const voxel::Region selRegion(math::Vec3i(1, 3, 1), math::Vec3i(6, 3, 6));
 	// fillHoles=false: hole positions must stay empty
 	sculptSmoothWall(volume, selRegion, voxel::FaceNames::PositiveY, 1, solid, 0,
 					 voxelutil::SmoothWallInterp::InverseDistance, false);

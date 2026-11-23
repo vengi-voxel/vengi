@@ -11,8 +11,11 @@
 #include "math/Plane.h"
 #include "video/Types.h"
 #include "core/collection/Buffer.h"
-#include <glm/mat3x3.hpp>
 #include <stdint.h>
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace video {
 
@@ -38,20 +41,20 @@ CORE_ENUM_BIT_OPERATIONS(ShapeBuilderCube);
 class ShapeBuilder {
 public:
 	typedef core::Buffer<uint32_t, 256> Indices;
-	typedef core::Buffer<glm::vec3, 256> Vertices;
-	typedef core::Buffer<glm::vec2, 256> Texcoords;
-	typedef core::Buffer<glm::vec4, 256> Colors;
+	typedef core::Buffer<math::Vec3f, 256> Vertices;
+	typedef core::Buffer<math::Vec2f, 256> Texcoords;
+	typedef core::Buffer<math::Vec4f, 256> Colors;
 private:
 	alignas(32) Indices _indices;
 	alignas(32) Texcoords _texcoords;
 	alignas(32) Vertices _vertices;
 	alignas(32) Vertices _normals;
 	alignas(32) Colors _colors;
-	glm::mat3 _rotation = glm::mat3(1.0f);
+	math::Mat3f _rotation = math::Mat3f(1.0f);
 	Primitive _primitive = Primitive::Triangles;
 	int _initialSize;
-	glm::vec4 _color;
-	glm::vec3 _position {0.0f};
+	math::Vec4f _color;
+	math::Vec3f _position {0.0f};
 	bool _applyRotation = false;
 public:
 	ShapeBuilder(int initialSize = 0);
@@ -97,8 +100,8 @@ public:
 		return _primitive;
 	}
 
-	uint32_t addVertex(const glm::vec3& vertex, const glm::vec2& uv, const glm::vec3& normal = glm::vec3(0.0f));
-	uint32_t addVertex(const glm::vec3& vertex, const glm::vec3& normal = glm::vec3(0.0f));
+	uint32_t addVertex(const math::Vec3f& vertex, const math::Vec2f& uv, const math::Vec3f& normal = math::Vec3f(0.0f));
+	uint32_t addVertex(const math::Vec3f& vertex, const math::Vec3f& normal = math::Vec3f(0.0f));
 	void addTri(const math::Tri &tri, bool calcNormal = false);
 
 	inline void clear() {
@@ -107,8 +110,8 @@ public:
 		_indices.clear();
 		_texcoords.clear();
 		_normals.clear();
-		_position = glm::vec3(0.0f);
-		_rotation = glm::mat3(1.0f);
+		_position = math::Vec3f(0.0f);
+		_rotation = math::Mat3f(1.0f);
 		_applyRotation = false;
 		_primitive = Primitive::Triangles;
 		if (_initialSize > 0) {
@@ -122,7 +125,7 @@ public:
 	void aabbGridXZ(const math::AABB<float>& aabb, bool near = false, float stepWidth = 1.0f, float thickness = 1.0f);
 	void aabbGridXZ(const math::AABB<float>& aabb, bool near, float stepX, float stepZ, float thickness);
 
-	void arrow(const glm::vec3 &point1, const glm::vec3 &point2, const glm::vec3 &point3, float thickness = 1.0f);
+	void arrow(const math::Vec3f &point1, const math::Vec3f &point2, const math::Vec3f &point3, float thickness = 1.0f);
 
 	void cylinder(float radius, float length, int slices = 20);
 
@@ -131,7 +134,7 @@ public:
 	 */
 	void cone(float baseRadius, float length, int slices = 20);
 
-	void cube(const glm::vec3& mins, const glm::vec3& maxs, ShapeBuilderCube sides = ShapeBuilderCube::All);
+	void cube(const math::Vec3f& mins, const math::Vec3f& maxs, ShapeBuilderCube sides = ShapeBuilderCube::All);
 	/**
 	 * @brief The bone is rendered into the positive z direction
 	 */
@@ -139,12 +142,12 @@ public:
 	/**
 	 * @brief The bone is rendered into the positive z direction
 	 */
-	void bone(const glm::vec3 &from, const glm::vec3 &to, float posSize = 1.0f, float boneSize = 2.0f);
+	void bone(const math::Vec3f &from, const math::Vec3f &to, float posSize = 1.0f, float boneSize = 2.0f);
 	void diamond(float length1, float length2);
 
-	void line(const glm::vec3& start, const glm::vec3& end, float thickness = 1.0f);
+	void line(const math::Vec3f& start, const math::Vec3f& end, float thickness = 1.0f);
 
-	void aabb(const glm::vec3& mins, const glm::vec3& maxs, float thickness = 1.0f);
+	void aabb(const math::Vec3f& mins, const math::Vec3f& maxs, float thickness = 1.0f);
 	void obb(const math::OBBF& obb);
 	void aabb(const math::AABB<float>& aabb, bool renderGrid = false, float stepWidth = 1.0f, float thickness = 1.0f);
 	void aabb(const math::AABB<int>& aabb, bool renderGrid = false, float stepWidth = 1.0f, float thickness = 1.0f);
@@ -154,10 +157,10 @@ public:
 	void plane(uint32_t tesselation = 10);
 	void frustum(const Camera& camera, int splitFrustum = 0);
 	void camera(const Camera& camera);
-	void geom(const glm::vec3* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive = Primitive::Triangles);
-	void geom(const core::Buffer<glm::vec3>& vert, const core::Buffer<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
+	void geom(const math::Vec3f* vert, size_t vertCount, const uint32_t* indices, size_t indicesCount, Primitive primitive = Primitive::Triangles);
+	void geom(const core::Buffer<math::Vec3f>& vert, const core::Buffer<uint32_t>& indices, Primitive primitive = Primitive::Triangles);
 	void plane(const math::Plane& plane, bool normal);
-	void pyramid(const glm::vec3& size = glm::vec3(1.0f));
+	void pyramid(const math::Vec3f& size = math::Vec3f(1.0f));
 	/**
 	 * Geometry layout for spheres is as follows (for 5 slices, 4 stacks):
 	 *
@@ -176,8 +179,8 @@ public:
 	 * +  +  +  +  +  +        south pole
 	 */
 	void sphere(int numSlices, int numStacks, float radius);
-	void axis(float scale) { axis(glm::vec3(scale)); }
-	void axis(const glm::vec3& scale);
+	void axis(float scale) { axis(math::Vec3f(scale)); }
+	void axis(const math::Vec3f& scale);
 	/**
 	 * @brief Frees the memory
 	 */
@@ -190,16 +193,16 @@ public:
 	 */
 	const Vertices& getVertices() const;
 	const Vertices& getNormals() const;
-	void convertVertices(core::Buffer<glm::vec4>& out) const;
+	void convertVertices(core::Buffer<math::Vec4f>& out) const;
 
 	template<class FUNC>
 	size_t iterate(FUNC&& func) const {
 		const size_t size = _vertices.size();
 		for (size_t i = 0; i < size; ++i) {
-			const glm::vec3& pos = _vertices[i];
-			const glm::vec2& uv = _texcoords.empty() ? glm::vec2(0.0f) : _texcoords[i];
-			const glm::vec4& color = _colors[i];
-			const glm::vec3& normal = _normals[i];
+			const math::Vec3f& pos = _vertices[i];
+			const math::Vec2f& uv = _texcoords.empty() ? math::Vec2f(0.0f) : _texcoords[i];
+			const math::Vec4f& color = _colors[i];
+			const math::Vec3f& normal = _normals[i];
 			func(pos, uv, color, normal);
 		}
 		return size;
@@ -208,9 +211,9 @@ public:
 	const Colors& getColors() const;
 	const Texcoords& getTexcoords() const;
 
-	bool setColor(const glm::vec4& color);
-	void setPosition(const glm::vec3& position);
-	void setRotation(const glm::mat3& rotation);
+	bool setColor(const math::Vec4f& color);
+	void setPosition(const math::Vec3f& position);
+	void setRotation(const math::Mat3f& rotation);
 	void resetRotation();
 };
 
@@ -219,15 +222,15 @@ inline void ShapeBuilder::resetRotation() {
 }
 
 inline void ShapeBuilder::aabb(const math::AABB<int>& aabb, bool renderGrid, float stepWidth, float thickness) {
-	const math::AABB<float> converted(glm::vec3(aabb.getLowerCorner()), glm::vec3(aabb.getUpperCorner()));
+	const math::AABB<float> converted(math::Vec3f(aabb.getLowerCorner()), math::Vec3f(aabb.getUpperCorner()));
 	this->aabb(converted, renderGrid, stepWidth, thickness);
 }
 
-inline void ShapeBuilder::setPosition(const glm::vec3& position) {
+inline void ShapeBuilder::setPosition(const math::Vec3f& position) {
 	_position = position;
 }
 
-inline void ShapeBuilder::setRotation(const glm::mat3& rotation) {
+inline void ShapeBuilder::setRotation(const math::Mat3f& rotation) {
 	_rotation = rotation;
 	_applyRotation = true;
 }
@@ -240,7 +243,7 @@ inline const ShapeBuilder::Vertices& ShapeBuilder::getNormals() const {
 	return _normals;
 }
 
-inline void ShapeBuilder::convertVertices(core::Buffer<glm::vec4>& out) const {
+inline void ShapeBuilder::convertVertices(core::Buffer<math::Vec4f>& out) const {
 	const ShapeBuilder::Vertices& vertices = getVertices();
 	out.reserve(vertices.size());
 	for (const ShapeBuilder::Vertices::value_type& v : vertices) {

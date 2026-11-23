@@ -6,6 +6,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -20,7 +21,7 @@ TEST_F(KenShapeFormatTest, testLoad) {
 	const voxel::RawVolume *volume = node->volume();
 	ASSERT_NE(nullptr, volume);
 	const voxel::Region &region = volume->region();
-	EXPECT_EQ(glm::ivec3(64, 64, 17), region.getDimensionsInVoxels());
+	EXPECT_EQ(math::Vec3i(64, 64, 17), region.getDimensionsInVoxels());
 	EXPECT_EQ(44, voxelutil::countVoxels(*volume));
 	EXPECT_TRUE(voxel::isAir(volume->voxel(29, 29, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isBlocked(volume->voxel(28, 29, 0).getMaterial()));

@@ -3,57 +3,58 @@
  */
 
 #include "FrameTransform.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
-void FrameTransform::setWorldMatrix(const glm::mat4 &m) {
+void FrameTransform::setWorldMatrix(const math::Mat4f &m) {
 	_matrix = m;
 	resetCache();
 }
 
-const glm::mat4 &FrameTransform::worldMatrix() const {
+math::Mat4f FrameTransform::worldMatrix() const {
 	return _matrix;
 }
 
 bool FrameTransform::isIdentity() const {
-	return glm::all(glm::epsilonEqual(glm::vec3(_matrix[3]), glm::vec3(0.0f), 0.001f)) &&
-		   glm::all(glm::epsilonEqual(glm::vec3(glm::eulerAngles(glm::quat_cast(_matrix))), glm::vec3(0.0f), 0.001f));
+	const math::Mat4f matrix = worldMatrix();
+	return math::all(math::epsilonEqual(math::Vec3f(matrix[3]), math::Vec3f(0.0f), 0.001f)) &&
+		   math::all(math::epsilonEqual(math::Vec3f(math::eulerAngles(math::quat_cast(matrix))), math::Vec3f(0.0f), 0.001f));
 }
 
-glm::mat4 FrameTransform::calculateWorldMatrix(const glm::vec3 &normalizedPivot, const glm::vec3 &dimensions) const {
-	return glm::translate(worldMatrix(), -normalizedPivot * dimensions);
+math::Mat4f FrameTransform::calculateWorldMatrix(const math::Vec3f &normalizedPivot, const math::Vec3f &dimensions) const {
+	return math::translate(worldMatrix(), -normalizedPivot * dimensions);
 }
 
-const glm::vec3 &FrameTransform::worldScale() const {
+const math::Vec3f &FrameTransform::worldScale() const {
 	if (_scaleCalculated) {
 		return _scale;
 	}
-	glm::vec3 sc;
-	glm::quat orientation;
-	glm::vec3 translation;
+	math::Vec3f sc;
+	math::Quatf orientation;
+	math::Vec3f translation;
 	decompose(sc, orientation, translation);
 	_scale = sc;
 	_scaleCalculated = true;
 	return _scale;
 }
 
-glm::vec3 FrameTransform::worldTranslation() const {
-	return glm::column(_matrix, 3);
+math::Vec3f FrameTransform::worldTranslation() const {
+	return math::column(worldMatrix(), 3);
 }
 
-void FrameTransform::decompose(glm::vec3 &scale, glm::quat &orientation, glm::vec3 &translation) const {
-	glm::vec3 skew;
-	glm::vec4 perspective;
-	glm::decompose(_matrix, scale, orientation, translation, skew, perspective);
+void FrameTransform::decompose(math::Vec3f &scale, math::Quatf &orientation, math::Vec3f &translation) const {
+	math::Vec3f skew;
+	math::Vec4f perspective;
+	math::decompose(worldMatrix(), scale, orientation, translation, skew, perspective);
 }
 
-glm::vec3 calculateExtents(const glm::vec3 &dimensions) {
+math::Vec3f calculateExtents(const math::Vec3f &dimensions) {
 	return dimensions / 2.0f;
 }
 

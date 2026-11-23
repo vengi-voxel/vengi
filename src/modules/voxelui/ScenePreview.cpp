@@ -16,6 +16,11 @@
 #include "video/Renderer.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/RenderUtil.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
 
 namespace voxelui {
 
@@ -54,7 +59,7 @@ bool ScenePreview::init() {
 		Log::error("Failed to init SceneGraphRenderer for ScenePreview");
 		return false;
 	}
-	if (!_renderContext.init(glm::ivec2(64, 64))) {
+	if (!_renderContext.init(math::Vec2i(64, 64))) {
 		Log::error("Failed to init RenderContext for ScenePreview");
 		return false;
 	}
@@ -80,7 +85,7 @@ void ScenePreview::shutdown() {
 	}
 	_sceneGraph.clear();
 	_loadedPath.clear();
-	_fbSize = glm::ivec2(0);
+	_fbSize = math::Vec2i(0);
 	_initialized = false;
 }
 
@@ -162,26 +167,26 @@ void ScenePreview::resetCamera() {
 	if (!region.isValid()) {
 		return;
 	}
-	const glm::vec3 angles(glm::radians(-25.0f), glm::radians(45.0f), 0.0f);
+	const math::Vec3f angles(math::radians(-25.0f), math::radians(45.0f), 0.0f);
 	voxelrender::configureCamera(_camera, region, voxelrender::SceneCameraMode::Free, 5000.0f, angles);
 	_cameraDirty = false;
 }
 
-glm::ivec2 ScenePreview::pixelSizeFor(const glm::vec2 &widgetSize) const {
-	glm::vec2 scale(1.0f);
+math::Vec2i ScenePreview::pixelSizeFor(const math::Vec2f &widgetSize) const {
+	math::Vec2f scale(1.0f);
 	if (ui::IMGUIApp *app = imguiApp()) {
-		const glm::vec2 &windowSize = app->windowDimension();
-		const glm::vec2 &fbSize = app->frameBufferDimension();
+		const math::Vec2f &windowSize = app->windowDimension();
+		const math::Vec2f &fbSize = app->frameBufferDimension();
 		if (windowSize.x > 0.0f && windowSize.y > 0.0f) {
 			scale = fbSize / windowSize;
 		}
 	}
 	const int w = core_max(1, (int)(widgetSize.x * scale.x));
 	const int h = core_max(1, (int)(widgetSize.y * scale.y));
-	return glm::ivec2(w, h);
+	return math::Vec2i(w, h);
 }
 
-void ScenePreview::resize(const glm::ivec2 &pixelSize) {
+void ScenePreview::resize(const math::Vec2i &pixelSize) {
 	if (_fbSize == pixelSize) {
 		return;
 	}
@@ -190,7 +195,7 @@ void ScenePreview::resize(const glm::ivec2 &pixelSize) {
 	_renderContext.resize(pixelSize);
 }
 
-void ScenePreview::handleOrbitInput(const glm::vec2 &size) {
+void ScenePreview::handleOrbitInput(const math::Vec2f &size) {
 	ImGui::InvisibleButton("##scenepreview_orbit", ImVec2(size.x, size.y));
 	const bool hovered = ImGui::IsItemHovered();
 	if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
@@ -215,7 +220,7 @@ void ScenePreview::renderFrame(double deltaSeconds) {
 		resetCamera();
 	}
 	_camera.update(deltaSeconds);
-	video::clearColor(glm::vec4(0.15f, 0.15f, 0.15f, 1.0f));
+	video::clearColor(math::Vec4f(0.15f, 0.15f, 0.15f, 1.0f));
 	video::enable(video::State::DepthTest);
 	video::depthFunc(video::CompareFunc::LessEqual);
 	video::enable(video::State::CullFace);
@@ -234,7 +239,7 @@ const video::FrameBuffer &ScenePreview::displayFrameBuffer() const {
 	return _renderContext.enableMultisampling ? _renderContext.resolveFrameBuffer : _renderContext.frameBuffer;
 }
 
-void ScenePreview::render(double deltaSeconds, const glm::ivec2 &pixelSize) {
+void ScenePreview::render(double deltaSeconds, const math::Vec2i &pixelSize) {
 	if (!ensureInit() || empty()) {
 		return;
 	}
@@ -253,14 +258,14 @@ bool ScenePreview::multisamplingEnabled() const {
 	return _renderContext.enableMultisampling;
 }
 
-void ScenePreview::drawImage(const glm::vec2 &size) const {
+void ScenePreview::drawImage(const math::Vec2f &size) const {
 	const video::FrameBuffer &fb = displayFrameBuffer();
-	const glm::vec4 &uv = fb.uv();
+	const math::Vec4f &uv = fb.uv();
 	const video::TexturePtr &texture = fb.texture(video::FrameBufferAttachment::Color0);
 	ImGui::Image(texture->handle(), ImVec2(size.x, size.y), ImVec2(uv.x, uv.y), ImVec2(uv.z, uv.w));
 }
 
-void ScenePreview::updateAndRender(double deltaSeconds, const glm::vec2 &size, bool interactive) {
+void ScenePreview::updateAndRender(double deltaSeconds, const math::Vec2f &size, bool interactive) {
 	if (!ensureInit()) {
 		ImGui::TextUnformatted(_("Preview unavailable"));
 		return;
@@ -322,7 +327,7 @@ void ScenePreview::renderForFileDialog(const io::FilesystemEntry &entry, video::
 
 	const ImVec2 avail = ImGui::GetContentRegionAvail();
 	const double delta = app::App::getInstance()->deltaFrameSeconds();
-	updateAndRender(delta, glm::vec2(avail.x, avail.y), true);
+	updateAndRender(delta, math::Vec2f(avail.x, avail.y), true);
 	ImGui::EndChild();
 }
 

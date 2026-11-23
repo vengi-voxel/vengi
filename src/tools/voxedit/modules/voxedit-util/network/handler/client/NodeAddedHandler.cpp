@@ -6,6 +6,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/VolumeCompression.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -18,7 +19,7 @@ void NodeAddedHandler::execute(const network::ClientId &, NodeAddedMessage *mess
 	const core::UUID &referenceUUID = message->referenceUUID();
 	const core::String &name = message->name();
 	const scenegraph::SceneGraphNodeType nodeType = message->nodeType();
-	const glm::vec3 &pivot = message->pivot();
+	const math::Vec3f &pivot = message->pivot();
 
 	scenegraph::SceneGraphNode *parentNode = nullptr;
 	if (parentUUID.isValid()) {

@@ -12,6 +12,7 @@
 #include "voxelformat/tests/TestHelper.h"
 #include <thread>
 #include <vector>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -70,7 +71,7 @@ TEST_F(ConcurrentSparseVolumeTest, testSetVoxels) {
 }
 
 TEST_F(ConcurrentSparseVolumeTest, testFullSamplerLoop) {
-	const voxel::Region &region = voxel::Region::fromSize(glm::ivec3(64));
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i(64));
 	ConcurrentSparseVolume v(region);
 	v.setVoxel(1, 2, 1, voxel::createVoxel(VoxelType::Generic, 0));
 
@@ -367,15 +368,15 @@ TEST_F(ConcurrentSparseVolumeTest, testParallelFillReadRemove) {
 	});
 	ASSERT_EQ((size_t)(size * size * size), v.size());
 	const Region region = v.calculateRegion();
-	EXPECT_EQ(glm::ivec3(offset), region.getLowerCorner());
-	EXPECT_EQ(glm::ivec3(offset + size - 1), region.getUpperCorner());
+	EXPECT_EQ(math::Vec3i(offset), region.getLowerCorner());
+	EXPECT_EQ(math::Vec3i(offset + size - 1), region.getUpperCorner());
 
 	core::AtomicInt mismatches{0};
 	app::for_parallel(0, size, [&](int start, int end) {
 		for (int z = start; z < end; ++z) {
 			for (int y = 0; y < size; ++y) {
 				for (int x = 0; x < size; ++x) {
-					const glm::ivec3 pos(offset + x, offset + y, offset + z);
+					const math::Vec3i pos(offset + x, offset + y, offset + z);
 					if (v.voxel(pos).getColor() != 3) {
 						mismatches.increment(1);
 					}

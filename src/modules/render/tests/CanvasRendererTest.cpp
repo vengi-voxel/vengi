@@ -7,6 +7,9 @@
 #include "video/FrameBufferConfig.h"
 #include "video/Renderer.h"
 #include "video/tests/AbstractGLTest.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 namespace render {
 class CanvasRendererTest : public video::AbstractGLTest {};
 TEST_F(CanvasRendererTest, NativeCanvasClipsBlendsAndRestoresScissorOnHighDpiTargets) {
@@ -14,21 +17,21 @@ TEST_F(CanvasRendererTest, NativeCanvasClipsBlendsAndRestoresScissorOnHighDpiTar
 	ASSERT_TRUE(canvas.init());
 	video::FrameBuffer target;
 	video::FrameBufferConfig config;
-	config.dimension(glm::ivec2(128)).colorTexture(true);
+	config.dimension(math::Vec2i(128)).colorTexture(true);
 	ASSERT_TRUE(target.init(config));
-	video::clearColor(glm::vec4(0, 0, 0, 1));
+	video::clearColor(math::Vec4f(0, 0, 0, 1));
 	target.bind(true);
-	canvas.begin(glm::vec2(64));
-	canvas.rect(glm::vec4(0, 0, 64, 64), glm::vec4(1, 0, 0, 1), 4);
-	canvas.clip(glm::vec4(16, 16, 16, 16));
-	canvas.rect(glm::vec4(0, 0, 64, 64), glm::vec4(0, 0, 1, 0.5f));
-	ASSERT_TRUE(canvas.pushClip(glm::vec4(22, 22, 40, 40)));
-	canvas.rect(glm::vec4(0, 0, 64, 64), glm::vec4(0, 1, 0, 1));
+	canvas.begin(math::Vec2f(64));
+	canvas.rect(math::Vec4f(0, 0, 64, 64), math::Vec4f(1, 0, 0, 1), 4);
+	canvas.clip(math::Vec4f(16, 16, 16, 16));
+	canvas.rect(math::Vec4f(0, 0, 64, 64), math::Vec4f(0, 0, 1, 0.5f));
+	ASSERT_TRUE(canvas.pushClip(math::Vec4f(22, 22, 40, 40)));
+	canvas.rect(math::Vec4f(0, 0, 64, 64), math::Vec4f(0, 1, 0, 1));
 	ASSERT_TRUE(canvas.popClip());
-	EXPECT_EQ(glm::vec4(16, 16, 16, 16), canvas.clipRect());
+	EXPECT_EQ(math::Vec4f(16, 16, 16, 16), canvas.clipRect());
 	EXPECT_FALSE(canvas.popClip());
 	canvas.resetClip();
-	canvas.text(glm::vec2(2, 42), "GPU", glm::vec4(1), 16);
+	canvas.text(math::Vec2f(2, 42), "GPU", math::Vec4f(1), 16);
 	video::scissor(1, 2, 3, 4);
 	const uint64_t draws = video::renderStats().drawCalls;
 	canvas.render();

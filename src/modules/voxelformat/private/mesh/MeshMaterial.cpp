@@ -3,6 +3,7 @@
  */
 
 #include "MeshMaterial.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -48,7 +49,7 @@ color::RGBA MeshMaterial::apply(color::RGBA color) const {
 	return color;
 }
 
-bool MeshMaterial::colorAt(color::RGBA &color, const glm::vec2 &uv, bool originUpperLeft) const {
+bool MeshMaterial::colorAt(color::RGBA &color, const math::Vec2f &uv, bool originUpperLeft) const {
 	if (!texture || !texture->isLoaded()) {
 		if (baseColorFactor <= 0.0f) {
 			return false;

@@ -10,8 +10,8 @@
 #include "core/collection/DynamicStringMap.h"
 #include <stdint.h>
 #include <string.h>
-#include <glm/fwd.hpp>
 #include "Types.h"
+#include "math/Vec3u.h"
 
 namespace video {
 
@@ -188,7 +188,7 @@ public:
 	 * @brief Run the compute shader.
 	 * @return @c false if this is no compute shader, or the execution failed.
 	 */
-	bool run(const glm::uvec3& workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
+	bool run(const math::Vec3u& workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
 
 	/**
 	 * @brief Adds a new define in the form '#define value' to the shader source code

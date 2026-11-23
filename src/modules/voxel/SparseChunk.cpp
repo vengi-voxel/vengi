@@ -3,7 +3,7 @@
  */
 
 #include "SparseChunk.h"
-#include <glm/common.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -208,18 +208,18 @@ const Voxel *SparseChunk::unpackRow(uint64_t bits, const Voxel *v, int width, Vo
 	return scratch;
 }
 
-void SparseChunk::readRegion(const glm::ivec3 &mins, const glm::ivec3 &size, Voxel *target) const {
-	const glm::ivec3 end = mins + size;
-	core_assert(glm::all(glm::greaterThanEqual(mins, glm::ivec3(0))));
-	core_assert(glm::all(glm::greaterThan(size, glm::ivec3(0))));
-	core_assert(glm::all(glm::lessThanEqual(end, glm::ivec3(Side))));
+void SparseChunk::readRegion(const math::Vec3i &mins, const math::Vec3i &size, Voxel *target) const {
+	const math::Vec3i end = mins + size;
+	core_assert(math::all(math::greaterThanEqual(mins, math::Vec3i(0))));
+	core_assert(math::all(math::greaterThan(size, math::Vec3i(0))));
+	core_assert(math::all(math::lessThanEqual(end, math::Vec3i(Side))));
 	const int planeStride = size.x * size.y;
 	for (int bz = mins.z; bz < end.z;) {
-		const int zEnd = glm::min(end.z, (bz | (BrickSide - 1)) + 1);
+		const int zEnd = math::min(end.z, (bz | (BrickSide - 1)) + 1);
 		for (int by = mins.y; by < end.y;) {
-			const int yEnd = glm::min(end.y, (by | (BrickSide - 1)) + 1);
+			const int yEnd = math::min(end.y, (by | (BrickSide - 1)) + 1);
 			for (int bx = mins.x; bx < end.x;) {
-				const int xEnd = glm::min(end.x, (bx | (BrickSide - 1)) + 1);
+				const int xEnd = math::min(end.x, (bx | (BrickSide - 1)) + 1);
 				const int width = xEnd - bx;
 				const Brick *b = brick(bx, by, bz);
 				static constexpr Voxel air[BrickVoxels]{};
@@ -247,7 +247,7 @@ void SparseChunk::readRegion(const glm::ivec3 &mins, const glm::ivec3 &size, Vox
 	}
 }
 
-bool SparseChunk::calculateBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const {
+bool SparseChunk::calculateBounds(math::Vec3i &mins, math::Vec3i &maxs) const {
 	bool found = false;
 	for (int i = 0; i < _poolUsed; ++i) {
 		const Brick *brick = poolBrick(i);
@@ -289,15 +289,15 @@ bool SparseChunk::calculateBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 		const int bx = (brick->cell & (BricksPerAxis - 1)) << BrickShift;
 		const int by = ((brick->cell >> BricksPerAxisShift) & (BricksPerAxis - 1)) << BrickShift;
 		const int bz = (brick->cell >> (2 * BricksPerAxisShift)) << BrickShift;
-		const glm::ivec3 bmins(bx + xmin, by + ymin, bz + zmin);
-		const glm::ivec3 bmaxs(bx + xmax, by + ymax, bz + zmax);
+		const math::Vec3i bmins(bx + xmin, by + ymin, bz + zmin);
+		const math::Vec3i bmaxs(bx + xmax, by + ymax, bz + zmax);
 		if (!found) {
 			mins = bmins;
 			maxs = bmaxs;
 			found = true;
 		} else {
-			mins = (glm::min)(mins, bmins);
-			maxs = (glm::max)(maxs, bmaxs);
+			mins = (math::min)(mins, bmins);
+			maxs = (math::max)(maxs, bmaxs);
 		}
 	}
 	return found;

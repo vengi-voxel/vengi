@@ -17,11 +17,13 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeCropper.h"
 #include "voxelutil/VolumeSplitter.h"
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/matrix.hpp>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/QuatOps.h"
 
 namespace voxelformat {
 
@@ -31,70 +33,70 @@ constexpr uint32_t MAXSPRITES = 1024;
 constexpr int32_t PI_UNITS = 32768;
 
 struct KenSprite {
-	glm::vec3 s{1.0f, 0.0f, 0.0f};
-	glm::vec3 h{0.0f, 1.0f, 0.0f};
-	glm::vec3 f{0.0f, 0.0f, 1.0f};
-	glm::vec3 p{0.0f, 0.0f, 0.0f};
+	math::Vec3f s{1.0f, 0.0f, 0.0f};
+	math::Vec3f h{0.0f, 1.0f, 0.0f};
+	math::Vec3f f{0.0f, 0.0f, 1.0f};
+	math::Vec3f p{0.0f, 0.0f, 0.0f};
 };
 
-static glm::vec3 toVec(const KFAFormat::Point3 &p) {
-	return glm::vec3(p.x, p.y, p.z);
+static math::Vec3f toVec(const KFAFormat::Point3 &p) {
+	return math::Vec3f(p.x, p.y, p.z);
 }
 
 // Ken sprite basis (s, h, f, p) as a 4x4 matrix. Local voxel (x,y,z) -> p + x*s + y*h + z*f
-static glm::mat4 spriteMatrix(const KenSprite &spr) {
-	glm::mat4 m(1.0f);
-	m[0] = glm::vec4(spr.s, 0.0f);
-	m[1] = glm::vec4(spr.h, 0.0f);
-	m[2] = glm::vec4(spr.f, 0.0f);
-	m[3] = glm::vec4(spr.p, 1.0f);
+static math::Mat4f spriteMatrix(const KenSprite &spr) {
+	math::Mat4f m(1.0f);
+	m[0] = math::Vec4f(spr.s, 0.0f);
+	m[1] = math::Vec4f(spr.h, 0.0f);
+	m[2] = math::Vec4f(spr.f, 0.0f);
+	m[3] = math::Vec4f(spr.p, 1.0f);
 	return m;
 }
 
 // Ken (x, y, z) -> vengi (x, -z, y)
-static glm::mat4 kenToVengi() {
-	glm::mat4 m(0.0f);
-	m[0] = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-	m[1] = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-	m[2] = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
-	m[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+static math::Mat4f kenToVengi() {
+	math::Mat4f m(0.0f);
+	m[0] = math::Vec4f(1.0f, 0.0f, 0.0f, 0.0f);
+	m[1] = math::Vec4f(0.0f, 0.0f, 1.0f, 0.0f);
+	m[2] = math::Vec4f(0.0f, -1.0f, 0.0f, 0.0f);
+	m[3] = math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f);
 	return m;
 }
 
-static glm::mat4 vengiToKen() {
-	glm::mat4 m(0.0f);
-	m[0] = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-	m[1] = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
-	m[2] = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);
-	m[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+static math::Mat4f vengiToKen() {
+	math::Mat4f m(0.0f);
+	m[0] = math::Vec4f(1.0f, 0.0f, 0.0f, 0.0f);
+	m[1] = math::Vec4f(0.0f, 0.0f, -1.0f, 0.0f);
+	m[2] = math::Vec4f(0.0f, 1.0f, 0.0f, 0.0f);
+	m[3] = math::Vec4f(0.0f, 0.0f, 0.0f, 1.0f);
 	return m;
 }
 
 // Given vector a, returns b and c that make (a, b, c) orthonormal - Ken's genperp
-static void genperp(const glm::vec3 &a, glm::vec3 &b, glm::vec3 &c) {
+static void genperp(const math::Vec3f &a, math::Vec3f &b, math::Vec3f &c) {
 	if (a.x == 0.0f && a.y == 0.0f && a.z == 0.0f) {
-		b = glm::vec3(0.0f);
-		c = glm::vec3(0.0f);
+		b = math::Vec3f(0.0f);
+		c = math::Vec3f(0.0f);
 		return;
 	}
-	if (glm::abs(a.x) < glm::abs(a.y) && glm::abs(a.x) < glm::abs(a.z)) {
-		const float t = 1.0f / glm::sqrt(a.y * a.y + a.z * a.z);
-		b = glm::vec3(0.0f, a.z * t, -a.y * t);
-	} else if (glm::abs(a.y) < glm::abs(a.z)) {
-		const float t = 1.0f / glm::sqrt(a.x * a.x + a.z * a.z);
-		b = glm::vec3(-a.z * t, 0.0f, a.x * t);
+	if (math::abs(a.x) < math::abs(a.y) && math::abs(a.x) < math::abs(a.z)) {
+		const float t = 1.0f / math::sqrt(a.y * a.y + a.z * a.z);
+		b = math::Vec3f(0.0f, a.z * t, -a.y * t);
+	} else if (math::abs(a.y) < math::abs(a.z)) {
+		const float t = 1.0f / math::sqrt(a.x * a.x + a.z * a.z);
+		b = math::Vec3f(-a.z * t, 0.0f, a.x * t);
 	} else {
-		const float t = 1.0f / glm::sqrt(a.x * a.x + a.y * a.y);
-		b = glm::vec3(a.y * t, -a.x * t, 0.0f);
+		const float t = 1.0f / math::sqrt(a.x * a.x + a.y * a.y);
+		b = math::Vec3f(a.y * t, -a.x * t, 0.0f);
 	}
-	c = glm::cross(a, b);
+	c = math::cross(a, b);
 }
 
 // A * B = C, find A (Ken mat0). Columns are s, h, f, origin.
-static void mat0(glm::vec3 &as, glm::vec3 &ah, glm::vec3 &ag, glm::vec3 &ao, const glm::vec3 &bs, const glm::vec3 &bh,
-				 const glm::vec3 &bg, const glm::vec3 &bo, const glm::vec3 &cs, const glm::vec3 &ch,
-				 const glm::vec3 &cg, const glm::vec3 &co) {
-	glm::vec3 ts, th, tg, to;
+static void mat0(math::Vec3f &as, math::Vec3f &ah, math::Vec3f &ag, math::Vec3f &ao, const math::Vec3f &bs, const math::Vec3f &bh,
+				 const math::Vec3f &bg, const math::Vec3f &bo, const math::Vec3f &cs, const math::Vec3f &ch,
+				 const math::Vec3f &cg, const math::Vec3f &co) {
+	math::Vec3f ts, th, tg, to;
 	ts.x = bs.x * cs.x + bh.x * ch.x + bg.x * cg.x;
 	ts.y = bs.x * cs.y + bh.x * ch.y + bg.x * cg.y;
 	ts.z = bs.x * cs.z + bh.x * ch.z + bg.x * cg.z;
@@ -114,10 +116,10 @@ static void mat0(glm::vec3 &as, glm::vec3 &ah, glm::vec3 &ag, glm::vec3 &ao, con
 }
 
 // A * B = C, find C (Ken mat2)
-static void mat2(const glm::vec3 &as, const glm::vec3 &ah, const glm::vec3 &af, const glm::vec3 &ao,
-				 const glm::vec3 &bs, const glm::vec3 &bh, const glm::vec3 &bf, const glm::vec3 &bo, glm::vec3 &cs,
-				 glm::vec3 &ch, glm::vec3 &cf, glm::vec3 &co) {
-	glm::vec3 ts, th, tf, to;
+static void mat2(const math::Vec3f &as, const math::Vec3f &ah, const math::Vec3f &af, const math::Vec3f &ao,
+				 const math::Vec3f &bs, const math::Vec3f &bh, const math::Vec3f &bf, const math::Vec3f &bo, math::Vec3f &cs,
+				 math::Vec3f &ch, math::Vec3f &cf, math::Vec3f &co) {
+	math::Vec3f ts, th, tf, to;
 	ts.x = as.x * bs.x + ah.x * bs.y + af.x * bs.z;
 	ts.y = as.y * bs.x + ah.y * bs.y + af.y * bs.z;
 	ts.z = as.z * bs.x + ah.z * bs.y + af.z * bs.z;
@@ -138,24 +140,24 @@ static void mat2(const glm::vec3 &as, const glm::vec3 &ah, const glm::vec3 &af, 
 
 static void setlimb(core::Buffer<KenSprite> &spr, const KFAFormat::Hinge &hinge, int32_t child, int32_t parent,
 					int8_t htype, int32_t val) {
-	glm::vec3 qs = toVec(hinge.v[0]);
-	glm::vec3 qp = toVec(hinge.p[0]);
-	glm::vec3 qh, qf;
+	math::Vec3f qs = toVec(hinge.v[0]);
+	math::Vec3f qp = toVec(hinge.p[0]);
+	math::Vec3f qh, qf;
 	genperp(qs, qh, qf);
 
 	if (htype == 0) {
-		const float angle = ((float)val) * (glm::pi<float>() / (float)PI_UNITS);
-		const float c = glm::cos(angle);
-		const float s = glm::sin(angle);
-		const glm::vec3 ph = qh;
-		const glm::vec3 pf = qf;
+		const float angle = ((float)val) * (math::pi / (float)PI_UNITS);
+		const float c = math::cos(angle);
+		const float s = math::sin(angle);
+		const math::Vec3f ph = qh;
+		const math::Vec3f pf = qf;
 		qh = ph * c - pf * s;
 		qf = ph * s + pf * c;
 	}
 
-	glm::vec3 ps = toVec(hinge.v[1]);
-	glm::vec3 pp = toVec(hinge.p[1]);
-	glm::vec3 ph, pf;
+	math::Vec3f ps = toVec(hinge.v[1]);
+	math::Vec3f pp = toVec(hinge.p[1]);
+	math::Vec3f ph, pf;
 	genperp(ps, ph, pf);
 
 	mat0(qs, qh, qf, qp, qs, qh, qf, qp, ps, ph, pf, pp);
@@ -221,7 +223,7 @@ static bool sortHinges(const core::Buffer<KFAFormat::Hinge> &hinges, core::Buffe
 	return true;
 }
 
-static void evaluatePose(const KFAFormat::Data &data, const core::Buffer<glm::vec3> &restP,
+static void evaluatePose(const KFAFormat::Data &data, const core::Buffer<math::Vec3f> &restP,
 						 const core::Buffer<int32_t> &evalOrder, const int32_t *angles,
 						 core::Buffer<KenSprite> &sprites) {
 	const uint32_t numhin = (uint32_t)data.hinges.size();
@@ -245,12 +247,12 @@ static void evaluatePose(const KFAFormat::Data &data, const core::Buffer<glm::ve
 	}
 }
 
-static void matrixToLocal(const glm::mat4 &m, scenegraph::SceneGraphTransform &transform) {
-	const glm::vec3 t(m[3]);
-	glm::vec3 x(m[0]);
-	glm::vec3 y(m[1]);
-	glm::vec3 z(m[2]);
-	glm::vec3 scale(glm::length(x), glm::length(y), glm::length(z));
+static void matrixToLocal(const math::Mat4f &m, scenegraph::SceneGraphTransform &transform) {
+	const math::Vec3f t(m[3]);
+	math::Vec3f x(m[0]);
+	math::Vec3f y(m[1]);
+	math::Vec3f z(m[2]);
+	math::Vec3f scale(math::length(x), math::length(y), math::length(z));
 	if (scale.x < 1e-8f) {
 		scale.x = 1.0f;
 	}
@@ -263,35 +265,35 @@ static void matrixToLocal(const glm::mat4 &m, scenegraph::SceneGraphTransform &t
 	x /= scale.x;
 	y /= scale.y;
 	z /= scale.z;
-	glm::mat3 rot(x, y, z);
+	math::Mat3f rot(x, y, z);
 	transform.setLocalTranslation(t);
-	transform.setLocalOrientation(glm::normalize(glm::quat_cast(rot)));
+	transform.setLocalOrientation(math::normalize(math::quat_cast(rot)));
 	transform.setLocalScale(scale);
 }
 
 // Ken local offset -> vengi offset (x, y, z) -> (x, -z, y)
-static glm::vec3 kenToVengiOffset(const glm::vec3 &ken) {
-	return glm::vec3(ken.x, -ken.z, ken.y);
+static math::Vec3f kenToVengiOffset(const math::Vec3f &ken) {
+	return math::Vec3f(ken.x, -ken.z, ken.y);
 }
 
 // Hinge velcro in volume voxel coordinates (0-based after the limb is shifted to origin)
-static glm::vec3 hingeVolumePos(const glm::vec3 &volumeOrigin, const glm::vec3 &hingeKen) {
+static math::Vec3f hingeVolumePos(const math::Vec3f &volumeOrigin, const math::Vec3f &hingeKen) {
 	return volumeOrigin + kenToVengiOffset(hingeKen);
 }
 
 // World matrix whose translation is the hinge. Combined with pivot = hingeVolume / dims
 // the renderer (wm * T(-pivot * dims)) still places voxels at Ken's sprite transform.
 // Bones use worldTranslation(), so the origin must be the velcro, not volume (0,0,0).
-static glm::mat4 vengiWorldFromSprite(const KenSprite &spr, const glm::vec3 &volumeOrigin, const glm::vec3 &hingeKen,
+static math::Mat4f vengiWorldFromSprite(const KenSprite &spr, const math::Vec3f &volumeOrigin, const math::Vec3f &hingeKen,
 									  bool hasVolume) {
-	const glm::mat4 L = kenToVengi();
-	const glm::mat4 Linv = vengiToKen();
-	glm::mat4 m = L * spriteMatrix(spr) * Linv;
-	const glm::vec3 hingeVolume = hingeVolumePos(hasVolume ? volumeOrigin : glm::vec3(0.0f), hingeKen);
+	const math::Mat4f L = kenToVengi();
+	const math::Mat4f Linv = vengiToKen();
+	math::Mat4f m = L * spriteMatrix(spr) * Linv;
+	const math::Vec3f hingeVolume = hingeVolumePos(hasVolume ? volumeOrigin : math::Vec3f(0.0f), hingeKen);
 	if (hasVolume) {
-		m = m * glm::translate(glm::mat4(1.0f), -volumeOrigin);
+		m = m * math::translate(math::Mat4f(1.0f), -volumeOrigin);
 	}
-	m = m * glm::translate(glm::mat4(1.0f), hingeVolume);
+	m = m * math::translate(math::Mat4f(1.0f), hingeVolume);
 	return m;
 }
 
@@ -369,8 +371,8 @@ static void freeVolumes(core::Buffer<voxel::RawVolume *> &volumes) {
 }
 
 // Ken (x, y, z) -> vengi voxel in the loaded KV6 region
-static glm::ivec3 kenVoxelToVengi(int kenX, int kenY, int kenZ, const voxel::Region &region) {
-	return glm::ivec3(region.getLowerX() + kenX, region.getUpperY() - kenZ, region.getLowerZ() + kenY);
+static math::Vec3i kenVoxelToVengi(int kenX, int kenY, int kenZ, const voxel::Region &region) {
+	return math::Vec3i(region.getLowerX() + kenX, region.getUpperY() - kenZ, region.getLowerZ() + kenY);
 }
 
 struct KenFifoEntry {
@@ -433,7 +435,7 @@ static core::Buffer<voxel::RawVolume *> splitKenVisSlabs(const voxel::RawVolume 
 				continue;
 			}
 			vis[i] = (uint8_t)(vis[i] & ~128u);
-			const glm::ivec3 p = kenVoxelToVengi(kenVoxels[i].x, kenVoxels[i].y, kenVoxels[i].z, region);
+			const math::Vec3i p = kenVoxelToVengi(kenVoxels[i].x, kenVoxels[i].y, kenVoxels[i].z, region);
 			if (region.containsPoint(p)) {
 				object.setVoxel(p, volume->voxel(p));
 				any = true;
@@ -659,7 +661,7 @@ bool KFAFormat::parse(const core::String &filename, const io::ArchivePtr &archiv
 #undef wrap
 #undef wrapBool
 
-bool KFAFormat::apply(const Data &data, const voxel::RawVolume *volume, const glm::vec3 &kenPivot,
+bool KFAFormat::apply(const Data &data, const voxel::RawVolume *volume, const math::Vec3f &kenPivot,
 					  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
 					  const core::String &nodePrefix, const core::Buffer<KenSpriteVox> &kenVoxels) {
 	if (volume == nullptr) {
@@ -690,8 +692,8 @@ bool KFAFormat::apply(const Data &data, const voxel::RawVolume *volume, const gl
 	}
 
 	const int fullHeight = volume->region().getHeightInVoxels();
-	core::Buffer<glm::vec3> restP;
-	core::Buffer<glm::vec3> volumeOrigin;
+	core::Buffer<math::Vec3f> restP;
+	core::Buffer<math::Vec3f> volumeOrigin;
 	restP.reserve(numhin);
 	volumeOrigin.reserve(numhin);
 	for (uint32_t i = 0; i < numhin; ++i) {
@@ -700,12 +702,12 @@ bool KFAFormat::apply(const Data &data, const voxel::RawVolume *volume, const gl
 			const int kenX0 = r.getLowerX();
 			const int kenY0 = r.getLowerZ();
 			const int kenZ0 = (fullHeight - 1) - r.getUpperY();
-			restP.push_back(glm::vec3((float)kenX0 - kenPivot.x, (float)kenY0 - kenPivot.y, (float)kenZ0 - kenPivot.z));
+			restP.push_back(math::Vec3f((float)kenX0 - kenPivot.x, (float)kenY0 - kenPivot.y, (float)kenZ0 - kenPivot.z));
 			// Ken sprite origin in the unsplit KV6 / cropped-limb voxel grid
-			volumeOrigin.push_back(glm::vec3((float)kenX0, (float)((fullHeight - 1) - kenZ0), (float)kenY0));
+			volumeOrigin.push_back(math::Vec3f((float)kenX0, (float)((fullHeight - 1) - kenZ0), (float)kenY0));
 		} else {
-			restP.push_back(glm::vec3(0.0f));
-			volumeOrigin.push_back(glm::vec3(0.0f));
+			restP.push_back(math::Vec3f(0.0f));
+			volumeOrigin.push_back(math::Vec3f(0.0f));
 		}
 	}
 
@@ -748,11 +750,11 @@ bool KFAFormat::apply(const Data &data, const voxel::RawVolume *volume, const gl
 			node.setPalette(palette);
 			node.setNormalPalette(normalPalette);
 			const voxel::Region &r = v->region();
-			const glm::vec3 dims(r.getDimensionsInVoxels());
-			const glm::vec3 hingeVolume = kfa_priv::hingeVolumePos(volumeOrigin[hingeIdx], kfa_priv::toVec(hinge.p[1]));
+			const math::Vec3f dims(r.getDimensionsInVoxels());
+			const math::Vec3f hingeVolume = kfa_priv::hingeVolumePos(volumeOrigin[hingeIdx], kfa_priv::toVec(hinge.p[1]));
 			node.setPivot(hingeVolume / dims);
 		} else {
-			node.setPivot(glm::vec3(0.0f));
+			node.setPivot(math::Vec3f(0.0f));
 		}
 		node.setName(core::String::format("%s_hinge_%d%s", nodePrefix.c_str(), hingeIdx, v != nullptr ? "" : "_joint"));
 		node.setProperty("kfa.hinge", (uint32_t)hingeIdx);
@@ -789,7 +791,7 @@ bool KFAFormat::apply(const Data &data, const voxel::RawVolume *volume, const gl
 	kfa_priv::collectKeyedTimes(posed, keyTimes, keyKenFrames);
 
 	core::Buffer<kfa_priv::KenSprite> sprites;
-	core::Buffer<glm::mat4> worldMats;
+	core::Buffer<math::Mat4f> worldMats;
 	core::Buffer<int32_t> angles;
 	core::Buffer<scenegraph::FrameIndex> written;
 	worldMats.reserve(numhin);
@@ -823,10 +825,10 @@ bool KFAFormat::apply(const Data &data, const voxel::RawVolume *volume, const gl
 			}
 			scenegraph::SceneGraphKeyFrame &kf = node.keyFrame(kfIdx);
 			kf.interpolation = scenegraph::InterpolationType::Linear;
-			glm::mat4 local = worldMats[i];
+			math::Mat4f local = worldMats[i];
 			const int32_t parent = posed.hinges[i].parent;
 			if (parent >= 0 && (uint32_t)parent < worldMats.size()) {
-				local = glm::inverse(worldMats[parent]) * worldMats[i];
+				local = math::inverse(worldMats[parent]) * worldMats[i];
 			}
 			kfa_priv::matrixToLocal(local, kf.transform());
 		}

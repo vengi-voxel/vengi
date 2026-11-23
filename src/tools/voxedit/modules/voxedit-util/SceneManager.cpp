@@ -78,6 +78,7 @@
 #include "voxelrender/RenderContext.h"
 #include "voxelrender/RenderUtil.h"
 #include "voxelutil/FillHollow.h"
+#include <float.h>
 #include "voxelutil/Hollow.h"
 #include "voxelutil/Picking.h"
 #include "voxelutil/Raycast.h"
@@ -92,6 +93,15 @@
 
 #include "Config.h"
 #include "CommandCompleter.h"
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/Scalar.h"
 
 namespace voxedit {
 
@@ -238,7 +248,7 @@ bool SceneManager::nodeCalculateNormals(int nodeId, voxel::Connectivity connecti
 			}
 			voxel::RawVolume::Sampler sampler(wrapper.volume());
 			sampler.setPosition(x, y, z);
-			const glm::vec3 &normal = voxel::calculateNormal(sampler, connectivity);
+			const math::Vec3f &normal = voxel::calculateNormal(sampler, connectivity);
 			int normalPaletteIndex = normalPalette.getClosestMatch(normal);
 			if (normalPaletteIndex == palette::PaletteNormalNotFound) {
 				normalPaletteIndex = NO_NORMAL;
@@ -529,8 +539,8 @@ void SceneManager::nodeGroupSelectByAirAxes(int minAxes) {
 		const voxel::Region &volRegion = v->region();
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			int axesWithAir = 0;
-			for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-				const glm::ivec3 neighbor(x + offset.x, y + offset.y, z + offset.z);
+			for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+				const math::Vec3i neighbor(x + offset.x, y + offset.y, z + offset.z);
 				if (!volRegion.containsPoint(neighbor) || !voxel::isBlocked(v->voxel(neighbor).getMaterial())) {
 					if (offset.x != 0) {
 						axesWithAir |= 1;
@@ -562,15 +572,15 @@ void SceneManager::nodeGroupSelectOnlyCorners() {
 
 void SceneManager::nodeGroupSelectOnlyWallEdges() {
 	// Ring neighbors in each perpendicular plane (8 neighbors per axis)
-	static constexpr glm::ivec3 ringY[] = {
+	static constexpr math::Vec3i ringY[] = {
 		{1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1},
 		{1, 0, 1}, {1, 0, -1}, {-1, 0, 1}, {-1, 0, -1}
 	};
-	static constexpr glm::ivec3 ringX[] = {
+	static constexpr math::Vec3i ringX[] = {
 		{0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1},
 		{0, 1, 1}, {0, 1, -1}, {0, -1, 1}, {0, -1, -1}
 	};
-	static constexpr glm::ivec3 ringZ[] = {
+	static constexpr math::Vec3i ringZ[] = {
 		{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0},
 		{1, 1, 0}, {1, -1, 0}, {-1, 1, 0}, {-1, -1, 0}
 	};
@@ -589,15 +599,15 @@ void SceneManager::nodeGroupSelectOnlyWallEdges() {
 		}
 		const voxel::Region &volRegion = v->region();
 		voxelutil::visitVolume(*v, selRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const glm::ivec3 pos(x, y, z);
+			const math::Vec3i pos(x, y, z);
 			bool isWallEdge = false;
 			static constexpr int ringSize = lengthof(ringX);
-			const glm::ivec3 *rings[] = {ringX, ringY, ringZ};
+			const math::Vec3i *rings[] = {ringX, ringY, ringZ};
 			static constexpr int maxSolidNeighbors = 1;
 			for (int axis = 0; axis < lengthof(rings); ++axis) {
 				int solidCount = 0;
 				for (int i = 0; i < ringSize; ++i) {
-					const glm::ivec3 neighbor = pos + rings[axis][i];
+					const math::Vec3i neighbor = pos + rings[axis][i];
 					if (volRegion.containsPoint(neighbor) && voxel::isBlocked(v->voxel(neighbor).getMaterial())) {
 						++solidCount;
 					}
@@ -633,21 +643,21 @@ void SceneManager::nodeGroupSelectionGrow() {
 		const voxel::Region &volRegion = v->region();
 
 		// expand selection region by 1 voxel in each direction, clamped to volume
-		const glm::ivec3 expandedMins = glm::max(selRegion.getLowerCorner() - 1, volRegion.getLowerCorner());
-		const glm::ivec3 expandedMaxs = glm::min(selRegion.getUpperCorner() + 1, volRegion.getUpperCorner());
+		const math::Vec3i expandedMins = math::max(selRegion.getLowerCorner() - 1, volRegion.getLowerCorner());
+		const math::Vec3i expandedMaxs = math::min(selRegion.getUpperCorner() + 1, volRegion.getUpperCorner());
 		const voxel::Region expandedRegion(expandedMins, expandedMaxs);
 
 		// iterate the expanded shell: for each unselected solid voxel, check if
 		// any of its 26 neighbors (within original selRegion) is selected.
 		// This avoids collecting source positions and produces no duplicates.
-		core::DynamicArray<glm::ivec3> toSelect;
+		core::DynamicArray<math::Vec3i> toSelect;
 		voxelutil::visitVolume(*v, expandedRegion, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
 				return;
 			}
-			auto hasSelectedNeighbor = [&](const glm::ivec3 *offsets, int count) {
+			auto hasSelectedNeighbor = [&](const math::Vec3i *offsets, int count) {
 				for (int idx = 0; idx < count; ++idx) {
-					const glm::ivec3 neighbor(x + offsets[idx].x, y + offsets[idx].y, z + offsets[idx].z);
+					const math::Vec3i neighbor(x + offsets[idx].x, y + offsets[idx].y, z + offsets[idx].z);
 					if (!selRegion.containsPoint(neighbor)) {
 						continue;
 					}
@@ -661,7 +671,7 @@ void SceneManager::nodeGroupSelectionGrow() {
 			if (hasSelectedNeighbor(voxel::arrayPathfinderFaces, 6) ||
 				hasSelectedNeighbor(voxel::arrayPathfinderEdges, 12) ||
 				hasSelectedNeighbor(voxel::arrayPathfinderCorners, 8)) {
-				toSelect.push_back(glm::ivec3(x, y, z));
+				toSelect.push_back(math::Vec3i(x, y, z));
 			}
 		}, voxelutil::VisitSolid());
 
@@ -671,7 +681,7 @@ void SceneManager::nodeGroupSelectionGrow() {
 
 		// apply selection flags from the destination list
 		voxel::Region dirtyRegion = selRegion;
-		for (const glm::ivec3 &pos : toSelect) {
+		for (const math::Vec3i &pos : toSelect) {
 			voxel::Voxel updated = v->voxel(pos);
 			updated.setFlags(updated.getFlags() | voxel::FlagOutline);
 			v->setVoxel(pos, updated);
@@ -717,7 +727,7 @@ void SceneManager::fillPlane(const image::ImagePtr &image) {
 		return;
 	}
 	voxel::RawVolumeWrapper wrapper = _modifier->createRawVolumeWrapper(v);
-	const glm::ivec3 &pos = _modifier->cursorPosition();
+	const math::Vec3i &pos = _modifier->cursorPosition();
 	const voxel::FaceNames face = _modifier->cursorFace();
 	if (face == voxel::FaceNames::Max) {
 		Log::debug("No cursor face for fill plane operation");
@@ -769,14 +779,14 @@ bool SceneManager::sceneSaveSun(bool undo) {
 		return false;
 	scenegraph::SceneGraphNode settings(scenegraph::SceneGraphNodeType::Group);
 	if (const auto sunAngleVar = core::findVar(cfg::VoxEditSunAngle)) {
-		glm::vec3 sunAngle;
+		math::Vec3f sunAngle;
 		sunAngleVar->vec3Val(&sunAngle[0]);
 		settings.setProperty(scenegraph::PropSunElevation, sunAngle.x);
 		settings.setProperty(scenegraph::PropSunAzimuth, sunAngle.y);
 	}
 	settings.setProperty(scenegraph::PropSunIntensity, core::getVar(cfg::PathTracerSunIntensity)->floatVal());
 	settings.setProperty(scenegraph::PropSunArea, core::getVar(cfg::PathTracerSunSoftness)->floatVal());
-	glm::vec3 sunColor;
+	math::Vec3f sunColor;
 	core::getVar(cfg::PathTracerSunColor)->vec3Val(&sunColor[0]);
 	settings.setProperty(scenegraph::PropSunColor, color::getRGB(sunColor));
 	if (const auto shadingMode = core::findVar(cfg::VoxEditShadingMode))
@@ -800,8 +810,8 @@ bool SceneManager::sceneSaveSun(bool undo) {
 bool SceneManager::sceneLoadSun() {
 	const auto &root = _sceneGraph.root();
 	if (!root.property(scenegraph::PropSunElevation).empty() || !root.property(scenegraph::PropSunAzimuth).empty()) {
-		glm::vec3 angle;
-		angle = glm::vec3(35.0f, 135.0f, 0.0f);
+		math::Vec3f angle;
+		angle = math::Vec3f(35.0f, 135.0f, 0.0f);
 		const auto sunAngleVar = core::findVar(cfg::VoxEditSunAngle);
 		if (sunAngleVar)
 			sunAngleVar->vec3Val(&angle[0]);
@@ -819,7 +829,7 @@ bool SceneManager::sceneLoadSun() {
 	if (!root.property(scenegraph::PropSunArea).empty())
 		core::getVar(cfg::PathTracerSunSoftness)->setVal(root.propertyf(scenegraph::PropSunArea));
 	if (!root.property(scenegraph::PropSunColor).empty()) {
-		const glm::vec4 c = color::fromRGBA(color::fromHex(root.property(scenegraph::PropSunColor).c_str()));
+		const math::Vec4f c = color::fromRGBA(color::fromHex(root.property(scenegraph::PropSunColor).c_str()));
 		core::getVar(cfg::PathTracerSunColor)->setVal(core::String::format("%.9g %.9g %.9g", c.r, c.g, c.b));
 	}
 	if (!root.property(scenegraph::PropSunShadows).empty()) {
@@ -889,7 +899,7 @@ bool SceneManager::import(const core::String& file) {
 
 	scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 	groupNode.setName(core::string::extractFilename(file));
-	const glm::ivec3 &centerOffset = newSceneGraph.sceneRegion().getDimensionsInVoxels() / 2;
+	const math::Vec3i &centerOffset = newSceneGraph.sceneRegion().getDimensionsInVoxels() / 2;
 	groupNode.transform(0).setLocalTranslation(referencePosition() - centerOffset);
 	int importGroupNodeId = _sceneGraph.emplace(core::move(groupNode), activeNode());
 	_sceneGraph.updateTransforms();
@@ -1012,7 +1022,7 @@ void SceneManager::setMouseLook(bool active) {
 	} else {
 		if (_camera != nullptr) {
 			if ((video::CameraRotationType)_preMouselookRotationType == video::CameraRotationType::Target) {
-				const glm::vec3 newTarget = _camera->worldPosition() + _camera->forward() * _camera->targetDistance();
+				const math::Vec3f newTarget = _camera->worldPosition() + _camera->forward() * _camera->targetDistance();
 				_camera->setTarget(newTarget);
 			}
 			_camera->setRotationType((video::CameraRotationType)_preMouselookRotationType);
@@ -1026,7 +1036,7 @@ void SceneManager::setMouseDelta(int dx, int dy) {
 	_mouseCursorDelta.y = dy;
 }
 
-glm::mat4 SceneManager::worldMatrix(scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
+math::Mat4f SceneManager::worldMatrix(scenegraph::FrameIndex frameIdx, bool applyTransforms) const {
 	const int nodeId = _sceneGraph.activeNode();
 	const scenegraph::SceneGraphNode &node = _sceneGraph.node(nodeId);
 	return _sceneGraph.worldMatrix(node, frameIdx, applyTransforms);
@@ -1164,7 +1174,7 @@ void SceneManager::nodeScaleDown(int nodeId) {
 		return;
 	}
 	const voxel::Region srcRegion = v->region();
-	const glm::ivec3& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	const math::Vec3i& targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	if (targetDimensionsHalf.x < 0 || targetDimensionsHalf.y < 0 || targetDimensionsHalf.z < 0) {
 		Log::debug("Can't scale anymore");
 		return;
@@ -1283,7 +1293,7 @@ bool SceneManager::startScaleDownSceneJob(const core::UUID &nodeUUID, const core
 	}
 
 	const voxel::Region srcRegion = node->volume()->region();
-	const glm::ivec3 &targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
+	const math::Vec3i &targetDimensionsHalf = (srcRegion.getDimensionsInVoxels() / 2) - 1;
 	if (targetDimensionsHalf.x < 0 || targetDimensionsHalf.y < 0 || targetDimensionsHalf.z < 0) {
 		Log::debug("Can't scale anymore");
 		return false;
@@ -1494,8 +1504,8 @@ bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const cor
 	}
 
 	const scenegraph::FrameTransform &srcTransform = _sceneGraph.transformForFrame(*sourceNode, _currentFrameIdx);
-	const glm::mat4 sourceWorldMatrix = srcTransform.worldMatrix();
-	const glm::vec3 sourcePivot = sourceNode->pivot();
+	const math::Mat4f sourceWorldMatrix = srcTransform.worldMatrix();
+	const math::Vec3f sourcePivot = sourceNode->pivot();
 	const bool transformSource = !srcTransform.isIdentity();
 	const palette::Palette sourcePalette = sourceNode->palette();
 	voxel::RawVolume *sourceSnapshot = new voxel::RawVolume(*sourceVolume);
@@ -1555,7 +1565,7 @@ bool SceneManager::startSplatMergeSceneJob(const core::UUID &nodeUUID, const cor
 			}
 			voxel::Region worldOverlap = sourceWorldRegion;
 			worldOverlap.cropTo(target.worldRegion);
-			const glm::ivec3 worldToLocal =
+			const math::Vec3i worldToLocal =
 				target.volume->region().getLowerCorner() - target.worldRegion.getLowerCorner();
 			const voxel::Region targetLocalOverlap(worldOverlap.getLowerCorner() + worldToLocal,
 												   worldOverlap.getUpperCorner() + worldToLocal);
@@ -1610,8 +1620,8 @@ void SceneManager::nodeBakeTransform(int nodeId) {
 	}
 	scenegraph::KeyFrameIndex keyFrameIdx = node->keyFrameForFrame(_currentFrameIdx);
 	scenegraph::SceneGraphTransform &nodeTransform = node->transform(keyFrameIdx);
-	nodeTransform.setWorldMatrix(glm::mat4(1.0f));
-	node->setPivot(glm::vec3(0.0f));
+	nodeTransform.setWorldMatrix(math::Mat4f(1.0f));
+	node->setPivot(math::Vec3f(0.0f));
 	if (nodeTransform.dirty()) {
 		nodeTransform.update(_sceneGraph, *node, _currentFrameIdx, false);
 		nodeKeyFramesChanged(*node);
@@ -1619,7 +1629,7 @@ void SceneManager::nodeBakeTransform(int nodeId) {
 	modified(nodeId, newVolume->region());
 }
 
-void SceneManager::nodeResize(int nodeId, const glm::ivec3& size) {
+void SceneManager::nodeResize(int nodeId, const math::Vec3i& size) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return;
@@ -1659,14 +1669,14 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 	// Use the enclosing region of old and new to ensure the memento captures all changes
 	// and the undo/redo can properly restore the volume in both directions
 	const voxel::Region modifiedRegion(
-		glm::min(oldRegion.getLowerCorner(), region.getLowerCorner()),
-		glm::max(oldRegion.getUpperCorner(), region.getUpperCorner())
+		math::min(oldRegion.getLowerCorner(), region.getLowerCorner()),
+		math::max(oldRegion.getUpperCorner(), region.getUpperCorner())
 	);
-	const glm::ivec3 oldMins = oldRegion.getLowerCorner();
-	const glm::ivec3 oldMaxs = oldRegion.getUpperCorner();
-	const glm::ivec3 mins = region.getLowerCorner();
-	const glm::ivec3 maxs = region.getUpperCorner();
-	if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
+	const math::Vec3i oldMins = oldRegion.getLowerCorner();
+	const math::Vec3i oldMaxs = oldRegion.getUpperCorner();
+	const math::Vec3i mins = region.getLowerCorner();
+	const math::Vec3i maxs = region.getUpperCorner();
+	if (math::all(math::greaterThanEqual(maxs, oldMaxs)) && math::all(math::lessThanEqual(mins, oldMins))) {
 		// No re-extraction needed if only new empty voxels were added, but still
 		// record the memento state with a valid region for undo/redo and network
 		modified(nodeId, modifiedRegion, SceneModifiedFlags::NoRegionUpdate);
@@ -1675,14 +1685,14 @@ void SceneManager::nodeResize(int nodeId, const voxel::Region &region) {
 	}
 
 	if (activeNode() == nodeId) {
-		const glm::ivec3 &refPos = referencePosition();
+		const math::Vec3i &refPos = referencePosition();
 		if (!region.containsPoint(refPos)) {
 			setReferencePosition(region.getCenter());
 		}
 	}
 }
 
-void SceneManager::nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize) {
+void SceneManager::nodeRescaleContent(int nodeId, const math::Vec3i &targetSize) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return;
@@ -1692,12 +1702,12 @@ void SceneManager::nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize) 
 		Log::error("Failed to lookup volume for node %i", nodeId);
 		return;
 	}
-	const glm::ivec3 currentSize = vol->region().getDimensionsInVoxels();
+	const math::Vec3i currentSize = vol->region().getDimensionsInVoxels();
 	if (targetSize.x <= 0 || targetSize.y <= 0 || targetSize.z <= 0) {
 		Log::warn("Invalid target size for rescale");
 		return;
 	}
-	const glm::vec3 scale = glm::vec3(targetSize) / glm::vec3(currentSize);
+	const math::Vec3f scale = math::Vec3f(targetSize) / math::Vec3f(currentSize);
 	voxel::RawVolume *scaledVolume = voxelutil::scaleVolume(vol, scale);
 	if (scaledVolume == nullptr) {
 		Log::error("Failed to rescale volume for node %i", nodeId);
@@ -1710,7 +1720,7 @@ void SceneManager::nodeRescaleContent(int nodeId, const glm::ivec3 &targetSize) 
 	modified(nodeId, scaledVolume->region());
 }
 
-void SceneManager::nodeGroupResize(const glm::ivec3& size) {
+void SceneManager::nodeGroupResize(const math::Vec3i& size) {
 	nodeForeachGroup([&](const core::UUID &nodeUUID) {
 		nodeResize(nodeUUID, size);
 	});
@@ -2198,8 +2208,8 @@ voxel::ClipboardData SceneManager::nodeClipboardCopy(scenegraph::SceneGraphNode 
 
 	// Create a new volume with the selected voxels
 	voxel::RawVolume *v = new voxel::RawVolume(selectionRegion);
-	const glm::ivec3 &selMins = selectionRegion.getLowerCorner();
-	const glm::ivec3 &selMaxs = selectionRegion.getUpperCorner();
+	const math::Vec3i &selMins = selectionRegion.getLowerCorner();
+	const math::Vec3i &selMaxs = selectionRegion.getUpperCorner();
 
 	// TODO: PERF: use a sampler
 	for (int32_t z = selMins.z; z <= selMaxs.z; ++z) {
@@ -2332,7 +2342,7 @@ bool SceneManager::loadGlobalClipboard(voxel::ClipboardData &clipData) {
 	return false;
 }
 
-bool SceneManager::paste(const glm::ivec3& pos) {
+bool SceneManager::paste(const math::Vec3i& pos) {
 	if (isLocked()) {
 		return false;
 	}
@@ -2340,7 +2350,7 @@ bool SceneManager::paste(const glm::ivec3& pos) {
 	return nodePaste(nodeId, pos);
 }
 
-bool SceneManager::nodePaste(int nodeId, const glm::ivec3& pos) {
+bool SceneManager::nodePaste(int nodeId, const math::Vec3i& pos) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return false;
@@ -2397,8 +2407,8 @@ bool SceneManager::nodeCut(int nodeId) {
 	}
 
 	voxel::RawVolume *v = new voxel::RawVolume(selectionRegion);
-	const glm::ivec3 &selMins = selectionRegion.getLowerCorner();
-	const glm::ivec3 &selMaxs = selectionRegion.getUpperCorner();
+	const math::Vec3i &selMins = selectionRegion.getLowerCorner();
+	const math::Vec3i &selMaxs = selectionRegion.getUpperCorner();
 
 	// TODO: PERF: use a sampler
 	for (int32_t z = selMins.z; z <= selMaxs.z; ++z) {
@@ -2498,7 +2508,7 @@ bool SceneManager::globalCopyVisible() {
 	return true;
 }
 
-bool SceneManager::globalPaste(const glm::ivec3 &pos) {
+bool SceneManager::globalPaste(const math::Vec3i &pos) {
 	if (isLocked()) {
 		return false;
 	}
@@ -2506,7 +2516,7 @@ bool SceneManager::globalPaste(const glm::ivec3 &pos) {
 	return nodeGlobalPaste(nodeId, pos);
 }
 
-bool SceneManager::nodeGlobalPaste(int nodeId, const glm::ivec3 &pos) {
+bool SceneManager::nodeGlobalPaste(int nodeId, const math::Vec3i &pos) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return false;
@@ -2516,7 +2526,7 @@ bool SceneManager::nodeGlobalPaste(int nodeId, const glm::ivec3 &pos) {
 	}
 	scenegraph::SceneGraphNode *node = sceneGraphModelNode(nodeId);
 	if (node != nullptr) {
-		const glm::ivec3 dims = _copy.volume->region().getDimensionsInVoxels();
+		const math::Vec3i dims = _copy.volume->region().getDimensionsInVoxels();
 		const voxel::Region pasteRegion(pos, pos + dims - 1);
 		if (node->region().containsRegion(pasteRegion)) {
 			Log::debug("globalPaste: merging into active node at %i:%i:%i", pos.x, pos.y, pos.z);
@@ -2543,7 +2553,7 @@ bool SceneManager::nodeGlobalPaste(int nodeId, const glm::ivec3 &pos) {
 	return true;
 }
 
-bool SceneManager::globalPasteNode(const glm::ivec3 &pos) {
+bool SceneManager::globalPasteNode(const math::Vec3i &pos) {
 	if (isLocked()) {
 		return false;
 	}
@@ -2628,7 +2638,7 @@ bool SceneManager::splatMerge(int sourceNodeId) {
 		worldOverlap.cropTo(targetWorldRegion);
 
 		// Map world overlap back to target local coordinates
-		const glm::ivec3 worldToLocal =
+		const math::Vec3i worldToLocal =
 			targetVolume->region().getLowerCorner() - targetWorldRegion.getLowerCorner();
 		const voxel::Region targetLocalOverlap(
 			worldOverlap.getLowerCorner() + worldToLocal,
@@ -2683,7 +2693,7 @@ bool SceneManager::mergeActiveToBackground() {
 
 	// Detect grid parameters from existing background nodes
 	const int chunkSize = _maxSuggestedVolumeSize->intVal();
-	glm::ivec3 gridOffset(0);
+	math::Vec3i gridOffset(0);
 	int backgroundParentId = _sceneGraph.root().id();
 	for (auto iter = _sceneGraph.beginModel(); iter != _sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &node = *iter;
@@ -2695,16 +2705,16 @@ bool SceneManager::mergeActiveToBackground() {
 			continue;
 		}
 		// Grid offset: lower corner modulo chunkSize (handle negative coords)
-		const glm::ivec3 &lc = wr.getLowerCorner();
-		gridOffset = ((lc % chunkSize) + glm::ivec3(chunkSize)) % glm::ivec3(chunkSize);
+		const math::Vec3i &lc = wr.getLowerCorner();
+		gridOffset = ((lc % chunkSize) + math::Vec3i(chunkSize)) % math::Vec3i(chunkSize);
 		backgroundParentId = _sceneGraph.parentId(node);
 		break;
 	}
 
 	// Floor division helper for grid cell origin (handles negative coordinates)
-	auto gridCellOrigin = [&](const glm::ivec3 &pos) -> glm::ivec3 {
-		const glm::ivec3 shifted = pos - gridOffset;
-		glm::ivec3 cell;
+	auto gridCellOrigin = [&](const math::Vec3i &pos) -> math::Vec3i {
+		const math::Vec3i shifted = pos - gridOffset;
+		math::Vec3i cell;
 		for (int i = 0; i < 3; ++i) {
 			cell[i] = (shifted[i] >= 0)
 				? (shifted[i] / chunkSize)
@@ -2715,18 +2725,18 @@ bool SceneManager::mergeActiveToBackground() {
 
 	// Enumerate all grid cells the source overlaps
 	struct GridCell {
-		glm::ivec3 origin;
+		math::Vec3i origin;
 		voxel::Region cellRegion;
 		int existingNodeId;
 	};
-	const glm::ivec3 firstCell = gridCellOrigin(sourceWorldRegion.getLowerCorner());
-	const glm::ivec3 lastCell = gridCellOrigin(sourceWorldRegion.getUpperCorner());
+	const math::Vec3i firstCell = gridCellOrigin(sourceWorldRegion.getLowerCorner());
+	const math::Vec3i lastCell = gridCellOrigin(sourceWorldRegion.getUpperCorner());
 	core::DynamicArray<GridCell> neededCells;
 	for (int y = firstCell.y; y <= lastCell.y; y += chunkSize) {
 		for (int z = firstCell.z; z <= lastCell.z; z += chunkSize) {
 			for (int x = firstCell.x; x <= lastCell.x; x += chunkSize) {
-				const glm::ivec3 origin(x, y, z);
-				const voxel::Region cellRegion(origin, origin + glm::ivec3(chunkSize - 1));
+				const math::Vec3i origin(x, y, z);
+				const voxel::Region cellRegion(origin, origin + math::Vec3i(chunkSize - 1));
 				if (!voxel::intersects(sourceWorldRegion, cellRegion)) {
 					continue;
 				}
@@ -2745,7 +2755,7 @@ bool SceneManager::mergeActiveToBackground() {
 		if (!wr.isValid()) {
 			continue;
 		}
-		const glm::ivec3 nodeCell = gridCellOrigin(wr.getLowerCorner());
+		const math::Vec3i nodeCell = gridCellOrigin(wr.getLowerCorner());
 		for (GridCell &cell : neededCells) {
 			if (cell.origin == nodeCell && cell.existingNodeId == InvalidNodeId) {
 				cell.existingNodeId = node.id();
@@ -2779,7 +2789,7 @@ bool SceneManager::mergeActiveToBackground() {
 
 			const voxel::Region targetWorldRegion =
 				_sceneGraph.sceneRegion(targetNode, _currentFrameIdx);
-			const glm::ivec3 worldToLocal =
+			const math::Vec3i worldToLocal =
 				targetVolume->region().getLowerCorner() - targetWorldRegion.getLowerCorner();
 
 			// The local region we need to write into
@@ -2791,8 +2801,8 @@ bool SceneManager::mergeActiveToBackground() {
 			const voxel::Region currentLocalRegion = targetVolume->region();
 			if (!currentLocalRegion.containsRegion(neededLocalRegion)) {
 				const voxel::Region expandedRegion(
-					glm::min(currentLocalRegion.getLowerCorner(), neededLocalRegion.getLowerCorner()),
-					glm::max(currentLocalRegion.getUpperCorner(), neededLocalRegion.getUpperCorner()));
+					math::min(currentLocalRegion.getLowerCorner(), neededLocalRegion.getLowerCorner()),
+					math::max(currentLocalRegion.getUpperCorner(), neededLocalRegion.getUpperCorner()));
 				voxel::RawVolume *newVolume = voxelutil::resize(targetVolume, expandedRegion);
 				if (newVolume == nullptr) {
 					Log::warn("mergeactivetobackground: failed to expand node %i", cell.existingNodeId);
@@ -2817,8 +2827,8 @@ bool SceneManager::mergeActiveToBackground() {
 
 			// Stamp all voxels including air (overwrite destination in overlap)
 			int count = 0;
-			const glm::ivec3 &srcLower = cellSourceOverlap.getLowerCorner();
-			const glm::ivec3 &dstLower = neededLocalRegion.getLowerCorner();
+			const math::Vec3i &srcLower = cellSourceOverlap.getLowerCorner();
+			const math::Vec3i &dstLower = neededLocalRegion.getLowerCorner();
 			const int32_t overlapW = cellSourceOverlap.getWidthInVoxels();
 			const int32_t overlapH = cellSourceOverlap.getHeightInVoxels();
 			const int32_t overlapD = cellSourceOverlap.getDepthInVoxels();
@@ -2852,7 +2862,7 @@ bool SceneManager::mergeActiveToBackground() {
 			voxel::RawVolume *newVolume = new voxel::RawVolume(cell.cellRegion);
 			palette::PaletteLookup palLookup(sourcePalette);
 
-			const glm::ivec3 &srcLower = cellSourceOverlap.getLowerCorner();
+			const math::Vec3i &srcLower = cellSourceOverlap.getLowerCorner();
 			const int32_t overlapW = cellSourceOverlap.getWidthInVoxels();
 			const int32_t overlapH = cellSourceOverlap.getHeightInVoxels();
 			const int32_t overlapD = cellSourceOverlap.getDepthInVoxels();
@@ -2938,12 +2948,12 @@ int SceneManager::mergeVisibleToTemp() {
 	// Bake all visible nodes into world space and merge
 	// The merged node will be placed under the root, so we need transforms
 	// relative to the root to avoid double-application of the root's transform
-	glm::mat4 rootWorldMatrix(1.0f);
+	math::Mat4f rootWorldMatrix(1.0f);
 	{
 		const scenegraph::FrameTransform &rootTransform = _sceneGraph.transformForFrame(_sceneGraph.root(), _currentFrameIdx);
 		rootWorldMatrix = rootTransform.worldMatrix();
 	}
-	const glm::mat4 invRootWorldMatrix = glm::inverse(rootWorldMatrix);
+	const math::Mat4f invRootWorldMatrix = math::inverse(rootWorldMatrix);
 
 	scenegraph::SceneGraph tempSceneGraph;
 	for (int nodeId : visibleNodeIds) {
@@ -2953,7 +2963,7 @@ int SceneManager::mergeVisibleToTemp() {
 		}
 		const scenegraph::FrameTransform &transform =
 			_sceneGraph.transformForFrame(*node, _currentFrameIdx);
-		const glm::mat4 relativeMatrix = invRootWorldMatrix * transform.worldMatrix();
+		const math::Mat4f relativeMatrix = invRootWorldMatrix * transform.worldMatrix();
 		const voxel::RawVolume *srcVolume = _sceneGraph.resolveVolume(*node);
 		voxel::RawVolume *bakedVolume =
 			voxelutil::applyTransformToVolume(*srcVolume, relativeMatrix, node->pivot());
@@ -3057,7 +3067,7 @@ bool SceneManager::hasSelection(const core::UUID &nodeUUID) const {
 	return selectionCalculateRegion(nodeUUID).isValid();
 }
 
-bool SceneManager::isSelected(const core::UUID &nodeUUID, const glm::ivec3 &pos) const {
+bool SceneManager::isSelected(const core::UUID &nodeUUID, const math::Vec3i &pos) const {
 	const scenegraph::SceneGraphNode *node = sceneGraphModelNodeByUUID(nodeUUID);
 	if (node == nullptr) {
 		return false;
@@ -3101,8 +3111,8 @@ void SceneManager::selectionSetBounds(const core::UUID &nodeUUID, const voxel::R
 		return;
 	}
 	const voxel::Region &vol = node->region();
-	const voxel::Region clamped(glm::max(region.getLowerCorner(), vol.getLowerCorner()),
-								glm::min(region.getUpperCorner(), vol.getUpperCorner()));
+	const voxel::Region clamped(math::max(region.getLowerCorner(), vol.getLowerCorner()),
+								math::min(region.getUpperCorner(), vol.getUpperCorner()));
 	if (!clamped.isValid()) {
 		return;
 	}
@@ -3136,7 +3146,7 @@ void SceneManager::selectionSetEllipse(const core::UUID &nodeUUID) {
 	if (!brush.circle().valid()) {
 		return;
 	}
-	const glm::ivec3 &center = brush.circle().center();
+	const math::Vec3i &center = brush.circle().center();
 	const int radiusU = brush.circle().radiusU();
 	const int radiusV = brush.circle().radiusV();
 	const int depth = brush.circle().depth();
@@ -3150,8 +3160,8 @@ void SceneManager::selectionSetEllipse(const core::UUID &nodeUUID) {
 
 	// Calculate the bounding region of the new ellipse
 	const voxel::Region &vol = node->region();
-	glm::ivec3 mins = center;
-	glm::ivec3 maxs = center;
+	math::Vec3i mins = center;
+	math::Vec3i maxs = center;
 	mins[uAxis] -= radiusU;
 	maxs[uAxis] += radiusU;
 	mins[vAxis] -= radiusV;
@@ -3168,8 +3178,8 @@ void SceneManager::selectionSetEllipse(const core::UUID &nodeUUID) {
 
 	// Clear only the positions flagged by the previous ellipse (not all selections)
 	voxel::Region dirtyRegion = ellipseRegion;
-	core::DynamicArray<glm::ivec3> &history = brush.circle().history();
-	for (const glm::ivec3 &pos : history) {
+	core::DynamicArray<math::Vec3i> &history = brush.circle().history();
+	for (const math::Vec3i &pos : history) {
 		const voxel::Voxel &v = volume->voxel(pos);
 		if (!voxel::isAir(v.getMaterial())) {
 			voxel::Voxel modified = v;
@@ -3182,7 +3192,7 @@ void SceneManager::selectionSetEllipse(const core::UUID &nodeUUID) {
 
 	// Apply the new ellipse selection and record positions
 	auto selectFunc = [&](int x, int y, int z, const voxel::Voxel &v) {
-		const glm::ivec3 pos(x, y, z);
+		const math::Vec3i pos(x, y, z);
 		if (select::Circle::insideSelection(pos, center, radiusU, radiusV, depth, is3D,
 										  uAxis, vAxis, faceAxisIdx, positiveNormal)) {
 			voxel::Voxel modified = v;
@@ -3233,13 +3243,13 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 	// compute the target parent's world transform so we can bake transforms
 	// relative to it - otherwise the parent's transform would be applied twice
 	// (once baked into voxels, once via the parent chain during rendering)
-	glm::mat4 parentWorldMatrix(1.0f);
+	math::Mat4f parentWorldMatrix(1.0f);
 	if (parent != InvalidNodeId && _sceneGraph.hasNode(parent)) {
 		const scenegraph::SceneGraphNode &parentNode = _sceneGraph.node(parent);
 		const scenegraph::FrameTransform &parentTransform = _sceneGraph.transformForFrame(parentNode, _currentFrameIdx);
 		parentWorldMatrix = parentTransform.worldMatrix();
 	}
-	const glm::mat4 invParentWorldMatrix = glm::inverse(parentWorldMatrix);
+	const math::Mat4f invParentWorldMatrix = math::inverse(parentWorldMatrix);
 
 	scenegraph::SceneGraph newSceneGraph;
 	for (int nodeId : nodeIds) {
@@ -3248,7 +3258,7 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 			continue;
 		}
 		const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(*node, _currentFrameIdx);
-		const glm::mat4 relativeMatrix = invParentWorldMatrix * transform.worldMatrix();
+		const math::Mat4f relativeMatrix = invParentWorldMatrix * transform.worldMatrix();
 		const voxel::RawVolume *srcVolume = _sceneGraph.resolveVolume(*node);
 		if (srcVolume == nullptr) {
 			Log::error("Skip merge for node %i ('%s'): could not resolve volume", nodeId, node->name().c_str());
@@ -3510,7 +3520,7 @@ bool SceneManager::splitVolumes() {
 		return false;
 	}
 	const int splitSize = _maxSuggestedVolumeSize->intVal();
-	const glm::ivec3 maxSize(splitSize);
+	const math::Vec3i maxSize(splitSize);
 	scenegraph::SceneGraph newSceneGraph;
 	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, false, false, maxSize)) {
 		return loadSceneGraph(core::move(newSceneGraph));
@@ -3596,8 +3606,8 @@ uint64_t SceneManager::calculateHash() const {
 	mix((uint64_t)_sceneGraph.size());
 	const voxel::Region region = _sceneGraph.sceneRegion();
 	if (region.isValid()) {
-		const glm::ivec3 &mins = region.getLowerCorner();
-		const glm::ivec3 &maxs = region.getUpperCorner();
+		const math::Vec3i &mins = region.getLowerCorner();
+		const math::Vec3i &maxs = region.getUpperCorner();
 		mix((uint64_t)(uint32_t)mins.x);
 		mix((uint64_t)(uint32_t)mins.y);
 		mix((uint64_t)(uint32_t)mins.z);
@@ -3759,7 +3769,7 @@ void SceneManager::nodeGroupRotate(math::Axis axis) {
 		if (newVolume == nullptr) {
 			return;
 		}
-		glm::vec3 pivot = node.pivot();
+		math::Vec3f pivot = node.pivot();
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
 		setSceneGraphNodeVolume(node, newVolume);
@@ -3779,9 +3789,9 @@ void SceneManager::nodeGroupRotate(math::Axis axis) {
 	});
 }
 
-static glm::vec3 rotateVec3AroundPivot(const glm::vec3 &pos, const glm::vec3 &pivot, math::Axis axis) {
-	const glm::vec3 rel = pos - pivot;
-	glm::vec3 result = pos;
+static math::Vec3f rotateVec3AroundPivot(const math::Vec3f &pos, const math::Vec3f &pivot, math::Axis axis) {
+	const math::Vec3f rel = pos - pivot;
+	math::Vec3f result = pos;
 	if (axis == math::Axis::Y) {
 		// CCW in XZ plane - matches voxelutil::rotateAxis(Y) voxel mapping
 		result.x = pivot.x - rel.z;
@@ -3803,7 +3813,7 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 	if (!sceneReg.isValid()) {
 		return;
 	}
-	const glm::vec3 scenePivot = sceneReg.calcCenterf();
+	const math::Vec3f scenePivot = sceneReg.calcCenterf();
 
 	for (auto *e : _sceneGraph.nodes()) {
 		scenegraph::SceneGraphNode &node = e->value;
@@ -3818,10 +3828,10 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 		if (newVolume == nullptr) {
 			continue;
 		}
-		const glm::vec3 oldRegionCenter = v->region().calcCenterf();
-		const glm::vec3 newRegionCenter = newVolume->region().calcCenterf();
+		const math::Vec3f oldRegionCenter = v->region().calcCenterf();
+		const math::Vec3f newRegionCenter = newVolume->region().calcCenterf();
 
-		glm::vec3 pivot = node.pivot();
+		math::Vec3f pivot = node.pivot();
 		voxel::Region r = newVolume->region();
 		r.accumulate(v->region());
 		setSceneGraphNodeVolume(node, newVolume);
@@ -3832,8 +3842,8 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 				scenegraph::SceneGraphTransform &transform = kf.transform();
 				// Rotate the volume's world-space center around the scene pivot,
 				// then back-compute the new translation so the center lands correctly.
-				const glm::vec3 worldCenter = transform.worldTranslation() + oldRegionCenter;
-				const glm::vec3 newWorldCenter = rotateVec3AroundPivot(worldCenter, scenePivot, axis);
+				const math::Vec3f worldCenter = transform.worldTranslation() + oldRegionCenter;
+				const math::Vec3f newWorldCenter = rotateVec3AroundPivot(worldCenter, scenePivot, axis);
 				transform.setWorldTranslation(newWorldCenter - newRegionCenter);
 			}
 		}
@@ -3847,7 +3857,7 @@ void SceneManager::nodeRotateAll(math::Axis axis) {
 	}
 }
 
-void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
+void SceneManager::nodeMoveVoxels(int nodeId, const math::Vec3i& m) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return;
@@ -3859,18 +3869,18 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 	if (hasSelection(_sceneGraph.uuid(nodeId))) {
 		// Move only the selected voxels (those with FlagOutline set)
 		const voxel::Region &region = v->region();
-		const glm::ivec3 &mins = region.getLowerCorner();
-		const glm::ivec3 &maxs = region.getUpperCorner();
+		const math::Vec3i &mins = region.getLowerCorner();
+		const math::Vec3i &maxs = region.getUpperCorner();
 
 		// First pass: collect selected voxels and clear them
-		core::DynamicArray<glm::ivec3> positions;
+		core::DynamicArray<math::Vec3i> positions;
 		core::DynamicArray<voxel::Voxel> voxels;
 		for (int32_t z = mins.z; z <= maxs.z; ++z) {
 			for (int32_t y = mins.y; y <= maxs.y; ++y) {
 				for (int32_t x = mins.x; x <= maxs.x; ++x) {
 					const voxel::Voxel &voxel = v->voxel(x, y, z);
 					if ((voxel.getFlags() & voxel::FlagOutline) != 0) {
-						positions.push_back(glm::ivec3(x, y, z));
+						positions.push_back(math::Vec3i(x, y, z));
 						voxels.push_back(voxel);
 						v->setVoxel(x, y, z, voxel::Voxel());
 					}
@@ -3880,7 +3890,7 @@ void SceneManager::nodeMoveVoxels(int nodeId, const glm::ivec3& m) {
 
 		// Second pass: place voxels at new positions
 		for (size_t i = 0; i < positions.size(); ++i) {
-			const glm::ivec3 newPos = positions[i] + m;
+			const math::Vec3i newPos = positions[i] + m;
 			if (region.containsPoint(newPos)) {
 				v->setVoxel(newPos, voxels[i]);
 			}
@@ -3895,13 +3905,13 @@ void SceneManager::nodeGroupMoveVoxels(int x, int y, int z) {
 	if (isLocked()) {
 		return;
 	}
-	const glm::ivec3 v(x, y, z);
+	const math::Vec3i v(x, y, z);
 	nodeForeachGroup([&](const core::UUID &nodeUUID) {
 		nodeMoveVoxels(nodeUUID, v);
 	});
 }
 
-void SceneManager::nodeShift(int nodeId, const glm::ivec3& m) {
+void SceneManager::nodeShift(int nodeId, const math::Vec3i& m) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return;
@@ -3924,13 +3934,13 @@ void SceneManager::nodeGroupShift(int x, int y, int z) {
 	if (isLocked()) {
 		return;
 	}
-	const glm::ivec3 v(x, y, z);
+	const math::Vec3i v(x, y, z);
 	nodeForeachGroup([&](const core::UUID &nodeUUID) {
 		nodeShift(nodeUUID, v);
 	});
 }
 
-bool SceneManager::setGridResolution(const glm::ivec3 &resolution) {
+bool SceneManager::setGridResolution(const math::Vec3i &resolution) {
 	if (isLocked()) {
 		return false;
 	}
@@ -3943,7 +3953,7 @@ bool SceneManager::setGridResolution(const glm::ivec3 &resolution) {
 }
 
 bool SceneManager::setGridResolution(int resolution) {
-	return setGridResolution(glm::ivec3(resolution));
+	return setGridResolution(math::Vec3i(resolution));
 }
 
 void SceneManager::releasePreview(const scenegraph::SceneGraph &view) {
@@ -3986,7 +3996,7 @@ void SceneManager::render(voxelrender::RenderContext &renderContext, voxelrender
 		_sceneRenderer->renderUI(renderContext, camera);
 		if (renderContext.isEditMode()) {
 			core_trace_scoped(ModifierRender);
-			const glm::mat4 &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
+			const math::Mat4f &mat = worldMatrix(renderContext.frame, renderContext.applyTransforms());
 			_modifier->render(modifierRenderContext, camera, activePalette(), mat);
 		}
 	}
@@ -4457,7 +4467,7 @@ void SceneManager::construct() {
 				}
 				float distance = 0.0f;
 				const voxel::Region &region = _sceneGraph.resolveRegion(node);
-				const glm::vec3 pivot = node.pivot();
+				const math::Vec3f pivot = node.pivot();
 				const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(node, _currentFrameIdx);
 				const math::OBBF &obb = scenegraph::toOBB(true, region, pivot, transform);
 				if (obb.intersect(ray.origin, ray.direction, distance)) {
@@ -4475,10 +4485,10 @@ void SceneManager::construct() {
 				if (v == nullptr) {
 					continue;
 				}
-				const glm::mat4 model = _sceneGraph.worldMatrix(node, _currentFrameIdx, true);
-				const glm::mat4 invModel = glm::inverse(model);
-				const glm::vec3 localOrigin = glm::vec3(invModel * glm::vec4(ray.origin, 1.0f));
-				const glm::vec3 localDir = glm::normalize(glm::vec3(invModel * glm::vec4(ray.direction, 0.0f)));
+				const math::Mat4f model = _sceneGraph.worldMatrix(node, _currentFrameIdx, true);
+				const math::Mat4f invModel = math::inverse(model);
+				const math::Vec3f localOrigin = math::Vec3f(invModel * math::Vec4f(ray.origin, 1.0f));
+				const math::Vec3f localDir = math::normalize(math::Vec3f(invModel * math::Vec4f(ray.direction, 0.0f)));
 				static constexpr voxel::Voxel air;
 				bool didHit = false;
 				voxelutil::raycastWithEndpoints(v, localOrigin - voxelutil::RaycastOffset, localOrigin + localDir * rayLength - voxelutil::RaycastOffset, [&] (voxel::RawVolume::Sampler &sampler) {
@@ -4570,7 +4580,7 @@ void SceneManager::construct() {
 			const int iw = args.intVal("width", 64) - 1;
 			const int ih = args.intVal("height", 64) - 1;
 			const int id = args.intVal("depth", 64) - 1;
-			const voxel::Region region(glm::zero<glm::ivec3>(), glm::ivec3(iw, ih, id));
+			const voxel::Region region(math::Vec3i(0), math::Vec3i(iw, ih, id));
 			if (!region.isValid()) {
 				Log::warn("Invalid size provided (%i:%i:%i)", iw, ih, id);
 				return;
@@ -4751,7 +4761,7 @@ void SceneManager::construct() {
 			const int x = args.intVal("x");
 			const int y = args.intVal("y");
 			const int z = args.intVal("z");
-			setReferencePosition(glm::ivec3(x, y, z));
+			setReferencePosition(math::Vec3i(x, y, z));
 		}).setHelp(_("Set the reference position to the specified position"));
 
 	command::Command::registerCommand("movecursor")
@@ -4822,7 +4832,7 @@ void SceneManager::construct() {
 			const int x = args.intVal("x");
 			const int y = args.intVal("y");
 			const int z = args.intVal("z");
-			setCursorPosition(glm::ivec3(x, y, z), _modifier->cursorFace(), true);
+			setCursorPosition(math::Vec3i(x, y, z), _modifier->cursorFace(), true);
 			_traceViaMouse = false;
 		}).setHelp(_("Set the cursor to the specified position"));
 
@@ -4841,7 +4851,7 @@ void SceneManager::construct() {
 			const int y = args.intVal("y", x);
 			const int z = args.intVal("z", y);
 			const int nodeId = toNodeId(args, activeNode());
-			nodeResizeAsync(_sceneGraph.uuid(nodeId), glm::ivec3(x, y, z));
+			nodeResizeAsync(_sceneGraph.uuid(nodeId), math::Vec3i(x, y, z));
 		}).setHelp(_("Resize your current model node by the specified size"));
 
 	command::Command::registerCommand("rescalecontent")
@@ -4854,7 +4864,7 @@ void SceneManager::construct() {
 			const int y = args.intVal("y", x);
 			const int z = args.intVal("z", y);
 			const int nodeId = toNodeId(args, activeNode());
-			nodeRescaleContent(nodeId, glm::ivec3(x, y, z));
+			nodeRescaleContent(nodeId, math::Vec3i(x, y, z));
 		}).setHelp(_("Rescale the content of a model node to the specified target size"));
 
 	command::Command::registerCommand("shift")
@@ -4870,15 +4880,15 @@ void SceneManager::construct() {
 
 	command::Command::registerCommand("center_referenceposition")
 		.setHandler([&] (const command::CommandArgs& args) {
-			const glm::ivec3& refPos = referencePosition();
+			const math::Vec3i& refPos = referencePosition();
 			nodeForeachGroup([&](const core::UUID &nodeUUID) {
 				const voxel::RawVolume *v = volume(nodeUUID);
 				if (v == nullptr) {
 					return;
 				}
 				const voxel::Region& region = v->region();
-				const glm::ivec3& center = region.getCenter();
-				const glm::ivec3& delta = refPos - center;
+				const math::Vec3i& center = region.getCenter();
+				const math::Vec3i& delta = refPos - center;
 				nodeShift(nodeUUID, delta);
 			});
 		}).setHelp(_("Center the current active nodes at the reference position"));
@@ -4891,10 +4901,10 @@ void SceneManager::construct() {
 					return;
 				}
 				const voxel::Region& region = v->region();
-				const glm::ivec3& delta = -region.getCenter();
+				const math::Vec3i& delta = -region.getCenter();
 				nodeShift(nodeUUID, delta);
 			});
-			setReferencePosition(glm::zero<glm::ivec3>());
+			setReferencePosition(math::Vec3i(0));
 		}).setHelp(_("Center the current active nodes at the origin"));
 
 	command::Command::registerCommand("move")
@@ -5330,7 +5340,7 @@ void SceneManager::construct() {
 			const float x = args.floatVal("x");
 			const float y = args.floatVal("y");
 			const float z = args.floatVal("z");
-			nodeUpdatePivot(nodeId, glm::vec3(x, y, z));
+			nodeUpdatePivot(nodeId, math::Vec3f(x, y, z));
 		}).setHelp(_("Set the pivot point for a node")).setArgumentCompleter(nodeCompleter(_sceneGraph));
 
 	command::Command::registerCommand("noderename")
@@ -5351,7 +5361,7 @@ void SceneManager::construct() {
 		.addArg({"y", command::ArgType::Int, false, "", "Total number of tiles along local Y"})
 		.addArg({"z", command::ArgType::Int, false, "", "Total number of tiles along local Z"})
 		.setHandler([&](const command::CommandArgs &args) {
-			nodeRepeat(toNodeId(args, InvalidNodeId), glm::ivec3(args.intVal("x"), args.intVal("y"), args.intVal("z")));
+			nodeRepeat(toNodeId(args, InvalidNodeId), math::Vec3i(args.intVal("x"), args.intVal("y"), args.intVal("z")));
 		}).setHelp(_("Repeat a volume along its transformed axes; positive counts include the original (maximum 1024 tiles)"))
 		.setArgumentCompleter(nodeCompleter(_sceneGraph));
 
@@ -5360,7 +5370,7 @@ void SceneManager::construct() {
 		.addArg({"y", command::ArgType::Int, false, "", "Total number of tiles along Y"})
 		.addArg({"z", command::ArgType::Int, false, "", "Total number of tiles along Z"})
 		.setHandler([&](const command::CommandArgs &args) {
-			selectionRepeat(glm::ivec3(args.intVal("x"), args.intVal("y"), args.intVal("z")));
+			selectionRepeat(math::Vec3i(args.intVal("x"), args.intVal("y"), args.intVal("z")));
 		}).setHelp(_("Repeat selected voxels by their bounds inside the active volume; positive counts include the original"));
 
 	command::Command::registerCommand("nodeduplicate")
@@ -5451,7 +5461,7 @@ void SceneManager::construct() {
 				Log::error("No active camera found");
 				return;
 			}
-			const glm::vec3 refPos = glm::vec3(referencePosition());
+			const math::Vec3f refPos = math::Vec3f(referencePosition());
 			camera->setTarget(refPos);
 			camera->setRotationType(video::CameraRotationType::Target);
 		}).setHelp(_("Set the camera orbit target to the reference point position"));
@@ -5466,7 +5476,7 @@ void SceneManager::construct() {
 				Log::error("No active camera found");
 				return;
 			}
-			const glm::vec3 pos(args.floatVal("x"), args.floatVal("y"), args.floatVal("z"));
+			const math::Vec3f pos(args.floatVal("x"), args.floatVal("y"), args.floatVal("z"));
 			camera->setWorldPosition(pos);
 		}).setHelp(_("Set the camera world position"));
 
@@ -5480,7 +5490,7 @@ void SceneManager::construct() {
 				Log::error("No active camera found");
 				return;
 			}
-			const glm::vec3 target(args.floatVal("x"), args.floatVal("y"), args.floatVal("z"));
+			const math::Vec3f target(args.floatVal("x"), args.floatVal("y"), args.floatVal("z"));
 			camera->setTarget(target);
 			camera->setRotationType(video::CameraRotationType::Target);
 		}).setHelp(_("Set the camera orbit target position"));
@@ -5568,7 +5578,7 @@ void SceneManager::nodeRemoveUnusedColors(int nodeId, bool reindexPalette) {
 	}
 }
 
-int SceneManager::addPointChild(const core::String& name, const glm::ivec3& position, const glm::quat& orientation, const core::UUID &uuid) {
+int SceneManager::addPointChild(const core::String& name, const math::Vec3i& position, const math::Quatf& orientation, const core::UUID &uuid) {
 	if (isLocked()) {
 		return InvalidNodeId;
 	}
@@ -5626,10 +5636,10 @@ int SceneManager::addModelAdjacent(int sourceNodeId, voxel::FaceNames face) {
 	if (!sourceRegion.isValid()) {
 		return InvalidNodeId;
 	}
-	const glm::ivec3 dims = sourceRegion.getDimensionsInVoxels();
+	const math::Vec3i dims = sourceRegion.getDimensionsInVoxels();
 	const scenegraph::FrameTransform &frameTransform = _sceneGraph.transformForFrame(*source, _currentFrameIdx);
 	const math::OBBF sourceObb = scenegraph::toOBB(true, sourceRegion, source->pivot(), frameTransform);
-	const glm::vec3 newExtents = scenegraph::calculateExtents(glm::vec3(dims));
+	const math::Vec3f newExtents = scenegraph::calculateExtents(math::Vec3f(dims));
 	const math::OBBF adjacentObb = scenegraph::calcAdjacentObb(sourceObb, face, newExtents);
 	const voxel::Region targetWorld = scenegraph::toRegion(adjacentObb);
 	if (!targetWorld.isValid()) {
@@ -5661,7 +5671,7 @@ int SceneManager::addModelAdjacent(int sourceNodeId, voxel::FaceNames face) {
 	newNode.setPalette(source->palette());
 	newNode.setPivot(source->pivot());
 	newNode.setAllKeyFrames(source->allKeyFrames(), DEFAULT_ANIMATION);
-	const glm::vec3 delta = adjacentObb.origin() - sourceObb.origin();
+	const math::Vec3f delta = adjacentObb.origin() - sourceObb.origin();
 	scenegraph::offsetNodeWorldTransforms(newNode, delta);
 	int parentId = _sceneGraph.parentId(*source);
 	if (parentId == InvalidNodeId) {
@@ -5738,8 +5748,8 @@ void SceneManager::updateAddNodeHover(scenegraph::FrameIndex frameIdx) {
 	if (hit.face == voxel::FaceNames::Max) {
 		return;
 	}
-	const glm::ivec3 dims = sourceRegion.getDimensionsInVoxels();
-	const glm::vec3 newExtents = scenegraph::calculateExtents(glm::vec3(dims));
+	const math::Vec3i dims = sourceRegion.getDimensionsInVoxels();
+	const math::Vec3f newExtents = scenegraph::calculateExtents(math::Vec3f(dims));
 	const math::OBBF adjacentObb = scenegraph::calcAdjacentObb(obb, hit.face, newExtents);
 	if (!scenegraph::toRegion(adjacentObb).isValid()) {
 		return;
@@ -6146,17 +6156,17 @@ bool SceneManager::applySceneJobResult(SceneJobResult &&result) {
 			return false;
 		}
 		const voxel::Region &newRegion = newVolume->region();
-		const glm::ivec3 oldMins = oldRegion.getLowerCorner();
-		const glm::ivec3 oldMaxs = oldRegion.getUpperCorner();
-		const glm::ivec3 mins = newRegion.getLowerCorner();
-		const glm::ivec3 maxs = newRegion.getUpperCorner();
-		if (glm::all(glm::greaterThanEqual(maxs, oldMaxs)) && glm::all(glm::lessThanEqual(mins, oldMins))) {
+		const math::Vec3i oldMins = oldRegion.getLowerCorner();
+		const math::Vec3i oldMaxs = oldRegion.getUpperCorner();
+		const math::Vec3i mins = newRegion.getLowerCorner();
+		const math::Vec3i maxs = newRegion.getUpperCorner();
+		if (math::all(math::greaterThanEqual(maxs, oldMaxs)) && math::all(math::lessThanEqual(mins, oldMins))) {
 			modified(result.nodeUUID, result.modifiedRegion, SceneModifiedFlags::NoRegionUpdate);
 		} else {
 			modified(result.nodeUUID, result.modifiedRegion);
 		}
 		if (activeNode() == node->id()) {
-			const glm::ivec3 &refPos = referencePosition();
+			const math::Vec3i &refPos = referencePosition();
 			if (!newRegion.containsPoint(refPos)) {
 				setReferencePosition(newRegion.getCenter());
 			}
@@ -6558,13 +6568,13 @@ float SceneManager::lsystemProgress() const {
 	return (float)_lsystem->execState.index / (float)_lsystem->state.sentence.size();
 }
 
-void SceneManager::setReferencePosition(const glm::ivec3& pos) {
+void SceneManager::setReferencePosition(const math::Vec3i& pos) {
 	_modifier->setReferencePosition(pos);
 }
 
 void SceneManager::moveCursor(int x, int y, int z) {
-	glm::ivec3 p = cursorPosition();
-	const glm::ivec3 &res = _modifier->gridResolution();
+	math::Vec3i p = cursorPosition();
+	const math::Vec3i &res = _modifier->gridResolution();
 	p.x += x * res.x;
 	p.y += y * res.y;
 	p.z += z * res.z;
@@ -6576,16 +6586,16 @@ void SceneManager::moveCursor(int x, int y, int z) {
 	}
 }
 
-void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, bool force) {
+void SceneManager::setCursorPosition(math::Vec3i pos, voxel::FaceNames hitFace, bool force) {
 	const voxel::RawVolume* v = activeVolume();
 	if (v == nullptr) {
 		return;
 	}
 
-	const glm::ivec3 &res = _modifier->gridResolution();
+	const math::Vec3i &res = _modifier->gridResolution();
 	const voxel::Region& region = v->region();
-	const glm::ivec3& mins = region.getLowerCorner();
-	const glm::ivec3 delta = pos - mins;
+	const math::Vec3i& mins = region.getLowerCorner();
+	const math::Vec3i delta = pos - mins;
 	if (res.x > 0 && delta.x % res.x != 0) {
 		pos.x = mins.x + (delta.x / res.x) * res.x;
 	}
@@ -6600,7 +6610,7 @@ void SceneManager::setCursorPosition(glm::ivec3 pos, voxel::FaceNames hitFace, b
 
 	// make a copy here - no reference - otherwise the comparison below won't
 	// do anything else than comparing the same values.
-	const glm::ivec3 oldCursorPos = cursorPosition();
+	const math::Vec3i oldCursorPos = cursorPosition();
 	if (!force) {
 		if ((lockedAxis & math::Axis::X) != math::Axis::None) {
 			pos.x = oldCursorPos.x;
@@ -6631,7 +6641,7 @@ bool SceneManager::trace(bool sceneMode, bool force) {
 	return trace(sceneMode, force, _lastTraceInvModel);
 }
 
-bool SceneManager::trace(bool sceneMode, bool force, const glm::mat4 &invModel) {
+bool SceneManager::trace(bool sceneMode, bool force, const math::Mat4f &invModel) {
 	if (_modifier->isLocked()) {
 		return false;
 	}
@@ -6667,7 +6677,7 @@ int SceneManager::traceScene(bool skipActiveNode) {
 		}
 		float distance = 0.0f;
 		const voxel::Region& region = _sceneGraph.resolveRegion(node);
-		const glm::vec3 pivot = node.pivot();
+		const math::Vec3f pivot = node.pivot();
 		const scenegraph::FrameTransform &transform = _sceneGraph.transformForFrame(node, _currentFrameIdx);
 		const math::OBBF& obb = scenegraph::toOBB(true, region, pivot, transform);
 		if (obb.intersect(ray.origin, ray.direction, distance)) {
@@ -6706,7 +6716,7 @@ void SceneManager::updateCursor() {
 	}
 }
 
-bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
+bool SceneManager::mouseRayTrace(bool force, const math::Mat4f &invModel) {
 	// mouse tracing is disabled - e.g. because the voxel cursor was moved by keyboard
 	// shortcuts. In this case the execution of the modifier would result in a
 	// re-execution of the trace. And that would move the voxel cursor to the mouse pos
@@ -6733,11 +6743,11 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	}
 	math::Ray ray = camera->mouseRay(_mouseCursor);
 	_lastTraceInvModel = invModel;
-	ray.origin = glm::vec3(invModel * glm::vec4(ray.origin, 1.0f));
-	ray.direction = glm::normalize(glm::vec3(invModel * glm::vec4(ray.direction, 0.0f)));
+	ray.origin = math::Vec3f(invModel * math::Vec4f(ray.origin, 1.0f));
+	ray.direction = math::normalize(math::Vec3f(invModel * math::Vec4f(ray.direction, 0.0f)));
 	const float rayLength = camera->farPlane();
 
-	const glm::vec3& dirWithLength = ray.direction * rayLength;
+	const math::Vec3f& dirWithLength = ray.direction * rayLength;
 	static constexpr voxel::Voxel air;
 
 	Log::trace("Execute new trace for %i:%i (%i:%i)",
@@ -6748,7 +6758,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	_lastRaytraceY = _mouseCursor.y;
 
 	if (const Brush *brush = _modifier->currentBrush()) {
-		glm::ivec3 position;
+		math::Vec3i position;
 		if (brush->projectCursor(ray, position)) {
 			setCursorPosition(position, _modifier->cursorFace());
 			_modifier->setVoxelAtCursor(v->voxel(_modifier->cursorPosition()));
@@ -6781,7 +6791,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 			// locked plane - but allow the ray to arrive at and travel along the plane so
 			// that side faces of voxels on the plane can be selected
 			if (lockedAxis != math::Axis::None && _result->validPreviousPosition) {
-				const glm::ivec3& cursorPos = cursorPosition();
+				const math::Vec3i& cursorPos = cursorPosition();
 				bool currOnPlane = false;
 				bool prevOnPlane = false;
 				if ((lockedAxis & math::Axis::X) != math::Axis::None) {
@@ -6843,7 +6853,7 @@ bool SceneManager::mouseRayTrace(bool force, const glm::mat4 &invModel) {
 	return true;
 }
 
-bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
+bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const math::Vec3f &pivot) {
 	beforeSceneMutation();
 	nodeSetPivot(node, pivot);
 	_sceneGraph.updateTransforms(_transformUpdateChildren->boolVal());
@@ -6852,7 +6862,7 @@ bool SceneManager::nodeUpdatePivot(scenegraph::SceneGraphNode &node, const glm::
 	return true;
 }
 
-bool SceneManager::nodeGroupUpdatePivot(const glm::vec3 &pivot) {
+bool SceneManager::nodeGroupUpdatePivot(const math::Vec3f &pivot) {
 	if (isLocked()) {
 		return false;
 	}
@@ -6862,7 +6872,7 @@ bool SceneManager::nodeGroupUpdatePivot(const glm::vec3 &pivot) {
 	return true;
 }
 
-bool SceneManager::nodeUpdatePivot(int nodeId, const glm::vec3 &pivot) {
+bool SceneManager::nodeUpdatePivot(int nodeId, const math::Vec3f &pivot) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return false;
@@ -6939,7 +6949,7 @@ bool SceneManager::nodeTransformMirror(int nodeId, scenegraph::KeyFrameIndex key
 	return false;
 }
 
-bool SceneManager::nodeGroupUpdateTransform(const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+bool SceneManager::nodeGroupUpdateTransform(const math::Vec3f &angles, const math::Vec3f &scale, const math::Vec3f &translation,
 											scenegraph::FrameIndex frameIdx, bool local) {
 	if (isLocked()) {
 		return false;
@@ -6967,7 +6977,7 @@ void SceneManager::nodeUpdatePartialVolume(scenegraph::SceneGraphNode &node, con
 	}
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, const glm::vec3 &scale, const glm::vec3 &translation,
+bool SceneManager::nodeUpdateTransform(int nodeId, const math::Vec3f &angles, const math::Vec3f &scale, const math::Vec3f &translation,
 							 scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	beforeSceneMutation();
 	if (isLocked()) {
@@ -6979,7 +6989,7 @@ bool SceneManager::nodeUpdateTransform(int nodeId, const glm::vec3 &angles, cons
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(int nodeId, const glm::mat4 &matrix,
+bool SceneManager::nodeUpdateTransform(int nodeId, const math::Mat4f &matrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	beforeSceneMutation();
 	if (scenegraph::SceneGraphNode *node = sceneGraphNode(nodeId)) {
@@ -7025,7 +7035,7 @@ bool SceneManager::nodeAddKeyframe(scenegraph::SceneGraphNode &node, scenegraph:
 			Log::debug("New keyframe for camera node %i at frame %i", node.id(), (int)frameIdx);
 			if (video::Camera* camera = activeCamera()) {
 				copyFromTransform.setWorldTranslation(camera->eye());
-				copyFromTransform.setWorldOrientation(camera->orientation());
+				copyFromTransform.setWorldOrientation(camera->quaternion());
 			}
 		} else {
 			scenegraph::KeyFrameIndex copyFromKeyFrameIdx = node.previousKeyFrameForFrame(frameIdx);
@@ -7167,14 +7177,14 @@ void SceneManager::nodeKeyFramesChanged(scenegraph::SceneGraphNode &node) {
 	markDirty();
 }
 
-bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const glm::vec3 &shift) {
+bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const math::Vec3f &shift) {
 	beforeSceneMutation();
 	if (node.keyFrames() == nullptr) {
 		return false;
 	}
 	for (auto &kf : *node.keyFrames()) {
 		scenegraph::SceneGraphTransform &transform = kf.transform();
-		const glm::vec3 &newLocalTranslation = transform.localTranslation() + shift;
+		const math::Vec3f &newLocalTranslation = transform.localTranslation() + shift;
 		transform.setLocalTranslation(newLocalTranslation);
 		transform.update(_sceneGraph, node, kf.frameIdx, false);
 	}
@@ -7182,7 +7192,7 @@ bool SceneManager::nodeShiftAllKeyframes(scenegraph::SceneGraphNode &node, const
 	return true;
 }
 
-bool SceneManager::nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift) {
+bool SceneManager::nodeShiftAllKeyframes(int nodeId, const math::Vec3f &shift) {
 	beforeSceneMutation();
 	if (isLocked()) {
 		return false;
@@ -7193,13 +7203,13 @@ bool SceneManager::nodeShiftAllKeyframes(int nodeId, const glm::vec3 &shift) {
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &angles,
-									   const glm::vec3 &scale, const glm::vec3 &translation,
+bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const math::Vec3f &angles,
+									   const math::Vec3f &scale, const math::Vec3f &translation,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	beforeSceneMutation();
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-	const glm::quat rot(glm::radians(angles));
+	const math::Quatf rot(math::radians(angles));
 	if (local) {
 		transform.setLocalOrientation(rot);
 		transform.setLocalScale(scale);
@@ -7216,7 +7226,7 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	return true;
 }
 
-bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const glm::mat4 &matrix,
+bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const math::Mat4f &matrix,
 									   scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	beforeSceneMutation();
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
@@ -7234,22 +7244,22 @@ bool SceneManager::nodeUpdateTransform(scenegraph::SceneGraphNode &node, const g
 	return true;
 }
 
-void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const glm::vec3 &pivot) {
+void SceneManager::nodeSetPivot(scenegraph::SceneGraphNode &node, const math::Vec3f &pivot) {
 	beforeSceneMutation();
 	Log::debug("Set the pivot of node %i to %f:%f:%f", node.id(), pivot.x, pivot.y, pivot.z);
 	// no memento states in here - this is just a helper
-	const glm::vec3 oldPivot = node.pivot();
+	const math::Vec3f oldPivot = node.pivot();
 	if (node.setPivot(pivot)) {
-		const glm::vec3 deltaPivot = pivot - oldPivot;
-		const glm::vec3 size = node.region().getDimensionsInVoxels();
-		const glm::vec3 dp = deltaPivot * size;
+		const math::Vec3f deltaPivot = pivot - oldPivot;
+		const math::Vec3f size = node.region().getDimensionsInVoxels();
+		const math::Vec3f dp = deltaPivot * size;
 		// Compensate the pivot change in each keyframe's local translation to keep the
 		// node visually at the same position. The compensation must account for the
 		// keyframe's own rotation and scale (the upper-left 3x3 of the local matrix).
 		for (auto *keyFrames : node.allKeyFrames()) {
 			for (scenegraph::SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 				scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-				const glm::mat3 rs(transform.localMatrix());
+				const math::Mat3f rs(transform.localMatrix());
 				transform.setLocalTranslation(transform.localTranslation() + rs * dp);
 			}
 		}
@@ -7265,7 +7275,7 @@ bool SceneManager::nodeResetTransform(scenegraph::SceneGraphNode &node, scenegra
 	}
 	scenegraph::SceneGraphKeyFrame &keyFrame = node.keyFrame(keyFrameIdx);
 	scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-	transform.setLocalMatrix(glm::mat4(1.0f));
+	transform.setLocalMatrix(math::Mat4f(1.0f));
 	_sceneGraph.updateTransforms();
 	_sceneGraph.markKeyFramesDirty(node.id());
 	markDirty();
@@ -7653,7 +7663,7 @@ bool SceneManager::nodeRemove(scenegraph::SceneGraphNode &node, bool recursive) 
 	return true;
 }
 
-bool SceneManager::nodeRepeat(int nodeId, const glm::ivec3 &counts) {
+bool SceneManager::nodeRepeat(int nodeId, const math::Vec3i &counts) {
 	beforeSceneMutation();
 	if (isLocked() || counts.x < 1 || counts.y < 1 || counts.z < 1) {
 		return false;
@@ -7672,13 +7682,13 @@ bool SceneManager::nodeRepeat(int nodeId, const glm::ivec3 &counts) {
 	if (volume == nullptr) {
 		return false;
 	}
-	if (counts == glm::ivec3(1)) {
+	if (counts == math::Vec3i(1)) {
 		return true;
 	}
 	const voxel::Region &region = volume->region();
 	const int activeId = activeNode();
 	const int parentId = _sceneGraph.parentId(*source);
-	const glm::vec3 dimensions(region.getDimensionsInVoxels());
+	const math::Vec3f dimensions(region.getDimensionsInVoxels());
 	scenegraph::SceneGraphNode pattern(scenegraph::SceneGraphNodeType::Model);
 	pattern.setName(source->name());
 	pattern.setPalette(_sceneGraph.resolvePalette(*source));
@@ -7691,8 +7701,8 @@ bool SceneManager::nodeRepeat(int nodeId, const glm::ivec3 &counts) {
 	pattern.setColor(source->color());
 	pattern.addProperties(source->properties());
 	pattern.createVolume(region);
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
 	for (int z = mins.z; z <= maxs.z; ++z) {
 		for (int y = mins.y; y <= maxs.y; ++y) {
 			for (int x = mins.x; x <= maxs.x; ++x) {
@@ -7711,12 +7721,12 @@ bool SceneManager::nodeRepeat(int nodeId, const glm::ivec3 &counts) {
 				}
 				scenegraph::SceneGraphNode tile(scenegraph::SceneGraphNodeType::Model);
 				scenegraph::copyNode(pattern, tile, true);
-				const glm::vec3 offset = glm::vec3(x, y, z) * dimensions;
+				const math::Vec3f offset = math::Vec3f(x, y, z) * dimensions;
 				// Offset in parent space to preserve rotation and nonuniform parent scale.
 				for (const auto &entry : tile.allKeyFrames()) {
 					for (scenegraph::SceneGraphKeyFrame &keyFrame : entry->value) {
 						scenegraph::SceneGraphTransform &transform = keyFrame.transform();
-						const glm::vec3 delta = glm::mat3(transform.localMatrix()) * offset;
+						const math::Vec3f delta = math::Mat3f(transform.localMatrix()) * offset;
 						transform.setLocalTranslation(transform.localTranslation() + delta);
 					}
 				}
@@ -7730,7 +7740,7 @@ bool SceneManager::nodeRepeat(int nodeId, const glm::ivec3 &counts) {
 	return true;
 }
 
-bool SceneManager::selectionRepeat(const glm::ivec3 &counts) {
+bool SceneManager::selectionRepeat(const math::Vec3i &counts) {
 	beforeSceneMutation();
 	if (isLocked() || counts.x < 1 || counts.y < 1 || counts.z < 1) {
 		return false;
@@ -7745,13 +7755,13 @@ bool SceneManager::selectionRepeat(const glm::ivec3 &counts) {
 	}
 	voxel::RawVolume *volume = node->volume();
 	const voxel::Region &bounds = volume->region();
-	const glm::ivec3 dimensions = region.getDimensionsInVoxels();
+	const math::Vec3i dimensions = region.getDimensionsInVoxels();
 	// Snapshot the source so copies cannot become input for later tiles.
 	const voxel::RawVolume pattern(*volume, region);
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-	const glm::ivec3 available = bounds.getUpperCorner() - mins;
-	const glm::ivec3 tiles = glm::min(counts, available / dimensions + 1);
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
+	const math::Vec3i available = bounds.getUpperCorner() - mins;
+	const math::Vec3i tiles = math::min(counts, available / dimensions + 1);
 	voxel::Region dirty = voxel::Region::InvalidRegion;
 	for (int z = 0; z < tiles.z; ++z) {
 		for (int y = 0; y < tiles.y; ++y) {
@@ -7759,8 +7769,8 @@ bool SceneManager::selectionRepeat(const glm::ivec3 &counts) {
 				if (x == 0 && y == 0 && z == 0) {
 					continue;
 				}
-				const glm::ivec3 offset = glm::ivec3(x, y, z) * dimensions;
-				const glm::ivec3 end = glm::min(maxs, bounds.getUpperCorner() - offset);
+				const math::Vec3i offset = math::Vec3i(x, y, z) * dimensions;
+				const math::Vec3i end = math::min(maxs, bounds.getUpperCorner() - offset);
 				for (int sz = mins.z; sz <= end.z; ++sz) {
 					for (int sy = mins.y; sy <= end.y; ++sy) {
 						for (int sx = mins.x; sx <= end.x; ++sx) {
@@ -7769,7 +7779,7 @@ bool SceneManager::selectionRepeat(const glm::ivec3 &counts) {
 								continue;
 							}
 							v.setFlags(0);
-							const glm::ivec3 pos = glm::ivec3(sx, sy, sz) + offset;
+							const math::Vec3i pos = math::Vec3i(sx, sy, sz) + offset;
 							if (volume->setVoxel(pos, v)) {
 								if (dirty.isValid()) {
 									dirty.accumulate(pos);
@@ -8401,8 +8411,8 @@ bool SceneManager::nodeActivate(int nodeId) {
 	if (node.isModelNode()) {
 		const voxel::Region& region = node.region();
 		if (!region.containsPoint(referencePosition())) {
-			const glm::ivec3 pivot = region.getLowerCorner() + glm::ivec3(node.pivot() * glm::vec3(region.getDimensionsInVoxels()));
-			setReferencePosition(glm::ivec3(pivot));
+			const math::Vec3i pivot = region.getLowerCorner() + math::Vec3i(node.pivot() * math::Vec3f(region.getDimensionsInVoxels()));
+			setReferencePosition(math::Vec3i(pivot));
 		}
 		if (!region.containsPoint(cursorPosition())) {
 			setCursorPosition(region.getCenter(), voxel::FaceNames::Max);
@@ -8455,15 +8465,15 @@ bool SceneManager::nodeRemoveKeyFrameByIndex(const core::UUID &nodeUUID, scenegr
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(const core::UUID &nodeUUID, const glm::vec3 &angles, const glm::vec3 &scale,
-										const glm::vec3 &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
+bool SceneManager::nodeUpdateTransform(const core::UUID &nodeUUID, const math::Vec3f &angles, const math::Vec3f &scale,
+										const math::Vec3f &translation, scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodeUpdateTransform(node->id(), angles, scale, translation, keyFrameIdx, local);
 	}
 	return false;
 }
 
-bool SceneManager::nodeUpdateTransform(const core::UUID &nodeUUID, const glm::mat4 &matrix,
+bool SceneManager::nodeUpdateTransform(const core::UUID &nodeUUID, const math::Mat4f &matrix,
 										scenegraph::KeyFrameIndex keyFrameIdx, bool local) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodeUpdateTransform(node->id(), matrix, keyFrameIdx, local);
@@ -8513,14 +8523,14 @@ bool SceneManager::nodeUpdateKeyFrameInterpolation(const core::UUID &nodeUUID, s
 	return false;
 }
 
-bool SceneManager::nodeUpdatePivot(const core::UUID &nodeUUID, const glm::vec3 &pivot) {
+bool SceneManager::nodeUpdatePivot(const core::UUID &nodeUUID, const math::Vec3f &pivot) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodeUpdatePivot(node->id(), pivot);
 	}
 	return false;
 }
 
-bool SceneManager::nodeShiftAllKeyframes(const core::UUID &nodeUUID, const glm::vec3 &shift) {
+bool SceneManager::nodeShiftAllKeyframes(const core::UUID &nodeUUID, const math::Vec3f &shift) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodeShiftAllKeyframes(node->id(), shift);
 	}
@@ -8598,13 +8608,13 @@ void SceneManager::nodeResize(const core::UUID &nodeUUID, const voxel::Region &r
 	}
 }
 
-void SceneManager::nodeResize(const core::UUID &nodeUUID, const glm::ivec3 &size) {
+void SceneManager::nodeResize(const core::UUID &nodeUUID, const math::Vec3i &size) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		nodeResize(node->id(), size);
 	}
 }
 
-void SceneManager::nodeRescaleContent(const core::UUID &nodeUUID, const glm::ivec3 &targetSize) {
+void SceneManager::nodeRescaleContent(const core::UUID &nodeUUID, const math::Vec3i &targetSize) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		nodeRescaleContent(node->id(), targetSize);
 	}
@@ -8672,11 +8682,11 @@ const voxel::Voxel &SceneManager::hitCursorVoxel() const {
 	return _modifier->hitCursorVoxel();
 }
 
-const glm::ivec3 &SceneManager::cursorPosition() const {
+const math::Vec3i &SceneManager::cursorPosition() const {
 	return _modifier->cursorPosition();
 }
 
-const glm::ivec3 &SceneManager::referencePosition() const {
+const math::Vec3i &SceneManager::referencePosition() const {
 	return _modifier->referencePosition();
 }
 
@@ -8787,7 +8797,7 @@ bool SceneManager::nodeResizeAsync(const core::UUID &nodeUUID, const voxel::Regi
 	return startSceneJob(core::move(request));
 }
 
-bool SceneManager::nodeResizeAsync(const core::UUID &nodeUUID, const glm::ivec3 &size) {
+bool SceneManager::nodeResizeAsync(const core::UUID &nodeUUID, const math::Vec3i &size) {
 	voxel::RawVolume *v = volume(nodeUUID);
 	if (v == nullptr) {
 		return false;
@@ -8815,7 +8825,7 @@ bool SceneManager::nodeCopy(const core::UUID &nodeUUID) {
 	return false;
 }
 
-bool SceneManager::nodePaste(const core::UUID &nodeUUID, const glm::ivec3 &pos) {
+bool SceneManager::nodePaste(const core::UUID &nodeUUID, const math::Vec3i &pos) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodePaste(node->id(), pos);
 	}
@@ -8829,7 +8839,7 @@ bool SceneManager::nodeGlobalCopy(const core::UUID &nodeUUID) {
 	return false;
 }
 
-bool SceneManager::nodeGlobalPaste(const core::UUID &nodeUUID, const glm::ivec3 &pos) {
+bool SceneManager::nodeGlobalPaste(const core::UUID &nodeUUID, const math::Vec3i &pos) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		return nodeGlobalPaste(node->id(), pos);
 	}
@@ -8865,13 +8875,13 @@ void SceneManager::nodeUpdateVoxelType(const core::UUID &nodeUUID, uint8_t palId
 	}
 }
 
-void SceneManager::nodeMoveVoxels(const core::UUID &nodeUUID, const glm::ivec3 &m) {
+void SceneManager::nodeMoveVoxels(const core::UUID &nodeUUID, const math::Vec3i &m) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		nodeMoveVoxels(node->id(), m);
 	}
 }
 
-void SceneManager::nodeShift(const core::UUID &nodeUUID, const glm::ivec3 &m) {
+void SceneManager::nodeShift(const core::UUID &nodeUUID, const math::Vec3i &m) {
 	if (scenegraph::SceneGraphNode *node = sceneGraphNodeByUUID(nodeUUID)) {
 		nodeShift(node->id(), m);
 	}

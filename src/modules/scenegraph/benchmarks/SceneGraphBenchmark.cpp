@@ -14,7 +14,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 class SceneGraphBenchmark : public app::AbstractBenchmark {
 protected:
@@ -53,13 +53,13 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, GetCollisionNodesMany)(benchmark::State 
 		modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
 		modelNode.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)(i % 8) * 10.0f, 0.0f, (float)(i / 8) * 10.0f));
+		transform.setWorldTranslation(math::Vec3f((float)(i % 8) * 10.0f, 0.0f, (float)(i / 8) * 10.0f));
 		modelNode.setTransform(0, transform);
 		sceneGraph.emplace(core::move(modelNode));
 	}
 	sceneGraph.updateTransforms();
 
-	const math::AABB<float> queryAABB(glm::vec3(-5.0f, -5.0f, -5.0f), glm::vec3(85.0f, 10.0f, 85.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(-5.0f, -5.0f, -5.0f), math::Vec3f(85.0f, 10.0f, 85.0f));
 	for (auto _ : state) {
 		scenegraph::CollisionNodes nodes;
 		sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
@@ -74,14 +74,14 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, GetCollisionNodesSparseQuery)(benchmark:
 		modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
 		modelNode.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)(i % 8) * 10.0f, 0.0f, (float)(i / 8) * 10.0f));
+		transform.setWorldTranslation(math::Vec3f((float)(i % 8) * 10.0f, 0.0f, (float)(i / 8) * 10.0f));
 		modelNode.setTransform(0, transform);
 		sceneGraph.emplace(core::move(modelNode));
 	}
 	sceneGraph.updateTransforms();
 
 	// Tiny query that only overlaps a few nodes - stresses cull path
-	const math::AABB<float> queryAABB(glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(5.0f, 5.0f, 5.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(-1.0f, -1.0f, -1.0f), math::Vec3f(5.0f, 5.0f, 5.0f));
 	for (auto _ : state) {
 		scenegraph::CollisionNodes nodes;
 		sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
@@ -97,13 +97,13 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, GetCollisionNodes256)(benchmark::State &
 		modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
 		modelNode.volume()->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)(i % 16) * 10.0f, 0.0f, (float)(i / 16) * 10.0f));
+		transform.setWorldTranslation(math::Vec3f((float)(i % 16) * 10.0f, 0.0f, (float)(i / 16) * 10.0f));
 		modelNode.setTransform(0, transform);
 		sceneGraph.emplace(core::move(modelNode));
 	}
 	sceneGraph.updateTransforms();
 
-	const math::AABB<float> queryAABB(glm::vec3(-5.0f, -5.0f, -5.0f), glm::vec3(165.0f, 10.0f, 165.0f));
+	const math::AABB<float> queryAABB(math::Vec3f(-5.0f, -5.0f, -5.0f), math::Vec3f(165.0f, 10.0f, 165.0f));
 	for (auto _ : state) {
 		scenegraph::CollisionNodes nodes;
 		sceneGraph.getCollisionNodes(nodes, 0, queryAABB);
@@ -117,7 +117,7 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, UpdateTransformsMany)(benchmark::State &
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)i, 0.0f, 0.0f));
+		transform.setWorldTranslation(math::Vec3f((float)i, 0.0f, 0.0f));
 		modelNode.setTransform(0, transform);
 		sceneGraph.emplace(core::move(modelNode));
 	}
@@ -132,7 +132,7 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameCached)(benchmark::Stat
 	scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 	modelNode.createVolume(voxel::Region(0, 0, 0, 3, 3, 3));
 	scenegraph::SceneGraphTransform transform;
-	transform.setWorldTranslation(glm::vec3(5.0f, 1.0f, 2.0f));
+	transform.setWorldTranslation(math::Vec3f(5.0f, 1.0f, 2.0f));
 	modelNode.setTransform(0, transform);
 	const int nodeId = sceneGraph.emplace(core::move(modelNode));
 	sceneGraph.updateTransforms();
@@ -154,12 +154,12 @@ static void addHierarchyModels(scenegraph::SceneGraph &sceneGraph, core::Buffer<
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		transform.setWorldTranslation(math::Vec3f((float)(i % 32), (float)(i / 32), 0.0f));
 		modelNode.setTransform(0, transform);
 		if (animated) {
 			const scenegraph::KeyFrameIndex kf1 = modelNode.addKeyFrame(10);
 			scenegraph::SceneGraphTransform transform1;
-			transform1.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 1.0f));
+			transform1.setWorldTranslation(math::Vec3f((float)(i % 32), (float)(i / 32), 1.0f));
 			modelNode.setTransform(kf1, transform1);
 		}
 		const int useParent = (i % 16 == 0) ? 0 : parentId;
@@ -212,7 +212,7 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameAfterBuild512)(benchmar
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		transform.setWorldTranslation(math::Vec3f((float)(i % 32), (float)(i / 32), 0.0f));
 		modelNode.setTransform(0, transform);
 		const int useParent = (i % 16 == 0) ? 0 : parentId;
 		parentId = sceneGraph.emplace(core::move(modelNode), useParent);
@@ -237,7 +237,7 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameParallelNoBuild512)(ben
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		transform.setWorldTranslation(math::Vec3f((float)(i % 32), (float)(i / 32), 0.0f));
 		modelNode.setTransform(0, transform);
 		const int useParent = (i % 16 == 0) ? 0 : parentId;
 		parentId = sceneGraph.emplace(core::move(modelNode), useParent);
@@ -264,7 +264,7 @@ BENCHMARK_DEFINE_F(SceneGraphBenchmark, TransformForFrameParallelAfterBuild512)(
 		scenegraph::SceneGraphNode modelNode(scenegraph::SceneGraphNodeType::Model);
 		modelNode.createVolume(voxel::Region(0, 0, 0, 1, 1, 1));
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3((float)(i % 32), (float)(i / 32), 0.0f));
+		transform.setWorldTranslation(math::Vec3f((float)(i % 32), (float)(i / 32), 0.0f));
 		modelNode.setTransform(0, transform);
 		const int useParent = (i % 16 == 0) ? 0 : parentId;
 		parentId = sceneGraph.emplace(core::move(modelNode), useParent);

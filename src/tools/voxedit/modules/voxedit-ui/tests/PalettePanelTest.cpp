@@ -9,6 +9,7 @@
 #include "voxedit-ui/WindowTitles.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "math/Vec4f.h"
 
 namespace voxedit {
 
@@ -709,7 +710,7 @@ void PalettePanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 
 		// set a known closest color and verify the index updates
-		_closestColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		_closestColor = math::Vec4f(1.0f, 0.0f, 0.0f, 1.0f);
 		ctx->Yield(3);
 		// the closest match index should be valid after the color edit triggers
 		IM_CHECK(_closestMatchPaletteColorIdx >= 0 || _closestMatchPaletteColorIdx == -1);

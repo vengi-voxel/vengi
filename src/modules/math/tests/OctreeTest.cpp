@@ -7,11 +7,10 @@
 #include "math/AABB.h"
 #include "math/Frustum.h"
 #include "core/Log.h"
-#include "core/GLM.h"
-#include <glm/gtc/epsilon.hpp>
-#include <glm/vector_relational.hpp>
-#include <glm/gtc/round.hpp>
-#include <glm/exponential.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Print.h"
+#include "math/Scalar.h"
 
 namespace math {
 
@@ -37,24 +36,24 @@ public:
 
 class OctreeTest : public app::AbstractTest {
 public:
-	void test(const glm::vec3& mins, const glm::vec3& maxs, int& n, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs, int size) {
-		EXPECT_TRUE(glm::isPowerOfTwo(size));
+	void test(const math::Vec3f& mins, const math::Vec3f& maxs, int& n, const math::Vec3i& expectedMins, const math::Vec3i& expectedMaxs, int size) {
+		EXPECT_TRUE(math::isPowerOfTwo(size));
 		n = 0;
 		const math::AABB<int> aabb(mins, maxs);
 		Octree<oc::Item> octree(aabb);
 		math::Frustum frustum(mins, maxs);
 		const math::AABB<float>& frustumAABB = frustum.aabb();
-		EXPECT_TRUE(glm::all(glm::epsilonEqual(mins, frustumAABB.mins(), 0.1f)));
-		EXPECT_TRUE(glm::all(glm::epsilonEqual(maxs, frustumAABB.maxs(), 0.1f)));
+		EXPECT_TRUE(math::all(math::epsilonEqual(mins, frustumAABB.mins(), 0.1f)));
+		EXPECT_TRUE(math::all(math::epsilonEqual(maxs, frustumAABB.maxs(), 0.1f)));
 		bool ignore = false;
-		const math::AABB<int>& visitAABB = computeAABB(frustum, glm::vec3(size));
+		const math::AABB<int>& visitAABB = computeAABB(frustum, math::Vec3f(size));
 		EXPECT_EQ(expectedMaxs, visitAABB.maxs());
 		EXPECT_EQ(expectedMins, visitAABB.mins());
-		octree.visit(frustum, [&] (const glm::ivec3& currentMins, const glm::ivec3& currentMaxs) {
+		octree.visit(frustum, [&] (const math::Vec3i& currentMins, const math::Vec3i& currentMaxs) {
 			if (!ignore) {
-				const glm::ivec3 center = (currentMins + currentMaxs) / 2;
+				const math::Vec3i center = (currentMins + currentMaxs) / 2;
 				for (int i = 0; i < center.length(); ++i) {
-					const int mod = glm::abs(center[i]) % size;
+					const int mod = math::abs(center[i]) % size;
 					const int expected = size / 2;
 					EXPECT_EQ(mod, expected) << center[i] << " => " << center.x << ":" << center.y << ":" << center.z;
 					ignore = mod != expected;
@@ -65,17 +64,17 @@ public:
 			}
 			++n;
 			return true;
-		}, glm::ivec3(size));
+		}, math::Vec3i(size));
 	}
 
-	void testAABB(const glm::vec3& mins, const glm::vec3& maxs, const glm::ivec3& expectedMins, const glm::ivec3& expectedMaxs, int size) {
-		EXPECT_TRUE(glm::isPowerOfTwo(size));
+	void testAABB(const math::Vec3f& mins, const math::Vec3f& maxs, const math::Vec3i& expectedMins, const math::Vec3i& expectedMaxs, int size) {
+		EXPECT_TRUE(math::isPowerOfTwo(size));
 		const math::AABB<int> aabb(mins, maxs);
 		math::Frustum frustum(mins, maxs);
 		const math::AABB<float>& frustumAABB = frustum.aabb();
-		EXPECT_TRUE(glm::all(glm::epsilonEqual(mins, frustumAABB.mins(), 0.1f)));
-		EXPECT_TRUE(glm::all(glm::epsilonEqual(maxs, frustumAABB.maxs(), 0.1f)));
-		const math::AABB<int>& visitAABB = computeAABB(frustum, glm::vec3(size));
+		EXPECT_TRUE(math::all(math::epsilonEqual(mins, frustumAABB.mins(), 0.1f)));
+		EXPECT_TRUE(math::all(math::epsilonEqual(maxs, frustumAABB.maxs(), 0.1f)));
+		const math::AABB<int>& visitAABB = computeAABB(frustum, math::Vec3f(size));
 		EXPECT_EQ(expectedMaxs, visitAABB.maxs());
 		EXPECT_EQ(expectedMins, visitAABB.mins());
 	}
@@ -141,8 +140,8 @@ TEST_F(OctreeTest, testQuery) {
 }
 
 TEST_F(OctreeTest, testOctreeVisitOrthoFrustum) {
-	const glm::vec3 mins(0.0f);
-	const glm::vec3 maxs(128.0f);
+	const math::Vec3f mins(0.0f);
+	const math::Vec3f maxs(128.0f);
 	const int slices = 8;
 	const math::AABB<int> aabb(mins, maxs);
 	Octree<oc::Item> octree(aabb);
@@ -151,58 +150,58 @@ TEST_F(OctreeTest, testOctreeVisitOrthoFrustum) {
 	ASSERT_EQ(mins, frustumAABB.mins());
 	ASSERT_EQ(maxs, frustumAABB.maxs());
 	int n = 0;
-	const int blockSize = glm::ceil(aabb.getWidthX() / slices);
-	octree.visit(frustum, [&] (const glm::ivec3& currentMins, const glm::ivec3& currentMaxs) {
-		const glm::ivec3 center = (currentMins + currentMaxs) / 2;
+	const int blockSize = math::ceil(aabb.getWidthX() / slices);
+	octree.visit(frustum, [&] (const math::Vec3i& currentMins, const math::Vec3i& currentMaxs) {
+		const math::Vec3i center = (currentMins + currentMaxs) / 2;
 		for (int i = 0; i < center.length(); ++i) {
 			EXPECT_EQ(center[i] % blockSize, slices) << center.x << ":" << center.y << ":" << center.z;
 		}
 		++n;
 		return true;
-	}, glm::ivec3(blockSize));
-	EXPECT_EQ(glm::pow(slices, glm::ivec3::length()), n);
+	}, math::Vec3i(blockSize));
+	EXPECT_EQ(math::pow(slices, math::Vec3i::length()), n);
 }
 
 TEST_F(OctreeTest, testOctreeComputeAABB1) {
-	testAABB(glm::vec3(-4.0f), glm::vec3(6.0f), glm::ivec3(-32), glm::ivec3(32), 32);
+	testAABB(math::Vec3f(-4.0f), math::Vec3f(6.0f), math::Vec3i(-32), math::Vec3i(32), 32);
 }
 
 TEST_F(OctreeTest, testOctreeComputeAABB2) {
-	testAABB(glm::vec3(1.0f), glm::vec3(6.0f), glm::ivec3(0), glm::ivec3(32), 32);
+	testAABB(math::Vec3f(1.0f), math::Vec3f(6.0f), math::Vec3i(0), math::Vec3i(32), 32);
 }
 
 TEST_F(OctreeTest, testOctreeComputeAABB3) {
 	testAABB(
-		glm::vec3(-34.0f, -12.0f, -1.0f),
-		glm::vec3(19.0f, 17.0f, 33.0f),
+		math::Vec3f(-34.0f, -12.0f, -1.0f),
+		math::Vec3f(19.0f, 17.0f, 33.0f),
 
-		glm::ivec3(-64, -32, -32),
-		glm::ivec3(64, 32, 96),
+		math::Vec3i(-64, -32, -32),
+		math::Vec3i(64, 32, 96),
 
 		32);
 }
 
 TEST_F(OctreeTest, testOctreeVisitOrthoFrustumNoPerfectMatch) {
-	const glm::vec3 mins(-4.0f);
-	const glm::vec3 maxs(6.0f);
+	const math::Vec3f mins(-4.0f);
+	const math::Vec3f maxs(6.0f);
 	int n = 0;
-	test(mins, maxs, n, glm::ivec3(-32), glm::ivec3(32), 32);
+	test(mins, maxs, n, math::Vec3i(-32), math::Vec3i(32), 32);
 	EXPECT_EQ(n, 8);
 }
 
 TEST_F(OctreeTest, testOctreeVisitOrthoFrustumNoPerfectMatchJustOneField) {
-	const glm::vec3 mins(1.0f);
-	const glm::vec3 maxs(6.0f);
+	const math::Vec3f mins(1.0f);
+	const math::Vec3f maxs(6.0f);
 	int n = 0;
-	test(mins, maxs, n, glm::ivec3(0), glm::ivec3(32), 32);
+	test(mins, maxs, n, math::Vec3i(0), math::Vec3i(32), 32);
 	EXPECT_EQ(n, 1);
 }
 
 TEST_F(OctreeTest, testOctreeVisitOrthoFrustumNoPerfectMatchBigAndUneven) {
-	const glm::vec3 mins(-34.0f, -12.0f, -1.0f);
-	const glm::vec3 maxs(19.0f, 17.0f, 33.0f);
+	const math::Vec3f mins(-34.0f, -12.0f, -1.0f);
+	const math::Vec3f maxs(19.0f, 17.0f, 33.0f);
 	int n = 0;
-	test(mins, maxs, n, glm::ivec3(-64, -32, -32), glm::ivec3(64, 32, 96), 32);
+	test(mins, maxs, n, math::Vec3i(-64, -32, -32), math::Vec3i(64, 32, 96), 32);
 	EXPECT_LE(n, 4 * 2 * 4) << "More than the absolute maxs of the calculated max AABB";
 	EXPECT_EQ(n, 18) << "Expected to get some bboxes not visited, because they are outside of the original frustum";
 }

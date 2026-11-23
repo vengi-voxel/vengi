@@ -9,26 +9,27 @@
 #include "core/String.h"
 #include "core/Var.h"
 #include "voxelrender/RenderUtil.h"
+#include "math/Vec3f.h"
 
 namespace voxelpathtracer {
 
 namespace {
 
-core::String formatVec3(const glm::vec3 &v) {
+core::String formatVec3(const math::Vec3f &v) {
 	return core::String::format("%f %f %f", v.x, v.y, v.z);
 }
 
-glm::vec3 readVec3(const char *name, const glm::vec3 &fallback) {
+math::Vec3f readVec3(const char *name, const math::Vec3f &fallback) {
 	const core::VarPtr &var = core::getVar(name);
 	if (!var) {
 		return fallback;
 	}
-	glm::vec3 v = fallback;
+	math::Vec3f v = fallback;
 	var->vec3Val(&v[0]);
 	return v;
 }
 
-void writeVec3(const char *name, const glm::vec3 &v) {
+void writeVec3(const char *name, const math::Vec3f &v) {
 	const core::VarPtr &var = core::getVar(name);
 	if (var) {
 		var->setVal(formatVec3(v));

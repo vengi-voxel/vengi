@@ -4,6 +4,10 @@
 
 #include "voxelrender/RenderUtil.h"
 #include "app/tests/AbstractTest.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Scalar.h"
 
 namespace voxelrender {
 
@@ -11,8 +15,8 @@ class RenderUtilTest : public app::AbstractTest {};
 
 TEST_F(RenderUtilTest, testConfigureCameraFarPlane) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
-	const voxel::Region &sceneRegion = voxel::Region::fromSize(glm::ivec3(513, 65, 513));
+	camera.setSize(math::Vec2i(1920, 1080));
+	const voxel::Region &sceneRegion = voxel::Region::fromSize(math::Vec3i(513, 65, 513));
 	const float farPlane = 5000.0f;
 	SceneCameraMode mode = SceneCameraMode::Free;
 	configureCamera(camera, sceneRegion, mode, farPlane);
@@ -21,15 +25,15 @@ TEST_F(RenderUtilTest, testConfigureCameraFarPlane) {
 
 TEST_F(RenderUtilTest, testConfigureCameraFreeModeDistance) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
+	camera.setSize(math::Vec2i(1920, 1080));
 	camera.setFieldOfView(45.0f);
-	const voxel::Region &sceneRegion = voxel::Region::fromSize(glm::ivec3(513, 65, 513));
+	const voxel::Region &sceneRegion = voxel::Region::fromSize(math::Vec3i(513, 65, 513));
 
 	configureCamera(camera, sceneRegion, SceneCameraMode::Free, 5000.0f);
 
-	const glm::vec3 center = sceneRegion.calcCenterf();
-	const glm::vec3 cameraPos = camera.worldPosition();
-	const float actualDistance = glm::distance(cameraPos, center);
+	const math::Vec3f center = sceneRegion.calcCenterf();
+	const math::Vec3f cameraPos = camera.worldPosition();
+	const float actualDistance = math::distance(cameraPos, center);
 	const float targetDistance = camera.targetDistance();
 
 	// The actual distance should match the target distance (within some tolerance)
@@ -42,13 +46,13 @@ TEST_F(RenderUtilTest, testConfigureCameraFreeModeDistance) {
 
 TEST_F(RenderUtilTest, testConfigureCameraFreeModePosition) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
-	const voxel::Region &sceneRegion = voxel::Region::fromSize(glm::ivec3(513, 65, 513));
+	camera.setSize(math::Vec2i(1920, 1080));
+	const voxel::Region &sceneRegion = voxel::Region::fromSize(math::Vec3i(513, 65, 513));
 
 	configureCamera(camera, sceneRegion, SceneCameraMode::Free, 5000.0f);
 
-	const glm::vec3 center = sceneRegion.calcCenterf();
-	const glm::vec3 cameraPos = camera.worldPosition();
+	const math::Vec3f center = sceneRegion.calcCenterf();
+	const math::Vec3f cameraPos = camera.worldPosition();
 
 	// For Free mode, camera should be positioned diagonally (negative X and Z)
 	EXPECT_LT(cameraPos.x, center.x);
@@ -60,23 +64,23 @@ TEST_F(RenderUtilTest, testExplicitFreeAnglesFlatCourseVisibleFromAbove) {
 	video::Camera camera;
 	camera.setSize({256, 256});
 	const voxel::Region region(0, 0, 0, 255, 12, 255);
-	const glm::vec3 angles(glm::radians(55.0f), glm::radians(38.0f), 0.0f);
+	const math::Vec3f angles(math::radians(55.0f), math::radians(38.0f), 0.0f);
 	configureCamera(camera, region, SceneCameraMode::Free, 5000.0f, angles);
 	camera.update(0.0);
-	EXPECT_GT(glm::abs(camera.worldPosition().y - region.calcCenterf().y), camera.targetDistance() * .6f);
-	EXPECT_NEAR(camera.targetDistance(), glm::distance(camera.worldPosition(), region.calcCenterf()), .01f);
-	EXPECT_GT(glm::dot(camera.forward(), glm::normalize(region.calcCenterf() - camera.worldPosition())), .99f);
+	EXPECT_GT(math::abs(camera.worldPosition().y - region.calcCenterf().y), camera.targetDistance() * .6f);
+	EXPECT_NEAR(camera.targetDistance(), math::distance(camera.worldPosition(), region.calcCenterf()), .01f);
+	EXPECT_GT(math::dot(camera.forward(), math::normalize(region.calcCenterf() - camera.worldPosition())), .99f);
 }
 
 TEST_F(RenderUtilTest, testConfigureCameraTopMode) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
-	const voxel::Region &sceneRegion = voxel::Region::fromSize(glm::ivec3(101, 51, 101));
+	camera.setSize(math::Vec2i(1920, 1080));
+	const voxel::Region &sceneRegion = voxel::Region::fromSize(math::Vec3i(101, 51, 101));
 
 	configureCamera(camera, sceneRegion, SceneCameraMode::Top, 5000.0f);
 
-	const glm::vec3 center = sceneRegion.calcCenterf();
-	const glm::vec3 cameraPos = camera.worldPosition();
+	const math::Vec3f center = sceneRegion.calcCenterf();
+	const math::Vec3f cameraPos = camera.worldPosition();
 
 	// Top view should be directly above the scene
 	EXPECT_FLOAT_EQ(cameraPos.x, center.x);
@@ -86,13 +90,13 @@ TEST_F(RenderUtilTest, testConfigureCameraTopMode) {
 
 TEST_F(RenderUtilTest, testConfigureCameraFrontMode) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
-	const voxel::Region &sceneRegion = voxel::Region::fromSize(glm::ivec3(101, 51, 101));
+	camera.setSize(math::Vec2i(1920, 1080));
+	const voxel::Region &sceneRegion = voxel::Region::fromSize(math::Vec3i(101, 51, 101));
 
 	configureCamera(camera, sceneRegion, SceneCameraMode::Front, 5000.0f);
 
-	const glm::vec3 center = sceneRegion.calcCenterf();
-	const glm::vec3 cameraPos = camera.worldPosition();
+	const math::Vec3f center = sceneRegion.calcCenterf();
+	const math::Vec3f cameraPos = camera.worldPosition();
 
 	// Front view should be in front of the scene (negative Z)
 	EXPECT_FLOAT_EQ(cameraPos.x, center.x);
@@ -103,8 +107,8 @@ TEST_F(RenderUtilTest, testConfigureCameraFrontMode) {
 TEST_F(RenderUtilTest, testConfigureCameraIsometricProjection) {
 	video::Camera camera;
 	camera.setMode(video::CameraMode::Isometric);
-	camera.setSize(glm::ivec2(1920, 1080));
-	const voxel::Region &sceneRegion = voxel::Region::fromSize(glm::ivec3(101, 51, 101));
+	camera.setSize(math::Vec2i(1920, 1080));
+	const voxel::Region &sceneRegion = voxel::Region::fromSize(math::Vec3i(101, 51, 101));
 
 	configureCamera(camera, sceneRegion, SceneCameraMode::Free, 5000.0f);
 	camera.update(0.0);
@@ -112,21 +116,21 @@ TEST_F(RenderUtilTest, testConfigureCameraIsometricProjection) {
 	EXPECT_EQ(video::CameraMode::Isometric, camera.mode());
 	EXPECT_TRUE(camera.isOrthographic());
 	video::Camera reference;
-	reference.setSize(glm::ivec2(1920, 1080));
+	reference.setSize(math::Vec2i(1920, 1080));
 	reference.setMode(video::CameraMode::Isometric);
-	reference.setAngles(video::Camera::IsometricPitch, glm::radians(45.0f), 0.0f);
+	reference.setAngles(video::Camera::IsometricPitch, math::radians(45.0f), 0.0f);
 	reference.update(0.0);
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.forward(), reference.forward(), 0.001f)));
-	EXPECT_TRUE(glm::all(glm::epsilonEqual(camera.up(), reference.up(), 0.001f)));
+	EXPECT_TRUE(math::all(math::epsilonEqual(camera.forward(), reference.forward(), 0.001f)));
+	EXPECT_TRUE(math::all(math::epsilonEqual(camera.up(), reference.up(), 0.001f)));
 }
 
 // Test with a flat scene (512x64x512) (ace of spades)
 TEST_F(RenderUtilTest, testConfigureCameraFlatSceneDistances) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
+	camera.setSize(math::Vec2i(1920, 1080));
 	camera.setFieldOfView(45.0f);
 
-	const voxel::Region &flatScene = voxel::Region::fromSize(glm::ivec3(513, 65, 513));
+	const voxel::Region &flatScene = voxel::Region::fromSize(math::Vec3i(513, 65, 513));
 
 	configureCamera(camera, flatScene, SceneCameraMode::Front, 5000.0f);
 	float frontDistance = camera.targetDistance();
@@ -140,11 +144,11 @@ TEST_F(RenderUtilTest, testConfigureCameraFlatSceneDistances) {
 
 TEST_F(RenderUtilTest, testConfigureCameraAspectRatioHandling) {
 	video::Camera wideCamera;
-	wideCamera.setSize(glm::ivec2(2560, 1080)); // Ultra-wide
+	wideCamera.setSize(math::Vec2i(2560, 1080)); // Ultra-wide
 	wideCamera.setFieldOfView(45.0f);
 
 	video::Camera tallCamera;
-	tallCamera.setSize(glm::ivec2(1080, 1920)); // Portrait
+	tallCamera.setSize(math::Vec2i(1080, 1920)); // Portrait
 	tallCamera.setFieldOfView(45.0f);
 
 	const voxel::Region &scene = voxel::Region::fromSize(101);
@@ -166,7 +170,7 @@ TEST_F(RenderUtilTest, testConfigureCameraAspectRatioHandling) {
 
 TEST_F(RenderUtilTest, testConfigureCameraCubeScene) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
+	camera.setSize(math::Vec2i(1920, 1080));
 	camera.setFieldOfView(45.0f);
 
 	// Test with a cube scene (100x100x100)
@@ -182,11 +186,11 @@ TEST_F(RenderUtilTest, testConfigureCameraCubeScene) {
 
 TEST_F(RenderUtilTest, testConfigureCameraVeryFlatScene) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
+	camera.setSize(math::Vec2i(1920, 1080));
 	camera.setFieldOfView(45.0f);
 
 	// Test with an extremely flat scene (1000x10x1000)
-	const voxel::Region &flatScene = voxel::Region::fromSize(glm::ivec3(1001, 11, 1001));
+	const voxel::Region &flatScene = voxel::Region::fromSize(math::Vec3i(1001, 11, 1001));
 
 	configureCamera(camera, flatScene, SceneCameraMode::Front, 5000.0f);
 	float frontDistance = camera.targetDistance();
@@ -203,11 +207,11 @@ TEST_F(RenderUtilTest, testConfigureCameraVeryFlatScene) {
 
 TEST_F(RenderUtilTest, testConfigureCameraTallScene) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
+	camera.setSize(math::Vec2i(1920, 1080));
 	camera.setFieldOfView(45.0f);
 
 	// Test with a tall scene (100x500x100)
-	const voxel::Region &tallScene = voxel::Region::fromSize(glm::ivec3(101, 501, 101));
+	const voxel::Region &tallScene = voxel::Region::fromSize(math::Vec3i(101, 501, 101));
 
 	configureCamera(camera, tallScene, SceneCameraMode::Front, 5000.0f);
 	float frontDistance = camera.targetDistance();
@@ -225,7 +229,7 @@ TEST_F(RenderUtilTest, testConfigureCameraTallScene) {
 
 TEST_F(RenderUtilTest, testConfigureCameraSmallScene) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
+	camera.setSize(math::Vec2i(1920, 1080));
 	camera.setFieldOfView(45.0f);
 
 	// Test with a tiny scene (10x10x10)
@@ -241,7 +245,7 @@ TEST_F(RenderUtilTest, testConfigureCameraSmallScene) {
 
 TEST_F(RenderUtilTest, testConfigureCameraLargeScene) {
 	video::Camera camera;
-	camera.setSize(glm::ivec2(1920, 1080));
+	camera.setSize(math::Vec2i(1920, 1080));
 	camera.setFieldOfView(45.0f);
 
 	// Test with a large scene (2000x2000x2000)

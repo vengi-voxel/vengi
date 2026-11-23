@@ -5,13 +5,13 @@
 #pragma once
 
 #include "math/CoordinateSystem.h"
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x4.hpp>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
 
 namespace math {
 
-bool coordinateSystemToMatrix(CoordinateSystem sys, glm::mat4 &matrix);
-bool coordinateSystemToRotationMatrix(CoordinateSystem sys, glm::mat3 &matrix);
+bool coordinateSystemToMatrix(CoordinateSystem sys, math::Mat4f &matrix);
+bool coordinateSystemToRotationMatrix(CoordinateSystem sys, math::Mat3f &matrix);
 
 /**
  * @param[in] from This specifies the coordinate system of the format
@@ -19,7 +19,7 @@ bool coordinateSystemToRotationMatrix(CoordinateSystem sys, glm::mat3 &matrix);
  * @param[in] fromMatrix The matrix to convert to the target coordinate system
  * @note This does not update the volume coordinates, only the node transforms.
  */
-glm::mat4 convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, const glm::mat4 &fromMatrix);
+math::Mat4f convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, const math::Mat4f &fromMatrix);
 
 /**
  * @param[in] from This specifies the coordinate system of the format and is used to perform the transform
@@ -27,11 +27,11 @@ glm::mat4 convertCoordinateSystem(CoordinateSystem from, CoordinateSystem to, co
  * @param[in] fromMatrix The matrix to convert to the target coordinate system
  * @note This does not update the volume coordinates, only the node transforms.
  */
-inline glm::mat4 convertCoordinateSystem(CoordinateSystem from, const glm::mat4 &fromMatrix) {
+inline math::Mat4f convertCoordinateSystem(CoordinateSystem from, const math::Mat4f &fromMatrix) {
 	return convertCoordinateSystem(from, CoordinateSystem::Vengi, fromMatrix);
 }
 
-bool coordinateSystemTransformationMatrix(CoordinateSystem from, CoordinateSystem to, glm::mat4 &transformationMatrix1,
-										  glm::mat4 &transformationMatrix2);
+bool coordinateSystemTransformationMatrix(CoordinateSystem from, CoordinateSystem to, math::Mat4f &transformationMatrix1,
+										  math::Mat4f &transformationMatrix2);
 
 } // namespace math

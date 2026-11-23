@@ -10,7 +10,11 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <glm/ext/scalar_constants.hpp>
+#include "math/Mat3f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
@@ -27,12 +31,12 @@ void Physics::binarySearch(const CollisionNodes &nodes, KinematicBody &body, int
 						   int iterations) const {
 	core_trace_scoped(BinarySearch);
 	for (int i = 0; i < iterations; i++) {
-		if (glm::abs(high - low) < glm::epsilon<float>()) {
+		if (math::abs(high - low) < math::epsilonf) {
 			// We have converged to a solution.
 			break;
 		}
 		const float mid = 0.5f * (low + high);
-		glm::vec3 pos = body.position;
+		math::Vec3f pos = body.position;
 		pos[axisIdx] = mid;
 
 		if (checkCollision(nodes, pos, body)) {
@@ -50,21 +54,21 @@ void Physics::binarySearch(const CollisionNodes &nodes, KinematicBody &body, int
 	body.velocity[axisIdx] = 0.0f;
 }
 
-bool Physics::checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &nextPos,
+bool Physics::checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &body, const math::Vec3f &nextPos,
 								   math::Axis axis) const {
 	core_trace_scoped(CheckCollisionOnAxis);
 	const int axisIdx = math::getIndexForAxis(axis);
 	const float targetPos = nextPos[axisIdx];
 	const float curPos = body.position[axisIdx];
 	const float length = targetPos - curPos;
-	const float distance = glm::abs(length);
+	const float distance = math::abs(length);
 	// If there is no movement on this axis, there is no collision to check.
-	if (distance < glm::epsilon<float>()) {
+	if (distance < math::epsilonf) {
 		return false;
 	}
 
 	// Test if we can move to the target position without a collision.
-	glm::vec3 pos = body.position;
+	math::Vec3f pos = body.position;
 	pos[axisIdx] = targetPos;
 
 	if (!checkCollision(nodes, pos, body)) {
@@ -81,11 +85,11 @@ bool Physics::checkCollisionOnAxis(const CollisionNodes &nodes, KinematicBody &b
 	return true;
 }
 
-bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextBodyPos,
+bool Physics::checkCollision(const CollisionNodes &nodes, const math::Vec3f &nextBodyPos,
 							 const KinematicBody &body) const {
 	core_trace_scoped(CheckCollision);
-	const float epsilon = glm::epsilon<float>();
-	const glm::vec3 &extents = body.extents;
+	const float epsilon = math::epsilonf;
+	const math::Vec3f &extents = body.extents;
 	for (const CollisionNode &node : nodes) {
 		if (!consumeWork()) {
 			return true;
@@ -95,14 +99,14 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 		}
 		const voxel::Region &region = node.volume->region();
 		// Transform the entire body AABB, including scale and rotation of the voxel model.
-		const glm::vec3 lower = nextBodyPos - glm::vec3(extents.x + epsilon, epsilon, extents.z + epsilon);
-		const glm::vec3 upper = nextBodyPos + extents;
-		const glm::vec3 half = (upper - lower) * 0.5f;
-		const glm::vec3 center = node.calcModelSpace((lower + upper) * 0.5f);
-		const glm::mat3 linear(node.worldToModel);
-		const glm::vec3 modelHalf = glm::abs(linear[0]) * half.x + glm::abs(linear[1]) * half.y + glm::abs(linear[2]) * half.z;
-		const glm::ivec3 mins = glm::floor(center - modelHalf);
-		const glm::ivec3 maxs = glm::floor(center + modelHalf);
+		const math::Vec3f lower = nextBodyPos - math::Vec3f(extents.x + epsilon, epsilon, extents.z + epsilon);
+		const math::Vec3f upper = nextBodyPos + extents;
+		const math::Vec3f half = (upper - lower) * 0.5f;
+		const math::Vec3f center = node.calcModelSpace((lower + upper) * 0.5f);
+		const math::Mat3f linear(node.worldToModel);
+		const math::Vec3f modelHalf = math::abs(linear[0]) * half.x + math::abs(linear[1]) * half.y + math::abs(linear[2]) * half.z;
+		const math::Vec3i mins = math::floor(center - modelHalf);
+		const math::Vec3i maxs = math::floor(center + modelHalf);
 		if (!voxel::intersects(region, voxel::Region(mins, maxs))) {
 			continue;
 		}
@@ -134,19 +138,19 @@ bool Physics::checkCollision(const CollisionNodes &nodes, const glm::vec3 &nextB
 
 void Physics::applyFriction(KinematicBody &body, double deltaSeconds) const {
 	// If the body is on the ground, apply friction.
-	const float decay = glm::pow(body.frictionDecay, (float)deltaSeconds);
+	const float decay = math::pow(body.frictionDecay, (float)deltaSeconds);
 	body.velocity.x *= decay;
 	body.velocity.z *= decay;
 
-	if (glm::abs(body.velocity.x) < 0.01f) {
+	if (math::abs(body.velocity.x) < 0.01f) {
 		body.velocity.x = 0.0f;
 	}
-	if (glm::abs(body.velocity.z) < 0.01f) {
+	if (math::abs(body.velocity.z) < 0.01f) {
 		body.velocity.z = 0.0f;
 	}
 }
 
-bool Physics::tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const glm::vec3 &desiredHorizontalPos) const {
+bool Physics::tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const math::Vec3f &desiredHorizontalPos) const {
 	core_trace_scoped(TryStepUp);
 	// Only allow stepping up when grounded
 	if (!body.collidedY) {
@@ -154,20 +158,20 @@ bool Physics::tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const 
 	}
 
 	// Check if there's horizontal movement being attempted
-	const glm::vec2 horizontalDelta(desiredHorizontalPos.x - body.position.x, desiredHorizontalPos.z - body.position.z);
-	const float horizontalDistance = glm::length(horizontalDelta);
-	if (horizontalDistance < glm::epsilon<float>()) {
+	const math::Vec2f horizontalDelta(desiredHorizontalPos.x - body.position.x, desiredHorizontalPos.z - body.position.z);
+	const float horizontalDistance = math::length(horizontalDelta);
+	if (horizontalDistance < math::epsilonf) {
 		return false;
 	}
 
 	const float maxStepHeight = body.extents.y;
 	constexpr float stepIncrement = 0.1f;
-	const int maxSteps = static_cast<int>(glm::ceil(maxStepHeight / stepIncrement));
+	const int maxSteps = static_cast<int>(math::ceil(maxStepHeight / stepIncrement));
 
 	for (int i = 1; i <= maxSteps; ++i) {
 		const float testStepHeight = i * stepIncrement;
 
-		glm::vec3 testPos = body.position;
+		math::Vec3f testPos = body.position;
 		testPos.y += testStepHeight;
 		testPos.x = desiredHorizontalPos.x;
 		testPos.z = desiredHorizontalPos.z;
@@ -175,7 +179,7 @@ bool Physics::tryStepUp(const CollisionNodes &nodes, KinematicBody &body, const 
 		if (!checkCollision(nodes, testPos, body)) {
 			bool foundGround = false;
 			for (float groundCheckDelta = 0.1f; groundCheckDelta <= testStepHeight + 0.5f; groundCheckDelta += 0.1f) {
-				glm::vec3 groundCheckPos = testPos;
+				math::Vec3f groundCheckPos = testPos;
 				groundCheckPos.y -= groundCheckDelta;
 
 				if (checkCollision(nodes, groundCheckPos, body)) {
@@ -208,16 +212,16 @@ void Physics::update(double deltaSeconds, const CollisionNodes &nodes, Kinematic
 	// Calculate the next potential position and velocity of the body using explicit euler integration.
 	// Xn+1 = Xn + Vn * dt
 	// Vn+1 = Vn + An * dt
-	const glm::vec3 nextPos = body.position + (body.velocity * (float)deltaSeconds);
+	const math::Vec3f nextPos = body.position + (body.velocity * (float)deltaSeconds);
 
 	// First, handle vertical collision (Y axis)
 	const bool collidedY = checkCollisionOnAxis(nodes, body, nextPos, math::Axis::Y);
 
 	bool steppedUp = false;
-	const bool hasHorizontalVelocity = glm::abs(body.velocity.x) > glm::epsilon<float>() || glm::abs(body.velocity.z) > glm::epsilon<float>();
+	const bool hasHorizontalVelocity = math::abs(body.velocity.x) > math::epsilonf || math::abs(body.velocity.z) > math::epsilonf;
 
 	if (collidedY && hasHorizontalVelocity) {
-		glm::vec3 testPos = body.position;
+		math::Vec3f testPos = body.position;
 		testPos.x = nextPos.x;
 		testPos.z = nextPos.z;
 
@@ -243,7 +247,7 @@ void Physics::update(double deltaSeconds, const CollisionNodes &nodes, Kinematic
 		}
 	}
 
-	if (body.collidedY && collidedY && body.velocity.y <= glm::epsilon<float>() && (!collidedX || !collidedZ)) {
+	if (body.collidedY && collidedY && body.velocity.y <= math::epsilonf && (!collidedX || !collidedZ)) {
 		applyFriction(body, deltaSeconds);
 	}
 	body.collidedX = collidedX;

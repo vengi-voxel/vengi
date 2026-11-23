@@ -5,7 +5,7 @@
 #pragma once
 
 #include "video/Types.h"
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
 
 namespace video {
 
@@ -25,7 +25,7 @@ struct SamplerConfig {
 	// A negative bias -> selects higher-resolution mip levels -> sharper but noisier/aliasing.
 	float lodBias = 0.0f;
 	bool useBorderColor = false;
-	glm::vec4 borderColor{0.0f};
+	math::Vec4f borderColor{0.0f};
 };
 
 } // namespace video

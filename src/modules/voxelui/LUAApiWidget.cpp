@@ -9,7 +9,6 @@
 #include "imgui.h"
 #include "palette/Palette.h"
 #include "voxelgenerator/LUAApi.h"
-#include <glm/ext/scalar_constants.hpp>
 
 namespace voxelui {
 

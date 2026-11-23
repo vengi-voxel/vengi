@@ -5,13 +5,14 @@
 #include "voxelutil/AStarPathfinder.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
 class AStarPathfinderTest : public app::AbstractTest {
 protected:
-	static bool standOnSolid(const voxel::RawVolume *v, const glm::ivec3 &pos) {
-		const glm::ivec3 below(pos.x, pos.y - 1, pos.z);
+	static bool standOnSolid(const voxel::RawVolume *v, const math::Vec3i &pos) {
+		const math::Vec3i below(pos.x, pos.y - 1, pos.z);
 		return voxel::isBlocked(v->voxel(below).getMaterial());
 	}
 };
@@ -23,12 +24,12 @@ TEST_F(AStarPathfinderTest, testGroundPath) {
 			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		}
 	}
-	const glm::ivec3 start(0, 1, 0);
-	const glm::ivec3 end(10, 1, 19);
-	core::List<glm::ivec3> listResult;
+	const math::Vec3i start(0, 1, 0);
+	const math::Vec3i end(10, 1, 19);
+	core::List<math::Vec3i> listResult;
 
 	AStarPathfinderParams<voxel::RawVolume> params(&volume, start, end, &listResult,
-												   [](const voxel::RawVolume *v, const glm::ivec3 &pos) {
+												   [](const voxel::RawVolume *v, const math::Vec3i &pos) {
 													   return standOnSolid(v, pos);
 												   });
 	AStarPathfinder pathfinder(params);
@@ -54,16 +55,16 @@ TEST_F(AStarPathfinderTest, testObstacleForcesDetour) {
 	// Leave a gap at z=14 so a path still exists around the wall
 	volume.setVoxel(7, 0, 14, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
-	core::List<glm::ivec3> listResult;
+	core::List<math::Vec3i> listResult;
 	AStarPathfinderParams<voxel::RawVolume> params(
-		&volume, glm::ivec3(0, 1, 0), glm::ivec3(14, 1, 0), &listResult,
-		[](const voxel::RawVolume *v, const glm::ivec3 &pos) { return standOnSolid(v, pos); }, 1.0f, 10000,
+		&volume, math::Vec3i(0, 1, 0), math::Vec3i(14, 1, 0), &listResult,
+		[](const voxel::RawVolume *v, const math::Vec3i &pos) { return standOnSolid(v, pos); }, 1.0f, 10000,
 		voxel::Connectivity::SixConnected);
 	AStarPathfinder pathfinder(params);
 	ASSERT_TRUE(pathfinder.execute());
 	EXPECT_GE(listResult.size(), 15u);
 	bool crossedGap = false;
-	for (const glm::ivec3 &p : listResult) {
+	for (const math::Vec3i &p : listResult) {
 		EXPECT_TRUE(standOnSolid(&volume, p));
 		if (p.x == 7) {
 			crossedGap = true;
@@ -85,10 +86,10 @@ TEST_F(AStarPathfinderTest, testUnreachableReturnsFalse) {
 			volume.setVoxel(x, 0, z, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 		}
 	}
-	core::List<glm::ivec3> listResult;
+	core::List<math::Vec3i> listResult;
 	AStarPathfinderParams<voxel::RawVolume> params(
-		&volume, glm::ivec3(0, 1, 0), glm::ivec3(10, 1, 0), &listResult,
-		[](const voxel::RawVolume *v, const glm::ivec3 &pos) { return standOnSolid(v, pos); }, 1.0f, 10000,
+		&volume, math::Vec3i(0, 1, 0), math::Vec3i(10, 1, 0), &listResult,
+		[](const voxel::RawVolume *v, const math::Vec3i &pos) { return standOnSolid(v, pos); }, 1.0f, 10000,
 		voxel::Connectivity::SixConnected);
 	AStarPathfinder pathfinder(params);
 	EXPECT_FALSE(pathfinder.execute());

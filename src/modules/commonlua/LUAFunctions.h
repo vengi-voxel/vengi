@@ -6,18 +6,17 @@
 #include "commonlua/LUA.h"
 #include "core/Common.h"
 #include "core/Log.h"
-#include "core/GLM.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"
 #include <lauxlib.h>
 #include <lua.h>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Vec4i.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace io {
 class SeekableReadWriteStream;
@@ -30,37 +29,31 @@ void clua_assert_argc(lua_State* s, bool pass);
 template<class T>
 struct clua_meta {};
 
-template<> struct clua_meta<glm::bvec2> { static char const *name() {return "__meta_bvec2";} };
-template<> struct clua_meta<glm::bvec3> { static char const *name() {return "__meta_bvec3";} };
-template<> struct clua_meta<glm::bvec4> { static char const *name() {return "__meta_bvec4";} };
-template<> struct clua_meta<glm::dvec2> { static char const *name() {return "__meta_dvec2";} };
-template<> struct clua_meta<glm::dvec3> { static char const *name() {return "__meta_dvec3";} };
-template<> struct clua_meta<glm::dvec4> { static char const *name() {return "__meta_dvec4";} };
-template<> struct clua_meta<glm::ivec2> { static char const *name() {return "__meta_ivec2";} };
-template<> struct clua_meta<glm::ivec3> { static char const *name() {return "__meta_ivec3";} };
-template<> struct clua_meta<glm::ivec4> { static char const *name() {return "__meta_ivec4";} };
-template<> struct clua_meta<glm::vec2> { static char const *name() {return "__meta_vec2";} };
-template<> struct clua_meta<glm::vec3> { static char const *name() {return "__meta_vec3";} };
-template<> struct clua_meta<glm::vec4> { static char const *name() {return "__meta_vec4";} };
-template<> struct clua_meta<glm::quat> { static char const *name() {return "__meta_quat";} };
+template<> struct clua_meta<math::BVec2> { static char const *name() {return "__meta_bvec2";} };
+template<> struct clua_meta<math::BVec3> { static char const *name() {return "__meta_bvec3";} };
+template<> struct clua_meta<math::BVec4> { static char const *name() {return "__meta_bvec4";} };
+template<> struct clua_meta<math::Vec2i> { static char const *name() {return "__meta_ivec2";} };
+template<> struct clua_meta<math::Vec3i> { static char const *name() {return "__meta_ivec3";} };
+template<> struct clua_meta<math::Vec4i> { static char const *name() {return "__meta_ivec4";} };
+template<> struct clua_meta<math::Vec2f> { static char const *name() {return "__meta_vec2";} };
+template<> struct clua_meta<math::Vec3f> { static char const *name() {return "__meta_vec3";} };
+template<> struct clua_meta<math::Vec4f> { static char const *name() {return "__meta_vec4";} };
+template<> struct clua_meta<math::Quatf> { static char const *name() {return "__meta_quat";} };
 template<> struct clua_meta<image::Image> { static char const *name() {return "__meta_image";} };
 
 template<class T>
 struct clua_name {};
 
-template<> struct clua_name<glm::bvec2> { static char const *name() {return "g_bvec2";} };
-template<> struct clua_name<glm::bvec3> { static char const *name() {return "g_bvec3";} };
-template<> struct clua_name<glm::bvec4> { static char const *name() {return "g_bvec4";} };
-template<> struct clua_name<glm::dvec2> { static char const *name() {return "g_dvec2";} };
-template<> struct clua_name<glm::dvec3> { static char const *name() {return "g_dvec3";} };
-template<> struct clua_name<glm::dvec4> { static char const *name() {return "g_dvec4";} };
-template<> struct clua_name<glm::ivec2> { static char const *name() {return "g_ivec2";} };
-template<> struct clua_name<glm::ivec3> { static char const *name() {return "g_ivec3";} };
-template<> struct clua_name<glm::ivec4> { static char const *name() {return "g_ivec4";} };
-template<> struct clua_name<glm::vec2> { static char const *name() {return "g_vec2";} };
-template<> struct clua_name<glm::vec3> { static char const *name() {return "g_vec3";} };
-template<> struct clua_name<glm::vec4> { static char const *name() {return "g_vec4";} };
-template<> struct clua_name<glm::quat> { static char const *name() {return "g_quat";} };
+template<> struct clua_name<math::BVec2> { static char const *name() {return "g_bvec2";} };
+template<> struct clua_name<math::BVec3> { static char const *name() {return "g_bvec3";} };
+template<> struct clua_name<math::BVec4> { static char const *name() {return "g_bvec4";} };
+template<> struct clua_name<math::Vec2i> { static char const *name() {return "g_ivec2";} };
+template<> struct clua_name<math::Vec3i> { static char const *name() {return "g_ivec3";} };
+template<> struct clua_name<math::Vec4i> { static char const *name() {return "g_ivec4";} };
+template<> struct clua_name<math::Vec2f> { static char const *name() {return "g_vec2";} };
+template<> struct clua_name<math::Vec3f> { static char const *name() {return "g_vec3";} };
+template<> struct clua_name<math::Vec4f> { static char const *name() {return "g_vec4";} };
+template<> struct clua_name<math::Quatf> { static char const *name() {return "g_quat";} };
 
 int clua_assignmetatable(lua_State* s, const char *name);
 
@@ -213,16 +206,16 @@ struct LuaNumberFuncs<bool> {
 static constexpr const char *VEC_MEMBERS[] = { "x", "y", "z", "w" };
 
 template<>
-inline int clua_push<glm::quat>(lua_State* s, const glm::quat& v) {
+inline int clua_push<math::Quatf>(lua_State* s, const math::Quatf& v) {
 	lua_newtable(s);
 
 	for (int i = 0; i < 4; ++i) {
 		lua_pushstring(s, VEC_MEMBERS[i]);
-		LuaNumberFuncs<glm::quat::value_type>::push(s, v[i]);
+		LuaNumberFuncs<math::Quatf::value_type>::push(s, v[i]);
 		lua_settable(s, -3);
 	}
 
-	luaL_getmetatable(s, clua_meta<glm::quat>::name());
+	luaL_getmetatable(s, clua_meta<math::Quatf>::name());
 	lua_setmetatable(s, -2);
 	return 1;
 }
@@ -239,7 +232,7 @@ inline int clua_push<int>(lua_State* s, const int& v) {
 	return 1;
 }
 
-glm::quat clua_toquat(lua_State *s, int n);
+math::Quatf clua_toquat(lua_State *s, int n);
 bool clua_isquat(lua_State *s, int n);
 
 template<class T>
@@ -254,20 +247,34 @@ T clua_tovec(lua_State *s, int n) {
 	return v;
 }
 
-template<int N, typename T>
-int clua_push(lua_State* s, const glm::vec<N, T>& v) {
-	using RAWTYPE = glm::vec<N, T>;
+template<class V>
+int clua_pushvec(lua_State* s, const V& v) {
 	lua_newtable(s);
 
-	for (int i = 0; i < N; ++i) {
+	for (int i = 0; i < V::length(); ++i) {
 		lua_pushstring(s, VEC_MEMBERS[i]);
-		LuaNumberFuncs<T>::push(s, v[i]);
+		LuaNumberFuncs<typename V::value_type>::push(s, v[i]);
 		lua_settable(s, -3);
 	}
 
-	luaL_getmetatable(s, clua_meta<RAWTYPE>::name());
+	luaL_getmetatable(s, clua_meta<V>::name());
 	lua_setmetatable(s, -2);
 	return 1;
+}
+
+template<> inline int clua_push<math::Vec2i>(lua_State* s, const math::Vec2i& v) { return clua_pushvec(s, v); }
+template<> inline int clua_push<math::Vec3i>(lua_State* s, const math::Vec3i& v) { return clua_pushvec(s, v); }
+template<> inline int clua_push<math::Vec4i>(lua_State* s, const math::Vec4i& v) { return clua_pushvec(s, v); }
+template<> inline int clua_push<math::Vec2f>(lua_State* s, const math::Vec2f& v) { return clua_pushvec(s, v); }
+template<> inline int clua_push<math::Vec3f>(lua_State* s, const math::Vec3f& v) { return clua_pushvec(s, v); }
+template<> inline int clua_push<math::Vec4f>(lua_State* s, const math::Vec4f& v) { return clua_pushvec(s, v); }
+
+inline float clua_optcomp(lua_State* s, int i, float value) {
+	return (float)luaL_optnumber(s, i, value);
+}
+
+inline int clua_optcomp(lua_State* s, int i, int value) {
+	return (int)luaL_optinteger(s, i, value);
 }
 
 template<class T>
@@ -276,10 +283,10 @@ int clua_vecadd(lua_State* s) {
 	if (clua_isvec<T>(s, 2)) {
 		const T& b = clua_tovec<T>(s, 2);
 		const T& c = a + b;
-		return clua_push(s, c);
+		return clua_pushvec(s, c);
 	}
 	const T& c = a + (typename T::value_type)lua_tonumber(s, 2);
-	return clua_push(s, c);
+	return clua_pushvec(s, c);
 }
 
 template<class T>
@@ -288,10 +295,10 @@ int clua_vecdiv(lua_State* s) {
 	if (clua_isvec<T>(s, 2)) {
 		const T& b = clua_tovec<T>(s, 2);
 		const T& c = a / b;
-		return clua_push(s, c);
+		return clua_pushvec(s, c);
 	}
 	const T& c = a / (typename T::value_type)lua_tonumber(s, 2);
-	return clua_push(s, c);
+	return clua_pushvec(s, c);
 }
 
 template<class T>
@@ -300,54 +307,24 @@ int clua_vecmul(lua_State* s) {
 	if (clua_isvec<T>(s, 2)) {
 		const T& b = clua_tovec<T>(s, 2);
 		const T& c = a * b;
-		return clua_push(s, c);
+		return clua_pushvec(s, c);
 	}
 	const T& c = a * (typename T::value_type)lua_tonumber(s, 2);
-	return clua_push(s, c);
+	return clua_pushvec(s, c);
 }
 
 template<class T>
-struct clua_vecequal {};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, float> > {
+struct clua_vecequal {
 static int equal(lua_State* s) {
-	const glm::vec<N, float>& a = clua_tovec<glm::vec<N, float> >(s, 1);
-	const glm::vec<N, float>& b = clua_tovec<glm::vec<N, float> >(s, 2);
-	const bool e = glm::all(glm::epsilonEqual(a, b, 0.0001f));
-	lua_pushboolean(s, e);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, double> > {
-static int equal(lua_State* s) {
-	const glm::vec<N, double>& a = clua_tovec<glm::vec<N, double> >(s, 1);
-	const glm::vec<N, double>& b = clua_tovec<glm::vec<N, double> >(s, 2);
-	const bool e = glm::all(glm::epsilonEqual(a, b, 0.0001));
-	lua_pushboolean(s, e);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, int> > {
-static int equal(lua_State* s) {
-	const glm::vec<N, int>& a = clua_tovec<glm::vec<N, int> >(s, 1);
-	const glm::vec<N, int>& b = clua_tovec<glm::vec<N, int> >(s, 2);
-	const bool e = glm::all(glm::equal(a, b));
-	lua_pushboolean(s, e);
-	return 1;
-}
-};
-
-template<int N>
-struct clua_vecequal<glm::vec<N, bool> > {
-static int equal(lua_State* s) {
-	const glm::vec<N, bool>& a = clua_tovec<glm::vec<N, bool> >(s, 1);
-	const glm::vec<N, bool>& b = clua_tovec<glm::vec<N, bool> >(s, 2);
-	const bool e = glm::all(glm::equal(a, b));
+	const T& a = clua_tovec<T>(s, 1);
+	const T& b = clua_tovec<T>(s, 2);
+	bool e = true;
+	for (int i = 0; i < T::length(); ++i) {
+		const double d = (double)a[i] - (double)b[i];
+		if (d > 0.0001 || -d > 0.0001) {
+			e = false;
+		}
+	}
 	lua_pushboolean(s, e);
 	return 1;
 }
@@ -358,14 +335,14 @@ int clua_vecsub(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
 	const T& b = clua_tovec<T>(s, 2);
 	const T& c = a - b;
-	clua_push(s, c);
+	clua_pushvec(s, c);
 	return 1;
 }
 
 template<class T>
 int clua_vecnegate(lua_State* s) {
 	const T& a = clua_tovec<T>(s, 1);
-	clua_push<T>(s, -a);
+	clua_pushvec(s, -a);
 	return 1;
 }
 
@@ -384,124 +361,73 @@ int clua_vectostring(lua_State* s) {
 }
 
 template<class T>
-struct clua_vecnew {};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, float> > {
+struct clua_vecnew {
 static int exec(lua_State* s) {
-	glm::vec<N, float> array;
-	float value = 0.0f;
-	for (int i = 0; i < N; ++i) {
-		array[i] = luaL_optnumber(s, i + 1, value);
+	T array(0);
+	typename T::value_type value = 0;
+	for (int i = 0; i < T::length(); ++i) {
+		array[i] = clua_optcomp(s, i + 1, value);
 		value = array[i];
 	}
-	return clua_push(s, array);
-}
-};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, double> > {
-static int exec(lua_State* s) {
-	glm::vec<N, double> array;
-	float value = 0.0f;
-	for (int i = 0; i < N; ++i) {
-		array[i] = luaL_optnumber(s, i + 1, value);
-		value = array[i];
-	}
-	return clua_push(s, array);
-}
-};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, int> > {
-static int exec(lua_State* s) {
-	glm::vec<N, int> array;
-	int value = 0;
-	for (int i = 0; i < N; ++i) {
-		array[i] = luaL_optinteger(s, i + 1, value);
-		value = array[i];
-	}
-	return clua_push(s, array);
-}
-};
-
-template<int N>
-struct clua_vecnew<glm::vec<N, bool> > {
-static int exec(lua_State* s) {
-	glm::vec<N, bool> array;
-	int value = 0;
-	for (int i = 0; i < N; ++i) {
-		array[i] = luaL_optinteger(s, i + 1, value);
-		value = array[i];
-	}
-	return clua_push(s, array);
+	return clua_pushvec(s, array);
 }
 };
 
 template<class T>
-struct clua_vecfunc {};
-
-#define LUA_GLM_VEC_FUNC2(type, func) \
-	static int func(lua_State* s) { \
-		const glm::vec<N, type> v1 = clua_tovec<glm::vec<N, type> >(s, 1); \
-		const glm::vec<N, type> v2 = clua_tovec<glm::vec<N, type> >(s, 2); \
-		return clua_push(s, glm::func(v1, v2)); \
+struct clua_vecfunc {
+	static int normalize(lua_State *s) {
+		return clua_error(s, "normalize is not supported for this vector type");
 	}
-
-#define LUA_GLM_VEC_FUNC2_unsupported(type, func) \
-	static int func(lua_State* s) { \
-		return clua_error(s, CORE_STRINGIFY(func) " is not supported for vector of type " CORE_STRINGIFY(type)); \
+	static int length(lua_State *s) {
+		return clua_error(s, "length is not supported for this vector type");
 	}
-
-#define LUA_GLM_VEC_FUNC1(type, func) \
-	static int func(lua_State* s) { \
-		if (lua_isnumber(s, 1)) { \
-			glm::vec<N, type> v1; \
-			for (int i = 0; i < N; ++i) { \
-				v1[i] = lua_tonumber(s, i + 1); \
-			} \
-			return clua_push(s, glm::func(v1)); \
-		} \
-		const glm::vec<N, type> v1 = clua_tovec<glm::vec<N, type> >(s, 1); \
-		return clua_push(s, glm::func(v1)); \
+	static int distance(lua_State *s) {
+		return clua_error(s, "distance is not supported for this vector type");
 	}
-
-#define LUA_GLM_VEC_FUNC1_unsupported(type, func) \
-	static int func(lua_State* s) { \
-		return clua_error(s, CORE_STRINGIFY(func) " is not supported for vector of type " CORE_STRINGIFY(type)); \
+	static int dot(lua_State *s) {
+		return clua_error(s, "dot is not supported for this vector type");
 	}
-
-template<int N>
-struct clua_vecfunc<glm::vec<N, float> > {
-	LUA_GLM_VEC_FUNC1(float, normalize)
-	LUA_GLM_VEC_FUNC1(float, length)
-	LUA_GLM_VEC_FUNC2(float, distance)
-	LUA_GLM_VEC_FUNC2(float, dot)
 };
 
-template<int N>
-struct clua_vecfunc<glm::vec<N, double> > {
-	LUA_GLM_VEC_FUNC1(double, normalize)
-	LUA_GLM_VEC_FUNC1(double, length)
-	LUA_GLM_VEC_FUNC2(double, distance)
-	LUA_GLM_VEC_FUNC2(double, dot)
-};
+#define CLUA_VECFUNC_FLOAT(V)                                                                                                  \
+	template<>                                                                                                                 \
+	struct clua_vecfunc<V> {                                                                                                   \
+		static int normalize(lua_State *s) {                                                                                   \
+			if (lua_isnumber(s, 1)) {                                                                                          \
+				V v1(0);                                                                                                       \
+				for (int i = 0; i < V::length(); ++i) {                                                                        \
+					v1[i] = (float)lua_tonumber(s, i + 1);                                                                     \
+				}                                                                                                              \
+				return clua_pushvec(s, math::normalize(v1));                                                                   \
+			}                                                                                                                  \
+			return clua_pushvec(s, math::normalize(clua_tovec<V>(s, 1)));                                                      \
+		}                                                                                                                      \
+		static int length(lua_State *s) {                                                                                      \
+			if (lua_isnumber(s, 1)) {                                                                                          \
+				V v1(0);                                                                                                       \
+				for (int i = 0; i < V::length(); ++i) {                                                                        \
+					v1[i] = (float)lua_tonumber(s, i + 1);                                                                     \
+				}                                                                                                              \
+				lua_pushnumber(s, (double)math::length(v1));                                                                   \
+				return 1;                                                                                                      \
+			}                                                                                                                  \
+			lua_pushnumber(s, (double)math::length(clua_tovec<V>(s, 1)));                                                      \
+			return 1;                                                                                                          \
+		}                                                                                                                      \
+		static int distance(lua_State *s) {                                                                                    \
+			lua_pushnumber(s, (double)math::distance(clua_tovec<V>(s, 1), clua_tovec<V>(s, 2)));                               \
+			return 1;                                                                                                          \
+		}                                                                                                                      \
+		static int dot(lua_State *s) {                                                                                         \
+			lua_pushnumber(s, (double)math::dot(clua_tovec<V>(s, 1), clua_tovec<V>(s, 2)));                                     \
+			return 1;                                                                                                          \
+		}                                                                                                                      \
+	};
 
-template<int N>
-struct clua_vecfunc<glm::vec<N, bool> > {
-	LUA_GLM_VEC_FUNC1_unsupported(bool, normalize)
-	LUA_GLM_VEC_FUNC1_unsupported(bool, length)
-	LUA_GLM_VEC_FUNC2_unsupported(bool, distance)
-	LUA_GLM_VEC_FUNC2_unsupported(bool, dot)
-};
-
-template<int N>
-struct clua_vecfunc<glm::vec<N, int> > {
-	LUA_GLM_VEC_FUNC1_unsupported(int, normalize)
-	LUA_GLM_VEC_FUNC1_unsupported(int, length)
-	LUA_GLM_VEC_FUNC2_unsupported(int, distance)
-	LUA_GLM_VEC_FUNC2_unsupported(int, dot)
-};
+CLUA_VECFUNC_FLOAT(math::Vec2f)
+CLUA_VECFUNC_FLOAT(math::Vec3f)
+CLUA_VECFUNC_FLOAT(math::Vec4f)
+#undef CLUA_VECFUNC_FLOAT
 
 template<class T>
 static int clua_vecindex(lua_State *s) {

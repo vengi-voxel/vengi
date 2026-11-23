@@ -6,7 +6,7 @@
 
 #include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
-#include <glm/vec2.hpp>
+#include "math/Vec2f.h"
 
 namespace scenegraph {
 
@@ -40,7 +40,7 @@ struct IKConstraint {
 	 */
 	struct RadiusConstraint {
 		/** @brief Center of the swing limit circle (polar coordinates on the cone) */
-		glm::vec2 center {0.0f, 0.0f}; // yaw, pitch
+		math::Vec2f center {0.0f, 0.0f}; // yaw, pitch
 		/** @brief Radius of the allowed swing region */
 		float radius = 0.0f;
 	};

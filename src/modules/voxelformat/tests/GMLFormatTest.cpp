@@ -8,6 +8,7 @@
 #include "core/Var.h"
 #include "io/MemoryArchive.h"
 #include "scenegraph/SceneGraph.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -992,7 +993,7 @@ TEST_F(GMLFormatTest, testMultiFileOffsetAdjustment) {
 
 	// Both buildings should be imported
 	int modelCount = 0;
-	glm::vec3 pos1(0.0f), pos2(0.0f);
+	math::Vec3f pos1(0.0f), pos2(0.0f);
 	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
 		const scenegraph::SceneGraphNode &n = *iter;
 		const scenegraph::SceneGraphTransform &transform = n.transform(0);
@@ -1008,7 +1009,7 @@ TEST_F(GMLFormatTest, testMultiFileOffsetAdjustment) {
 	// The two buildings should be at different positions (not overlapping)
 	// Building Near is at GML (105,205) and Building Far is at GML (205,305)
 	// They should be separated by roughly 100 units on each axis
-	const float distance = glm::length(pos2 - pos1);
+	const float distance = math::length(pos2 - pos1);
 	EXPECT_GT(distance, 50.0f) << "Buildings should not overlap - they are at different world positions";
 }
 

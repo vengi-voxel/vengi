@@ -8,42 +8,34 @@
 #include "scenegraph/SceneGraph.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/ext/quaternion_common.hpp>
-#include <glm/ext/scalar_constants.hpp>
-#include <glm/gtc/epsilon.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/compatibility.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/geometric.hpp>
 
 namespace scenegraph {
 
-SceneGraphTransform::SceneGraphTransform()
-	: _worldOrientation{glm::quat_identity<float, glm::defaultp>()},
-	  _localOrientation{glm::quat_identity<float, glm::defaultp>()} {
+SceneGraphTransform::SceneGraphTransform() {
 }
 
-void SceneGraphTransform::setTransforms(const glm::vec3 &worldTranslation, const glm::quat &worldOrientation,
-										const glm::vec3 &worldScale, const glm::vec3 &localTranslation,
-										const glm::quat &localOrientation, const glm::vec3 &localScale) {
+void SceneGraphTransform::setTransforms(const math::Vec3f &worldTranslation, const math::Quatf &worldOrientation,
+										const math::Vec3f &worldScale, const math::Vec3f &localTranslation,
+										const math::Quatf &localOrientation, const math::Vec3f &localScale) {
 	_worldTranslation = worldTranslation;
-	_worldOrientation = glm::normalize(worldOrientation);
+	_worldOrientation = math::normalize(worldOrientation);
 	_worldScale = worldScale;
 	_localTranslation = localTranslation;
-	_localOrientation = glm::normalize(localOrientation);
+	_localOrientation = math::normalize(localOrientation);
 	_localScale = localScale;
-	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(_worldScale);
-	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(_localScale);
+	_worldMat = math::translate(_worldTranslation) * math::mat4_cast(_worldOrientation) * math::scale(_worldScale);
+	_localMat = math::translate(_localTranslation) * math::mat4_cast(_localOrientation) * math::scale(_localScale);
 	_dirty = 0u;
 }
 
-void SceneGraphTransform::setWorldTranslation(const glm::vec3 &translation) {
+void SceneGraphTransform::setWorldTranslation(const math::Vec3f &translation) {
 	if (_worldTranslation == translation) {
 		return;
 	}
@@ -53,16 +45,16 @@ void SceneGraphTransform::setWorldTranslation(const glm::vec3 &translation) {
 	_worldTranslation = translation;
 }
 
-void SceneGraphTransform::setWorldOrientation(const glm::quat &orientation) {
+void SceneGraphTransform::setWorldOrientation(const math::Quatf &orientation) {
 	if (_worldOrientation == orientation) {
 		return;
 	}
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local was already modified");
 	_dirty |= DIRTY_WORLDVALUES;
-	_worldOrientation = glm::normalize(orientation);
+	_worldOrientation = math::normalize(orientation);
 }
 
-void SceneGraphTransform::setWorldScale(const glm::vec3 &scale) {
+void SceneGraphTransform::setWorldScale(const math::Vec3f &scale) {
 	if (_worldScale == scale) {
 		return;
 	}
@@ -71,15 +63,17 @@ void SceneGraphTransform::setWorldScale(const glm::vec3 &scale) {
 	_worldScale = scale;
 }
 
-void SceneGraphTransform::setWorldMatrix(const glm::mat4x4 &matrix) {
+void SceneGraphTransform::setWorldMatrix(const math::Mat4f &matrix) {
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "local was already modified");
-	glm::vec3 skew;
-	glm::vec4 perspective;
-	glm::decompose(matrix, _worldScale, _worldOrientation, _worldTranslation, skew, perspective);
+	math::Vec3f skew;
+	math::Vec4f perspective;
+	math::Quatf orientation;
+	math::decompose(matrix, _worldScale, orientation, _worldTranslation, skew, perspective);
+	_worldOrientation = orientation;
 	_dirty |= DIRTY_WORLDVALUES;
 }
 
-void SceneGraphTransform::setLocalTranslation(const glm::vec3 &translation) {
+void SceneGraphTransform::setLocalTranslation(const math::Vec3f &translation) {
 	if (_localTranslation == translation) {
 		return;
 	}
@@ -88,13 +82,13 @@ void SceneGraphTransform::setLocalTranslation(const glm::vec3 &translation) {
 	_localTranslation = translation;
 }
 
-void SceneGraphTransform::setLocalOrientation(const glm::quat &orientation) {
+void SceneGraphTransform::setLocalOrientation(const math::Quatf &orientation) {
 	if (_localOrientation == orientation) {
 		return;
 	}
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "world was already modified");
 	_dirty |= DIRTY_LOCALVALUES;
-	_localOrientation = glm::normalize(orientation);
+	_localOrientation = math::normalize(orientation);
 }
 
 void SceneGraphTransform::mirrorX() {
@@ -151,7 +145,7 @@ void SceneGraphTransform::rotate(math::Axis axis) {
 	}
 }
 
-void SceneGraphTransform::setLocalScale(const glm::vec3 &scale) {
+void SceneGraphTransform::setLocalScale(const math::Vec3f &scale) {
 	if (_localScale == scale) {
 		return;
 	}
@@ -160,41 +154,43 @@ void SceneGraphTransform::setLocalScale(const glm::vec3 &scale) {
 	_localScale = scale;
 }
 
-void SceneGraphTransform::setLocalMatrix(const glm::mat4x4 &matrix) {
+void SceneGraphTransform::setLocalMatrix(const math::Mat4f &matrix) {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "world was already modified");
-	glm::vec3 skew;
-	glm::vec4 perspective;
-	glm::decompose(matrix, _localScale, _localOrientation, _localTranslation, skew, perspective);
+	math::Vec3f skew;
+	math::Vec4f perspective;
+	math::Quatf orientation;
+	math::decompose(matrix, _localScale, orientation, _localTranslation, skew, perspective);
+	_localOrientation = orientation;
 	_dirty |= DIRTY_LOCALVALUES;
 }
 
 bool SceneGraphTransform::validate() const {
-	if (!glm::all(glm::isfinite(_worldTranslation))) {
+	if (!math::all(math::isfinite(_worldTranslation))) {
 		Log::error("World translation is not finite: %f, %f, %f", _worldTranslation.x, _worldTranslation.y,
 				   _worldTranslation.z);
 		return false;
 	}
-	if (!glm::all(glm::isfinite(_worldScale))) {
+	if (!math::all(math::isfinite(_worldScale))) {
 		Log::error("World scale is not finite: %f, %f, %f", _worldScale.x, _worldScale.y, _worldScale.z);
 		return false;
 	}
-	if (!glm::all(glm::isfinite(_localTranslation))) {
+	if (!math::all(math::isfinite(_localTranslation))) {
 		Log::error("Local translation is not finite: %f, %f, %f", _localTranslation.x, _localTranslation.y,
 				   _localTranslation.z);
 		return false;
 	}
-	if (!glm::all(glm::isfinite(_localScale))) {
+	if (!math::all(math::isfinite(_localScale))) {
 		Log::error("Local scale is not finite: %f, %f, %f", _localScale.x, _localScale.y, _localScale.z);
 		return false;
 	}
-	if (!glm::all(glm::isfinite(
-			glm::vec4(_worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w)))) {
+	if (!math::all(math::isfinite(
+			math::Vec4f(_worldOrientation.x, _worldOrientation.y, _worldOrientation.z, _worldOrientation.w)))) {
 		Log::error("World orientation is not finite: %f, %f, %f, %f", _worldOrientation.x, _worldOrientation.y,
 				   _worldOrientation.z, _worldOrientation.w);
 		return false;
 	}
-	if (!glm::all(glm::isfinite(
-			glm::vec4(_localOrientation.x, _localOrientation.y, _localOrientation.z, _localOrientation.w)))) {
+	if (!math::all(math::isfinite(
+			math::Vec4f(_localOrientation.x, _localOrientation.y, _localOrientation.z, _localOrientation.w)))) {
 		Log::error("Local orientation is not finite: %f, %f, %f, %f", _localOrientation.x, _localOrientation.y,
 				   _localOrientation.z, _localOrientation.w);
 		return false;
@@ -203,60 +199,60 @@ bool SceneGraphTransform::validate() const {
 }
 
 void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFrameSeconds) {
-	const float factor = glm::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
+	const float factor = math::clamp((float)(deltaFrameSeconds), 0.0f, 1.0f);
 
 	core_assert_msg((dest._dirty & DIRTY_WORLDVALUES) == 0u, "dirty world values: %u", dest._dirty);
-	setWorldTranslation(glm::mix(_worldTranslation, dest._worldTranslation, factor));
-	setWorldOrientation(glm::slerp(_worldOrientation, dest._worldOrientation, factor));
-	setWorldScale(glm::mix(_worldScale, dest._worldScale, factor));
+	setWorldTranslation(math::mix(_worldTranslation, dest._worldTranslation, factor));
+	setWorldOrientation(math::slerp(_worldOrientation, dest._worldOrientation, factor));
+	setWorldScale(math::mix(_worldScale, dest._worldScale, factor));
 	_dirty = 0u;
 
 	core_assert_msg((dest._dirty & DIRTY_LOCALVALUES) == 0u, "dirty local values: %u", dest._dirty);
-	setLocalTranslation(glm::mix(_localTranslation, dest._localTranslation, factor));
-	setLocalOrientation(glm::slerp(_localOrientation, dest._localOrientation, factor));
-	setLocalScale(glm::mix(_localScale, dest._localScale, factor));
+	setLocalTranslation(math::mix(_localTranslation, dest._localTranslation, factor));
+	setLocalOrientation(math::slerp(_localOrientation, dest._localOrientation, factor));
+	setLocalScale(math::mix(_localScale, dest._localScale, factor));
 	_dirty = 0u;
 
-	_worldMat = glm::translate(_worldTranslation) * glm::mat4_cast(_worldOrientation) * glm::scale(_worldScale);
-	_localMat = glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(_localScale);
+	_worldMat = math::translate(_worldTranslation) * math::mat4_cast(_worldOrientation) * math::scale(_worldScale);
+	_localMat = math::translate(_localTranslation) * math::mat4_cast(_localOrientation) * math::scale(_localScale);
 }
 
-const glm::mat4x4 &SceneGraphTransform::localMatrix() const {
+math::Mat4f SceneGraphTransform::localMatrix() const {
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "dirty flag: %u", _dirty);
 	return _localMat;
 }
 
-const glm::vec3 &SceneGraphTransform::localTranslation() const {
+const math::Vec3f &SceneGraphTransform::localTranslation() const {
 	return _localTranslation;
 }
 
-const glm::quat &SceneGraphTransform::localOrientation() const {
+math::Quatf SceneGraphTransform::localOrientation() const {
 	return _localOrientation;
 }
 
-const glm::vec3 &SceneGraphTransform::localScale() const {
+const math::Vec3f &SceneGraphTransform::localScale() const {
 	return _localScale;
 }
 
-const glm::mat4x4 &SceneGraphTransform::worldMatrix() const {
+math::Mat4f SceneGraphTransform::worldMatrix() const {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "dirty flag: %u", _dirty);
 	return _worldMat;
 }
 
-const glm::vec3 &SceneGraphTransform::worldTranslation() const {
+const math::Vec3f &SceneGraphTransform::worldTranslation() const {
 	return _worldTranslation;
 }
 
-const glm::quat &SceneGraphTransform::worldOrientation() const {
+math::Quatf SceneGraphTransform::worldOrientation() const {
 	return _worldOrientation;
 }
 
-const glm::vec3 &SceneGraphTransform::worldScale() const {
+const math::Vec3f &SceneGraphTransform::worldScale() const {
 	return _worldScale;
 }
 
-const glm::mat4x4 SceneGraphTransform::calculateLocalMatrix() const {
-	return glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+const math::Mat4f SceneGraphTransform::calculateLocalMatrix() const {
+	return math::translate(_localTranslation) * math::mat4_cast(_localOrientation) * math::scale(math::Vec3f(_localScale));
 }
 
 bool SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &node, FrameIndex frameIdx,
@@ -282,8 +278,8 @@ bool SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 							node.name().c_str());
 			const KeyFrameIndex keyFrameIdx = parent->keyFrameForFrame(frameIdx);
 			const SceneGraphTransform &parentTransform = parent->transform(keyFrameIdx);
-			const glm::vec3 relativeTranslation = _worldTranslation - parentTransform.worldTranslation();
-			const glm::quat invParentOrientation = glm::conjugate(parentTransform.worldOrientation());
+			const math::Vec3f relativeTranslation = _worldTranslation - parentTransform.worldTranslation();
+			const math::Quatf invParentOrientation = math::conjugate(parentTransform.worldOrientation());
 			_localTranslation = invParentOrientation * (relativeTranslation / parentTransform.worldScale());
 			_localOrientation = _worldOrientation * invParentOrientation;
 			_localScale = _worldScale / parentTransform.worldScale();
@@ -300,8 +296,8 @@ bool SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 
 	if (_dirty & DIRTY_LOCALVALUES) {
 		core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "local and world were modified");
-		_localMat =
-			glm::translate(_localTranslation) * glm::mat4_cast(_localOrientation) * glm::scale(glm::vec3(_localScale));
+		_localMat = math::translate(_localTranslation) * math::mat4_cast(_localOrientation) *
+							math::scale(math::Vec3f(_localScale));
 		_dirty &= ~DIRTY_LOCALVALUES;
 
 		// update own world matrix
@@ -312,7 +308,7 @@ bool SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			core_assert_msg(parent != nullptr, "node %i (%s) doesn't have a root", node.id(),
 							node.name().c_str());
 			const KeyFrameIndex keyFrameIdx = parent->keyFrameForFrame(frameIdx);
-			const glm::mat4 &parentWorldMat = parent->transform(keyFrameIdx).worldMatrix();
+			const math::Mat4f parentWorldMat = parent->transform(keyFrameIdx).worldMatrix();
 			_worldMat = parentWorldMat * _localMat;
 		}
 		setWorldMatrix(_worldMat);
@@ -356,7 +352,7 @@ bool SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 			core_assert_msg(parent != nullptr, "node %i (%s) doesn't have a root", node.id(),
 							node.name().c_str());
 			const KeyFrameIndex keyFrameIdx = parent->keyFrameForFrame(frameIdx);
-			const glm::mat4 &parentWorldMat = parent->transform(keyFrameIdx).worldMatrix();
+			const math::Mat4f parentWorldMat = parent->transform(keyFrameIdx).worldMatrix();
 			_worldMat = parentWorldMat * _localMat;
 		}
 		setWorldMatrix(_worldMat);
@@ -384,9 +380,9 @@ bool SceneGraphTransform::update(const SceneGraph &sceneGraph, SceneGraphNode &n
 	return true;
 }
 
-glm::vec3 SceneGraphTransform::apply(const glm::vec3 &pos, const glm::vec3 &pivot) const {
+math::Vec3f SceneGraphTransform::apply(const math::Vec3f &pos, const math::Vec3f &pivot) const {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "Missing update for world matrix %i", (int)_dirty);
-	return glm::vec3(_worldMat * (glm::vec4(pos, 1.0f) - glm::vec4(pivot, 0.0f)));
+	return math::Vec3f(_worldMat * (math::Vec4f(pos, 1.0f) - math::Vec4f(pivot, 0.0f)));
 }
 
 } // namespace scenegraph

@@ -6,18 +6,19 @@
 
 #include "voxel/Connectivity.h"
 #include "voxel/Voxel.h"
-#include <glm/geometric.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
 template<typename SAMPLER>
-glm::vec3 calculateNormal(SAMPLER &sampler, voxel::Connectivity connectivity) {
-	const glm::ivec3 pos = sampler.position();
-	glm::ivec3 sum(0);
+math::Vec3f calculateNormal(SAMPLER &sampler, voxel::Connectivity connectivity) {
+	const math::Vec3i pos = sampler.position();
+	math::Vec3i sum(0);
 	switch (connectivity) {
 	case voxel::Connectivity::TwentySixConnected:
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderCorners) {
-			const glm::ivec3 &volPos = pos + offset;
+		for (const math::Vec3i &offset : voxel::arrayPathfinderCorners) {
+			const math::Vec3i &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
 			}
@@ -28,8 +29,8 @@ glm::vec3 calculateNormal(SAMPLER &sampler, voxel::Connectivity connectivity) {
 		/* fallthrough */
 
 	case voxel::Connectivity::EighteenConnected:
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderEdges) {
-			const glm::ivec3 &volPos = pos + offset;
+		for (const math::Vec3i &offset : voxel::arrayPathfinderEdges) {
+			const math::Vec3i &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
 			}
@@ -40,8 +41,8 @@ glm::vec3 calculateNormal(SAMPLER &sampler, voxel::Connectivity connectivity) {
 		/* fallthrough */
 
 	case voxel::Connectivity::SixConnected:
-		for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-			const glm::ivec3 &volPos = pos + offset;
+		for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+			const math::Vec3i &volPos = pos + offset;
 			if (!sampler.setPosition(volPos)) {
 				continue;
 			}
@@ -52,9 +53,9 @@ glm::vec3 calculateNormal(SAMPLER &sampler, voxel::Connectivity connectivity) {
 		break;
 	}
 	if (sum.x == 0 && sum.y == 0 && sum.z == 0) {
-		return glm::vec3(0.0f);
+		return math::Vec3f(0.0f);
 	}
-	return glm::normalize(glm::vec3(-sum));
+	return math::normalize(math::Vec3f(-sum));
 }
 
 } // namespace voxel

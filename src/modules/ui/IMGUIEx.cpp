@@ -28,10 +28,12 @@
 #endif
 #include <limits.h>
 #include <stdint.h>
-#include <glm/common.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include <float.h>
 
 namespace ImGui {
 
@@ -71,19 +73,19 @@ static const char *getId(const char *icon, const char *label, char *buf, size_t 
 static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	switch (axis) {
 	case math::Axis::X: {
-		const glm::vec4 &c = style::color(style::ColorAxisX);
+		const math::Vec4f &c = style::color(style::ColorAxisX);
 		style.setColor(ImGuiCol_Text, color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
 	case math::Axis::Y: {
-		const glm::vec4 &c = style::color(style::ColorAxisY);
+		const math::Vec4f &c = style::color(style::ColorAxisY);
 		style.setColor(ImGuiCol_Text, color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
 	}
 	case math::Axis::Z: {
-		const glm::vec4 &c = style::color(style::ColorAxisZ);
+		const math::Vec4f &c = style::color(style::ColorAxisZ);
 		style.setColor(ImGuiCol_Text, color::contrastTextColor(c));
 		style.setButtonColor(c);
 		break;
@@ -93,11 +95,11 @@ static void AxisStyleButton(ui::ScopedStyle &style, math::Axis axis) {
 	}
 }
 
-template<typename ValueType>
-static bool InputXYZImpl(const char *label, glm::vec<3, ValueType> &vec, const char *format, ImGuiInputTextFlags flags, ValueType step, ValueType step_fast) {
+template<typename Vec, typename ValueType>
+static bool InputXYZImpl(const char *label, Vec &vec, const char *format, ImGuiInputTextFlags flags, ValueType step, ValueType step_fast) {
 	constexpr bool isFloat = std::is_same<ValueType, float>::value;
 	constexpr bool isInt = std::is_same<ValueType, int>::value;
-	static_assert(isFloat || isInt, "VecType must be glm::vec3 or glm::ivec3");
+	static_assert(isFloat || isInt, "VecType must be math::Vec3f or math::Vec3i");
 
 	if (ImGui::GetCurrentTable()) {
 		ImGui::BeginGroup();
@@ -207,14 +209,14 @@ static bool IntegerWithButtons(const char *label, int *value, int step, int step
 		ImGui::BeginDisabled(readOnly || (*value <= min));
 		if (ImGui::Button("-", ImVec2(buttonWidth, 0))) {
 			const int64_t next = (int64_t)*value - increment;
-			*value = (int)glm::max(next, (int64_t)min);
+			*value = (int)math::max(next, (int64_t)min);
 			changed = true;
 		}
 		ImGui::EndDisabled();
 		ImGui::PopItemFlag();
 	}
 	ImGui::SameLine(0, spacing);
-	ImGui::SetNextItemWidth(glm::max(1.0f, width - 2.0f * (buttonWidth + spacing)));
+	ImGui::SetNextItemWidth(math::max(1.0f, width - 2.0f * (buttonWidth + spacing)));
 	// Keep the original input ID while rendering the label after the increment button.
 	const core::String inputLabel = core::String::format("###%s", label);
 	if (slider) {
@@ -231,7 +233,7 @@ static bool IntegerWithButtons(const char *label, int *value, int step, int step
 		ImGui::BeginDisabled(readOnly || (clampMax && *value >= max));
 		if (ImGui::Button("+", ImVec2(buttonWidth, 0))) {
 			const int64_t next = (int64_t)*value + increment;
-			*value = (int)glm::min(next, (int64_t)(clampMax ? max : INT_MAX));
+			*value = (int)math::min(next, (int64_t)(clampMax ? max : INT_MAX));
 			changed = true;
 		}
 		ImGui::EndDisabled();
@@ -481,24 +483,24 @@ bool InputFolderVar(const char *varName, ImGuiInputTextFlags flags) {
 	return InputFolderVar(core::getVar(varName), flags);
 }
 
-bool InputVec2(const char *label, glm::ivec2 &vec, ImGuiInputTextFlags flags) {
-	return InputInt2(label, glm::value_ptr(vec), flags);
+bool InputVec2(const char *label, math::Vec2i &vec, ImGuiInputTextFlags flags) {
+	return InputInt2(label, math::value_ptr(vec), flags);
 }
 
-bool InputVec2(const char *label, glm::vec2 &vec, const char *format, ImGuiInputTextFlags flags) {
-	return InputFloat2(label, glm::value_ptr(vec), format, flags);
+bool InputVec2(const char *label, math::Vec2f &vec, const char *format, ImGuiInputTextFlags flags) {
+	return InputFloat2(label, math::value_ptr(vec), format, flags);
 }
 
-bool InputVec3(const char *label, const glm::vec3 &vec) {
-	return InputVec3(label, const_cast<glm::vec3 &>(vec), "%.3f", ImGuiInputTextFlags_ReadOnly);
+bool InputVec3(const char *label, const math::Vec3f &vec) {
+	return InputVec3(label, const_cast<math::Vec3f &>(vec), "%.3f", ImGuiInputTextFlags_ReadOnly);
 }
 
-bool InputVec3(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags) {
-	return InputFloat3(label, glm::value_ptr(vec), format, flags);
+bool InputVec3(const char *label, math::Vec3f &vec, const char *format, ImGuiInputTextFlags flags) {
+	return InputFloat3(label, math::value_ptr(vec), format, flags);
 }
 
-bool InputVec3(const char *label, glm::ivec3 &vec, ImGuiInputTextFlags flags) {
-	return InputInt3(label, glm::value_ptr(vec), flags);
+bool InputVec3(const char *label, math::Vec3i &vec, ImGuiInputTextFlags flags) {
+	return InputInt3(label, math::value_ptr(vec), flags);
 }
 
 void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
@@ -517,7 +519,7 @@ void AxisStyleText(ui::ScopedStyle &style, math::Axis axis) {
 	}
 }
 
-bool AxisSliders(glm::ivec3 &vec, int mins, int maxs) {
+bool AxisSliders(math::Vec3i &vec, int mins, int maxs) {
 	bool changed = false;
 	ImGui::AxisButtonX();
 	ImGui::SameLine();
@@ -531,7 +533,7 @@ bool AxisSliders(glm::ivec3 &vec, int mins, int maxs) {
 	return changed;
 }
 
-bool AxisSliders(glm::vec3 &vec, float mins, float maxs, const char *format) {
+bool AxisSliders(math::Vec3f &vec, float mins, float maxs, const char *format) {
 	bool changed = false;
 	ImGui::AxisButtonX();
 	ImGui::SameLine();
@@ -604,16 +606,16 @@ bool AxisCheckboxFlags(math::Axis axis, const char *name, math::Axis* value) {
 	return false;
 }
 
-bool InputXYZ(const char *label, const glm::vec3 &vec) {
-	glm::vec3 copy = vec;
+bool InputXYZ(const char *label, const math::Vec3f &vec) {
+	math::Vec3f copy = vec;
 	return InputXYZ(label, copy, "%.3f", ImGuiInputTextFlags_ReadOnly);
 }
 
-bool InputXYZ(const char *label, glm::vec3 &vec, const char *format, ImGuiInputTextFlags flags, float step, float step_fast) {
+bool InputXYZ(const char *label, math::Vec3f &vec, const char *format, ImGuiInputTextFlags flags, float step, float step_fast) {
 	return _priv::InputXYZImpl(label, vec, format, flags, step, step_fast);
 }
 
-bool InputXYZ(const char *label, glm::ivec3 &vec, const char *format, ImGuiInputTextFlags flags, int step, int step_fast) {
+bool InputXYZ(const char *label, math::Vec3i &vec, const char *format, ImGuiInputTextFlags flags, int step, int step_fast) {
 	return _priv::InputXYZImpl(label, vec, format, flags, step, step_fast);
 }
 
@@ -739,7 +741,7 @@ bool SliderVarFloat(const char *varName, const char *format,
 }
 
 bool InputVec3Var(const char *varName) {
-	glm::vec3 vec;
+	math::Vec3f vec;
 	const core::VarPtr &var = core::getVar(varName);
 	const core::String label = _priv::varLabel(var);
 	var->vec3Val(&vec[0]);
@@ -753,7 +755,7 @@ bool InputVec3Var(const char *varName) {
 }
 
 bool InputIVec3Var(const core::VarPtr &var, int minVal, int maxVal) {
-	glm::ivec3 vec(1);
+	math::Vec3i vec(1);
 	const core::String label = _priv::varLabel(var);
 	// Accept single or three-component values; reuse parse helpers from voxedit when available
 	// via space/colon/comma split matching ve_gridsize style.
@@ -761,14 +763,14 @@ bool InputIVec3Var(const core::VarPtr &var, int minVal, int maxVal) {
 	core::string::splitString(var->strVal(), tokens, " :,\t");
 	if (tokens.size() == 1) {
 		const int n = tokens[0].toInt();
-		vec = glm::ivec3(n);
+		vec = math::Vec3i(n);
 	} else {
 		for (size_t i = 0; i < core_min(tokens.size(), (size_t)3); ++i) {
 			vec[(int)i] = tokens[i].toInt();
 		}
 	}
-	if (InputInt3(label.c_str(), glm::value_ptr(vec))) {
-		vec = glm::clamp(vec, glm::ivec3(minVal), glm::ivec3(maxVal));
+	if (InputInt3(label.c_str(), math::value_ptr(vec))) {
+		vec = math::clamp(vec, math::Vec3i(minVal), math::Vec3i(maxVal));
 		if (vec.x == vec.y && vec.y == vec.z) {
 			var->setVal(core::String::format("%i", vec.x));
 		} else {
@@ -785,11 +787,11 @@ bool InputIVec3Var(const char *varName, int minVal, int maxVal) {
 }
 
 bool ColorEdit3Var(const char *varName) {
-	glm::vec3 col;
+	math::Vec3f col;
 	const core::VarPtr &var = core::getVar(varName);
 	const core::String label = _priv::varLabel(var);
 	var->vec3Val(&col[0]);
-	if (ImGui::ColorEdit3(label.c_str(), glm::value_ptr(col))) {
+	if (ImGui::ColorEdit3(label.c_str(), math::value_ptr(col))) {
 		const core::String &c = core::String::format("%f %f %f", col.x, col.y, col.z);
 		var->setVal(c);
 		return true;
@@ -799,11 +801,11 @@ bool ColorEdit3Var(const char *varName) {
 }
 
 bool ColorEdit4Var(const char *varName, ImGuiColorEditFlags flags) {
-	glm::vec4 col;
+	math::Vec4f col;
 	const core::VarPtr &var = core::getVar(varName);
 	const core::String label = _priv::varLabel(var);
 	var->vec4Val(&col[0]);
-	if (ImGui::ColorEdit4(label.c_str(), glm::value_ptr(col), flags)) {
+	if (ImGui::ColorEdit4(label.c_str(), math::value_ptr(col), flags)) {
 		const core::String &c = core::String::format("%f %f %f %f", col.x, col.y, col.z, col.w);
 		var->setVal(c);
 		return true;
@@ -910,7 +912,7 @@ ImTextureID toImTextureID(video::Id handle) {
 #endif
 }
 
-void AddImage(video::Id handle, const glm::vec2 &uv0, const glm::vec2 &uv1) {
+void AddImage(video::Id handle, const math::Vec2f &uv0, const math::Vec2f &uv1) {
 	const ImTextureID tex = toImTextureID(handle);
 	if (tex == ImTextureID_Invalid) {
 		return;
@@ -918,7 +920,7 @@ void AddImage(video::Id handle, const glm::vec2 &uv0, const glm::vec2 &uv1) {
 	ImGui::GetWindowDrawList()->AddImage(tex, ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
 }
 
-void Image(video::Id handle, const glm::ivec2 &size, const glm::vec2 &uv0, const glm::vec2 &uv1, const glm::vec4 &tintColor, const glm::vec4 &borderColor) {
+void Image(video::Id handle, const math::Vec2i &size, const math::Vec2f &uv0, const math::Vec2f &uv1, const math::Vec4f &tintColor, const math::Vec4f &borderColor) {
 	const ImTextureID tex = toImTextureID(handle);
 	if (tex == ImTextureID_Invalid) {
 		return;
@@ -1211,11 +1213,11 @@ void LoadingIndicatorCircle(const char *label, const float indicator_radius, con
 		return;
 	}
 	const float t = (float)g.Time;
-	const float degree_offset = 2.0f * glm::pi<float>() / (float)circle_count;
+	const float degree_offset = 2.0f * math::pi / (float)circle_count;
 	for (int i = 0; i < circle_count; ++i) {
-		const float x = indicator_radius * glm::sin(degree_offset * (float)i);
-		const float y = indicator_radius * glm::cos(degree_offset * (float)i);
-		const float growth = core_max(0.0f, glm::sin(t * speed - i * degree_offset));
+		const float x = indicator_radius * math::sin(degree_offset * (float)i);
+		const float y = indicator_radius * math::cos(degree_offset * (float)i);
+		const float growth = core_max(0.0f, math::sin(t * speed - i * degree_offset));
 		ImVec4 color;
 		color.x = main_color.x * growth + backdrop_color.x * (1.0f - growth);
 		color.y = main_color.y * growth + backdrop_color.y * (1.0f - growth);

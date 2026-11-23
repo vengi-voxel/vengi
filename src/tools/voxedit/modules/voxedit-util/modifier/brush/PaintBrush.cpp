@@ -11,9 +11,9 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -82,9 +82,9 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from, const voxel::Voxel &to,
 						float factor) {
 	const palette::Palette &palette = wrapper.node().palette();
-	const glm::vec4 colorA = palette.color4(from.getColor());
-	const glm::vec4 colorB = palette.color4(to.getColor());
-	const glm::vec4 newColor = glm::mix(colorA, colorB, factor);
+	const math::Vec4f colorA = palette.color4(from.getColor());
+	const math::Vec4f colorB = palette.color4(to.getColor());
+	const math::Vec4f newColor = math::mix(colorA, colorB, factor);
 	const int index = palette.getClosestMatch(color::getRGBA(newColor), from.getColor());
 	if (index == palette::PaletteColorNotFound) {
 		return from;
@@ -116,13 +116,13 @@ static voxel::Voxel mixBlend(palette::Palette &palette, const voxel::Voxel &from
 	return voxel::createVoxel(palette, index, from.getNormal(), from.getFlags(), from.getBoneIdx());
 }
 
-static float blendFactor(const glm::ivec3 &pos, const glm::vec3 &center, float falloffRadius, float opacity) {
+static float blendFactor(const math::Vec3i &pos, const math::Vec3f &center, float falloffRadius, float opacity) {
 	if (falloffRadius <= 0.0f) {
 		return opacity;
 	}
-	const float distance = glm::distance(glm::vec3(pos), center);
-	const float t = glm::clamp(1.0f - distance / falloffRadius, 0.0f, 1.0f);
-	return glm::smoothstep(0.0f, 1.0f, t) * opacity;
+	const float distance = math::distance(math::Vec3f(pos), center);
+	const float t = math::clamp(1.0f - distance / falloffRadius, 0.0f, 1.0f);
+	return math::smoothstep(0.0f, 1.0f, t) * opacity;
 }
 
 static voxel::Voxel gaussianBlurVoxel(ModifierVolumeWrapper &wrapper, palette::Palette &palette, int x, int y, int z,
@@ -133,7 +133,7 @@ static voxel::Voxel gaussianBlurVoxel(ModifierVolumeWrapper &wrapper, palette::P
 
 	// 3x3x3 Gaussian-ish kernel (separable weights approximated on Chebyshev neighborhood)
 	static const float kWeights[3] = {0.25f, 0.5f, 0.25f};
-	glm::vec3 sum(0.0f);
+	math::Vec3f sum(0.0f);
 	float weightSum = 0.0f;
 	for (int dz = -1; dz <= 1; ++dz) {
 		for (int dy = -1; dy <= 1; ++dy) {
@@ -144,7 +144,7 @@ static voxel::Voxel gaussianBlurVoxel(ModifierVolumeWrapper &wrapper, palette::P
 				}
 				const float w = kWeights[dx + 1] * kWeights[dy + 1] * kWeights[dz + 1];
 				const color::RGBA c = palette.color(neighbor.getColor());
-				sum += glm::vec3((float)c.r, (float)c.g, (float)c.b) * w;
+				sum += math::Vec3f((float)c.r, (float)c.g, (float)c.b) * w;
 				weightSum += w;
 			}
 		}
@@ -153,8 +153,8 @@ static voxel::Voxel gaussianBlurVoxel(ModifierVolumeWrapper &wrapper, palette::P
 		return old;
 	}
 	sum /= weightSum;
-	const color::RGBA blurred((uint8_t)glm::clamp(sum.r, 0.0f, 255.0f), (uint8_t)glm::clamp(sum.g, 0.0f, 255.0f),
-							  (uint8_t)glm::clamp(sum.b, 0.0f, 255.0f), 255);
+	const color::RGBA blurred((uint8_t)math::clamp(sum.r, 0.0f, 255.0f), (uint8_t)math::clamp(sum.g, 0.0f, 255.0f),
+							  (uint8_t)math::clamp(sum.b, 0.0f, 255.0f), 255);
 	const color::RGBA original = palette.color(old.getColor());
 	const color::RGBA mixed = color::RGBA::mix(original, blurred, amount);
 	uint8_t newColorIndex = 0;
@@ -177,18 +177,18 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		PaintStrokeMap &blendStroke = runtime.blendStroke;
 		// Preview receives its own runtime copy through the same contract.
 		const bool trackStroke = true;
-		glm::vec3 center;
+		math::Vec3f center;
 		float falloffRadius;
 		if (anyStrokeMode()) {
-			center = glm::vec3(ctx.cursorPosition);
+			center = math::Vec3f(ctx.cursorPosition);
 			falloffRadius = (float)radius();
 		} else {
-			center = glm::vec3(region.getCenter());
-			const glm::vec3 halfExtents = glm::vec3(region.getDimensionsInVoxels()) * 0.5f;
-			falloffRadius = glm::length(halfExtents);
+			center = math::Vec3f(region.getCenter());
+			const math::Vec3f halfExtents = math::Vec3f(region.getDimensionsInVoxels()) * 0.5f;
+			falloffRadius = math::length(halfExtents);
 		}
 
-		core::DynamicArray<glm::ivec3> positions;
+		core::DynamicArray<math::Vec3i> positions;
 		core::DynamicArray<voxel::Voxel> results;
 		auto collect = [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (_maskToColorPool && !_colorPool.empty()) {
@@ -203,7 +203,7 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 					return;
 				}
 			}
-			const glm::ivec3 pos(x, y, z);
+			const math::Vec3i pos(x, y, z);
 			const float factor = blendFactor(pos, center, falloffRadius, _blendOpacity);
 			if (factor <= 0.0f) {
 				return;
@@ -235,7 +235,7 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		// Sequential visit: the stroke map is not thread-safe, and blur reads neighbors.
 		voxelutil::visitVolume(wrapper, region, collect);
 		for (size_t i = 0; i < positions.size(); ++i) {
-			const glm::ivec3 &pos = positions[i];
+			const math::Vec3i &pos = positions[i];
 			wrapper.setVoxel(pos.x, pos.y, pos.z, results[i]);
 		}
 		return;
@@ -250,10 +250,10 @@ void PaintBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrap
 		voxelutil::paintPlane(wrapper, region.getLowerCorner(), ctx.cursorFace, ctx.hitCursorVoxel,
 							  voxelColor.evaluate(ctx.hitCursorVoxel));
 	} else if (gradient()) {
-		const glm::ivec3 start = ctx.cursorPosition;
-		const glm::ivec3 size = region.getDimensionsInVoxels();
+		const math::Vec3i start = ctx.cursorPosition;
+		const math::Vec3i size = region.getDimensionsInVoxels();
 		auto func = [&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const float factor = glm::distance(glm::vec3(x, y, z), glm::vec3(start)) / glm::length(glm::vec3(size));
+			const float factor = math::distance(math::Vec3f(x, y, z), math::Vec3f(start)) / math::length(math::Vec3f(size));
 			const voxel::Voxel evalVoxel = voxelColor.evaluate(voxel);
 			const voxel::Voxel newVoxel = mix(wrapper, ctx.hitCursorVoxel, evalVoxel, factor);
 			wrapper.setVoxel(x, y, z, newVoxel);
@@ -285,26 +285,26 @@ bool PaintBrush::wantBox() const {
 }
 
 void PaintBrush::setStrength(float strength) {
-	if (_strength != glm::clamp(strength, 0.1f, 10.0f)) {
+	if (_strength != math::clamp(strength, 0.1f, 10.0f)) {
 		markSettingsChanged();
 	}
-	_strength = glm::clamp(strength, 0.1f, 10.0f);
+	_strength = math::clamp(strength, 0.1f, 10.0f);
 	markDirty();
 }
 
 void PaintBrush::setBlendOpacity(float opacity) {
-	if (_blendOpacity != glm::clamp(opacity, 0.0f, 1.0f)) {
+	if (_blendOpacity != math::clamp(opacity, 0.0f, 1.0f)) {
 		markSettingsChanged();
 	}
-	_blendOpacity = glm::clamp(opacity, 0.0f, 1.0f);
+	_blendOpacity = math::clamp(opacity, 0.0f, 1.0f);
 	markDirty();
 }
 
 void PaintBrush::setVariationChance(int variationChance) {
-	if (_variationChance != glm::clamp(variationChance, 2, 20)) {
+	if (_variationChance != math::clamp(variationChance, 2, 20)) {
 		markSettingsChanged();
 	}
-	_variationChance = glm::clamp(variationChance, 2, 20);
+	_variationChance = math::clamp(variationChance, 2, 20);
 	markDirty();
 }
 

@@ -16,6 +16,7 @@
 #include "math/tests/TestMathHelper.h"
 #include "palette/Palette.h"
 #include "palette/tests/TestHelper.h"
+#include "math/OBB.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
@@ -29,14 +30,19 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/VolumeFormat.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
+#include <float.h>
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelgenerator/LSystem.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Scalar.h"
 
 namespace voxedit {
 
@@ -74,7 +80,7 @@ protected:
 		ASSERT_TRUE(_sceneMgr->loadSceneGraph(core::move(newSceneGraph)));
 	}
 
-	bool testSetVoxel(const glm::ivec3 &pos, int paletteColorIndex = 1) {
+	bool testSetVoxel(const math::Vec3i &pos, int paletteColorIndex = 1) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.setBrushType(BrushType::Shape);
 		modifier.shapeBrush().setStrokeMode();
@@ -108,7 +114,7 @@ protected:
 	 * so that selection state (hasSelection/FlagOutline) is properly consulted by
 	 * the ModifierVolumeWrapper during editing.
 	 */
-	bool testSetVoxelOnRealNode(const glm::ivec3 &pos, int paletteColorIndex = 1) {
+	bool testSetVoxelOnRealNode(const math::Vec3i &pos, int paletteColorIndex = 1) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.setBrushType(BrushType::Shape);
 		modifier.shapeBrush().setStrokeMode();
@@ -135,7 +141,7 @@ protected:
 		return executed == 1;
 	}
 
-	void testSelect(const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	void testSelect(const math::Vec3i &mins, const math::Vec3i &maxs) {
 		Modifier &modifier = _sceneMgr->modifier();
 		modifier.endBrush();
 		modifier.setBrushType(BrushType::Select);
@@ -165,11 +171,11 @@ protected:
 		ASSERT_FALSE(_sceneMgr->isSceneJobRunning());
 	}
 
-	glm::ivec3 testMins() {
+	math::Vec3i testMins() {
 		return testVolume()->region().getLowerCorner();
 	}
 
-	glm::ivec3 testMaxs() {
+	math::Vec3i testMaxs() {
 		return testVolume()->region().getUpperCorner();
 	}
 };
@@ -195,13 +201,13 @@ TEST_F(SceneManagerTest, testEditNormalPaletteEntryUndoRedo) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "normals", voxel::Region(0, 0, 0, 1, 0, 0)));
 	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNode());
 	palette::NormalPalette before;
-	before.setNormal(0, glm::vec3(1, 0, 0));
+	before.setNormal(0, math::Vec3f(1, 0, 0));
 	node.setNormalPalette(before);
 	const voxel::Voxel painted(voxel::VoxelType::Generic, 3, NORMAL_PALETTE_OFFSET, voxel::FlagOutline);
 	ASSERT_TRUE(testVolume()->setVoxel(0, 0, 0, painted));
 	ASSERT_TRUE(_sceneMgr->mementoHandler().markModification(_sceneMgr->sceneGraph(), node, testVolume()->region()));
 	ASSERT_TRUE(_sceneMgr->mementoHandler().markNormalPaletteChange(_sceneMgr->sceneGraph(), node));
-	const color::RGBA direction = palette::NormalPalette::toRGBA(glm::vec3(0, 1, 0));
+	const color::RGBA direction = palette::NormalPalette::toRGBA(math::Vec3f(0, 1, 0));
 	ASSERT_TRUE(_sceneMgr->nodeSetNormal(node.uuid(), 4, direction));
 	EXPECT_EQ(5u, node.normalPalette().size());
 	EXPECT_EQ(direction, node.normalPalette().normal(4));
@@ -228,8 +234,8 @@ TEST_F(SceneManagerTest, testSwapNormalPaletteEntriesPreservesDirections) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "normals", voxel::Region(0, 0, 0, 3, 0, 0)));
 	scenegraph::SceneGraphNode &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNode());
 	palette::NormalPalette before;
-	before.setNormal(0, glm::vec3(1, 0, 0));
-	before.setNormal(1, glm::vec3(0, 1, 0));
+	before.setNormal(0, math::Vec3f(1, 0, 0));
+	before.setNormal(1, math::Vec3f(0, 1, 0));
 	node.setNormalPalette(before);
 	const voxel::Voxel first(voxel::VoxelType::Generic, 3, NORMAL_PALETTE_OFFSET, voxel::FlagOutline);
 	const voxel::Voxel second(voxel::VoxelType::Transparent, 4, NORMAL_PALETTE_OFFSET + 1);
@@ -614,7 +620,7 @@ TEST_F(SceneManagerTest, testCopyPaste) {
 }
 
 TEST_F(SceneManagerTest, testSelectionToNewNode) {
-	const glm::ivec3 pos = testMins();
+	const math::Vec3i pos = testMins();
 	ASSERT_TRUE(testSetVoxel(pos, 1));
 	testSelect(pos, testMaxs());
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
@@ -666,8 +672,8 @@ TEST_F(SceneManagerTest, testMergeVengiFile) {
 	EXPECT_EQ(region.getDimensionsInVoxels(), v->region().getDimensionsInVoxels());
 	EXPECT_EQ(region.getLowerCorner(), v->region().getLowerCorner());
 	const scenegraph::SceneGraphTransform &transform = node->transform(0);
-	EXPECT_EQ(transform.localTranslation(), glm::vec3(0.0f));
-	EXPECT_EQ(transform.localScale(), glm::vec3(1.0f));
+	EXPECT_EQ(transform.localTranslation(), math::Vec3f(0.0f));
+	EXPECT_EQ(transform.localScale(), math::Vec3f(1.0f));
 }
 
 TEST_F(SceneManagerTest, testMerge2VengiFile) {
@@ -689,8 +695,8 @@ TEST_F(SceneManagerTest, testMerge2VengiFile) {
 	EXPECT_EQ(region.getDimensionsInVoxels(), v->region().getDimensionsInVoxels());
 	EXPECT_EQ(region.getLowerCorner(), v->region().getLowerCorner());
 	const scenegraph::SceneGraphTransform &transform = node->transform(0);
-	EXPECT_EQ(transform.localTranslation(), glm::vec3(0.0f));
-	EXPECT_EQ(transform.localScale(), glm::vec3(1.0f));
+	EXPECT_EQ(transform.localTranslation(), math::Vec3f(0.0f));
+	EXPECT_EQ(transform.localScale(), math::Vec3f(1.0f));
 }
 
 TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
@@ -710,7 +716,7 @@ TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
 		_sceneMgr->nodeBakeTransform(node->uuid());
 		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(0, 0, -1, 3, 5, 2));
-		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+		EXPECT_VEC_NEAR(math::Vec3f(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
 	{
 		SCOPED_TRACE("K_Toe_Right");
@@ -722,7 +728,7 @@ TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
 		_sceneMgr->nodeBakeTransform(node->uuid());
 		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(0, 0, 3, 3, 2, 5));
-		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+		EXPECT_VEC_NEAR(math::Vec3f(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
 	{
 		SCOPED_TRACE("K_Leg_Right_l");
@@ -734,7 +740,7 @@ TEST_F(SceneManagerTest, testMerge2VengiFileBakeTransform) {
 		_sceneMgr->nodeBakeTransform(node->uuid());
 		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(1, 4, 0, 2, 9, 1));
-		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+		EXPECT_VEC_NEAR(math::Vec3f(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
 }
 
@@ -754,7 +760,7 @@ TEST_F(SceneManagerTest, testChrKnightBakeTransform) {
 		_sceneMgr->nodeBakeTransform(node->uuid());
 		const voxel::Region newRegion = _sceneMgr->volume(node->uuid())->region();
 		ASSERT_EQ(newRegion, voxel::Region(-3, 14, -3, 5, 17, 3));
-		EXPECT_VEC_NEAR(glm::vec3(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
+		EXPECT_VEC_NEAR(math::Vec3f(0.0f, 0.0f, 0.0f), node->transform().worldTranslation(), 0.0001f);
 	}
 }
 
@@ -826,7 +832,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	ASSERT_EQ(19u, _sceneMgr->sceneGraph().size());
 
 	scenegraph::SceneGraphTransform &transform = _sceneMgr->sceneGraph().node(0).transform(0);
-	transform.setWorldOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
+	transform.setWorldOrientation(math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
 	_sceneMgr->sceneGraph().updateTransforms();
 
 	const scenegraph::SceneGraphNode *head = _sceneMgr->sceneGraph().findNodeByName("K_Head");
@@ -853,7 +859,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeCoverAndHead) {
 	ASSERT_NE(nullptr, mergedHeadVolume);
 	const voxel::Region &mergedRegion = mergedHeadVolume->region();
 
-	glm::ivec3 expectedDimensions(9, 14, 14);
+	math::Vec3i expectedDimensions(9, 14, 14);
 
 	EXPECT_EQ(expectedDimensions, mergedRegion.getDimensionsInVoxels())
 		<< "Original head: " << headRegion.toString() << " Original cover: " << coverRegion.toString();
@@ -889,7 +895,7 @@ TEST_F(SceneManagerTest, testChrKnightMergeWithRootRotation) {
 
 	// Now reset the root rotation to identity and merge again
 	scenegraph::SceneGraphTransform &transform = _sceneMgr->sceneGraph().node(0).transform(0);
-	transform.setWorldOrientation(glm::quat::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
+	transform.setWorldOrientation(math::Quatf::wxyz(1.0f, 0.0f, 0.0f, 0.0f));
 	_sceneMgr->sceneGraph().updateTransforms();
 
 	_sceneMgr->mergeNodes(NodeMergeFlags::All);
@@ -938,19 +944,19 @@ TEST_F(SceneManagerTest, testChrKnightMergeVisibleLeftLeg) {
 
 	// Compute world-space AABB of the visible nodes before merge by transforming
 	// each voxel position through the node's world matrix
-	glm::vec3 worldMins(FLT_MAX);
-	glm::vec3 worldMaxs(-FLT_MAX);
+	math::Vec3f worldMins(FLT_MAX);
+	math::Vec3f worldMaxs(-FLT_MAX);
 	for (const char *name : leftLegNodes) {
 		const scenegraph::SceneGraphNode *n = _sceneMgr->sceneGraph().findNodeByName(name);
-		const glm::mat4 wm = _sceneMgr->sceneGraph().worldMatrix(*n);
+		const math::Mat4f wm = _sceneMgr->sceneGraph().worldMatrix(*n);
 		const voxel::RawVolume *v = _sceneMgr->volume(n->uuid());
 		voxelutil::visitVolume(*v, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 			if (voxel::isAir(voxel.getMaterial())) {
 				return;
 			}
-			const glm::vec3 worldPos = glm::vec3(wm * glm::vec4((float)x, (float)y, (float)z, 1.0f));
-			worldMins = glm::min(worldMins, worldPos);
-			worldMaxs = glm::max(worldMaxs, worldPos);
+			const math::Vec3f worldPos = math::Vec3f(wm * math::Vec4f((float)x, (float)y, (float)z, 1.0f));
+			worldMins = math::min(worldMins, worldPos);
+			worldMaxs = math::max(worldMaxs, worldPos);
 		});
 	}
 
@@ -974,20 +980,20 @@ TEST_F(SceneManagerTest, testChrKnightMergeVisibleLeftLeg) {
 	EXPECT_EQ(totalVoxelsBefore, voxelutil::countVoxels(*mergedVolume));
 
 	// Compute world-space AABB of the merged node
-	const glm::mat4 mergedWm = _sceneMgr->sceneGraph().worldMatrix(*mergedNode);
-	glm::vec3 mergedWorldMins(FLT_MAX);
-	glm::vec3 mergedWorldMaxs(-FLT_MAX);
+	const math::Mat4f mergedWm = _sceneMgr->sceneGraph().worldMatrix(*mergedNode);
+	math::Vec3f mergedWorldMins(FLT_MAX);
+	math::Vec3f mergedWorldMaxs(-FLT_MAX);
 	voxelutil::visitVolume(*mergedVolume, [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (voxel::isAir(voxel.getMaterial())) {
 			return;
 		}
-		const glm::vec3 worldPos = glm::vec3(mergedWm * glm::vec4((float)x, (float)y, (float)z, 1.0f));
-		mergedWorldMins = glm::min(mergedWorldMins, worldPos);
-		mergedWorldMaxs = glm::max(mergedWorldMaxs, worldPos);
+		const math::Vec3f worldPos = math::Vec3f(mergedWm * math::Vec4f((float)x, (float)y, (float)z, 1.0f));
+		mergedWorldMins = math::min(mergedWorldMins, worldPos);
+		mergedWorldMaxs = math::max(mergedWorldMaxs, worldPos);
 	});
 
 	// The world-space bounding boxes should match closely (within 1 voxel due to rounding)
-	const glm::vec3 tolerance(1.5f);
+	const math::Vec3f tolerance(1.5f);
 	EXPECT_NEAR(worldMins.x, mergedWorldMins.x, tolerance.x) << "World min X mismatch";
 	EXPECT_NEAR(worldMins.y, mergedWorldMins.y, tolerance.y) << "World min Y mismatch";
 	EXPECT_NEAR(worldMins.z, mergedWorldMins.z, tolerance.z) << "World min Z mismatch";
@@ -1005,12 +1011,12 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 
 	// set voxel into second node
 	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(secondNodeId)));
-	testSetVoxel(glm::ivec3(1, 1, 1), modifier.cursorVoxel().getColor());
+	testSetVoxel(math::Vec3i(1, 1, 1), modifier.cursorVoxel().getColor());
 	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(_sceneMgr->sceneGraph().uuid(secondNodeId)), modifier.cursorVoxel()));
 
 	// set voxel into third node
 	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(thirdNodeId)));
-	testSetVoxel(glm::ivec3(2, 2, 2), modifier.cursorVoxel().getColor());
+	testSetVoxel(math::Vec3i(2, 2, 2), modifier.cursorVoxel().getColor());
 	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*_sceneMgr->volume(_sceneMgr->sceneGraph().uuid(thirdNodeId)), modifier.cursorVoxel()));
 
 	// merge and validate
@@ -1019,8 +1025,8 @@ TEST_F(SceneManagerTest, testMergeSimple) {
 	const voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(newNodeId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(2, voxelutil::countVoxels(*v));
-	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(1, 1, 1)).getMaterial()));
-	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(2, 2, 2)).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(math::Vec3i(1, 1, 1)).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(math::Vec3i(2, 2, 2)).getMaterial()));
 
 	// merged nodes are gone
 	EXPECT_EQ(nullptr, _sceneMgr->sceneGraphNode(secondNodeId));
@@ -1039,7 +1045,7 @@ static void assertRestoredReferencesResolve(scenegraph::SceneGraph &sceneGraph, 
 	const voxel::RawVolume *modelVolume = sceneGraph.resolveVolume(*model);
 	ASSERT_NE(nullptr, modelVolume);
 	EXPECT_EQ(1, voxelutil::countVoxels(*modelVolume));
-	EXPECT_FALSE(voxel::isAir(modelVolume->voxel(glm::ivec3(0, 0, 0)).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(modelVolume->voxel(math::Vec3i(0, 0, 0)).getMaterial()));
 
 	int resolvedRefs = 0;
 	for (auto iter = sceneGraph.begin(scenegraph::SceneGraphNodeType::ModelReference); iter != sceneGraph.end();
@@ -1058,14 +1064,14 @@ TEST_F(SceneManagerTest, testMergeAllWithModelReferences) {
 	const int modelId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_NE(InvalidNodeId, modelId);
 	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(modelId)));
-	testSetVoxel(glm::ivec3(0, 0, 0), modifier.cursorVoxel().getColor());
+	testSetVoxel(math::Vec3i(0, 0, 0), modifier.cursorVoxel().getColor());
 
 	scenegraph::SceneGraphNode &model = _sceneMgr->sceneGraph().node(modelId);
 	const core::UUID modelUUID = model.uuid();
 	const int refId = scenegraph::createNodeReference(_sceneMgr->sceneGraph(), model);
 	ASSERT_NE(InvalidNodeId, refId);
 	scenegraph::SceneGraphTransform refTransform;
-	refTransform.setWorldTranslation(glm::vec3(4.0f, 0.0f, 0.0f));
+	refTransform.setWorldTranslation(math::Vec3f(4.0f, 0.0f, 0.0f));
 	_sceneMgr->sceneGraph().node(refId).setTransform(0, refTransform);
 	_sceneMgr->sceneGraph().updateTransforms();
 
@@ -1082,8 +1088,8 @@ TEST_F(SceneManagerTest, testMergeAllWithModelReferences) {
 	const voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(mergedId));
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(2, voxelutil::countVoxels(*v));
-	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(0, 0, 0)).getMaterial()));
-	EXPECT_FALSE(voxel::isAir(v->voxel(glm::ivec3(4, 0, 0)).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(math::Vec3i(0, 0, 0)).getMaterial()));
+	EXPECT_FALSE(voxel::isAir(v->voxel(math::Vec3i(4, 0, 0)).getMaterial()));
 
 	ASSERT_TRUE(_sceneMgr->undo());
 	assertRestoredReferencesResolve(_sceneMgr->sceneGraph(), modelUUID, 1);
@@ -1106,7 +1112,7 @@ TEST_F(SceneManagerTest, testMergeAllWithMultipleModelReferences) {
 	const int modelId = _sceneMgr->sceneGraph().activeNode();
 	ASSERT_NE(InvalidNodeId, modelId);
 	EXPECT_TRUE(_sceneMgr->nodeActivate(_sceneMgr->sceneGraph().uuid(modelId)));
-	testSetVoxel(glm::ivec3(0, 0, 0), modifier.cursorVoxel().getColor());
+	testSetVoxel(math::Vec3i(0, 0, 0), modifier.cursorVoxel().getColor());
 
 	scenegraph::SceneGraphNode &model = _sceneMgr->sceneGraph().node(modelId);
 	const core::UUID modelUUID = model.uuid();
@@ -1115,7 +1121,7 @@ TEST_F(SceneManagerTest, testMergeAllWithMultipleModelReferences) {
 		const int refId = scenegraph::createNodeReference(_sceneMgr->sceneGraph(), model);
 		ASSERT_NE(InvalidNodeId, refId);
 		scenegraph::SceneGraphTransform refTransform;
-		refTransform.setWorldTranslation(glm::vec3((float)((i + 1) * 4), 0.0f, 0.0f));
+		refTransform.setWorldTranslation(math::Vec3f((float)((i + 1) * 4), 0.0f, 0.0f));
 		_sceneMgr->sceneGraph().node(refId).setTransform(0, refTransform);
 	}
 	_sceneMgr->sceneGraph().updateTransforms();
@@ -1166,7 +1172,7 @@ TEST_F(SceneManagerTest, testNodeActivateByUUIDSurvivesRecreate) {
 
 TEST_F(SceneManagerTest, testDuplicateNodeKeyFrame) {
 	scenegraph::SceneGraphTransform transform;
-	transform.setWorldTranslation(glm::vec3(100.0f, 0.0, 0.0f));
+	transform.setWorldTranslation(math::Vec3f(100.0f, 0.0, 0.0f));
 
 	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(_sceneMgr->sceneGraph().uuid(1), 1));
 	EXPECT_TRUE(_sceneMgr->nodeAddKeyFrame(_sceneMgr->sceneGraph().uuid(1), 10));
@@ -1386,40 +1392,40 @@ TEST_F(SceneManagerTest, testChangePivotOfParentThenUndo) {
 	ASSERT_EQ(2u, _sceneMgr->sceneGraph().nodeSize());
 	const int cnodeId = _sceneMgr->addModelChild("children", 1, 1, 1);
 	ASSERT_NE(cnodeId, InvalidNodeId);
-	const glm::vec3 clocalTranslationVec = glm::vec3(10.0f);
-	const glm::vec3 cworldTranslationFinal = glm::vec3(12.0f);
+	const math::Vec3f clocalTranslationVec = math::Vec3f(10.0f);
+	const math::Vec3f cworldTranslationFinal = math::Vec3f(12.0f);
 	const scenegraph::KeyFrameIndex keyFrameIndex = 0;
-	const glm::mat4 ctranslationMat = glm::translate(clocalTranslationVec);
+	const math::Mat4f ctranslationMat = math::translate(clocalTranslationVec);
 	scenegraph::SceneGraphNode *cnode = _sceneMgr->sceneGraphNode(cnodeId);
 	ASSERT_NE(cnode, nullptr);
-	EXPECT_EQ(cnode->region().getDimensionsInVoxels(), glm::ivec3(1));
+	EXPECT_EQ(cnode->region().getDimensionsInVoxels(), math::Vec3i(1));
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
 	ASSERT_NE(node, nullptr);
 	{
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
-		EXPECT_EQ(node->region().getDimensionsInVoxels(), glm::ivec3(2));
+		EXPECT_EQ(node->region().getDimensionsInVoxels(), math::Vec3i(2));
 
 		ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(_sceneMgr->sceneGraph().uuid(cnodeId), ctranslationMat, keyFrameIndex, false));
 		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
 		ASSERT_VEC_NEAR(ctransform.worldTranslation(), ctransform.localTranslation(), 0.0001f)
 			<< "local and world should match at this point";
-		ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(_sceneMgr->sceneGraph().uuid(nodeId), glm::vec3(1.0f, 1.0f, 1.0f)));
+		ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(_sceneMgr->sceneGraph().uuid(nodeId), math::Vec3f(1.0f, 1.0f, 1.0f)));
 		ASSERT_VEC_NEAR(ctransform.localTranslation(), clocalTranslationVec, 0.0001f);
 		ASSERT_VEC_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
 	}
 	ASSERT_TRUE(_sceneMgr->undo());
 	{
-		const glm::vec3 pivot = node->pivot();
-		ASSERT_VEC_NEAR(pivot, glm::vec3(0.0f), 0.0001f);
+		const math::Vec3f pivot = node->pivot();
+		ASSERT_VEC_NEAR(pivot, math::Vec3f(0.0f), 0.0001f);
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
 		ASSERT_VEC_NEAR(ctransform.worldTranslation(), clocalTranslationVec, 0.0001f);
-		ASSERT_VEC_NEAR(node->pivot(), glm::vec3(0.0f), 0.0001f);
+		ASSERT_VEC_NEAR(node->pivot(), math::Vec3f(0.0f), 0.0001f);
 	}
 	ASSERT_TRUE(_sceneMgr->redo());
 	{
 		const scenegraph::SceneGraphTransform &ctransform = cnode->transform(keyFrameIndex);
 		ASSERT_VEC_NEAR(ctransform.worldTranslation(), cworldTranslationFinal, 0.0001f);
-		ASSERT_VEC_NEAR(node->pivot(), glm::vec3(1.0f), 0.0001f);
+		ASSERT_VEC_NEAR(node->pivot(), math::Vec3f(1.0f), 0.0001f);
 	}
 }
 
@@ -1429,25 +1435,25 @@ TEST_F(SceneManagerTest, testChangePivotOfRotatedNode) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNode(nodeId);
 	ASSERT_NE(node, nullptr);
 	// region is 2x2x2, so size = (2,2,2)
-	EXPECT_EQ(node->region().getDimensionsInVoxels(), glm::ivec3(2));
+	EXPECT_EQ(node->region().getDimensionsInVoxels(), math::Vec3i(2));
 
 	// Apply a 90-degree rotation around Y axis
 	const scenegraph::KeyFrameIndex keyFrameIndex = 0;
-	const glm::mat4 rotMat = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	const math::Mat4f rotMat = math::rotate(math::halfPi, math::Vec3f(0.0f, 1.0f, 0.0f));
 	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(_sceneMgr->sceneGraph().uuid(nodeId), rotMat, keyFrameIndex, false));
 
 	// Record the world position of voxel (0,0,0) before pivot change
 	const scenegraph::SceneGraphTransform &transform = node->transform(keyFrameIndex);
-	const glm::vec3 pivotVoxelSpace = node->pivot() * glm::vec3(node->region().getDimensionsInVoxels());
-	const glm::vec3 worldPosBefore = transform.apply(glm::vec3(0.0f), pivotVoxelSpace);
+	const math::Vec3f pivotVoxelSpace = node->pivot() * math::Vec3f(node->region().getDimensionsInVoxels());
+	const math::Vec3f worldPosBefore = transform.apply(math::Vec3f(0.0f), pivotVoxelSpace);
 
 	// Change pivot to center (0.5, 0.5, 0.5)
-	ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(_sceneMgr->sceneGraph().uuid(nodeId), glm::vec3(0.5f, 0.5f, 0.5f)));
+	ASSERT_TRUE(_sceneMgr->nodeUpdatePivot(_sceneMgr->sceneGraph().uuid(nodeId), math::Vec3f(0.5f, 0.5f, 0.5f)));
 
 	// The world position of voxel (0,0,0) should remain the same after pivot change
 	const scenegraph::SceneGraphTransform &transformAfter = node->transform(keyFrameIndex);
-	const glm::vec3 pivotVoxelSpaceAfter = node->pivot() * glm::vec3(node->region().getDimensionsInVoxels());
-	const glm::vec3 worldPosAfter = transformAfter.apply(glm::vec3(0.0f), pivotVoxelSpaceAfter);
+	const math::Vec3f pivotVoxelSpaceAfter = node->pivot() * math::Vec3f(node->region().getDimensionsInVoxels());
+	const math::Vec3f worldPosAfter = transformAfter.apply(math::Vec3f(0.0f), pivotVoxelSpaceAfter);
 
 	ASSERT_VEC_NEAR(worldPosBefore, worldPosAfter, 0.001f)
 		<< "Voxel world position should not change when pivot is modified on a rotated node";
@@ -1513,8 +1519,8 @@ TEST_F(SceneManagerTest, testReduceColors) {
 	core::Buffer<uint8_t> srcBuf;
 	voxel::Voxel targetVoxel = modifier.cursorVoxel();
 	for (int i = 0; i < 4; ++i) {
-		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
-		v->setVoxel(glm::ivec3(i, i, i), voxel::createVoxel(voxel::VoxelType::Generic, i));
+		v->setVoxel(math::Vec3i(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
+		v->setVoxel(math::Vec3i(i, i, i), voxel::createVoxel(voxel::VoxelType::Generic, i));
 		if (i != targetVoxel.getColor()) {
 			srcBuf.push_back(i);
 		}
@@ -1551,16 +1557,16 @@ TEST_F(SceneManagerTest, testTraceClearsPreviousNormal) {
 	camera.setNearPlane(0.1f);
 	camera.setFarPlane(30.0f);
 	camera.setFieldOfView(45.0f);
-	camera.setSize(glm::ivec2(800, 600));
+	camera.setSize(math::Vec2i(800, 600));
 	_sceneMgr->setActiveCamera(&camera, false);
 	_sceneMgr->setMousePos(400, 300);
 	for (int x = 0; x < 2; ++x) {
-		camera.setWorldPosition(glm::vec3(x + 0.5f, 0.5f, 10.0f));
-		camera.lookAt(glm::vec3(x + 0.5f, 0.5f, 0.0f), glm::vec3(0, 1, 0));
+		camera.setWorldPosition(math::Vec3f(x + 0.5f, 0.5f, 10.0f));
+		camera.lookAt(math::Vec3f(x + 0.5f, 0.5f, 0.0f), math::Vec3f(0, 1, 0));
 		camera.update(0.0);
-		ASSERT_TRUE(_sceneMgr->trace(false, true, glm::mat4(1.0f)));
+		ASSERT_TRUE(_sceneMgr->trace(false, true, math::Mat4f(1.0f)));
 		ASSERT_TRUE(sceneMgr()->getPickResult().didHit);
-		EXPECT_EQ(glm::ivec3(x, 0, 0), sceneMgr()->getPickResult().hitVoxel);
+		EXPECT_EQ(math::Vec3i(x, 0, 0), sceneMgr()->getPickResult().hitVoxel);
 		EXPECT_EQ(x == 0 ? 8 : NO_NORMAL, _sceneMgr->hitCursorVoxel().getNormal());
 	}
 }
@@ -1569,13 +1575,13 @@ TEST_F(SceneManagerTest, testStrokeGestureInputAndUndo) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "stroke_gesture", voxel::Region(0, 0, 0, 8, 2, 2)));
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.shapeBrush().setStrokeMode();
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, volume);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
 	EXPECT_FALSE(voxel::isAir(volume->voxel(0, 0, 0).getMaterial())) << "Apply the first dab on press";
-	modifier.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(4, 0, 0), voxel::FaceNames::PositiveY);
 	modifier.update(1.0, nullptr);
 	for (int x = 0; x <= 4; ++x) {
 		EXPECT_FALSE(voxel::isAir(volume->voxel(x, 0, 0).getMaterial())) << x;
@@ -1600,7 +1606,7 @@ TEST_F(SceneManagerTest, testStampGestureScheduling) {
 	stamp.setVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 1), palette);
 	stamp.setCenterMode(false);
 	stamp.setContinuousMode(false);
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, volume);
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
@@ -1611,12 +1617,12 @@ TEST_F(SceneManagerTest, testStampGestureScheduling) {
 	EXPECT_FALSE(voxel::isAir(volume->voxel(0, 0, 0).getMaterial()));
 
 	stamp.setContinuousMode(true);
-	modifier.setCursorPosition(glm::ivec3(3, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(3, 0, 0), voxel::FaceNames::PositiveY);
 	command::executeCommands("+actionexecute 1 2.0");
 	EXPECT_TRUE(voxel::isAir(volume->voxel(3, 0, 0).getMaterial())) << "Stamp still waits for the continuous tick";
 	modifier.update(2.0, nullptr);
 	EXPECT_FALSE(voxel::isAir(volume->voxel(3, 0, 0).getMaterial()));
-	modifier.setCursorPosition(glm::ivec3(6, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(6, 0, 0), voxel::FaceNames::PositiveY);
 	modifier.update(3.0, nullptr);
 	EXPECT_FALSE(voxel::isAir(volume->voxel(6, 0, 0).getMaterial()));
 	EXPECT_TRUE(voxel::isAir(volume->voxel(4, 0, 0).getMaterial())) << "Stamp retains its existing spacing behavior";
@@ -1625,8 +1631,8 @@ TEST_F(SceneManagerTest, testStampGestureScheduling) {
 
 TEST_F(SceneManagerTest, testTemporaryEraseUsesViewportTransform) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "erase_transform", voxel::Region(-3, 3)));
-	const glm::ivec3 target(0, 0, 0);
-	const glm::ivec3 adjacent(1, 0, 0);
+	const math::Vec3i target(0, 0, 0);
+	const math::Vec3i adjacent(1, 0, 0);
 	ASSERT_TRUE(testSetVoxel(target, 1));
 	ASSERT_TRUE(testSetVoxel(adjacent, 2));
 	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
@@ -1639,13 +1645,13 @@ TEST_F(SceneManagerTest, testTemporaryEraseUsesViewportTransform) {
 	camera.setNearPlane(0.1f);
 	camera.setFarPlane(30.0f);
 	camera.setFieldOfView(45.0f);
-	camera.setSize(glm::ivec2(800, 600));
-	camera.setWorldPosition(glm::vec3(40.5f, 0.5f, 10.0f));
-	camera.lookAt(glm::vec3(40.5f, 0.5f, 0.0f), glm::vec3(0, 1, 0));
+	camera.setSize(math::Vec2i(800, 600));
+	camera.setWorldPosition(math::Vec3f(40.5f, 0.5f, 10.0f));
+	camera.lookAt(math::Vec3f(40.5f, 0.5f, 0.0f), math::Vec3f(0, 1, 0));
 	camera.update(0.0);
 	_sceneMgr->setActiveCamera(&camera, false);
 	_sceneMgr->setMousePos(400, 300);
-	const glm::mat4 invModel = glm::translate(glm::vec3(-40.0f, 0, 0));
+	const math::Mat4f invModel = math::translate(math::Vec3f(-40.0f, 0, 0));
 	ASSERT_TRUE(_sceneMgr->trace(false, true, invModel));
 	ASSERT_TRUE(sceneMgr()->getPickResult().didHit);
 	EXPECT_EQ(target, sceneMgr()->getPickResult().hitVoxel);
@@ -1671,7 +1677,7 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	const voxel::Region region{-10, 10};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "raycast_test", region));
 
-	const glm::ivec3 targetPos(0, 0, 0);
+	const math::Vec3i targetPos(0, 0, 0);
 	ASSERT_TRUE(testSetVoxel(targetPos, 1));
 
 	// Create and set up a camera for the raycast
@@ -1679,12 +1685,12 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	camera.setNearPlane(0.1f);
 	camera.setFarPlane(20.0f);
 	camera.setFieldOfView(45.0f);
-	camera.setSize(glm::ivec2(800, 600));
+	camera.setSize(math::Vec2i(800, 600));
 
 	// Position camera to look directly at the origin from positive Z
-	const glm::vec3 cameraPos(0.0f, 0.0f, 10.0f);
-	const glm::vec3 lookAt(0.0f, 0.0f, 0.0f);
-	const glm::vec3 up(0.0f, 1.0f, 0.0f);
+	const math::Vec3f cameraPos(0.0f, 0.0f, 10.0f);
+	const math::Vec3f lookAt(0.0f, 0.0f, 0.0f);
+	const math::Vec3f up(0.0f, 1.0f, 0.0f);
 	camera.setWorldPosition(cameraPos);
 	camera.lookAt(lookAt, up);
 	camera.update(0.0);
@@ -1697,7 +1703,7 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	_sceneMgr->setMousePos(camera.size().x / 2, camera.size().y / 2);
 
 	// Perform the raycast with identity transformation matrix
-	const glm::mat4 invModel(1.0f);
+	const math::Mat4f invModel(1.0f);
 	EXPECT_TRUE(sceneMgr()->testMouseRayTrace(true, invModel));
 
 	// Check the raycast result - we should at least get a result
@@ -1713,8 +1719,8 @@ TEST_F(SceneManagerTest, testMouseRayTrace) {
 	}
 
 	// Test raycast against empty space by pointing camera away from any voxels
-	const glm::vec3 emptyCameraPos(0.0f, 0.0f, -10.0f); // Point away from voxels
-	const glm::vec3 emptyLookAt(0.0f, 0.0f, -20.0f);
+	const math::Vec3f emptyCameraPos(0.0f, 0.0f, -10.0f); // Point away from voxels
+	const math::Vec3f emptyLookAt(0.0f, 0.0f, -20.0f);
 	camera.setWorldPosition(emptyCameraPos);
 	camera.lookAt(emptyLookAt, up);
 	camera.update(0.0);
@@ -1747,7 +1753,7 @@ TEST_F(SceneManagerTest, testColorToNewNode) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	for (int i = 0; i < 4; ++i) {
-		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
+		v->setVoxel(math::Vec3i(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
 	}
 	voxel::Voxel targetVoxel(voxel::VoxelType::Generic, 1);
 	EXPECT_EQ(1, voxelutil::countVoxelsByColor(*v, targetVoxel));
@@ -1766,7 +1772,7 @@ TEST_F(SceneManagerTest, testColorToNewNodeMultipleIndices) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	for (int i = 0; i < 4; ++i) {
-		v->setVoxel(glm::ivec3(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
+		v->setVoxel(math::Vec3i(i, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, i));
 	}
 	const voxel::Voxel voxel1(voxel::VoxelType::Generic, 1);
 	const voxel::Voxel voxel2(voxel::VoxelType::Generic, 2);
@@ -1808,18 +1814,18 @@ TEST_F(SceneManagerTest, testNodeShiftAllKeyframes) {
 
 	// validate initial state
 	const scenegraph::FrameTransform &ft0 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
-	EXPECT_VEC_NEAR(ft0.worldTranslation(), glm::vec3(0.0f, 0.0f, 0.0f), 0.001f);
+	EXPECT_VEC_NEAR(ft0.worldTranslation(), math::Vec3f(0.0f, 0.0f, 0.0f), 0.001f);
 
 	// perform action
-	const glm::vec3 shift(5.0f, 5.0f, 5.0f);
+	const math::Vec3f shift(5.0f, 5.0f, 5.0f);
 	EXPECT_TRUE(_sceneMgr->nodeShiftAllKeyframes(_sceneMgr->sceneGraph().uuid(nodeId), shift));
 
 	// validate shifted state
 	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
-	EXPECT_VEC_NEAR(ft1.worldTranslation(), glm::vec3(5.0f, 5.0f, 5.0f), 0.001f);
+	EXPECT_VEC_NEAR(ft1.worldTranslation(), math::Vec3f(5.0f, 5.0f, 5.0f), 0.001f);
 
 	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n, 10);
-	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(5.0f, 5.0f, 5.0f), 0.001f);
+	EXPECT_VEC_NEAR(ft2.worldTranslation(), math::Vec3f(5.0f, 5.0f, 5.0f), 0.001f);
 }
 
 TEST_F(SceneManagerTest, testNodeTransformMirror) {
@@ -1830,20 +1836,20 @@ TEST_F(SceneManagerTest, testNodeTransformMirror) {
 
 	// set initial transform
 	scenegraph::SceneGraphTransform transform;
-	transform.setWorldTranslation(glm::vec3(10.0f, 20.0f, 30.0f));
+	transform.setWorldTranslation(math::Vec3f(10.0f, 20.0f, 30.0f));
 	n.keyFrame(0).setTransform(transform);
 	_sceneMgr->sceneGraph().updateTransforms();
 
 	// validate initial state
 	const scenegraph::FrameTransform &ft0 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
-	EXPECT_VEC_NEAR(ft0.worldTranslation(), glm::vec3(10.0f, 20.0f, 30.0f), 0.001f);
+	EXPECT_VEC_NEAR(ft0.worldTranslation(), math::Vec3f(10.0f, 20.0f, 30.0f), 0.001f);
 
 	// perform action X
 	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(_sceneMgr->sceneGraph().uuid(nodeId), 0, math::Axis::X));
 
 	// validate mirrored state X
 	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
-	EXPECT_VEC_NEAR(ft1.worldTranslation(), glm::vec3(-10.0f, 20.0f, 30.0f), 0.001f);
+	EXPECT_VEC_NEAR(ft1.worldTranslation(), math::Vec3f(-10.0f, 20.0f, 30.0f), 0.001f);
 
 	// perform action XZ (mirror X and Z)
 	// Current state: (-10, 20, 30)
@@ -1852,7 +1858,7 @@ TEST_F(SceneManagerTest, testNodeTransformMirror) {
 	EXPECT_TRUE(_sceneMgr->nodeTransformMirror(_sceneMgr->sceneGraph().uuid(nodeId), 0, math::Axis::X | math::Axis::Z));
 
 	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n, 0);
-	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(10.0f, 20.0f, -30.0f), 0.001f);
+	EXPECT_VEC_NEAR(ft2.worldTranslation(), math::Vec3f(10.0f, 20.0f, -30.0f), 0.001f);
 }
 
 TEST_F(SceneManagerTest, testLoadPalette) {
@@ -1876,9 +1882,9 @@ TEST_F(SceneManagerTest, testCalculateNormals) {
 	const voxel::Region region{0, 5};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "normals_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
-	ASSERT_TRUE(testSetVoxel(glm::ivec3(2, 2, 2), 1));
-	ASSERT_TRUE(testSetVoxel(glm::ivec3(3, 2, 2), 1));
-	ASSERT_TRUE(testSetVoxel(glm::ivec3(2, 3, 2), 1));
+	ASSERT_TRUE(testSetVoxel(math::Vec3i(2, 2, 2), 1));
+	ASSERT_TRUE(testSetVoxel(math::Vec3i(3, 2, 2), 1));
+	ASSERT_TRUE(testSetVoxel(math::Vec3i(2, 3, 2), 1));
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, v);
 	// check that no normal is set yet
@@ -1892,9 +1898,9 @@ TEST_F(SceneManagerTest, testCalculateNormals) {
 	}
 	EXPECT_TRUE(_sceneMgr->nodeCalculateNormals(_sceneMgr->sceneGraph().uuid(nodeId), voxel::SixConnected));
 	// check that normals are set for the voxels we placed
-	EXPECT_NE(v->voxel(glm::ivec3(2, 2, 2)).getNormal(), NO_NORMAL);
-	EXPECT_NE(v->voxel(glm::ivec3(3, 2, 2)).getNormal(), NO_NORMAL);
-	EXPECT_NE(v->voxel(glm::ivec3(2, 3, 2)).getNormal(), NO_NORMAL);
+	EXPECT_NE(v->voxel(math::Vec3i(2, 2, 2)).getNormal(), NO_NORMAL);
+	EXPECT_NE(v->voxel(math::Vec3i(3, 2, 2)).getNormal(), NO_NORMAL);
+	EXPECT_NE(v->voxel(math::Vec3i(2, 3, 2)).getNormal(), NO_NORMAL);
 }
 
 TEST_F(SceneManagerTest, testSaveNode) {
@@ -2116,7 +2122,7 @@ TEST_F(SceneManagerTest, testSelectOnlyCornersNoSelection) {
 TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXZ) {
 	// Paper-thin wall in XZ plane (1 voxel thick in Y).
 	// After filtering, only the perimeter voxels should remain selected.
-	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{5, 0, 5}};
+	const voxel::Region region{math::Vec3i{0, 0, 0}, math::Vec3i{5, 0, 5}};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_xz_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
@@ -2158,7 +2164,7 @@ TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXZ) {
 
 TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXY) {
 	// Paper-thin wall in XY plane (1 voxel thick in Z).
-	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{5, 5, 0}};
+	const voxel::Region region{math::Vec3i{0, 0, 0}, math::Vec3i{5, 5, 0}};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_xy_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
@@ -2199,7 +2205,7 @@ TEST_F(SceneManagerTest, testSelectOnlyWallEdgesXY) {
 
 TEST_F(SceneManagerTest, testSelectOnlyWallEdgesYZ) {
 	// Paper-thin wall in YZ plane (1 voxel thick in X).
-	const voxel::Region region{glm::ivec3{0, 0, 0}, glm::ivec3{0, 5, 5}};
+	const voxel::Region region{math::Vec3i{0, 0, 0}, math::Vec3i{0, 5, 5}};
 	ASSERT_TRUE(_sceneMgr->newScene(true, "walledges_yz_test", region));
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *v = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
@@ -2258,7 +2264,7 @@ TEST_F(SceneManagerTest, testSelectionGrow) {
 	// Select only the center voxel (2,2,2)
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
-	const voxel::Region centerRegion(glm::ivec3(2), glm::ivec3(2));
+	const voxel::Region centerRegion(math::Vec3i(2), math::Vec3i(2));
 	node->select(centerRegion);
 
 	// Verify only center is selected
@@ -2333,7 +2339,7 @@ TEST_F(SceneManagerTest, testFillPlane) {
 
 	// set cursor position and face for the fill plane operation
 	Modifier &modifier = _sceneMgr->modifier();
-	modifier.setCursorPosition(glm::ivec3(0, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0, 0, 0), voxel::FaceNames::PositiveY);
 	_sceneMgr->fillPlane(img);
 }
 
@@ -2410,7 +2416,7 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 	v1->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
 	// Set an asymmetric pivot on the first node to verify X<->Z swap
-	const glm::vec3 pivot1(0.25f, 0.0f, 0.75f);
+	const math::Vec3f pivot1(0.25f, 0.0f, 0.75f);
 	_sceneMgr->sceneGraph().node(firstNodeId).setPivot(pivot1);
 
 	const int secondNodeId = _sceneMgr->addModelChild("second node", 4, 8, 4);
@@ -2420,7 +2426,7 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 	v2->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 2));
 
 	// Set an asymmetric pivot on the second node
-	const glm::vec3 pivot2(1.0f, 0.5f, 0.0f);
+	const math::Vec3f pivot2(1.0f, 0.5f, 0.0f);
 	_sceneMgr->sceneGraph().node(secondNodeId).setPivot(pivot2);
 
 	_sceneMgr->sceneGraph().updateTransforms();
@@ -2457,10 +2463,10 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 	// pivot1 (0.25, 0.0, 0.75) -> (0.75, 0.0, 0.25)
 	// pivot2 (1.0, 0.5, 0.0) -> (0.0, 0.5, 1.0)
 	const scenegraph::SceneGraphNode &n1 = _sceneMgr->sceneGraph().node(firstNodeId);
-	EXPECT_VEC_NEAR(n1.pivot(), glm::vec3(0.75f, 0.0f, 0.25f), 0.0001f)
+	EXPECT_VEC_NEAR(n1.pivot(), math::Vec3f(0.75f, 0.0f, 0.25f), 0.0001f)
 		<< "First node pivot should have X and Z swapped";
 	const scenegraph::SceneGraphNode &n2 = _sceneMgr->sceneGraph().node(secondNodeId);
-	EXPECT_VEC_NEAR(n2.pivot(), glm::vec3(0.0f, 0.5f, 1.0f), 0.0001f)
+	EXPECT_VEC_NEAR(n2.pivot(), math::Vec3f(0.0f, 0.5f, 1.0f), 0.0001f)
 		<< "Second node pivot should have X and Z swapped";
 
 	// World translations after rotation around the scene pivot
@@ -2469,11 +2475,11 @@ TEST_F(SceneManagerTest, testNodeRotateAllNodes) {
 	// Node 1: worldCenter(2,2,3.5) rotated around scene center -> (-8.5, 0.0, -0.5)
 	// Node 2 (child, inherits parent translation): worldCenter(-6.5,4,1.5) rotated -> (-5.0, 0.0, -9.0)
 	const scenegraph::FrameTransform &ft1 = _sceneMgr->sceneGraph().transformForFrame(n1, 0);
-	EXPECT_VEC_NEAR(ft1.worldTranslation(), glm::vec3(-8.5f, 0.0f, -0.5f), 0.001f)
+	EXPECT_VEC_NEAR(ft1.worldTranslation(), math::Vec3f(-8.5f, 0.0f, -0.5f), 0.001f)
 		<< "First node world translation after rotation";
 
 	const scenegraph::FrameTransform &ft2 = _sceneMgr->sceneGraph().transformForFrame(n2, 0);
-	EXPECT_VEC_NEAR(ft2.worldTranslation(), glm::vec3(-5.0f, 0.0f, -9.0f), 0.001f)
+	EXPECT_VEC_NEAR(ft2.worldTranslation(), math::Vec3f(-5.0f, 0.0f, -9.0f), 0.001f)
 		<< "Second node world translation after rotation";
 }
 
@@ -2585,10 +2591,10 @@ TEST_F(SceneManagerTest, testNodeQuantizeColors) {
 	palette.setColor(3, color::RGBA(5, 5, 250, 255));   // near-blue
 
 	// place voxels with each color
-	EXPECT_TRUE(testSetVoxel(glm::ivec3(0, 0, 0), 0));
-	EXPECT_TRUE(testSetVoxel(glm::ivec3(1, 0, 0), 1));
-	EXPECT_TRUE(testSetVoxel(glm::ivec3(2, 0, 0), 2));
-	EXPECT_TRUE(testSetVoxel(glm::ivec3(3, 0, 0), 3));
+	EXPECT_TRUE(testSetVoxel(math::Vec3i(0, 0, 0), 0));
+	EXPECT_TRUE(testSetVoxel(math::Vec3i(1, 0, 0), 1));
+	EXPECT_TRUE(testSetVoxel(math::Vec3i(2, 0, 0), 2));
+	EXPECT_TRUE(testSetVoxel(math::Vec3i(3, 0, 0), 3));
 
 	// quantize all 4 colors down to 2
 	core::Buffer<uint8_t> selectedIndices;
@@ -2827,7 +2833,7 @@ TEST_F(SceneManagerTest, testMergeActiveToBackgroundExpandsNode) {
 	ASSERT_NE(nullptr, resultNode);
 	const voxel::RawVolume *resultVol = resultNode->volume();
 	ASSERT_NE(nullptr, resultVol);
-	EXPECT_TRUE(resultVol->region().containsPoint(glm::ivec3(8, 8, 8)));
+	EXPECT_TRUE(resultVol->region().containsPoint(math::Vec3i(8, 8, 8)));
 	EXPECT_FALSE(voxel::isAir(resultVol->voxel(8, 8, 8).getMaterial()));
 }
 
@@ -2895,7 +2901,7 @@ TEST_F(SceneManagerTest, testGlobalCopyVisibleAndPasteNode) {
 
 	// Now paste as new node
 	const size_t nodeCountBefore = _sceneMgr->sceneGraph().size();
-	ASSERT_TRUE(_sceneMgr->globalPasteNode(glm::ivec3(0)));
+	ASSERT_TRUE(_sceneMgr->globalPasteNode(math::Vec3i(0)));
 
 	// A new node should have been created
 	EXPECT_GT(_sceneMgr->sceneGraph().size(), nodeCountBefore);
@@ -2916,12 +2922,12 @@ TEST_F(SceneManagerTest, testAutoSelectOnPaste) {
 	v->setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1));
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
-	node->select(voxel::Region{glm::ivec3(0), glm::ivec3(1, 0, 0)});
+	node->select(voxel::Region{math::Vec3i(0), math::Vec3i(1, 0, 0)});
 	ASSERT_TRUE(_sceneMgr->hasSelection(node->uuid()));
 
 	// Copy and then paste
 	ASSERT_TRUE(_sceneMgr->nodeCopy(_sceneMgr->sceneGraph().uuid(nodeId)));
-	ASSERT_TRUE(_sceneMgr->paste(glm::ivec3(2, 0, 0)));
+	ASSERT_TRUE(_sceneMgr->paste(math::Vec3i(2, 0, 0)));
 
 	// The pasted voxels should have FlagOutline set
 	const voxel::Voxel &pasted1 = v->voxel(2, 0, 0);
@@ -3018,7 +3024,7 @@ TEST_F(SceneManagerTest, testDeselectColor) {
 	// Select all three
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
-	node->select(voxel::Region{glm::ivec3(0, 0, 0), glm::ivec3(2, 0, 0)});
+	node->select(voxel::Region{math::Vec3i(0, 0, 0), math::Vec3i(2, 0, 0)});
 
 	// Deselect colorA
 	sceneMgr()->testDeselectColor(colorA);
@@ -3045,7 +3051,7 @@ TEST_F(SceneManagerTest, testSelectOnlyColor) {
 
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNode(nodeId);
 	ASSERT_NE(nullptr, node);
-	node->select(voxel::Region{glm::ivec3(0, 0, 0), glm::ivec3(2, 0, 0)});
+	node->select(voxel::Region{math::Vec3i(0, 0, 0), math::Vec3i(2, 0, 0)});
 
 	// Keep only colorA selected
 	sceneMgr()->testSelectOnlyColor(colorA);
@@ -3191,16 +3197,16 @@ TEST_F(SceneManagerTest, testRescaleContent) {
 		}
 	}
 
-	const glm::ivec3 originalSize = vol->region().getDimensionsInVoxels();
-	EXPECT_EQ(originalSize, glm::ivec3(10, 10, 10));
+	const math::Vec3i originalSize = vol->region().getDimensionsInVoxels();
+	EXPECT_EQ(originalSize, math::Vec3i(10, 10, 10));
 
 	// Rescale to double size
-	_sceneMgr->nodeRescaleContent(_sceneMgr->sceneGraph().uuid(nodeId), glm::ivec3(20, 20, 20));
+	_sceneMgr->nodeRescaleContent(_sceneMgr->sceneGraph().uuid(nodeId), math::Vec3i(20, 20, 20));
 
 	voxel::RawVolume *rescaled = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, rescaled);
-	const glm::ivec3 newSize = rescaled->region().getDimensionsInVoxels();
-	EXPECT_EQ(newSize, glm::ivec3(20, 20, 20));
+	const math::Vec3i newSize = rescaled->region().getDimensionsInVoxels();
+	EXPECT_EQ(newSize, math::Vec3i(20, 20, 20));
 
 	// Check that voxels exist in the rescaled volume
 	EXPECT_TRUE(voxel::isBlocked(rescaled->voxel(0, 0, 0).getMaterial()));
@@ -3211,10 +3217,10 @@ TEST_F(SceneManagerTest, testRescaleContentInvalidSize) {
 	const int nodeId = _sceneMgr->sceneGraph().activeNode();
 	voxel::RawVolume *vol = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, vol);
-	const glm::ivec3 originalSize = vol->region().getDimensionsInVoxels();
+	const math::Vec3i originalSize = vol->region().getDimensionsInVoxels();
 
 	// Try rescale with invalid size - should be a no-op
-	_sceneMgr->nodeRescaleContent(_sceneMgr->sceneGraph().uuid(nodeId), glm::ivec3(0, 10, 10));
+	_sceneMgr->nodeRescaleContent(_sceneMgr->sceneGraph().uuid(nodeId), math::Vec3i(0, 10, 10));
 
 	voxel::RawVolume *after = _sceneMgr->volume(_sceneMgr->sceneGraph().uuid(nodeId));
 	ASSERT_NE(nullptr, after);
@@ -3299,20 +3305,20 @@ TEST_F(SceneManagerTest, testKeyFrameLongRotationUndoRedo) {
 	auto &node = graph.node(_sceneMgr->activeNode());
 	ASSERT_TRUE(_sceneMgr->nodeAddKeyFrame(node.uuid(), 20));
 	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(node.uuid(),
-		glm::rotate(glm::half_pi<float>(), glm::vec3(0, 1, 0)), 1, true));
-	const glm::vec3 point(1, 0, 0);
-	const glm::vec3 shortPoint = glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0));
+		math::rotate(math::halfPi, math::Vec3f(0, 1, 0)), 1, true));
+	const math::Vec3f point(1, 0, 0);
+	const math::Vec3f shortPoint = math::Vec3f(graph.transformForFrame(node, 10).worldMatrix() * math::Vec4f(point, 0));
 	EXPECT_GT(shortPoint.x, 0.0f);
 	ASSERT_TRUE(_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), 0, true));
 	EXPECT_TRUE(node.keyFrame(0).longRotation);
-	const glm::vec3 longPoint = glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0));
+	const math::Vec3f longPoint = math::Vec3f(graph.transformForFrame(node, 10).worldMatrix() * math::Vec4f(point, 0));
 	EXPECT_LT(longPoint.x, 0.0f);
 	ASSERT_TRUE(_sceneMgr->undo());
 	EXPECT_FALSE(node.keyFrame(0).longRotation);
-	ASSERT_VEC_NEAR(shortPoint, glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0)), 0.0001f);
+	ASSERT_VEC_NEAR(shortPoint, math::Vec3f(graph.transformForFrame(node, 10).worldMatrix() * math::Vec4f(point, 0)), 0.0001f);
 	ASSERT_TRUE(_sceneMgr->redo());
 	EXPECT_TRUE(node.keyFrame(0).longRotation);
-	ASSERT_VEC_NEAR(longPoint, glm::vec3(graph.transformForFrame(node, 10).worldMatrix() * glm::vec4(point, 0)), 0.0001f);
+	ASSERT_VEC_NEAR(longPoint, math::Vec3f(graph.transformForFrame(node, 10).worldMatrix() * math::Vec4f(point, 0)), 0.0001f);
 	EXPECT_FALSE(_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), -1, true));
 	EXPECT_FALSE(_sceneMgr->nodeUpdateKeyFrameLongRotation(node.uuid(), 10, true));
 }
@@ -3320,9 +3326,9 @@ TEST_F(SceneManagerTest, testKeyFrameLongRotationUndoRedo) {
 TEST_F(SceneManagerTest, testRepeatNodeGridUndoRedo) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region(2, 4, 6, 3, 6, 9)));
 	const int sourceId = _sceneMgr->activeNode();
-	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(2, 4, 6), 7));
+	ASSERT_TRUE(testSetVoxelOnRealNode(math::Vec3i(2, 4, 6), 7));
 	// A selection must not restrict full-node repetition.
-	testSelect(glm::ivec3(2, 4, 6), glm::ivec3(2, 4, 6));
+	testSelect(math::Vec3i(2, 4, 6), math::Vec3i(2, 4, 6));
 	ASSERT_EQ(1, command::executeCommands(core::String::format("noderepeat %i 2 2 2", sourceId)));
 	EXPECT_EQ(8u, _sceneMgr->sceneGraph().size());
 	EXPECT_EQ(sourceId, _sceneMgr->activeNode());
@@ -3334,8 +3340,8 @@ TEST_F(SceneManagerTest, testRepeatNodeGridUndoRedo) {
 		}
 		EXPECT_EQ(voxel::Region(2, 4, 6, 3, 6, 9), node.region());
 		EXPECT_EQ(7, node.volume()->voxel(2, 4, 6).getColor());
-		const glm::vec3 translation = node.transform().worldTranslation();
-		const glm::ivec3 tile = glm::ivec3(translation) / glm::ivec3(2, 3, 4);
+		const math::Vec3f translation = node.transform().worldTranslation();
+		const math::Vec3i tile = math::Vec3i(translation) / math::Vec3i(2, 3, 4);
 		ASSERT_GE(tile.x, 0);
 		ASSERT_LE(tile.x, 1);
 		ASSERT_GE(tile.y, 0);
@@ -3356,14 +3362,14 @@ TEST_F(SceneManagerTest, testRepeatNodeTransformedParent) {
 	auto &graph = _sceneMgr->sceneGraph();
 	const int sourceId = _sceneMgr->activeNode();
 	scenegraph::SceneGraphNode parent(scenegraph::SceneGraphNodeType::Group);
-	parent.transform().setLocalMatrix(glm::translate(glm::vec3(10, 20, 30)) *
-		glm::rotate(0.7f, glm::vec3(0, 1, 0)) * glm::scale(glm::vec3(2, 3, 4)));
+	parent.transform().setLocalMatrix(math::translate(math::Vec3f(10, 20, 30)) *
+		math::rotate(0.7f, math::Vec3f(0, 1, 0)) * math::scale(math::Vec3f(2, 3, 4)));
 	const int parentId = graph.emplace(core::move(parent));
 	ASSERT_TRUE(graph.changeParent(sourceId, parentId));
 	graph.updateTransforms();
 	const auto &source = graph.node(sourceId);
-	const glm::mat4 before = source.transform().worldMatrix();
-	const glm::vec3 delta = glm::mat3(before) * glm::vec3(2, 0, 0);
+	const math::Mat4f before = source.transform().worldMatrix();
+	const math::Vec3f delta = math::Mat3f(before) * math::Vec3f(2, 0, 0);
 	ASSERT_EQ(1, command::executeCommands(core::String::format("noderepeat %s 2 1 1", source.uuid().str().c_str())));
 	ASSERT_EQ(2u, graph.size());
 	for (const auto &entry : graph.nodes()) {
@@ -3372,8 +3378,8 @@ TEST_F(SceneManagerTest, testRepeatNodeTransformedParent) {
 			continue;
 		}
 		EXPECT_EQ(parentId, graph.parentId(node));
-		ASSERT_VEC_NEAR(glm::vec3(before[3]) + delta, node.transform().worldTranslation(), 0.001f);
-		ASSERT_VEC_NEAR(glm::vec3(before[0]), glm::vec3(node.transform().worldMatrix()[0]), 0.001f);
+		ASSERT_VEC_NEAR(math::Vec3f(before[3]) + delta, node.transform().worldTranslation(), 0.001f);
+		ASSERT_VEC_NEAR(math::Vec3f(before[0]), math::Vec3f(node.transform().worldMatrix()[0]), 0.001f);
 		EXPECT_EQ(source.pivot(), node.pivot());
 		EXPECT_EQ(source.palette().hash(), node.palette().hash());
 	}
@@ -3381,10 +3387,10 @@ TEST_F(SceneManagerTest, testRepeatNodeTransformedParent) {
 
 TEST_F(SceneManagerTest, testRepeatSelectionBoundsAndUndo) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region(-2, 0, 0, 5, 0, 0)));
-	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(-2, 0, 0), 7));
-	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(-1, 0, 0), 9));
-	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(0, 0, 0), 8));
-	testSelect(glm::ivec3(-2, 0, 0), glm::ivec3(-2, 0, 0));
+	ASSERT_TRUE(testSetVoxelOnRealNode(math::Vec3i(-2, 0, 0), 7));
+	ASSERT_TRUE(testSetVoxelOnRealNode(math::Vec3i(-1, 0, 0), 9));
+	ASSERT_TRUE(testSetVoxelOnRealNode(math::Vec3i(0, 0, 0), 8));
+	testSelect(math::Vec3i(-2, 0, 0), math::Vec3i(-2, 0, 0));
 	// Select two disconnected voxels without selecting the voxel between them.
 	auto &node = _sceneMgr->sceneGraph().node(_sceneMgr->activeNode());
 	voxel::Voxel v = node.volume()->voxel(0, 0, 0);
@@ -3418,8 +3424,8 @@ TEST_F(SceneManagerTest, testRepeatInvalidAndNoOp) {
 
 TEST_F(SceneManagerTest, testRepeatSelectionGrid) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region{0, 2}));
-	ASSERT_TRUE(testSetVoxelOnRealNode(glm::ivec3(0), 7));
-	testSelect(glm::ivec3(0), glm::ivec3(0));
+	ASSERT_TRUE(testSetVoxelOnRealNode(math::Vec3i(0), 7));
+	testSelect(math::Vec3i(0), math::Vec3i(0));
 	ASSERT_EQ(1, command::executeCommands("selectionrepeat 2 2 2"));
 	for (int z = 0; z <= 2; ++z) {
 		for (int y = 0; y <= 2; ++y) {
@@ -3442,7 +3448,7 @@ TEST_F(SceneManagerTest, testAddModelAdjacentPositiveX) {
 	const scenegraph::SceneGraphNode *source = _sceneMgr->sceneGraphModelNode(sourceNodeId);
 	ASSERT_NE(nullptr, source);
 	const voxel::Region sourceWorld = _sceneMgr->sceneGraph().sceneRegion(*source, 0);
-	const glm::ivec3 dims = source->region().getDimensionsInVoxels();
+	const math::Vec3i dims = source->region().getDimensionsInVoxels();
 	const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX);
 	ASSERT_NE(InvalidNodeId, newNodeId);
 	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
@@ -3487,14 +3493,14 @@ TEST_F(SceneManagerTest, testAddModelAdjacentOverlapRejected) {
 TEST_F(SceneManagerTest, testAddModelAdjacentRotatedSource) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 1, 1, 1)));
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
-	const glm::mat4 rotMat = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
+	const math::Mat4f rotMat = math::rotate(math::halfPi, math::Vec3f(0.0f, 1.0f, 0.0f));
 	ASSERT_TRUE(_sceneMgr->nodeUpdateTransform(_sceneMgr->sceneGraph().uuid(sourceNodeId), rotMat, 0, false));
 	const scenegraph::SceneGraphNode *source = _sceneMgr->sceneGraphModelNode(sourceNodeId);
 	ASSERT_NE(nullptr, source);
-	const glm::ivec3 dims = source->region().getDimensionsInVoxels();
+	const math::Vec3i dims = source->region().getDimensionsInVoxels();
 	const math::OBBF sourceObb = _sceneMgr->sceneGraph().sceneOBB(*source, 0);
 	const math::OBBF expectedObb =
-		scenegraph::calcAdjacentObb(sourceObb, voxel::FaceNames::PositiveX, scenegraph::calculateExtents(glm::vec3(dims)));
+		scenegraph::calcAdjacentObb(sourceObb, voxel::FaceNames::PositiveX, scenegraph::calculateExtents(math::Vec3f(dims)));
 	const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX);
 	ASSERT_NE(InvalidNodeId, newNodeId);
 	const scenegraph::SceneGraphNode *newNode = _sceneMgr->sceneGraphModelNode(newNodeId);
@@ -3503,8 +3509,8 @@ TEST_F(SceneManagerTest, testAddModelAdjacentRotatedSource) {
 	const math::OBBF newObb = _sceneMgr->sceneGraph().sceneOBB(*newNode, 0);
 	ASSERT_VEC_NEAR(expectedObb.origin(), newObb.origin(), 0.001f);
 	ASSERT_VEC_NEAR(expectedObb.extents(), newObb.extents(), 0.001f);
-	const glm::mat3 expectedRot(expectedObb.rotation());
-	const glm::mat3 newRot(newObb.rotation());
+	const math::Mat3f expectedRot(expectedObb.rotation());
+	const math::Mat3f newRot(newObb.rotation());
 	ASSERT_VEC_NEAR(expectedRot[0], newRot[0], 0.001f);
 	ASSERT_VEC_NEAR(expectedRot[1], newRot[1], 0.001f);
 	ASSERT_VEC_NEAR(expectedRot[2], newRot[2], 0.001f);
@@ -3513,7 +3519,7 @@ TEST_F(SceneManagerTest, testAddModelAdjacentRotatedSource) {
 TEST_F(SceneManagerTest, testAddModelAdjacentEmptyVolume) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 3, 3, 3)));
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
-	const glm::ivec3 pos(1, 2, 3);
+	const math::Vec3i pos(1, 2, 3);
 	ASSERT_TRUE(testSetVoxelOnRealNode(pos, 3));
 	_sceneMgr->setAddNodeModeActive(true);
 	const int newNodeId = _sceneMgr->addModelAdjacent(_sceneMgr->sceneGraph().uuid(sourceNodeId), voxel::FaceNames::PositiveX);
@@ -3526,7 +3532,7 @@ TEST_F(SceneManagerTest, testAddModelAdjacentEmptyVolume) {
 TEST_F(SceneManagerTest, testAddModelAdjacentCloneVoxels) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "test", voxel::Region(0, 0, 0, 3, 3, 3)));
 	const int sourceNodeId = _sceneMgr->sceneGraph().activeNode();
-	const glm::ivec3 pos(1, 2, 3);
+	const math::Vec3i pos(1, 2, 3);
 	ASSERT_TRUE(testSetVoxelOnRealNode(pos, 3));
 	_sceneMgr->setAddNodeModeActive(true);
 	core::getVar(cfg::VoxEditAddNodeCloneVoxels)->setVal(true);
@@ -3568,7 +3574,7 @@ TEST_F(SceneManagerTest, testCalculateHash) {
 	const uint64_t full = _sceneMgr->calculateHash();
 	voxel::RawVolume *volume = node->volume();
 	ASSERT_NE(nullptr, volume);
-	const glm::ivec3 pos = volume->region().getCenter();
+	const math::Vec3i pos = volume->region().getCenter();
 	volume->setVoxel(pos, voxel::createVoxel(node->palette(), 1));
 	_sceneMgr->modified(node->uuid(), voxel::Region(pos, pos), SceneModifiedFlags::NoUndo);
 	EXPECT_NE(full, _sceneMgr->calculateHash());
@@ -3583,7 +3589,7 @@ TEST_F(SceneManagerTest, testLSystemExpandsRegion) {
 	config.width = 1.0f;
 	config.leafRadius = 0.0f;
 	config.iterations = 0;
-	config.position = glm::ivec3(4, 0, 4);
+	config.position = math::Vec3i(4, 0, 4);
 	_sceneMgr->lsystem(config);
 	for (int i = 0; i < 32 && _sceneMgr->lsystemRunning(); ++i) {
 		_sceneMgr->update((double)i * 0.016);
@@ -3598,7 +3604,7 @@ TEST_F(SceneManagerTest, testLSystemExpandsRegion) {
 
 TEST_F(SceneManagerTest, testExtrudeGizmoClickDoesNotChangeFace) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "extrude_gizmo", voxel::Region(-3, 3)));
-	ASSERT_TRUE(testSetVoxel(glm::ivec3(0), 1));
+	ASSERT_TRUE(testSetVoxel(math::Vec3i(0), 1));
 	voxel::RawVolume *volume = _sceneMgr->volume(_sceneMgr->activeNodeUUID());
 	ASSERT_NE(nullptr, volume);
 	voxel::Voxel selected = volume->voxel(0, 0, 0);
@@ -3608,7 +3614,7 @@ TEST_F(SceneManagerTest, testExtrudeGizmoClickDoesNotChangeFace) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setBrushType(BrushType::Extrude);
 	modifier.setModifierType(ModifierType::Place);
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveX);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveX);
 
 	core::ScopedBindingContext bindingContext(core::BindingContext::Context2);
 	command::executeCommands("+actionexecute 1 0.0");
@@ -3616,7 +3622,7 @@ TEST_F(SceneManagerTest, testExtrudeGizmoClickDoesNotChangeFace) {
 	EXPECT_EQ(modifier.extrudeBrush().face(), voxel::FaceNames::PositiveX);
 
 	_sceneMgr->setViewportGizmoActive(true);
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	command::executeCommands("+actionexecute 1 2.0");
 	command::executeCommands("-actionexecute 1 3.0");
 	EXPECT_EQ(modifier.extrudeBrush().face(), voxel::FaceNames::PositiveX)
@@ -3628,12 +3634,12 @@ TEST_F(SceneManagerTest, testNewPointBecomesActive) {
 	scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
 	point.setName("marker");
 	scenegraph::SceneGraphTransform transform;
-	transform.setLocalTranslation(glm::vec3(3.0f, 4.0f, 5.0f));
+	transform.setLocalTranslation(math::Vec3f(3.0f, 4.0f, 5.0f));
 	point.setTransform(0, transform);
 	const int pointId = _sceneMgr->moveNodeToSceneGraph(point, _sceneMgr->sceneGraph().root().id());
 	ASSERT_NE(InvalidNodeId, pointId);
 	EXPECT_EQ(pointId, _sceneMgr->activeNode());
-	const glm::mat4 world = _sceneMgr->sceneGraph().worldMatrix(_sceneMgr->sceneGraph().node(pointId), 0);
+	const math::Mat4f world = _sceneMgr->sceneGraph().worldMatrix(_sceneMgr->sceneGraph().node(pointId), 0);
 	EXPECT_NEAR(world[3][0], 3.0f, 0.001f);
 	EXPECT_NEAR(world[3][1], 4.0f, 0.001f);
 	EXPECT_NEAR(world[3][2], 5.0f, 0.001f);

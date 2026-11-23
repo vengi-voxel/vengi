@@ -9,11 +9,12 @@
 #include "core/SharedPtr.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 struct ambientocclusion {
 	static core::SharedPtr<voxel::RawVolume> create() {
-		glm::ivec3 mins(13, 14, 2);
-		glm::ivec3 maxs(17, 18, 6);
+		math::Vec3i mins(13, 14, 2);
+		math::Vec3i maxs(17, 18, 6);
 		voxel::Region region(mins, maxs);
 		core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 		v->setVoxel(15, 16, 2, voxel::createVoxel(voxel::VoxelType::Generic, 0));
@@ -54,8 +55,8 @@ struct ambientocclusion {
 
 	// https://github.com/vengi-voxel/vengi/issues/388
 	static core::SharedPtr<voxel::RawVolume> createIssue338() {
-		glm::ivec3 mins(0, 0, 0);
-		glm::ivec3 maxs(1, 0, 1);
+		math::Vec3i mins(0, 0, 0);
+		math::Vec3i maxs(1, 0, 1);
 		voxel::Region region(mins, maxs);
 		core::SharedPtr<voxel::RawVolume> v = core::make_shared<voxel::RawVolume>(region);
 		v->setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 244));

@@ -8,6 +8,7 @@
 #include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/network/ProtocolIds.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -21,7 +22,7 @@ private:
 	core::UUID _referenceUUID;
 	core::String _name;
 	scenegraph::SceneGraphNodeType _nodeType = scenegraph::SceneGraphNodeType::Unknown;
-	glm::vec3 _pivot{0.0f};
+	math::Vec3f _pivot{0.0f};
 	palette::Palette _palette;
 	scenegraph::SceneGraphNodeProperties _properties;
 	scenegraph::SceneGraphKeyFramesMap _keyFrames;
@@ -188,7 +189,7 @@ public:
 	scenegraph::SceneGraphNodeType nodeType() const {
 		return _nodeType;
 	}
-	const glm::vec3 &pivot() const {
+	const math::Vec3f &pivot() const {
 		return _pivot;
 	}
 	const palette::Palette &palette() const {

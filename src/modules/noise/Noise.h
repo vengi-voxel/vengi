@@ -5,8 +5,10 @@
 #pragma once
 
 #include "core/IComponent.h"
-#include <glm/glm.hpp>
 #include <stdint.h>
+#include "math/Vec3d.h"
+#include "math/Vec3i.h"
+#include "math/Vec2f.h"
 
 namespace noise {
 
@@ -14,7 +16,7 @@ namespace noise {
  * @brief Normalizes a noise value in the range [-1,-1] to [0,1]
  */
 inline float norm(float noise) {
-	return (glm::clamp(noise, -1.0f, 1.0f) + 1.0f) * 0.5f;
+	return (math::clamp(noise, -1.0f, 1.0f) + 1.0f) * 0.5f;
 }
 
 /**
@@ -51,27 +53,27 @@ public:
 	/**
 	 * @return Range [-+2147483647,+2147483647].
 	 */
-	int32_t intValueNoise(const glm::ivec3& pos, int32_t seed = 0) const;
+	int32_t intValueNoise(const math::Vec3i& pos, int32_t seed = 0) const;
 
 	/**
 	 * @return Range [-1.0,+1.0].
 	 */
-	double doubleValueNoise(const glm::ivec3& pos, int32_t seed = 0) const;
+	double doubleValueNoise(const math::Vec3i& pos, int32_t seed = 0) const;
 
-	double voronoi(const glm::dvec3& pos, bool enableDistance, double frequency = 1.0, int seed = 0) const;
+	double voronoi(const math::Vec3d& pos, bool enableDistance, double frequency = 1.0, int seed = 0) const;
 
 	/**
 	 * https://www.decarpentier.nl/scape-procedural-extensions
 	 * @param lacunarity spacing between successive octaves (use exactly 2.0 for wrapping output)
 	 * @param gain relative weighting applied to each successive octave
 	 */
-	float swissTurbulence(const glm::vec2& p, float offset, int octaves, float lacunarity = 2.0f, float gain = 0.6f, float warp = 0.15f) const;
+	float swissTurbulence(const math::Vec2f& p, float offset, int octaves, float lacunarity = 2.0f, float gain = 0.6f, float warp = 0.15f) const;
 
 	/**
 	 * @param lacunarity spacing between successive octaves (use exactly 2.0 for wrapping output)
 	 * @param gain relative weighting applied to each successive octave
 	 */
-	float jordanTurbulence(const glm::vec2&p, float offset, int octaves, float lacunarity = 2.0f, float gain1 = 0.8f, float gain = 0.5f, float warp0 = 0.4f, float warp = 0.35f,
+	float jordanTurbulence(const math::Vec2f&p, float offset, int octaves, float lacunarity = 2.0f, float gain1 = 0.8f, float gain = 0.5f, float warp0 = 0.4f, float warp = 0.35f,
 			float damp0 = 1.0f, float damp = 0.8f, float damp_scale = 1.0f) const;
 
 	/**

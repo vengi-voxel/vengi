@@ -4,7 +4,7 @@
 
 #include "SculptOperation.h"
 #include "core/TraceScoped.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
@@ -23,6 +23,7 @@
 #include "voxelutil/VolumeSculpt.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <cmath>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -41,11 +42,11 @@ bool SculptOperation::setParameters(const Parameters &parameters) {
 		_planeFitted = false;
 	}
 	_parameters = parameters;
-	_parameters.strength = glm::clamp(parameters.strength, 0.0f, 1.0f);
-	_parameters.iterations = glm::clamp(parameters.iterations, 1, 250);
-	_parameters.radius = glm::clamp(parameters.radius, 1, 32);
-	_parameters.kernelSize = glm::clamp(parameters.kernelSize, 1, 7);
-	_parameters.sigma = glm::clamp(parameters.sigma, 0.1f, 8.0f);
+	_parameters.strength = math::clamp(parameters.strength, 0.0f, 1.0f);
+	_parameters.iterations = math::clamp(parameters.iterations, 1, 250);
+	_parameters.radius = math::clamp(parameters.radius, 1, 32);
+	_parameters.kernelSize = math::clamp(parameters.kernelSize, 1, 7);
+	_parameters.sigma = math::clamp(parameters.sigma, 0.1f, 8.0f);
 	_paramsDirty = true;
 	_active = true;
 	return true;
@@ -78,16 +79,16 @@ void SculptOperation::captureSnapshot(const voxel::RawVolume *volume, const voxe
 	// The actual count will be <= voxels in the scan region.
 	_snapshotEntries.reserve(scanRegion.voxels());
 
-	glm::ivec3 selLo(scanRegion.getUpperCorner());
-	glm::ivec3 selHi(scanRegion.getLowerCorner());
+	math::Vec3i selLo(scanRegion.getUpperCorner());
+	math::Vec3i selHi(scanRegion.getLowerCorner());
 
 	voxelutil::visitVolume(
 		*volume, scanRegion,
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
-			const glm::ivec3 pos(x, y, z);
+			const math::Vec3i pos(x, y, z);
 			_snapshotEntries.push_back({pos, voxel});
-			selLo = glm::min(selLo, pos);
-			selHi = glm::max(selHi, pos);
+			selLo = math::min(selLo, pos);
+			selHi = math::max(selHi, pos);
 		},
 		voxelutil::VisitSolidOutline());
 
@@ -103,7 +104,7 @@ void SculptOperation::captureSnapshot(const voxel::RawVolume *volume, const voxe
 	_cachedVoxelMapValid = false;
 }
 
-void SculptOperation::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
+void SculptOperation::adjustSnapshotForRegionShift(const math::Vec3i &delta) {
 	core_trace_scoped(SculptBrushAdjustSnapshotForRegionShift);
 
 	// Shift all snapshot entries in-place
@@ -125,7 +126,7 @@ void SculptOperation::adjustSnapshotForRegionShift(const glm::ivec3 &delta) {
 	_cachedVoxelMapValid = false;
 }
 
-void SculptOperation::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos) {
+void SculptOperation::saveToHistory(voxel::RawVolume *vol, const math::Vec3i &pos) {
 	// O(1) bit test instead of O(N/buckets) hash chain traversal
 	if (_historyRegion.containsPoint(pos) && _historyBits.hasValue(pos.x, pos.y, pos.z)) {
 		return;
@@ -136,7 +137,7 @@ void SculptOperation::saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos
 	_historyEntries.push_back({pos, vol->voxel(pos)});
 }
 
-void SculptOperation::writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &newVoxel) {
+void SculptOperation::writeVoxel(ModifierVolumeWrapper &wrapper, const math::Vec3i &pos, const voxel::Voxel &newVoxel) {
 	voxel::RawVolume *volume = wrapper.volume();
 	if (!volume->region().containsPoint(pos)) {
 		return;
@@ -192,7 +193,7 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 		// Expand the working BitVolume to accommodate skin layers that protrude
 		// beyond the selection. Without this, out-of-region setVoxel calls are
 		// silently dropped and protruding skin voxels never appear.
-		const int expand = glm::abs(_parameters.reskin.zOffset) + _parameters.reskin.skinDepth;
+		const int expand = math::abs(_parameters.reskin.zOffset) + _parameters.reskin.skinDepth;
 		voxel::Region expandedRegion = _snapshotRegion;
 		expandedRegion.grow(expand);
 		voxel::BitVolume workSolid(expandedRegion);
@@ -224,7 +225,7 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 					return true;
 				}
 				// Save original voxel to history (flat array, no hash)
-				historyEntries->push_back({glm::ivec3(x, y, z), vol->voxel(x, y, z)});
+				historyEntries->push_back({math::Vec3i(x, y, z), vol->voxel(x, y, z)});
 				// Write new voxel directly to volume
 				voxel::Voxel v = voxel;
 				if (voxel::isBlocked(v.getMaterial())) {
@@ -265,8 +266,8 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 		anchorRegion.cropTo(volRegion);
 		voxel::BitVolume anchorSolid(anchorRegion);
 		for (const voxel::VoxelPosition &entry : _snapshotEntries) {
-			for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-				const glm::ivec3 neighbor = entry.pos + offset;
+			for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+				const math::Vec3i neighbor = entry.pos + offset;
 				if (currentSolid.hasValue(neighbor.x, neighbor.y, neighbor.z)) {
 					continue;
 				}
@@ -290,7 +291,7 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 		voxel::Voxel fillVoxel = _parameters.voxel;
 		fillVoxel.setFlags(voxel::FlagOutline);
 		static constexpr int smoothWallIterations = 1;
-		core::DynamicArray<glm::ivec3> addedPositions;
+		core::DynamicArray<math::Vec3i> addedPositions;
 		voxelutil::sculptSmoothWall(currentSolid, colorVolume, anchorSolid, _parameters.face, smoothWallIterations,
 									fillVoxel, _parameters.smoothWallClearDepth, _parameters.smoothWallInterp,
 									_parameters.smoothWallFillHoles, addedPositions);
@@ -315,7 +316,7 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 			}
 		}
 		// Added entries: collected during sculptSmoothWall
-		for (const glm::ivec3 &pos : addedPositions) {
+		for (const math::Vec3i &pos : addedPositions) {
 			if (!volRegion.containsPoint(pos)) {
 				continue;
 			}
@@ -375,16 +376,16 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 	anchorRegion.cropTo(volRegion);
 	voxel::BitVolume anchorSolid(anchorRegion);
 	if (needsAnchors) {
-		const glm::ivec3 &snapLo = _snapshotRegion.getLowerCorner();
-		const glm::ivec3 &snapHi = _snapshotRegion.getUpperCorner();
+		const math::Vec3i &snapLo = _snapshotRegion.getLowerCorner();
+		const math::Vec3i &snapHi = _snapshotRegion.getUpperCorner();
 		for (int z = snapLo.z; z <= snapHi.z; ++z) {
 			for (int y = snapLo.y; y <= snapHi.y; ++y) {
 				for (int x = snapLo.x; x <= snapHi.x; ++x) {
 					if (!currentSolid.hasValue(x, y, z)) {
 						continue;
 					}
-					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-						const glm::ivec3 neighbor = glm::ivec3(x, y, z) + offset;
+					for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+						const math::Vec3i neighbor = math::Vec3i(x, y, z) + offset;
 						if (currentSolid.hasValue(neighbor.x, neighbor.y, neighbor.z)) {
 							continue;
 						}
@@ -458,8 +459,8 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 	}
 
 	// Pass 2: write newly grown voxels (not in original snapshot)
-	const glm::ivec3 &workLo = workRegion.getLowerCorner();
-	const glm::ivec3 &workHi = workRegion.getUpperCorner();
+	const math::Vec3i &workLo = workRegion.getLowerCorner();
+	const math::Vec3i &workHi = workRegion.getUpperCorner();
 	for (int z = workLo.z; z <= workHi.z; ++z) {
 		for (int y = workLo.y; y <= workHi.y; ++y) {
 			for (int x = workLo.x; x <= workHi.x; ++x) {
@@ -469,7 +470,7 @@ void SculptOperation::applySculpt(ModifierVolumeWrapper &wrapper) {
 				if (_cachedBitVolume.hasValue(x, y, z)) {
 					continue;
 				}
-				const glm::ivec3 pos(x, y, z);
+				const math::Vec3i pos(x, y, z);
 				if (voxelMap.hasVoxel(x, y, z)) {
 					voxel::Voxel v = voxelMap.voxel(x, y, z);
 					v.setFlags(voxel::FlagOutline);
@@ -555,21 +556,21 @@ void SculptOperation::fitPlaneFromSnapshot() {
 
 	// Build height map from snapshot: surface height per (u,v) column
 	// Key is ivec3 with height axis zeroed out (no hash<ivec2> available)
-	using HeightMap = core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>>;
+	using HeightMap = core::DynamicMap<math::Vec3i, int, 1031, math::Vec3iHash>;
 	HeightMap heightMap;
 
 	for (const voxel::VoxelPosition &entry : _snapshotEntries) {
-		const glm::ivec3 &pos = entry.pos;
-		glm::ivec3 key(pos);
+		const math::Vec3i &pos = entry.pos;
+		math::Vec3i key(pos);
 		key[_planeHeightAxis] = 0;
 		auto it = heightMap.find(key);
 		if (it == heightMap.end()) {
 			heightMap.put(key, pos[_planeHeightAxis]);
 		} else {
 			if (fromPositive) {
-				it->value = glm::max(it->value, pos[_planeHeightAxis]);
+				it->value = math::max(it->value, pos[_planeHeightAxis]);
 			} else {
-				it->value = glm::min(it->value, pos[_planeHeightAxis]);
+				it->value = math::min(it->value, pos[_planeHeightAxis]);
 			}
 		}
 	}
@@ -623,7 +624,7 @@ void SculptOperation::fitPlaneFromSnapshot() {
 		const double suh = sumDUDH - n * meanDU * meanDH;
 		const double svh = sumDVDH - n * meanDV * meanDH;
 		const double det = suu * svv - suv * suv;
-		if (glm::abs(det) > MinDeterminant) {
+		if (math::abs(det) > MinDeterminant) {
 			_planeGradU = static_cast<float>((svv * suh - suv * svh) / det);
 			_planeGradV = static_cast<float>((suu * svh - suv * suh) / det);
 		}
@@ -662,17 +663,17 @@ void SculptOperation::paintExtendPlane(ModifierVolumeWrapper &wrapper) {
 									  _planeGradV * static_cast<float>(v - _planeSeedV);
 
 			// Fill vertical span from floor to ceil to cover sub-voxel plane position
-			int loH = static_cast<int>(glm::floor(predictedHf));
-			int hiH = static_cast<int>(glm::ceil(predictedHf));
+			int loH = static_cast<int>(math::floor(predictedHf));
+			int hiH = static_cast<int>(math::ceil(predictedHf));
 
 			// Extend span toward UV neighbors to bridge gaps on steep slopes
 			for (int ni = 0; ni < numUVNeighbors; ++ni) {
 				const float neighborH = static_cast<float>(_planeSeedH) +
 										_planeGradU * static_cast<float>(u + uvNeighborDU[ni] - _planeSeedU) +
 										_planeGradV * static_cast<float>(v + uvNeighborDV[ni] - _planeSeedV);
-				const int midH = static_cast<int>(glm::round((predictedHf + neighborH) * 0.5f));
-				loH = glm::min(loH, midH);
-				hiH = glm::max(hiH, midH);
+				const int midH = static_cast<int>(math::round((predictedHf + neighborH) * 0.5f));
+				loH = math::min(loH, midH);
+				hiH = math::max(hiH, midH);
 			}
 
 			// In extend-only mode, only place voxels adjacent to existing solid
@@ -680,12 +681,12 @@ void SculptOperation::paintExtendPlane(ModifierVolumeWrapper &wrapper) {
 			if (_parameters.extendOnly) {
 				canPlace = false;
 				for (int h = loH; h <= hiH && !canPlace; ++h) {
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[_planeUAxis] = u;
 					pos[_planeVAxis] = v;
 					pos[_planeHeightAxis] = h;
-					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-						const glm::ivec3 neighbor = pos + offset;
+					for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+						const math::Vec3i neighbor = pos + offset;
 						if (!volRegion.containsPoint(neighbor)) {
 							continue;
 						}
@@ -708,7 +709,7 @@ void SculptOperation::paintExtendPlane(ModifierVolumeWrapper &wrapper) {
 					fromPositive ? hiH + _parameters.removeAboveDepth : loH - _parameters.removeAboveDepth;
 				const int clearStep = fromPositive ? 1 : -1;
 				for (int h = clearStart; fromPositive ? (h <= clearEnd) : (h >= clearEnd); h += clearStep) {
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[_planeUAxis] = u;
 					pos[_planeVAxis] = v;
 					pos[_planeHeightAxis] = h;
@@ -727,7 +728,7 @@ void SculptOperation::paintExtendPlane(ModifierVolumeWrapper &wrapper) {
 			// the remove-above pass above), so skip the placement entirely.
 			if (canPlace && !_parameters.removeOnly) {
 				for (int h = loH; h <= hiH; ++h) {
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[_planeUAxis] = u;
 					pos[_planeVAxis] = v;
 					pos[_planeHeightAxis] = h;
@@ -739,8 +740,8 @@ void SculptOperation::paintExtendPlane(ModifierVolumeWrapper &wrapper) {
 					const voxel::Voxel &existing = vol->voxel(pos);
 					if (voxel::isAir(existing.getMaterial())) {
 						voxel::Voxel newVoxel = fillVoxel;
-						for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-							const glm::ivec3 neighbor = pos + offset;
+						for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+							const math::Vec3i neighbor = pos + offset;
 							if (!volRegion.containsPoint(neighbor)) {
 								continue;
 							}

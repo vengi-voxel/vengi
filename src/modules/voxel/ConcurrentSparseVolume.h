@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/SharedPtr.h"
 #include "core/collection/DynamicMap.h"
 #include "core/concurrent/Atomic.h"
@@ -14,6 +14,7 @@
 #include "voxel/SparseVolumeUtil.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -36,7 +37,7 @@ private:
 
 	using ChunkPtr = core::SharedPtr<Chunk>;
 
-	core::DynamicMap<glm::ivec3, ChunkPtr, 1031, glm::hash<glm::ivec3>> _chunks;
+	core::DynamicMap<math::Vec3i, ChunkPtr, 1031, math::Vec3iHash> _chunks;
 	mutable core_trace_mutex(core::Lock, _chunkLock, "ConcurrentSparseVolumeChunks");
 	core::AtomicInt _size{0};
 	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0, 0, 0};
@@ -47,10 +48,10 @@ private:
 
 	// Last accessed chunk cache for performance
 	mutable ChunkPtr _cachedChunkPtr;
-	mutable glm::ivec3 _cachedChunkPosition{INT32_MAX, INT32_MAX, INT32_MAX};
+	mutable math::Vec3i _cachedChunkPosition{INT32_MAX, INT32_MAX, INT32_MAX};
 
-	Chunk *findChunkUnsafe(const glm::ivec3 &chunkPos) const;
-	ChunkPtr findOrCreateChunkCached(const glm::ivec3 &chunkPos);
+	Chunk *findChunkUnsafe(const math::Vec3i &chunkPos) const;
+	ChunkPtr findOrCreateChunkCached(const math::Vec3i &chunkPos);
 
 public:
 	class Sampler : public SparseVolumeSampler<Sampler, ConcurrentSparseVolume> {
@@ -66,8 +67,8 @@ public:
 	protected:
 		// Cached chunk for performance
 		mutable Chunk *_cachedChunk = nullptr;
-		mutable glm::ivec3 _cachedChunkPos{0, 0, 0};
-		mutable glm::ivec3 _cachedLocal{0, 0, 0};
+		mutable math::Vec3i _cachedChunkPos{0, 0, 0};
+		mutable math::Vec3i _cachedLocal{0, 0, 0};
 
 		void updateCurrentVoxel();
 		template<int Axis>
@@ -95,7 +96,7 @@ public:
 		return setVoxel({x, y, z}, voxel);
 	}
 
-	bool setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel);
+	bool setVoxel(const math::Vec3i &pos, const voxel::Voxel &voxel);
 
 	// Batch set voxels in a row (same Y, same Z, varying X)
 	void setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel);
@@ -111,11 +112,11 @@ public:
 	 * @param pos The 3D position of the voxel
 	 * @return The voxel value
 	 */
-	[[nodiscard]] const Voxel &voxel(const glm::ivec3 &pos) const;
+	[[nodiscard]] const Voxel &voxel(const math::Vec3i &pos) const;
 
 	[[nodiscard]] bool hasVoxel(int x, int y, int z) const;
 
-	[[nodiscard]] bool hasVoxel(const glm::ivec3 &pos) const;
+	[[nodiscard]] bool hasVoxel(const math::Vec3i &pos) const;
 
 	[[nodiscard]] inline bool empty() const {
 		return size() == 0;

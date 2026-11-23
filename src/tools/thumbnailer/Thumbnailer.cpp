@@ -22,9 +22,9 @@
 #include "voxelpathtracer/PathTracerConfig.h"
 #include "voxelpathtracer/PathTracerState.h"
 #include "voxelrender/RenderUtil.h"
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/trigonometric.hpp>
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Scalar.h"
 
 Thumbnailer::Thumbnailer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider, 2) {
@@ -160,23 +160,23 @@ app::AppState Thumbnailer::onRunning() {
 	const int outputSize = core::string::toInt(getArgVal("--size"));
 
 	voxelformat::ThumbnailContext ctx;
-	ctx.outputSize = glm::ivec2(outputSize);
+	ctx.outputSize = math::Vec2i(outputSize);
 	ctx.useSceneCamera = hasArg("--use-scene-camera");
 	ctx.distance = core::string::toFloat(getArgVal("--distance", "-1.0"));
 	ctx.cameraMode = getArgVal("--camera-mode", "free");
 	ctx.useWorldPosition = hasArg("--position");
 	if (ctx.useWorldPosition) {
 		const core::String &pos = getArgVal("--position");
-		core::string::parseVec3(pos, glm::value_ptr(ctx.worldPosition), ":");
+		core::string::parseVec3(pos, math::value_ptr(ctx.worldPosition), ":");
 		Log::debug("Use position %f:%f:%f", ctx.worldPosition.x, ctx.worldPosition.y, ctx.worldPosition.z);
 	}
 	if (hasArg("--angles")) {
 		const core::String &anglesStr = getArgVal("--angles");
-		glm::vec3 angles(0.0f);
-		core::string::parseVec3(anglesStr, glm::value_ptr(angles), ":");
-		ctx.pitch = glm::radians(angles.x);
-		ctx.yaw = glm::radians(angles.y);
-		ctx.roll = glm::radians(angles.z);
+		math::Vec3f angles(0.0f);
+		core::string::parseVec3(anglesStr, math::value_ptr(angles), ":");
+		ctx.pitch = math::radians(angles.x);
+		ctx.yaw = math::radians(angles.y);
+		ctx.roll = math::radians(angles.z);
 		Log::info("Use euler angles %f:%f:%f", angles.x, angles.y, angles.z);
 	}
 	if (hasArg("--sunelevation")) {

@@ -11,7 +11,6 @@
 #include "io/Filesystem.h"
 #include "io/FilesystemArchive.h"
 #include "io/FormatDescription.h"
-#include "math/Math.h"
 #include "palette/Material.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -29,10 +28,10 @@
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelrender/RenderUtil.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace {
 
@@ -78,17 +77,17 @@ app::AppState TestVolumeRenderer::onConstruct() {
 }
 
 void TestVolumeRenderer::configureRendererFeatures() {
-	_renderer.setAmbientColor(glm::vec3(0.25f, 0.26f, 0.30f));
-	_renderer.setDiffuseColor(glm::vec3(0.85f, 0.80f, 0.70f));
-	_renderer.setSunAngle(glm::vec3(32.0f, 50.0f, 0.0f));
+	_renderer.setAmbientColor(math::Vec3f(0.25f, 0.26f, 0.30f));
+	_renderer.setDiffuseColor(math::Vec3f(0.85f, 0.80f, 0.70f));
+	_renderer.setSunAngle(math::Vec3f(32.0f, 50.0f, 0.0f));
 }
 
 bool TestVolumeRenderer::addVolume(int idx, voxel::RawVolume *volume, palette::Palette *palette,
-								  const glm::mat4 &worldMatrix) {
+								  const math::Mat4f &worldMatrix) {
 	delete _renderer.setVolume(_meshState, idx, volume, palette, nullptr, true);
 	const voxel::Region &region = volume->region();
-	glm::vec3 mins;
-	glm::vec3 maxs;
+	math::Vec3f mins;
+	math::Vec3f maxs;
 	region.transformArvo(worldMatrix, mins, maxs);
 	_meshState->setCullFace(idx, math::det3x3(worldMatrix) < 0.0f ? video::Face::Front : video::Face::Back);
 	if (!_meshState->setModelMatrix(idx, worldMatrix, mins, maxs)) {
@@ -155,7 +154,7 @@ bool TestVolumeRenderer::createMaterialScene() {
 	outlineVoxel.setOutline();
 	fillBox(volume, voxel::Region(2, 12, 2, 9, 13, 9), outlineVoxel);
 
-	if (!addVolume(0, volume, &_palette, glm::mat4(1.0f))) {
+	if (!addVolume(0, volume, &_palette, math::Mat4f(1.0f))) {
 		return false;
 	}
 
@@ -186,7 +185,7 @@ bool TestVolumeRenderer::createLSystemScene(const core::String &name) {
 		if (volume == nullptr) {
 			volume = new voxel::RawVolume(generated);
 		}
-		if (!addVolume(0, volume, &_palette, glm::mat4(1.0f))) {
+		if (!addVolume(0, volume, &_palette, math::Mat4f(1.0f))) {
 			return false;
 		}
 		voxelrender::configureCamera(camera(), volume->region(), voxelrender::SceneCameraMode::Free, 500.0f);
@@ -210,9 +209,9 @@ void TestVolumeRenderer::addReferenceInstances(int count) {
 	for (int i = 1; i <= count; ++i) {
 		_meshState->setReference(i, 0);
 		_renderer.ensureRenderState(i);
-		const glm::mat4 worldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 36.0f * (float)i));
-		glm::vec3 mins;
-		glm::vec3 maxs;
+		const math::Mat4f worldMatrix = math::translate(math::Mat4f(1.0f), math::Vec3f(0.0f, 0.0f, 36.0f * (float)i));
+		math::Vec3f mins;
+		math::Vec3f maxs;
 		region.transformArvo(worldMatrix, mins, maxs);
 		_meshState->setCullFace(i, video::Face::Back);
 		if (!_meshState->setModelMatrix(i, worldMatrix, mins, maxs)) {
@@ -242,10 +241,10 @@ bool TestVolumeRenderer::loadScene(const core::String &filename) {
 			continue;
 		}
 		const scenegraph::FrameTransform frameTransform = _sceneGraph.transformForFrame(node, 0);
-		const glm::mat4 &wm = frameTransform.worldMatrix();
+		const math::Mat4f &wm = frameTransform.worldMatrix();
 		const voxel::Region &region = volume->region();
-		const glm::vec3 dimensions(region.getDimensionsInVoxels());
-		const glm::mat4 worldMatrix = glm::translate(wm, -node.pivot() * dimensions);
+		const math::Vec3f dimensions(region.getDimensionsInVoxels());
+		const math::Mat4f worldMatrix = math::translate(wm, -node.pivot() * dimensions);
 		if (!addVolume(idx, volume, &node.palette(), worldMatrix)) {
 			return false;
 		}
@@ -310,15 +309,15 @@ app::AppState TestVolumeRenderer::onInit() {
 			return app::AppState::InitFailure;
 		}
 		video::ShapeBuilder builder;
-		builder.setColor(glm::vec4(0.1f, 0.4f, 1.0f, 1.0f));
-		builder.cube(glm::vec3(0), glm::vec3(12));
+		builder.setColor(math::Vec4f(0.1f, 0.4f, 1.0f, 1.0f));
+		builder.cube(math::Vec3f(0), math::Vec3f(12));
 		_previewShapes.createOrUpdate(_previewMesh, builder);
 	}
 	return state;
 }
 
 void TestVolumeRenderer::presentFrameBuffer() {
-	const glm::ivec2 dim = _renderContext.frameBuffer.dimension();
+	const math::Vec2i dim = _renderContext.frameBuffer.dimension();
 	video::Id src = _renderContext.frameBuffer.handle();
 	if (_renderContext.enableMultisampling) {
 		src = _renderContext.resolveFrameBuffer.handle();
@@ -337,7 +336,7 @@ void TestVolumeRenderer::doRender() {
 		const video::ScopedState depth(video::State::DepthTest, true);
 		_previewShapes.render(_previewMesh, camera());
 		const bool erase = getArgVal("--preview") == "erase";
-		_renderContext.surfaceOverlay.end(erase ? glm::vec4(0.95f, 0.12f, 0.08f, 0.75f) : glm::vec4(0));
+		_renderContext.surfaceOverlay.end(erase ? math::Vec4f(0.95f, 0.12f, 0.08f, 0.75f) : math::Vec4f(0));
 	}
 	_renderContext.endFrame();
 	presentFrameBuffer();

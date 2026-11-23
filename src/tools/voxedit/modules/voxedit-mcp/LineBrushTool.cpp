@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/LineBrush.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -57,8 +58,8 @@ bool LineBrushTool::execute(const json::Json &id, const json::Json &args, ToolCo
 	json::Json startPos = args.get("start");
 	json::Json endPos = args.get("end");
 
-	const glm::ivec3 start(startPos.intVal("x", 0), startPos.intVal("y", 0), startPos.intVal("z", 0));
-	const glm::ivec3 end(endPos.intVal("x", 0), endPos.intVal("y", 0), endPos.intVal("z", 0));
+	const math::Vec3i start(startPos.intVal("x", 0), startPos.intVal("y", 0), startPos.intVal("z", 0));
+	const math::Vec3i end(endPos.intVal("x", 0), endPos.intVal("y", 0), endPos.intVal("z", 0));
 
 	const int colorIndex = args.intVal("colorIndex", 0);
 	const core::String modifierTypeStr = args.strVal("modifierType", "place").c_str();
@@ -86,7 +87,7 @@ bool LineBrushTool::execute(const json::Json &id, const json::Json &args, ToolCo
 	brushContext.cursorPosition = end;
 	brushContext.cursorFace = voxel::FaceNames::PositiveY;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = glm::ivec3(1);
+	brushContext.gridResolution = math::Vec3i(1);
 
 	// Create the modifier wrapper
 

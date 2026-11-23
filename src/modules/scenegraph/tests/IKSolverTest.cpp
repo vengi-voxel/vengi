@@ -10,12 +10,9 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/gtc/quaternion.hpp>
-#include <glm/ext/scalar_constants.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
@@ -23,8 +20,8 @@ class IKSolverTest : public app::AbstractTest {};
 
 TEST_F(IKSolverTest, testClampOrientationIdentity) {
 	IKConstraint constraint;
-	const glm::quat identity(1.0f, 0.0f, 0.0f, 0.0f);
-	const glm::quat result = IKSolver::clampOrientation(identity, constraint);
+	const math::Quatf identity(1.0f, 0.0f, 0.0f, 0.0f);
+	const math::Quatf result = IKSolver::clampOrientation(identity, constraint);
 	EXPECT_NEAR(result.w, identity.w, 0.001f);
 	EXPECT_NEAR(result.x, identity.x, 0.001f);
 	EXPECT_NEAR(result.y, identity.y, 0.001f);
@@ -33,17 +30,17 @@ TEST_F(IKSolverTest, testClampOrientationIdentity) {
 
 TEST_F(IKSolverTest, testClampOrientationRollLimits) {
 	IKConstraint constraint;
-	constraint.rollMin = -glm::half_pi<float>();
-	constraint.rollMax = glm::half_pi<float>();
+	constraint.rollMin = -math::halfPi;
+	constraint.rollMax = math::halfPi;
 
 	// Create a rotation around Y axis (roll) that exceeds the limit
-	const glm::quat rotation = glm::angleAxis(glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
-	const glm::quat result = IKSolver::clampOrientation(rotation, constraint);
+	const math::Quatf rotation = math::angleAxis(math::pi, math::Vec3f(0.0f, 1.0f, 0.0f));
+	const math::Quatf result = IKSolver::clampOrientation(rotation, constraint);
 
 	// The result should be clamped to the max roll
 	// Extract the twist angle around Y
-	const float resultAngle = 2.0f * glm::atan(glm::length(glm::vec3(result.x, result.y, result.z)), result.w);
-	EXPECT_LE(resultAngle, glm::half_pi<float>() + 0.1f);
+	const float resultAngle = 2.0f * math::atan(math::length(math::Vec3f(result.x, result.y, result.z)), result.w);
+	EXPECT_LE(resultAngle, math::halfPi + 0.1f);
 }
 
 TEST_F(IKSolverTest, testSolveNoConstraint) {
@@ -102,7 +99,7 @@ TEST_F(IKSolverTest, testSolveSimpleChain) {
 	// Create a target node
 	SceneGraphNode target(SceneGraphNodeType::Point);
 	target.setName("target");
-	target.transform(0).setWorldTranslation(glm::vec3(10.0f, 5.0f, 0.0f));
+	target.transform(0).setWorldTranslation(math::Vec3f(10.0f, 5.0f, 0.0f));
 	const int targetId = sceneGraph.emplace(core::move(target));
 	EXPECT_GE(targetId, 0);
 
@@ -113,11 +110,11 @@ TEST_F(IKSolverTest, testSolveSimpleChain) {
 	endEffectorNode.setIkConstraint(constraint);
 
 	// Set up translations to create a chain
-	sceneGraph.node(anchorId).transform(0).setLocalTranslation(glm::vec3(0.0f, 0.0f, 0.0f));
+	sceneGraph.node(anchorId).transform(0).setLocalTranslation(math::Vec3f(0.0f, 0.0f, 0.0f));
 	sceneGraph.node(anchorId).transform(0).update(sceneGraph, sceneGraph.node(anchorId), 0, true);
-	sceneGraph.node(jointId).transform(0).setLocalTranslation(glm::vec3(5.0f, 0.0f, 0.0f));
+	sceneGraph.node(jointId).transform(0).setLocalTranslation(math::Vec3f(5.0f, 0.0f, 0.0f));
 	sceneGraph.node(jointId).transform(0).update(sceneGraph, sceneGraph.node(jointId), 0, true);
-	sceneGraph.node(endEffectorId).transform(0).setLocalTranslation(glm::vec3(5.0f, 0.0f, 0.0f));
+	sceneGraph.node(endEffectorId).transform(0).setLocalTranslation(math::Vec3f(5.0f, 0.0f, 0.0f));
 	sceneGraph.node(endEffectorId).transform(0).update(sceneGraph, sceneGraph.node(endEffectorId), 0, true);
 	sceneGraph.node(targetId).transform(0).update(sceneGraph, sceneGraph.node(targetId), 0, true);
 

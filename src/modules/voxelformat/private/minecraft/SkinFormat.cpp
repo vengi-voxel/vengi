@@ -20,7 +20,11 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/ImageUtils.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/trigonometric.hpp>
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -36,10 +40,10 @@ struct Part {
 // Defines a single 3D part from its 6 faces (x, y, z sizes and face coordinates)
 struct SkinBox {
 	const char *name;
-	glm::ivec3 size;		  // width, height, depth in voxels
-	glm::vec3 translation;	  // World position (offset) of the part
-	glm::vec3 rotationDegree; // Rotation in degrees around the pivot point
-	glm::vec3 pivot;
+	math::Vec3i size;		  // width, height, depth in voxels
+	math::Vec3f translation;	  // World position (offset) of the part
+	math::Vec3f rotationDegree; // Rotation in degrees around the pivot point
+	math::Vec3f pivot;
 	Part part;
 	bool extension;
 };
@@ -159,7 +163,7 @@ static const voxel::FaceNames order[] = {voxel::FaceNames::Top,	  voxel::FaceNam
 static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, int parentId,
 					bool applyTransform, voxel::FaceNames faceNameOffset, const SkinBox &skinBox) {
 	scenegraph::SceneGraphTransform transform;
-	glm::vec3 translation = skinBox.translation;
+	math::Vec3f translation = skinBox.translation;
 	if (faceNameOffset != voxel::FaceNames::Max) {
 		// offset the translation by the face name offset to prevent z-fighting
 		const bool isX = voxel::isX(faceNameOffset);
@@ -181,11 +185,11 @@ static void addNode(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNo
 	}
 	if (applyTransform) {
 		transform.setLocalTranslation(translation);
-		const glm::quat orientation(glm::radians(skinBox.rotationDegree));
+		const math::Quatf orientation(math::radians(skinBox.rotationDegree));
 		transform.setLocalOrientation(orientation);
 		node.setPivot(skinBox.pivot);
 	} else {
-		const glm::vec3 regionSize(node.region().getDimensionsInVoxels());
+		const math::Vec3f regionSize(node.region().getDimensionsInVoxels());
 		transform.setLocalTranslation(translation - skinBox.pivot * regionSize);
 	}
 	node.setTransform(0, transform);
@@ -354,7 +358,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	for (int i = 0; i < nBoxes; ++i) {
 		ctx.report("skin part", i, nBoxes);
 		const SkinBox &skinBox = boxes[i];
-		const glm::ivec3 size = skinBox.size;
+		const math::Vec3i size = skinBox.size;
 		const voxel::Region region(0, 0, 0, size.x - 1, size.y - 1, size.z - 1);
 
 		int parentId = 0;

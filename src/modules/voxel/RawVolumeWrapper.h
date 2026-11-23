@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -25,7 +26,7 @@ public:
 	class Sampler : public VolumeSampler<RawVolumeWrapper> {
 	private:
 		using Super = VolumeSampler<RawVolumeWrapper>;
-		core::DynamicArray<glm::ivec3, 1024> _positions;
+		core::DynamicArray<math::Vec3i, 1024> _positions;
 	public:
 		VOLUMESAMPLERUSING;
 
@@ -88,7 +89,7 @@ public:
 
 	inline void sampleSparseAt(int lx, int ly, int lz, const SparseChunk *&outChunk,
 							   const SparseChunk::Brick *&outBrick, const Voxel *&outRow, bool &outWholeBrick,
-							   glm::ivec3 &outLower, glm::ivec3 &outUpper, Voxel &outFallbackVoxel,
+							   math::Vec3i &outLower, math::Vec3i &outUpper, Voxel &outFallbackVoxel,
 							   uint32_t &outGen) const {
 		_volume->sampleSparseAt(lx, ly, lz, outChunk, outBrick, outRow, outWholeBrick, outLower, outUpper,
 								outFallbackVoxel, outGen);
@@ -128,7 +129,7 @@ public:
 		return _volume;
 	}
 
-	inline void addToDirtyRegion(const glm::ivec3 &pos) {
+	inline void addToDirtyRegion(const math::Vec3i &pos) {
 		core::ScopedLock lock(_lock);
 		if (_dirtyRegion.isValid()) {
 			_dirtyRegion.accumulate(pos);
@@ -146,7 +147,7 @@ public:
 		if (!_dirtyRegion.isValid()) {
 			_dirtyRegion = Region(positions[0], positions[0]);
 		}
-		for (const glm::ivec3 &pos : positions) {
+		for (const math::Vec3i &pos : positions) {
 			_dirtyRegion.accumulate(pos);
 		}
 	}
@@ -186,7 +187,7 @@ public:
 		_region.cropTo(region);
 	}
 
-	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS const Voxel& voxel(const glm::ivec3& pos) const {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS const Voxel& voxel(const math::Vec3i& pos) const {
 		return _volume->voxel(pos.x, pos.y, pos.z);
 	}
 
@@ -194,7 +195,7 @@ public:
 		return _volume->voxel(x, y, z);
 	}
 
-	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(const glm::ivec3& pos, const Voxel& voxel) {
+	CORE_FORCE_INLINE CORE_NO_SANITIZE_ADDRESS bool setVoxel(const math::Vec3i& pos, const Voxel& voxel) {
 		return setVoxel(pos.x, pos.y, pos.z, voxel);
 	}
 
@@ -209,7 +210,7 @@ public:
 	 * @note You should never use this directly - but just with a sampler
 	 */
 	virtual bool setVoxel(int x, int y, int z, const Voxel& voxel) {
-		const glm::ivec3 p(x, y, z);
+		const math::Vec3i p(x, y, z);
 		if (!_region.containsPoint(p)) {
 			return false;
 		}

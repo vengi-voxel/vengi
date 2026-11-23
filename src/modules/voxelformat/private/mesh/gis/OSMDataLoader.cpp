@@ -8,14 +8,14 @@
 #include "http/HttpCacheStream.h"
 
 #include <cstdlib>
-#include <glm/trigonometric.hpp>
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
 core::String OSMDataLoader::buildOverpassQuery(const Options &options) {
 	// Convert radius in km to approximate lat/lon offsets
 	const double latOffset = options.radiusKm / 111.32;
-	const double lonOffset = options.radiusKm / (111.32 * cos(glm::radians(options.lat)));
+	const double lonOffset = options.radiusKm / (111.32 * cos(math::radians(options.lat)));
 
 	const double south = options.lat - latOffset;
 	const double north = options.lat + latOffset;

@@ -7,8 +7,8 @@
 #include "voxel/Region.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
-#include <glm/vec3.hpp>
 
 namespace voxel {
 class RawVolume;
@@ -35,7 +35,7 @@ private:
 	// Selection bounding box at capture time
 	voxel::Region _snapshotRegion = voxel::Region::InvalidRegion;
 	// Volume region lower corner at snapshot capture time (to detect region shifts)
-	glm::ivec3 _capturedVolumeLower{0};
+	math::Vec3i _capturedVolumeLower{0};
 	bool _hasSnapshot = false;
 
 public:
@@ -52,17 +52,17 @@ public:
 	 * @brief Adjust snapshot and history positions when the volume region shifts
 	 * (e.g. node was moved)
 	 */
-	void adjustForRegionShift(const glm::ivec3 &delta);
+	void adjustForRegionShift(const math::Vec3i &delta);
 
 	/**
 	 * @brief Save the current voxel at @p pos into history (if not already tracked)
 	 */
-	void saveToHistory(voxel::RawVolume *vol, const glm::ivec3 &pos);
+	void saveToHistory(voxel::RawVolume *vol, const math::Vec3i &pos);
 
 	/**
 	 * @brief Write a voxel at @p pos, saving the original to history first
 	 */
-	void writeVoxel(ModifierVolumeWrapper &wrapper, const glm::ivec3 &pos, const voxel::Voxel &newVoxel);
+	void writeVoxel(ModifierVolumeWrapper &wrapper, const math::Vec3i &pos, const voxel::Voxel &newVoxel);
 
 	/**
 	 * @brief Restore all history entries into the volume (used when cancelling)
@@ -90,7 +90,7 @@ public:
 		return _snapshotRegion;
 	}
 
-	const glm::ivec3 &capturedVolumeLower() const {
+	const math::Vec3i &capturedVolumeLower() const {
 		return _capturedVolumeLower;
 	}
 

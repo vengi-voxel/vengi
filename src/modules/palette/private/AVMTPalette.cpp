@@ -8,6 +8,7 @@
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Material.h"
+#include "math/Vec4f.h"
 
 namespace palette {
 
@@ -52,7 +53,7 @@ bool AVMTPalette::save(const palette::ColorPalette &palette, const core::String 
 		}
 		++added;
 		const color::RGBA &color = palette.color(i);
-		const glm::vec4 c = color::fromRGBA(color);
+		const math::Vec4f c = color::fromRGBA(color);
 		stream.writeString("\t\t\t\t{\n", false);
 		stream.writeStringFormat(false, "\t\t\t\t\tr =\t%0.9f\n", c.r);
 		stream.writeStringFormat(false, "\t\t\t\t\tg =\t%0.9f\n", c.g);

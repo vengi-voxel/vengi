@@ -15,6 +15,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -22,7 +23,7 @@ class SelectStrategyTest : public AbstractSceneManagerTest {
 protected:
 	scenegraph::SceneGraph _sceneGraph;
 
-	void fillCube(voxel::RawVolume &volume, const glm::ivec3 &mins, const glm::ivec3 &maxs, uint8_t color = 1) {
+	void fillCube(voxel::RawVolume &volume, const math::Vec3i &mins, const math::Vec3i &maxs, uint8_t color = 1) {
 		for (int z = mins.z; z <= maxs.z; ++z) {
 			for (int y = mins.y; y <= maxs.y; ++y) {
 				for (int x = mins.x; x <= maxs.x; ++x) {
@@ -49,7 +50,7 @@ protected:
 };
 
 TEST_F(SelectStrategyTest, testAllStrategy) {
-	const voxel::Region region(glm::ivec3(-2), glm::ivec3(2));
+	const voxel::Region region(math::Vec3i(-2), math::Vec3i(2));
 	voxel::RawVolume volume(region);
 	fillCube(volume, region.getLowerCorner(), region.getUpperCorner());
 
@@ -69,7 +70,7 @@ TEST_F(SelectStrategyTest, testAllStrategy) {
 }
 
 TEST_F(SelectStrategyTest, testAllStrategyErase) {
-	const voxel::Region region(glm::ivec3(-2), glm::ivec3(2));
+	const voxel::Region region(math::Vec3i(-2), math::Vec3i(2));
 	voxel::RawVolume volume(region);
 	fillCube(volume, region.getLowerCorner(), region.getUpperCorner());
 	// Pre-select all voxels
@@ -90,7 +91,7 @@ TEST_F(SelectStrategyTest, testAllStrategyErase) {
 }
 
 TEST_F(SelectStrategyTest, testSurfaceStrategy) {
-	const voxel::Region region(glm::ivec3(-2), glm::ivec3(2));
+	const voxel::Region region(math::Vec3i(-2), math::Vec3i(2));
 	voxel::RawVolume volume(region);
 	fillCube(volume, region.getLowerCorner(), region.getUpperCorner());
 
@@ -113,12 +114,12 @@ TEST_F(SelectStrategyTest, testSurfaceStrategy) {
 }
 
 TEST_F(SelectStrategyTest, testSameColorStrategy) {
-	const voxel::Region region(glm::ivec3(-2), glm::ivec3(2));
+	const voxel::Region region(math::Vec3i(-2), math::Vec3i(2));
 	voxel::RawVolume volume(region);
 	// Fill with color 1
 	fillCube(volume, region.getLowerCorner(), region.getUpperCorner(), 1);
 	// Overwrite some with color 2
-	fillCube(volume, glm::ivec3(0), region.getUpperCorner(), 2);
+	fillCube(volume, math::Vec3i(0), region.getUpperCorner(), 2);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
@@ -141,11 +142,11 @@ TEST_F(SelectStrategyTest, testSameColorStrategy) {
 }
 
 TEST_F(SelectStrategyTest, testConnectedStrategy) {
-	const voxel::Region region(glm::ivec3(-5), glm::ivec3(5));
+	const voxel::Region region(math::Vec3i(-5), math::Vec3i(5));
 	voxel::RawVolume volume(region);
 	// Two disconnected cubes
-	fillCube(volume, region.getLowerCorner(), glm::ivec3(-3, -3, -3), 1);
-	fillCube(volume, glm::ivec3(3, 3, 3), region.getUpperCorner(), 1);
+	fillCube(volume, region.getLowerCorner(), math::Vec3i(-3, -3, -3), 1);
+	fillCube(volume, math::Vec3i(3, 3, 3), region.getUpperCorner(), 1);
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
@@ -154,7 +155,7 @@ TEST_F(SelectStrategyTest, testConnectedStrategy) {
 	select::Connected strategy;
 	BrushContext ctx;
 	ctx.targetVolumeRegion = volume.region();
-	ctx.cursorPosition = glm::ivec3(-4, -4, -4);
+	ctx.cursorPosition = math::Vec3i(-4, -4, -4);
 	ctx.hitCursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	select::AABBBrushState state;
 
@@ -199,7 +200,7 @@ TEST_F(SelectStrategyTest, testLassoGenerateRequiresMinPoints) {
 
 	// generate with < 3 points should be a no-op (e.g. preview manager calling mid-recording)
 
-	const voxel::Region region(glm::ivec3(-2), glm::ivec3(2));
+	const voxel::Region region(math::Vec3i(-2), math::Vec3i(2));
 	voxel::RawVolume volume(region);
 	fillCube(volume, region.getLowerCorner(), region.getUpperCorner());
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);

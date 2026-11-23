@@ -16,8 +16,11 @@
 #include "voxel/Voxel.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelrender/RenderUtil.h"
+#include "math/Quatf.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
-#include <glm/gtc/quaternion.hpp>
 
 TestSceneGraphRenderer::TestSceneGraphRenderer(const io::FilesystemPtr &filesystem,
 											   const core::TimeProviderPtr &timeProvider)
@@ -61,9 +64,9 @@ app::AppState TestSceneGraphRenderer::onInit() {
 	{
 		const voxel::Region region(0, 0, 0, 31, 31, 31);
 		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		const glm::ivec3 center = region.getCenter();
+		const math::Vec3i center = region.getCenter();
 		const int diameter = 29;
-		const glm::ivec3 centerBottom(center.x, region.getLowerY(), center.z);
+		const math::Vec3i centerBottom(center.x, region.getLowerY(), center.z);
 		voxelgenerator::shape::createEllipse(*volume, centerBottom, math::Axis::Y, diameter, diameter, diameter,
 											 voxel::createVoxel(voxel::VoxelType::Generic, 1));
 
@@ -74,10 +77,10 @@ app::AppState TestSceneGraphRenderer::onInit() {
 		pal.nippon();
 		node.setPalette(pal);
 		scenegraph::SceneGraphTransform transform;
-		const glm::quat orientation =
-			glm::angleAxis(glm::radians(25.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
-			glm::angleAxis(glm::radians(35.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
-			glm::angleAxis(glm::radians(15.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		const math::Quatf orientation =
+			math::angleAxis(math::radians(25.0f), math::Vec3f(1.0f, 0.0f, 0.0f)) *
+			math::angleAxis(math::radians(35.0f), math::Vec3f(0.0f, 1.0f, 0.0f)) *
+			math::angleAxis(math::radians(15.0f), math::Vec3f(0.0f, 0.0f, 1.0f));
 		transform.setLocalOrientation(orientation);
 		const scenegraph::FrameIndex frameIdx = 0;
 		node.setTransform(frameIdx, transform);
@@ -99,11 +102,11 @@ app::AppState TestSceneGraphRenderer::onInit() {
 		pal.nippon();
 		node.setPalette(pal);
 		scenegraph::SceneGraphTransform transform;
-		transform.setLocalTranslation(glm::vec3(40.0f, 0.0f, 0.0f));
-		const glm::quat orientation =
-			glm::angleAxis(glm::radians(20.0f), glm::vec3(1.0f, 0.0f, 0.0f)) *
-			glm::angleAxis(glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f)) *
-			glm::angleAxis(glm::radians(10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		transform.setLocalTranslation(math::Vec3f(40.0f, 0.0f, 0.0f));
+		const math::Quatf orientation =
+			math::angleAxis(math::radians(20.0f), math::Vec3f(1.0f, 0.0f, 0.0f)) *
+			math::angleAxis(math::radians(30.0f), math::Vec3f(0.0f, 1.0f, 0.0f)) *
+			math::angleAxis(math::radians(10.0f), math::Vec3f(0.0f, 0.0f, 1.0f));
 		transform.setLocalOrientation(orientation);
 		const scenegraph::FrameIndex frameIdx = 0;
 		node.setTransform(frameIdx, transform);
@@ -112,7 +115,7 @@ app::AppState TestSceneGraphRenderer::onInit() {
 
 	if (hasArg("--shadow-grid") || hasArg("--shadow-close")) {
 		core::getVar(cfg::ClientShadowMap)->setVal(true);
-		const int side = glm::clamp(getArgVal("--shadow-grid", "8").toInt(), 1, 32);
+		const int side = math::clamp(getArgVal("--shadow-grid", "8").toInt(), 1, 32);
 		for (int z = 0; z < side; ++z) {
 			for (int x = 0; x < side; ++x) {
 				const auto &source = _sceneGraph.node(1 + (x + z) % 2);

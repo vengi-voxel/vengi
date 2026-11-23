@@ -7,7 +7,7 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
 #include "voxelformat/private/slab6/KFAFormat.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 /**
@@ -32,7 +32,7 @@ public:
 	 * @param[out] kenPivot Pivot in Ken / KV6 space (x, y, z)
 	 */
 	bool loadRawVolume(const core::String &filename, const io::ArchivePtr &archive, voxel::RawVolume *&volume,
-					   palette::Palette &palette, glm::vec3 &kenPivot, const LoadContext &ctx,
+					   palette::Palette &palette, math::Vec3f &kenPivot, const LoadContext &ctx,
 					   core::Buffer<KFAFormat::KenSpriteVox> *kenVoxels = nullptr);
 
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,

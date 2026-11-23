@@ -8,6 +8,8 @@
 #include "math/AABB.h"
 #include "video/Camera.h"
 #include "video/Renderer.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 namespace render {
 
@@ -16,7 +18,7 @@ bool CameraRenderer::init(int splitFrustum) {
 	if (!_shapeRenderer.init()) {
 		return false;
 	}
-	_shapeBuilder.cube(glm::vec3(0), glm::vec3(1));
+	_shapeBuilder.cube(math::Vec3f(0), math::Vec3f(1));
 	_frustumMesh = _shapeRenderer.create(_shapeBuilder);
 	if (_frustumMesh == -1) {
 		return false;
@@ -32,7 +34,7 @@ void CameraRenderer::shutdown() {
 void CameraRenderer::render(const video::Camera &camera, const Node &frustumCamera) {
 	core_trace_scoped(CameraRender);
 	_shapeBuilder.clear();
-	const glm::vec4 color(color::fromRGBA(frustumCamera.color));
+	const math::Vec4f color(color::fromRGBA(frustumCamera.color));
 	_shapeBuilder.setColor(color);
 	if (_splitFrustum > 0) {
 		_shapeBuilder.frustum(frustumCamera.camera, _splitFrustum);

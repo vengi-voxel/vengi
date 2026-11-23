@@ -10,6 +10,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 class SnapshotHelperBenchmark : public app::AbstractBenchmark {
 protected:
@@ -66,8 +67,8 @@ BENCHMARK_DEFINE_F(SnapshotHelperBenchmark, WriteAndRevert)(benchmark::State &st
 		// Reset volume
 		voxel::RawVolume *vol = node->volume();
 		const voxel::Region &region = vol->region();
-		const glm::ivec3 &lo = region.getLowerCorner();
-		const glm::ivec3 &hi = region.getUpperCorner();
+		const math::Vec3i &lo = region.getLowerCorner();
+		const math::Vec3i &hi = region.getUpperCorner();
 		for (int z = lo.z; z <= hi.z; ++z) {
 			for (int y = lo.y; y <= hi.y; ++y) {
 				for (int x = lo.x; x <= hi.x; ++x) {
@@ -87,7 +88,7 @@ BENCHMARK_DEFINE_F(SnapshotHelperBenchmark, WriteAndRevert)(benchmark::State &st
 		const voxel::Voxel newVoxel = selectedVoxel(5);
 		for (int x = -_halfSize; x <= _halfSize; ++x) {
 			for (int z = -_halfSize; z <= _halfSize; ++z) {
-				helper.writeVoxel(wrapper, glm::ivec3(x, 2, z), newVoxel);
+				helper.writeVoxel(wrapper, math::Vec3i(x, 2, z), newVoxel);
 			}
 		}
 
@@ -102,8 +103,8 @@ BENCHMARK_DEFINE_F(SnapshotHelperBenchmark, RestoreHistory)(benchmark::State &st
 		state.PauseTiming();
 		voxel::RawVolume *vol = node->volume();
 		const voxel::Region &region = vol->region();
-		const glm::ivec3 &lo = region.getLowerCorner();
-		const glm::ivec3 &hi = region.getUpperCorner();
+		const math::Vec3i &lo = region.getLowerCorner();
+		const math::Vec3i &hi = region.getUpperCorner();
 		for (int z = lo.z; z <= hi.z; ++z) {
 			for (int y = lo.y; y <= hi.y; ++y) {
 				for (int x = lo.x; x <= hi.x; ++x) {
@@ -121,7 +122,7 @@ BENCHMARK_DEFINE_F(SnapshotHelperBenchmark, RestoreHistory)(benchmark::State &st
 		const voxel::Voxel newVoxel = selectedVoxel(5);
 		for (int x = -_halfSize; x <= _halfSize; ++x) {
 			for (int z = -_halfSize; z <= _halfSize; ++z) {
-				helper.writeVoxel(wrapper, glm::ivec3(x, 2, z), newVoxel);
+				helper.writeVoxel(wrapper, math::Vec3i(x, 2, z), newVoxel);
 			}
 		}
 		state.ResumeTiming();
@@ -138,7 +139,7 @@ BENCHMARK_DEFINE_F(SnapshotHelperBenchmark, AdjustForRegionShift)(benchmark::Sta
 
 	int shift = 1;
 	for (auto _ : state) {
-		helper.adjustForRegionShift(glm::ivec3(shift, 0, 0));
+		helper.adjustForRegionShift(math::Vec3i(shift, 0, 0));
 		shift = -shift;
 		voxel::Region region = helper.snapshotRegion();
 		benchmark::DoNotOptimize(region);
@@ -216,15 +217,15 @@ BENCHMARK_DEFINE_F(SnapshotHelperLargeBenchmark, CaptureSnapshot)(benchmark::Sta
 BENCHMARK_DEFINE_F(SnapshotHelperLargeBenchmark, CaptureSnapshotSequential)(benchmark::State &state) {
 	for (auto _ : state) {
 		voxel::SparseVolume snapshot;
-		glm::ivec3 selLo(node->region().getUpperCorner());
-		glm::ivec3 selHi(node->region().getLowerCorner());
+		math::Vec3i selLo(node->region().getUpperCorner());
+		math::Vec3i selHi(node->region().getLowerCorner());
 		voxelutil::visitVolume(
 			*node->volume(), node->region(),
 			[&](int x, int y, int z, const voxel::Voxel &voxel) {
-				const glm::ivec3 pos(x, y, z);
+				const math::Vec3i pos(x, y, z);
 				snapshot.setVoxel(pos, voxel);
-				selLo = glm::min(selLo, pos);
-				selHi = glm::max(selHi, pos);
+				selLo = math::min(selLo, pos);
+				selHi = math::max(selHi, pos);
 			},
 			voxelutil::VisitSolidOutline());
 		benchmark::DoNotOptimize(snapshot.size());

@@ -22,10 +22,9 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/private/cubzh/CubzhFormat.h"
 #include <stdint.h>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/euler_angles.hpp>
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -242,9 +241,9 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 			wrap(stream.readUInt8(numFields))
 			core::String uuid;
 			core::String name;
-			glm::vec3 pos{0.0f};
-			glm::vec3 rot{0.0f};
-			glm::vec3 scale{1.0f}; // TODO: VOXELFORMAT: check this - might also be 0.5
+			math::Vec3f pos{0.0f};
+			math::Vec3f rot{0.0f};
+			math::Vec3f scale{1.0f}; // TODO: VOXELFORMAT: check this - might also be 0.5
 			uint8_t physicMode = 0;
 			Log::trace("numFields: %i", numFields);
 			for (uint8_t k = 0; k < numFields; ++k) {
@@ -314,7 +313,7 @@ bool CubzhB64Format::readObjects(const core::String &filename, const io::Archive
 
 			scenegraph::SceneGraphTransform instanceGroupTransform;
 			instanceGroupTransform.setWorldTranslation(pos);
-			instanceGroupTransform.setWorldOrientation(glm::quat(rot));
+			instanceGroupTransform.setWorldOrientation(math::Quatf(rot));
 			instanceGroupTransform.setWorldScale(scale);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			instanceGroupNode.setTransform(keyFrameIdx, instanceGroupTransform);

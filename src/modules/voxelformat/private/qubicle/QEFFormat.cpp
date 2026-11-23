@@ -5,7 +5,6 @@
 #include "color/ColorUtil.h"
 #include "QEFFormat.h"
 #include "color/Color.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -15,7 +14,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "palette/Palette.h"
-#include <glm/common.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -66,12 +66,12 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	const glm::ivec3 size(width, height, depth);
-	if (glm::any(glm::greaterThan(size, glm::ivec3(MaxRegionSize)))) {
+	const math::Vec3i size(width, height, depth);
+	if (math::any(math::greaterThan(size, math::Vec3i(MaxRegionSize)))) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::lessThan(size, glm::ivec3(1)))) {
+	if (math::any(math::lessThan(size, math::Vec3i(1)))) {
 		Log::warn("Size of matrix results in empty space");
 		return false;
 	}
@@ -104,7 +104,7 @@ bool QEFFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 			Log::error("Failed to parse palette color");
 			return false;
 		}
-		const glm::vec4 color(r, g, b, 1.0f);
+		const math::Vec4f color(r, g, b, 1.0f);
 		palette.setColor(i, color::getRGBA(color));
 	}
 	ctx.report("palette", paletteSize, paletteSize);
@@ -147,7 +147,7 @@ bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	const voxel::Region &region = node->volume()->region();
 	voxel::RawVolume::Sampler sampler(node->volume());
-	const glm::ivec3 &lower = region.getLowerCorner();
+	const math::Vec3i &lower = region.getLowerCorner();
 
 	const uint32_t width = region.getWidthInVoxels();
 	const uint32_t height = region.getHeightInVoxels();
@@ -157,7 +157,7 @@ bool QEFFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	stream->writeStringFormat(false, "%i\n", palette.colorCount());
 	for (int i = 0; i < palette.colorCount(); ++i) {
 		const color::RGBA c = palette.color(i);
-		const glm::vec4 &cv = color::fromRGBA(c);
+		const math::Vec4f &cv = color::fromRGBA(c);
 		stream->writeStringFormat(false, "%f %f %f\n", cv.r, cv.g, cv.b);
 	}
 

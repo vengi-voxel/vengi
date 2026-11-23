@@ -7,7 +7,8 @@
 #include "math/Axis.h"
 #include "voxel/Region.h"
 #include "video/ShapeBuilder.h"
-#include "core/GLM.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -20,6 +21,6 @@ inline constexpr int getIndexForMirrorAxis(math::Axis axis) {
 	return 0;
 }
 
-extern void updateShapeBuilderForPlane(video::ShapeBuilder& shapeBuilder, const voxel::Region& region, bool mirror, const glm::ivec3& pos, math::Axis axis, const glm::vec4& color);
+extern void updateShapeBuilderForPlane(video::ShapeBuilder& shapeBuilder, const voxel::Region& region, bool mirror, const math::Vec3i& pos, math::Axis axis, const math::Vec4f& color);
 
 }

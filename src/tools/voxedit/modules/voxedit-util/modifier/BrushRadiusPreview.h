@@ -7,7 +7,8 @@
 #include "core/collection/Buffer.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -18,7 +19,7 @@ namespace voxedit {
  * exposed surface along the face axis so the ring follows terrain / slopes.
  * Used by any brush that reports a preview radius.
  */
-void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const glm::ivec3 &center, voxel::FaceNames face,
-							   int radius, core::Buffer<glm::vec3> &out);
+void buildSurfaceRadiusOutline(const voxel::RawVolume *volume, const math::Vec3i &center, voxel::FaceNames face,
+							   int radius, core::Buffer<math::Vec3f> &out);
 
 } // namespace voxedit

@@ -7,8 +7,8 @@
 
 #include "GpuSceneData.h"
 #include "core/collection/Buffer.h"
-#include <glm/vec3.hpp>
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace palette {
 class Palette;
@@ -33,14 +33,14 @@ int pathTracerVoxelsPerBrick();
  */
 struct SparseGpuVolume {
 	uint32_t *indirection = nullptr;
-	glm::ivec3 coarseSize{0};
+	math::Vec3i coarseSize{0};
 	uint32_t *bricks = nullptr;
-	glm::ivec3 *brickCoords = nullptr;
+	math::Vec3i *brickCoords = nullptr;
 	int brickCount = 0;
 	/** @brief Brick atlas grid size in bricks (X = row, Y = col, Z = layers). */
 	int bricksPerRow = 1;
 	int bricksPerCol = 1;
-	glm::ivec3 atlasSize{0};
+	math::Vec3i atlasSize{0};
 	bool bricksTruncated = false;
 };
 
@@ -67,7 +67,7 @@ void collectScenePalettes(const scenegraph::SceneGraph &sceneGraph, core::Buffer
  * Bricks still store temporary (slot,color) indices until buildDenseMaterialAtlas().
  */
 bool buildSparseGpuVolume(const scenegraph::SceneGraph &sceneGraph, core::Buffer<const palette::Palette *> &palettes,
-						  const glm::ivec3 &worldMin, const glm::ivec3 &volumeSize, int maxTextureAxis,
+						  const math::Vec3i &worldMin, const math::Vec3i &volumeSize, int maxTextureAxis,
 						  SparseGpuVolume &out, uint8_t *transmissive);
 
 /**
@@ -88,8 +88,8 @@ void gatherSceneEmitLights(const SparseGpuVolume &volume, int materialCount, con
 struct PreparedGpuScene {
 	SparseGpuVolume sparse;
 	GpuMaterialAtlas materials;
-	glm::ivec3 worldMin{0};
-	glm::ivec3 volumeSize{0};
+	math::Vec3i worldMin{0};
+	math::Vec3i volumeSize{0};
 	bool empty = true;
 	bool volumeTruncated = false;
 	bool success = false;

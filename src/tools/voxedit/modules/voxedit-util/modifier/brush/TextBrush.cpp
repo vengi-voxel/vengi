@@ -9,7 +9,7 @@
 #include "core/Unicode.h"
 #include "math/Axis.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
-#include <glm/vector_relational.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -35,8 +35,8 @@ voxel::Region TextBrush::calcRegion(const BrushContext &ctx) const {
 	const int w = core_max(0, (l - 1)) * _spacing + dimX;
 	const int h = dimY;
 	const int d = _thickness;
-	const glm::ivec3 &mins = ctx.cursorPosition;
-	glm::ivec3 maxs = mins;
+	const math::Vec3i &mins = ctx.cursorPosition;
+	math::Vec3i maxs = mins;
 	const int widthIndex = math::getIndexForAxis(_axis);
 	maxs[(widthIndex + 0) % 3] += (w - 1);
 	maxs[(widthIndex + 1) % 3] += (h - 1);
@@ -52,7 +52,7 @@ void TextBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 	}
 	const char *t = _input.c_str();
 	const char **s = &t;
-	glm::ivec3 pos = region.getLowerCorner();
+	math::Vec3i pos = region.getLowerCorner();
 	const int widthIndex = math::getIndexForAxis(_axis);
 
 	for (int c = core::unicode::next(s); c != -1; c = core::unicode::next(s)) {
@@ -66,7 +66,7 @@ void TextBrush::setSize(int size) {
 	if (_size == size) {
 		return;
 	}
-	_size = glm::clamp(size, 6, 255);
+	_size = math::clamp(size, 6, 255);
 	markDirty();
 }
 
@@ -75,7 +75,7 @@ void TextBrush::setThickness(int thickness) {
 	if (_thickness == thickness) {
 		return;
 	}
-	_thickness = glm::clamp(thickness, 1, 255);
+	_thickness = math::clamp(thickness, 1, 255);
 	markDirty();
 }
 

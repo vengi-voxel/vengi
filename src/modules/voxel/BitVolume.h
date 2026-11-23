@@ -7,6 +7,7 @@
 #include "core/collection/DynamicBitSet.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -121,11 +122,11 @@ public:
 		_data.set(idx, value);
 	}
 
-	inline void setVoxel(const glm::ivec3 &pos, const voxel::Voxel &value) {
+	inline void setVoxel(const math::Vec3i &pos, const voxel::Voxel &value) {
 		setVoxel(pos.x, pos.y, pos.z, value);
 	}
 
-	inline void setVoxel(const glm::ivec3 &pos, bool value) {
+	inline void setVoxel(const math::Vec3i &pos, bool value) {
 		setVoxel(pos.x, pos.y, pos.z, value);
 	}
 
@@ -167,7 +168,7 @@ public:
 	 * the vector that describes the mins value of an aabb where a voxel is set in this volume
 	 * deleting a voxel afterwards might lead to invalid results
 	 */
-	inline glm::ivec3 mins() const {
+	inline math::Vec3i mins() const {
 		return _region.getLowerCorner();
 	}
 
@@ -175,7 +176,7 @@ public:
 	 * the vector that describes the maxs value of an aabb where a voxel is set in this volume
 	 * deleting a voxel afterwards might lead to invalid results
 	 */
-	inline glm::ivec3 maxs() const {
+	inline math::Vec3i maxs() const {
 		return _region.getUpperCorner();
 	}
 

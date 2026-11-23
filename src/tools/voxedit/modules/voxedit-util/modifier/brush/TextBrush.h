@@ -7,6 +7,7 @@
 #include "Brush.h"
 #include "voxel/Region.h"
 #include "voxelfont/VoxelFont.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -22,7 +23,7 @@ private:
 protected:
 	core::String _font = "font.ttf";
 	core::String _input = "text";
-	glm::ivec3 _lastCursorPosition{0};
+	math::Vec3i _lastCursorPosition{0};
 	int _size = 16;
 	int _spacing = 1;
 	int _thickness = 1;

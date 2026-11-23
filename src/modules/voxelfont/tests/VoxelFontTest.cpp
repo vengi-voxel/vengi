@@ -7,7 +7,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxelfont {
 
@@ -20,7 +20,7 @@ TEST_F(VoxelFontTest, RenderCharacterSetsVoxels) {
 	voxel::RawVolume volume(region);
 	voxel::RawVolumeWrapper wrapper(&volume);
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	const int width = font.renderCharacter('A', 32, 2, glm::ivec3(8, 8, 0), wrapper, voxel);
+	const int width = font.renderCharacter('A', 32, 2, math::Vec3i(8, 8, 0), wrapper, voxel);
 	EXPECT_GT(width, 0);
 	int count = 0;
 	for (int y = region.getLowerY(); y <= region.getUpperY(); ++y) {

@@ -6,7 +6,6 @@
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/FourCC.h"
-#include "core/GLM.h"
 #include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -29,7 +28,9 @@
 #include "voxelformat/private/mesh/MeshTri.h"
 #include "voxelformat/private/mesh/PosSampling.h"
 #include "voxelutil/VoxelUtil.h"
-#include <math.h>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -600,21 +601,21 @@ bool QuakeBSPFormat::loadQuake1Vertices(io::SeekableReadStream &stream, const Bs
 	return true;
 }
 
-float QuakeBSPFormat::distSqPointTriangle(const glm::vec3 &p, const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c) {
-	const auto len2 = [](const glm::vec3 &v) {
-		return glm::dot(v, v);
+float QuakeBSPFormat::distSqPointTriangle(const math::Vec3f &p, const math::Vec3f &a, const math::Vec3f &b, const math::Vec3f &c) {
+	const auto len2 = [](const math::Vec3f &v) {
+		return math::dot(v, v);
 	};
-	const glm::vec3 ab = b - a;
-	const glm::vec3 ac = c - a;
-	const glm::vec3 ap = p - a;
-	const float d1 = glm::dot(ab, ap);
-	const float d2 = glm::dot(ac, ap);
+	const math::Vec3f ab = b - a;
+	const math::Vec3f ac = c - a;
+	const math::Vec3f ap = p - a;
+	const float d1 = math::dot(ab, ap);
+	const float d2 = math::dot(ac, ap);
 	if (d1 <= 0.0f && d2 <= 0.0f) {
 		return len2(ap);
 	}
-	const glm::vec3 bp = p - b;
-	const float d3 = glm::dot(ab, bp);
-	const float d4 = glm::dot(ac, bp);
+	const math::Vec3f bp = p - b;
+	const float d3 = math::dot(ab, bp);
+	const float d4 = math::dot(ac, bp);
 	if (d3 >= 0.0f && d4 <= d3) {
 		return len2(bp);
 	}
@@ -623,9 +624,9 @@ float QuakeBSPFormat::distSqPointTriangle(const glm::vec3 &p, const glm::vec3 &a
 		const float v = d1 / (d1 - d3);
 		return len2(a + ab * v - p);
 	}
-	const glm::vec3 cp = p - c;
-	const float d5 = glm::dot(ab, cp);
-	const float d6 = glm::dot(ac, cp);
+	const math::Vec3f cp = p - c;
+	const float d5 = math::dot(ab, cp);
+	const float d6 = math::dot(ac, cp);
 	if (d6 >= 0.0f && d5 <= d6) {
 		return len2(cp);
 	}
@@ -646,8 +647,8 @@ float QuakeBSPFormat::distSqPointTriangle(const glm::vec3 &p, const glm::vec3 &a
 }
 
 bool QuakeBSPFormat::quakePointSolid(const core::Buffer<Quake1Plane> &planes, const core::Buffer<Quake1Node> &nodes,
-									 const core::Buffer<Quake1Leaf> &leaves, int root, const glm::vec3 &pos,
-									 const glm::vec3 &half) {
+									 const core::Buffer<Quake1Leaf> &leaves, int root, const math::Vec3f &pos,
+									 const math::Vec3f &half) {
 	if (root < 0) {
 		return false;
 	}
@@ -655,8 +656,8 @@ bool QuakeBSPFormat::quakePointSolid(const core::Buffer<Quake1Plane> &planes, co
 	int stack[256];
 	int sp = 0;
 	stack[sp++] = root;
-	const glm::vec3 pmin = pos - half;
-	const glm::vec3 pmax = pos + half;
+	const math::Vec3f pmin = pos - half;
+	const math::Vec3f pmax = pos + half;
 	while (sp > 0) {
 		const int idx = stack[--sp];
 		if (idx < 0) {
@@ -820,7 +821,7 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 										  const core::Buffer<Quake1Leaf> &leaves, const core::Buffer<Quake1Model> &models,
 										  scenegraph::SceneGraph &sceneGraph, const core::String &name,
 										  const MeshMaterialArray &meshMaterialArray) {
-	const glm::vec3 scale = sceneInputScale();
+	const math::Vec3f scale = sceneInputScale();
 	if (scale.x == 0.0f || scale.y == 0.0f || scale.z == 0.0f) {
 		Log::error("Invalid scale for bsp voxelization");
 		return false;
@@ -836,7 +837,7 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 	if (!normalPalette.load(normalPaletteVar->strVal().c_str())) {
 		normalPalette.redAlert2();
 	}
-	const glm::vec3 half(0.5f / scale.x, 0.5f / scale.z, 0.5f / scale.y);
+	const math::Vec3f half(0.5f / scale.x, 0.5f / scale.z, 0.5f / scale.y);
 	const float shellSq = _priv::quakeShellVoxels * _priv::quakeShellVoxels;
 	bool any = false;
 
@@ -872,8 +873,8 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 
 		core::DynamicArray<MeshTri> tris;
 		for (Face &face : visible) {
-			core::DynamicArray<glm::vec3> poly;
-			core::DynamicArray<glm::vec2> uvs;
+			core::DynamicArray<math::Vec3f> poly;
+			core::DynamicArray<math::Vec2f> uvs;
 			bool bad = false;
 			for (int j = 0; j < face.edgeCount; ++j) {
 				const int surfEdgesIdx = face.edgeId + j;
@@ -894,18 +895,18 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 					break;
 				}
 				const BspVertex &vert = vertices[vertIndex];
-				const glm::vec3 quakePos(vert.x, vert.y, vert.z);
-				poly.push_back(glm::vec3(quakePos.x * scale.x, quakePos.z * scale.y, quakePos.y * scale.z));
-				glm::vec2 uv(0.0f);
+				const math::Vec3f quakePos(vert.x, vert.y, vert.z);
+				poly.push_back(math::Vec3f(quakePos.x * scale.x, quakePos.z * scale.y, quakePos.y * scale.z));
+				math::Vec2f uv(0.0f);
 				if (face.textureId >= 0 && face.textureId < (int)textures.size()) {
 					const Texture &texture = textures[face.textureId];
 					if (texture.materialIdx >= 0 && texture.materialIdx < (int)meshMaterialArray.size()) {
 						const MeshMaterialPtr &material = meshMaterialArray[texture.materialIdx];
 						if (material->texture) {
-							const glm::vec3 sdir(texture.vecS[0], texture.vecS[1], texture.vecS[2]);
-							const glm::vec3 tdir(texture.vecT[0], texture.vecT[1], texture.vecT[2]);
-							uv.x = (glm::dot(quakePos, sdir) + texture.distS) / (float)material->texture->width();
-							uv.y = (glm::dot(quakePos, tdir) + texture.distT) / (float)material->texture->height();
+							const math::Vec3f sdir(texture.vecS[0], texture.vecS[1], texture.vecS[2]);
+							const math::Vec3f tdir(texture.vecT[0], texture.vecT[1], texture.vecT[2]);
+							uv.x = (math::dot(quakePos, sdir) + texture.distS) / (float)material->texture->width();
+							uv.y = (math::dot(quakePos, tdir) + texture.distT) / (float)material->texture->height();
 						}
 					}
 				}
@@ -934,34 +935,34 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 			continue;
 		}
 
-		glm::vec3 boundsMin(tris[0].mins());
-		glm::vec3 boundsMax(tris[0].maxs());
+		math::Vec3f boundsMin(tris[0].mins());
+		math::Vec3f boundsMax(tris[0].maxs());
 		for (const MeshTri &tri : tris) {
-			boundsMin = glm::min(boundsMin, tri.mins());
-			boundsMax = glm::max(boundsMax, tri.maxs());
+			boundsMin = math::min(boundsMin, tri.mins());
+			boundsMax = math::max(boundsMax, tri.maxs());
 		}
-		const glm::vec3 shell(_priv::quakeShellVoxels);
-		const int x0 = (int)glm::floor(boundsMin.x - shell.x);
-		const int y0 = (int)glm::floor(boundsMin.y - shell.y);
-		const int z0 = (int)glm::floor(boundsMin.z - shell.z);
-		const int x1 = (int)glm::floor(boundsMax.x + shell.x);
-		const int y1 = (int)glm::floor(boundsMax.y + shell.y);
-		const int z1 = (int)glm::floor(boundsMax.z + shell.z);
+		const math::Vec3f shell(_priv::quakeShellVoxels);
+		const int x0 = (int)math::floor(boundsMin.x - shell.x);
+		const int y0 = (int)math::floor(boundsMin.y - shell.y);
+		const int z0 = (int)math::floor(boundsMin.z - shell.z);
+		const int x1 = (int)math::floor(boundsMax.x + shell.x);
+		const int y1 = (int)math::floor(boundsMax.y + shell.y);
+		const int z1 = (int)math::floor(boundsMax.z + shell.z);
 
 		// shortcut: each occupied chunk tests every triangle. Index triangles per chunk if large maps are slow.
-		core::Map<glm::ivec3, int, 1031, glm::hash<glm::ivec3>> chunkIds(16384);
+		core::Map<math::Vec3i, int, 1031, math::Vec3iHash> chunkIds(16384);
 		bool tooManyChunks = false;
 		for (const MeshTri &tri : tris) {
-			const int cx0 = ((int)glm::floor(tri.mins().x - shell.x) - x0) / _priv::quakeShellChunk;
-			const int cy0 = ((int)glm::floor(tri.mins().y - shell.y) - y0) / _priv::quakeShellChunk;
-			const int cz0 = ((int)glm::floor(tri.mins().z - shell.z) - z0) / _priv::quakeShellChunk;
-			const int cx1 = ((int)glm::floor(tri.maxs().x + shell.x) - x0) / _priv::quakeShellChunk;
-			const int cy1 = ((int)glm::floor(tri.maxs().y + shell.y) - y0) / _priv::quakeShellChunk;
-			const int cz1 = ((int)glm::floor(tri.maxs().z + shell.z) - z0) / _priv::quakeShellChunk;
+			const int cx0 = ((int)math::floor(tri.mins().x - shell.x) - x0) / _priv::quakeShellChunk;
+			const int cy0 = ((int)math::floor(tri.mins().y - shell.y) - y0) / _priv::quakeShellChunk;
+			const int cz0 = ((int)math::floor(tri.mins().z - shell.z) - z0) / _priv::quakeShellChunk;
+			const int cx1 = ((int)math::floor(tri.maxs().x + shell.x) - x0) / _priv::quakeShellChunk;
+			const int cy1 = ((int)math::floor(tri.maxs().y + shell.y) - y0) / _priv::quakeShellChunk;
+			const int cz1 = ((int)math::floor(tri.maxs().z + shell.z) - z0) / _priv::quakeShellChunk;
 			for (int cz = cz0; cz <= cz1 && !tooManyChunks; ++cz) {
 				for (int cy = cy0; cy <= cy1 && !tooManyChunks; ++cy) {
 					for (int cx = cx0; cx <= cx1; ++cx) {
-						const glm::ivec3 key(cx, cy, cz);
+						const math::Vec3i key(cx, cy, cz);
 						if (chunkIds.find(key) != chunkIds.end()) {
 							continue;
 						}
@@ -983,7 +984,7 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 			continue;
 		}
 
-		core::DynamicArray<glm::ivec3> chunkCoords;
+		core::DynamicArray<math::Vec3i> chunkCoords;
 		chunkCoords.reserve((int)chunkIds.size());
 		for (auto it = chunkIds.begin(); it != chunkIds.end(); ++it) {
 			chunkCoords.push_back(it->key);
@@ -1005,7 +1006,7 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 		};
 		core::Buffer<ShellCell> cells;
 		int chunkIndex = 0;
-		for (const glm::ivec3 &chunk : chunkCoords) {
+		for (const math::Vec3i &chunk : chunkCoords) {
 			if (stopExecution()) {
 				break;
 			}
@@ -1037,18 +1038,18 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 					eminY >= (float)(yEnd + 1) || emaxZ < (float)zStart || eminZ >= (float)(zEnd + 1)) {
 					continue;
 				}
-				const int vx0 = core_max(xStart, (int)glm::floor(eminX));
-				const int vy0 = core_max(yStart, (int)glm::floor(eminY));
-				const int vz0 = core_max(zStart, (int)glm::floor(eminZ));
-				const int vx1 = core_min(xEnd, (int)glm::floor(emaxX));
-				const int vy1 = core_min(yEnd, (int)glm::floor(emaxY));
-				const int vz1 = core_min(zEnd, (int)glm::floor(emaxZ));
-				const glm::vec3 n = glm::cross(tri.vertex1() - tri.vertex0(), tri.vertex2() - tri.vertex0());
-				const float n2 = glm::dot(n, n);
+				const int vx0 = core_max(xStart, (int)math::floor(eminX));
+				const int vy0 = core_max(yStart, (int)math::floor(eminY));
+				const int vz0 = core_max(zStart, (int)math::floor(eminZ));
+				const int vx1 = core_min(xEnd, (int)math::floor(emaxX));
+				const int vy1 = core_min(yEnd, (int)math::floor(emaxY));
+				const int vz1 = core_min(zEnd, (int)math::floor(emaxZ));
+				const math::Vec3f n = math::cross(tri.vertex1() - tri.vertex0(), tri.vertex2() - tri.vertex0());
+				const float n2 = math::dot(n, n);
 				for (int z = vz0; z <= vz1; ++z) {
 					for (int y = vy0; y <= vy1; ++y) {
 						for (int x = vx0; x <= vx1; ++x) {
-							const glm::vec3 center(x + 0.5f, y + 0.5f, z + 0.5f);
+							const math::Vec3f center(x + 0.5f, y + 0.5f, z + 0.5f);
 							const float distSq = distSqPointTriangle(center, tri.vertex0(), tri.vertex1(), tri.vertex2());
 							if (distSq > shellSq) {
 								continue;
@@ -1058,16 +1059,16 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 							if (distSq >= slot.distSq) {
 								continue;
 							}
-							const glm::vec3 quake = glm::vec3(center.x / scale.x, center.z / scale.z, center.y / scale.y);
+							const math::Vec3f quake = math::Vec3f(center.x / scale.x, center.z / scale.z, center.y / scale.y);
 							if (!quakePointSolid(planes, nodes, leaves, model.headnode, quake, half)) {
 								continue;
 							}
 							slot.distSq = distSq;
-							glm::vec2 uv = tri.centerUV();
+							math::Vec2f uv = tri.centerUV();
 							if (n2 > 1.0e-12f) {
-								const glm::vec3 nn = n / sqrtf(n2);
-								const glm::vec3 proj = center - nn * glm::dot(nn, center - tri.vertex0());
-								glm::vec2 projected;
+								const math::Vec3f nn = n / sqrtf(n2);
+								const math::Vec3f proj = center - nn * math::dot(nn, center - tri.vertex0());
+								math::Vec2f projected;
 								if (tri.calcUVs(proj, projected)) {
 									uv = projected;
 								}
@@ -1084,8 +1085,8 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 				}
 			}
 
-			glm::ivec3 tightMin(0);
-			glm::ivec3 tightMax(0);
+			math::Vec3i tightMin(0);
+			math::Vec3i tightMax(0);
 			int hitCount = 0;
 			for (int z = zStart; z <= zEnd; ++z) {
 				for (int y = yStart; y <= yEnd; ++y) {
@@ -1094,13 +1095,13 @@ bool QuakeBSPFormat::voxelizeQuake1Models(const core::DynamicArray<Texture> &tex
 						if (cells[cell].state != 1) {
 							continue;
 						}
-						const glm::ivec3 pos(x, y, z);
+						const math::Vec3i pos(x, y, z);
 						if (hitCount == 0) {
 							tightMin = pos;
 							tightMax = pos;
 						} else {
-							tightMin = glm::min(tightMin, pos);
-							tightMax = glm::max(tightMax, pos);
+							tightMin = math::min(tightMin, pos);
+							tightMax = math::max(tightMax, pos);
 						}
 						++hitCount;
 					}
@@ -1344,8 +1345,8 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 		Log::debug("No vertices or indices found - skipping");
 		return false;
 	}
-	core::Buffer<glm::vec2> texcoords(vertexCount);
-	core::Buffer<glm::vec3> verts(vertexCount);
+	core::Buffer<math::Vec2f> texcoords(vertexCount);
+	core::Buffer<math::Vec3f> verts(vertexCount);
 	core::Buffer<int16_t> textureIndices(vertexCount);
 	voxel::IndexArray indices(indexCount);
 
@@ -1377,26 +1378,26 @@ bool QuakeBSPFormat::voxelize(const core::DynamicArray<Texture> &textures, core:
 			}
 
 			const Texture &texture = textures[face.textureId];
-			const glm::vec3 sdir(texture.vecS[0], texture.vecS[1], texture.vecS[2]);
-			const glm::vec3 tdir(texture.vecT[0], texture.vecT[1], texture.vecT[2]);
+			const math::Vec3f sdir(texture.vecS[0], texture.vecS[1], texture.vecS[2]);
+			const math::Vec3f tdir(texture.vecT[0], texture.vecT[1], texture.vecT[2]);
 
-			const glm::vec3 vertex(vert->x, vert->y, vert->z);
+			const math::Vec3f vertex(vert->x, vert->y, vert->z);
 			if (texture.materialIdx > 0 && texture.materialIdx < (int)meshMaterialArray.size()) {
 				const MeshMaterialPtr &material = meshMaterialArray[texture.materialIdx];
 				if (material->texture) {
 					/* texture coordinates */
-					float s = glm::dot(vertex, sdir) + texture.distS;
+					float s = math::dot(vertex, sdir) + texture.distS;
 					s /= (float)material->texture->width();
 
-					float t = glm::dot(vertex, tdir) + texture.distT;
+					float t = math::dot(vertex, tdir) + texture.distT;
 					t /= (float)material->texture->height();
 
-					texcoords[offset] = glm::vec2(s, t);
+					texcoords[offset] = math::Vec2f(s, t);
 				} else {
-					texcoords[offset] = glm::vec2(0, 0);
+					texcoords[offset] = math::Vec2f(0, 0);
 				}
 			} else {
-				texcoords[offset] = glm::vec2(0, 0);
+				texcoords[offset] = math::Vec2f(0, 0);
 			}
 			textureIndices[offset] = face.textureId;
 			verts[offset] = vertex;
@@ -1631,7 +1632,7 @@ bool QuakeBSPFormat::loadQuetooBsp(const core::String &filename, io::SeekableRea
 	if (sideCount < 0) {
 		return false;
 	}
-	core::Buffer<Side> sides((size_t)glm::max(sideCount, 0));
+	core::Buffer<Side> sides((size_t)math::max(sideCount, 0));
 	if (sideCount > 0) {
 		if (stream.seek(header.lumps[brushSidesLump].offset) == -1) {
 			Log::error("Invalid brush side lump offset - can't seek");
@@ -1773,8 +1774,8 @@ bool QuakeBSPFormat::loadQuetooBsp(const core::String &filename, io::SeekableRea
 			for (int t = 0; t < triCount; ++t) {
 				const int32_t idx[3] = {elements[face.firstElement + t * 3], elements[face.firstElement + t * 3 + 1],
 										elements[face.firstElement + t * 3 + 2]};
-				glm::vec3 pos[3];
-				glm::vec2 uv[3];
+				math::Vec3f pos[3];
+				math::Vec2f uv[3];
 				bool ok = true;
 				for (int k = 0; k < 3; ++k) {
 					if (idx[k] < 0 || idx[k] >= vertexCount) {
@@ -1782,8 +1783,8 @@ bool QuakeBSPFormat::loadQuetooBsp(const core::String &filename, io::SeekableRea
 						break;
 					}
 					const Vert &vert = vertices[idx[k]];
-					pos[k] = glm::vec3(vert.x, vert.z, vert.y);
-					uv[k] = glm::vec2(vert.u, vert.v);
+					pos[k] = math::Vec3f(vert.x, vert.z, vert.y);
+					uv[k] = math::Vec2f(vert.u, vert.v);
 				}
 				if (!ok) {
 					Log::error("Face %i references a vertex out of bounds", f);

@@ -9,6 +9,8 @@
 #include "gesture/StrokeGesture.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -87,7 +89,7 @@ private:
 	using Super = Brush;
 
 	/** Tracks the last cursor position to detect movement and trigger preview updates */
-	glm::ivec3 _lastCursorPos{-100000};
+	math::Vec3i _lastCursorPos{-100000};
 
 protected:
 	BoxGesture _boxGesture;
@@ -101,7 +103,7 @@ protected:
 	 * @param[in] resolution Grid resolution per axis (1 = no snapping on that axis)
 	 * @return Position snapped to nearest grid point
 	 */
-	glm::ivec3 applyGridResolution(const glm::ivec3 &inPos, const glm::ivec3 &resolution) const;
+	math::Vec3i applyGridResolution(const math::Vec3i &inPos, const math::Vec3i &resolution) const;
 
 	/**
 	 * @brief Extend the brush region to span the entire volume in orthographic view
@@ -153,7 +155,7 @@ public:
 	}
 	bool setRegion(const voxel::Region &region);
 	void handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoState> &output) const override;
-	bool editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &delta,
+	bool editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &delta,
 					uint32_t operation) override;
 	void construct() override;
 	void onSceneChange() override;
@@ -179,7 +181,7 @@ public:
 	 * @sa needsAdditionalAction() - checks if more input is needed
 	 * @sa step() - updates the second position
 	 */
-	glm::ivec3 currentCursorPosition(const BrushContext &ctx) const override;
+	math::Vec3i currentCursorPosition(const BrushContext &ctx) const override;
 
 	voxel::Region calcRegion(const BrushContext &ctx) const override;
 

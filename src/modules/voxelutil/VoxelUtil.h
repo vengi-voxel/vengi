@@ -9,8 +9,9 @@
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <glm/fwd.hpp>
-#include <glm/geometric.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 class RawVolumeWrapper;
@@ -24,7 +25,7 @@ namespace voxelutil {
 /**
  * @brief Checks if there is a solid voxel around the given position
  */
-bool isTouching(const voxel::RawVolume &volume, const glm::ivec3 &pos,
+bool isTouching(const voxel::RawVolume &volume, const math::Vec3i &pos,
 				voxel::Connectivity connectivity = voxel::Connectivity::SixConnected);
 
 /**
@@ -38,9 +39,9 @@ bool isEmpty(const voxel::RawVolume &in, const voxel::Region &region);
  * @brief Fill the plane at the position with the pixels of the image if the underlying voxel is of the given type
  */
 int fillPlane(voxel::RawVolumeWrapper &in, const image::Image *image, const voxel::Voxel &searchedVoxel,
-			  const glm::ivec3 &position, voxel::FaceNames face);
+			  const math::Vec3i &position, voxel::FaceNames face);
 inline int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, const voxel::Voxel &searchedVoxel,
-					 const glm::ivec3 &position, voxel::FaceNames face) {
+					 const math::Vec3i &position, voxel::FaceNames face) {
 	return fillPlane(in, image.get(), searchedVoxel, position, face);
 }
 
@@ -53,12 +54,12 @@ inline int fillPlane(voxel::RawVolumeWrapper &in, const image::ImagePtr &image, 
  * @param groundVoxel The voxel we want to extrude on
  * @param newPlaneVoxel The voxel to put at the given position
  */
-int extrudePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int extrudePlane(voxel::RawVolumeWrapper &in, const math::Vec3i &pos, voxel::FaceNames face,
 				 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness);
 /**
  * @return The region of the volume that was changed
  */
-voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const math::Vec3i &pos, voxel::FaceNames face,
 								 const voxel::Voxel &groundVoxel, const voxel::Voxel &newPlaneVoxel, int thickness);
 
 /**
@@ -73,12 +74,12 @@ voxel::Region extrudePlaneRegion(const voxel::RawVolume &volume, const glm::ivec
  * @param groundVoxel The voxel to match for erasing.
  * @return The number of voxels that were erased.
  */
-int erasePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int erasePlane(voxel::RawVolumeWrapper &in, const math::Vec3i &pos, voxel::FaceNames face,
 			   const voxel::Voxel &groundVoxel, int thickness = 1);
 /**
  * @return The region of the volume that was changed
  */
-voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const math::Vec3i &pos, voxel::FaceNames face,
 							   const voxel::Voxel &groundVoxel, int thickness = 1);
 
 /**
@@ -92,7 +93,7 @@ voxel::Region erasePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 
  * @param face The direction of the face to paint.
  * @param replaceVoxel The voxel to paint the plane with.
  */
-int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int paintPlane(voxel::RawVolumeWrapper &in, const math::Vec3i &pos, voxel::FaceNames face,
 			   const voxel::Voxel &searchVoxel, const voxel::Voxel &replaceVoxel);
 
 /**
@@ -106,12 +107,12 @@ int paintPlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNa
  * @param face The direction of the face to override.
  * @param replaceVoxel The voxel to override the plane with.
  */
-int overridePlane(voxel::RawVolumeWrapper &in, const glm::ivec3 &pos, voxel::FaceNames face,
+int overridePlane(voxel::RawVolumeWrapper &in, const math::Vec3i &pos, voxel::FaceNames face,
 				  const voxel::Voxel &replaceVoxel, int thickness = 1);
 /**
  * @return The region of the volume that was changed
  */
-voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const glm::ivec3 &pos, voxel::FaceNames face,
+voxel::Region overridePlaneRegion(const voxel::RawVolume &volume, const math::Vec3i &pos, voxel::FaceNames face,
 								  const voxel::Voxel &replaceVoxel, int thickness = 1);
 
 void fill(voxel::RawVolumeWrapper &in, const voxel::Voxel &voxel, bool overwrite = true);
@@ -143,7 +144,7 @@ voxel::Region remapToPalette(voxel::RawVolume *v, const palette::Palette &oldPal
  */
 [[nodiscard]] voxel::RawVolume *diffVolumes(const voxel::RawVolume *v1, const voxel::RawVolume *v2);
 
-[[nodiscard]] voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const glm::mat4 &worldMat,
-													   const glm::vec3 &normalizedPivot);
+[[nodiscard]] voxel::RawVolume *applyTransformToVolume(const voxel::RawVolume &volume, const math::Mat4f &worldMat,
+													   const math::Vec3f &normalizedPivot);
 
 } // namespace voxelutil

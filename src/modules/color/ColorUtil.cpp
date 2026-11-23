@@ -7,26 +7,23 @@
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
-#include <glm/ext/scalar_integer.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-#include <glm/gtc/epsilon.hpp>
 
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/type_aligned.hpp>
 
 #include "core/sdl/SDLSystem.h"
 #include <stdio.h>
+#include "math/AlignedVec4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
+#include "math/Conversions.h"
 
 namespace color {
 
-glm::vec4 fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-	return glm::aligned_vec4(r, g, b, a) / color::magnitudef;
+math::Vec4f fromRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+	return math::AlignedVec4f(r, g, b, a) / color::magnitudef;
 }
 
-glm::vec4 fromRGBA(const RGBA rgba) {
+math::Vec4f fromRGBA(const RGBA rgba) {
 	return fromRGBA(rgba.r, rgba.g, rgba.b, rgba.a);
 }
 
@@ -274,8 +271,17 @@ double srgbToLinear(uint8_t c) {
 	return (double)srgbToLinear(c / 255.0f);
 }
 
-glm::vec3 srgbToLinear(const glm::vec3 &srgb) {
-	return glm::vec3(srgbToLinear(srgb.x), srgbToLinear(srgb.y), srgbToLinear(srgb.z));
+math::Vec3f srgbToLinear(const math::Vec3f &srgb) {
+	return math::Vec3f(srgbToLinear(srgb.x), srgbToLinear(srgb.y), srgbToLinear(srgb.z));
+}
+
+float linearToSrgb(float c) {
+	const float v = core_max(c, 0.0f);
+	return (v <= 0.0031308f) ? (v * 12.92f) : (float)(1.055 * pow(v, 1.0 / 2.4) - 0.055);
+}
+
+math::Vec3f linearToSrgb(const math::Vec3f &linear) {
+	return math::Vec3f(linearToSrgb(linear.x), linearToSrgb(linear.y), linearToSrgb(linear.z));
 }
 
 void rgbToXyz(uint8_t r, uint8_t g, uint8_t b, double &X, double &Y, double &Z) {
@@ -345,7 +351,7 @@ void getCIELab(RGBA color, float &L, float &a, float &b) {
 	getCIELab(fromRGBA(color), L, a, b);
 }
 
-RGBA fromCIELab(const glm::vec4 &in) {
+RGBA fromCIELab(const math::Vec4f &in) {
 	float fy = (in.r + 16.0f) / 116.0f;
 	float fx = in.g / 500.0f + fy;
 	float fz = fy - in.b / 200.0f;
@@ -380,45 +386,45 @@ RGBA fromCIELab(const glm::vec4 &in) {
 	float b = x * 0.0557f + y * -0.2040f + z * 1.0570f;
 
 	if (r > 0.0031308f) {
-		r = 1.055f * glm::pow(r, 1.0f / 2.4f) - 0.055f;
+		r = 1.055f * math::pow(r, 1.0f / 2.4f) - 0.055f;
 	} else {
 		r = 12.92f * r;
 	}
 
 	if (g > 0.0031308f) {
-		g = 1.055f * glm::pow(g, 1.0f / 2.4f) - 0.055f;
+		g = 1.055f * math::pow(g, 1.0f / 2.4f) - 0.055f;
 	} else {
 		g = 12.92f * g;
 	}
 
 	if (b > 0.0031308f) {
-		b = 1.055f * glm::pow(b, 1.0f / 2.4f) - 0.055f;
+		b = 1.055f * math::pow(b, 1.0f / 2.4f) - 0.055f;
 	} else {
 		b = 12.92f * b;
 	}
 
-	return RGBA((uint8_t)glm::clamp(r * color::magnitude, 0.0f, 255.0f),
-				(uint8_t)glm::clamp(g * color::magnitude, 0.0f, 255.0f),
-				(uint8_t)glm::clamp(b * color::magnitude, 0.0f, 255.0f),
+	return RGBA((uint8_t)math::clamp(r * color::magnitude, 0.0f, 255.0f),
+				(uint8_t)math::clamp(g * color::magnitude, 0.0f, 255.0f),
+				(uint8_t)math::clamp(b * color::magnitude, 0.0f, 255.0f),
 				255u);
 }
 
-void getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
+void getCIELab(const math::Vec4f &color, float &L, float &a, float &b) {
 	float red, green, blue;
 	if (color.r > 0.04045f) {
-		red = glm::pow(((color.r + 0.055f) / 1.055f), 2.4f);
+		red = math::pow(((color.r + 0.055f) / 1.055f), 2.4f);
 	} else {
 		red = color.r / 12.92f;
 	}
 
 	if (color.g > 0.04045f) {
-		green = glm::pow(((color.g + 0.055f) / 1.055f), 2.4f);
+		green = math::pow(((color.g + 0.055f) / 1.055f), 2.4f);
 	} else {
 		green = color.g / 12.92f;
 	}
 
 	if (color.b > 0.04045f) {
-		blue = glm::pow(((color.b + 0.055f) / 1.055f), 2.4f);
+		blue = math::pow(((color.b + 0.055f) / 1.055f), 2.4f);
 	} else {
 		blue = color.b / 12.92f;
 	}
@@ -438,19 +444,19 @@ void getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
 	float fz = z / 108.883f;
 
 	if (fx > 0.008856f) {
-		fx = glm::pow(fx, 1.0f / 3.0f);
+		fx = math::pow(fx, 1.0f / 3.0f);
 	} else {
 		fx = (7.787f * fx) + (4.0f / 29.0f);
 	}
 
 	if (fy > 0.008856f) {
-		fy = glm::pow(fy, 1.0f / 3.0f);
+		fy = math::pow(fy, 1.0f / 3.0f);
 	} else {
 		fy = (7.787f * fy) + (4.0f / 29.0f);
 	}
 
 	if (fz > 0.008856f) {
-		fz = glm::pow(fz, 1.0f / 3.0f);
+		fz = math::pow(fz, 1.0f / 3.0f);
 	} else {
 		fz = (7.787f * fz) + (4.0f / 29.0f);
 	}
@@ -460,12 +466,12 @@ void getCIELab(const glm::vec4 &color, float &L, float &a, float &b) {
 	b = 200.0f * (fy - fz);
 }
 
-RGBA getRGBA(const glm::vec4 &color) {
+RGBA getRGBA(const math::Vec4f &color) {
 	return RGBA{(uint8_t)(color.r * color::magnitude), (uint8_t)(color.g * color::magnitude),
 				(uint8_t)(color.b * color::magnitude), (uint8_t)(color.a * color::magnitude)};
 }
 
-RGBA getRGB(const glm::vec3 &color) {
+RGBA getRGB(const math::Vec3f &color) {
 	return RGBA{(uint8_t)(color.r * color::magnitude), (uint8_t)(color.g * color::magnitude),
 				(uint8_t)(color.b * color::magnitude), 255u};
 }
@@ -474,7 +480,7 @@ void getHSB(RGBA color, float &chue, float &csaturation, float &cbrightness) {
 	getHSB(fromRGBA(color), chue, csaturation, cbrightness);
 }
 
-void getHSB(const glm::vec4 &color, float &chue, float &csaturation, float &cbrightness) {
+void getHSB(const math::Vec4f &color, float &chue, float &csaturation, float &cbrightness) {
 	cbrightness = brightness(color);
 	const float minBrightness = core_min(color.r, core_min(color.g, color.b));
 	const float delta = cbrightness - minBrightness;
@@ -500,15 +506,15 @@ void getHSB(const glm::vec4 &color, float &chue, float &csaturation, float &cbri
 	csaturation = delta / cbrightness;
 }
 
-glm::vec4 alpha(const glm::vec4 &c, float alpha) {
-	return glm::vec4(c.r, c.g, c.b, alpha);
+math::Vec4f alpha(const math::Vec4f &c, float alpha) {
+	return math::Vec4f(c.r, c.g, c.b, alpha);
 }
 
 RGBA alpha(const RGBA rgba, uint8_t alpha) {
 	return RGBA(rgba.r, rgba.g, rgba.b, alpha);
 }
 
-float brightness(const glm::vec4 &color) {
+float brightness(const math::Vec4f &color) {
 	return core_max(color.r, core_max(color.g, color.b));
 }
 
@@ -516,18 +522,18 @@ uint8_t brightness(const RGBA &color) {
 	return core_max(color.r, core_max(color.g, color.b));
 }
 
-float intensity(const glm::vec4 &color) {
+float intensity(const math::Vec4f &color) {
 	return (color.r + color.g + color.b) / 3.f;
 }
 
-glm::vec4 gray(const glm::vec4 &color) {
+math::Vec4f gray(const math::Vec4f &color) {
 	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b);
-	return glm::vec4(gray, gray, gray, color.a);
+	return math::Vec4f(gray, gray, gray, color.a);
 }
 
-glm::vec3 gray(const glm::vec3 &color) {
+math::Vec3f gray(const math::Vec3f &color) {
 	const float gray = (0.21f * color.r + 0.72f * color.g + 0.07f * color.b);
-	return glm::vec3(gray, gray, gray);
+	return math::Vec3f(gray, gray, gray);
 }
 
 RGBA darker(const RGBA &color, float f) {
@@ -539,7 +545,7 @@ RGBA darker(const RGBA &color, float f) {
 	return result;
 }
 
-const glm::vec4 &contrastTextColor(const glm::vec4 &background) {
+const math::Vec4f &contrastTextColor(const math::Vec4f &background) {
 	// Compute luminance using the Rec. 709 formula
 	float luminance = 0.2126f * background.r + 0.7152f * background.g + 0.0722f * background.b;
 
@@ -547,21 +553,21 @@ const glm::vec4 &contrastTextColor(const glm::vec4 &background) {
 	return (luminance < 0.5f) ? color::White() : color::Black();
 }
 
-glm::vec4 darker(const glm::vec4 &color, float f) {
+math::Vec4f darker(const math::Vec4f &color, float f) {
 	f = (float)SDL_pow(color::scaleFactor, f);
-	return glm::vec4(glm::clamp(glm::vec3(color) * f, 0.0f, 1.0f), color.a);
+	return math::Vec4f(math::clamp(math::Vec3f(color) * f, 0.0f, 1.0f), color.a);
 }
 
 RGBA brighter(const RGBA color, float f) {
 	return getRGBA(brighter(fromRGBA(color), f));
 }
 
-glm::vec4 brighter(const glm::vec4 &color, float f) {
+math::Vec4f brighter(const math::Vec4f &color, float f) {
 	static float min = 21.f / color::magnitude;
-	glm::vec3 result = glm::vec3(color);
+	math::Vec3f result = math::Vec3f(color);
 	f = (float)SDL_pow(color::scaleFactor, f);
-	if (glm::all(glm::epsilonEqual(glm::zero<glm::vec3>(), result, 0.00001f))) {
-		return glm::vec4(min / f, min / f, min / f, color.a);
+	if (math::all(math::epsilonEqual(math::Vec3f(0.0f), result, 0.00001f))) {
+		return math::Vec4f(min / f, min / f, min / f, color.a);
 	}
 	if (result.r > 0.f && result.r < min) {
 		result.r = min;
@@ -572,7 +578,7 @@ glm::vec4 brighter(const glm::vec4 &color, float f) {
 	if (result.b > 0.f && result.b < min) {
 		result.b = min;
 	}
-	return glm::vec4(glm::clamp(result / f, 0.f, 1.f), color.a);
+	return math::Vec4f(math::clamp(result / f, 0.f, 1.f), color.a);
 }
 
 } // namespace color

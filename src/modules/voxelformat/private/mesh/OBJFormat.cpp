@@ -32,6 +32,10 @@
 #include <array> // needed by tiny_obj_loader.h
 #include "voxelformat/external/earcut.hpp"
 #include "voxelformat/external/tiny_obj_loader.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -49,8 +53,8 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 		return false;
 	}
 
-	glm::vec4 diffuse(1.0f, 1.0f, 1.0f, 1.0f);
-	glm::vec3 specular(0.0f);
+	math::Vec4f diffuse(1.0f, 1.0f, 1.0f, 1.0f);
+	math::Vec3f specular(0.0f);
 	float shininess = 0.0f;
 	float dissolve = 1.0f;
 	float ior = 1.0f;
@@ -67,14 +71,14 @@ bool OBJFormat::writeMtlFile(io::SeekableWriteStream &stream, const core::String
 		if (material.has(palette::MaterialProperty::MaterialRoughness)) {
 			roughness = material.value(palette::MaterialProperty::MaterialRoughness);
 			// Map roughness to a phong exponent for classic MTL readers.
-			shininess = glm::clamp((1.0f - roughness) * 1000.0f, 0.0f, 1000.0f);
+			shininess = math::clamp((1.0f - roughness) * 1000.0f, 0.0f, 1000.0f);
 		}
 		if (material.has(palette::MaterialProperty::MaterialMetal)) {
 			metallic = material.value(palette::MaterialProperty::MaterialMetal);
 		}
 		if (material.has(palette::MaterialProperty::MaterialSpecular)) {
 			const float spec = material.value(palette::MaterialProperty::MaterialSpecular);
-			specular = glm::vec3(spec);
+			specular = math::Vec3f(spec);
 			illum = 2;
 		}
 		if (material.has(palette::MaterialProperty::MaterialIndexOfRefraction)) {
@@ -126,7 +130,7 @@ bool OBJFormat::writePaletteMaterials(io::SeekableWriteStream &stream, const pal
 
 bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
 						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+						   const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -167,7 +171,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-			const glm::mat3 normalMatrix = meshExt.normalMatrix(transform, scale);
+			const math::Mat3f normalMatrix = meshExt.normalMatrix(transform, scale);
 			const palette::Palette &palette = graphNode.palette();
 
 			const core::String hashId = core::String::format("%" PRIu64, palette.hash());
@@ -252,7 +256,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			for (int j = 0; j < nv; ++j) {
 				const voxel::VoxelVertex &v = vertices[j];
 
-				glm::vec3 pos;
+				math::Vec3f pos;
 				if (meshExt.applyTransform) {
 					pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
 				} else {
@@ -261,14 +265,14 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 				pos *= scale;
 				stream->writeStringFormat(false, "v %.04f %.04f %.04f", pos.x, pos.y, pos.z);
 				if (withColor) {
-					const glm::vec4 &color = color::fromRGBA(palette.color(v.colorIndex));
+					const math::Vec4f &color = color::fromRGBA(palette.color(v.colorIndex));
 					stream->writeStringFormat(false, " %.03f %.03f %.03f", color.r, color.g, color.b);
 				}
 				wrapBool(stream->writeStringFormat(false, "\n"))
 			}
 			if (withNormals) {
 				for (int j = 0; j < nv; ++j) {
-					const glm::vec3 norm = glm::normalize(normalMatrix * normals[j]);
+					const math::Vec3f norm = math::normalize(normalMatrix * normals[j]);
 					stream->writeStringFormat(false, "vn %.04f %.04f %.04f\n", norm.x, norm.y, norm.z);
 				}
 			}
@@ -288,13 +292,13 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			if (quad) {
 				if (withTexCoords) {
 					if (useTexture) {
-						for (const glm::vec2 &uv : uvs) {
+						for (const math::Vec2f &uv : uvs) {
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, 1.0f - uv.y);
 						}
 					} else {
 						for (int j = 0; j < ni; j += 6) {
 							const voxel::VoxelVertex &v = vertices[indices[j]];
-							const glm::vec2 &uv = paletteUV(v.colorIndex);
+							const math::Vec2f &uv = paletteUV(v.colorIndex);
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
@@ -362,13 +366,13 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			} else {
 				if (withTexCoords) {
 					if (useTexture) {
-						for (const glm::vec2 &uv : uvs) {
+						for (const math::Vec2f &uv : uvs) {
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, 1.0f - uv.y);
 						}
 					} else {
 						for (int j = 0; j < ni; j += 3) {
 							const voxel::VoxelVertex &v = vertices[indices[j]];
-							const glm::vec2 &uv = paletteUV(v.colorIndex);
+							const math::Vec2f &uv = paletteUV(v.colorIndex);
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
 							stream->writeStringFormat(false, "vt %f %f\n", uv.x, uv.y);
@@ -434,7 +438,7 @@ bool OBJFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 bool OBJFormat::savePointCloud(const scenegraph::SceneGraph &, const PointCloud &pointCloud,
 							   const core::String &filename, const io::ArchivePtr &archive,
-							   const glm::vec3 &scale, bool withColor) const {
+							   const math::Vec3f &scale, bool withColor) const {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -446,9 +450,9 @@ bool OBJFormat::savePointCloud(const scenegraph::SceneGraph &, const PointCloud 
 	wrapBool(stream->writeStringFormat(false, "o PointCloud\n"))
 
 	for (const PointCloudVertex &point : pointCloud) {
-		const glm::vec3 pos = point.position * scale;
+		const math::Vec3f pos = point.position * scale;
 		if (withColor) {
-			const glm::vec4 color = color::fromRGBA(point.color);
+			const math::Vec4f color = color::fromRGBA(point.color);
 			if (!stream->writeStringFormat(false, "v %.04f %.04f %.04f %.03f %.03f %.03f\n", pos.x, pos.y,
 								   pos.z, color.r, color.g, color.b)) {
 				Log::error("Failed to write obj point vertex with color");
@@ -477,7 +481,7 @@ void OBJFormat::loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &
 	pointCloud.resize(tinyShape.points.indices.size());
 	for (int i = 0; i < (int)tinyShape.points.indices.size(); ++i) {
 		const tinyobj::index_t &idx0 = tinyShape.points.indices[i];
-		const glm::vec3 &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0],
+		const math::Vec3f &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0],
 								 tinyAttrib.vertices[3 * idx0.vertex_index + 1],
 								 tinyAttrib.vertices[3 * idx0.vertex_index + 2]};
 		pointCloud[i].position = vertex0;
@@ -486,7 +490,7 @@ void OBJFormat::loadPointCloud(tinyobj::attrib_t &tinyAttrib, tinyobj::shape_t &
 			const float r0 = tinyAttrib.colors[3 * idx0.vertex_index + 0];
 			const float g0 = tinyAttrib.colors[3 * idx0.vertex_index + 1];
 			const float b0 = tinyAttrib.colors[3 * idx0.vertex_index + 2];
-			pointCloud[i].color = color::getRGBA(glm::vec4(r0, g0, b0, 1.0f));
+			pointCloud[i].color = color::getRGBA(math::Vec4f(r0, g0, b0, 1.0f));
 		}
 	}
 }
@@ -511,13 +515,13 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 		const tinyobj::index_t &idx0 = tinyMesh.indices[indexOffset + 0];
 		const tinyobj::index_t &idx1 = tinyMesh.indices[indexOffset + 1];
 		const tinyobj::index_t &idx2 = tinyMesh.indices[indexOffset + 2];
-		const glm::vec3 &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0],
+		const math::Vec3f &vertex0{tinyAttrib.vertices[3 * idx0.vertex_index + 0],
 								 tinyAttrib.vertices[3 * idx0.vertex_index + 1],
 								 tinyAttrib.vertices[3 * idx0.vertex_index + 2]};
-		const glm::vec3 &vertex1{tinyAttrib.vertices[3 * idx1.vertex_index + 0],
+		const math::Vec3f &vertex1{tinyAttrib.vertices[3 * idx1.vertex_index + 0],
 								 tinyAttrib.vertices[3 * idx1.vertex_index + 1],
 								 tinyAttrib.vertices[3 * idx1.vertex_index + 2]};
-		const glm::vec3 &vertex2{tinyAttrib.vertices[3 * idx2.vertex_index + 0],
+		const math::Vec3f &vertex2{tinyAttrib.vertices[3 * idx2.vertex_index + 0],
 								 tinyAttrib.vertices[3 * idx2.vertex_index + 1],
 								 tinyAttrib.vertices[3 * idx2.vertex_index + 2]};
 		meshTri.setVertices(vertex0, vertex1, vertex2);
@@ -531,16 +535,16 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 			const float r2 = tinyAttrib.colors[3 * idx2.vertex_index + 0];
 			const float g2 = tinyAttrib.colors[3 * idx2.vertex_index + 1];
 			const float b2 = tinyAttrib.colors[3 * idx2.vertex_index + 2];
-			meshTri.setColor(color::getRGBA(glm::vec4(r0, g0, b0, 1.0f)),
-							 color::getRGBA(glm::vec4(r1, g1, b1, 1.0f)),
-							 color::getRGBA(glm::vec4(r2, g2, b2, 1.0f)));
+			meshTri.setColor(color::getRGBA(math::Vec4f(r0, g0, b0, 1.0f)),
+							 color::getRGBA(math::Vec4f(r1, g1, b1, 1.0f)),
+							 color::getRGBA(math::Vec4f(r2, g2, b2, 1.0f)));
 		}
 		if (idx0.texcoord_index >= 0 && idx1.texcoord_index >= 0 && idx2.texcoord_index >= 0) {
-			const glm::vec2 &uv0{tinyAttrib.texcoords[2 * idx0.texcoord_index + 0],
+			const math::Vec2f &uv0{tinyAttrib.texcoords[2 * idx0.texcoord_index + 0],
 								 tinyAttrib.texcoords[2 * idx0.texcoord_index + 1]};
-			const glm::vec2 &uv1{tinyAttrib.texcoords[2 * idx1.texcoord_index + 0],
+			const math::Vec2f &uv1{tinyAttrib.texcoords[2 * idx1.texcoord_index + 0],
 								 tinyAttrib.texcoords[2 * idx1.texcoord_index + 1]};
-			const glm::vec2 &uv2{tinyAttrib.texcoords[2 * idx2.texcoord_index + 0],
+			const math::Vec2f &uv2{tinyAttrib.texcoords[2 * idx2.texcoord_index + 0],
 								 tinyAttrib.texcoords[2 * idx2.texcoord_index + 1]};
 			meshTri.setUVs(uv0, uv1, uv2);
 		}
@@ -556,7 +560,7 @@ bool OBJFormat::voxelizeMeshShape(const tinyobj::shape_t &tinyShape, const tinyo
 				}
 			}
 			if (tinyAttrib.colors.empty()) {
-				const glm::vec4 diffuseColor(tinyMaterial->diffuse[0], tinyMaterial->diffuse[1],
+				const math::Vec4f diffuseColor(tinyMaterial->diffuse[0], tinyMaterial->diffuse[1],
 											 tinyMaterial->diffuse[2], 1.0f);
 				meshTri.setColor(diffuseColor);
 			}
@@ -672,7 +676,7 @@ bool OBJFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 			paletteMaterial.setValue(palette::MaterialProperty::MaterialSpecular, specular);
 		}
 		meshMaterial->transparency = 1.0f - tinyMaterial.dissolve;
-		meshMaterial->baseColor = color::getRGBA(glm::vec4(tinyMaterial.diffuse[0], tinyMaterial.diffuse[1],
+		meshMaterial->baseColor = color::getRGBA(math::Vec4f(tinyMaterial.diffuse[0], tinyMaterial.diffuse[1],
 														   tinyMaterial.diffuse[2], tinyMaterial.dissolve));
 		// Without a diffuse texture, use Kd as the solid base color.
 		if (tinyMaterial.diffuse_texname.empty()) {

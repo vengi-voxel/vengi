@@ -8,7 +8,7 @@
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/Hash.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "io/Filesystem.h"
 #include "Version.h"
 #include "core/Assert.h"
@@ -19,8 +19,9 @@
 #include "video/Renderer.h"
 #include "video/DeferredDestroy.h"
 #include "util/IncludeUtil.h"
-#include <glm/gtc/type_ptr.hpp>
 #include "engine-config.h"
+#include "math/Vec3u.h"
+#include "math/Conversions.h"
 
 namespace video {
 
@@ -471,7 +472,7 @@ bool Shader::createProgramFromShaders() {
 	return video::linkShader(_program, vert, frag, geom, _name);
 }
 
-bool Shader::run(const glm::uvec3& workGroups, MemoryBarrierType wait) {
+bool Shader::run(const math::Vec3u& workGroups, MemoryBarrierType wait) {
 	const Id comp = getShader(ShaderType::Compute);
 	if (comp == InvalidId) {
 		return false;

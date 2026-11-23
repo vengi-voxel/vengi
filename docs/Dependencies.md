@@ -7,7 +7,6 @@
 ## Libraries
 
 * development headers/libs for
-  * glm
   * lua >= 5.4
   * sdl3
   * gtest (and gmock)
@@ -23,7 +22,7 @@ the higher priority. Usually you don't have to install anything of these.
 ## Debian
 
 ```bash
-apt-get install binutils-dev libunwind-dev libglm-dev lua5.4 liblua5.4-dev libfreetype-dev libsdl3-dev wayland-protocols pkg-config libjpeg-dev libpng-dev libbrotli-dev
+apt-get install binutils-dev libunwind-dev lua5.4 liblua5.4-dev libfreetype-dev libsdl3-dev wayland-protocols pkg-config libjpeg-dev libpng-dev libbrotli-dev
 ```
 
 ## RockyLinux
@@ -57,5 +56,5 @@ brew install sdl3 jpeg-turbo freetype cmake ninja pkg-config
 ## Windows
 
 ```bash
-vcpkg install pkg-config sdl3 libjpeg-turbo lua glm glslang gtest freetype
+vcpkg install pkg-config sdl3 libjpeg-turbo lua glslang gtest freetype
 ```

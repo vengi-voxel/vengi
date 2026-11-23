@@ -15,6 +15,7 @@
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 namespace axiom {
@@ -34,22 +35,22 @@ static bool loadAxiom(const priv::NamedBinaryTag &schematic, scenegraph::SceneGr
 	}
 
 	// Calculate bounds
-	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
-	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
+	math::Vec3i mins((std::numeric_limits<int32_t>::max)() / 2);
+	math::Vec3i maxs((std::numeric_limits<int32_t>::min)() / 2);
 	for (const auto &regionTag : blockRegions) {
 		if (regionTag.type() != priv::TagType::COMPOUND) {
 			Log::error("Invalid region tag type");
 			return false;
 		}
-		const glm::ivec3 regionPos(regionTag.get("X").int32(0), regionTag.get("Y").int32(0),
+		const math::Vec3i regionPos(regionTag.get("X").int32(0), regionTag.get("Y").int32(0),
 								   regionTag.get("Z").int32(0));
-		mins = glm::min(mins, regionPos);
-		maxs = glm::max(maxs, regionPos);
+		mins = math::min(mins, regionPos);
+		maxs = math::max(maxs, regionPos);
 	}
 	constexpr const int chunkSize = 16;
 
 	// Calculate size in blocks (each region is 16x16x16)
-	const glm::ivec3 regionSize = (maxs - mins + glm::ivec3(1)) * chunkSize;
+	const math::Vec3i regionSize = (maxs - mins + math::Vec3i(1)) * chunkSize;
 	const voxel::Region region({0, 0, 0}, regionSize - 1);
 	if (!region.isValid()) {
 		Log::error("Invalid region size: %i %i %i", regionSize.x, regionSize.y, regionSize.z);

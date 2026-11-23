@@ -30,6 +30,8 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VoxelUtil.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -224,8 +226,8 @@ void Modifier::reset() {
 	}
 	_sliceRegion = voxel::Region::InvalidRegion;
 	_sliceVolume = nullptr;
-	_brushContext.gridResolution = glm::ivec3(1);
-	_brushContext.cursorPosition = glm::ivec3(0);
+	_brushContext.gridResolution = math::Vec3i(1);
+	_brushContext.cursorPosition = math::Vec3i(0);
 	_brushContext.cursorFace = voxel::FaceNames::Max;
 	_brushContext.brushGizmoActive = false;
 
@@ -352,7 +354,7 @@ void Modifier::notifySessionSample(const BrushEditTarget &target, const BrushApp
 	_sceneMgr->modified(target.nodeUUID, result.dirtyRegion, flags);
 }
 
-BrushApplyResult Modifier::applySessionSample(BrushEditTarget &target, const glm::ivec3 &samplePos) {
+BrushApplyResult Modifier::applySessionSample(BrushEditTarget &target, const math::Vec3i &samplePos) {
 	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphNodeByUUID(target.nodeUUID);
 	if (node == nullptr || !node->visible() || node->volume() != target.volume) {
 		BrushApplyResult result;
@@ -406,7 +408,7 @@ bool Modifier::applySessionTargets() {
 	if (!_editSession.isActive()) {
 		return false;
 	}
-	const glm::ivec3 position = _brushContext.cursorPosition;
+	const math::Vec3i position = _brushContext.cursorPosition;
 	bool anyApplied = false;
 	for (BrushEditTarget &target : _editSession.targets()) {
 		const BrushApplyResult result = applySessionSample(target, position);
@@ -496,15 +498,15 @@ bool Modifier::updateEdit() {
 		setSliceMode(true);
 	}
 
-	core::DynamicArray<glm::ivec3> samples;
-	const glm::ivec3 end = brush->currentCursorPosition(_brushContext);
-	_editSession.stroke().visit(end, [&](const glm::ivec3 &position) {
+	core::DynamicArray<math::Vec3i> samples;
+	const math::Vec3i end = brush->currentCursorPosition(_brushContext);
+	_editSession.stroke().visit(end, [&](const math::Vec3i &position) {
 		samples.push_back(position);
 	});
 
 	bool anyApplied = false;
 	for (BrushEditTarget &target : _editSession.targets()) {
-		for (const glm::ivec3 &sample : samples) {
+		for (const math::Vec3i &sample : samples) {
 			const BrushApplyResult result = applySessionSample(target, sample);
 			_editSession.accumulate(target, result.dirtyRegion);
 			anyApplied |= result.changed();
@@ -608,7 +610,7 @@ void Modifier::executeAdditionalAction() {
 	}
 }
 
-void Modifier::setReferencePosition(const glm::ivec3 &pos) {
+void Modifier::setReferencePosition(const math::Vec3i &pos) {
 	_brushContext.referencePos = pos;
 }
 
@@ -622,7 +624,7 @@ bool Modifier::needsAdditionalAction() {
 	return false;
 }
 
-glm::ivec3 Modifier::currentCursorPosition() {
+math::Vec3i Modifier::currentCursorPosition() {
 	if (Brush *brush = currentBrush()) {
 		return brush->currentCursorPosition(_brushContext);
 	}
@@ -744,7 +746,7 @@ void Modifier::preExecuteBrush(const voxel::RawVolume *volume) {
 			clampBrushCursor(_brushContext.targetVolumeRegion, brushRegion, _brushContext.prevCursorPosition);
 	}
 	if (_sliceRegion.isValid()) {
-		_brushContext.cursorPosition = glm::clamp(_brushContext.cursorPosition, _sliceRegion.getLowerCorner(), _sliceRegion.getUpperCorner());
+		_brushContext.cursorPosition = math::clamp(_brushContext.cursorPosition, _sliceRegion.getLowerCorner(), _sliceRegion.getUpperCorner());
 	}
 	brush->preExecute(_brushContext, volume);
 }
@@ -911,8 +913,8 @@ BrushType Modifier::setBrushType(BrushType type) {
 	return _brushType;
 }
 
-void Modifier::setGridResolution(const glm::ivec3 &gridSize) {
-	const glm::ivec3 resolution = glm::max(glm::ivec3(1), gridSize);
+void Modifier::setGridResolution(const math::Vec3i &gridSize) {
+	const math::Vec3i resolution = math::max(math::Vec3i(1), gridSize);
 	if (_brushContext.gridResolution != resolution) {
 		finishEdit(BrushEditFinishReason::SettingsChange);
 		_brushContext.gridResolution = resolution;
@@ -920,7 +922,7 @@ void Modifier::setGridResolution(const glm::ivec3 &gridSize) {
 }
 
 void Modifier::setGridResolution(int gridSize) {
-	setGridResolution(glm::ivec3(core_max(1, gridSize)));
+	setGridResolution(math::Vec3i(core_max(1, gridSize)));
 }
 
 ModifierType Modifier::setModifierType(ModifierType type) {
@@ -967,7 +969,7 @@ ModifierType Modifier::checkModifierType() {
 	return currentBrush() ? currentBrush()->modifierType(ModifierType::Mask) : ModifierType::ColorPicker;
 }
 
-void Modifier::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette, const glm::mat4 &model) {
+void Modifier::render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette, const math::Mat4f &model) {
 	if (_locked) {
 		return;
 	}

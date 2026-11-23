@@ -6,7 +6,7 @@
 
 #include "SelectStrategy.h"
 #include "core/collection/DynamicArray.h"
-#include <glm/vec2.hpp>
+#include "math/Vec2f.h"
 
 namespace voxedit {
 
@@ -18,7 +18,7 @@ class Lasso : public Strategy {
 private:
 	using Super = Strategy;
 	SceneManager *_sceneManager;
-	core::DynamicArray<glm::vec2> _screenPoints;
+	core::DynamicArray<math::Vec2f> _screenPoints;
 	bool _screenDragging = false;
 
 public:
@@ -40,7 +40,7 @@ public:
 	bool screenDragging() const {
 		return _screenDragging;
 	}
-	const core::DynamicArray<glm::vec2> &screenPoints() const {
+	const core::DynamicArray<math::Vec2f> &screenPoints() const {
 		return _screenPoints;
 	}
 };

@@ -13,7 +13,8 @@
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
-#include <glm/common.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -109,7 +110,7 @@ bool KVXFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 	const float pivy = (float)pivy_d / 256.0f;
 	const float pivz = (float)pivz_h / 256.0f;
 
-	glm::vec3 normalizedPivot;
+	math::Vec3f normalizedPivot;
 	normalizedPivot.x = pivx / (float)xsiz_w;
 	normalizedPivot.y = ((float)(zsiz_h - 1) - pivz) / (float)zsiz_h;
 	normalizedPivot.z = pivy / (float)ysiz_d;
@@ -222,7 +223,7 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	core_assert(node);
 
 	const voxel::Region &region = node->volume()->region();
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 
 	if (dim.x > 256 || dim.z > 256 || dim.y > 255) {
 		Log::error("Dimensions exceeded: w: %i, h: %i, d: %i", dim.x, dim.y, dim.z);
@@ -243,11 +244,11 @@ bool KVXFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 
 	// KVX only stores a pivot. Bake node translation into it so a scene-mode
 	// move (e.g. raising a model off the waterline) survives save/reload.
-	const glm::vec3 nodePivot =
+	const math::Vec3f nodePivot =
 		priv::bakedNormalizedPivot(node->pivot(), priv::nodeTranslation(sceneGraph, *node), dim);
-	int32_t pivx_w = (int32_t)glm::round(nodePivot.x * (float)dim.x * 256.0f);
-	int32_t pivy_d = (int32_t)glm::round(nodePivot.z * (float)dim.z * 256.0f);
-	int32_t pivz_h = (int32_t)glm::round(((float)(dim.y - 1) - nodePivot.y * (float)dim.y) * 256.0f);
+	int32_t pivx_w = (int32_t)math::round(nodePivot.x * (float)dim.x * 256.0f);
+	int32_t pivy_d = (int32_t)math::round(nodePivot.z * (float)dim.z * 256.0f);
+	int32_t pivz_h = (int32_t)math::round(((float)(dim.y - 1) - nodePivot.y * (float)dim.y) * 256.0f);
 	wrapBool(stream->writeInt32(pivx_w))
 	wrapBool(stream->writeInt32(pivy_d))
 	wrapBool(stream->writeInt32(pivz_h))

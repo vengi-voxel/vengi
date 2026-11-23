@@ -5,6 +5,7 @@
 #include "voxel/SparseChunk.h"
 #include "app/tests/AbstractTest.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -89,10 +90,10 @@ TEST_F(SparseChunkTest, testBoundaries) {
 	EXPECT_FALSE(chunk.hasVoxel(1, 0, 0));
 	EXPECT_FALSE(chunk.hasVoxel(254, 255, 255));
 
-	glm::ivec3 mins, maxs;
+	math::Vec3i mins, maxs;
 	ASSERT_TRUE(chunk.calculateBounds(mins, maxs));
-	EXPECT_EQ(glm::ivec3(0), mins);
-	EXPECT_EQ(glm::ivec3(255), maxs);
+	EXPECT_EQ(math::Vec3i(0), mins);
+	EXPECT_EQ(math::Vec3i(255), maxs);
 
 	int visited = 0;
 	chunk.visit([&](int x, int y, int z, const Voxel &v) {
@@ -118,10 +119,10 @@ TEST_F(SparseChunkTest, testCalculateBoundsInsideBrick) {
 	const Voxel voxel = createVoxel(VoxelType::Generic, 1);
 	chunk.setVoxel(10, 20, 30, voxel);
 	chunk.setVoxel(13, 17, 29, voxel);
-	glm::ivec3 mins, maxs;
+	math::Vec3i mins, maxs;
 	ASSERT_TRUE(chunk.calculateBounds(mins, maxs));
-	EXPECT_EQ(glm::ivec3(10, 17, 29), mins);
-	EXPECT_EQ(glm::ivec3(13, 20, 30), maxs);
+	EXPECT_EQ(math::Vec3i(10, 17, 29), mins);
+	EXPECT_EQ(math::Vec3i(13, 20, 30), maxs);
 }
 
 TEST_F(SparseChunkTest, testSetVoxelsRow) {
@@ -281,7 +282,7 @@ TEST_F(SparseChunkTest, testBrickReuse) {
 	int visited = 0;
 	chunk.visit([&](int, int, int, const Voxel &) { ++visited; });
 	EXPECT_EQ(expected + 2, visited);
-	glm::ivec3 mins, maxs;
+	math::Vec3i mins, maxs;
 	ASSERT_TRUE(chunk.calculateBounds(mins, maxs));
 	EXPECT_EQ(200, maxs.y);
 	EXPECT_EQ(200, maxs.z);
@@ -315,8 +316,8 @@ TEST_F(SparseChunkTest, testReadRegionAcrossPackedDenseAndUnallocatedBricks) {
 	chunk.setVoxel(9, 7, 7, b);
 	chunk.removeVoxel(8, 7, 7);
 
-	const glm::ivec3 mins(5, 6, 6);
-	const glm::ivec3 size(14, 4, 4);
+	const math::Vec3i mins(5, 6, 6);
+	const math::Vec3i size(14, 4, 4);
 	Voxel output[14 * 4 * 4];
 	for (Voxel &v : output) {
 		v.overwrite(b);

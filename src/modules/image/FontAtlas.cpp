@@ -9,12 +9,13 @@
 #include "core/Unicode.h"
 #include "image/Image.h"
 #include "io/Filesystem.h"
-#include <glm/common.hpp>
 #define STBTT_assert core_assert
 #define STBTT_malloc(x, u) ((void)(u), core_malloc(x))
 #define STBTT_free(x, u) ((void)(u), core_free(x))
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "external/stb_truetype.h"
+#include "math/Vec4f.h"
+#include "math/Scalar.h"
 
 namespace image {
 
@@ -26,7 +27,7 @@ FontAtlas::~FontAtlas() {
 
 bool FontAtlas::init(const char *filename, float height, uint32_t lastCodepoint) {
 	shutdown();
-	if (glm::isinf(height) || glm::isnan(height) || height < 4.0f || height > 64.0f || lastCodepoint < 127 || lastCodepoint > 4095) {
+	if (math::isinf(height) || math::isnan(height) || height < 4.0f || height > 64.0f || lastCodepoint < 127 || lastCodepoint > 4095) {
 		return false;
 	}
 	const auto file = io::filesystem()->open(filename);
@@ -57,8 +58,8 @@ bool FontAtlas::init(const char *filename, float height, uint32_t lastCodepoint)
 	_glyphs.resize(metrics.size());
 	for (size_t i = 0; i < metrics.size(); ++i) {
 		const auto &g = metrics[i];
-		_glyphs[i] = {glm::vec4(g.x0, g.y0, g.x1, g.y1) / (float)size,
-					  glm::vec4(g.xoff, g.yoff + height * 0.8f, g.x1 - g.x0, g.y1 - g.y0), g.xadvance};
+		_glyphs[i] = {math::Vec4f(g.x0, g.y0, g.x1, g.y1) / (float)size,
+					  math::Vec4f(g.xoff, g.yoff + height * 0.8f, g.x1 - g.x0, g.y1 - g.y0), g.xadvance};
 	}
 	_image = createEmptyImage("font atlas");
 	_image->load(size, size, [pixels, size](int x, int y, color::RGBA &rgba) {
@@ -90,13 +91,13 @@ float FontAtlas::width(const char *text, float height) const {
 	float maximum = 0;
 	for (int c = core::unicode::next(&text); c != -1; c = core::unicode::next(&text)) {
 		if (c == '\n') {
-			maximum = glm::max(maximum, x);
+			maximum = math::max(maximum, x);
 			x = 0;
 		} else {
 			x += glyph(c).advance * height / _height;
 		}
 	}
-	return glm::max(maximum, x);
+	return math::max(maximum, x);
 }
 
 bool FontAtlas::rasterize(uint32_t codepoint, float size, uint8_t *&bitmap, int &w, int &h, int &x0, int &y0) const {
@@ -105,7 +106,7 @@ bool FontAtlas::rasterize(uint32_t codepoint, float size, uint8_t *&bitmap, int 
 	h = 0;
 	x0 = 0;
 	y0 = 0;
-	if (_font == nullptr || glm::isinf(size) || glm::isnan(size) || size <= 0.0f) {
+	if (_font == nullptr || math::isinf(size) || math::isnan(size) || size <= 0.0f) {
 		return false;
 	}
 	const float scale = stbtt_ScaleForPixelHeight(_font, size);
@@ -120,7 +121,7 @@ void FontAtlas::freeBitmap(uint8_t *bitmap) const {
 void FontAtlas::measure(const char *string, float size, int &w, int &h) const {
 	w = 0;
 	h = 0;
-	if (_font == nullptr || string == nullptr || glm::isinf(size) || glm::isnan(size) || size <= 0.0f) {
+	if (_font == nullptr || string == nullptr || math::isinf(size) || math::isnan(size) || size <= 0.0f) {
 		return;
 	}
 	const float scale = stbtt_ScaleForPixelHeight(_font, size);

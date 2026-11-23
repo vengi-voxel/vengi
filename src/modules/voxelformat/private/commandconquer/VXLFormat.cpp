@@ -26,13 +26,9 @@
 #include "voxelformat/private/commandconquer/HVAFormat.h"
 #include "voxelformat/private/commandconquer/VXLShared.h"
 #include "voxelutil/VoxelUtil.h"
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/matrix.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -99,8 +95,8 @@ bool VXLFormat::writeLayer(io::SeekableWriteStream &stream, const scenegraph::Sc
 						   const scenegraph::SceneGraphNode &node, vxl::VXLLayerOffset &offsets,
 						   uint64_t nodeSectionOffset) const {
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
-	const glm::ivec3 &size = region.getDimensionsInVoxels();
-	if (glm::any(glm::greaterThan(size, maxSize()))) {
+	const math::Vec3i &size = region.getDimensionsInVoxels();
+	if (math::any(math::greaterThan(size, maxSize()))) {
 		Log::error("Node %i exceeds max supported dimensions", node.id());
 		return false;
 	}
@@ -226,12 +222,12 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	const scenegraph::FrameIndex frameIdx = 0;
 	const scenegraph::SceneGraphTransform &transform = node.transform(frameIdx);
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
-	const glm::ivec3 &size = region.getDimensionsInVoxels();
-	core_assert(!glm::any(glm::greaterThan(size, maxSize())));
+	const math::Vec3i &size = region.getDimensionsInVoxels();
+	core_assert(!math::any(math::greaterThan(size, maxSize())));
 	// TODO: VOXELFORMAT: check pivot handling (https://github.com/vengi-voxel/vengi/issues/537)
-	const glm::mat4 &localMatrix = transform.localMatrix();
-	const glm::vec3 scale(glm::length(localMatrix[0]), glm::length(localMatrix[1]), glm::length(localMatrix[2]));
-	const glm::vec3 mins = node.pivot() * glm::vec3(-size) * scale;
+	const math::Mat4f &localMatrix = transform.localMatrix();
+	const math::Vec3f scale(math::length(localMatrix[0]), math::length(localMatrix[1]), math::length(localMatrix[2]));
+	const math::Vec3f mins = node.pivot() * math::Vec3f(-size) * scale;
 	const vxl::VXLMatrix &vxlMatrix = vxl::convertVXLWrite(localMatrix);
 
 	// this is always the same and NOT the transform scale
@@ -250,7 +246,7 @@ bool VXLFormat::writeLayerInfo(io::SeekableWriteStream &stream, const scenegraph
 	wrapBool(stream.writeFloat(mins.z))
 	wrapBool(stream.writeFloat(mins.y))
 
-	const glm::vec3 maxs = mins + glm::vec3(size) * scale;
+	const math::Vec3f maxs = mins + math::Vec3f(size) * scale;
 	wrapBool(stream.writeFloat(maxs.x))
 	wrapBool(stream.writeFloat(maxs.z))
 	wrapBool(stream.writeFloat(maxs.y))
@@ -469,7 +465,7 @@ bool VXLFormat::readLayer(io::SeekableReadStream &stream, vxl::VXLModel &mdl, ui
 		const uint8_t x = (uint8_t)(i % footer.xsize);
 		const uint8_t y = (uint8_t)(i / footer.xsize);
 		uint8_t z = 0;
-		glm::ivec3 pos(x, z, footer.ysize - y - 1);
+		math::Vec3i pos(x, z, footer.ysize - y - 1);
 		while (z < footer.zsize) {
 			uint8_t skipCount;
 			wrap(stream.readUInt8(skipCount))

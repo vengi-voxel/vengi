@@ -18,6 +18,12 @@
 #include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3u.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -56,7 +62,7 @@ private:
 	io::SeekableWriteStream &_stream;
 	const voxel::RawVolume *_volume;
 	const palette::Palette &_palette;
-	const glm::ivec3 _maxs;
+	const math::Vec3i _maxs;
 
 	const bool _leftHanded;
 	const bool _rleCompressed;
@@ -158,7 +164,7 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 		Log::error("Invalid region");
 		return false;
 	}
-	const glm::ivec3 &size = region.getDimensionsInVoxels();
+	const math::Vec3i &size = region.getDimensionsInVoxels();
 	if (leftHanded) {
 		wrapSave(stream.writeUInt32(size.x));
 		wrapSave(stream.writeUInt32(size.y));
@@ -171,8 +177,8 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	// QB stores the grid origin, whereas vengi translation locates the pivot.
-	const glm::mat4 worldMatrix = sceneGraph.worldMatrix(node, keyFrameIdx);
-	const glm::ivec3 offset = glm::round(glm::vec3(worldMatrix * glm::vec4(region.getLowerCorner(), 1.0f)));
+	const math::Mat4f worldMatrix = sceneGraph.worldMatrix(node, keyFrameIdx);
+	const math::Vec3i offset = math::round(math::Vec3f(worldMatrix * math::Vec4f(region.getLowerCorner(), 1.0f)));
 	if (leftHanded) {
 		wrapSave(stream.writeInt32(offset.x));
 		wrapSave(stream.writeInt32(offset.y));
@@ -258,7 +264,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 	wrapBool(stream.readPascalStringUInt8(name))
 	Log::debug("Matrix name: %s", name.c_str());
 
-	glm::uvec3 size(0);
+	math::Vec3u size(0);
 	wrap(stream.readUInt32(size.x))
 	wrap(stream.readUInt32(size.y))
 	wrap(stream.readUInt32(size.z))
@@ -276,7 +282,7 @@ bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegra
 
 	scenegraph::SceneGraphTransform transform;
 	{
-		glm::ivec3 offset(0);
+		math::Vec3i offset(0);
 		if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
 			wrap(stream.readInt32(offset.x))
 			wrap(stream.readInt32(offset.y))
@@ -412,7 +418,7 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 		return false;
 	}
 
-	glm::uvec3 size(0);
+	math::Vec3u size(0);
 	wrap(stream.readUInt32(size.x));
 	wrap(stream.readUInt32(size.y));
 	wrap(stream.readUInt32(size.z));

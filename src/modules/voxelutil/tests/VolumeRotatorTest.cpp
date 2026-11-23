@@ -6,23 +6,20 @@
 #include "app/tests/AbstractTest.h"
 #include "core/ScopedPtr.h"
 #include "math/Axis.h"
-#include "math/Math.h"
 #include "math/tests/TestMathHelper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxel/tests/VoxelPrinter.h"
 #include "voxelutil/VolumeVisitor.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/euler_angles.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelutil {
 
 class VolumeRotatorTest : public app::AbstractTest {
 protected:
 	// {0, 0, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0}
-	void rotateAxisAndValidate(math::Axis axis, const glm::ivec3 positions[4]) {
+	void rotateAxisAndValidate(math::Axis axis, const math::Vec3i positions[4]) {
 		const voxel::Region region(-1, 1);
 		voxel::RawVolume smallVolume(region);
 		// build a block in a 3x3 volume area with the center voxel
@@ -44,7 +41,7 @@ protected:
 				<< "Expected to find a voxel at position " << positions[i] << "(" << i << ")\n"
 				<< *rotated;
 		}
-		glm::ivec3 remaining(0);
+		math::Vec3i remaining(0);
 		remaining[math::getIndexForAxis(axis)] = 270;
 
 		core::ScopedPtr<voxel::RawVolume> unRotated;
@@ -80,19 +77,19 @@ protected:
 
 TEST_F(VolumeRotatorTest, testRotateAxisX) {
 	const math::Axis axis = math::Axis::X;
-	const glm::ivec3 positions[]{{0, 0, 0}, {0, 0, -1}, {-1, 0, 0}, {1, 0, 0}};
+	const math::Vec3i positions[]{{0, 0, 0}, {0, 0, -1}, {-1, 0, 0}, {1, 0, 0}};
 	rotateAxisAndValidate(axis, positions);
 }
 
 TEST_F(VolumeRotatorTest, testRotateAxisY) {
 	const math::Axis axis = math::Axis::Y;
-	const glm::ivec3 positions[]{{0, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, -1}};
+	const math::Vec3i positions[]{{0, 0, 0}, {0, 1, 0}, {0, 0, 1}, {0, 0, -1}};
 	rotateAxisAndValidate(axis, positions);
 }
 
 TEST_F(VolumeRotatorTest, testRotateAxisZ) {
 	const math::Axis axis = math::Axis::Z;
-	const glm::ivec3 positions[]{{0, 0, 0}, {0, 1, 0}, {0, -1, 0}, {1, 0, 0}};
+	const math::Vec3i positions[]{{0, 0, 0}, {0, 1, 0}, {0, -1, 0}, {1, 0, 0}};
 	rotateAxisAndValidate(axis, positions);
 }
 
@@ -102,8 +99,8 @@ TEST_F(VolumeRotatorTest, testRotateAxisY45) {
 	EXPECT_TRUE(smallVolume.setVoxel(0, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(smallVolume.setVoxel(0, 1, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	EXPECT_TRUE(smallVolume.setVoxel(1, 0, 0, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-	const glm::vec3 angles(0.0f, 45.0f, 0.0f);
-	const glm::vec3 pivot(0.0f, 0.5f, 0.0f);
+	const math::Vec3f angles(0.0f, 45.0f, 0.0f);
+	const math::Vec3f pivot(0.0f, 0.5f, 0.0f);
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolumeDegrees(&smallVolume, angles, pivot));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	const voxel::Region &rotatedRegion = rotated->region();
@@ -115,19 +112,19 @@ TEST_F(VolumeRotatorTest, testRotateXYZByAngle) {
 	const voxel::Region region(-1, 6);
 	voxel::RawVolume smallVolume(region);
 
-	const glm::ivec3 originalPositions[] = {
-		glm::ivec3(0, 0, 0),
-		glm::ivec3(0, 1, 0),
-		glm::ivec3(1, 0, 0),
-		glm::ivec3(5, 3, 0),
-		glm::ivec3(2, 5, 0)
+	const math::Vec3i originalPositions[] = {
+		math::Vec3i(0, 0, 0),
+		math::Vec3i(0, 1, 0),
+		math::Vec3i(1, 0, 0),
+		math::Vec3i(5, 3, 0),
+		math::Vec3i(2, 5, 0)
 	};
 
-	for (const glm::ivec3 &p : originalPositions) {
+	for (const math::Vec3i &p : originalPositions) {
 		EXPECT_TRUE(smallVolume.setVoxel(p, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
 	}
-	const glm::vec3 angles(24.0f, 8.0f, 70.0f);
-	const glm::vec3 pivot(0.0f, 0.0f, 0.0f);
+	const math::Vec3f angles(24.0f, 8.0f, 70.0f);
+	const math::Vec3f pivot(0.0f, 0.0f, 0.0f);
 	core::ScopedPtr<voxel::RawVolume> rotated(voxelutil::rotateVolumeDegrees(&smallVolume, angles, pivot));
 	ASSERT_NE(nullptr, rotated) << "No new volume was returned for the desired rotation";
 	int voxelCount = voxelutil::countVoxels(*rotated);

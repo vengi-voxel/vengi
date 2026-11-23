@@ -17,6 +17,8 @@
 #include "voxedit-util/tests/AbstractBrushTest.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
+#include "math/Vec2i.h"
 
 namespace voxedit {
 
@@ -27,15 +29,15 @@ protected:
 		using ShapeBrush::setShapeType;
 	};
 
-	void ellipse(const glm::ivec2 &mins2, const glm::ivec2 &maxs2) {
+	void ellipse(const math::Vec2i &mins2, const math::Vec2i &maxs2) {
 		TestShapeBrush brush;
 		brush.setBoxMode();
 		BrushContext brushContext;
 		ASSERT_TRUE(brush.init());
 		brush.setShapeType(ShapeType::Ellipse);
 
-		const glm::ivec3 mins(0, 0, 31);
-		const glm::ivec3 maxs(31, 31, 31);
+		const math::Vec3i mins(0, 0, 31);
+		const math::Vec3i maxs(31, 31, 31);
 		const voxel::Region vregion(mins, maxs);
 		voxel::RawVolume volume(vregion);
 		scenegraph::SceneGraph sceneGraph;
@@ -44,17 +46,17 @@ protected:
 		ModifierVolumeWrapper wrapper(node, ModifierType::Place);
 		brush.preExecute(brushContext, wrapper.volume());
 		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-		brushContext.cursorPosition = glm::ivec3(mins2.x, mins2.y, maxs.z);
+		brushContext.cursorPosition = math::Vec3i(mins2.x, mins2.y, maxs.z);
 		brushContext.cursorFace = voxel::FaceNames::PositiveX;
 		EXPECT_TRUE(brush.beginBrush(brushContext));
 		EXPECT_TRUE(brush.active());
-		brushContext.cursorPosition = glm::ivec3(maxs2.x, maxs2.y, maxs.z);
+		brushContext.cursorPosition = math::Vec3i(maxs2.x, maxs2.y, maxs.z);
 		brush.step(brushContext);
 		const voxel::Region region = brush.calcRegion(brushContext);
-		const glm::ivec3 &lc = region.getLowerCorner();
-		const glm::ivec3 &uc = region.getUpperCorner();
-		ASSERT_EQ(lc, glm::ivec3(mins2.x, mins2.y, maxs.z));
-		ASSERT_EQ(uc, glm::ivec3(maxs2.x, maxs2.y, maxs.z));
+		const math::Vec3i &lc = region.getLowerCorner();
+		const math::Vec3i &uc = region.getUpperCorner();
+		ASSERT_EQ(lc, math::Vec3i(mins2.x, mins2.y, maxs.z));
+		ASSERT_EQ(uc, math::Vec3i(maxs2.x, maxs2.y, maxs.z));
 		brush.execute(sceneGraph, wrapper, brushContext);
 		const int voxelCount = voxelutil::countVoxels(volume);
 		ASSERT_LT(voxelCount, region.voxels());
@@ -70,7 +72,7 @@ protected:
 		brush.shutdown();
 	}
 
-	void prepare(ShapeBrush &brush, BrushContext &brushContext, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	void prepare(ShapeBrush &brush, BrushContext &brushContext, const math::Vec3i &mins, const math::Vec3i &maxs) {
 		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		brushContext.cursorPosition = mins;
 		brushContext.cursorFace = voxel::FaceNames::PositiveX;
@@ -84,15 +86,15 @@ protected:
 		}
 	}
 
-	void testMirror(math::Axis axis, const glm::ivec3 &expectedMins, const glm::ivec3 &expectedMaxs) {
+	void testMirror(math::Axis axis, const math::Vec3i &expectedMins, const math::Vec3i &expectedMaxs) {
 		ShapeBrush brush;
 		brush.setBoxMode();
 		BrushContext brushContext;
 		ASSERT_TRUE(brush.init());
-		const glm::ivec3 regMins(-2);
-		const glm::ivec3 regMaxs = regMins;
+		const math::Vec3i regMins(-2);
+		const math::Vec3i regMaxs = regMins;
 		prepare(brush, brushContext, regMins, regMaxs);
-		EXPECT_TRUE(brush.setMirrorAxis(axis, glm::ivec3(0)));
+		EXPECT_TRUE(brush.setMirrorAxis(axis, math::Vec3i(0)));
 		const voxel::Region region(-3, 3);
 		voxel::RawVolume volume(region);
 		scenegraph::SceneGraph sceneGraph;
@@ -143,17 +145,17 @@ TEST_F(ShapeBrushTest, testCapturedShapeParametersAreValidated) {
 
 TEST_F(ShapeBrushTest, testMovingMirrorPlaneInvalidatesPreview) {
 	ShapeBrush brush;
-	ASSERT_TRUE(brush.setMirrorAxis(math::Axis::X, glm::ivec3(0)));
+	ASSERT_TRUE(brush.setMirrorAxis(math::Axis::X, math::Vec3i(0)));
 	brush.markClean();
-	ASSERT_TRUE(brush.setMirrorAxis(math::Axis::X, glm::ivec3(3)));
+	ASSERT_TRUE(brush.setMirrorAxis(math::Axis::X, math::Vec3i(3)));
 	EXPECT_TRUE(brush.dirty());
-	glm::ivec3 mins(0);
-	glm::ivec3 maxs(0);
+	math::Vec3i mins(0);
+	math::Vec3i maxs(0);
 	ASSERT_TRUE(brush.getMirrorBox(mins, maxs));
-	EXPECT_EQ(glm::ivec3(0, 0, 5), mins);
+	EXPECT_EQ(math::Vec3i(0, 0, 5), mins);
 	EXPECT_EQ(mins, maxs);
 	brush.markClean();
-	EXPECT_FALSE(brush.setMirrorAxis(math::Axis::X, glm::ivec3(3)));
+	EXPECT_FALSE(brush.setMirrorAxis(math::Axis::X, math::Vec3i(3)));
 	EXPECT_FALSE(brush.dirty());
 }
 
@@ -187,7 +189,7 @@ TEST_F(ShapeBrushTest, testZeroRadiusStroke) {
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	brush.update(ctx, 0.0);
 	brush.markClean();
-	ctx.cursorPosition = glm::ivec3(1, 2, 3);
+	ctx.cursorPosition = math::Vec3i(1, 2, 3);
 	brush.update(ctx, 0.1);
 	EXPECT_FALSE(brush.dirty());
 	EXPECT_EQ(brush.calcRegion(ctx), voxel::Region(ctx.cursorPosition, ctx.cursorPosition));
@@ -214,7 +216,7 @@ TEST_F(ShapeBrushTest, testStrokeFacePreview) {
 	brush.setRadius(2);
 	brush.setShapeType(ShapeType::Cone);
 	BrushContext ctx;
-	ctx.cursorPosition = glm::ivec3(0);
+	ctx.cursorPosition = math::Vec3i(0);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	ctx.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	ctx.preview = true;
@@ -227,7 +229,7 @@ TEST_F(ShapeBrushTest, testStrokeFacePreview) {
 	EXPECT_TRUE(brush.dirty());
 
 	// The cone must follow the current face even before a stroke begins.
-	voxel::RawVolume volume(voxel::Region(glm::ivec3(-3), glm::ivec3(3)));
+	voxel::RawVolume volume(voxel::Region(math::Vec3i(-3), math::Vec3i(3)));
 	scenegraph::SceneGraph sceneGraph;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setUnownedVolume(&volume);
@@ -263,7 +265,7 @@ TEST_F(ShapeBrushTest, testDefaultStroke) {
 	ASSERT_TRUE(brush.init());
 	EXPECT_TRUE(brush.strokeMode());
 	BrushContext ctx;
-	ctx.cursorPosition = glm::ivec3(2, 3, 4);
+	ctx.cursorPosition = math::Vec3i(2, 3, 4);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
 	EXPECT_EQ(voxel::Region(ctx.cursorPosition, ctx.cursorPosition), brush.calcRegion(ctx));
 	brush.reset();
@@ -282,12 +284,12 @@ TEST_F(ShapeBrushTest, testCenterPositive) {
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
 
-	const glm::ivec3 mins(0);
-	const glm::ivec3 maxs(1);
+	const math::Vec3i mins(0);
+	const math::Vec3i maxs(1);
 	prepare(brush, brushContext, mins, maxs);
 	const voxel::Region region = brush.calcRegion(brushContext);
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
-	EXPECT_EQ(glm::ivec3(3), dim);
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
+	EXPECT_EQ(math::Vec3i(3), dim);
 	brush.shutdown();
 }
 
@@ -297,10 +299,10 @@ TEST_F(ShapeBrushTest, testCenterNegative) {
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
 	brush.setCenterMode();
-	prepare(brush, brushContext, glm::ivec3(0), glm::ivec3(-1));
+	prepare(brush, brushContext, math::Vec3i(0), math::Vec3i(-1));
 	const voxel::Region region = brush.calcRegion(brushContext);
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
-	EXPECT_EQ(glm::ivec3(3), dim);
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
+	EXPECT_EQ(math::Vec3i(3), dim);
 	brush.shutdown();
 }
 
@@ -321,23 +323,23 @@ TEST_F(ShapeBrushTest, testModifierDim) {
 	brush.setBoxMode();
 	BrushContext brushContext;
 	ASSERT_TRUE(brush.init());
-	prepare(brush, brushContext, glm::ivec3(-1), glm::ivec3(1));
+	prepare(brush, brushContext, math::Vec3i(-1), math::Vec3i(1));
 	const voxel::Region region = brush.calcRegion(brushContext);
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
-	EXPECT_EQ(glm::ivec3(3), dim);
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
+	EXPECT_EQ(math::Vec3i(3), dim);
 	brush.shutdown();
 }
 
 TEST_F(ShapeBrushTest, testModifierActionMirrorAxisX) {
-	testMirror(math::Axis::X, glm::ivec3(-2), glm::ivec3(-2, -2, 1));
+	testMirror(math::Axis::X, math::Vec3i(-2), math::Vec3i(-2, -2, 1));
 }
 
 TEST_F(ShapeBrushTest, testModifierActionMirrorAxisY) {
-	testMirror(math::Axis::Y, glm::ivec3(-2), glm::ivec3(-2, 1, -2));
+	testMirror(math::Axis::Y, math::Vec3i(-2), math::Vec3i(-2, 1, -2));
 }
 
 TEST_F(ShapeBrushTest, testModifierActionMirrorAxisZ) {
-	testMirror(math::Axis::Z, glm::ivec3(-2), glm::ivec3(1, -2, -2));
+	testMirror(math::Axis::Z, math::Vec3i(-2), math::Vec3i(1, -2, -2));
 }
 
 TEST_P(BrushTestParamTest, testShapeBrush) {
@@ -347,7 +349,7 @@ TEST_P(BrushTestParamTest, testShapeBrush) {
 }
 
 TEST_F(ShapeBrushTest, testEllipse) {
-	ellipse(glm::ivec2(10, 10), glm::ivec2(19, 19));
+	ellipse(math::Vec2i(10, 10), math::Vec2i(19, 19));
 }
 
 TEST_F(ShapeBrushTest, testTorus) {
@@ -357,8 +359,8 @@ TEST_F(ShapeBrushTest, testTorus) {
 	ASSERT_TRUE(brush.init());
 	brush.setShapeType(ShapeType::Torus);
 
-	const glm::ivec3 mins(0, 0, 0);
-	const glm::ivec3 maxs(19, 9, 14);
+	const math::Vec3i mins(0, 0, 0);
+	const math::Vec3i maxs(19, 9, 14);
 	const voxel::Region vregion(mins, maxs);
 	voxel::RawVolume volume(vregion);
 	scenegraph::SceneGraph sceneGraph;
@@ -378,7 +380,7 @@ TEST_F(ShapeBrushTest, testTorus) {
 	ASSERT_GT(voxelCount, 0) << "Torus should generate voxels";
 
 	// verify the center is empty (torus hole)
-	const glm::ivec3 center = mins + (maxs - mins) / 2;
+	const math::Vec3i center = mins + (maxs - mins) / 2;
 	EXPECT_TRUE(voxel::isAir(volume.voxel(center).getMaterial()))
 		<< "Center of torus should be empty";
 

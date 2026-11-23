@@ -8,8 +8,11 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/operation/ShapeOperation.h"
 #include "voxedit-util/modifier/brush/operation/TransformOperation.h"
-#include <glm/gtc/matrix_transform.hpp>
 #include <limits>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -37,7 +40,7 @@ TEST_F(BrushOperationTest, testTransformDraftDoesNotChangeCommittedScene) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setBrushType(BrushType::Transform);
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
 	EXPECT_EQ(selected(), volume->voxel(0, 0, 0));
 	EXPECT_TRUE(voxel::isAir(volume->voxel(2, 0, 0).getMaterial()));
@@ -86,7 +89,7 @@ TEST_F(BrushOperationTest, testTransformApplyUndoRedo) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setBrushType(BrushType::Transform);
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
 	ASSERT_TRUE(modifier.applyDraft().changed());
 	EXPECT_EQ(selected(), node.volume()->voxel(2, 0, 0));
@@ -101,7 +104,7 @@ TEST_F(BrushOperationTest, testSceneReloadDiscardsDraftEvenWithMatchingNodeIdent
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setBrushType(BrushType::Transform);
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
 	scenegraph::SceneGraph replacement;
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, uuid);
@@ -132,7 +135,7 @@ TEST_F(BrushOperationTest, testNewSceneFinishesStrokeAndDiscardsDraft) {
 	_sceneMgr->modified(source.uuid(), voxel::Region(0, 0));
 	modifier.setBrushType(BrushType::Transform);
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
 	ASSERT_TRUE(_sceneMgr->newScene(true, "draft replacement", voxel::Region(-5, 5)));
 	EXPECT_FALSE(modifier.hasDraft());
@@ -146,13 +149,13 @@ TEST_F(BrushOperationTest, testIdentityDraftPreservesRedo) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setBrushType(BrushType::Transform);
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
 	ASSERT_TRUE(modifier.applyDraft().changed());
 	ASSERT_TRUE(_sceneMgr->undo());
 	ASSERT_TRUE(_sceneMgr->mementoHandler().canRedo());
 	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
-	parameters.translation = glm::ivec3(0);
+	parameters.translation = math::Vec3i(0);
 	EXPECT_EQ(BrushApplyStatus::Unchanged, modifier.updateParameters<TransformBrush>("transform", parameters).status);
 	EXPECT_EQ(BrushApplyStatus::Unchanged, modifier.applyDraft().status);
 	EXPECT_TRUE(_sceneMgr->mementoHandler().canRedo());
@@ -166,9 +169,9 @@ TEST_F(BrushOperationTest, testRepeatedTransformUsesOriginalInput) {
 	targets.push_back(node.uuid());
 	ASSERT_TRUE(session.begin(_sceneMgr->sceneGraph(), targets));
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(session.update(parameters).changed());
-	parameters.translation = glm::ivec3(3, 0, 0);
+	parameters.translation = math::Vec3i(3, 0, 0);
 	ASSERT_TRUE(session.update(parameters).changed());
 	const scenegraph::SceneGraphNode *draft = session.view()->findNodeByUUID(node.uuid());
 	ASSERT_NE(nullptr, draft);
@@ -191,7 +194,7 @@ TEST_F(BrushOperationTest, testExternalMutationRejectsEveryTargetBeforePublicati
 	DraftEditSession<TransformOperation> session;
 	ASSERT_TRUE(session.begin(_sceneMgr->sceneGraph(), targets));
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(session.update(parameters).changed());
 	secondVolume->setVoxel(1, 0, 0, selected(3));
 	EXPECT_EQ(BrushApplyStatus::InvalidTarget, session.apply(_sceneMgr->sceneGraph()).status);
@@ -209,7 +212,7 @@ TEST_F(BrushOperationTest, testGizmoAndParameterUpdatesAgree) {
 	modifier.brushHandles(handles);
 	ASSERT_FALSE(handles.empty());
 	state = handles[0];
-	glm::mat4 matrix = state.matrix;
+	math::Mat4f matrix = state.matrix;
 	matrix[3].x += 2.0f;
 	BrushHandleEvent event;
 	event.operationId = state.operationId;
@@ -223,7 +226,7 @@ TEST_F(BrushOperationTest, testGizmoAndParameterUpdatesAgree) {
 	ASSERT_TRUE(modifier.editBrushHandle(event));
 	event.phase = BrushHandlePhase::End;
 	modifier.editBrushHandle(event);
-	EXPECT_EQ(glm::ivec3(2, 0, 0), modifier.transformBrush().parameters().translation);
+	EXPECT_EQ(math::Vec3i(2, 0, 0), modifier.transformBrush().parameters().translation);
 	EXPECT_EQ(selected(), modifier.renderSceneGraph().findNodeByUUID(node.uuid())->volume()->voxel(2, 0, 0));
 	EXPECT_EQ(selected(), node.volume()->voxel(0, 0, 0));
 }
@@ -260,14 +263,14 @@ TEST_F(BrushOperationTest, testInvalidDraftCannotPublishPreviousValidPreview) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setBrushType(BrushType::Transform);
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).changed());
 	parameters.scale.x = std::numeric_limits<float>::quiet_NaN();
 	EXPECT_TRUE(modifier.updateParameters<TransformBrush>("transform", parameters).failed());
 	EXPECT_NE(nullptr, modifier.operationError());
 	EXPECT_TRUE(modifier.applyDraft().failed());
 	EXPECT_EQ(selected(), node.volume()->voxel(0, 0, 0));
-	parameters.scale = glm::vec3(1.0f);
+	parameters.scale = math::Vec3f(1.0f);
 	EXPECT_FALSE(modifier.updateParameters<TransformBrush>("transform", parameters).failed());
 	EXPECT_EQ(nullptr, modifier.operationError());
 	EXPECT_TRUE(modifier.applyDraft().changed());
@@ -282,7 +285,7 @@ TEST_F(BrushOperationTest, testSliceDraftPreservesOtherPlanes) {
 	targets.push_back(node.uuid());
 	ASSERT_TRUE(session.begin(_sceneMgr->sceneGraph(), targets, voxel::Region(-5, 0, -5, 5, 0, 5)));
 	TransformParameters parameters;
-	parameters.translation = glm::ivec3(2, 0, 0);
+	parameters.translation = math::Vec3i(2, 0, 0);
 	ASSERT_TRUE(session.update(parameters).changed());
 	ASSERT_TRUE(session.apply(_sceneMgr->sceneGraph()).changed());
 	EXPECT_EQ(selected(), volume->voxel(2, 0, 0));
@@ -292,7 +295,7 @@ TEST_F(BrushOperationTest, testSliceDraftPreservesOtherPlanes) {
 
 namespace {
 struct ExampleParameters {
-	glm::ivec3 position{1, 0, 0};
+	math::Vec3i position{1, 0, 0};
 	bool colorOnly = false;
 };
 class ExampleOperation {
@@ -348,11 +351,11 @@ public:
 		BrushGizmoState handle;
 		handle.id = 42;
 		handle.operations = BrushGizmo_Translate;
-		handle.matrix[3] = glm::vec4(glm::vec3(parameters.position), 1);
+		handle.matrix[3] = math::Vec4f(math::Vec3f(parameters.position), 1);
 		output.push_back(handle);
 	}
-	bool editHandle(uint32_t handleId, BrushContext &, const glm::mat4 &matrix, const glm::mat4 &, uint32_t) override {
-		parameters.position = glm::ivec3(glm::round(glm::vec3(matrix[3])));
+	bool editHandle(uint32_t handleId, BrushContext &, const math::Mat4f &matrix, const math::Mat4f &, uint32_t) override {
+		parameters.position = math::Vec3i(math::round(math::Vec3f(matrix[3])));
 		return true;
 	}
 };
@@ -375,7 +378,7 @@ TEST_F(BrushOperationTest, testRegisteredToolGetsPreviewHandlesPublicationAndUnd
 	core::SharedPtr<ExampleBrush> tool = registerExample(modifier);
 	ASSERT_TRUE(modifier.setTool("example"));
 	ExampleParameters parameters;
-	parameters.position = glm::ivec3(2, 0, 0);
+	parameters.position = math::Vec3i(2, 0, 0);
 	tool->setParameters(parameters);
 	modifier.flushPendingBrushChanges();
 	EXPECT_TRUE(voxel::isAir(volume->voxel(2, 0, 0).getMaterial()));
@@ -393,9 +396,9 @@ TEST_F(BrushOperationTest, testRegisteredToolGetsPreviewHandlesPublicationAndUnd
 	other.viewportId = 2;
 	EXPECT_FALSE(modifier.editBrushHandle(other));
 	event.phase = BrushHandlePhase::Change;
-	event.matrix[3] = glm::vec4(3, 0, 0, 1);
+	event.matrix[3] = math::Vec4f(3, 0, 0, 1);
 	ASSERT_TRUE(modifier.editBrushHandle(event));
-	EXPECT_EQ(glm::ivec3(3, 0, 0), tool->parameters.position);
+	EXPECT_EQ(math::Vec3i(3, 0, 0), tool->parameters.position);
 	event.phase = BrushHandlePhase::End;
 	ASSERT_TRUE(modifier.editBrushHandle(event));
 	ASSERT_TRUE(modifier.applyDraft().changed());
@@ -472,7 +475,7 @@ TEST_F(BrushOperationTest, testShapeFieldsAndBoundsHandleUseTheSameRegion) {
 	modifier.setTool("shape");
 	modifier.shapeBrush().setBoxMode();
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.beginEdit());
 	ASSERT_TRUE(modifier.updateBoxRegion(voxel::Region(1, 1, 1, 2, 2, 2)));
 	core::DynamicArray<BrushGizmoState> handles;
@@ -521,8 +524,8 @@ TEST_F(BrushOperationTest, testDirectLineModeChangeAppliesExistingDraft) {
 	modifier.setTool("line");
 	LineBrush &brush = modifier.lineBrush();
 	brush.setBezier(true);
-	modifier.setReferencePosition(glm::ivec3(1, 0, 0));
-	modifier.setCursorPosition(glm::ivec3(3, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setReferencePosition(math::Vec3i(1, 0, 0));
+	modifier.setCursorPosition(math::Vec3i(3, 0, 0), voxel::FaceNames::PositiveY);
 	modifier.setCursorVoxel(voxel::Voxel(voxel::VoxelType::Generic, 2));
 	ASSERT_TRUE(modifier.beginBrush());
 	modifier.flushPendingBrushChanges();
@@ -544,7 +547,7 @@ TEST_F(BrushOperationTest, testDirectExtrudeSettersRefreshPrivateDraft) {
 	Modifier &modifier = _sceneMgr->modifier();
 	modifier.setTool("extrude");
 	modifier.setCursorVoxel(selected());
-	modifier.setCursorPosition(glm::ivec3(0), voxel::FaceNames::PositiveX);
+	modifier.setCursorPosition(math::Vec3i(0), voxel::FaceNames::PositiveX);
 	ASSERT_TRUE(modifier.beginBrush());
 	ExtrudeBrush &brush = modifier.extrudeBrush();
 	brush.setDepth(1);
@@ -600,11 +603,11 @@ TEST_F(BrushOperationTest, testSculptPlaneUsesAccumulatingStrokeAndGroupedUndo) 
 	modifier.flushPendingBrushChanges();
 	modifier.setCursorVoxel(voxel::createVoxel(voxel::VoxelType::Generic, 2));
 	EXPECT_FALSE(modifier.isAdjustable());
-	modifier.setCursorPosition(glm::ivec3(2, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(2, 0, 0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.beginEdit());
 	ASSERT_TRUE(modifier.updateEdit());
 	EXPECT_FALSE(voxel::isAir(volume->voxel(2, 0, 0).getMaterial()));
-	modifier.setCursorPosition(glm::ivec3(4, 0, 0), voxel::FaceNames::PositiveY);
+	modifier.setCursorPosition(math::Vec3i(4, 0, 0), voxel::FaceNames::PositiveY);
 	ASSERT_TRUE(modifier.updateEdit());
 	modifier.finishEdit(BrushEditFinishReason::Release);
 	EXPECT_FALSE(voxel::isAir(volume->voxel(2, 0, 0).getMaterial()));

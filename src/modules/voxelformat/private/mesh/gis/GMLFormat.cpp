@@ -21,6 +21,9 @@
 #include "tinyxml2.h"
 #include <SDL3/SDL_stdinc.h>
 #include <float.h>
+#include "math/Vec3d.h"
+#include "math/Vec3f.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -138,7 +141,7 @@ int GMLFormat::getSrsDimension(const tinyxml2::XMLElement *element) {
 	return 3; // default to 3D
 }
 
-bool GMLFormat::parsePosList(const char *posData, core::DynamicArray<glm::vec3> &vertices, const glm::dvec3 &offset,
+bool GMLFormat::parsePosList(const char *posData, core::DynamicArray<math::Vec3f> &vertices, const math::Vec3d &offset,
 							 int srsDimension) const {
 	if (posData == nullptr) {
 		return false;
@@ -186,14 +189,14 @@ bool GMLFormat::parsePosList(const char *posData, core::DynamicArray<glm::vec3> 
 
 		// GML uses geographic coordinates, apply offset to normalize
 		// Swap Y and Z for proper orientation (GML: X=east, Y=north, Z=up -> our: X, Z, Y)
-		const glm::vec3 vertex((float)(x - offset.x), (float)(z - offset.z), (float)(y - offset.y));
+		const math::Vec3f vertex((float)(x - offset.x), (float)(z - offset.z), (float)(y - offset.y));
 		vertices.push_back(vertex);
 	}
 	return true;
 }
 
 bool GMLFormat::parseCoordinatesElement(const tinyxml2::XMLElement *coordsElement,
-										core::DynamicArray<glm::vec3> &vertices, const glm::dvec3 &offset) const {
+										core::DynamicArray<math::Vec3f> &vertices, const math::Vec3d &offset) const {
 	if (coordsElement == nullptr) {
 		return false;
 	}
@@ -245,14 +248,14 @@ bool GMLFormat::parseCoordinatesElement(const tinyxml2::XMLElement *coordsElemen
 			ptr = endPtr;
 		}
 
-		const glm::vec3 vertex((float)(x - offset.x), (float)(z - offset.z), (float)(y - offset.y));
+		const math::Vec3f vertex((float)(x - offset.x), (float)(z - offset.z), (float)(y - offset.y));
 		vertices.push_back(vertex);
 	}
 	return true;
 }
 
 bool GMLFormat::parseLinearRing(const tinyxml2::XMLElement *linearRing, GMLPolygon &polygon,
-								const glm::dvec3 &offset) const {
+								const math::Vec3d &offset) const {
 	if (linearRing == nullptr) {
 		return false;
 	}
@@ -293,7 +296,7 @@ bool GMLFormat::parseLinearRing(const tinyxml2::XMLElement *linearRing, GMLPolyg
 }
 
 bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::DynamicArray<GMLPolygon> &polygons,
-							 const glm::dvec3 &offset, SurfaceType surfaceType) const {
+							 const math::Vec3d &offset, SurfaceType surfaceType) const {
 	core_trace_scoped(ParsePolygon);
 	if (polygonElement == nullptr) {
 		return false;
@@ -360,7 +363,7 @@ bool GMLFormat::parsePolygon(const tinyxml2::XMLElement *polygonElement, core::D
 }
 
 bool GMLFormat::parseMultiSurface(const tinyxml2::XMLElement *multiSurface, core::DynamicArray<GMLPolygon> &polygons,
-								  const glm::dvec3 &offset, SurfaceType surfaceType) const {
+								  const math::Vec3d &offset, SurfaceType surfaceType) const {
 	core_trace_scoped(ParseMultiSurface);
 	if (multiSurface == nullptr) {
 		return false;
@@ -412,7 +415,7 @@ GMLFormat::SurfaceType GMLFormat::surfaceTypeFromName(const char *name) {
 }
 
 bool GMLFormat::parseCityGMLBoundedBy(const tinyxml2::XMLElement *boundedBy, core::DynamicArray<GMLPolygon> &polygons,
-									  const glm::dvec3 &offset) const {
+									  const math::Vec3d &offset) const {
 	if (boundedBy == nullptr) {
 		return false;
 	}
@@ -447,7 +450,7 @@ bool GMLFormat::parseCityGMLBoundedBy(const tinyxml2::XMLElement *boundedBy, cor
 }
 
 bool GMLFormat::parseBuilding(const tinyxml2::XMLElement *building, core::DynamicArray<GMLPolygon> &polygons,
-							  const glm::dvec3 &offset) const {
+							  const math::Vec3d &offset) const {
 	if (building == nullptr) {
 		return false;
 	}
@@ -484,7 +487,7 @@ bool GMLFormat::parseBuilding(const tinyxml2::XMLElement *building, core::Dynami
 
 // Parse a gml:MultiGeometry element (per XSD: MultiGeometryType has geometryMember/geometryMembers)
 bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, core::DynamicArray<GMLPolygon> &polygons,
-								   const glm::dvec3 &offset, SurfaceType surfaceType) const {
+								   const math::Vec3d &offset, SurfaceType surfaceType) const {
 	core_trace_scoped(ParseMultiGeometry);
 	if (multiGeometry == nullptr) {
 		return false;
@@ -546,7 +549,7 @@ bool GMLFormat::parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, co
 
 // Helper to find and parse any geometry element (MultiSurface, MultiGeometry, CompositeSurface, Solid, etc.)
 bool GMLFormat::parseAnyGeometry(const tinyxml2::XMLElement *parent, core::DynamicArray<GMLPolygon> &polygons,
-								 const glm::dvec3 &offset, SurfaceType surfaceType) const {
+								 const math::Vec3d &offset, SurfaceType surfaceType) const {
 	core_trace_scoped(ParseAnyGeometry);
 	if (parent == nullptr) {
 		return false;
@@ -626,7 +629,7 @@ bool GMLFormat::parseAnyGeometry(const tinyxml2::XMLElement *parent, core::Dynam
 }
 
 bool GMLFormat::parseLandUse(const tinyxml2::XMLElement *landUse, core::DynamicArray<GMLPolygon> &polygons,
-							 const glm::dvec3 &offset) const {
+							 const math::Vec3d &offset) const {
 	if (landUse == nullptr) {
 		return false;
 	}
@@ -645,7 +648,7 @@ bool GMLFormat::parseLandUse(const tinyxml2::XMLElement *landUse, core::DynamicA
 }
 
 bool GMLFormat::parseReliefFeature(const tinyxml2::XMLElement *relief, core::DynamicArray<GMLPolygon> &polygons,
-								   const glm::dvec3 &offset) const {
+								   const math::Vec3d &offset) const {
 	if (relief == nullptr) {
 		return false;
 	}
@@ -698,7 +701,7 @@ bool GMLFormat::parseReliefFeature(const tinyxml2::XMLElement *relief, core::Dyn
 }
 
 bool GMLFormat::parseVegetation(const tinyxml2::XMLElement *vegetation, core::DynamicArray<GMLPolygon> &polygons,
-								const glm::dvec3 &offset) const {
+								const math::Vec3d &offset) const {
 	if (vegetation == nullptr) {
 		return false;
 	}
@@ -717,7 +720,7 @@ bool GMLFormat::parseVegetation(const tinyxml2::XMLElement *vegetation, core::Dy
 }
 
 bool GMLFormat::parseWaterBody(const tinyxml2::XMLElement *waterBody, core::DynamicArray<GMLPolygon> &polygons,
-							   const glm::dvec3 &offset) const {
+							   const math::Vec3d &offset) const {
 	if (waterBody == nullptr) {
 		return false;
 	}
@@ -749,7 +752,7 @@ bool GMLFormat::parseWaterBody(const tinyxml2::XMLElement *waterBody, core::Dyna
 }
 
 bool GMLFormat::parseTransportation(const tinyxml2::XMLElement *transportation,
-									core::DynamicArray<GMLPolygon> &polygons, const glm::dvec3 &offset) const {
+									core::DynamicArray<GMLPolygon> &polygons, const math::Vec3d &offset) const {
 	if (transportation == nullptr) {
 		return false;
 	}
@@ -783,7 +786,7 @@ bool GMLFormat::parseTransportation(const tinyxml2::XMLElement *transportation,
 }
 
 bool GMLFormat::parseBridge(const tinyxml2::XMLElement *bridge, core::DynamicArray<GMLPolygon> &polygons,
-							const glm::dvec3 &offset) const {
+							const math::Vec3d &offset) const {
 	if (bridge == nullptr) {
 		return false;
 	}
@@ -843,7 +846,7 @@ bool GMLFormat::parseBridge(const tinyxml2::XMLElement *bridge, core::DynamicArr
 }
 
 bool GMLFormat::parseGenericCityObject(const tinyxml2::XMLElement *obj, core::DynamicArray<GMLPolygon> &polygons,
-									   const glm::dvec3 &offset) const {
+									   const math::Vec3d &offset) const {
 	if (obj == nullptr) {
 		return false;
 	}
@@ -861,7 +864,7 @@ bool GMLFormat::parseGenericCityObject(const tinyxml2::XMLElement *obj, core::Dy
 	return !polygons.empty();
 }
 
-bool GMLFormat::parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &lowerCorner, glm::dvec3 &upperCorner) const {
+bool GMLFormat::parseEnvelope(const tinyxml2::XMLElement *envelope, math::Vec3d &lowerCorner, math::Vec3d &upperCorner) const {
 	if (envelope == nullptr) {
 		return false;
 	}
@@ -943,7 +946,7 @@ bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, M
 
 		// Skip the closing vertex if it's the same as the first
 		size_t effectiveVertices = numVertices;
-		if (numVertices > 3 && glm::distance(polygon.vertices[0], polygon.vertices[numVertices - 1]) < 0.001f) {
+		if (numVertices > 3 && math::distance(polygon.vertices[0], polygon.vertices[numVertices - 1]) < 0.001f) {
 			effectiveVertices = numVertices - 1;
 		}
 
@@ -968,7 +971,7 @@ bool GMLFormat::polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, M
 	return !mesh.vertices.empty();
 }
 
-bool GMLFormat::parseRegionFilter(const core::String &regionStr, glm::dvec3 &mins, glm::dvec3 &maxs) {
+bool GMLFormat::parseRegionFilter(const core::String &regionStr, math::Vec3d &mins, math::Vec3d &maxs) {
 	if (regionStr.empty()) {
 		return false;
 	}
@@ -1002,15 +1005,15 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 	}
 
 	// First, find the envelope to get the offset for coordinate normalization
-	glm::dvec3 offsetMins(0.0);
+	math::Vec3d offsetMins(0.0);
 	const tinyxml2::XMLElement *boundedBy = findChildElement(cityModel, "boundedBy");
 	if (boundedBy != nullptr) {
 		const tinyxml2::XMLElement *envelope = findChildElement(boundedBy, "Envelope");
-		glm::dvec3 offsetMaxs(0.0);
+		math::Vec3d offsetMaxs(0.0);
 		if (parseEnvelope(envelope, offsetMins, offsetMaxs)) {
 			const core::String &regionStr = core::getVar(cfg::VoxformatGMLRegion)->strVal();
-			glm::dvec3 gmlFilterMins(0.0);
-			glm::dvec3 gmlFilterMaxs(0.0);
+			math::Vec3d gmlFilterMins(0.0);
+			math::Vec3d gmlFilterMaxs(0.0);
 			if (parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs)) {
 				if (offsetMaxs.x < gmlFilterMins.x || offsetMins.x > gmlFilterMaxs.x ||
 					offsetMaxs.y < gmlFilterMins.y || offsetMins.y > gmlFilterMaxs.y ||
@@ -1030,7 +1033,7 @@ bool GMLFormat::parseCityModel(const tinyxml2::XMLElement *cityModel, core::Dyna
 		const char *elementName;
 		const char *typeName;
 		bool (GMLFormat::*parser)(const tinyxml2::XMLElement *, core::DynamicArray<GMLPolygon> &,
-								  const glm::dvec3 &) const;
+								  const math::Vec3d &) const;
 	};
 
 	const CityObjectDispatch dispatchers[] = {
@@ -1228,8 +1231,8 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 	Log::info("Found total of %d objects in GML data", (int)allObjects.size());
 
 	// Parse the region filter (in GML world coordinates) for per-object filtering
-	glm::dvec3 gmlFilterMins(0.0);
-	glm::dvec3 gmlFilterMaxs(0.0);
+	math::Vec3d gmlFilterMins(0.0);
+	math::Vec3d gmlFilterMaxs(0.0);
 	const core::String &regionStr = core::getVar(cfg::VoxformatGMLRegion)->strVal();
 	const bool hasRegionFilter = parseRegionFilter(regionStr, gmlFilterMins, gmlFilterMaxs);
 
@@ -1241,10 +1244,10 @@ bool GMLFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 		// Apply per-object region filter: compute the object's bounding box in GML world
 		// coordinates and check if it intersects the filter region
 		if (hasRegionFilter) {
-			glm::dvec3 objGmlMins(DBL_MAX);
-			glm::dvec3 objGmlMaxs(-DBL_MAX);
+			math::Vec3d objGmlMins(DBL_MAX);
+			math::Vec3d objGmlMaxs(-DBL_MAX);
 			for (const GMLPolygon &poly : obj.polygons) {
-				for (const glm::vec3 &v : poly.vertices) {
+				for (const math::Vec3f &v : poly.vertices) {
 					// Convert from internal coords back to GML world coords
 					// Internal: (gml_x - offset.x, gml_z - offset.z, gml_y - offset.y)
 					const double gmlX = (double)v.x + obj.offset.x;

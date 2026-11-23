@@ -5,8 +5,8 @@
 #pragma once
 
 #include "VXLShared.h"
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -218,8 +218,8 @@ namespace voxelformat {
  */
 class VXLFormat : public PaletteFormat {
 private:
-	glm::ivec3 maxSize() const override {
-		return glm::ivec3(255);
+	math::Vec3i maxSize() const override {
+		return math::Vec3i(255);
 	}
 
 	// writing

@@ -9,7 +9,8 @@
 #include "io/Stream.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -28,8 +29,8 @@ SLABVisibility calculateVisibility(const voxel::RawVolume *v, int x, int y, int 
  * normalized pivot so world placement survives save/reload (volume is always recreated
  * at (0,0,0) with an identity transform).
  */
-glm::vec3 nodeTranslation(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
-glm::vec3 bakedNormalizedPivot(const glm::vec3 &normalizedPivot, const glm::vec3 &translation, const glm::ivec3 &dims);
+math::Vec3f nodeTranslation(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node);
+math::Vec3f bakedNormalizedPivot(const math::Vec3f &normalizedPivot, const math::Vec3f &translation, const math::Vec3i &dims);
 
 bool readColor(io::SeekableReadStream &stream, color::RGBA &color, bool bgr, bool scale);
 bool writeColor(io::SeekableWriteStream &stream, color::RGBA color, bool bgr, bool scale);

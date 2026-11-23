@@ -8,6 +8,7 @@
 #include "math/Axis.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -120,7 +121,7 @@ TEST_F(RawVolumeTest, testCopyIntoDisjointRegions) {
 		for (int direction = -1; direction <= 1; direction += 2) {
 			RawVolume src(Region{0, 3});
 			Region dstRegion = src.region();
-			glm::ivec3 offset(0);
+			math::Vec3i offset(0);
 			offset[axis] = direction * 5;
 			dstRegion.shift(offset);
 			RawVolume dst(dstRegion);
@@ -260,7 +261,7 @@ TEST_F(RawVolumeTest, testRemoveFlags) {
 
 TEST_F(RawVolumeTest, testSetFlagsOddWidth) {
 	// Test with odd line length to cover the remaining voxel handling
-	RawVolume v(voxel::Region::fromSize(glm::ivec3(5, 3, 3)));
+	RawVolume v(voxel::Region::fromSize(math::Vec3i(5, 3, 3)));
 	for (int z = 0; z <= 2; ++z) {
 		for (int y = 0; y <= 2; ++y) {
 			for (int x = 0; x <= 4; ++x) {
@@ -270,7 +271,7 @@ TEST_F(RawVolumeTest, testSetFlagsOddWidth) {
 	}
 
 	// Set flags on a region with odd width (5 voxels wide)
-	v.setFlags(voxel::Region::fromSize(glm::ivec3(5, 3, 3)), 1);
+	v.setFlags(voxel::Region::fromSize(math::Vec3i(5, 3, 3)), 1);
 
 	// Verify all voxels in the region have flags set
 	for (int z = 0; z <= 2; ++z) {
@@ -312,7 +313,7 @@ TEST_F(RawVolumeTest, testHasFlags) {
 // Test alignment issues with odd starting coordinates
 TEST_F(RawVolumeTest, testFlagsAlignment) {
 	// Create a volume where odd x-coordinates will cause misaligned 64-bit accesses
-	RawVolume v(voxel::Region::fromSize(glm::ivec3(10, 4, 4)));
+	RawVolume v(voxel::Region::fromSize(math::Vec3i(10, 4, 4)));
 	for (int z = 0; z <= 3; ++z) {
 		for (int y = 0; y <= 3; ++y) {
 			for (int x = 0; x <= 9; ++x) {
@@ -513,8 +514,8 @@ TEST_F(RawVolumeTest, testRegionForFlagSingleVoxel) {
 	v.setVoxel(5, 5, 5, voxel);
 	const Region result = v.regionForFlag(FlagOutline);
 	ASSERT_TRUE(result.isValid());
-	EXPECT_EQ(result.getLowerCorner(), glm::ivec3(5));
-	EXPECT_EQ(result.getUpperCorner(), glm::ivec3(5));
+	EXPECT_EQ(result.getLowerCorner(), math::Vec3i(5));
+	EXPECT_EQ(result.getUpperCorner(), math::Vec3i(5));
 }
 
 TEST_F(RawVolumeTest, testRegionForFlagMultipleVoxels) {
@@ -525,8 +526,8 @@ TEST_F(RawVolumeTest, testRegionForFlagMultipleVoxels) {
 	v.setVoxel(7, 8, 6, voxel);
 	const Region result = v.regionForFlag(FlagOutline);
 	ASSERT_TRUE(result.isValid());
-	EXPECT_EQ(result.getLowerCorner(), glm::ivec3(2, 3, 4));
-	EXPECT_EQ(result.getUpperCorner(), glm::ivec3(7, 8, 6));
+	EXPECT_EQ(result.getLowerCorner(), math::Vec3i(2, 3, 4));
+	EXPECT_EQ(result.getUpperCorner(), math::Vec3i(7, 8, 6));
 }
 
 TEST_F(RawVolumeTest, testFillBehindPlanePreservesSliceAndSkipsEmpty) {

@@ -5,11 +5,11 @@
 #pragma once
 
 #include "core/Common.h"
-#include <glm/vec3.hpp>
 #include <algorithm>
 #include <limits> //For numeric_limits
 #include <set>
 #include <vector>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -46,7 +46,7 @@ struct Node {
 		return false;
 	}
 
-	glm::ivec3 position;
+	math::Vec3i position;
 	float gVal;
 	float hVal;
 	Node* parent;

@@ -9,11 +9,12 @@
 #include "core/ProgressScope.h"
 #include "voxel/RawVolume.h"
 #include "voxelutil/VolumeMerger.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
-[[nodiscard]] CORE_NO_SANITIZE_ADDRESS bool computeSolidBounds(const voxel::RawVolume *volume, glm::ivec3 &mins,
-															   glm::ivec3 &maxs) {
+[[nodiscard]] CORE_NO_SANITIZE_ADDRESS bool computeSolidBounds(const voxel::RawVolume *volume, math::Vec3i &mins,
+															   math::Vec3i &maxs) {
 	if (volume == nullptr || !volume->valid()) {
 		return false;
 	}
@@ -76,14 +77,14 @@ namespace voxelutil {
 		return false;
 	}
 
-	const glm::ivec3 &lower = region.getLowerCorner();
-	mins = glm::ivec3(lower.x + minX, lower.y + minY, lower.z + minZ);
-	maxs = glm::ivec3(lower.x + maxX, lower.y + maxY, lower.z + maxZ);
+	const math::Vec3i &lower = region.getLowerCorner();
+	mins = math::Vec3i(lower.x + minX, lower.y + minY, lower.z + minZ);
+	maxs = math::Vec3i(lower.x + maxX, lower.y + maxY, lower.z + maxZ);
 	return true;
 }
 
-[[nodiscard]] voxel::RawVolume *cropVolume(const voxel::RawVolume *volume, const glm::ivec3 &mins,
-										   const glm::ivec3 &maxs) {
+[[nodiscard]] voxel::RawVolume *cropVolume(const voxel::RawVolume *volume, const math::Vec3i &mins,
+										   const math::Vec3i &maxs) {
 	core_trace_scoped(CropVolume);
 	const voxel::Region newRegion(mins, maxs);
 	if (!newRegion.isValid()) {
@@ -101,8 +102,8 @@ namespace voxelutil {
 	if (volume == nullptr) {
 		return nullptr;
 	}
-	glm::ivec3 mins;
-	glm::ivec3 maxs;
+	math::Vec3i mins;
+	math::Vec3i maxs;
 	if (!computeSolidBounds(volume, mins, maxs)) {
 		return nullptr;
 	}

@@ -3,9 +3,10 @@
  */
 #include "TestGridRenderer.h"
 #include "testcore/TestAppMain.h"
+#include "math/Vec3f.h"
 
 TestGridRenderer::TestGridRenderer(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
-	: Super(filesystem, timeProvider), _gridRenderer(true, true, true), _aabb(glm::vec3(-32.0f), glm::vec3(32.0f)) {
+	: Super(filesystem, timeProvider), _gridRenderer(true, true, true), _aabb(math::Vec3f(-32.0f), math::Vec3f(32.0f)) {
 	setCameraMotion(true);
 	setRenderAxis(true);
 	setRenderPlane(false);

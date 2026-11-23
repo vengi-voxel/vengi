@@ -4,6 +4,8 @@
 
 #include "TextureRenderer.h"
 #include "core/Log.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace render {
 
@@ -13,9 +15,9 @@ bool TextureRenderer::init(bool yFlipped) {
 		return false;
 	}
 
-	const glm::ivec2& fullscreenQuadIndices = _vbo.createFullscreenTexturedQuad(yFlipped);
-	_vbo.addAttribute(_shader.getPosAttribute(fullscreenQuadIndices.x, &glm::vec2::x));
-	_vbo.addAttribute(_shader.getTexcoordAttribute(fullscreenQuadIndices.y, &glm::vec2::x));
+	const math::Vec2i& fullscreenQuadIndices = _vbo.createFullscreenTexturedQuad(yFlipped);
+	_vbo.addAttribute(_shader.getPosAttribute(fullscreenQuadIndices.x, &math::Vec2f::x));
+	_vbo.addAttribute(_shader.getTexcoordAttribute(fullscreenQuadIndices.y, &math::Vec2f::x));
 	return true;
 }
 

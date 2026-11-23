@@ -12,6 +12,7 @@
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxelutil/VolumeMerger.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -88,7 +89,7 @@ TEST_F(VolumeSplitterTest, testSplit) {
 	EXPECT_EQ(expectedVoxelCount, foundVoxels);
 
 	// perform split
-	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(&volume, glm::ivec3(16));
+	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(&volume, math::Vec3i(16));
 	EXPECT_EQ(8u, rawVolumes.size());
 
 	// merge volumes
@@ -120,7 +121,7 @@ TEST_F(VolumeSplitterTest, testSplitEmpty) {
 	EXPECT_EQ(expectedVoxelCount, foundVoxels);
 
 	// perform split
-	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(&volume, glm::ivec3(16), true);
+	core::Buffer<voxel::RawVolume *> rawVolumes = voxelutil::splitVolume(&volume, math::Vec3i(16), true);
 	EXPECT_EQ(8u, rawVolumes.size());
 
 	// merge volumes

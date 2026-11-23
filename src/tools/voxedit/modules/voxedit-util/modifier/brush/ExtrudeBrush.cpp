@@ -15,7 +15,9 @@
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/gtc/matrix_transform.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -46,7 +48,7 @@ void ExtrudeBrush::reset() {
 	_cachedWallCandidates.clear();
 	_cachedSelectedBBox = voxel::Region::InvalidRegion;
 	_hasCachedSelection = false;
-	_capturedVolumeLower = glm::ivec3(0);
+	_capturedVolumeLower = math::Vec3i(0);
 	_cachedSelBBoxValid = false;
 	_parameters.fillWalls = true;
 }
@@ -89,14 +91,14 @@ voxel::Region ExtrudeBrush::calcRegion(const BrushContext &ctx) const {
 	const int faceSign = voxel::isNegativeFace(_parameters.face) ? -1 : 1;
 	const bool carving = _parameters.depth < 0;
 	const int dirSign = carving ? -faceSign : faceSign;
-	const int steps = glm::abs(_parameters.depth);
+	const int steps = math::abs(_parameters.depth);
 
 	static constexpr int NumAxes = 3;
 	const int perp1 = (axisIdx + 1) % NumAxes;
 	const int perp2 = (axisIdx + 2) % NumAxes;
 
-	glm::ivec3 lo = _cachedSelBBox.getLowerCorner();
-	glm::ivec3 hi = _cachedSelBBox.getUpperCorner();
+	math::Vec3i lo = _cachedSelBBox.getLowerCorner();
+	math::Vec3i hi = _cachedSelBBox.getUpperCorner();
 
 	// Extend along extrusion axis by depth steps
 	if (dirSign > 0) {
@@ -180,11 +182,11 @@ void ExtrudeBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &stat
 		return;
 	}
 
-	const glm::vec3 center = glm::vec3(_cachedSelBBox.getCenter());
-	const glm::vec3 normal = voxel::faceNormal(_parameters.face);
+	const math::Vec3f center = math::Vec3f(_cachedSelBBox.getCenter());
+	const math::Vec3f normal = voxel::faceNormal(_parameters.face);
 
 	// Position the gizmo at the selection center, offset by current depth along the face normal
-	state.matrix = glm::translate(glm::mat4(1.0f), center + normal * (float)_parameters.depth);
+	state.matrix = math::translate(math::Mat4f(1.0f), center + normal * (float)_parameters.depth);
 
 	// Only allow translation along the extrusion axis
 	const math::Axis axis = voxel::faceToAxis(_parameters.face);
@@ -207,16 +209,16 @@ void ExtrudeBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &stat
 	state.localMode = false;
 }
 
-bool ExtrudeBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix,
-								   const glm::mat4 &deltaMatrix, uint32_t operation) {
+bool ExtrudeBrush::editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix,
+								   const math::Mat4f &deltaMatrix, uint32_t operation) {
 	if (_parameters.face == voxel::FaceNames::Max) {
 		return false;
 	}
 
 	const math::Axis axis = voxel::faceToAxis(_parameters.face);
 	const int axisIdx = math::getIndexForAxis(axis);
-	const glm::vec3 translation(deltaMatrix[3]);
-	const int delta = (int)glm::round(translation[axisIdx]);
+	const math::Vec3f translation(deltaMatrix[3]);
+	const int delta = (int)math::round(translation[axisIdx]);
 	if (delta == 0) {
 		return false;
 	}

@@ -6,7 +6,6 @@
 #include "app/App.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
-#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
@@ -36,9 +35,13 @@
 #include "voxelformat/Format.h"
 #include "voxelformat/FormatThumbnail.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Axes.h"
 
 namespace voxelformat {
 
@@ -165,19 +168,19 @@ constexpr const char *NodeType = "vengi_type";
 	}
 
 // Swap Y and Z between VoxelMax (Z-up) and vengi (Y-up). This is its own inverse.
-static glm::vec3 vmaxAxes(const glm::vec3 &v) {
-	return glm::vec3(v.x, v.z, v.y);
+static math::Vec3f vmaxAxes(const math::Vec3f &v) {
+	return math::Vec3f(v.x, v.z, v.y);
 }
 
-static glm::quat vmaxAxisAngleToQuat(const glm::vec4 &t_r) {
-	const glm::vec3 axis = vmaxAxes(glm::vec3(t_r));
+static math::Quatf vmaxAxisAngleToQuat(const math::Vec4f &t_r) {
+	const math::Vec3f axis = vmaxAxes(math::Vec3f(t_r));
 	// (x,y,z)->(x,z,y) has det -1, so R conjugates as R(C*axis, -angle).
 	const float angle = -t_r.w;
-	const float len2 = glm::dot(axis, axis);
-	if (len2 <= 1.0e-12f || glm::abs(angle) <= 1.0e-8f) {
-		return glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+	const float len2 = math::dot(axis, axis);
+	if (len2 <= 1.0e-12f || math::abs(angle) <= 1.0e-8f) {
+		return math::Quatf(1.0f, 0.0f, 0.0f, 0.0f);
 	}
-	return glm::angleAxis(angle, axis / glm::sqrt(len2));
+	return math::angleAxis(angle, axis / math::sqrt(len2));
 }
 
 static core::String vmaxPaletteFileForContents(const core::String &contentsPath) {
@@ -242,16 +245,16 @@ static util::BinaryPList vmaxReadPlist(io::SeekableReadStream &stream) {
 	return util::BinaryPList::parse(stream);
 }
 
-static glm::vec4 vmaxEulerToAxisAngle(const glm::vec3 &euler) {
-	const glm::quat q(euler);
-	const float angle = glm::angle(q);
-	if (glm::abs(angle) <= 1.0e-8f) {
-		return glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+static math::Vec4f vmaxEulerToAxisAngle(const math::Vec3f &euler) {
+	const math::Quatf q(euler);
+	const float angle = math::angle(q);
+	if (math::abs(angle) <= 1.0e-8f) {
+		return math::Vec4f(0.0f, 0.0f, 1.0f, 0.0f);
 	}
-	return glm::vec4(glm::axis(q), angle);
+	return math::Vec4f(math::axis(q), angle);
 }
 
-static void vmaxParseAxisAngleOrEuler(const json::Json &obj, glm::vec4 &t_r) {
+static void vmaxParseAxisAngleOrEuler(const json::Json &obj, math::Vec4f &t_r) {
 	if (obj.contains(vmax::Rotation) && obj.get(vmax::Rotation).isArray()) {
 		const json::Json &arr = obj.get(vmax::Rotation);
 		for (int i = 0; i < 4 && i < (int)arr.size(); ++i) {
@@ -262,7 +265,7 @@ static void vmaxParseAxisAngleOrEuler(const json::Json &obj, glm::vec4 &t_r) {
 	// Legacy SceneKit Euler radians fallback when t_r is absent.
 	if (obj.contains(vmax::LegacyEulerRotation) && obj.get(vmax::LegacyEulerRotation).isArray()) {
 		const json::Json &arr = obj.get(vmax::LegacyEulerRotation);
-		glm::vec3 euler(0.0f);
+		math::Vec3f euler(0.0f);
 		for (int i = 0; i < 3 && i < (int)arr.size(); ++i) {
 			euler[i] = arr.get(i).floatVal();
 		}
@@ -322,22 +325,22 @@ static bool vmaxIsPackage(const io::ArchivePtr &archive, const core::String &fil
 	return false;
 }
 
-void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
-									 const glm::vec3 &t_s) const {
-	applySceneTransform(node, t_p, t_r, t_s, glm::vec3(0.0f));
+void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const math::Vec3f &t_p, const math::Vec4f &t_r,
+									 const math::Vec3f &t_s) const {
+	applySceneTransform(node, t_p, t_r, t_s, math::Vec3f(0.0f));
 }
 
-void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const glm::vec3 &t_p, const glm::vec4 &t_r,
-									 const glm::vec3 &t_s, const glm::vec3 &volumeMins) const {
+void VMaxFormat::applySceneTransform(scenegraph::SceneGraphNode &node, const math::Vec3f &t_p, const math::Vec4f &t_r,
+									 const math::Vec3f &t_s, const math::Vec3f &volumeMins) const {
 	scenegraph::SceneGraphTransform transform;
 	// VoxelMax uses T * R * S from t_p/t_r/t_s and applies that matrix on the parent chain.
 	// Decoder stores e_c but does not fold it into the matrix.
 	// Voxels stay in the 256 work-area; crop + T(volumeMins) restores those coords.
 	// vmaxAxes is (x,z,y) (det -1); vmaxAxisAngleToQuat uses -t_r.w so R conjugates.
-	const glm::mat4 local = glm::translate(glm::mat4(1.0f), vmaxAxes(t_p)) *
-							glm::mat4_cast(vmaxAxisAngleToQuat(t_r)) *
-							glm::scale(glm::mat4(1.0f), vmaxAxes(t_s)) *
-							glm::translate(glm::mat4(1.0f), volumeMins);
+	const math::Mat4f local = math::translate(math::Mat4f(1.0f), vmaxAxes(t_p)) *
+							math::mat4_cast(vmaxAxisAngleToQuat(t_r)) *
+							math::scale(math::Mat4f(1.0f), vmaxAxes(t_s)) *
+							math::translate(math::Mat4f(1.0f), volumeMins);
 	transform.setLocalMatrix(local);
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
@@ -375,12 +378,12 @@ void VMaxFormat::applySceneMetadata(scenegraph::SceneGraph &sceneGraph, const VM
 void VMaxFormat::addSceneCamera(scenegraph::SceneGraph &sceneGraph, const VMaxCamera &cam) const {
 	// Stick camera: look-at o with pan (px,py), orbit by wa/ha/da (radians), distance z.
 	// MagicaVoxel-style view matrix after Z-up remap; yaw sign matches their (pitch,-yaw,roll).
-	const glm::vec3 target = vmaxAxes(cam.o) + glm::vec3(cam.px, 0.0f, cam.py);
-	const glm::quat quat(glm::vec3(cam.ha, -cam.wa, cam.da));
+	const math::Vec3f target = vmaxAxes(cam.o) + math::Vec3f(cam.px, 0.0f, cam.py);
+	const math::Quatf quat(math::Vec3f(cam.ha, -cam.wa, cam.da));
 	const float distance = cam.z > 0.0f ? cam.z : 512.0f;
-	const glm::vec3 forward = glm::conjugate(quat) * glm::forward();
-	const glm::vec3 position = target - forward * distance;
-	const glm::mat4 viewMatrix = glm::translate(glm::mat4_cast(quat), -position);
+	const math::Vec3f forward = math::conjugate(quat) * math::forward();
+	const math::Vec3f position = target - forward * distance;
+	const math::Mat4f viewMatrix = math::translate(math::mat4_cast(quat), -position);
 
 	scenegraph::SceneGraphNodeCamera camNode;
 	camNode.setName("Camera");
@@ -744,7 +747,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		applyVmaxPaletteSettings(embeddedPal, pal, objectLayers);
 	}
 	struct VoxelData {
-		glm::ivec3 position;
+		math::Vec3i position;
 		uint8_t material;
 		uint8_t color;
 	};
@@ -754,7 +757,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 	if (eo.isInt() && eo.asInt() >= 5 && eo.asInt() <= 9) {
 		order = (int)eo.asInt();
 	}
-	glm::ivec3 workMin(0), workMax((1 << order) - 1);
+	math::Vec3i workMin(0), workMax((1 << order) - 1);
 	const util::BinaryPList &vp = plist.getDictEntry("tools").getDictEntry("vp");
 	if (vp.isDict()) {
 		const util::BinaryPList &lo = vp.getDictEntry("min");
@@ -774,7 +777,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 			}
 		}
 	}
-	const auto decode = [&](const util::BinaryPList &bytes, const glm::ivec3 &base, int offset, int stride) {
+	const auto decode = [&](const util::BinaryPList &bytes, const math::Vec3i &base, int offset, int stride) {
 		if (!bytes.isData() || bytes.size() % stride != 0 || offset < 0 ||
 			(size_t)offset + bytes.size() / stride > 32768u) {
 			Log::error("Invalid VoxelMax chunk data or Morton offset");
@@ -794,11 +797,11 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 			}
 			uint8_t x, y, z;
 			voxel::mortonIndexToCoord((uint32_t)(offset + slot), x, y, z);
-			const glm::ivec3 position = base + glm::ivec3(x, y, z);
-			if (glm::any(glm::lessThan(position, workMin)) || glm::any(glm::greaterThan(position, workMax))) {
+			const math::Vec3i position = base + math::Vec3i(x, y, z);
+			if (math::any(math::lessThan(position, workMin)) || math::any(math::greaterThan(position, workMax))) {
 				continue;
 			}
-			voxels.push_back({glm::ivec3(position.x, position.z, position.y),
+			voxels.push_back({math::Vec3i(position.x, position.z, position.y),
 							  (uint8_t)(stride == 2 ? ds[slot * stride] & 7 : 0), (uint8_t)(color - 1)});
 		}
 		return true;
@@ -821,7 +824,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		}
 		io::MemoryReadStream records(legacyChunks.asData().data(), legacyChunks.size());
 		struct LegacyChunk {
-			glm::ivec3 base;
+			math::Vec3i base;
 			int stride;
 		};
 		core::DynamicArray<LegacyChunk> chunks;
@@ -831,7 +834,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 				wrap(records.readInt32(origin[axis]))
 			}
 			wrap(records.readInt32(flag))
-			glm::ivec3 base;
+			math::Vec3i base;
 			for (int axis = 0; axis < 3; ++axis) {
 				// Floor division, including negative chunk origins.
 				const int value = origin[axis];
@@ -909,7 +912,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 			}
 			uint8_t x, y, z;
 			voxel::mortonIndexToCoord(cid, x, y, z);
-			if (!decode(bytes, glm::ivec3(x, y, z) * 32, (int)mins.asArray()[3].asInt(), 2)) {
+			if (!decode(bytes, math::Vec3i(x, y, z) * 32, (int)mins.asArray()[3].asInt(), 2)) {
 				return false;
 			}
 		}
@@ -937,7 +940,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 	for (int part = 0; part < (combinations + 255) / 256; ++part) {
 		palette::Palette partPalette;
 		partPalette.setName(pal.name());
-		glm::ivec3 mins(512), maxs(-1);
+		math::Vec3i mins(512), maxs(-1);
 		for (int layer = 0; layer < 8; ++layer) {
 			for (int color = 0; color < 255; ++color) {
 				const int entry = entries[layer][color];
@@ -954,12 +957,12 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		}
 		for (const VoxelData &v : voxels) {
 			if (entries[v.material][v.color] / 256 == part) {
-				mins = glm::min(mins, v.position);
-				maxs = glm::max(maxs, v.position);
+				mins = math::min(mins, v.position);
+				maxs = math::max(maxs, v.position);
 			}
 		}
 		partPalette.setSize(core_min(256, combinations - part * 256));
-		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(glm::ivec3(0), maxs - mins));
+		voxel::RawVolume *volume = new voxel::RawVolume(voxel::Region(math::Vec3i(0), maxs - mins));
 		for (const VoxelData &v : voxels) {
 			const int entry = entries[v.material][v.color];
 			if (entry / 256 == part) {
@@ -969,7 +972,7 @@ bool VMaxFormat::loadObject(const core::String &filename, io::SeekableReadStream
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model, part == 0 ? obj.id : core::UUID());
 		node.addProperties(obj.properties);
 		node.setName(part == 0 ? obj.n : core::String::format("%s-%i", obj.n.c_str(), part + 1));
-		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s, glm::vec3(mins));
+		applySceneTransform(node, obj.t_p, obj.t_r, obj.t_s, math::Vec3f(mins));
 		if (obj.pid.isValid()) {
 			node.setProperty(scenegraph::PropParentUUID, obj.pid.str());
 		}
@@ -1081,7 +1084,7 @@ void VMaxFormat::applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palId
 	if (material.hasEmission) {
 		// VoxelMax's 0-100 emission slider stores sic in 0-20. Normalize to
 		// vengi's 0-1 factor, retaining the relative strength of material layers.
-		resolved.setValue(palette::MaterialEmit, (float)glm::clamp(material.emission / 20.0, 0.0, 1.0));
+		resolved.setValue(palette::MaterialEmit, (float)math::clamp(material.emission / 20.0, 0.0, 1.0));
 	}
 	if (material.hasEmission && material.emission > 0.0) {
 		resolved.type = palette::MaterialType::Emit;
@@ -1093,10 +1096,10 @@ void VMaxFormat::applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palId
 		resolved.type = palette::MaterialType::Diffuse;
 	}
 	if (material.hasMetalness) {
-		resolved.setValue(palette::MaterialMetal, (float)glm::clamp((material.metalness - 0.1) / 0.8, 0.0, 1.0));
+		resolved.setValue(palette::MaterialMetal, (float)math::clamp((material.metalness - 0.1) / 0.8, 0.0, 1.0));
 	}
 	if (material.hasRoughness) {
-		resolved.setValue(palette::MaterialRoughness, (float)glm::clamp((material.roughness - 0.1) / 0.8, 0.0, 1.0));
+		resolved.setValue(palette::MaterialRoughness, (float)math::clamp((material.roughness - 0.1) / 0.8, 0.0, 1.0));
 	}
 	if (material.hasIor) {
 		resolved.setValue(palette::MaterialIndexOfRefraction, (float)material.ior);
@@ -1108,7 +1111,7 @@ void VMaxFormat::applyVmaxLayerMaterial(palette::Palette &palette, uint8_t palId
 	if (material.hasTransmission && material.transmission > 0.0) {
 		// Approximate optical transmission with blending
 		color::RGBA color = palette.color(palIdx);
-		const uint8_t alpha = (uint8_t)glm::round(255.0 * (1.0 - 0.5 * glm::clamp(material.transmission, 0.0, 1.0)));
+		const uint8_t alpha = (uint8_t)math::round(255.0 * (1.0 - 0.5 * math::clamp(material.transmission, 0.0, 1.0)));
 		color.a = core_min(color.a, alpha);
 		palette.setColor(palIdx, color);
 	}
@@ -1160,9 +1163,9 @@ void VMaxFormat::applyVmaxPaletteSettings(const util::BinaryPList &plist, palett
 		}
 		const VmaxMaterial &a = layers.layers[firstLayer];
 		const VmaxMaterial &b = layers.layers[i];
-		if (glm::abs(a.roughness - b.roughness) > 1.0e-4 || glm::abs(a.metalness - b.metalness) > 1.0e-4 ||
-			glm::abs(a.emission - b.emission) > 1.0e-4 || glm::abs(a.transmission - b.transmission) > 1.0e-4 ||
-			glm::abs(a.ior - b.ior) > 1.0e-4 || glm::abs(a.absorption - b.absorption) > 1.0e-4 ||
+		if (math::abs(a.roughness - b.roughness) > 1.0e-4 || math::abs(a.metalness - b.metalness) > 1.0e-4 ||
+			math::abs(a.emission - b.emission) > 1.0e-4 || math::abs(a.transmission - b.transmission) > 1.0e-4 ||
+			math::abs(a.ior - b.ior) > 1.0e-4 || math::abs(a.absorption - b.absorption) > 1.0e-4 ||
 			a.hasEmission != b.hasEmission || a.hasTransmission != b.hasTransmission ||
 			a.hasMetalness != b.hasMetalness || a.hasRoughness != b.hasRoughness ||
 			a.hasIor != b.hasIor || a.hasAbsorption != b.hasAbsorption) {
@@ -1412,7 +1415,7 @@ size_t VMaxFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	return palette.colorCount();
 }
 
-static json::Json vmaxVector(const glm::vec3 &v) {
+static json::Json vmaxVector(const math::Vec3f &v) {
 	json::Json array = json::Json::array();
 	for (int i = 0; i < 3; ++i) {
 		array.push(v[i]);
@@ -1432,7 +1435,7 @@ static util::BinaryPList vmaxString(const core::String &value) {
 	return util::BinaryPList(core::String(value));
 }
 
-static util::BinaryPList vmaxInts(const glm::ivec3 &v) {
+static util::BinaryPList vmaxInts(const math::Vec3i &v) {
 	util::PListArray array;
 	for (int i = 0; i < 3; ++i) {
 		array.emplace_back((uint32_t)v[i]);
@@ -1547,7 +1550,7 @@ static util::BinaryPList vmaxPaletteSettings(const palette::Palette &palette, co
 	return util::BinaryPList(core::move(settings));
 }
 
-static util::BinaryPList vmaxMortonBounds(const glm::ivec3 &v, uint32_t morton) {
+static util::BinaryPList vmaxMortonBounds(const math::Vec3i &v, uint32_t morton) {
 	util::PListArray array;
 	array.emplace_back(voxel::mortonIndex((uint8_t)v.x, 0, 0));
 	array.emplace_back(voxel::mortonIndex(0, (uint8_t)v.y, 0));
@@ -1558,9 +1561,9 @@ static util::BinaryPList vmaxMortonBounds(const glm::ivec3 &v, uint32_t morton) 
 
 static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &volume, const VmaxExportPart &part,
 							const util::BinaryPList &palette, const core::UUID &uuid, const json::Json &camera) {
-	const glm::ivec3 lower = volume.region().getLowerCorner();
-	const glm::ivec3 dimensions = volume.region().getDimensionsInVoxels();
-	const glm::ivec3 vmaxDimensions = glm::ivec3(dimensions.x, dimensions.z, dimensions.y);
+	const math::Vec3i lower = volume.region().getLowerCorner();
+	const math::Vec3i dimensions = volume.region().getDimensionsInVoxels();
+	const math::Vec3i vmaxDimensions = math::Vec3i(dimensions.x, dimensions.z, dimensions.y);
 	const int order = core_max(dimensions.x, core_max(dimensions.y, dimensions.z)) > 256 ? 9 : 8;
 	util::PListArray snapshots;
 	core::Buffer<uint8_t> chunk(32768 * 2);
@@ -1572,12 +1575,12 @@ static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &vol
 				}
 				core_memset(chunk.data(), 0, chunk.size());
 				uint32_t first = 32768, last = 0, count = 0;
-				glm::ivec3 mins(31), maxs(0);
+				math::Vec3i mins(31), maxs(0);
 				util::PListByteArray usage(256);
 				for (int z = 0; z < core_min(32, vmaxDimensions.z - cz * 32); ++z) {
 					for (int y = 0; y < core_min(32, vmaxDimensions.y - cy * 32); ++y) {
 						for (int x = 0; x < core_min(32, vmaxDimensions.x - cx * 32); ++x) {
-							const auto &voxel = volume.voxel(lower + glm::ivec3(cx * 32 + x, cz * 32 + z, cy * 32 + y));
+							const auto &voxel = volume.voxel(lower + math::Vec3i(cx * 32 + x, cz * 32 + z, cy * 32 + y));
 							const int color = part.colors[voxel.getColor()];
 							if (voxel::isAir(voxel.getMaterial()) || color < 0) {
 								continue;
@@ -1588,8 +1591,8 @@ static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &vol
 							usage[color] |= (uint8_t)(1u << part.layers[voxel.getColor()]);
 							first = core_min(first, morton);
 							last = core_max(last, morton);
-							mins = glm::min(mins, glm::ivec3(x, y, z));
-							maxs = glm::max(maxs, glm::ivec3(x, y, z));
+							mins = math::min(mins, math::Vec3i(x, y, z));
+							maxs = math::max(maxs, math::Vec3i(x, y, z));
 							++count;
 						}
 					}
@@ -1598,8 +1601,8 @@ static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &vol
 					continue;
 				}
 				util::PListDict range;
-				range.put("min", vmaxInts(glm::ivec3(0)));
-				range.put("max", vmaxInts(glm::ivec3(31)));
+				range.put("min", vmaxInts(math::Vec3i(0)));
+				range.put("max", vmaxInts(math::Vec3i(31)));
 				util::PListDict extent;
 				extent.put("o", util::BinaryPList((uint32_t)5));
 				extent.put("r", util::BinaryPList(core::move(range)));
@@ -1608,8 +1611,8 @@ static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &vol
 				stats.put("scount", util::BinaryPList((uint32_t)0));
 				stats.put("min", vmaxMortonBounds(mins, first));
 				stats.put("max", vmaxMortonBounds(maxs, last));
-				stats.put("smin", vmaxMortonBounds(glm::ivec3(0), 0));
-				stats.put("smax", vmaxMortonBounds(glm::ivec3(31), 32767));
+				stats.put("smin", vmaxMortonBounds(math::Vec3i(0), 0));
+				stats.put("smax", vmaxMortonBounds(math::Vec3i(31), 32767));
 				stats.put("extent", util::BinaryPList(core::move(extent)));
 				util::PListDict id;
 				id.put("c", util::BinaryPList(voxel::mortonIndex((uint8_t)cx, (uint8_t)cy, (uint8_t)cz)));
@@ -1630,8 +1633,8 @@ static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &vol
 		}
 	}
 	util::PListDict viewbox;
-	viewbox.put("min", vmaxInts(glm::ivec3(0)));
-	viewbox.put("max", vmaxInts(glm::ivec3((1 << order) - 1)));
+	viewbox.put("min", vmaxInts(math::Vec3i(0)));
+	viewbox.put("max", vmaxInts(math::Vec3i((1 << order) - 1)));
 	util::PListDict tools;
 	tools.put("vp", util::BinaryPList(core::move(viewbox)));
 	tools.put("al", vmaxString("1"));
@@ -1658,7 +1661,7 @@ static bool writeVmaxObject(io::WriteStream &stream, const voxel::RawVolume &vol
 }
 
 static json::Json vmaxNode(const scenegraph::SceneGraphNode &node, const core::UUID &parent,
-						   const glm::vec3 &volumeOffset = glm::vec3(0.0f)) {
+						   const math::Vec3f &volumeOffset = math::Vec3f(0.0f)) {
 	json::Json json = json::Json::object();
 	json.set(vmax::Id, node.uuid().str());
 	json.set(vmax::ParentId, parent.isValid() ? parent.str() : "");
@@ -1667,17 +1670,17 @@ static json::Json vmaxNode(const scenegraph::SceneGraphNode &node, const core::U
 	json.set(vmax::Properties, vmaxProperties(node));
 	const auto &transform = node.transform(0);
 	json.set(vmax::Position,
-			 vmaxVector(vmaxAxes(glm::vec3(transform.localMatrix() * glm::vec4(volumeOffset, 1.0f)))));
+			 vmaxVector(vmaxAxes(math::Vec3f(transform.localMatrix() * math::Vec4f(volumeOffset, 1.0f)))));
 	json.set(vmax::Scale, vmaxVector(vmaxAxes(transform.localScale())));
-	const glm::quat rotation = glm::normalize(transform.localOrientation());
-	const float angle = glm::angle(rotation);
-	const glm::vec3 axis = angle > 0.000001f ? vmaxAxes(glm::axis(rotation)) : glm::vec3(0.0f, 0.0f, 1.0f);
+	const math::Quatf rotation = math::normalize(transform.localOrientation());
+	const float angle = math::angle(rotation);
+	const math::Vec3f axis = angle > 0.000001f ? vmaxAxes(math::axis(rotation)) : math::Vec3f(0.0f, 0.0f, 1.0f);
 	json::Json axisAngle = vmaxVector(axis);
 	axisAngle.push(-angle);
 	json.set(vmax::Rotation, axisAngle);
-	json.set(vmax::BoundsCenter, vmaxVector(glm::vec3(0.0f)));
-	json.set(vmax::BoundsMin, vmaxVector(glm::vec3(0.0f)));
-	json.set(vmax::BoundsMax, vmaxVector(glm::vec3(0.0f)));
+	json.set(vmax::BoundsCenter, vmaxVector(math::Vec3f(0.0f)));
+	json.set(vmax::BoundsMin, vmaxVector(math::Vec3f(0.0f)));
+	json.set(vmax::BoundsMax, vmaxVector(math::Vec3f(0.0f)));
 	return json;
 }
 
@@ -1694,18 +1697,18 @@ static json::Json vmaxCamera(const scenegraph::SceneGraph &graph) {
 	camera.set(vmax::CameraPanX, 0.0f);
 	camera.set(vmax::CameraPanY, 0.0f);
 	camera.set(vmax::CameraZoom, 512.0f);
-	camera.set(vmax::CameraOrigin, vmaxVector(glm::vec3(0.0f)));
+	camera.set(vmax::CameraOrigin, vmaxVector(math::Vec3f(0.0f)));
 	const auto iter = graph.begin(scenegraph::SceneGraphNodeType::Camera);
 	if (iter != graph.end()) {
 		const scenegraph::SceneGraphNode &node = *iter;
 		const auto transform = graph.transformForFrame(node, 0);
-		glm::vec3 scale, translation;
-		glm::quat rotation;
+		math::Vec3f scale, translation;
+		math::Quatf rotation;
 		transform.decompose(scale, rotation, translation);
-		const glm::vec3 angles = glm::eulerAngles(rotation);
+		const math::Vec3f angles = math::eulerAngles(rotation);
 		const float distance = node.propertyf("vmax_z") > 0.0f ? node.propertyf("vmax_z") : 512.0f;
-		const glm::vec3 position = -(glm::conjugate(rotation) * transform.worldTranslation());
-		const glm::vec3 forward = glm::conjugate(rotation) * glm::forward();
+		const math::Vec3f position = -(math::conjugate(rotation) * transform.worldTranslation());
+		const math::Vec3f forward = math::conjugate(rotation) * math::forward();
 		camera.set(vmax::CameraPitch, angles.x);
 		camera.set(vmax::CameraYaw, -angles.y);
 		camera.set(vmax::CameraRoll, angles.z);
@@ -1746,7 +1749,7 @@ static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &a
 	json::Json objects = json::Json::array();
 	json::Json groups = json::Json::array();
 	int objectIndex = 0;
-	const bool rootTransform = root.transform(0).localMatrix() != glm::mat4(1.0f);
+	const bool rootTransform = root.transform(0).localMatrix() != math::Mat4f(1.0f);
 	if (rootTransform) {
 		json::Json group = vmaxNode(root, core::UUID());
 		group.set(vmax::GroupName, root.name());
@@ -1812,26 +1815,26 @@ static bool writeVmaxPackage(const scenegraph::SceneGraph &graph, io::Archive &a
 					return false;
 				}
 			}
-			const glm::ivec3 &dims = volume->region().getDimensionsInVoxels();
-			const glm::vec3 offset = glm::vec3(volume->region().getLowerCorner()) - node.pivot() * glm::vec3(dims);
+			const math::Vec3i &dims = volume->region().getDimensionsInVoxels();
+			const math::Vec3f offset = math::Vec3f(volume->region().getLowerCorner()) - node.pivot() * math::Vec3f(dims);
 			json::Json object = vmaxNode(node, split ? node.uuid() : pid, offset);
 			if (split) {
 				object.set(vmax::Id, uuid.str());
 				object.set(vmax::Position, vmaxVector(vmaxAxes(offset)));
 				object.set(vmax::Rotation, json::Json::parse("[0,0,1,0]"));
-				object.set(vmax::Scale, vmaxVector(glm::vec3(1.0f)));
+				object.set(vmax::Scale, vmaxVector(math::Vec3f(1.0f)));
 			}
 			object.set(vmax::ObjectName, split ? core::String::format("%s-%i", node.name().c_str(), ++partIndex) : node.name());
 			object.set(vmax::ContentsFile, dataName);
 			object.set(vmax::PaletteFile, paletteName);
 			object.set(vmax::HistoryFile, "");
-			object.set(vmax::Index, vmaxVector(glm::vec3((float)objectIndex, 0.0f, 0.0f)));
+			object.set(vmax::Index, vmaxVector(math::Vec3f((float)objectIndex, 0.0f, 0.0f)));
 			object.set(vmax::Alignment, "f");
 			object.set(vmax::PivotAlignment, "4");
 			object.set(vmax::PivotFace, "8");
-			object.set(vmax::BoundsCenter, vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
-			object.set(vmax::BoundsMin, vmaxVector(-vmaxAxes(glm::vec3(dims) * 0.5f)));
-			object.set(vmax::BoundsMax, vmaxVector(vmaxAxes(glm::vec3(dims) * 0.5f)));
+			object.set(vmax::BoundsCenter, vmaxVector(vmaxAxes(math::Vec3f(dims) * 0.5f)));
+			object.set(vmax::BoundsMin, vmaxVector(-vmaxAxes(math::Vec3f(dims) * 0.5f)));
+			object.set(vmax::BoundsMax, vmaxVector(vmaxAxes(math::Vec3f(dims) * 0.5f)));
 			objects.push(object);
 			if (node.uuid() == graph.activeNodeUUID()) {
 				scene.set(split ? vmax::ActiveGroup : vmax::ActiveObject, node.uuid().str());

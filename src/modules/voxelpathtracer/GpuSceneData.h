@@ -7,14 +7,15 @@
 
 #include "VoxelpathtracerShaderConstants.h"
 #include "core/StandardLib.h"
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <stddef.h>
 #include <stdint.h>
 
 #define VENGICPP
 #include "shaders/_gpuscene.inc"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2u.h"
 #undef VENGICPP
 
 namespace palette {
@@ -29,15 +30,15 @@ constexpr int BrickSize = shader::VoxelpathtracerShaderConstants::getBrickSize()
 uint32_t sampleSeedHash(uint32_t sampleIndex);
 
 /** @brief First two Sobol coordinates, represented as 32-bit fixed-point fractions. */
-glm::uvec2 cameraSobolPoint(uint32_t sampleIndex);
+math::Vec2u cameraSobolPoint(uint32_t sampleIndex);
 
 /** @brief Encode the largest aligned empty block (up to 8 bricks per axis) in each empty cell.
  * Occupied input cells must contain 255, empty cells 0. Output stores log2(block width), or 255 for occupied.
  */
-void buildEmptySpaceHierarchy(uint8_t *coarse, const glm::ivec3 &size);
+void buildEmptySpaceHierarchy(uint8_t *coarse, const math::Vec3i &size);
 
 /** @brief Flat xyz index for a volume of the given size. */
-inline int volumeOffset(int x, int y, int z, const glm::ivec3 &size) {
+inline int volumeOffset(int x, int y, int z, const math::Vec3i &size) {
 	return (z * size.y + y) * size.x + x;
 }
 
@@ -49,7 +50,7 @@ int padToBrick(int v);
  * @param[in] maxTextureAxis @c Limit::Max3DTextureSize for the indirection and brick-atlas textures.
  * @param[out] truncated Set when the input was shrunk to fit.
  */
-glm::ivec3 clampVolumeSize(glm::ivec3 size, int maxTextureAxis, bool &truncated);
+math::Vec3i clampVolumeSize(math::Vec3i size, int maxTextureAxis, bool &truncated);
 
 static_assert(sizeof(GpuMaterial) ==
 				  (size_t)shader::VoxelpathtracerShaderConstants::getMaterialRows() * 4u * sizeof(float),
@@ -86,13 +87,13 @@ static_assert(offsetof(GpuEmitLight, aliasIndex) == 28);
 GpuMaterial packGpuMaterial(const palette::Material &material, uint8_t alpha, bool voxelTransparent);
 
 /** @brief Pack an emitter with the same linear radiance formula used for surface emission. */
-GpuEmitLight packGpuEmitLight(const glm::ivec3 &cell, const glm::vec3 &srgb, const GpuMaterial &material);
+GpuEmitLight packGpuEmitLight(const math::Vec3i &cell, const math::Vec3f &srgb, const GpuMaterial &material);
 
 /** @brief Build a luminance-weighted emitter alias table; return total luminance. */
 float buildEmitterAliasTable(GpuEmitLight *lights, int count);
 
 /** @brief Build 16 equal-solid-angle sky bands; return integrated luminance, or zero for a nearly uniform sky. */
-float buildSkyDistribution(const glm::vec3 &top, const glm::vec3 &horizon, const glm::vec3 &nadir, glm::vec4 *bands);
+float buildSkyDistribution(const math::Vec3f &top, const math::Vec3f &horizon, const math::Vec3f &nadir, math::Vec4f *bands);
 
 /** @brief Pack a brick voxel word: materialId in bits 0-13, transmits/emit flags in 14/15. */
 inline uint32_t packVoxelPayload(uint32_t materialId, bool transmits, bool emit) {

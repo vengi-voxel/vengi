@@ -4,9 +4,7 @@
 
 #include "VolumeSculpt.h"
 #include "core/TraceScoped.h"
-#include "core/Log.h"
 #include "app/ForParallel.h"
-#include "core/GLM.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicSet.h"
@@ -20,19 +18,18 @@
 #include "voxel/Voxel.h"
 #include "core/Algorithm.h"
 #include "palette/Palette.h"
-#include <cfloat>
-#include <climits>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
-static bool isSolid(const voxel::BitVolume &solid, const voxel::BitVolume &anchors, const glm::ivec3 &pos) {
+static bool isSolid(const voxel::BitVolume &solid, const voxel::BitVolume &anchors, const math::Vec3i &pos) {
 	return solid.hasValue(pos.x, pos.y, pos.z) || anchors.hasValue(pos.x, pos.y, pos.z);
 }
 
 static int countFaceNeighbors(const voxel::BitVolume &solid, const voxel::BitVolume &anchors,
-							  const glm::ivec3 &pos) {
+							  const math::Vec3i &pos) {
 	int count = 0;
-	for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
+	for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
 		if (isSolid(solid, anchors, pos + offset)) {
 			count++;
 		}
@@ -43,12 +40,12 @@ static int countFaceNeighbors(const voxel::BitVolume &solid, const voxel::BitVol
 void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				 float strength, int iterations) {
 	core_trace_scoped(SculptErode);
-	const int removeThreshold = (int)glm::mix(0.0f, 5.0f, strength);
+	const int removeThreshold = (int)math::mix(0.0f, 5.0f, strength);
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 
-	core::DynamicArray<glm::ivec3> toRemove;
+	core::DynamicArray<math::Vec3i> toRemove;
 	for (int iter = 0; iter < iterations; ++iter) {
 		toRemove.clear();
 
@@ -58,7 +55,7 @@ void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const v
 					if (!solid.hasValue(x, y, z)) {
 						continue;
 					}
-					const glm::ivec3 pos(x, y, z);
+					const math::Vec3i pos(x, y, z);
 					const int neighborCount = countFaceNeighbors(solid, anchors, pos);
 					if (neighborCount == 6) {
 						continue;
@@ -74,7 +71,7 @@ void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const v
 			break;
 		}
 
-		for (const glm::ivec3 &pos : toRemove) {
+		for (const math::Vec3i &pos : toRemove) {
 			solid.setVoxel(pos, false);
 			voxelMap.setVoxel(pos, voxel::Voxel());
 		}
@@ -84,14 +81,14 @@ void sculptErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const v
 void sculptGrow(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 				float strength, int iterations, const voxel::Voxel &fillVoxel) {
 	core_trace_scoped(SculptGrow);
-	const int addThreshold = (int)glm::mix(7.0f, 1.0f, strength);
+	const int addThreshold = (int)math::mix(7.0f, 1.0f, strength);
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 
-	using AirSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
+	using AirSet = core::DynamicSet<math::Vec3i, 1031, math::Vec3iHash>;
 
-	core::DynamicArray<glm::ivec3> toAdd;
+	core::DynamicArray<math::Vec3i> toAdd;
 	AirSet airCandidates;
 	for (int iter = 0; iter < iterations; ++iter) {
 		toAdd.clear();
@@ -103,9 +100,9 @@ void sculptGrow(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const vo
 					if (!solid.hasValue(x, y, z)) {
 						continue;
 					}
-					const glm::ivec3 pos(x, y, z);
-					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-						const glm::ivec3 neighbor = pos + offset;
+					const math::Vec3i pos(x, y, z);
+					for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+						const math::Vec3i neighbor = pos + offset;
 						if (!isSolid(solid, anchors, neighbor) && region.containsPoint(neighbor)) {
 							airCandidates.insert(neighbor);
 						}
@@ -115,7 +112,7 @@ void sculptGrow(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const vo
 		}
 
 		for (auto it = airCandidates.begin(); it != airCandidates.end(); ++it) {
-			const glm::ivec3 &pos = it->key;
+			const math::Vec3i &pos = it->key;
 			const int myCount = countFaceNeighbors(solid, anchors, pos);
 			if (myCount >= addThreshold) {
 				toAdd.push_back(pos);
@@ -126,12 +123,12 @@ void sculptGrow(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const vo
 			break;
 		}
 
-		for (const glm::ivec3 &pos : toAdd) {
+		for (const math::Vec3i &pos : toAdd) {
 			solid.setVoxel(pos, true);
 			// Pick color from nearest solid face-neighbor
 			voxel::Voxel newVoxel = fillVoxel;
-			for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-				const glm::ivec3 neighbor = pos + offset;
+			for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+				const math::Vec3i neighbor = pos + offset;
 				if (voxelMap.hasVoxel(neighbor)) {
 					newVoxel = voxelMap.voxel(neighbor);
 					break;
@@ -151,12 +148,12 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool fromPositive = voxel::isPositiveFace(face);
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 	// Step direction: move top voxels inward (positive face -> step -1, negative face -> step +1)
 	const int step = fromPositive ? -1 : 1;
 
-	core::DynamicArray<glm::ivec3> extremePositions;
+	core::DynamicArray<math::Vec3i> extremePositions;
 	for (int iter = 0; iter < iterations; ++iter) {
 		int extremeVal = fromPositive ? INT_MIN : INT_MAX;
 		for (int z = lo.z; z <= hi.z; ++z) {
@@ -165,11 +162,11 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 					if (!solid.hasValue(x, y, z)) {
 						continue;
 					}
-					const glm::ivec3 pos(x, y, z);
+					const math::Vec3i pos(x, y, z);
 					if (fromPositive) {
-						extremeVal = glm::max(extremeVal, pos[axisIdx]);
+						extremeVal = math::max(extremeVal, pos[axisIdx]);
 					} else {
-						extremeVal = glm::min(extremeVal, pos[axisIdx]);
+						extremeVal = math::min(extremeVal, pos[axisIdx]);
 					}
 				}
 			}
@@ -182,7 +179,7 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 					if (!solid.hasValue(x, y, z)) {
 						continue;
 					}
-					const glm::ivec3 pos(x, y, z);
+					const math::Vec3i pos(x, y, z);
 					if (pos[axisIdx] == extremeVal) {
 						extremePositions.push_back(pos);
 					}
@@ -194,9 +191,9 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 			break;
 		}
 
-		for (const glm::ivec3 &pos : extremePositions) {
+		for (const math::Vec3i &pos : extremePositions) {
 			// Move the top voxel one step inward to preserve the cap surface and its color
-			glm::ivec3 dest = pos;
+			math::Vec3i dest = pos;
 			dest[axisIdx] += step;
 			const voxel::Voxel topVoxel = voxelMap.hasVoxel(pos) ? voxelMap.voxel(pos) : voxel::Voxel();
 			// Remove the original extreme position
@@ -213,10 +210,10 @@ void sculptFlatten(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel
 
 // Compute column height along an axis from a position set.
 // Returns the number of consecutive solid voxels from bottom towards top at the given 2D column.
-static int columnHeight(const voxel::BitVolume &solid, const voxel::BitVolume &anchors, const glm::ivec3 &basePos,
+static int columnHeight(const voxel::BitVolume &solid, const voxel::BitVolume &anchors, const math::Vec3i &basePos,
 						int axisIdx, int bottomVal, int topVal) {
 	int height = 0;
-	glm::ivec3 pos = basePos;
+	math::Vec3i pos = basePos;
 	for (int v = bottomVal; v <= topVal; ++v) {
 		pos[axisIdx] = v;
 		if (isSolid(solid, anchors, pos)) {
@@ -227,14 +224,14 @@ static int columnHeight(const voxel::BitVolume &solid, const voxel::BitVolume &a
 }
 
 // Get the 4 planar neighbor offsets perpendicular to a given axis
-static void getPlanarOffsets(int axisIdx, glm::ivec3 offsets[4]) {
-	static const glm::ivec3 planarOffsetsForAxis[3][4] = {
+static void getPlanarOffsets(int axisIdx, math::Vec3i offsets[4]) {
+	static const math::Vec3i planarOffsetsForAxis[3][4] = {
 		// axis X: neighbors in Y and Z
-		{glm::ivec3(0, 1, 0), glm::ivec3(0, -1, 0), glm::ivec3(0, 0, 1), glm::ivec3(0, 0, -1)},
+		{math::Vec3i(0, 1, 0), math::Vec3i(0, -1, 0), math::Vec3i(0, 0, 1), math::Vec3i(0, 0, -1)},
 		// axis Y: neighbors in X and Z
-		{glm::ivec3(1, 0, 0), glm::ivec3(-1, 0, 0), glm::ivec3(0, 0, 1), glm::ivec3(0, 0, -1)},
+		{math::Vec3i(1, 0, 0), math::Vec3i(-1, 0, 0), math::Vec3i(0, 0, 1), math::Vec3i(0, 0, -1)},
 		// axis Z: neighbors in X and Y
-		{glm::ivec3(1, 0, 0), glm::ivec3(-1, 0, 0), glm::ivec3(0, 1, 0), glm::ivec3(0, -1, 0)}};
+		{math::Vec3i(1, 0, 0), math::Vec3i(-1, 0, 0), math::Vec3i(0, 1, 0), math::Vec3i(0, -1, 0)}};
 	for (int i = 0; i < 4; ++i) {
 		offsets[i] = planarOffsetsForAxis[axisIdx][i];
 	}
@@ -251,13 +248,13 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool positiveUp = voxel::isPositiveFace(face);
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 
-	glm::ivec3 planarOffsets[4];
+	math::Vec3i planarOffsets[4];
 	getPlanarOffsets(axisIdx, planarOffsets);
 
-	using ColumnSet = core::DynamicSet<glm::ivec3, 1031, glm::hash<glm::ivec3>>;
+	using ColumnSet = core::DynamicSet<math::Vec3i, 1031, math::Vec3iHash>;
 
 	for (int iter = 0; iter < iterations; ++iter) {
 		// Recompute bounds each iteration since solid set grows
@@ -269,10 +266,10 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 					if (!solid.hasValue(x, y, z)) {
 						continue;
 					}
-					const glm::ivec3 pos(x, y, z);
+					const math::Vec3i pos(x, y, z);
 					const int v = pos[axisIdx];
-					minVal = glm::min(minVal, v);
-					maxVal = glm::max(maxVal, v);
+					minVal = math::min(minVal, v);
+					maxVal = math::max(maxVal, v);
 				}
 			}
 		}
@@ -280,14 +277,14 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 			return;
 		}
 
-		const int absBottom = glm::min(minVal, maxVal);
-		const int absTop = glm::max(minVal, maxVal);
+		const int absBottom = math::min(minVal, maxVal);
+		const int absTop = math::max(minVal, maxVal);
 		const int bottomVal = positiveUp ? minVal : maxVal;
 		const int topVal = positiveUp ? maxVal : minVal;
 		const int step = positiveUp ? 1 : -1;
 
 		// Collect all positions to add for this iteration (at most one per column).
-		core::DynamicArray<glm::ivec3> toAdd;
+		core::DynamicArray<math::Vec3i> toAdd;
 		// Track which 2D columns already have a pending add this iteration
 		ColumnSet addedColumns;
 
@@ -298,20 +295,20 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 						if (!solid.hasValue(x, y, z)) {
 							continue;
 						}
-						const glm::ivec3 pos(x, y, z);
+						const math::Vec3i pos(x, y, z);
 						if (pos[axisIdx] != layer) {
 							continue;
 						}
 
 						// Check the air voxel one step above this solid position
-						glm::ivec3 above = pos;
+						math::Vec3i above = pos;
 						above[axisIdx] += step;
 						if (isSolid(solid, anchors, above)) {
 							continue;
 						}
 
 						// Use the 2D column key (zero out the up-axis component)
-						glm::ivec3 colKey = pos;
+						math::Vec3i colKey = pos;
 						colKey[axisIdx] = 0;
 						if (addedColumns.has(colKey)) {
 							continue;
@@ -322,7 +319,7 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 
 						// Check 4 planar neighbors
 						for (int i = 0; i < 4; ++i) {
-							const glm::ivec3 neighborBase = pos + planarOffsets[i];
+							const math::Vec3i neighborBase = pos + planarOffsets[i];
 							const int neighborHeight =
 								columnHeight(solid, anchors, neighborBase, axisIdx, absBottom, absTop);
 							if (neighborHeight - curHeight >= heightThreshold) {
@@ -340,12 +337,12 @@ void sculptSmoothAdditive(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 			break;
 		}
 
-		for (const glm::ivec3 &pos : toAdd) {
+		for (const math::Vec3i &pos : toAdd) {
 			solid.setVoxel(pos, true);
 			// Pick color from nearest solid face-neighbor
 			voxel::Voxel newVoxel = fillVoxel;
-			for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-				const glm::ivec3 neighbor = pos + offset;
+			for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+				const math::Vec3i neighbor = pos + offset;
 				if (voxelMap.hasVoxel(neighbor)) {
 					newVoxel = voxelMap.voxel(neighbor);
 					break;
@@ -367,10 +364,10 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool positiveUp = voxel::isPositiveFace(face);
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 
-	glm::ivec3 planarOffsets[4];
+	math::Vec3i planarOffsets[4];
 	getPlanarOffsets(axisIdx, planarOffsets);
 
 	const int step = positiveUp ? 1 : -1;
@@ -383,7 +380,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 		const int axis2 = (axisIdx == 2) ? 1 : 2;
 
 		// Step 1: Build column top height map
-		using ColHeightMap = core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>>;
+		using ColHeightMap = core::DynamicMap<math::Vec3i, int, 1031, math::Vec3iHash>;
 		ColHeightMap columnTop;
 
 		for (int z = lo.z; z <= hi.z; ++z) {
@@ -392,8 +389,8 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 					if (!solid.hasValue(x, y, z)) {
 						continue;
 					}
-					const glm::ivec3 pos(x, y, z);
-					glm::ivec3 colKey = pos;
+					const math::Vec3i pos(x, y, z);
+					math::Vec3i colKey = pos;
 					colKey[axisIdx] = 0;
 					const int val = pos[axisIdx];
 
@@ -409,7 +406,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 		}
 
 		// Step 2: Flood-fill islands among columns with the same top height (4-connected in 2D)
-		using IslandIdMap = core::DynamicMap<glm::ivec3, int, 1031, glm::hash<glm::ivec3>>;
+		using IslandIdMap = core::DynamicMap<math::Vec3i, int, 1031, math::Vec3iHash>;
 		IslandIdMap islandId;
 		struct IslandInfo {
 			float centerA;
@@ -417,12 +414,12 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 			int topHeight;
 		};
 		core::DynamicArray<IslandInfo> islands;
-		core::DynamicArray<glm::ivec3> bfsQueue;
+		core::DynamicArray<math::Vec3i> bfsQueue;
 		bfsQueue.reserve(columnTop.size());
 		int bottomHeight = positiveUp ? INT_MAX : INT_MIN;
 
 		for (auto it = columnTop.begin(); it != columnTop.end(); ++it) {
-			const glm::ivec3 &colKey = it->key;
+			const math::Vec3i &colKey = it->key;
 			if (islandId.find(colKey) != islandId.end()) {
 				continue;
 			}
@@ -439,14 +436,14 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 
 			size_t front = 0;
 			while (front < bfsQueue.size()) {
-				const glm::ivec3 cur = bfsQueue[front];
+				const math::Vec3i cur = bfsQueue[front];
 				front++;
 				sumA += (float)cur[axis1];
 				sumB += (float)cur[axis2];
 				count++;
 
 				for (int i = 0; i < 4; ++i) {
-					const glm::ivec3 neighbor = cur + planarOffsets[i];
+					const math::Vec3i neighbor = cur + planarOffsets[i];
 					if (islandId.find(neighbor) != islandId.end()) {
 						continue;
 					}
@@ -475,9 +472,9 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 				float snapA = info.centerA;
 				float snapB = info.centerB;
 				for (size_t qi = 0; qi < bfsQueue.size(); ++qi) {
-					const float da = glm::abs((float)bfsQueue[qi][axis1] - info.centerA);
-					const float db = glm::abs((float)bfsQueue[qi][axis2] - info.centerB);
-					const float d = glm::max(da, db);
+					const float da = math::abs((float)bfsQueue[qi][axis1] - info.centerA);
+					const float db = math::abs((float)bfsQueue[qi][axis2] - info.centerB);
+					const float d = math::max(da, db);
 					if (d < bestDist) {
 						bestDist = d;
 						snapA = (float)bfsQueue[qi][axis1];
@@ -492,9 +489,9 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 
 			// Track the bottom island height
 			if (positiveUp) {
-				bottomHeight = glm::min(bottomHeight, myHeight);
+				bottomHeight = math::min(bottomHeight, myHeight);
 			} else {
-				bottomHeight = glm::max(bottomHeight, myHeight);
+				bottomHeight = math::max(bottomHeight, myHeight);
 			}
 		}
 
@@ -502,15 +499,15 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 		// Skip the bottom island. Center columns (dist=0) keep full height.
 		// Track each trimmed column's original top voxel and new top position.
 		struct TrimEntry {
-			glm::ivec3 colKey;
+			math::Vec3i colKey;
 			int topCoord;
 			int trim;
 		};
-		core::DynamicArray<glm::ivec3> toRemove;
+		core::DynamicArray<math::Vec3i> toRemove;
 		core::DynamicArray<TrimEntry> trimmedColumns;
 		toRemove.reserve(columnTop.size());
 		for (auto it = islandId.begin(); it != islandId.end(); ++it) {
-			const glm::ivec3 &colKey = it->key;
+			const math::Vec3i &colKey = it->key;
 			const int id = it->second;
 			const IslandInfo &info = islands[id];
 
@@ -518,24 +515,24 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 				continue;
 			}
 
-			const float da = glm::abs((float)colKey[axis1] - info.centerA);
-			const float db = glm::abs((float)colKey[axis2] - info.centerB);
-			const int dist = (int)glm::floor(glm::max(da, db));
+			const float da = math::abs((float)colKey[axis1] - info.centerA);
+			const float db = math::abs((float)colKey[axis2] - info.centerB);
+			const int dist = (int)math::floor(math::max(da, db));
 			if (dist == 0) {
 				continue;
 			}
 
 			const int topCoord = info.topHeight;
 			// Cap trim so columns never sink to the bottom island height
-			const int maxTrim = glm::max(0, (topCoord - bottomHeight) * step - 1);
-			const int trim = glm::min(glm::min(dist * trimPerStep, iterations), maxTrim);
+			const int maxTrim = math::max(0, (topCoord - bottomHeight) * step - 1);
+			const int trim = math::min(math::min(dist * trimPerStep, iterations), maxTrim);
 
 			if (trim > 0) {
 				trimmedColumns.push_back({colKey, topCoord, trim});
 			}
 
 			for (int t = 0; t < trim; ++t) {
-				glm::ivec3 pos = colKey;
+				math::Vec3i pos = colKey;
 				pos[axisIdx] = topCoord - t * step;
 				if (solid.hasValue(pos.x, pos.y, pos.z)) {
 					toRemove.push_back(pos);
@@ -547,12 +544,12 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 		core::DynamicArray<voxel::Voxel> topVoxels;
 		topVoxels.reserve(trimmedColumns.size());
 		for (const TrimEntry &entry : trimmedColumns) {
-			glm::ivec3 topPos = entry.colKey;
+			math::Vec3i topPos = entry.colKey;
 			topPos[axisIdx] = entry.topCoord;
 			topVoxels.push_back(voxelMap.hasVoxel(topPos) ? voxelMap.voxel(topPos) : voxel::Voxel());
 		}
 
-		for (const glm::ivec3 &pos : toRemove) {
+		for (const math::Vec3i &pos : toRemove) {
 			solid.setVoxel(pos, false);
 			voxelMap.setVoxel(pos, voxel::Voxel());
 		}
@@ -560,7 +557,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 		// Place original top voxel at each column's new top position
 		for (size_t i = 0; i < trimmedColumns.size(); ++i) {
 			const TrimEntry &entry = trimmedColumns[i];
-			glm::ivec3 newTopPos = entry.colKey;
+			math::Vec3i newTopPos = entry.colKey;
 			newTopPos[axisIdx] = entry.topCoord - entry.trim * step;
 			if (!region.containsPoint(newTopPos)) {
 				continue;
@@ -602,7 +599,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 				const int coord1 = base1 + a1;
 				const int coord2 = base2 + a2;
 				for (int av = axisLo; av <= axisHi; ++av) {
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[axis1] = coord1;
 					pos[axis2] = coord2;
 					pos[axisIdx] = av;
@@ -613,11 +610,11 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 						colTopArr[flatIdx] = av;
 						colBotArr[flatIdx] = av;
 					} else if (positiveUp) {
-						colTopArr[flatIdx] = glm::max(colTopArr[flatIdx], av);
-						colBotArr[flatIdx] = glm::min(colBotArr[flatIdx], av);
+						colTopArr[flatIdx] = math::max(colTopArr[flatIdx], av);
+						colBotArr[flatIdx] = math::min(colBotArr[flatIdx], av);
 					} else {
-						colTopArr[flatIdx] = glm::min(colTopArr[flatIdx], av);
-						colBotArr[flatIdx] = glm::max(colBotArr[flatIdx], av);
+						colTopArr[flatIdx] = math::min(colTopArr[flatIdx], av);
+						colBotArr[flatIdx] = math::max(colBotArr[flatIdx], av);
 					}
 				}
 			}
@@ -629,14 +626,14 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 			globalMinBot = axisHi;
 			for (int idx = 0; idx < numColumns; ++idx) {
 				if (colBotArr[idx] != EMPTY) {
-					globalMinBot = glm::min(globalMinBot, colBotArr[idx]);
+					globalMinBot = math::min(globalMinBot, colBotArr[idx]);
 				}
 			}
 		} else {
 			globalMinBot = axisLo;
 			for (int idx = 0; idx < numColumns; ++idx) {
 				if (colBotArr[idx] != EMPTY) {
-					globalMinBot = glm::max(globalMinBot, colBotArr[idx]);
+					globalMinBot = math::max(globalMinBot, colBotArr[idx]);
 				}
 			}
 		}
@@ -687,7 +684,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 				// Trim exactly 1 voxel from the top
 				const int coord1 = base1 + a1;
 				const int coord2 = base2 + a2;
-				glm::ivec3 removePos;
+				math::Vec3i removePos;
 				removePos[axis1] = coord1;
 				removePos[axis2] = coord2;
 				removePos[axisIdx] = myTop;
@@ -705,7 +702,7 @@ void sculptSmoothErode(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, c
 
 					// Seal: ensure voxels below the removed one are solid
 				for (int s = 1; s <= SEAL_DEPTH; ++s) {
-					glm::ivec3 belowPos;
+					math::Vec3i belowPos;
 					belowPos[axis1] = coord1;
 					belowPos[axis2] = coord2;
 					belowPos[axisIdx] = myTop - step * s;
@@ -729,20 +726,20 @@ void sculptBridgeGap(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, con
 	core_trace_scoped(SculptBridgeGap);
 
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 
 	// Step 1: Find boundary voxels (solid with at least one air face-neighbor)
-	core::DynamicArray<glm::ivec3> boundary;
+	core::DynamicArray<math::Vec3i> boundary;
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
-				const glm::ivec3 pos(x, y, z);
+				const math::Vec3i pos(x, y, z);
 				if (!isSolid(solid, anchors, pos)) {
 					continue;
 				}
-				for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-					const glm::ivec3 neighbor = pos + offset;
+				for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+					const math::Vec3i neighbor = pos + offset;
 					if (region.containsPoint(neighbor) && !isSolid(solid, anchors, neighbor)) {
 						boundary.push_back(pos);
 						break;
@@ -760,24 +757,24 @@ void sculptBridgeGap(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, con
 	const int numBoundary = (int)boundary.size();
 	for (int idxA = 0; idxA < numBoundary; ++idxA) {
 		for (int idxB = idxA + 1; idxB < numBoundary; ++idxB) {
-			const glm::ivec3 diff = boundary[idxB] - boundary[idxA];
+			const math::Vec3i diff = boundary[idxB] - boundary[idxA];
 			const int distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
 			// Skip pairs that are already adjacent (face/edge/corner neighbors)
 			if (distSq <= 3) {
 				continue;
 			}
 
-			const glm::ivec3 &start = boundary[idxA];
-			const glm::ivec3 &end = boundary[idxB];
-			const int dx = glm::abs(end.x - start.x);
-			const int dy = glm::abs(end.y - start.y);
-			const int dz = glm::abs(end.z - start.z);
+			const math::Vec3i &start = boundary[idxA];
+			const math::Vec3i &end = boundary[idxB];
+			const int dx = math::abs(end.x - start.x);
+			const int dy = math::abs(end.y - start.y);
+			const int dz = math::abs(end.z - start.z);
 			const int sx = (end.x > start.x) ? 1 : (end.x < start.x) ? -1 : 0;
 			const int sy = (end.y > start.y) ? 1 : (end.y < start.y) ? -1 : 0;
 			const int sz = (end.z > start.z) ? 1 : (end.z < start.z) ? -1 : 0;
 			const int totalSteps = dx + dy + dz;
 
-			glm::ivec3 pos = start;
+			math::Vec3i pos = start;
 			int ex = 0;
 			int ey = 0;
 			int ez = 0;
@@ -785,8 +782,8 @@ void sculptBridgeGap(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, con
 				if (!solid.hasValue(pos.x, pos.y, pos.z) && region.containsPoint(pos)) {
 					solid.setVoxel(pos, true);
 					voxel::Voxel newVoxel = fillVoxel;
-					for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-						const glm::ivec3 neighbor = pos + offset;
+					for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+						const math::Vec3i neighbor = pos + offset;
 						if (voxelMap.hasVoxel(neighbor)) {
 							newVoxel = voxelMap.voxel(neighbor);
 							break;
@@ -824,8 +821,8 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool positiveUp = voxel::isPositiveFace(face);
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 	const int step = positiveUp ? 1 : -1;
 
 	const int axis1 = (axisIdx == 0) ? 1 : 0;
@@ -863,7 +860,7 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 			entry.da = da;
 			entry.db = db;
 			entry.offset = da * extent2 + db;
-			entry.weight = glm::exp(-distSq / twoSigmaSq);
+			entry.weight = math::exp(-distSq / twoSigmaSq);
 			kernelEntries.push_back(entry);
 		}
 	}
@@ -893,7 +890,7 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 				int topVal = EMPTY;
 				int botVal = EMPTY;
 				for (int av = axisLo; av <= axisHi; ++av) {
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[axis1] = coord1;
 					pos[axis2] = coord2;
 					pos[axisIdx] = av;
@@ -904,11 +901,11 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 						topVal = av;
 						botVal = av;
 					} else if (positiveUp) {
-						topVal = glm::max(topVal, av);
-						botVal = glm::min(botVal, av);
+						topVal = math::max(topVal, av);
+						botVal = math::min(botVal, av);
 					} else {
-						topVal = glm::min(topVal, av);
-						botVal = glm::max(botVal, av);
+						topVal = math::min(topVal, av);
+						botVal = math::max(botVal, av);
 					}
 				}
 				colTopArr[flatIdx] = topVal;
@@ -952,7 +949,7 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 					}
 
 					if (weightSum > 0.0f) {
-						const int target = (int)glm::round(heightSum / weightSum);
+						const int target = (int)math::round(heightSum / weightSum);
 						if (target != myTop) {
 							targetArr[flatIdx] = target;
 						}
@@ -977,10 +974,10 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 				if ((positiveUp && target < currentTop) || (!positiveUp && target > currentTop)) {
 					// Trim from top down to target, but not below column bottom
 					const int trimLimit = positiveUp
-						? glm::max(target + 1, currentBottom)
-						: glm::min(target - 1, currentBottom);
+						? math::max(target + 1, currentBottom)
+						: math::min(target - 1, currentBottom);
 					for (int v = currentTop; v != trimLimit; v -= step) {
-						glm::ivec3 pos;
+						math::Vec3i pos;
 						pos[axis1] = coord1;
 						pos[axis2] = coord2;
 						pos[axisIdx] = v;
@@ -993,15 +990,15 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 				} else if ((positiveUp && target > currentTop) || (!positiveUp && target < currentTop)) {
 					// Grow from current top up to target
 					for (int v = currentTop + step; v != target + step; v += step) {
-						glm::ivec3 pos;
+						math::Vec3i pos;
 						pos[axis1] = coord1;
 						pos[axis2] = coord2;
 						pos[axisIdx] = v;
 						if (region.containsPoint(pos) && !solid.hasValue(pos.x, pos.y, pos.z)) {
 							solid.setVoxel(pos, true);
 							voxel::Voxel newVoxel = fillVoxel;
-							for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-								const glm::ivec3 neighbor = pos + offset;
+							for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+								const math::Vec3i neighbor = pos + offset;
 								if (voxelMap.hasVoxel(neighbor)) {
 									newVoxel = voxelMap.voxel(neighbor);
 									break;
@@ -1025,16 +1022,16 @@ void sculptSmoothGaussian(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap
 // Templated to work with SparseVolume (full path) or RawVolume (fast path).
 template<typename ColorSource>
 static void fillSmoothWallVoxel(voxel::BitVolume &solid, ColorSource &colorSource,
-								const glm::ivec3 &pos, const voxel::Voxel &fillVoxel,
-								core::DynamicArray<glm::ivec3> &addedPositions) {
+								const math::Vec3i &pos, const voxel::Voxel &fillVoxel,
+								core::DynamicArray<math::Vec3i> &addedPositions) {
 	if (solid.hasValue(pos.x, pos.y, pos.z)) {
 		return;
 	}
 	solid.setVoxel(pos, true);
 	addedPositions.push_back(pos);
 	voxel::Voxel newVoxel = fillVoxel;
-	for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-		const glm::ivec3 neighbor = pos + offset;
+	for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+		const math::Vec3i neighbor = pos + offset;
 		const voxel::Voxel &nv = colorSource.voxel(neighbor);
 		if (voxel::isBlocked(nv.getMaterial())) {
 			newVoxel = nv;
@@ -1048,14 +1045,14 @@ template<typename ColorSource>
 static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSource, const voxel::BitVolume &anchors,
 					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
 					  int removeAboveDepth, SmoothWallInterp interp, bool fillHoles,
-					  core::DynamicArray<glm::ivec3> &addedPositions) {
+					  core::DynamicArray<math::Vec3i> &addedPositions) {
 	core_trace_scoped(SculptSmoothWall);
 
 	const int axisIdx = math::getIndexForAxis(voxel::faceToAxis(face));
 	const bool positiveUp = voxel::isPositiveFace(face);
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 
 	// U and V are the two axes perpendicular to the face normal
 	const int uAxis = (axisIdx == 0) ? 1 : 0;
@@ -1129,7 +1126,7 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 					// negativeUp: top = min height (scan from axisLo up), bottom = max height (scan from axisHi down)
 					int topVal = EMPTY;
 					int botVal = EMPTY;
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[uAxis] = coordU;
 					pos[vAxis] = coordV;
 					if (positiveUp) {
@@ -1417,9 +1414,9 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 						// Edge-aware IDW: weight = 1 / (dist * (1 + gradientAlongAxis)).
 						// Flat-wall axis pairs (small gradient) get stronger influence.
 						const float gradientU = (edgeLeft != EMPTY && edgeRight != EMPTY)
-							? (float)glm::abs(edgeLeft - edgeRight) : 0.0f;
+							? (float)math::abs(edgeLeft - edgeRight) : 0.0f;
 						const float gradientV = (edgeTop != EMPTY && edgeBottom != EMPTY)
-							? (float)glm::abs(edgeTop - edgeBottom) : 0.0f;
+							? (float)math::abs(edgeTop - edgeBottom) : 0.0f;
 						float totalWeight = 0.0f;
 						float weightedHeight = 0.0f;
 						if (edgeLeft != EMPTY) {
@@ -1442,7 +1439,7 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 							totalWeight += w;
 							weightedHeight += (float)edgeBottom * w;
 						}
-						target = (int)glm::round(weightedHeight / totalWeight);
+						target = (int)math::round(weightedHeight / totalWeight);
 					} else {
 						// IDW fallback (also used for Linear when not all 4 edges found)
 						float totalWeight = 0.0f;
@@ -1452,17 +1449,17 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 							totalWeight += w;
 							weightedHeight += (float)edgeHeights[ei] * w;
 						}
-						target = (int)glm::round(weightedHeight / totalWeight);
+						target = (int)math::round(weightedHeight / totalWeight);
 					}
 
-					targetArr[flatIdx] = glm::clamp(target, axisLo, axisHi);
+					targetArr[flatIdx] = math::clamp(target, axisLo, axisHi);
 				}
 			}
 		});
 
 		// Step 3: Enforce the smooth surface for each interior column (parallel collect, sequential write).
 		struct VoxelOp {
-			glm::ivec3 pos;
+			math::Vec3i pos;
 			voxel::Voxel color;
 			bool add;
 		};
@@ -1484,7 +1481,7 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 					}
 					const int coordU = baseU + iu;
 					const int coordV = baseV + iv;
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[uAxis] = coordU;
 					pos[vAxis] = coordV;
 
@@ -1513,8 +1510,8 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 						const int colTop = colTopArr[flatIdx];
 						const int clearStart = positiveUp ? target + 1 : target - 1;
 						const int clearEnd = positiveUp
-							? glm::min(glm::min(target + removeAboveDepth, axisHi), colTop)
-							: glm::max(glm::max(target - removeAboveDepth, axisLo), colTop);
+							? math::min(math::min(target + removeAboveDepth, axisHi), colTop)
+							: math::max(math::max(target - removeAboveDepth, axisLo), colTop);
 						const int clearStep = positiveUp ? 1 : -1;
 						for (int av = clearStart; positiveUp ? (av <= clearEnd) : (av >= clearEnd); av += clearStep) {
 							pos[axisIdx] = av;
@@ -1549,11 +1546,11 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 
 		// Step 4: Gap-fill pass (parallel collect, sequential write).
 		// For each column, extend +/-3 toward neighbor heights to close seams.
-		core::DynamicArray<core::DynamicArray<glm::ivec3>> s4PerRowAdds(extentU);
+		core::DynamicArray<core::DynamicArray<math::Vec3i>> s4PerRowAdds(extentU);
 
 		app::for_parallel(0, extentU, [&](int startIu, int endIu) {
 			for (int iu = startIu; iu < endIu; ++iu) {
-				core::DynamicArray<glm::ivec3> &adds = s4PerRowAdds[iu];
+				core::DynamicArray<math::Vec3i> &adds = s4PerRowAdds[iu];
 				for (int iv = 0; iv < extentV; ++iv) {
 					const int flatIdx = iu * extentV + iv;
 					const int myTarget = targetArr[flatIdx];
@@ -1582,15 +1579,15 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 						if (nHeight == EMPTY) {
 							continue;
 						}
-						neighborMin = glm::min(neighborMin, nHeight);
-						neighborMax = glm::max(neighborMax, nHeight);
+						neighborMin = math::min(neighborMin, nHeight);
+						neighborMax = math::max(neighborMax, nHeight);
 					}
 
-					const int fillLo = glm::max(neighborMin, myTarget - 3);
-					const int fillHi = glm::min(neighborMax, myTarget + 3);
+					const int fillLo = math::max(neighborMin, myTarget - 3);
+					const int fillHi = math::min(neighborMax, myTarget + 3);
 					const int coordU = baseU + iu;
 					const int coordV = baseV + iv;
-					glm::ivec3 pos;
+					math::Vec3i pos;
 					pos[uAxis] = coordU;
 					pos[vAxis] = coordV;
 					for (int av = fillLo; av <= fillHi; ++av) {
@@ -1610,7 +1607,7 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 		}
 		addedPositions.reserve(addedPositions.size() + s4Total);
 		for (int iu = 0; iu < extentU; ++iu) {
-			for (const glm::ivec3 &pos : s4PerRowAdds[iu]) {
+			for (const math::Vec3i &pos : s4PerRowAdds[iu]) {
 				fillSmoothWallVoxel(solid, colorSource, pos, fillVoxel, addedPositions);
 			}
 		}
@@ -1620,14 +1617,14 @@ static void sculptSmoothWallImpl(voxel::BitVolume &solid, ColorSource &colorSour
 void sculptSmoothWall(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
 					  int removeAboveDepth, SmoothWallInterp interp, bool fillHoles,
-					  core::DynamicArray<glm::ivec3> &addedPositions) {
+					  core::DynamicArray<math::Vec3i> &addedPositions) {
 	sculptSmoothWallImpl(solid, voxelMap, anchors, face, iterations, fillVoxel, removeAboveDepth, interp, fillHoles, addedPositions);
 }
 
 void sculptSmoothWall(voxel::BitVolume &solid, voxel::RawVolume &colorVolume, const voxel::BitVolume &anchors,
 					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
 					  int removeAboveDepth, SmoothWallInterp interp, bool fillHoles,
-					  core::DynamicArray<glm::ivec3> &addedPositions) {
+					  core::DynamicArray<math::Vec3i> &addedPositions) {
 	sculptSmoothWallImpl(solid, colorVolume, anchors, face, iterations, fillVoxel, removeAboveDepth, interp, fillHoles, addedPositions);
 }
 
@@ -1645,8 +1642,8 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
 	const int perp2 = (axisIdx + 2) % 3;
 
 	const voxel::Region &region = solid.region();
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 
 	// For each (perp1, perp2) column, find if any solid voxel exists and pick
 	// the color from the voxel nearest to the plane coordinate.
@@ -1658,7 +1655,7 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
 
 			// Scan the column to find the nearest solid voxel to the plane
 			for (int av = lo[axisIdx]; av <= hi[axisIdx]; ++av) {
-				glm::ivec3 pos;
+				math::Vec3i pos;
 				pos[axisIdx] = av;
 				pos[perp1] = a1;
 				pos[perp2] = a2;
@@ -1666,7 +1663,7 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
 					continue;
 				}
 				hasAnySolid = true;
-				const int dist = glm::abs(av - planeCoord);
+				const int dist = math::abs(av - planeCoord);
 				if (dist < bestDist && voxelMap.hasVoxel(pos)) {
 					bestDist = dist;
 					bestVoxel = voxelMap.voxel(pos);
@@ -1679,7 +1676,7 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
 
 			// Clear all voxels in the column
 			for (int av = lo[axisIdx]; av <= hi[axisIdx]; ++av) {
-				glm::ivec3 pos;
+				math::Vec3i pos;
 				pos[axisIdx] = av;
 				pos[perp1] = a1;
 				pos[perp2] = a2;
@@ -1690,7 +1687,7 @@ void sculptSquashToPlane(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap,
 			}
 
 			// Place the single voxel at the plane coordinate
-			glm::ivec3 planePos;
+			math::Vec3i planePos;
 			planePos[axisIdx] = planeCoord;
 			planePos[perp1] = a1;
 			planePos[perp2] = a2;
@@ -1732,8 +1729,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 		for (int i = 0; i < PaletteSize; ++i) {
 			usedColors[i] = false;
 		}
-		const glm::ivec3 &sLo = skinRegion.getLowerCorner();
-		const glm::ivec3 &sHi = skinRegion.getUpperCorner();
+		const math::Vec3i &sLo = skinRegion.getLowerCorner();
+		const math::Vec3i &sHi = skinRegion.getUpperCorner();
 		for (int z = sLo.z; z <= sHi.z; ++z) {
 			for (int y = sLo.y; y <= sHi.y; ++y) {
 				for (int x = sLo.x; x <= sHi.x; ++x) {
@@ -1765,8 +1762,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 	const int skinUIdx = (skinUpIdx + 1) % 3;
 	const int skinVIdx = (skinUpIdx + 2) % 3;
 
-	const glm::ivec3 &skinLo = skinRegion.getLowerCorner();
-	const glm::ivec3 &skinHi = skinRegion.getUpperCorner();
+	const math::Vec3i &skinLo = skinRegion.getLowerCorner();
+	const math::Vec3i &skinHi = skinRegion.getUpperCorner();
 	const int skinUExtent = skinHi[skinUIdx] - skinLo[skinUIdx] + 1;
 	const int skinVExtent = skinHi[skinVIdx] - skinLo[skinVIdx] + 1;
 	const int skinDExtent = skinHi[skinUpIdx] - skinLo[skinUpIdx] + 1;
@@ -1778,8 +1775,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 	const int inwardStep = positiveUp ? -1 : 1;
 
 	const voxel::Region &selRegion = solid.region();
-	const glm::ivec3 &lo = selRegion.getLowerCorner();
-	const glm::ivec3 &hi = selRegion.getUpperCorner();
+	const math::Vec3i &lo = selRegion.getLowerCorner();
+	const math::Vec3i &hi = selRegion.getUpperCorner();
 
 	const int uMin = lo[perp1];
 	const int uMax = hi[perp1];
@@ -1804,8 +1801,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 	int effectiveSelH = selH;
 	if (config.preview) {
 		static constexpr int PreviewTiles = 2;
-		effectiveSelW = glm::min(selW, tileW * PreviewTiles);
-		effectiveSelH = glm::min(selH, tileH * PreviewTiles);
+		effectiveSelW = math::min(selW, tileW * PreviewTiles);
+		effectiveSelH = math::min(selH, tileH * PreviewTiles);
 	}
 
 	// Build surface height map per (u,v) column
@@ -1822,7 +1819,7 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 				if (!solid.hasValue(x, y, z)) {
 					continue;
 				}
-				const glm::ivec3 pos(x, y, z);
+				const math::Vec3i pos(x, y, z);
 				const int uCoord = pos[perp1];
 				const int vCoord = pos[perp2];
 				const int h = pos[axisIdx];
@@ -1830,9 +1827,9 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 				if (surfaceHeight[idx] == EMPTY) {
 					surfaceHeight[idx] = h;
 				} else if (positiveUp) {
-					surfaceHeight[idx] = glm::max(surfaceHeight[idx], h);
+					surfaceHeight[idx] = math::max(surfaceHeight[idx], h);
 				} else {
-					surfaceHeight[idx] = glm::min(surfaceHeight[idx], h);
+					surfaceHeight[idx] = math::min(surfaceHeight[idx], h);
 				}
 			}
 		}
@@ -1852,9 +1849,9 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 				referenceHeight = surfaceHeight[i];
 				anyValid = true;
 			} else if (positiveUp) {
-				referenceHeight = glm::max(referenceHeight, surfaceHeight[i]);
+				referenceHeight = math::max(referenceHeight, surfaceHeight[i]);
 			} else {
-				referenceHeight = glm::min(referenceHeight, surfaceHeight[i]);
+				referenceHeight = math::min(referenceHeight, surfaceHeight[i]);
 			}
 		}
 		if (!anyValid) {
@@ -1904,14 +1901,14 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 	// edge share a cache entry. Values can be negative. Only sample-derived medians are
 	// cached; if the neighborhood is empty the per-column fallback is applied at the
 	// caller so we don't leak one column's surface height to another.
-	using CornerMedianMap = core::DynamicMap<int64_t, float, 257, std::hash<int64_t>>;
+	using CornerMedianMap = core::DynamicMap<int64_t, float, 257>;
 	CornerMedianMap cornerMedianCache;
 	auto cornerKey = [](int uCenter, int vCenter) -> int64_t {
 		return ((int64_t)(uint32_t)uCenter << 32) | (int64_t)(uint32_t)vCenter;
 	};
 	auto cornerMedianCached = [&](int uCenter, int vCenter, int fallbackHeight) -> float {
-		const int clampedU = glm::clamp(uCenter, 0, selW - 1);
-		const int clampedV = glm::clamp(vCenter, 0, selH - 1);
+		const int clampedU = math::clamp(uCenter, 0, selW - 1);
+		const int clampedV = math::clamp(vCenter, 0, selH - 1);
 		const int64_t key = cornerKey(clampedU, clampedV);
 		auto iter = cornerMedianCache.find(key);
 		if (iter != cornerMedianCache.end()) {
@@ -1933,8 +1930,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 	// is still empty (sparse selection), fall back to the caller-supplied per-column surface height.
 	static constexpr int CornerSampleRadius = 2;
 	auto cornerAvgAt = [&](int uCenter, int vCenter, int fallbackHeight) -> float {
-		uCenter = glm::clamp(uCenter, 0, selW - 1);
-		vCenter = glm::clamp(vCenter, 0, selH - 1);
+		uCenter = math::clamp(uCenter, 0, selW - 1);
+		vCenter = math::clamp(vCenter, 0, selH - 1);
 		int sum = 0;
 		int count = 0;
 		for (int du = -CornerSampleRadius; du <= CornerSampleRadius; ++du) {
@@ -1961,7 +1958,7 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 	};
 
 	// Process each (u,v) column
-	const int maxDepth = glm::min(config.skinDepth, skinDExtent);
+	const int maxDepth = math::min(config.skinDepth, skinDExtent);
 	const voxel::Voxel air;
 
 	// Anchor re-orients the local tile coordinate so that skin(0,0) lands at the chosen
@@ -2041,8 +2038,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 				if (selH > 1) {
 					tV = localV * (tileH - 1) / (selH - 1);
 				}
-				tU = glm::clamp(tU, 0, tileW - 1);
-				tV = glm::clamp(tV, 0, tileH - 1);
+				tU = math::clamp(tU, 0, tileW - 1);
+				tV = math::clamp(tV, 0, tileH - 1);
 				break;
 			default:
 				break;
@@ -2079,9 +2076,9 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 									  h10 * fu * (1.0f - fv) +
 									  h01 * (1.0f - fu) * fv +
 									  h11 * fu * fv;
-				const int planeH = (int)glm::round(interpH);
+				const int planeH = (int)math::round(interpH);
 				// Clamp so texture never starts inside the wall
-				startHeight = (positiveUp ? glm::max(planeH, surface) : glm::min(planeH, surface))
+				startHeight = (positiveUp ? math::max(planeH, surface) : math::min(planeH, surface))
 							  + config.zOffset * outwardStep;
 			} else if (config.follow == ReskinFollow::Median) {
 				// Hybrid: sample a tile-sized neighborhood median at each of the 4 tile
@@ -2097,8 +2094,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 									  h10 * fu * (1.0f - fv) +
 									  h01 * (1.0f - fu) * fv +
 									  h11 * fu * fv;
-				const int planeH = (int)glm::round(interpH);
-				startHeight = (positiveUp ? glm::max(planeH, surface) : glm::min(planeH, surface))
+				const int planeH = (int)math::round(interpH);
+				startHeight = (positiveUp ? math::max(planeH, surface) : math::min(planeH, surface))
 							  + config.zOffset * outwardStep;
 			} else {
 				startHeight = referenceHeight + config.zOffset * outwardStep;
@@ -2132,12 +2129,12 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 
 			// Apply skin layers. Base at startHeight, layers grow outward from surface.
 			for (int d = 0; d < maxDepth; ++d) {
-				glm::ivec3 worldPos;
+				math::Vec3i worldPos;
 				worldPos[perp1] = uCoord;
 				worldPos[perp2] = vCoord;
 				worldPos[axisIdx] = startHeight + d * outwardStep;
 
-				glm::ivec3 skinPos;
+				math::Vec3i skinPos;
 				skinPos[skinUIdx] = skinLo[skinUIdx] + skinSU;
 				skinPos[skinVIdx] = skinLo[skinVIdx] + skinSV;
 				// Depth d is the distance outward from the surface; the world direction is
@@ -2201,8 +2198,8 @@ void sculptReskin(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const 
 static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region &region,
 							voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, voxel::BitVolume &anchors) {
 	core_trace_scoped(BuildFromVolume);
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
@@ -2224,8 +2221,8 @@ static void buildFromVolume(const voxel::RawVolume &volume, const voxel::Region 
 				if (!solid.hasValue(x, y, z)) {
 					continue;
 				}
-				for (const glm::ivec3 &offset : voxel::arrayPathfinderFaces) {
-					const glm::ivec3 neighbor = glm::ivec3(x, y, z) + offset;
+				for (const math::Vec3i &offset : voxel::arrayPathfinderFaces) {
+					const math::Vec3i neighbor = math::Vec3i(x, y, z) + offset;
 					if (region.containsPoint(neighbor)) {
 						continue;
 					}
@@ -2251,8 +2248,8 @@ static int writeResultToVolume(voxel::RawVolume &volume, const voxel::Region &re
 
 	// Remove voxels that were solid in the region but are no longer
 	// TODO: PERF: use visitor
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
@@ -2400,7 +2397,7 @@ int sculptSmoothWall(voxel::RawVolume &volume, const voxel::Region &region, voxe
 	anchorRegion.cropTo(volume.region());
 	voxel::BitVolume anchors(anchorRegion);
 	buildFromVolume(volume, region, solid, voxelMap, anchors);
-	core::DynamicArray<glm::ivec3> addedPositions;
+	core::DynamicArray<math::Vec3i> addedPositions;
 	sculptSmoothWall(solid, voxelMap, anchors, face, iterations, fillVoxel, removeAboveDepth, interp, fillHoles, addedPositions);
 	return writeResultToVolume(volume, region, solid, voxelMap);
 }
@@ -2434,8 +2431,8 @@ int sculptReskin(voxel::RawVolume &volume, const voxel::Region &region, const vo
 	// Custom write-back that also handles color changes (not just add/remove)
 	int changed = 0;
 	const voxel::Voxel air;
-	const glm::ivec3 &lo = region.getLowerCorner();
-	const glm::ivec3 &hi = region.getUpperCorner();
+	const math::Vec3i &lo = region.getLowerCorner();
+	const math::Vec3i &hi = region.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {

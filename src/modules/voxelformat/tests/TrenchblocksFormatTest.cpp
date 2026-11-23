@@ -19,6 +19,8 @@
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -61,7 +63,7 @@ TEST_F(TrenchblocksFormatTest, testVXLToTrenchblocks) {
 	ASSERT_EQ(source.size(), 1u);
 	const scenegraph::SceneGraphNode &terrain = *source.firstModelNode();
 	const voxel::Region &region = terrain.volume()->region();
-	ASSERT_EQ(region.getDimensionsInVoxels(), glm::ivec3(512, 64, 512));
+	ASSERT_EQ(region.getDimensionsInVoxels(), math::Vec3i(512, 64, 512));
 
 	const io::MemoryArchivePtr archive = io::openMemoryArchive();
 	const io::FormatDescription &desc = TrenchblocksFormat::format();
@@ -100,20 +102,20 @@ TEST_F(TrenchblocksFormatTest, testVXLToTrenchblocks) {
 		nearest[i] = color::ApproximationDistanceMax;
 		for (int j = 16; j < mapPalette.colorCount(); ++j) {
 			if (mapPalette.color(j).a == 255) {
-				nearest[i] = glm::min(nearest[i], distance(terrain.palette().color(i), mapPalette.color(j)));
+				nearest[i] = math::min(nearest[i], distance(terrain.palette().color(i), mapPalette.color(j)));
 			}
 		}
 	}
 	for (auto iter = converted.beginModel(); iter != converted.end(); ++iter) {
 		const scenegraph::SceneGraphNode &tile = *iter;
 		SCOPED_TRACE(tile.name().c_str());
-		const glm::ivec3 offset(tile.transform().worldTranslation());
+		const math::Vec3i offset(tile.transform().worldTranslation());
 		bool sameGeometry = true;
 		bool validColors = true;
 		voxelutil::visitVolume(
 			*tile.volume(),
 			[&](int x, int y, int z, const voxel::Voxel &voxel) {
-				const voxel::Voxel original = terrain.volume()->voxel(offset + glm::ivec3(x, y, z));
+				const voxel::Voxel original = terrain.volume()->voxel(offset + math::Vec3i(x, y, z));
 				sameGeometry &= voxel::isAir(voxel.getMaterial()) == voxel::isAir(original.getMaterial());
 				if (!voxel::isAir(voxel.getMaterial())) {
 					const color::RGBA color = tile.palette().color(voxel.getColor());
@@ -147,7 +149,7 @@ TEST_F(TrenchblocksFormatTest, testVXLTrenchblocksVXLRoundtrip) {
 	ASSERT_EQ(loaded.size(), 1u);
 	const scenegraph::SceneGraphNode &src = *source.firstModelNode();
 	const scenegraph::SceneGraphNode &dst = *loaded.firstModelNode();
-	EXPECT_EQ(dst.region().getDimensionsInVoxels(), glm::ivec3(512, 64, 512));
+	EXPECT_EQ(dst.region().getDimensionsInVoxels(), math::Vec3i(512, 64, 512));
 	EXPECT_EQ(src.region().getDimensionsInVoxels(), dst.region().getDimensionsInVoxels());
 	// AoS maps always keep a solid bottom layer; only assert source solids survived.
 	int solidSrc = 0;
@@ -167,15 +169,15 @@ TEST_F(TrenchblocksFormatTest, testVXLTrenchblocksVXLRoundtrip) {
 
 TEST_F(TrenchblocksFormatTest, testCropAndValidateMaps) {
 	TrenchblocksFormat format;
-	for (const glm::ivec3 &size : {glm::ivec3(513, 1, 1), glm::ivec3(1, 257, 1), glm::ivec3(1, 1, 513)}) {
+	for (const math::Vec3i &size : {math::Vec3i(513, 1, 1), math::Vec3i(1, 257, 1), math::Vec3i(1, 1, 513)}) {
 		const io::MemoryArchivePtr archive = io::openMemoryArchive();
 		scenegraph::SceneGraph graph;
-		const glm::ivec3 mins(-12, 7, -4);
-		const glm::ivec3 clipped = glm::min(size, glm::ivec3(512, 256, 512));
+		const math::Vec3i mins(-12, 7, -4);
+		const math::Vec3i clipped = math::min(size, math::Vec3i(512, 256, 512));
 		addTerrain(graph, voxel::Region(mins, mins + size - 1));
 		scenegraph::SceneGraphNode &node = *graph.firstModelNode();
 		node.volume()->setVoxel(mins + clipped - 1, voxel::createVoxel(voxel::VoxelType::Generic, 0));
-		node.transform().setLocalTranslation(glm::vec3(10, 20, 30));
+		node.transform().setLocalTranslation(math::Vec3f(10, 20, 30));
 		ASSERT_TRUE(format.save(graph, "cropped.vox", archive, testSaveCtx));
 		const ogt_vox_scene *scene = readScene(archive, "cropped.vox");
 		ASSERT_NE(scene, nullptr);
@@ -202,8 +204,8 @@ TEST_F(TrenchblocksFormatTest, testCropAndValidateMaps) {
 	scenegraph::SceneGraph empty;
 	addTerrain(empty, voxel::Region(0, 0, 0, 0, 0, 0), false);
 	EXPECT_FALSE(format.save(empty, "empty.vox", archive, testSaveCtx));
-	for (const glm::vec3 &position :
-		 {glm::vec3(0, -1, 0), glm::vec3(0, 256, 0), glm::vec3(glm::uintBitsToFloat(0x7fc00000u), 0, 0)}) {
+	for (const math::Vec3f &position :
+		 {math::Vec3f(0, -1, 0), math::Vec3f(0, 256, 0), math::Vec3f(math::uintBitsToFloat(0x7fc00000u), 0, 0)}) {
 		scenegraph::SceneGraph graph;
 		addTerrain(graph, voxel::Region(0, 0, 0, 0, 0, 0));
 		scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
@@ -233,7 +235,7 @@ TEST_F(TrenchblocksFormatTest, testPointPlacementAndSpawnFiltering) {
 		auto point = [&](const char *name, int x, int y, bool point2D) {
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Point);
 			node.setName(name);
-			node.transform().setLocalTranslation(glm::vec3(x, y, 0));
+			node.transform().setLocalTranslation(math::Vec3f(x, y, 0));
 			if (point2D) {
 				node.setProperty("trenchblocks_2d", "true");
 			}
@@ -273,7 +275,7 @@ TEST_F(TrenchblocksFormatTest, testMarkerPointRoundTrip) {
 	for (int i = 0; i < 8; ++i) {
 		scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
 		point.setName(names[i]);
-		point.transform().setLocalTranslation(glm::vec3(i, 1, 0));
+		point.transform().setLocalTranslation(math::Vec3f(i, 1, 0));
 		if (i == 6) {
 			scenegraph::SceneGraphNode group(scenegraph::SceneGraphNodeType::Group);
 			group.setName(names[i]);
@@ -303,7 +305,7 @@ TEST_F(TrenchblocksFormatTest, testMarkerPointRoundTrip) {
 				if (point.name() == names[i]) {
 					EXPECT_FALSE(found[i]);
 					found[i] = true;
-					EXPECT_EQ(point.transform().worldTranslation(), glm::vec3(i, 1, 0));
+					EXPECT_EQ(point.transform().worldTranslation(), math::Vec3f(i, 1, 0));
 				}
 			}
 		}
@@ -338,7 +340,7 @@ TEST_F(TrenchblocksFormatTest, testGenericVoxRetainsMarkerColors) {
 	addTerrain(graph, voxel::Region(0, 0, 0, 1, 0, 0));
 	scenegraph::SceneGraphNode point(scenegraph::SceneGraphNodeType::Point);
 	point.setName("PickupSatchel");
-	point.transform().setLocalTranslation(glm::vec3(0));
+	point.transform().setLocalTranslation(math::Vec3f(0));
 	graph.emplace(core::move(point));
 	const io::MemoryArchivePtr archive = io::openMemoryArchive();
 	TrenchblocksFormat format;

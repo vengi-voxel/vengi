@@ -10,6 +10,10 @@
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Region.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
+#include "math/Scalar.h"
 
 namespace voxelgenerator {
 namespace lsystem {
@@ -93,7 +97,7 @@ TEST_F(LSystemTests, testBambooLeafPositions) {
 		voxel::RawVolume volume(voxel::Region(-32, 32));
 		voxel::RawVolumeWrapper wrapper(&volume);
 		LSystemExecutionState exec;
-		core::DynamicArray<glm::vec3> leafPositions;
+		core::DynamicArray<math::Vec3f> leafPositions;
 		while (exec.index < state.sentence.size()) {
 			if (state.sentence[exec.index] == 'L') {
 				leafPositions.push_back(exec.step.pos);
@@ -102,9 +106,9 @@ TEST_F(LSystemTests, testBambooLeafPositions) {
 		}
 		ASSERT_EQ(leafPositions.size(), 4u);
 		for (size_t i = 0; i < leafPositions.size(); ++i) {
-			EXPECT_GT(glm::length(glm::vec2(leafPositions[i].x, leafPositions[i].z)), 0.5f);
+			EXPECT_GT(math::length(math::Vec2f(leafPositions[i].x, leafPositions[i].z)), 0.5f);
 			for (size_t j = 0; j < i; ++j) {
-				EXPECT_GT(glm::distance(leafPositions[i], leafPositions[j]), 0.5f);
+				EXPECT_GT(math::distance(leafPositions[i], leafPositions[j]), 0.5f);
 			}
 		}
 		return;
@@ -149,13 +153,13 @@ TEST_F(LSystemTests, testFractionalLength) {
 TEST_F(LSystemTests, testDiagonalFractionalSegment) {
 	LSystemConfig config;
 	config.axiom = "+F";
-	config.angle = glm::radians(45.0f);
+	config.angle = math::radians(45.0f);
 	config.length = 2.5f;
 	voxel::RawVolume volume(voxel::Region(-8, 8));
 	LSystemExecutionState exec;
 	generate(config, volume, exec);
-	EXPECT_NEAR(exec.step.pos.x, -glm::sqrt(0.5f) * 2.5f, 0.0001f);
-	EXPECT_NEAR(exec.step.pos.y, glm::sqrt(0.5f) * 2.5f, 0.0001f);
+	EXPECT_NEAR(exec.step.pos.x, -math::sqrt(0.5f) * 2.5f, 0.0001f);
+	EXPECT_NEAR(exec.step.pos.y, math::sqrt(0.5f) * 2.5f, 0.0001f);
 	for (int i = 0; i <= 2; ++i) {
 		EXPECT_FALSE(voxel::isAir(volume.voxel(-i, i, 0).getMaterial()));
 	}
@@ -211,7 +215,7 @@ TEST_F(LSystemTests, testSeededGeneration) {
 	LSystemConfig config;
 	config.axiom = "F[+FL][-FL]>FL";
 	config.length = 5.0f;
-	config.angleVariation = glm::radians(15.0f);
+	config.angleVariation = math::radians(15.0f);
 	config.leafRadius = 2.0f;
 	config.leafColor = 2;
 	voxel::RawVolume first(voxel::Region(-24, 24));
@@ -252,7 +256,7 @@ TEST_F(LSystemTests, testEvaluateRegionMatchesGeneration) {
 	config.width = 3.0f;
 	config.leafRadius = 2.0f;
 	config.leafColor = 2;
-	config.position = glm::ivec3(2, 3, 4);
+	config.position = math::Vec3i(2, 3, 4);
 	voxel::RawVolume volume(voxel::Region(-32, 32));
 	LSystemExecutionState exec;
 	generate(config, volume, exec);

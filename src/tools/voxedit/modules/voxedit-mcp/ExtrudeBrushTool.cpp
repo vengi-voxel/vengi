@@ -10,6 +10,7 @@
 #include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -124,7 +125,7 @@ bool ExtrudeBrushTool::execute(const json::Json &id, const json::Json &args, Too
 	brushContext.referencePos = brushContext.cursorPosition;
 	brushContext.cursorFace = face;
 	brushContext.targetVolumeRegion = volume->region();
-	brushContext.gridResolution = glm::ivec3(1);
+	brushContext.gridResolution = math::Vec3i(1);
 
 	// Create the modifier wrapper
 

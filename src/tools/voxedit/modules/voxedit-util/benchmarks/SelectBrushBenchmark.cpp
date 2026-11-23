@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/brush/select/Connected.h"
 #include "voxedit-util/modifier/brush/select/Surface.h"
 #include "voxelutil/VolumeSelect.h"
+#include "math/Vec3i.h"
 
 class SelectBrushBenchmark : public BrushBenchmark {
 protected:
@@ -68,14 +69,14 @@ BENCHMARK_DEFINE_F(SelectBrushBenchmark, Connected)(benchmark::State &state) {
 BENCHMARK_DEFINE_F(LassoPointInPolygonBenchmark, SquarePolygon)(benchmark::State &state) {
 	const int numPoints = state.range(0);
 	// Build a circular polygon with numPoints vertices
-	core::DynamicArray<glm::ivec3> path;
+	core::DynamicArray<math::Vec3i> path;
 	path.reserve(numPoints);
 	const float radius = 50.0f;
 	for (int i = 0; i < numPoints; ++i) {
 		float angle = 2.0f * 3.14159265f * (float)i / (float)numPoints;
-		int x = (int)(radius * cosf(angle) + 50.0f);
-		int z = (int)(radius * sinf(angle) + 50.0f);
-		path.push_back(glm::ivec3(x, 0, z));
+		int x = (int)(radius * math::cos(angle) + 50.0f);
+		int z = (int)(radius * math::sin(angle) + 50.0f);
+		path.push_back(math::Vec3i(x, 0, z));
 	}
 
 	const int uAxis = 0;
@@ -125,7 +126,7 @@ BENCHMARK_DEFINE_F(SelectStrategyBenchmark, ConnectedGenerate)(benchmark::State 
 	scenegraph::SceneGraph sceneGraph;
 	voxedit::BrushContext ctx;
 	ctx.targetVolumeRegion = node->region();
-	ctx.cursorPosition = glm::ivec3(0, 0, 0);
+	ctx.cursorPosition = math::Vec3i(0, 0, 0);
 	ctx.hitCursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 	voxedit::select::AABBBrushState brushState;
 
@@ -179,11 +180,11 @@ BENCHMARK_DEFINE_F(CircleSelectLargeBenchmark, Radius80)(benchmark::State &state
 	scenegraph::SceneGraph sceneGraph;
 	voxedit::BrushContext ctx;
 	ctx.targetVolumeRegion = node->region();
-	ctx.cursorPosition = glm::ivec3(256 + 80, 0, 256);
+	ctx.cursorPosition = math::Vec3i(256 + 80, 0, 256);
 	voxedit::select::AABBBrushState brushState;
 	brushState.boxMode = true;
 	brushState.aabbFace = voxel::FaceNames::PositiveY;
-	brushState.aabbFirstPos = glm::ivec3(256, 0, 256);
+	brushState.aabbFirstPos = math::Vec3i(256, 0, 256);
 	brushState.cursorPosition = ctx.cursorPosition;
 
 	const voxel::Region circleRegion = strategy.calcRegion(ctx, brushState);

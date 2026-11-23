@@ -21,9 +21,12 @@
 #include "voxelformat/private/voxelmax/VMaxFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/common.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/geometric.hpp>
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
 
 namespace voxelformat {
 
@@ -96,10 +99,10 @@ TEST_F(VMaxFormatTest, testTransform) {
 			  sceneGraphFromVmax.size(scenegraph::SceneGraphNodeType::AllModels));
 	sceneGraphOfficial.updateTransforms();
 	sceneGraphFromVmax.updateTransforms();
-	glm::vec3 officialMins(0.0f);
-	glm::vec3 officialMaxs(0.0f);
-	glm::vec3 vmaxMins(0.0f);
-	glm::vec3 vmaxMaxs(0.0f);
+	math::Vec3f officialMins(0.0f);
+	math::Vec3f officialMaxs(0.0f);
+	math::Vec3f vmaxMins(0.0f);
+	math::Vec3f vmaxMaxs(0.0f);
 	ASSERT_TRUE(voxel::occupiedWorldAABB(sceneGraphOfficial, officialMins, officialMaxs));
 	ASSERT_TRUE(voxel::occupiedWorldAABB(sceneGraphFromVmax, vmaxMins, vmaxMaxs));
 	EXPECT_NEAR(officialMins.x, vmaxMins.x, 1.0f);
@@ -143,29 +146,29 @@ TEST_F(VMaxFormatTest, testHierarchyAndAxisAngle) {
 	EXPECT_EQ(4, originalCount);
 	EXPECT_EQ(4, cloneCount);
 	ASSERT_NE(nullptr, clone);
-	const glm::quat &cloneRot = clone->transform(0).localOrientation();
-	EXPECT_GT(glm::angle(cloneRot), 1.0f) << "clone t_r is 90 degrees around X in VoxelMax";
+	const math::Quatf &cloneRot = clone->transform(0).localOrientation();
+	EXPECT_GT(math::angle(cloneRot), 1.0f) << "clone t_r is 90 degrees around X in VoxelMax";
 }
 
 TEST_F(VMaxFormatTest, testAxisAngleYSwapPreservesParentSpaceCenter) {
 	// Robots.vmax child: 90 deg around -Z. VXTransform.updateMatrix is T*R*S in
 	// Z-up, so parentSpaceCenter = t_p + R*e_c is compact. Remap (x,y,z)->(x,z,y)
 	// has det -1 and must conjugate as R(C*axis, -angle) or the part explodes.
-	const glm::vec3 t_p(-112.0001f, 142.4999f, 0.0f);
-	const glm::vec3 e_c(142.5f, 112.0f, 10.0f);
-	const glm::vec3 axis(0.0f, 0.0f, -1.0f);
+	const math::Vec3f t_p(-112.0001f, 142.4999f, 0.0f);
+	const math::Vec3f e_c(142.5f, 112.0f, 10.0f);
+	const math::Vec3f axis(0.0f, 0.0f, -1.0f);
 	const float angle = 1.5707955f;
-	const glm::vec3 pscVmax = t_p + glm::mat3_cast(glm::angleAxis(angle, axis)) * e_c;
+	const math::Vec3f pscVmax = t_p + math::mat3_cast(math::angleAxis(angle, axis)) * e_c;
 	EXPECT_NEAR(0.0f, pscVmax.x, 0.5f);
 	EXPECT_NEAR(0.0f, pscVmax.y, 0.5f);
 	EXPECT_NEAR(10.0f, pscVmax.z, 0.5f);
 
-	const auto remap = [](const glm::vec3 &v) { return glm::vec3(v.x, v.z, v.y); };
-	const glm::vec3 pscVengi = remap(pscVmax);
-	const glm::vec3 axisVengi = glm::normalize(remap(axis));
-	const glm::vec3 exploded = remap(t_p) + glm::mat3_cast(glm::angleAxis(angle, axisVengi)) * remap(e_c);
-	const glm::vec3 assembled = remap(t_p) + glm::mat3_cast(glm::angleAxis(-angle, axisVengi)) * remap(e_c);
-	EXPECT_GT(glm::length(exploded - pscVengi), 100.0f);
+	const auto remap = [](const math::Vec3f &v) { return math::Vec3f(v.x, v.z, v.y); };
+	const math::Vec3f pscVengi = remap(pscVmax);
+	const math::Vec3f axisVengi = math::normalize(remap(axis));
+	const math::Vec3f exploded = remap(t_p) + math::mat3_cast(math::angleAxis(angle, axisVengi)) * remap(e_c);
+	const math::Vec3f assembled = remap(t_p) + math::mat3_cast(math::angleAxis(-angle, axisVengi)) * remap(e_c);
+	EXPECT_GT(math::length(exploded - pscVengi), 100.0f);
 	EXPECT_NEAR(pscVengi.x, assembled.x, 0.5f);
 	EXPECT_NEAR(pscVengi.y, assembled.y, 0.5f);
 	EXPECT_NEAR(pscVengi.z, assembled.z, 0.5f);
@@ -179,17 +182,17 @@ TEST_F(VMaxFormatTest, testSingleVoxelAtWorldOrigin) {
 	ASSERT_NE(nullptr, node->volume());
 	sceneGraph.updateTransforms();
 
-	glm::ivec3 voxelPos(0);
+	math::Vec3i voxelPos(0);
 	int voxels = 0;
 	voxelutil::visitVolume(*node->volume(), [&](int x, int y, int z, const voxel::Voxel &voxel) {
 		if (!voxel::isAir(voxel.getMaterial())) {
-			voxelPos = glm::ivec3(x, y, z);
+			voxelPos = math::Vec3i(x, y, z);
 			++voxels;
 		}
 	});
 	ASSERT_EQ(1, voxels);
-	const glm::mat4 worldMat = sceneGraph.worldMatrix(*node, 0);
-	const glm::vec3 world = glm::vec3(worldMat * glm::vec4(voxelPos, 1.0f));
+	const math::Mat4f worldMat = sceneGraph.worldMatrix(*node, 0);
+	const math::Vec3f world = math::Vec3f(worldMat * math::Vec4f(voxelPos, 1.0f));
 	EXPECT_NEAR(0.0f, world.x, 1.0f);
 	EXPECT_NEAR(0.0f, world.y, 1.0f);
 	EXPECT_NEAR(0.0f, world.z, 1.0f);
@@ -522,7 +525,7 @@ TEST_F(VMaxFormatTest, testEmissionNormalizesSliderRangeAndRetainsColor) {
 	ASSERT_TRUE(format.load("emission-range.vmaxb", regressionArchive(), graph, testLoadCtx));
 	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	glm::vec4 colors[palette::PaletteMaxColors], emissions[palette::PaletteMaxColors];
+	math::Vec4f colors[palette::PaletteMaxColors], emissions[palette::PaletteMaxColors];
 	node->palette().toVec4f(colors, emissions);
 	const float expected[] = {0.14f, 1.0f, 1.0f, 0.0f, 0.0f};
 	EXPECT_EQ(5, voxelutil::countVoxels(*node->volume()));
@@ -533,7 +536,7 @@ TEST_F(VMaxFormatTest, testEmissionNormalizesSliderRangeAndRetainsColor) {
 		const uint8_t index = v.getColor();
 		EXPECT_NEAR(expected[count], node->palette().material(index).emit, 0.0001f);
 		// The source color is green. Strength must scale green without adding red or blue.
-		EXPECT_VEC_NEAR(glm::vec3(0.0f, expected[count], 0.0f), glm::vec3(emissions[index]), 0.0001f);
+		EXPECT_VEC_NEAR(math::Vec3f(0.0f, expected[count], 0.0f), math::Vec3f(emissions[index]), 0.0001f);
 	}
 }
 
@@ -609,7 +612,7 @@ TEST_F(VMaxFormatTest, testKnownContentsVersions) {
 			EXPECT_EQ(color::RGBA(255, 0, 0, 255), node->palette().color(node->volume()->voxel(0, 0, 0).getColor()));
 			EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(node->volume()->voxel(1, 0, 0).getColor()));
 			graph.updateTransforms();
-			EXPECT_VEC_NEAR(glm::vec3(32.0f, 96.0f, 64.0f), node->transform(0).worldTranslation(), 0.001f);
+			EXPECT_VEC_NEAR(math::Vec3f(32.0f, 96.0f, 64.0f), node->transform(0).worldTranslation(), 0.001f);
 		}
 	}
 }
@@ -628,7 +631,7 @@ TEST_F(VMaxFormatTest, testSnapshotSpanIncludesAir) {
 		EXPECT_EQ(color::RGBA(255, 0, 0, 255), node->palette().color(node->volume()->voxel(1, 0, 0).getColor()));
 		EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(node->volume()->voxel(0, 1, 0).getColor()));
 		graph.updateTransforms();
-		EXPECT_VEC_NEAR(glm::vec3(2.0f, 0.0f, 0.0f), node->transform(0).worldTranslation(), 0.001f);
+		EXPECT_VEC_NEAR(math::Vec3f(2.0f, 0.0f, 0.0f), node->transform(0).worldTranslation(), 0.001f);
 	}
 }
 
@@ -701,7 +704,7 @@ TEST_F(VMaxFormatTest, testLegacyEulerFallbackAndCameraMetadata) {
 	EXPECT_EQ(childId, sceneGraph.activeNodeUUID().str());
 	EXPECT_EQ("1:2:3", child->property("vmax_ind"));
 	EXPECT_EQ("history.vmaxhb", child->property("vmax_hist"));
-	EXPECT_GT(glm::angle(child->transform(0).localOrientation()), 1.0f);
+	EXPECT_GT(math::angle(child->transform(0).localOrientation()), 1.0f);
 }
 
 } // namespace voxelformat

@@ -3,6 +3,9 @@
  */
 
 #include "McpServer.h"
+#ifndef _WIN32
+#include <sys/select.h>
+#endif
 #include "command/Command.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"

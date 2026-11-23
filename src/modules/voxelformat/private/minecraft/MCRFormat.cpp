@@ -30,8 +30,8 @@
 #include "voxelutil/VolumeVisitor.h"
 #include "MinecraftPaletteMap.h"
 #include "NamedBinaryTag.h"
+#include "math/Vec3i.h"
 
-#include <glm/common.hpp>
 
 namespace voxelformat {
 
@@ -407,7 +407,7 @@ voxel::RawVolume *MCRFormat::finalize(SectionVolumes &volumes, int xPos, int zPo
 	if (merged == nullptr) {
 		return nullptr;
 	}
-	merged->translate(glm::ivec3(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
+	merged->translate(math::Vec3i(xPos * MAX_SIZE, 0, zPos * MAX_SIZE));
 	return merged;
 }
 
@@ -416,8 +416,8 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 	Log::debug("Parse block states");
 	const bool hasData = data.type() == priv::TagType::LONG_ARRAY && !data.longArray()->empty();
 
-	const glm::ivec3 mins(0, 0, 0);
-	const glm::ivec3 maxs(MAX_SIZE - 1, MAX_SIZE - 1, MAX_SIZE - 1);
+	const math::Vec3i mins(0, 0, 0);
+	const math::Vec3i maxs(MAX_SIZE - 1, MAX_SIZE - 1, MAX_SIZE - 1);
 	const voxel::Region region(mins, maxs);
 	voxel::RawVolume *v = new voxel::RawVolume(region);
 	bool hasBlocks = false;
@@ -637,7 +637,7 @@ bool MCRFormat::parseBlockStates(int dataVersion, const palette::Palette &palett
 	}
 
 	if (hasBlocks) {
-		glm::ivec3 translate;
+		math::Vec3i translate;
 		translate.x = 0;
 		translate.y = sectionY * MAX_SIZE;
 		translate.z = 0;
@@ -815,7 +815,7 @@ bool MCRFormat::parsePaletteList(int dataVersion, const priv::NamedBinaryTag &pa
 	if (paletteCount <= 1u) {
 		sectionPal.numBits = 0u;
 	} else {
-		sectionPal.numBits = (uint32_t)glm::max(glm::ceil(glm::log2((float)paletteCount)), 4.0f);
+		sectionPal.numBits = (uint32_t)math::max(math::ceil(math::log2((float)paletteCount)), 4.0f);
 	}
 
 	int paletteEntry = 0;

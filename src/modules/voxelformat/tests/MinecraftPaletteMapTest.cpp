@@ -11,7 +11,6 @@
 #include "io/FileStream.h"
 #include "palette/Palette.h"
 #include "palette/private/AVMTHelper.h"
-#include <glm/vec3.hpp>
 
 namespace voxelformat {
 

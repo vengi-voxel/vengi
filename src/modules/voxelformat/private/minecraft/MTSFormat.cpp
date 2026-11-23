@@ -20,6 +20,7 @@
 #include "voxel/Voxel.h"
 #include "MinecraftPaletteMap.h"
 #include "palette/Palette.h"
+#include "math/U16Vec3.h"
 
 namespace voxelformat {
 
@@ -49,7 +50,7 @@ bool MTSFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 		return false;
 	}
 
-	glm::u16vec3 size;
+	math::U16Vec3 size;
 	wrap(stream->readUInt16BE(size.x))
 	wrap(stream->readUInt16BE(size.y))
 	wrap(stream->readUInt16BE(size.z))

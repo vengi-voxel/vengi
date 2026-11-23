@@ -13,7 +13,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
-#include <glm/common.hpp>
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -159,9 +159,9 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 
 			// TODO: PERF: use volume sampler
 			for (uint32_t v = matrixIndex; v < matrixIndex + count; ++v) {
-				const int x = (int)glm::mod((float)glm::floor((float)v / (float)(sizez * sizey)), (float)sizex);
-				const int y = (int)glm::mod((float)glm::floor((float)v / (float)(sizez)), (float)sizey);
-				const int z = (int)glm::mod((float)v, (float)sizez);
+				const int x = (int)math::mod((float)math::floor((float)v / (float)(sizez * sizey)), (float)sizex);
+				const int y = (int)math::mod((float)math::floor((float)v / (float)(sizez)), (float)sizey);
+				const int z = (int)math::mod((float)v, (float)sizez);
 				volume->setVoxel(x, y, z, voxel);
 			}
 
@@ -173,9 +173,9 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		node.setName(name);
 		scenegraph::SceneGraphTransform transform;
 		if (version >= 4) {
-			transform.setWorldTranslation(glm::vec3(posx, posy, posz) / 10.0f);
+			transform.setWorldTranslation(math::Vec3f(posx, posy, posz) / 10.0f);
 		} else {
-			transform.setWorldTranslation(glm::vec3(posx, posy, posz) / 2.0f);
+			transform.setWorldTranslation(math::Vec3f(posx, posy, posz) / 2.0f);
 		}
 		scenegraph::KeyFrameIndex keyFrameIdx = 0;
 		node.setTransform(keyFrameIdx, transform);

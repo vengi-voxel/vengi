@@ -17,6 +17,7 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <type_traits>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
@@ -32,7 +33,7 @@ int mergeVolumes(Volume1 *destination, const Volume2 *source, const voxel::Regio
 	core::AtomicInt cnt = 0;
 	if constexpr (std::is_same_v<Volume1, voxel::RawVolume>) {
 		if (destination->isSparse()) {
-			const glm::ivec3 offset = destReg.getLowerCorner() - sourceReg.getLowerCorner();
+			const math::Vec3i offset = destReg.getLowerCorner() - sourceReg.getLowerCorner();
 			const voxel::Region targetReg(destReg.getLowerCorner(),
 										  destReg.getLowerCorner() + sourceReg.getDimensionsInVoxels() - 1);
 			voxel::forEachTileWriteParallel(*destination, targetReg, [&](voxel::ParallelTileWriter &tile) {
@@ -133,7 +134,7 @@ int mergeVolumes(Volume1 *destination, const palette::Palette &destinationPalett
 	}
 	if constexpr (std::is_same_v<Volume1, voxel::RawVolume>) {
 		if (destination->isSparse()) {
-			const glm::ivec3 offset = destReg.getLowerCorner() - sourceReg.getLowerCorner();
+			const math::Vec3i offset = destReg.getLowerCorner() - sourceReg.getLowerCorner();
 			const voxel::Region targetReg(destReg.getLowerCorner(),
 										  destReg.getLowerCorner() + sourceReg.getDimensionsInVoxels() - 1);
 			voxel::forEachTileWriteParallel(*destination, targetReg, [&](voxel::ParallelTileWriter &tile) {

@@ -7,7 +7,7 @@
 #include "core/tests/TestHelper.h"
 #include "core/Common.h"
 #include "core/StandardLib.h"
-#include <glm/common.hpp>
+#include "math/Scalar.h"
 
 namespace core {
 
@@ -23,7 +23,7 @@ TEST_F(StringUtilTest, testParseDouble) {
 	for (const auto &entry : valid) {
 		double value;
 		ASSERT_TRUE(string::parseDouble(entry.input, value)) << entry.input;
-		EXPECT_NEAR(entry.expected, value, glm::abs(entry.expected) * 1e-14) << entry.input;
+		EXPECT_NEAR(entry.expected, value, math::abs(entry.expected) * 1e-14) << entry.input;
 	}
 	double value;
 	ASSERT_TRUE(string::parseDouble("-2.5e-1", value));
@@ -86,6 +86,16 @@ TEST_F(StringUtilTest, testParseHex) {
 
 	// invalid
 	EXPECT_EQ(-1, core::string::parseHex("#0x01020304", r, g, b, a));
+}
+
+TEST_F(StringUtilTest, testIsNumber) {
+	EXPECT_TRUE(core::string::isNumber("2"));
+	EXPECT_TRUE(core::string::isNumber("-2.5"));
+	EXPECT_TRUE(core::string::isNumber("1e2"));
+	EXPECT_FALSE(core::string::isNumber(""));
+	EXPECT_FALSE(core::string::isNumber("1a"));
+	EXPECT_FALSE(core::string::isNumber("1e9999"));
+	EXPECT_FALSE(core::string::isNumber("-1e9999"));
 }
 
 TEST_F(StringUtilTest, testIsInteger) {

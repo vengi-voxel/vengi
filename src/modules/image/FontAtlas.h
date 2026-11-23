@@ -6,8 +6,8 @@
 
 #include "core/collection/DynamicArray.h"
 #include "image/ImageFwd.h"
-#include <glm/vec4.hpp>
 #include <stdint.h>
+#include "math/Vec4f.h"
 
 struct stbtt_fontinfo;
 
@@ -17,8 +17,8 @@ namespace image {
 class FontAtlas {
 public:
 	struct Glyph {
-		glm::vec4 uv{0};
-		glm::vec4 bounds{0};
+		math::Vec4f uv{0};
+		math::Vec4f bounds{0};
 		float advance = 0;
 	};
 

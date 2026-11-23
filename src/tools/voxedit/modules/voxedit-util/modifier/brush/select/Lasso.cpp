@@ -15,7 +15,13 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/Raycast.h"
-#include <glm/geometric.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Mat4Ops.h"
 
 namespace voxedit {
 namespace select {
@@ -54,9 +60,9 @@ void Lasso::update(const BrushContext &ctx, double nowSeconds) {
 	if (!_screenDragging || !_sceneManager) {
 		return;
 	}
-	const glm::ivec2 &mouse = _sceneManager->mousePos();
-	const glm::vec2 pt((float)mouse.x, (float)mouse.y);
-	if (_screenPoints.empty() || glm::distance(_screenPoints.back(), pt) > 2.0f) {
+	const math::Vec2i &mouse = _sceneManager->mousePos();
+	const math::Vec2f pt((float)mouse.x, (float)mouse.y);
+	if (_screenPoints.empty() || math::distance(_screenPoints.back(), pt) > 2.0f) {
 		_screenPoints.push_back(pt);
 	}
 }
@@ -68,8 +74,8 @@ bool Lasso::beginBrush(const BrushContext &ctx, const AABBBrushState &state) {
 	_screenPoints.clear();
 	_screenDragging = true;
 	if (_sceneManager) {
-		const glm::ivec2 &mouse = _sceneManager->mousePos();
-		_screenPoints.push_back(glm::vec2((float)mouse.x, (float)mouse.y));
+		const math::Vec2i &mouse = _sceneManager->mousePos();
+		_screenPoints.push_back(math::Vec2f((float)mouse.x, (float)mouse.y));
 	}
 	return true;
 }
@@ -87,16 +93,16 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 	}
 	_screenDragging = false;
 
-	const glm::mat4 invModel = _sceneManager->modifier().isSliceMode() ? glm::mat4(1.0f) : glm::inverse(_sceneManager->worldMatrix());
+	const math::Mat4f invModel = _sceneManager->modifier().isSliceMode() ? math::Mat4f(1.0f) : math::inverse(_sceneManager->worldMatrix());
 
-	glm::vec2 bmin = _screenPoints[0];
-	glm::vec2 bmax = _screenPoints[0];
-	for (const glm::vec2 &pt : _screenPoints) {
-		bmin = glm::min(bmin, pt);
-		bmax = glm::max(bmax, pt);
+	math::Vec2f bmin = _screenPoints[0];
+	math::Vec2f bmax = _screenPoints[0];
+	for (const math::Vec2f &pt : _screenPoints) {
+		bmin = math::min(bmin, pt);
+		bmax = math::max(bmax, pt);
 	}
-	const int y0 = glm::max((int)bmin.y, 0);
-	const int y1 = glm::min((int)bmax.y, camera->size().y - 1);
+	const int y0 = math::max((int)bmin.y, 0);
+	const int y1 = math::min((int)bmax.y, camera->size().y - 1);
 	const int screenMaxX = camera->size().x - 1;
 
 	const float rayLength = camera->farPlane();
@@ -112,7 +118,7 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 
 	// Parallel phase: each chunk collects hit positions into its own array
 	const int chunkCount = app::for_parallel_size(0, rowCount);
-	core::DynamicArray<core::DynamicArray<glm::ivec3>> chunkResults(chunkCount);
+	core::DynamicArray<core::DynamicArray<math::Vec3i>> chunkResults(chunkCount);
 
 	const auto &screenPoints = _screenPoints;
 	voxel::RawVolume *volume = wrapper.volume();
@@ -121,10 +127,10 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 		// Determine which chunk this is for result storage
 		const int chunkSize = (rowCount + chunkCount - 1) / chunkCount;
 		const int chunkIdx = startIdx / chunkSize;
-		core::DynamicArray<glm::ivec3> &results = chunkResults[chunkIdx];
+		core::DynamicArray<math::Vec3i> &results = chunkResults[chunkIdx];
 		core::DynamicArray<float> intersections;
 		intersections.reserve(16);
-		core::DynamicMap<glm::ivec3, bool, 1031, glm::hash<glm::ivec3>> visited;
+		core::DynamicMap<math::Vec3i, bool, 1031, math::Vec3iHash> visited;
 
 		for (int rowIdx = startIdx; rowIdx < endIdx; ++rowIdx) {
 			const int y = y0 + rowIdx * stride;
@@ -136,8 +142,8 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 			// Scanline: compute x-intersections of polygon edges with this row
 			intersections.clear();
 			for (int i = 0, j = polySize - 1; i < polySize; j = i++) {
-				const glm::vec2 &vi = screenPoints[i];
-				const glm::vec2 &vj = screenPoints[j];
+				const math::Vec2f &vi = screenPoints[i];
+				const math::Vec2f &vj = screenPoints[j];
 				if ((vi.y > fy) != (vj.y > fy)) {
 					const float xInt = vi.x + (fy - vi.y) / (vj.y - vi.y) * (vj.x - vi.x);
 					intersections.push_back(xInt);
@@ -150,21 +156,21 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 
 			// Process pairs of intersections (even-odd fill rule)
 			for (int p = 0; p + 1 < (int)intersections.size(); p += 2) {
-				int xStart = glm::max((int)ceilf(intersections[p]), 0);
-				int xEnd = glm::min((int)floorf(intersections[p + 1]), screenMaxX);
+				int xStart = math::max((int)math::ceil(intersections[p]), 0);
+				int xEnd = math::min((int)math::floor(intersections[p + 1]), screenMaxX);
 				xStart = ((xStart + stride - 1) / stride) * stride;
 
 				for (int x = xStart; x <= xEnd; x += stride) {
-					const math::Ray worldRay = camera->mouseRay(glm::ivec2(x, y));
-					const glm::vec3 origin = glm::vec3(invModel * glm::vec4(worldRay.origin, 1.0f));
-					const glm::vec3 dir = glm::normalize(glm::vec3(invModel * glm::vec4(worldRay.direction, 0.0f)));
-					const glm::vec3 end = origin + dir * rayLength;
+					const math::Ray worldRay = camera->mouseRay(math::Vec2i(x, y));
+					const math::Vec3f origin = math::Vec3f(invModel * math::Vec4f(worldRay.origin, 1.0f));
+					const math::Vec3f dir = math::normalize(math::Vec3f(invModel * math::Vec4f(worldRay.direction, 0.0f)));
+					const math::Vec3f end = origin + dir * rayLength;
 					voxelutil::raycastWithEndpoints(volume, origin, end, [&](const voxel::RawVolume::Sampler &sampler) {
 						const voxel::Voxel &voxel = sampler.voxel();
 						if (voxel::isAir(voxel.getMaterial())) {
 							return true;
 						}
-						const glm::ivec3 &pos = sampler.position();
+						const math::Vec3i &pos = sampler.position();
 						if (visited.putIfAbsent(pos, true)) {
 							results.push_back(pos);
 						}
@@ -178,7 +184,7 @@ void Lasso::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &
 	// Sequential phase: apply flags from collected positions
 	const bool erase = wrapper.modifierType() == ModifierType::Erase;
 	for (const auto &results : chunkResults) {
-		for (const glm::ivec3 &pos : results) {
+		for (const math::Vec3i &pos : results) {
 			if (erase) {
 				wrapper.removeFlagAt(pos.x, pos.y, pos.z, voxel::FlagOutline);
 			} else {

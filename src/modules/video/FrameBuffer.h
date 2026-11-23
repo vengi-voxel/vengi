@@ -8,6 +8,8 @@
 #include "Texture.h"
 #include "core/NonCopyable.h"
 #include "core/SharedPtr.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
 
 namespace video {
 
@@ -29,7 +31,7 @@ private:
 	TexturePtr _colorAttachments[core::enumVal(FrameBufferAttachment::Max)];
 	RenderBufferPtr _bufferAttachments[core::enumVal(FrameBufferAttachment::Max)];
 
-	glm::ivec2 _dimension { 0 };
+	math::Vec2i _dimension { 0 };
 	int _samples = 0;
 
 	int32_t _viewport[4] = {0, 0, 0, 0};
@@ -58,12 +60,12 @@ public:
 	/**
 	 * @return two uv coordinates lower left and upper right (a and c)
 	 */
-	glm::vec4 uv() const;
+	math::Vec4f uv() const;
 
-	const glm::ivec2& dimension() const;
+	const math::Vec2i& dimension() const;
 };
 
-inline const glm::ivec2& FrameBuffer::dimension() const {
+inline const math::Vec2i& FrameBuffer::dimension() const {
 	return _dimension;
 }
 

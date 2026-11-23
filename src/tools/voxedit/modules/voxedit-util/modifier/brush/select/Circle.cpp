@@ -8,6 +8,7 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 namespace select {
@@ -19,7 +20,7 @@ void Circle::ellipseAxes(voxel::FaceNames face, int &uAxis, int &vAxis) {
 	vAxis = (faceAxisIdx + 2) % 3;
 }
 
-bool Circle::insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int uAxis,
+bool Circle::insideEllipse(const math::Vec3i &pos, const math::Vec3i &center, int radiusU, int radiusV, int uAxis,
 						   int vAxis) {
 	if (radiusU <= 0 || radiusV <= 0) {
 		return false;
@@ -31,7 +32,7 @@ bool Circle::insideEllipse(const glm::ivec3 &pos, const glm::ivec3 &center, int 
 	return du * du * rV2 + dv * dv * rU2 <= rU2 * rV2;
 }
 
-bool Circle::insideSelection(const glm::ivec3 &pos, const glm::ivec3 &center, int radiusU, int radiusV, int depth,
+bool Circle::insideSelection(const math::Vec3i &pos, const math::Vec3i &center, int radiusU, int radiusV, int depth,
 							 bool is3D, int uAxis, int vAxis, int faceAxisIdx, bool positiveNormal) {
 	if (radiusU <= 0 || radiusV <= 0) {
 		return false;
@@ -73,16 +74,16 @@ voxel::Region Circle::calcRegion(const BrushContext &ctx, const AABBBrushState &
 	if (!state.boxMode || state.aabbFace == voxel::FaceNames::Max) {
 		return voxel::Region::InvalidRegion;
 	}
-	const glm::ivec3 center = state.aabbFirstPos;
-	const glm::ivec3 current = state.cursorPosition;
+	const math::Vec3i center = state.aabbFirstPos;
+	const math::Vec3i current = state.cursorPosition;
 	int uAxis;
 	int vAxis;
 	ellipseAxes(state.aabbFace, uAxis, vAxis);
-	const int du = glm::abs(current[uAxis] - center[uAxis]);
-	const int dv = glm::abs(current[vAxis] - center[vAxis]);
-	const int r = glm::max(du, dv);
-	glm::ivec3 mins = center;
-	glm::ivec3 maxs = center;
+	const int du = math::abs(current[uAxis] - center[uAxis]);
+	const int dv = math::abs(current[vAxis] - center[vAxis]);
+	const int r = math::max(du, dv);
+	math::Vec3i mins = center;
+	math::Vec3i maxs = center;
 	mins[uAxis] -= r;
 	maxs[uAxis] += r;
 	mins[vAxis] -= r;
@@ -106,21 +107,21 @@ void Circle::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 	if (state.aabbFace == voxel::FaceNames::Max) {
 		return;
 	}
-	const glm::ivec3 center(state.aabbFirstPos);
+	const math::Vec3i center(state.aabbFirstPos);
 	int uAxis;
 	int vAxis;
 	ellipseAxes(state.aabbFace, uAxis, vAxis);
 	const int faceAxisIdx = math::getIndexForAxis(voxel::faceToAxis(state.aabbFace));
-	const int du = glm::abs(ctx.cursorPosition[uAxis] - center[uAxis]);
-	const int dv = glm::abs(ctx.cursorPosition[vAxis] - center[vAxis]);
-	const int radius = glm::max(du, dv);
+	const int du = math::abs(ctx.cursorPosition[uAxis] - center[uAxis]);
+	const int dv = math::abs(ctx.cursorPosition[vAxis] - center[vAxis]);
+	const int radius = math::max(du, dv);
 	const int radiusU = radius;
 	const int radiusV = radius;
 	const int depth = _ellipseDepth;
 	const bool is3D = _ellipse3D;
 	const bool positiveNormal = voxel::isPositiveFace(state.aabbFace);
 	auto inBounds = [&](int x, int y, int z) {
-		const glm::ivec3 pos(x, y, z);
+		const math::Vec3i pos(x, y, z);
 		return insideSelection(pos, center, radiusU, radiusV, depth, is3D, uAxis, vAxis, faceAxisIdx, positiveNormal);
 	};
 	_ellipseHistory.clear();
@@ -132,7 +133,7 @@ void Circle::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper 
 			} else {
 				wrapper.setFlagAt(x, y, z, voxel::FlagOutline);
 			}
-			_ellipseHistory.push_back(glm::ivec3(x, y, z));
+			_ellipseHistory.push_back(math::Vec3i(x, y, z));
 		}
 	};
 	if (depth > 1) {

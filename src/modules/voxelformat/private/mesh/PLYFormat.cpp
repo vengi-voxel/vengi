@@ -20,6 +20,9 @@
 #include "voxel/MaterialColor.h"
 #include "voxel/Mesh.h"
 #include "voxel/VoxelVertex.h"
+#include "math/Mat3f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -658,7 +661,7 @@ bool PLYFormat::voxelizeGroups(const core::String &filename, const io::ArchivePt
 
 bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &sceneGraph,
 						   const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-						   const glm::vec3 &scale, bool quad, bool withColor, bool withTexCoords) {
+						   const math::Vec3f &scale, bool quad, bool withColor, bool withTexCoords) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -667,7 +670,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 	// if no transform are applied, and no scale is wanted, we can just export integers
 	const bool withNormals = core::getVar(cfg::VoxformatWithNormals)->boolVal();
 	const bool applyTransform = core::getVar(cfg::VoxformatTransform)->boolVal();
-	const bool exportIntegers = glm::all(glm::equal(scale, glm::vec3(1.0f))) && !applyTransform;
+	const bool exportIntegers = math::all(math::equal(scale, math::Vec3f(1.0f))) && !applyTransform;
 	int elementsCnt = 0;
 	int indicesCnt = 0;
 	for (const auto &meshExt : meshes) {
@@ -744,12 +747,12 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 			const scenegraph::SceneGraphNode &graphNode = sceneGraph.node(meshExt.nodeId);
 			scenegraph::KeyFrameIndex keyFrameIdx = 0;
 			const scenegraph::SceneGraphTransform &transform = graphNode.transform(keyFrameIdx);
-			const glm::mat3 normalMatrix = meshExt.normalMatrix(transform, scale);
+			const math::Mat3f normalMatrix = meshExt.normalMatrix(transform, scale);
 			const palette::Palette &palette = graphNode.palette();
 
 			for (int j = 0; j < nv; ++j) {
 				const voxel::VoxelVertex &v = vertices[j];
-				glm::vec3 pos;
+				math::Vec3f pos;
 				if (meshExt.applyTransform) {
 					pos = transform.apply(v.position, meshExt.pivot * meshExt.size);
 				} else {
@@ -762,11 +765,11 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 					stream->writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
 				}
 				if (withNormals) {
-					const glm::vec3 normal = glm::normalize(normalMatrix * mesh.getNormalVector()[j]);
+					const math::Vec3f normal = math::normalize(normalMatrix * mesh.getNormalVector()[j]);
 					stream->writeStringFormat(false, " %f %f %f", normal.x, normal.y, normal.z);
 				}
 				if (withTexCoords) {
-					const glm::vec2 &uv = paletteUV(v.colorIndex);
+					const math::Vec2f &uv = paletteUV(v.colorIndex);
 					stream->writeStringFormat(false, " %f %f", uv.x, uv.y);
 				}
 				if (withColor) {
@@ -816,7 +819,7 @@ bool PLYFormat::saveMeshes(const core::Map<int, int> &, const scenegraph::SceneG
 
 bool PLYFormat::savePointCloud(const scenegraph::SceneGraph &, const PointCloud &pointCloud,
 							   const core::String &filename, const io::ArchivePtr &archive,
-							   const glm::vec3 &scale, bool withColor) const {
+							   const math::Vec3f &scale, bool withColor) const {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -838,7 +841,7 @@ bool PLYFormat::savePointCloud(const scenegraph::SceneGraph &, const PointCloud 
 	stream->writeStringFormat(false, "end_header\n");
 
 	for (const PointCloudVertex &point : pointCloud) {
-		const glm::vec3 pos = point.position * scale;
+		const math::Vec3f pos = point.position * scale;
 		stream->writeStringFormat(false, "%f %f %f", pos.x, pos.y, pos.z);
 		if (withColor) {
 			stream->writeStringFormat(false, " %u %u %u %u", point.color.r, point.color.g, point.color.b,

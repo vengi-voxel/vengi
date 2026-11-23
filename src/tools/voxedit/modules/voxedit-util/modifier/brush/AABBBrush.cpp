@@ -10,6 +10,10 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -45,8 +49,8 @@ void AABBBrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoSt
 	BrushGizmoState state;
 	state.operations = BrushGizmo_Translate | BrushGizmo_Bounds;
 	state.hasBounds = true;
-	state.matrix[3] = glm::vec4(glm::vec3(region.getLowerCorner()), 1.0f);
-	const glm::ivec3 size = region.getDimensionsInVoxels();
+	state.matrix[3] = math::Vec4f(math::Vec3f(region.getLowerCorner()), 1.0f);
+	const math::Vec3i size = region.getDimensionsInVoxels();
 	for (int i = 0; i < 3; ++i) {
 		state.bounds[i + 3] = (float)size[i];
 		state.snap[i] = (float)ctx.gridResolution[i];
@@ -54,12 +58,12 @@ void AABBBrush::handles(const BrushContext &ctx, core::DynamicArray<BrushGizmoSt
 	output.push_back(state);
 }
 
-bool AABBBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &, uint32_t) {
+bool AABBBrush::editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &, uint32_t) {
 	const voxel::Region previous = calcRegion(ctx);
-	const glm::vec3 first = glm::vec3(matrix * glm::vec4(0, 0, 0, 1));
-	const glm::vec3 second = glm::vec3(matrix * glm::vec4(glm::vec3(previous.getDimensionsInVoxels()), 1));
-	const glm::ivec3 lower(glm::round(glm::min(first, second)));
-	const glm::ivec3 upper = glm::max(lower, glm::ivec3(glm::round(glm::max(first, second))) - 1);
+	const math::Vec3f first = math::Vec3f(matrix * math::Vec4f(0, 0, 0, 1));
+	const math::Vec3f second = math::Vec3f(matrix * math::Vec4f(math::Vec3f(previous.getDimensionsInVoxels()), 1));
+	const math::Vec3i lower(math::round(math::min(first, second)));
+	const math::Vec3i upper = math::max(lower, math::Vec3i(math::round(math::max(first, second))) - 1);
 	return setRegion(voxel::Region(lower, upper));
 }
 
@@ -104,7 +108,7 @@ void AABBBrush::resetRuntime() {
 	_editedRegion = voxel::Region::InvalidRegion;
 }
 
-glm::ivec3 AABBBrush::applyGridResolution(const glm::ivec3 &inPos, const glm::ivec3 &resolution) const {
+math::Vec3i AABBBrush::applyGridResolution(const math::Vec3i &inPos, const math::Vec3i &resolution) const {
 	return BoxGesture::snapToGrid(inPos, resolution);
 }
 
@@ -119,8 +123,8 @@ voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegio
 			// TODO: BRUSH
 			return brushRegion;
 		}
-		glm::ivec3 mins = brushRegion.getLowerCorner();
-		glm::ivec3 maxs = brushRegion.getUpperCorner();
+		math::Vec3i mins = brushRegion.getLowerCorner();
+		math::Vec3i maxs = brushRegion.getUpperCorner();
 		switch (ctx.cursorFace) {
 		case voxel::FaceNames::PositiveX:
 		case voxel::FaceNames::NegativeX:
@@ -151,8 +155,8 @@ voxel::Region AABBBrush::extendRegionInOrthoMode(const voxel::Region &brushRegio
 
 void AABBBrush::generateMirrored(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 								 const BrushContext &ctx, const voxel::Region &region) {
-	glm::ivec3 minsMirror = region.getLowerCorner();
-	glm::ivec3 maxsMirror = region.getUpperCorner();
+	math::Vec3i minsMirror = region.getLowerCorner();
+	math::Vec3i maxsMirror = region.getUpperCorner();
 	if (!getMirrorBox(minsMirror, maxsMirror)) {
 		generate(sceneGraph, wrapper, ctx, region);
 	} else {
@@ -180,7 +184,7 @@ bool AABBBrush::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrappe
 	return executeSample(sceneGraph, wrapper, ctx);
 }
 
-glm::ivec3 AABBBrush::currentCursorPosition(const BrushContext &ctx) const {
+math::Vec3i AABBBrush::currentCursorPosition(const BrushContext &ctx) const {
 	return _boxGesture.cursorPosition(ctx, radius());
 }
 
@@ -252,10 +256,10 @@ void AABBBrush::setMode(uint32_t mode) {
 }
 
 void AABBBrush::setRadius(int radius) {
-	if (_radius != glm::abs(radius)) {
+	if (_radius != math::abs(radius)) {
 		markSettingsChanged();
 	}
-	_radius = glm::abs(radius);
+	_radius = math::abs(radius);
 	markDirty();
 }
 

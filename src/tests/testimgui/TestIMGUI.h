@@ -6,8 +6,8 @@
 
 #include "core/String.h"
 #include "testcore/TestApp.h"
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 /**
  * @brief Renders a Dear ImGui style preview plus optional demo windows
@@ -27,8 +27,8 @@ private:
 	float _slider = 0.45f;
 	int _sliderInt = 4;
 	core::String _input = "Voxel layer";
-	glm::vec3 _position{1.0f, 2.0f, 3.0f};
-	glm::vec4 _color{0.26f, 0.59f, 0.98f, 1.0f};
+	math::Vec3f _position{1.0f, 2.0f, 3.0f};
+	math::Vec4f _color{0.26f, 0.59f, 0.98f, 1.0f};
 	float _progress = 0.62f;
 
 	void doRender() override;

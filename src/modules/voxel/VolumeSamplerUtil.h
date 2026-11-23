@@ -9,9 +9,8 @@
 #include "voxel/Voxel.h"
 #include "voxel/VoxelSampling.h"
 #include <float.h>
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxel {
 
@@ -85,8 +84,8 @@ inline bool setVoxels<RawVolume>(RawVolume &volume, int x, int y, int z, int nx,
  */
 template<class Sampler>
 CORE_NO_INLINE static voxel::Voxel sampleNearestNeighborhood(const Sampler &sampler,
-																		const glm::vec3 &pos,
-																		const glm::ivec3 &rounded) {
+																		const math::Vec3f &pos,
+																		const math::Vec3i &rounded) {
 	voxel::Voxel best;
 	float bestDistSq = FLT_MAX;
 
@@ -146,8 +145,8 @@ CORE_NO_INLINE static voxel::Voxel sampleNearestNeighborhood(const Sampler &samp
  * rounding lands on the air side.
  */
 template<class Sampler>
-static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
-	const glm::ivec3 rounded = glm::ivec3(glm::round(pos));
+static voxel::Voxel sampleNearest(Sampler &sampler, const math::Vec3f &pos) {
+	const math::Vec3i rounded = math::Vec3i(math::round(pos));
 	if (sampler.setPosition(rounded) && !voxel::isAir(sampler.voxel().getMaterial())) {
 		return sampler.voxel();
 	}
@@ -156,13 +155,13 @@ static voxel::Voxel sampleNearest(Sampler &sampler, const glm::vec3 &pos) {
 
 // Generic trilinear sampling
 template<class Sampler>
-static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
-	const glm::ivec3 base = glm::ivec3(glm::round(pos));
+static voxel::Voxel sampleTrilinear(Sampler &sampler, const math::Vec3f &pos) {
+	const math::Vec3i base = math::Vec3i(math::round(pos));
 	if (!sampler.setPosition(base)) {
 		return voxel::Voxel();
 	}
 
-	const glm::vec3 frac = pos - glm::vec3(base);
+	const math::Vec3f frac = pos - math::Vec3f(base);
 
 	// Fetch 8 corner voxels via peek APIs relative to current sampler position
 	const voxel::Voxel v000 = sampler.peekVoxel0px0py0pz();
@@ -225,11 +224,11 @@ static voxel::Voxel sampleTrilinear(Sampler &sampler, const glm::vec3 &pos) {
  * The voxel color with the highest total weight wins.
  */
 template<class Sampler>
-static voxel::Voxel sampleCubic(const Sampler &sampler, const glm::vec3 &pos) {
+static voxel::Voxel sampleCubic(const Sampler &sampler, const math::Vec3f &pos) {
 	static constexpr int HalfExtent = 2;
 	static constexpr float MaxCubicDistanceSq = 3.5f * 3.5f;
 
-	const glm::ivec3 center = glm::ivec3(glm::round(pos));
+	const math::Vec3i center = math::Vec3i(math::round(pos));
 	const int x0 = center.x - HalfExtent + 1;
 	const int y0 = center.y - HalfExtent + 1;
 	const int z0 = center.z - HalfExtent + 1;
@@ -278,7 +277,7 @@ static voxel::Voxel sampleCubic(const Sampler &sampler, const glm::vec3 &pos) {
 }
 
 template<class Sampler>
-voxel::Voxel sampleVoxel(Sampler &sampler, VoxelSampling sampling, const glm::vec3 &srcPos) {
+voxel::Voxel sampleVoxel(Sampler &sampler, VoxelSampling sampling, const math::Vec3f &srcPos) {
 	switch (sampling) {
 	case VoxelSampling::Linear:
 		return sampleTrilinear(sampler, srcPos);

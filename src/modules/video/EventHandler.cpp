@@ -5,9 +5,8 @@
 #include "EventHandler.h"
 #include "core/Log.h"
 #include "video/IEventObserver.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/Assert.h"
-#include <glm/common.hpp>
 #include <SDL3/SDL_version.h>
 
 #include <SDL3/SDL_events.h>
@@ -105,8 +104,8 @@ bool EventHandler::handleEvent(SDL_Event &event) {
 		float y;
 		x = event.wheel.x;
 		y = event.wheel.y;
-		x = glm::clamp(x, -1.0f, 1.0f);
-		y = glm::clamp(y, -1.0f, 1.0f);
+		x = math::clamp(x, -1.0f, 1.0f);
+		y = math::clamp(y, -1.0f, 1.0f);
 		mouseWheel((void*)SDL_GetWindowFromID(event.wheel.windowID), x, y, event.wheel.which);
 		break;
 	}

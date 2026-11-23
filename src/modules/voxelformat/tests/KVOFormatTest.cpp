@@ -7,6 +7,7 @@
 #include "io/MemoryArchive.h"
 #include "palette/NormalPalette.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -165,7 +166,7 @@ TEST_F(KVOFormatTest, testSignedNormals) {
 	const uint8_t normal = node->volume()->voxel(0, 1, 0).getNormal();
 	ASSERT_NE(NO_NORMAL, normal);
 	EXPECT_GT(
-		glm::dot(glm::normalize(node->normalPalette().normal3f(normal - NORMAL_PALETTE_OFFSET)), glm::vec3(0, -1, 0)),
+		math::dot(math::normalize(node->normalPalette().normal3f(normal - NORMAL_PALETTE_OFFSET)), math::Vec3f(0, -1, 0)),
 		0.999f);
 	EXPECT_EQ(NO_NORMAL, node->volume()->voxel(1, 0, 1).getNormal());
 }
@@ -192,9 +193,9 @@ TEST_F(KVOFormatTest, testPackedEquivecNormalsAndAlpha) {
 	const voxel::Voxel &last = node->volume()->voxel(1, 0, 1);
 	ASSERT_NE(NO_NORMAL, first.getNormal());
 	ASSERT_NE(NO_NORMAL, last.getNormal());
-	const glm::vec3 n0 = glm::normalize(node->normalPalette().normal3f(first.getNormal() - NORMAL_PALETTE_OFFSET));
-	const glm::vec3 n7 = glm::normalize(node->normalPalette().normal3f(last.getNormal() - NORMAL_PALETTE_OFFSET));
-	EXPECT_GT(glm::dot(n0, glm::vec3(0.4841229f, 0.0f, -0.875f)), 0.999f);
+	const math::Vec3f n0 = math::normalize(node->normalPalette().normal3f(first.getNormal() - NORMAL_PALETTE_OFFSET));
+	const math::Vec3f n7 = math::normalize(node->normalPalette().normal3f(last.getNormal() - NORMAL_PALETTE_OFFSET));
+	EXPECT_GT(math::dot(n0, math::Vec3f(0.4841229f, 0.0f, -0.875f)), 0.999f);
 	EXPECT_NEAR(0.875f, n7.z, 0.01f);
 	EXPECT_GT(n7.y, 0.4f);
 	EXPECT_EQ(255, node->palette().color(first.getColor()).a);
@@ -210,9 +211,9 @@ TEST_F(KVOFormatTest, testSaveSolidCubeAndNormals) {
 	pal.tryAdd(color::RGBA(0, 0, 255, 128));
 	node.setPalette(pal);
 	palette::NormalPalette normals;
-	normals.setNormal(0, glm::vec3(0, 1, 0));
+	normals.setNormal(0, math::Vec3f(0, 1, 0));
 	node.setNormalPalette(normals);
-	node.setPivot(glm::vec3(0.25f, 0.5f, 0.75f));
+	node.setPivot(math::Vec3f(0.25f, 0.5f, 0.75f));
 	for (int z = 0; z < 4; ++z) {
 		for (int y = 0; y < 4; ++y) {
 			for (int x = 0; x < 4; ++x) {
@@ -239,7 +240,7 @@ TEST_F(KVOFormatTest, testSaveSolidCubeAndNormals) {
 		EXPECT_EQ(color::RGBA(0, 0, 255, 128), model->palette().color(v.getColor()));
 		ASSERT_TRUE(model->hasNormalPalette());
 		ASSERT_NE(NO_NORMAL, v.getNormal());
-		EXPECT_GT(glm::normalize(model->normalPalette().normal3f(v.getNormal() - NORMAL_PALETTE_OFFSET)).y, 0.999f);
+		EXPECT_GT(math::normalize(model->normalPalette().normal3f(v.getNormal() - NORMAL_PALETTE_OFFSET)).y, 0.999f);
 		EXPECT_EQ(NO_NORMAL, model->volume()->voxel(1, 1, 1).getNormal());
 	}
 }

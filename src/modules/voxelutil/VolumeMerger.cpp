@@ -7,19 +7,18 @@
 #include "core/Log.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include <glm/common.hpp>
-#include <glm/vec3.hpp>
 #include <limits>
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
 voxel::RawVolume *merge(const core::Buffer<const voxel::RawVolume *> &volumes) {
-	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
-	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
+	math::Vec3i mins((std::numeric_limits<int32_t>::max)() / 2);
+	math::Vec3i maxs((std::numeric_limits<int32_t>::min)() / 2);
 	for (const voxel::RawVolume *v : volumes) {
 		const voxel::Region &region = v->region();
-		mins = (glm::min)(mins, region.getLowerCorner());
-		maxs = (glm::max)(maxs, region.getUpperCorner());
+		mins = (math::min)(mins, region.getLowerCorner());
+		maxs = (math::max)(maxs, region.getUpperCorner());
 	}
 
 	const voxel::Region mergedRegion(mins, maxs);
@@ -51,15 +50,15 @@ voxel::RawVolume *merge(const core::Buffer<voxel::RawVolume *> &volumes) {
 }
 
 voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume *> &volumes) {
-	glm::ivec3 mins((std::numeric_limits<int32_t>::max)() / 2);
-	glm::ivec3 maxs((std::numeric_limits<int32_t>::min)() / 2);
+	math::Vec3i mins((std::numeric_limits<int32_t>::max)() / 2);
+	math::Vec3i maxs((std::numeric_limits<int32_t>::min)() / 2);
 	bool found = false;
 	for (const voxel::RawVolume *v : volumes) {
 		if (v == nullptr) {
 			continue;
 		}
-		glm::ivec3 volumeMins;
-		glm::ivec3 volumeMaxs;
+		math::Vec3i volumeMins;
+		math::Vec3i volumeMaxs;
 		if (!computeSolidBounds(v, volumeMins, volumeMaxs)) {
 			continue;
 		}
@@ -68,8 +67,8 @@ voxel::RawVolume *mergeAndCrop(const core::Buffer<const voxel::RawVolume *> &vol
 			maxs = volumeMaxs;
 			found = true;
 		} else {
-			mins = (glm::min)(mins, volumeMins);
-			maxs = (glm::max)(maxs, volumeMaxs);
+			mins = (math::min)(mins, volumeMins);
+			maxs = (math::max)(maxs, volumeMaxs);
 		}
 	}
 	if (!found) {

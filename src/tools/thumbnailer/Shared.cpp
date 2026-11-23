@@ -27,7 +27,8 @@
 #include "voxelrender/RenderUtil.h"
 #include "scenegraph/SceneGraphImage.h"
 #include "voxelutil/ImageUtils.h"
-#include <glm/gtc/constants.hpp>
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace {
 
@@ -151,7 +152,7 @@ bool pathTracerTurntable(const scenegraph::SceneGraph &sceneGraph, const core::S
 			return false;
 		}
 		Log::info("Write image %s", filepath.c_str());
-		ctx.omega = glm::vec3(0.0f, glm::two_pi<float>() / (float)loops, 0.0f);
+		ctx.omega = math::Vec3f(0.0f, math::twoPi / (float)loops, 0.0f);
 		ctx.deltaFrameSeconds += 1000.0 / (double)loops;
 	}
 	pathTracer.shutdown();

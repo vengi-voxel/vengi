@@ -7,6 +7,7 @@
 #include "AABBBrush.h"
 #include "image/Image.h"
 #include "voxedit-util/modifier/ModifierType.h"
+#include "math/Vec2f.h"
 
 namespace palette {
 class Palette;
@@ -32,8 +33,8 @@ private:
 
 	SceneManager *_sceneMgr;
 	image::ImagePtr _image;
-	glm::vec2 _uv0{0.0f, 0.0f};
-	glm::vec2 _uv1{1.0f, 1.0f};
+	math::Vec2f _uv0{0.0f, 0.0f};
+	math::Vec2f _uv1{1.0f, 1.0f};
 	bool _projectOntoSurface = true;
 
 protected:
@@ -66,11 +67,11 @@ public:
 	void setImage(const image::ImagePtr &texture);
 	const image::ImagePtr &image() const;
 
-	void setUV0(const glm::vec2 &uv0);
-	const glm::vec2 &uv0() const;
+	void setUV0(const math::Vec2f &uv0);
+	const math::Vec2f &uv0() const;
 
-	void setUV1(const glm::vec2 &uv1);
-	const glm::vec2 &uv1() const;
+	void setUV1(const math::Vec2f &uv1);
+	const math::Vec2f &uv1() const;
 
 	void setProjectOntoSurface(bool projectOntoSurface);
 	bool projectOntoSurface() const;

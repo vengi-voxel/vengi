@@ -5,6 +5,7 @@
 #pragma once
 
 #include "voxel/Region.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -47,7 +48,7 @@ public:
 		_data[idx] = value;
 	}
 
-	inline void setValue(const glm::ivec3 &pos, const T &value) {
+	inline void setValue(const math::Vec3i &pos, const T &value) {
 		setValue(pos.x, pos.y, pos.z, value);
 	}
 
@@ -62,7 +63,7 @@ public:
 		return _data[idx];
 	}
 
-	inline T value(const glm::ivec3 &pos) const {
+	inline T value(const math::Vec3i &pos) const {
 		return value(pos.x, pos.y, pos.z);
 	}
 };

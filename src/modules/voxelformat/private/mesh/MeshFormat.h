@@ -14,12 +14,16 @@
 #include "palette/NormalPalette.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/Mesh.h"
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include "voxelformat/private/mesh/Mesh.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
 #include "core/IProgress.h"
+#include <functional>
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace palette {
 class NormalPaletteLookup;
@@ -32,7 +36,7 @@ class SceneGraphTransform;
 namespace voxelformat {
 
 struct PointCloudVertex {
-	glm::vec3 position{0.0f};
+	math::Vec3f position{0.0f};
 	color::RGBA color{0, 0, 0, 255};
 };
 using PointCloud = core::Buffer<PointCloudVertex, 4096>;
@@ -54,8 +58,8 @@ public:
 	 * Subdivide until we brought the triangles down to the size of 1 or smaller
 	 */
 	static bool subdivideTri(const voxelformat::MeshTri &meshTri, MeshTriCollection &tinyTris, int depth);
-	static bool calculateAABB(const MeshTriCollection &tris, glm::vec3 &mins, glm::vec3 &maxs);
-	static glm::vec3 getScale();
+	static bool calculateAABB(const MeshTriCollection &tris, math::Vec3f &mins, math::Vec3f &maxs);
+	static math::Vec3f getScale();
 	/**
 	 * @brief Checks whether the given triangles are axis aligned - usually true for voxel meshes
 	 */
@@ -100,20 +104,20 @@ protected:
 private:
 	struct InputBounds {
 		int nodeId;
-		glm::vec3 origin;
-		glm::vec3 mins;
-		glm::vec3 maxs;
-		core::DynamicArray<glm::vec3> vertices;
-		void calculateAABB(const glm::mat4 &matrix, glm::vec3 &worldMins, glm::vec3 &worldMaxs) const;
+		math::Vec3f origin;
+		math::Vec3f mins;
+		math::Vec3f maxs;
+		core::DynamicArray<math::Vec3f> vertices;
+		void calculateAABB(const math::Mat4f &matrix, math::Vec3f &worldMins, math::Vec3f &worldMaxs) const;
 	};
 	mutable core::DynamicArray<InputBounds> _inputBounds;
 	bool _collectInputBounds = false;
 	bool _useSceneInputScale = false;
-	glm::vec3 _sceneInputScale{1.0f};
+	math::Vec3f _sceneInputScale{1.0f};
 
 	int collectInputBounds(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph,
 						   const Mesh &mesh, int parent, bool resetOrigin) const;
-	bool calculateInputBounds(const scenegraph::SceneGraph &sceneGraph, glm::vec3 &mins, glm::vec3 &maxs) const;
+	bool calculateInputBounds(const scenegraph::SceneGraph &sceneGraph, math::Vec3f &mins, math::Vec3f &maxs) const;
 	bool prepareInputScale(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx);
 	int voxelizeMesh(const core::UUID &uuid, const core::String &name, scenegraph::SceneGraph &sceneGraph, Mesh &&mesh,
 					 int parent, bool resetOrigin, core::IProgress *progress) const;
@@ -127,35 +131,35 @@ protected:
 		image::ImagePtr texture;
 		bool applyTransform = false;
 
-		glm::vec3 size{0.0f};
-		glm::vec3 pivot{0.0f};
+		math::Vec3f size{0.0f};
+		math::Vec3f pivot{0.0f};
 		int nodeId = -1;
 
-		glm::mat3 normalMatrix(const scenegraph::SceneGraphTransform &transform, const glm::vec3 &scale) const;
+		math::Mat3f normalMatrix(const scenegraph::SceneGraphTransform &transform, const math::Vec3f &scale) const;
 		void visitByMaterial(int materialIndex, const std::function<void(const voxel::Mesh &, voxel::IndexType,
 																		voxel::IndexType, voxel::IndexType)> &callback) const;
 	};
 	using ChunkMeshes = core::DynamicArray<ChunkMeshExt>;
 	virtual bool saveMeshes(const core::Map<int, int> &meshIdxNodeMap, const scenegraph::SceneGraph &sceneGraph,
 							const ChunkMeshes &meshes, const core::String &filename, const io::ArchivePtr &archive,
-							const glm::vec3 &scale = glm::vec3(1.0f), bool quad = false, bool withColor = true,
+							const math::Vec3f &scale = math::Vec3f(1.0f), bool quad = false, bool withColor = true,
 							bool withTexCoords = true) = 0;
 	virtual bool savePointCloud(const scenegraph::SceneGraph &sceneGraph, const PointCloud &pointCloud,
 								const core::String &filename, const io::ArchivePtr &archive,
-								const glm::vec3 &scale = glm::vec3(1.0f), bool withColor = true) const {
+								const math::Vec3f &scale = math::Vec3f(1.0f), bool withColor = true) const {
 		return false;
 	}
 
 	static ChunkMeshExt *getParent(const scenegraph::SceneGraph &sceneGraph, ChunkMeshes &meshes, int nodeId);
-	glm::vec3 getInputScale(const glm::vec3 &meshMins, const glm::vec3 &meshMaxs) const;
-	glm::vec3 sceneInputScale() const {
-		return _collectInputBounds ? glm::vec3(1.0f) : _useSceneInputScale ? _sceneInputScale : getScale();
+	math::Vec3f getInputScale(const math::Vec3f &meshMins, const math::Vec3f &meshMaxs) const;
+	math::Vec3f sceneInputScale() const {
+		return _collectInputBounds ? math::Vec3f(1.0f) : _useSceneInputScale ? _sceneInputScale : getScale();
 	}
 	bool collectingInputBounds() const {
 		return _collectInputBounds;
 	}
 	bool savePointClouds(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
-							 const io::ArchivePtr &archive, const glm::vec3 &scale = glm::vec3(1.0f),
+							 const io::ArchivePtr &archive, const math::Vec3f &scale = math::Vec3f(1.0f),
 							 bool withColor = true) const;
 
 	/**
@@ -200,7 +204,7 @@ protected:
 	 * @return A particular uv value for the palette image for the given color index
 	 * @sa image::Image::uv()
 	 */
-	static glm::vec2 paletteUV(int colorIndex);
+	static math::Vec2f paletteUV(int colorIndex);
 
 	size_t simplify(voxel::IndexArray &indices, const core::DynamicArray<MeshVertex> &vertices) const;
 	void simplifyPointCloud(PointCloud &vertices) const;
@@ -208,7 +212,7 @@ protected:
 	/**
 	 * @brief A map with positions and colors that can get averaged from the input triangles
 	 */
-	void addToPosMap(PosMap &posMap, const voxel::Region &region, color::RGBA rgba, uint32_t area, uint8_t normalIdx, const glm::ivec3 &pos,
+	void addToPosMap(PosMap &posMap, const voxel::Region &region, color::RGBA rgba, uint32_t area, uint8_t normalIdx, const math::Vec3i &pos,
 					 MeshMaterialIndex material) const;
 
 	/**
@@ -247,7 +251,7 @@ protected:
 
 	int voxelizeNodeChunked(const core::String &name, scenegraph::SceneGraph &sceneGraph,
 							MeshTriCollection &&tris, const MeshMaterialArray &meshMaterialArray,
-							const glm::vec3 &trisMins, const voxel::Region &region,
+							const math::Vec3f &trisMins, const voxel::Region &region,
 							const palette::NormalPalette &normalPalette, int parent, bool resetOrigin,
 							core::IProgress *progress = nullptr) const;
 

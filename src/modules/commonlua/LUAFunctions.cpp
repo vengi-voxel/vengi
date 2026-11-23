@@ -6,7 +6,6 @@
 #include "app/App.h"
 #include "command/CommandHandler.h"
 #include "core/BindingContext.h"
-#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/String.h"
 #include "core/Var.h"
@@ -19,13 +18,15 @@
 #include "io/FileStream.h"
 #include "io/Filesystem.h"
 #include "io/Stream.h"
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/ext/quaternion_trigonometric.hpp>
-#include <glm/ext/quaternion_common.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/geometric.hpp>
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Vec4i.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
+#include "math/Axes.h"
 
 int clua_errorhandler(lua_State* s) {
 	Log::error("Lua error handler invoked");
@@ -716,59 +717,59 @@ bool clua_isquat(lua_State *s, int n) {
 	return lua_istable(s, n);
 }
 
-glm::quat clua_toquat(lua_State *s, int n) {
+math::Quatf clua_toquat(lua_State *s, int n) {
 	luaL_checktype(s, n, LUA_TTABLE);
-	glm::quat v;
+	math::Quatf v;
 	lua_getfield(s, n, VEC_MEMBERS[0]);
-	v.x = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	v.x = LuaNumberFuncs<typename math::Quatf::value_type>::check(s, -1);
 	lua_pop(s, 1);
 	lua_getfield(s, n, VEC_MEMBERS[1]);
-	v.y = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	v.y = LuaNumberFuncs<typename math::Quatf::value_type>::check(s, -1);
 	lua_pop(s, 1);
 	lua_getfield(s, n, VEC_MEMBERS[2]);
-	v.z = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	v.z = LuaNumberFuncs<typename math::Quatf::value_type>::check(s, -1);
 	lua_pop(s, 1);
 	lua_getfield(s, n, VEC_MEMBERS[3]);
-	v.w = LuaNumberFuncs<typename glm::quat::value_type>::check(s, -1);
+	v.w = LuaNumberFuncs<typename math::Quatf::value_type>::check(s, -1);
 	lua_pop(s, 1);
 	return v;
 }
 
-static glm::quat rotateX(float angle) {
-	return glm::angleAxis(angle, glm::right());
+static math::Quatf rotateX(float angle) {
+	return math::angleAxis(angle, math::right());
 }
 
-static glm::quat rotateZ(float angle) {
-	return glm::angleAxis(angle, glm::backward());
+static math::Quatf rotateZ(float angle) {
+	return math::angleAxis(angle, math::backward());
 }
 
-static glm::quat rotateY(float angle) {
-	return glm::angleAxis(angle, glm::up());
+static math::Quatf rotateY(float angle) {
+	return math::angleAxis(angle, math::up());
 }
 
 static int clua_quat_rotate_xyz(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float y = lua_tonumber(s, 2);
 	const float z = lua_tonumber(s, 3);
-	return clua_push(s, glm::quat(glm::vec3(x, y, z)));
+	return clua_push(s, math::Quatf(math::Vec3f(x, y, z)));
 }
 
 static int clua_quat_rotate_xy(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float y = lua_tonumber(s, 2);
-	return clua_push(s, glm::quat(glm::vec3(x, y, 0.0f)));
+	return clua_push(s, math::Quatf(math::Vec3f(x, y, 0.0f)));
 }
 
 static int clua_quat_rotate_yz(lua_State* s) {
 	const float y = lua_tonumber(s, 1);
 	const float z = lua_tonumber(s, 2);
-	return clua_push(s, glm::quat(glm::vec3(0.0f, y, z)));
+	return clua_push(s, math::Quatf(math::Vec3f(0.0f, y, z)));
 }
 
 static int clua_quat_rotate_xz(lua_State* s) {
 	const float x = lua_tonumber(s, 1);
 	const float z = lua_tonumber(s, 2);
-	return clua_push(s, glm::quat(glm::vec3(x, 0.0f, z)));
+	return clua_push(s, math::Quatf(math::Vec3f(x, 0.0f, z)));
 }
 
 static int clua_quat_rotate_x(lua_State* s) {
@@ -787,37 +788,37 @@ static int clua_quat_rotate_z(lua_State* s) {
 }
 
 static int clua_quat_new(lua_State* s) {
-	glm::quat array = glm::quat_identity<float, glm::defaultp>();
+	math::Quatf array = math::Quatf::identity();
 	return clua_push(s, array);
 }
 
 static int clua_quatmul(lua_State* s) {
-	const glm::quat& a = clua_toquat(s, 1);
-	const glm::quat& b = clua_toquat(s, 2);
-	const glm::quat& c = a * b;
+	const math::Quatf& a = clua_toquat(s, 1);
+	const math::Quatf& b = clua_toquat(s, 2);
+	const math::Quatf& c = a * b;
 	return clua_push(s, c);
 }
 
 static int clua_quat_slerp(lua_State* s) {
-	const glm::quat& a = clua_toquat(s, 1);
-	const glm::quat& b = clua_toquat(s, 2);
+	const math::Quatf& a = clua_toquat(s, 1);
+	const math::Quatf& b = clua_toquat(s, 2);
 	const float t = lua_tonumber(s, 3);
-	return clua_push(s, glm::slerp(a, b, t));
+	return clua_push(s, math::slerp(a, b, t));
 }
 
 static int clua_quat_conjugate(lua_State* s) {
-	const glm::quat& q = clua_toquat(s, 1);
-	return clua_push(s, glm::conjugate(q));
+	const math::Quatf& q = clua_toquat(s, 1);
+	return clua_push(s, math::conjugate(q));
 }
 
 static int clua_quat_fromaxisangle(lua_State* s) {
-	const glm::vec3 axis = clua_tovec<glm::vec3>(s, 1);
+	const math::Vec3f axis = clua_tovec<math::Vec3f>(s, 1);
 	const float angle = lua_tonumber(s, 2);
-	return clua_push(s, glm::angleAxis(angle, glm::normalize(axis)));
+	return clua_push(s, math::angleAxis(angle, math::normalize(axis)));
 }
 
 static int clua_quatindex(lua_State *s) {
-	const glm::quat& v = clua_toquat(s, 1);
+	const math::Quatf& v = clua_toquat(s, 1);
 	const char* i = luaL_checkstring(s, 2);
 
 	switch (*i) {
@@ -998,8 +999,8 @@ void clua_quatregister(lua_State* s) {
 		{"__index", clua_quatindex},
 		{nullptr, nullptr}
 	};
-	Log::debug("Register %s lua functions", clua_meta<glm::quat>::name());
-	clua_registerfuncs(s, funcs, clua_meta<glm::quat>::name());
+	Log::debug("Register %s lua functions", clua_meta<math::Quatf>::name());
+	clua_registerfuncs(s, funcs, clua_meta<math::Quatf>::name());
 	static const clua_Reg globalFuncs[] = {
 		{"new",          clua_quat_new, clua_quat_new_jsonhelp},
 		{"rotateXYZ",    clua_quat_rotate_xyz, clua_quat_rotatexyz_jsonhelp},
@@ -1014,8 +1015,8 @@ void clua_quatregister(lua_State* s) {
 		{"fromAxisAngle", clua_quat_fromaxisangle, clua_quat_fromaxisangle_jsonhelp},
 		{nullptr, nullptr, nullptr}
 	};
-	const core::String& globalMeta = core::String::format("%s_global", clua_meta<glm::quat>::name());
-	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<glm::quat>::name());
+	const core::String& globalMeta = core::String::format("%s_global", clua_meta<math::Quatf>::name());
+	clua_registerfuncsglobal(s, globalFuncs, globalMeta.c_str(), clua_name<math::Quatf>::name());
 }
 
 static int clua_sleep_continuation(lua_State *s, int status, lua_KContext ctx) {
@@ -2602,11 +2603,11 @@ void clua_streamregister(lua_State *s) {
 }
 
 void clua_mathregister(lua_State *s) {
-	clua_vecregister<glm::vec2>(s);
-	clua_vecregister<glm::vec3>(s);
-	clua_vecregister<glm::vec4>(s);
-	clua_vecregister<glm::ivec2>(s);
-	clua_vecregister<glm::ivec3>(s);
-	clua_vecregister<glm::ivec4>(s);
+	clua_vecregister<math::Vec2f>(s);
+	clua_vecregister<math::Vec3f>(s);
+	clua_vecregister<math::Vec4f>(s);
+	clua_vecregister<math::Vec2i>(s);
+	clua_vecregister<math::Vec3i>(s);
+	clua_vecregister<math::Vec4i>(s);
 	clua_quatregister(s);
 }

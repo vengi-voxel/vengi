@@ -10,11 +10,11 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
-#include <glm/common.hpp>
-#include <glm/geometric.hpp>
-#include <glm/gtc/epsilon.hpp>
 #include "voxel/private/BinaryGreedyMesher.h"
 #include "voxelformat/FormatConfig.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxel {
 
@@ -23,7 +23,7 @@ protected:
 	/**
 	 * @brief Helper function to verify vertex properties
 	 */
-	static void verifyVertex(const VoxelVertex &vertex, const glm::vec3 &expectedPos, uint8_t expectedColor,
+	static void verifyVertex(const VoxelVertex &vertex, const math::Vec3f &expectedPos, uint8_t expectedColor,
 							 uint32_t expectedAO, const char *msg) {
 		EXPECT_FLOAT_EQ(vertex.position.x, expectedPos.x) << msg << " - X position mismatch";
 		EXPECT_FLOAT_EQ(vertex.position.y, expectedPos.y) << msg << " - Y position mismatch";
@@ -86,14 +86,14 @@ TEST_F(SurfaceExtractorTest, testVoxelNormalPreservation) {
 					}
 				}
 				ChunkMesh baseline;
-				auto baselineCtx = createContext(type, &volume, region, pal, baseline, glm::ivec3(0), true, true, ao);
+				auto baselineCtx = createContext(type, &volume, region, pal, baseline, math::Vec3i(0), true, true, ao);
 				extractSurface(baselineCtx);
 				ChunkMesh compact;
-				auto compactCtx = createContext(type, &withNormals, region, pal, compact, glm::ivec3(0), true, true, ao);
+				auto compactCtx = createContext(type, &withNormals, region, pal, compact, math::Vec3i(0), true, true, ao);
 				compactCtx.preserveVoxelNormals = false;
 				extractSurface(compactCtx);
 				ChunkMesh preserved;
-				auto preservedCtx = createContext(type, &withNormals, region, pal, preserved, glm::ivec3(0), true, true, ao);
+				auto preservedCtx = createContext(type, &withNormals, region, pal, preserved, math::Vec3i(0), true, true, ao);
 				ASSERT_TRUE(preservedCtx.preserveVoxelNormals);
 				extractSurface(preservedCtx);
 				for (int m = 0; m < ChunkMesh::Meshes; ++m) {
@@ -134,8 +134,8 @@ TEST_F(SurfaceExtractorTest, testVoxelNormalPreservation) {
 // the final .obj file. 49 & 48 also overlapping. 30 & 20. 55 & 51. 4 & 14. 13 & 2. 10 & 16. 11 & 8. 23 & 9. 39 & 37. 41
 // & 25. 44 & 33. 36 & 34. 17 & 15. 47 & 46.
 TEST_F(SurfaceExtractorTest, DISABLED_testMeshExtraction) {
-	glm::ivec3 mins(0, 0, 0);
-	glm::ivec3 maxs(143, 22, 134);
+	math::Vec3i mins(0, 0, 0);
+	math::Vec3i maxs(143, 22, 134);
 	voxel::Region region(mins, maxs);
 	voxel::RawVolume v(region);
 	v.setVoxel(96, 6, 62, voxel::createVoxel(voxel::VoxelType::Generic, 47));
@@ -219,14 +219,14 @@ TEST_F(SurfaceExtractorTest, DISABLED_testMeshExtraction) {
 	voxel::ChunkMesh mesh;
 
 	SurfaceExtractionContext ctx =
-		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		voxel::buildCubicContext(&v, region, mesh, math::Vec3i(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(48, (int)mesh.mesh[0].getNoOfVertices());
 }
 
 TEST_F(SurfaceExtractorTest, testMeshExtractionIssue445) {
-	glm::ivec3 mins(-1, -1, -1);
-	glm::ivec3 maxs(1, -1, 1);
+	math::Vec3i mins(-1, -1, -1);
+	math::Vec3i maxs(1, -1, 1);
 	voxel::Region region(mins, maxs);
 	voxel::RawVolume v(region);
 	for (int x = mins.x; x <= maxs.x; ++x) {
@@ -245,14 +245,14 @@ TEST_F(SurfaceExtractorTest, testMeshExtractionIssue445) {
 
 	region.shiftUpperCorner(1, 1, 1);
 	SurfaceExtractionContext ctx =
-		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		voxel::buildCubicContext(&v, region, mesh, math::Vec3i(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(8, (int)mesh.mesh[0].getNoOfVertices());
 }
 
 TEST_F(SurfaceExtractorTest, testMeshExtractionMarchingCubes) {
-	glm::ivec3 mins(-1, -1, -1);
-	glm::ivec3 maxs(1, -1, 1);
+	math::Vec3i mins(-1, -1, -1);
+	math::Vec3i maxs(1, -1, 1);
 	voxel::Region region(mins, maxs);
 	voxel::RawVolume v(region);
 	for (int x = mins.x; x <= maxs.x; ++x) {
@@ -275,7 +275,7 @@ TEST_F(SurfaceExtractorTest, testMeshExtractionMarchingCubes) {
 }
 
 TEST_F(SurfaceExtractorTest, testDualContouringSingleVoxel) {
-	const glm::ivec3 pos(-3, 7, 12);
+	const math::Vec3i pos(-3, 7, 12);
 	RawVolume volume(Region(pos, pos));
 	const Region region(pos, pos + 1);
 	ChunkMesh mesh;
@@ -295,18 +295,18 @@ TEST_F(SurfaceExtractorTest, testDualContouringSingleVoxel) {
 		const VoxelVertex &v = opaque.getVertex(i);
 		EXPECT_EQ(42, v.colorIndex);
 		EXPECT_EQ(NO_NORMAL, v.normalIndex);
-		const glm::vec3 local = v.position - glm::vec3(pos);
+		const math::Vec3f local = v.position - math::Vec3f(pos);
 		for (int axis = 0; axis < 3; ++axis) {
-			EXPECT_NEAR(0.5f, glm::abs(local[axis] - 0.5f), 0.00001f);
+			EXPECT_NEAR(0.5f, math::abs(local[axis] - 0.5f), 0.00001f);
 		}
-		EXPECT_NEAR(1.0f, glm::length(opaque.getNormalVector()[i]), 0.00001f);
-		EXPECT_GT(glm::dot(opaque.getNormalVector()[i], local - 0.5f), 0.0f);
+		EXPECT_NEAR(1.0f, math::length(opaque.getNormalVector()[i]), 0.00001f);
+		EXPECT_GT(math::dot(opaque.getNormalVector()[i], local - 0.5f), 0.0f);
 	}
 	for (IndexType i = 0; i < opaque.getNoOfIndices(); i += 3) {
-		const glm::vec3 a = opaque.getVertex(opaque.getIndex(i)).position - glm::vec3(pos) - 0.5f;
-		const glm::vec3 b = opaque.getVertex(opaque.getIndex(i + 1)).position - glm::vec3(pos) - 0.5f;
-		const glm::vec3 c = opaque.getVertex(opaque.getIndex(i + 2)).position - glm::vec3(pos) - 0.5f;
-		EXPECT_GT(glm::dot(glm::cross(b - a, c - a), a), 0.0f);
+		const math::Vec3f a = opaque.getVertex(opaque.getIndex(i)).position - math::Vec3f(pos) - 0.5f;
+		const math::Vec3f b = opaque.getVertex(opaque.getIndex(i + 1)).position - math::Vec3f(pos) - 0.5f;
+		const math::Vec3f c = opaque.getVertex(opaque.getIndex(i + 2)).position - math::Vec3f(pos) - 0.5f;
+		EXPECT_GT(math::dot(math::cross(b - a, c - a), a), 0.0f);
 	}
 }
 
@@ -318,7 +318,7 @@ TEST_F(SurfaceExtractorTest, testDualContouringColorsAndTransparency) {
 	const Region region(0, 0, 0, 3, 1, 1);
 	palette::Palette palette;
 	ChunkMesh mesh;
-	auto ctx = createContext(SurfaceExtractionType::DualContouring, &volume, region, palette, mesh, glm::ivec3(0));
+	auto ctx = createContext(SurfaceExtractionType::DualContouring, &volume, region, palette, mesh, math::Vec3i(0));
 	extractSurface(ctx);
 
 	const Mesh &opaque = mesh.mesh[0];
@@ -354,7 +354,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxel) {
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), true);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), true);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -387,7 +387,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherPlane) {
 	}
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -424,12 +424,12 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherAmbientOcclusion) {
 	volume.setVoxel(2, 2, 0, createVoxel(VoxelType::Generic, cornerColor));
 
 	ChunkMesh meshWithAO;
-	SurfaceExtractionContext ctxWithAO = buildBinaryContext(&volume, region, meshWithAO, glm::ivec3(0), true);
+	SurfaceExtractionContext ctxWithAO = buildBinaryContext(&volume, region, meshWithAO, math::Vec3i(0), true);
 	extractSurface(ctxWithAO);
 
 	ChunkMesh meshWithoutAO;
 	SurfaceExtractionContext ctxWithoutAO =
-		buildBinaryContext(&volume, region, meshWithoutAO, glm::ivec3(0), false);
+		buildBinaryContext(&volume, region, meshWithoutAO, math::Vec3i(0), false);
 	extractSurface(ctxWithoutAO);
 
 	const Mesh &aoMesh = meshWithAO.mesh[0];
@@ -467,7 +467,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherVertexPositions) {
 	// Single voxel at (1,1,1)
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, testColor));
 
-	const glm::ivec3 translate(10, 20, 30);
+	const math::Vec3i translate(10, 20, 30);
 	ChunkMesh mesh;
 	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, translate, false);
 	extractSurface(ctx);
@@ -477,7 +477,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherVertexPositions) {
 
 	// Verify vertices are within expected bounds (cube at 1,1,1 with translation)
 	for (size_t i = 0; i < vertices.size(); ++i) {
-		const glm::vec3 &pos = vertices[i].position;
+		const math::Vec3f &pos = vertices[i].position;
 
 		// Positions should be in range [translate+1, translate+2] for each axis
 		EXPECT_GE(pos.x, translate.x + 1.0f) << "Vertex " << i << " X too small";
@@ -502,7 +502,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoAdjacentVoxels) {
 	volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, color2));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -535,7 +535,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShape) {
 	volume.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -565,7 +565,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTransparentVoxels) {
 	volume.setVoxel(2, 2, 2, createVoxel(VoxelType::Transparent, transColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -595,7 +595,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherEmptyRegion) {
 	RawVolume volume(region);
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -616,7 +616,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxelDetailedPositions)
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -633,11 +633,11 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxelDetailedPositions)
 	}
 
 	// Count unique vertex positions (should be 8 corners of the cube)
-	core::DynamicArray<glm::vec3> uniquePositions;
+	core::DynamicArray<math::Vec3f> uniquePositions;
 	for (const auto &v : vertices) {
 		bool found = false;
 		for (const auto &pos : uniquePositions) {
-			if (glm::all(glm::epsilonEqual(v.position, pos, 0.001f))) {
+			if (math::all(math::epsilonEqual(v.position, pos, 0.001f))) {
 				found = true;
 				break;
 			}
@@ -669,7 +669,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsXAxis) {
 	volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -685,8 +685,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsXAxis) {
 	// Verify X positions span from 1 to 3
 	float minX = 1000.0f, maxX = -1000.0f;
 	for (const auto &v : vertices) {
-		minX = glm::min(minX, v.position.x);
-		maxX = glm::max(maxX, v.position.x);
+		minX = math::min(minX, v.position.x);
+		maxX = math::max(maxX, v.position.x);
 	}
 	EXPECT_FLOAT_EQ(minX, 1.0f) << "Min X should be 1.0";
 	EXPECT_FLOAT_EQ(maxX, 3.0f) << "Max X should be 3.0";
@@ -702,7 +702,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsYAxis) {
 	volume.setVoxel(0, 2, 0, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -718,8 +718,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsYAxis) {
 	// Verify Y positions span from 1 to 3
 	float minY = 1000.0f, maxY = -1000.0f;
 	for (const auto &v : vertices) {
-		minY = glm::min(minY, v.position.y);
-		maxY = glm::max(maxY, v.position.y);
+		minY = math::min(minY, v.position.y);
+		maxY = math::max(maxY, v.position.y);
 	}
 	EXPECT_FLOAT_EQ(minY, 1.0f) << "Min Y should be 1.0";
 	EXPECT_FLOAT_EQ(maxY, 3.0f) << "Max Y should be 3.0";
@@ -735,7 +735,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsZAxis) {
 	volume.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -751,8 +751,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherTwoVoxelsZAxis) {
 	// Verify Z positions span from 1 to 3
 	float minZ = 1000.0f, maxZ = -1000.0f;
 	for (const auto &v : vertices) {
-		minZ = glm::min(minZ, v.position.z);
-		maxZ = glm::max(maxZ, v.position.z);
+		minZ = math::min(minZ, v.position.z);
+		maxZ = math::max(maxZ, v.position.z);
 	}
 	EXPECT_FLOAT_EQ(minZ, 1.0f) << "Min Z should be 1.0";
 	EXPECT_FLOAT_EQ(maxZ, 3.0f) << "Max Z should be 3.0";
@@ -775,7 +775,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShapeDetailedPositions) {
 	volume.setVoxel(0, 0, 2, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -791,8 +791,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShapeDetailedPositions) {
 	// Verify X positions span from 0 to 3
 	float minX = 1000.0f, maxX = -1000.0f;
 	for (const auto &v : vertices) {
-		minX = glm::min(minX, v.position.x);
-		maxX = glm::max(maxX, v.position.x);
+		minX = math::min(minX, v.position.x);
+		maxX = math::max(maxX, v.position.x);
 	}
 	EXPECT_FLOAT_EQ(minX, 0.0f) << "Min X should be 0.0";
 	EXPECT_FLOAT_EQ(maxX, 3.0f) << "Max X should be 3.0";
@@ -800,8 +800,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShapeDetailedPositions) {
 	// Verify Z positions span from 0 to 3
 	float minZ = 1000.0f, maxZ = -1000.0f;
 	for (const auto &v : vertices) {
-		minZ = glm::min(minZ, v.position.z);
-		maxZ = glm::max(maxZ, v.position.z);
+		minZ = math::min(minZ, v.position.z);
+		maxZ = math::max(maxZ, v.position.z);
 	}
 	EXPECT_FLOAT_EQ(minZ, 0.0f) << "Min Z should be 0.0";
 	EXPECT_FLOAT_EQ(maxZ, 3.0f) << "Max Z should be 3.0";
@@ -809,8 +809,8 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherLShapeDetailedPositions) {
 	// Y should be at 0 and 1 (bottom and top of voxels)
 	float minY = 1000.0f, maxY = -1000.0f;
 	for (const auto &v : vertices) {
-		minY = glm::min(minY, v.position.y);
-		maxY = glm::max(maxY, v.position.y);
+		minY = math::min(minY, v.position.y);
+		maxY = math::max(maxY, v.position.y);
 	}
 	EXPECT_FLOAT_EQ(minY, 0.0f) << "Min Y should be 0.0";
 	EXPECT_FLOAT_EQ(maxY, 1.0f) << "Max Y should be 1.0";
@@ -834,7 +834,7 @@ TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherCubeCornerVoxels) {
 	volume.setVoxel(3, 3, 3, createVoxel(VoxelType::Generic, testColor));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	const Mesh &opaqueMesh = mesh.mesh[0];
@@ -885,9 +885,9 @@ TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_124) {
 	// First chunk starts at origin and spans 62 voxels (0..62 inclusive upper corner)
 	bool foundOrigin = false;
 	for (const auto &r : regions) {
-		if (r.getLowerCorner() == glm::ivec3(0, 0, 0)) {
+		if (r.getLowerCorner() == math::Vec3i(0, 0, 0)) {
 			foundOrigin = true;
-			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(62, 62, 62))
+			EXPECT_EQ(r.getUpperCorner(), math::Vec3i(62, 62, 62))
 				<< "First sub-region upper corner should be (62,62,62)";
 		}
 	}
@@ -896,9 +896,9 @@ TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_124) {
 	// Second chunk along each axis starts at coordinate 62
 	bool foundSecond = false;
 	for (const auto &r : regions) {
-		if (r.getLowerCorner() == glm::ivec3(62, 62, 62)) {
+		if (r.getLowerCorner() == math::Vec3i(62, 62, 62)) {
 			foundSecond = true;
-			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(123, 123, 123))
+			EXPECT_EQ(r.getUpperCorner(), math::Vec3i(123, 123, 123))
 				<< "Last sub-region upper corner should be (123,123,123)";
 		}
 	}
@@ -915,11 +915,11 @@ TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_128) {
 	// The last (remainder) chunk along each axis starts at 124 and ends at 127 (4 voxels)
 	bool foundRemainder = false;
 	for (const auto &r : regions) {
-		if (r.getLowerCorner() == glm::ivec3(124, 124, 124)) {
+		if (r.getLowerCorner() == math::Vec3i(124, 124, 124)) {
 			foundRemainder = true;
-			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(127, 127, 127))
+			EXPECT_EQ(r.getUpperCorner(), math::Vec3i(127, 127, 127))
 				<< "Remainder sub-region upper corner should be (127,127,127)";
-			const glm::ivec3 dims = r.getDimensionsInVoxels();
+			const math::Vec3i dims = r.getDimensionsInVoxels();
 			EXPECT_EQ(dims.x, 4) << "Remainder sub-region should be 4 voxels wide in X";
 			EXPECT_EQ(dims.y, 4) << "Remainder sub-region should be 4 voxels wide in Y";
 			EXPECT_EQ(dims.z, 4) << "Remainder sub-region should be 4 voxels wide in Z";
@@ -938,11 +938,11 @@ TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_256) {
 	// Verify the last remainder chunk: starts at 248 (4*62), ends at 255 (8 voxels)
 	bool foundRemainder = false;
 	for (const auto &r : regions) {
-		if (r.getLowerCorner() == glm::ivec3(248, 248, 248)) {
+		if (r.getLowerCorner() == math::Vec3i(248, 248, 248)) {
 			foundRemainder = true;
-			EXPECT_EQ(r.getUpperCorner(), glm::ivec3(255, 255, 255))
+			EXPECT_EQ(r.getUpperCorner(), math::Vec3i(255, 255, 255))
 				<< "Remainder sub-region upper corner should be (255,255,255)";
-			const glm::ivec3 dims = r.getDimensionsInVoxels();
+			const math::Vec3i dims = r.getDimensionsInVoxels();
 			EXPECT_EQ(dims.x, 8) << "Remainder sub-region should be 8 voxels wide in X";
 			EXPECT_EQ(dims.y, 8) << "Remainder sub-region should be 8 voxels wide in Y";
 			EXPECT_EQ(dims.z, 8) << "Remainder sub-region should be 8 voxels wide in Z";
@@ -962,7 +962,7 @@ TEST_F(SurfaceExtractorTest, testGetBinaryMesherRegions_NonZeroOrigin) {
 	// First sub-region must start at the region's lower corner
 	bool foundFirst = false;
 	for (const auto &r : regions) {
-		if (r.getLowerCorner() == glm::ivec3(10, 20, 30)) {
+		if (r.getLowerCorner() == math::Vec3i(10, 20, 30)) {
 			foundFirst = true;
 			break;
 		}
@@ -988,7 +988,7 @@ TEST_F(SurfaceExtractorTest, testCubicSingleVoxel) {
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
 	ChunkMesh mesh;
 	// mergeQuads=true, reuseVertices=true -> 8 unique vertices
-	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh, glm::ivec3(0), true, true, false);
+	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh, math::Vec3i(0), true, true, false);
 	extractSurface(ctx);
 	EXPECT_EQ(mesh.mesh[0].getNoOfVertices(), 8u);
 	EXPECT_EQ(mesh.mesh[0].getNoOfIndices(), 36u);
@@ -1011,9 +1011,9 @@ TEST_F(SurfaceExtractorTest, testCubicSolidBlockMergesToSixQuads) {
 	ChunkMesh meshMerged;
 	ChunkMesh meshUnmerged;
 	SurfaceExtractionContext ctxMerged =
-		buildCubicContext(&volume, region, meshMerged, glm::ivec3(0), true, true, false);
+		buildCubicContext(&volume, region, meshMerged, math::Vec3i(0), true, true, false);
 	SurfaceExtractionContext ctxUnmerged =
-		buildCubicContext(&volume, region, meshUnmerged, glm::ivec3(0), false, true, false);
+		buildCubicContext(&volume, region, meshUnmerged, math::Vec3i(0), false, true, false);
 	extractSurface(ctxMerged);
 	extractSurface(ctxUnmerged);
 	EXPECT_EQ(meshMerged.mesh[0].getNoOfIndices(), 36u);
@@ -1029,8 +1029,8 @@ TEST_F(SurfaceExtractorTest, testCubicNoMergeQuads) {
 		}
 	}
 	ChunkMesh meshMerged, meshUnmerged;
-	SurfaceExtractionContext ctxMerged = buildCubicContext(&volume, region, meshMerged, glm::ivec3(0), true, true, false);
-	SurfaceExtractionContext ctxUnmerged = buildCubicContext(&volume, region, meshUnmerged, glm::ivec3(0), false, true, false);
+	SurfaceExtractionContext ctxMerged = buildCubicContext(&volume, region, meshMerged, math::Vec3i(0), true, true, false);
+	SurfaceExtractionContext ctxUnmerged = buildCubicContext(&volume, region, meshUnmerged, math::Vec3i(0), false, true, false);
 	extractSurface(ctxMerged);
 	extractSurface(ctxUnmerged);
 	// Without merging, more quads are generated
@@ -1042,8 +1042,8 @@ TEST_F(SurfaceExtractorTest, testCubicNoReuseVertices) {
 	RawVolume volume(region);
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
 	ChunkMesh meshReuse, meshNoReuse;
-	SurfaceExtractionContext ctxReuse = buildCubicContext(&volume, region, meshReuse, glm::ivec3(0), false, true, false);
-	SurfaceExtractionContext ctxNoReuse = buildCubicContext(&volume, region, meshNoReuse, glm::ivec3(0), false, false, false);
+	SurfaceExtractionContext ctxReuse = buildCubicContext(&volume, region, meshReuse, math::Vec3i(0), false, true, false);
+	SurfaceExtractionContext ctxNoReuse = buildCubicContext(&volume, region, meshNoReuse, math::Vec3i(0), false, false, false);
 	extractSurface(ctxReuse);
 	extractSurface(ctxNoReuse);
 	// Without vertex reuse, each face gets its own 4 vertices = 24 total
@@ -1066,7 +1066,7 @@ TEST_F(SurfaceExtractorTest, testCubicOptimize) {
 	RawVolume volume(region);
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh, glm::ivec3(0), true, true, false, true);
+	SurfaceExtractionContext ctx = buildCubicContext(&volume, region, mesh, math::Vec3i(0), true, true, false, true);
 	extractSurface(ctx);
 	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
 }
@@ -1183,7 +1183,7 @@ TEST_F(SurfaceExtractorTest, testBinaryOutlineFlagPreventsmerging) {
 	volume.setVoxel(1, 0, 0, createVoxel(VoxelType::Generic, 1, 0, 0));
 	volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Generic, 1, 0, FlagOutline));
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 	// Each voxel should have 5 visible faces (shared face culled) but flags differ
 	// so top/bottom faces cannot merge across the boundary
@@ -1195,7 +1195,7 @@ TEST_F(SurfaceExtractorTest, testBinaryOptimize) {
 	RawVolume volume(region);
 	volume.setVoxel(1, 1, 1, createVoxel(VoxelType::Generic, 1));
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false, true);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false, true);
 	extractSurface(ctx);
 	EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u);
 }
@@ -1217,7 +1217,7 @@ TEST_F(SurfaceExtractorTest, testCreateContextAllTypes) {
 	};
 	for (auto type : types) {
 		ChunkMesh mesh;
-		SurfaceExtractionContext ctx = createContext(type, &volume, region, pal, mesh, glm::ivec3(0));
+		SurfaceExtractionContext ctx = createContext(type, &volume, region, pal, mesh, math::Vec3i(0));
 		EXPECT_EQ(ctx.type, type);
 		extractSurface(ctx);
 		EXPECT_GT(mesh.mesh[0].getNoOfVertices(), 0u) << "Type " << (int)type << " should produce vertices";
@@ -1231,8 +1231,8 @@ TEST_F(SurfaceExtractorTest, testCreateContextAllTypes) {
 // faces are generated when MeshState schedules the adjacent chunk.
 // https://github.com/vengi-voxel/vengi/issues/831
 TEST_F(SurfaceExtractorTest, testCubicSingleVoxelAtRegionBoundary) {
-	glm::ivec3 mins(0, 0, 66);
-	glm::ivec3 maxs(61, 61, 127);
+	math::Vec3i mins(0, 0, 66);
+	math::Vec3i maxs(61, 61, 127);
 	voxel::Region region(mins, maxs);
 	voxel::RawVolume v(region);
 	v.setVoxel(61, 28, 127, voxel::createVoxel(voxel::VoxelType::Generic, 1));
@@ -1245,7 +1245,7 @@ TEST_F(SurfaceExtractorTest, testCubicSingleVoxelAtRegionBoundary) {
 	// PositiveZ at z=128) belong to the adjacent chunk and won't be generated here.
 	voxel::ChunkMesh mesh;
 	SurfaceExtractionContext ctx =
-		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		voxel::buildCubicContext(&v, region, mesh, math::Vec3i(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
 
 	// 3 of 6 faces are generated by this region (NegativeX, NegativeY, NegativeZ).
@@ -1265,8 +1265,8 @@ TEST_F(SurfaceExtractorTest, testCubicSingleVoxelAtRegionBoundary) {
 // scheduling the adjacent chunk.
 // https://github.com/vengi-voxel/vengi/issues/844
 TEST_F(SurfaceExtractorTest, testCubicTwoAdjacentVoxelsSingleRegion) {
-	glm::ivec3 mins(-1, 16, 1);
-	glm::ivec3 maxs(0, 16, 1);
+	math::Vec3i mins(-1, 16, 1);
+	math::Vec3i maxs(0, 16, 1);
 	voxel::Region region(mins, maxs);
 	voxel::RawVolume v(region);
 	v.setVoxel(-1, 16, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1));
@@ -1278,7 +1278,7 @@ TEST_F(SurfaceExtractorTest, testCubicTwoAdjacentVoxelsSingleRegion) {
 
 	voxel::ChunkMesh mesh;
 	SurfaceExtractionContext ctx =
-		voxel::buildCubicContext(&v, region, mesh, glm::ivec3(0), mergeQuads, reuseVertices, ambientOcclusion);
+		voxel::buildCubicContext(&v, region, mesh, math::Vec3i(0), mergeQuads, reuseVertices, ambientOcclusion);
 	voxel::extractSurface(ctx);
 
 	// The extractor generates faces within the region. The PositiveX face
@@ -1301,20 +1301,20 @@ static int countDuplicateTriangles(const voxel::Mesh &mesh) {
 	int duplicates = 0;
 
 	for (size_t i = 0; i < numTris; ++i) {
-		glm::vec3 pi[3] = {
+		math::Vec3f pi[3] = {
 			vertices[indices[i * 3 + 0]].position,
 			vertices[indices[i * 3 + 1]].position,
 			vertices[indices[i * 3 + 2]].position
 		};
 		// Sort for canonical comparison
-		auto sortVec = [](glm::vec3 &a, glm::vec3 &b) {
+		auto sortVec = [](math::Vec3f &a, math::Vec3f &b) {
 			if (a.x > b.x || (a.x == b.x && (a.y > b.y || (a.y == b.y && a.z > b.z))))
 				core::exchange(a, b);
 		};
 		sortVec(pi[0], pi[1]); sortVec(pi[1], pi[2]); sortVec(pi[0], pi[1]);
 
 		for (size_t j = i + 1; j < numTris; ++j) {
-			glm::vec3 pj[3] = {
+			math::Vec3f pj[3] = {
 				vertices[indices[j * 3 + 0]].position,
 				vertices[indices[j * 3 + 1]].position,
 				vertices[indices[j * 3 + 2]].position
@@ -1357,7 +1357,7 @@ TEST_F(SurfaceExtractorTest, testBinaryNoDuplicateTrianglesInSingleExtraction) {
 				volume.setVoxel(x, y, z, createVoxel(VoxelType::Generic, 1));
 
 	ChunkMesh mesh;
-	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, glm::ivec3(0), false);
+	SurfaceExtractionContext ctx = buildBinaryContext(&volume, region, mesh, math::Vec3i(0), false);
 	extractSurface(ctx);
 
 	EXPECT_EQ(0, countDuplicateTriangles(mesh.mesh[0])) << "Binary extractor should not produce duplicate triangles";

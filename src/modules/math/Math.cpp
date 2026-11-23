@@ -2,43 +2,50 @@
  * @file
  */
 
-#include "Math.h"
-#include <glm/trigonometric.hpp>
-#include <glm/mat4x4.hpp>
+#include "math/Polar.h"
+#include "math/Mat4Ops.h"
+#include "math/OBB.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace math {
 
-glm::vec3 polarToVector(float longitude, float latitude) {
-	float num = glm::cos(latitude);
-	float num2 = glm::sin(latitude);
-	float num3 = glm::cos(longitude);
-	float num4 = glm::sin(longitude);
-	return glm::vec3(num3 * num, num2, num4 * num);
+void obbSetInverse(Mat4f &inv, const Mat4f &rotation) {
+	inv = inverse(rotation);
 }
 
-void vectorToPolar(const glm::vec3& vector, float& longitude, float& latitude) {
-	float num = glm::sqrt(vector.x * vector.x + vector.z * vector.z);
+math::Vec3f polarToVector(float longitude, float latitude) {
+	float num = math::cos(latitude);
+	float num2 = math::sin(latitude);
+	float num3 = math::cos(longitude);
+	float num4 = math::sin(longitude);
+	return math::Vec3f(num3 * num, num2, num4 * num);
+}
+
+void vectorToPolar(const math::Vec3f& vector, float& longitude, float& latitude) {
+	float num = math::sqrt(vector.x * vector.x + vector.z * vector.z);
 	if (num > 0.0f) {
-		longitude = glm::atan(vector.z, vector.x);
-		latitude = glm::atan(vector.y, num);
+		longitude = math::atan(vector.z, vector.x);
+		latitude = math::atan(vector.y, num);
 	} else {
 		longitude = 0.0f;
-		latitude = glm::atan(vector.y, num);
+		latitude = math::atan(vector.y, num);
 	}
 }
 
-glm::ivec3 transform(const glm::mat4x4 &mat, const glm::ivec3 &pos, const glm::vec3 &pivot) {
-	const glm::vec4 v((float)pos.x - 0.5f - pivot.x, (float)pos.y - 0.5f - pivot.y, (float)pos.z - 0.5f - pivot.z,
+math::Vec3i transform(const math::Mat4f &mat, const math::Vec3i &pos, const math::Vec3f &pivot) {
+	const math::Vec4f v((float)pos.x - 0.5f - pivot.x, (float)pos.y - 0.5f - pivot.y, (float)pos.z - 0.5f - pivot.z,
 					  1.0f);
-	const glm::vec3 &e = glm::vec3(mat * v) + 0.5f + pivot;
-	const glm::ivec3 f = glm::floor(e);
+	const math::Vec3f &e = math::Vec3f(mat * v) + 0.5f + pivot;
+	const math::Vec3i f = math::floor(e);
 	return f;
 }
 
-glm::vec3 transform(const glm::mat4x4 &mat, const glm::vec3 &pos, const glm::vec3 &pivot) {
-	const glm::vec4 v(pos.x - pivot.x, pos.y - pivot.y, pos.z - pivot.z,
+math::Vec3f transform(const math::Mat4f &mat, const math::Vec3f &pos, const math::Vec3f &pivot) {
+	const math::Vec4f v(pos.x - pivot.x, pos.y - pivot.y, pos.z - pivot.z,
 					  1.0f);
-	return glm::vec3(mat * v) + pivot;
+	return math::Vec3f(mat * v) + pivot;
 }
 
 } // namespace math

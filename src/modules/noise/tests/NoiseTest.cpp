@@ -6,7 +6,7 @@
 #include "io/FileStream.h"
 #include "noise/Noise.h"
 #include "image/Image.h"
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/StringUtil.h"
 
 namespace noise {

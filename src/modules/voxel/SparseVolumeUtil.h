@@ -5,10 +5,11 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "voxel/Region.h"
 #include "voxel/SparseChunk.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 namespace sparse {
@@ -16,17 +17,17 @@ namespace sparse {
 static constexpr int ChunkSide = SparseChunk::Side;
 static constexpr int ChunkMask = ChunkSide - 1;
 
-inline glm::ivec3 chunkPosition(const glm::ivec3 &pos) {
+inline math::Vec3i chunkPosition(const math::Vec3i &pos) {
 	// arithmetic shift - rounds towards negative infinity
-	return glm::ivec3(pos.x >> SparseChunk::SideShift, pos.y >> SparseChunk::SideShift, pos.z >> SparseChunk::SideShift);
+	return math::Vec3i(pos.x >> SparseChunk::SideShift, pos.y >> SparseChunk::SideShift, pos.z >> SparseChunk::SideShift);
 }
 
-inline glm::ivec3 chunkBase(const glm::ivec3 &chunkPos) {
+inline math::Vec3i chunkBase(const math::Vec3i &chunkPos) {
 	return chunkPos * ChunkSide;
 }
 
-inline glm::ivec3 localPosition(const glm::ivec3 &pos) {
-	return glm::ivec3(pos.x & ChunkMask, pos.y & ChunkMask, pos.z & ChunkMask);
+inline math::Vec3i localPosition(const math::Vec3i &pos) {
+	return math::Vec3i(pos.x & ChunkMask, pos.y & ChunkMask, pos.z & ChunkMask);
 }
 
 /**
@@ -62,19 +63,19 @@ inline void clipToLowerCorner(const Region &region, int &x, int &y, int &z, int 
  */
 template<class ChunkMap, class BoundsFunc>
 Region calculateRegion(const ChunkMap &chunks, BoundsFunc &&chunkBounds) {
-	glm::ivec3 mins(0);
-	glm::ivec3 maxs(0);
+	math::Vec3i mins(0);
+	math::Vec3i maxs(0);
 	bool initialized = false;
 	for (auto iter = chunks.begin(); iter != chunks.end(); ++iter) {
 		if (!iter->value) {
 			continue;
 		}
-		glm::ivec3 chunkMins;
-		glm::ivec3 chunkMaxs;
+		math::Vec3i chunkMins;
+		math::Vec3i chunkMaxs;
 		if (!chunkBounds(*iter->value.get(), chunkMins, chunkMaxs)) {
 			continue;
 		}
-		const glm::ivec3 base = chunkBase(iter->key);
+		const math::Vec3i base = chunkBase(iter->key);
 		chunkMins += base;
 		chunkMaxs += base;
 		if (!initialized) {
@@ -83,8 +84,8 @@ Region calculateRegion(const ChunkMap &chunks, BoundsFunc &&chunkBounds) {
 			initialized = true;
 			continue;
 		}
-		mins = (glm::min)(mins, chunkMins);
-		maxs = (glm::max)(maxs, chunkMaxs);
+		mins = (math::min)(mins, chunkMins);
+		maxs = (math::max)(maxs, chunkMaxs);
 	}
 	if (!initialized) {
 		return Region::InvalidRegion;
@@ -102,7 +103,7 @@ void copyTo(const ChunkMap &chunks, Volume &target, const Region *region, VisitF
 		if (!iter->value) {
 			continue;
 		}
-		const glm::ivec3 base = chunkBase(iter->key);
+		const math::Vec3i base = chunkBase(iter->key);
 		if (region == nullptr) {
 			visitChunk(*iter->value.get(), [&target, &base](int x, int y, int z, const Voxel &voxel) {
 				target.setVoxel(base.x + x, base.y + y, base.z + z, voxel);
@@ -115,7 +116,7 @@ void copyTo(const ChunkMap &chunks, Volume &target, const Region *region, VisitF
 			continue;
 		}
 		visitChunk(*iter->value.get(), [&target, &base, region](int x, int y, int z, const Voxel &voxel) {
-			const glm::ivec3 pos(base.x + x, base.y + y, base.z + z);
+			const math::Vec3i pos(base.x + x, base.y + y, base.z + z);
 			if (region->containsPoint(pos)) {
 				target.setVoxel(pos.x, pos.y, pos.z, voxel);
 			}

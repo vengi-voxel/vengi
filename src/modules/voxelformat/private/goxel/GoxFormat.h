@@ -7,10 +7,11 @@
 #include "core/collection/Map.h"
 #include "core/collection/StringMap.h"
 #include "palette/Palette.h"
-#include <glm/vec3.hpp>
 #include "voxelformat/Format.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Stream.h"
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 /**
@@ -133,8 +134,8 @@ private:
 	bool saveChunk_DictString(io::WriteStream &stream, const core::String &key, const core::String &value);
 	bool saveChunk_DictFloat(io::WriteStream &stream, const core::String &key, float value);
 	bool saveChunk_DictBool(io::WriteStream &stream, const core::String &key, bool value);
-	bool saveChunk_DictMat4(io::WriteStream &stream, const core::String &key, const glm::mat4 &value);
-	bool saveChunk_DictVec3(io::WriteStream &stream, const core::String &key, const glm::vec3 &value);
+	bool saveChunk_DictMat4(io::WriteStream &stream, const core::String &key, const math::Mat4f &value);
+	bool saveChunk_DictVec3(io::WriteStream &stream, const core::String &key, const math::Vec3f &value);
 	bool saveChunk_DictInt(io::WriteStream &stream, const core::String &key, int32_t value);
 	bool saveChunk_DictColor(io::WriteStream &stream, const core::String &key, const color::RGBA &value);
 

@@ -7,12 +7,13 @@
 #include "core/collection/DynamicArray.h"
 #include "core/ProgressScope.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
 template<class VOLUME>
 inline void hollow(VOLUME &volume) {
-	core::DynamicArray<glm::ivec3> toHollow;
+	core::DynamicArray<math::Vec3i> toHollow;
 	toHollow.reserve(volume.region().voxels());
 	core::IProgress &progress = core::currentProgress();
 	progress.setProgress(0.0f);

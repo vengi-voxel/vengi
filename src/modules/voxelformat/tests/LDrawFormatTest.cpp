@@ -9,6 +9,7 @@
 #include "scenegraph/SceneGraphNodeProperties.h"
 #include "util/VarUtil.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -25,7 +26,7 @@ TEST_F(LDrawFormatTest, testLoadLDR) {
 	EXPECT_EQ(node->property(scenegraph::PropAuthor), "Test");
 	const voxel::RawVolume *volume = node->volume();
 	ASSERT_NE(volume, nullptr);
-	EXPECT_EQ(volume->region().getDimensionsInVoxels(), glm::ivec3(21, 21, 21));
+	EXPECT_EQ(volume->region().getDimensionsInVoxels(), math::Vec3i(21, 21, 21));
 	EXPECT_EQ(voxelutil::countVoxels(*volume), 1920);
 }
 

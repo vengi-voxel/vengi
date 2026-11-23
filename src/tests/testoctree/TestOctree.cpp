@@ -7,7 +7,9 @@
 #include "core/collection/Array.h"
 #include "testcore/TestAppMain.h"
 #include "core/Log.h"
-#include <glm/gtc/type_ptr.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 TestOctree::TestOctree(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider) :
 		Super(filesystem, timeProvider) {
@@ -32,9 +34,9 @@ bool TestOctree::onKeyPress(void *windowHandle, int32_t key, int16_t modifier) {
 
 void TestOctree::insert() {
 	const math::AABB<int>& aabb = _octree.aabb();
-	const glm::ivec3& mins = aabb.mins();
-	const glm::ivec3& maxs = aabb.maxs();
-	glm::ivec3 pos;
+	const math::Vec3i& mins = aabb.mins();
+	const math::Vec3i& maxs = aabb.maxs();
+	math::Vec3i pos;
 	for (int i = 0; i < (int)decltype(pos)::length(); ++i) {
 		pos[i] = _random.random(mins[i] + 1, maxs[i] - 1);
 	}
@@ -62,13 +64,13 @@ app::AppState TestOctree::onInit() {
 		return app::AppState::InitFailure;
 	}
 
-	const glm::ivec3& center = _octree.aabb().getCenter();
+	const math::Vec3i& center = _octree.aabb().getCenter();
 	_queryMins = center - 150;
 	_queryMaxs = center + 150;
 
 	_octree.setListener(&_listener);
 	camera().setFarPlane(4000.0f);
-	camera().setWorldPosition(glm::vec3(0.0f, 1250.0f, 2500.0f));
+	camera().setWorldPosition(math::Vec3f(0.0f, 1250.0f, 2500.0f));
 
 	insert();
 
@@ -99,7 +101,7 @@ void TestOctree::handleDirtyState() {
 
 	// build AABBs
 	_octree.visit([this] (const Node& node) {
-		static const core::Array<glm::vec4, 5> colors {
+		static const core::Array<math::Vec4f, 5> colors {
 			color::Blue(),
 			color::Red(),
 			color::Green(),
@@ -165,8 +167,8 @@ void TestOctree::onRenderUI() {
 	_shapeBuilder.aabb(_queryAABB);
 	_shapeRenderer.createOrUpdate(_queryMeshes, _shapeBuilder);
 	_shapeBuilder.clear();
-	const glm::ivec3& mins = _octree.aabb().mins();
-	const glm::ivec3& maxs = _octree.aabb().maxs();
+	const math::Vec3i& mins = _octree.aabb().mins();
+	const math::Vec3i& maxs = _octree.aabb().maxs();
 	ImGui::Text("Tree size: mins(%i:%i:%i) maxs(%i:%i:%i)",
 			mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z);
 	ImGui::BulletText("Nodes: %i", _nodes);
@@ -183,8 +185,8 @@ void TestOctree::onRenderUI() {
 		std::vector<AABBInfo> _itemVector;
 		_VectorGetter(const std::vector<math::AABB<int> >& itemVector) {
 			for (const auto& aabb : itemVector) {
-				const glm::ivec3& mins = aabb.mins();
-				const glm::ivec3& maxs = aabb.maxs();
+				const math::Vec3i& mins = aabb.mins();
+				const math::Vec3i& maxs = aabb.maxs();
 				_itemVector.emplace_back(AABBInfo{aabb,
 						core::String::format("mins(%i:%i:%i) maxs(%i:%i:%i)",
 						mins.x, mins.y, mins.z, maxs.x, maxs.y, maxs.z)});
@@ -202,7 +204,7 @@ void TestOctree::onRenderUI() {
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5f);
 	const int numEntries = (int)_itemVector.size();
 	ImGui::Combo("Nodes", &_itemIndex, &VectorGetter::resolve, &mds,
-			numEntries, glm::clamp(numEntries, 0, 25));
+			numEntries, math::clamp(numEntries, 0, 25));
 	ImGui::PopItemWidth();
 	if (_itemIndex != -1) {
 		const math::AABB<int>& selected = _itemVector[_itemIndex];

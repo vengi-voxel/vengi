@@ -8,14 +8,15 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Mat4Ops.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/common.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/trigonometric.hpp>
 
 namespace voxedit {
 
@@ -47,10 +48,10 @@ void TransformBrush::commitCurrentTransform() {
 	_cachedRegionValid = false;
 	_cachedRegion = voxel::Region::InvalidRegion;
 	_prevTransformedRegion = voxel::Region::InvalidRegion;
-	_parameters.translation = glm::ivec3(0);
-	_parameters.shear = glm::ivec3(0);
-	_parameters.scale = glm::vec3(1.0f);
-	_parameters.rotationDegrees = glm::vec3(0.0f);
+	_parameters.translation = math::Vec3i(0);
+	_parameters.shear = math::Vec3i(0);
+	_parameters.scale = math::Vec3f(1.0f);
+	_parameters.rotationDegrees = math::Vec3f(0.0f);
 }
 
 void TransformBrush::reset() {
@@ -58,7 +59,7 @@ void TransformBrush::reset() {
 	_active = false;
 
 	commitCurrentTransform();
-	_snapshotCenter = glm::vec3(0.0f);
+	_snapshotCenter = math::Vec3f(0.0f);
 	_parameters.mode = TransformMode::Move;
 	_parameters.sampling = voxel::VoxelSampling::Nearest;
 }
@@ -115,29 +116,29 @@ void TransformBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &st
 	state.snap[2] = (float)ctx.gridResolution.z;
 	state.localMode = true;
 
-	const glm::vec3 center = _snapshotHelper.hasSnapshot() ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
+	const math::Vec3f center = _snapshotHelper.hasSnapshot() ? _snapshotCenter : math::Vec3f(ctx.targetVolumeRegion.getCenter());
 
 	switch (_parameters.mode) {
 	case TransformMode::Move:
 		state.operations = BrushGizmo_Translate;
-		state.matrix = glm::translate(glm::mat4(1.0f), center + glm::vec3(_parameters.translation));
+		state.matrix = math::translate(math::Mat4f(1.0f), center + math::Vec3f(_parameters.translation));
 		break;
 	case TransformMode::Rotate: {
 		state.operations = BrushGizmo_Rotate;
-		const glm::vec3 radians = glm::radians(_parameters.rotationDegrees);
-		const glm::mat4 rot = glm::eulerAngleYXZ(radians.y, radians.x, radians.z);
-		state.matrix = glm::translate(glm::mat4(1.0f), center) * rot;
+		const math::Vec3f radians = math::radians(_parameters.rotationDegrees);
+		const math::Mat4f rot = math::eulerAngleYXZ(radians.y, radians.x, radians.z);
+		state.matrix = math::translate(math::Mat4f(1.0f), center) * rot;
 		state.snap[0] = state.snap[1] = state.snap[2] = 15.0f; // 15 degree snap for rotation
 		break;
 	}
 	case TransformMode::Scale:
 		state.operations = BrushGizmo_Scale;
-		state.matrix = glm::translate(glm::mat4(1.0f), center) * glm::scale(glm::mat4(1.0f), _parameters.scale);
+		state.matrix = math::translate(math::Mat4f(1.0f), center) * math::scale(math::Mat4f(1.0f), _parameters.scale);
 		state.snap[0] = state.snap[1] = state.snap[2] = 0.1f;
 		break;
 	case TransformMode::Shear:
 		state.operations = BrushGizmo_Translate;
-		state.matrix = glm::translate(glm::mat4(1.0f), center + glm::vec3(_parameters.shear));
+		state.matrix = math::translate(math::Mat4f(1.0f), center + math::Vec3f(_parameters.shear));
 		break;
 	default:
 		state.operations = BrushGizmo_None;
@@ -145,16 +146,16 @@ void TransformBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &st
 	}
 }
 
-bool TransformBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+bool TransformBrush::editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &deltaMatrix,
 									 uint32_t operation) {
 	core_trace_scoped(ApplyBrushGizmo);
-	const glm::vec3 center = _snapshotHelper.hasSnapshot() ? _snapshotCenter : glm::vec3(ctx.targetVolumeRegion.getCenter());
+	const math::Vec3f center = _snapshotHelper.hasSnapshot() ? _snapshotCenter : math::Vec3f(ctx.targetVolumeRegion.getCenter());
 
 	switch (_parameters.mode) {
 	case TransformMode::Move: {
 		// Extract absolute position from the gizmo matrix and compute offset from center
-		const glm::vec3 newPos(matrix[3]);
-		const glm::ivec3 offset = glm::ivec3(glm::round(newPos - center));
+		const math::Vec3f newPos(matrix[3]);
+		const math::Vec3i offset = math::Vec3i(math::round(newPos - center));
 		if (offset != _parameters.translation) {
 			setMoveOffset(offset);
 			markDirty();
@@ -164,8 +165,8 @@ bool TransformBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm:
 	}
 	case TransformMode::Shear: {
 		// Extract absolute position from the gizmo matrix and compute offset from center
-		const glm::vec3 newPos(matrix[3]);
-		const glm::ivec3 offset = glm::ivec3(glm::round(newPos - center));
+		const math::Vec3f newPos(matrix[3]);
+		const math::Vec3i offset = math::Vec3i(math::round(newPos - center));
 		if (offset != _parameters.shear) {
 			setShearOffset(offset);
 			markDirty();
@@ -175,13 +176,13 @@ bool TransformBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm:
 	}
 	case TransformMode::Rotate: {
 		// Extract rotation from manipulated matrix (translation removed)
-		glm::vec3 scale;
-		glm::vec3 translation;
-		glm::quat orientation;
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(matrix, scale, orientation, translation, skew, perspective);
-		const glm::vec3 euler = glm::degrees(glm::eulerAngles(orientation));
+		math::Vec3f scale;
+		math::Vec3f translation;
+		math::Quatf orientation;
+		math::Vec3f skew;
+		math::Vec4f perspective;
+		math::decompose(matrix, scale, orientation, translation, skew, perspective);
+		const math::Vec3f euler = math::degrees(math::eulerAngles(orientation));
 		if (euler != _parameters.rotationDegrees) {
 			setRotationDegrees(euler);
 			markDirty();
@@ -191,12 +192,12 @@ bool TransformBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm:
 	}
 	case TransformMode::Scale: {
 		// Extract scale from manipulated matrix
-		glm::vec3 newScale;
-		glm::vec3 translation;
-		glm::quat orientation;
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(matrix, newScale, orientation, translation, skew, perspective);
+		math::Vec3f newScale;
+		math::Vec3f translation;
+		math::Quatf orientation;
+		math::Vec3f skew;
+		math::Vec4f perspective;
+		math::decompose(matrix, newScale, orientation, translation, skew, perspective);
 		if (newScale != _parameters.scale) {
 			setScale(newScale);
 			markDirty();

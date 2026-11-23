@@ -12,7 +12,7 @@
 #include "noise/Noise.h"
 #include "voxel/Face.h"
 #include "voxelgenerator/LUAApi.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 struct BrushGizmoState;
@@ -99,13 +99,13 @@ public:
 	 * @param aabbFace The face from the initial click (from AABBBrush)
 	 */
 	bool execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
-				 const voxel::Region &region, const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace);
+				 const voxel::Region &region, const math::Vec3i &aabbFirstPos, voxel::FaceNames aabbFace);
 
 	bool hasGizmo() const;
 
-	bool hasHandle(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace) const;
+	bool hasHandle(const BrushContext &ctx, const math::Vec3i &aabbFirstPos, voxel::FaceNames aabbFace) const;
 
-	void describeHandle(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
+	void describeHandle(const BrushContext &ctx, BrushGizmoState &state, const math::Vec3i &aabbFirstPos,
 						 voxel::FaceNames aabbFace) const;
 
 	/**

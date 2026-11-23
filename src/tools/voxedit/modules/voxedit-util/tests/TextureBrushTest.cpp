@@ -13,12 +13,14 @@
 #include "voxelutil/VoxelUtil.h"
 #include "voxel/tests/VoxelPrinter.h"
 #include "math/tests/TestMathHelper.h"
+#include "math/Vec3i.h"
+#include "math/Vec2f.h"
 
 namespace voxedit {
 
 class TextureBrushTest : public app::AbstractTest {
 protected:
-	void prepare(AABBBrush &brush, BrushContext &brushContext, const glm::ivec3 &mins, const glm::ivec3 &maxs) {
+	void prepare(AABBBrush &brush, BrushContext &brushContext, const math::Vec3i &mins, const math::Vec3i &maxs) {
 		brushContext.cursorVoxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		brushContext.cursorPosition = mins;
 		brushContext.cursorFace = voxel::FaceNames::PositiveX;
@@ -36,13 +38,13 @@ protected:
 TEST_F(TextureBrushTest, testExecuteFilled) {
 	TextureBrush brush(nullptr);
 	BrushContext brushContext;
-	const glm::ivec3 mins(0, 0, 0);
-	const glm::ivec3 maxs(20, 20, 20);
+	const math::Vec3i mins(0, 0, 0);
+	const math::Vec3i maxs(20, 20, 20);
 	prepare(brush, brushContext, {maxs.x, mins.y, mins.z}, {maxs.x, maxs.y, maxs.z});
 	ASSERT_TRUE(brush.init());
 	brush.setImage(image::loadImage("test-palette-in.png"));
-	brush.setUV0(glm::vec2(0.0f, 0.0f));
-	brush.setUV1(glm::vec2(1.0f, 1.0f));
+	brush.setUV0(math::Vec2f(0.0f, 0.0f));
+	brush.setUV1(math::Vec2f(1.0f, 1.0f));
 	brush.setProjectOntoSurface(true);
 
 	voxel::RawVolume volume(voxel::Region(mins, maxs));
@@ -88,8 +90,8 @@ TEST_F(TextureBrushTest, testCreateImageFromFace) {
 	EXPECT_EQ(8, brush.image()->width());
 	EXPECT_EQ(8, brush.image()->height());
 	// UV should be reset
-	EXPECT_EQ(glm::vec2(0.0f), brush.uv0());
-	EXPECT_EQ(glm::vec2(1.0f), brush.uv1());
+	EXPECT_EQ(math::Vec2f(0.0f), brush.uv0());
+	EXPECT_EQ(math::Vec2f(1.0f), brush.uv1());
 
 	brush.shutdown();
 }

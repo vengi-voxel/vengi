@@ -7,7 +7,8 @@
 #include "video/ScopedViewPort.h"
 #include "color/Color.h"
 #include "core/Log.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3u.h"
+#include "math/Conversions.h"
 
 TestComputeShader::TestComputeShader(const io::FilesystemPtr &filesystem, const core::TimeProviderPtr &timeProvider)
 	: Super(filesystem, timeProvider) {
@@ -67,7 +68,7 @@ app::AppState TestComputeShader::onCleanup() {
 void TestComputeShader::doRender() {
 	_computeShader.activate();
 	const uint32_t groups = (uint32_t)((TextureSize + 7) / 8);
-	_computeShader.run(glm::uvec3(groups, groups, 1u), video::MemoryBarrierType::ShaderImageAccess);
+	_computeShader.run(math::Vec3u(groups, groups, 1u), video::MemoryBarrierType::ShaderImageAccess);
 	_computeShader.deactivate();
 
 	video::ScopedState depthTest(video::State::DepthTest, false);

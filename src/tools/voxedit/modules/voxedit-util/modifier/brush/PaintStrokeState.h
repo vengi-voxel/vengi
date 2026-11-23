@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/collection/DynamicMap.h"
 #include "math/Random.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -22,7 +22,7 @@ struct PaintStrokeSample {
 	float factor = 0.0f;
 };
 
-using PaintStrokeMap = core::DynamicMap<glm::ivec3, PaintStrokeSample, 1031, glm::hash<glm::ivec3>>;
+using PaintStrokeMap = core::DynamicMap<math::Vec3i, PaintStrokeSample, 1031, math::Vec3iHash>;
 
 /**
  * Per-target paint runtime for one edit. Owned by the session, never by a shared brush.

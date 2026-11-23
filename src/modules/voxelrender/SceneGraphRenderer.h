@@ -14,6 +14,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "voxel/RawVolume.h"
+#include "math/Vec3f.h"
 
 /**
  * Basic voxel rendering
@@ -73,9 +74,9 @@ public:
 	void update(const voxel::MeshStatePtr &meshState);
 	void shutdown();
 
-	void setAmbientColor(const glm::vec3 &color);
-	void setDiffuseColor(const glm::vec3 &color);
-	void setSunAngle(const glm::vec3 &angle);
+	void setAmbientColor(const math::Vec3f &color);
+	void setDiffuseColor(const math::Vec3f &color);
+	void setSunAngle(const math::Vec3f &angle);
 
 	void nodeRemove(const voxel::MeshStatePtr &meshState, const core::UUID &uuid);
 	/**

@@ -8,7 +8,7 @@
 #include "ui/ScopedID.h"
 #include "ui/ScopedStyle.h"
 #include "voxedit-util/SceneManager.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -47,7 +47,7 @@ inline bool sunAngleSettings(const core::VarPtr &sunAngleVar, bool shadowsEnable
 		ImGui::SetItemTooltipUnformatted(_("Sun angle is only used in Shadows mode"));
 	}
 
-	glm::vec3 sunAngle;
+	math::Vec3f sunAngle;
 	sunAngleVar->vec3Val(&sunAngle[0]);
 
 	bool sunChanged = false;
@@ -64,17 +64,17 @@ inline bool sunAngleSettings(const core::VarPtr &sunAngleVar, bool shadowsEnable
 
 	ImGui::BeginDisabled(!shadowsEnabled);
 	if (ImGui::Button(_("Preset: Noon"))) {
-		sunAngle = glm::vec3(60.0f, 135.0f, 0.0f);
+		sunAngle = math::Vec3f(60.0f, 135.0f, 0.0f);
 		sunChanged = true;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button(_("Preset: Evening"))) {
-		sunAngle = glm::vec3(15.0f, 225.0f, 0.0f);
+		sunAngle = math::Vec3f(15.0f, 225.0f, 0.0f);
 		sunChanged = true;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button(_("Preset: Morning"))) {
-		sunAngle = glm::vec3(15.0f, 45.0f, 0.0f);
+		sunAngle = math::Vec3f(15.0f, 45.0f, 0.0f);
 		sunChanged = true;
 	}
 	ImGui::EndDisabled();

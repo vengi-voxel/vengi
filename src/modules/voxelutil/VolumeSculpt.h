@@ -10,6 +10,7 @@
 #include "voxel/SparseVolume.h"
 
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace palette {
 class Palette;
@@ -334,7 +335,7 @@ int sculptSquashToPlane(voxel::RawVolume &volume, const voxel::Region &region, v
 void sculptSmoothWall(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, const voxel::BitVolume &anchors,
 					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
 					  int removeAboveDepth, SmoothWallInterp interp, bool fillHoles,
-					  core::DynamicArray<glm::ivec3> &addedPositions);
+					  core::DynamicArray<math::Vec3i> &addedPositions);
 
 /**
  * @brief Smooth wall using RawVolume as color source (fast path -- no SparseVolume allocation).
@@ -342,7 +343,7 @@ void sculptSmoothWall(voxel::BitVolume &solid, voxel::SparseVolume &voxelMap, co
 void sculptSmoothWall(voxel::BitVolume &solid, voxel::RawVolume &colorVolume, const voxel::BitVolume &anchors,
 					  voxel::FaceNames face, int iterations, const voxel::Voxel &fillVoxel,
 					  int removeAboveDepth, SmoothWallInterp interp, bool fillHoles,
-					  core::DynamicArray<glm::ivec3> &addedPositions);
+					  core::DynamicArray<math::Vec3i> &addedPositions);
 
 
 /**

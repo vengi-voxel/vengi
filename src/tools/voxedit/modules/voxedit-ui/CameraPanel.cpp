@@ -13,6 +13,7 @@
 #include "video/Camera.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -32,7 +33,7 @@ void CameraPanel::cameraOptions(command::CommandExecutionListener *listener, vid
 		return;
 	}
 
-	glm::vec3 omega = camera.omega();
+	math::Vec3f omega = camera.omega();
 	if (ImGui::InputFloat(_("Camera rotation"), &omega.y)) {
 		camera.setOmega(omega);
 	}
@@ -118,7 +119,7 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 		addToolbar(listener, camera);
 		cameraProjectionCombo(camera);
 		if (ImGui::BeginTable("##camera_props", 2, ImGuiTableFlags_SizingStretchProp)) {
-			glm::vec3 pos = camera.worldPosition();
+			math::Vec3f pos = camera.worldPosition();
 			if (ImGui::InputXYZ(_("Position"), pos)) {
 				const core::String &cmd = core::String::format("camera_position %f %f %f", pos.x, pos.y, pos.z);
 				command::executeCommands(cmd.c_str(), &listener);
@@ -135,7 +136,7 @@ void CameraPanel::update(const char *id, video::Camera &camera, command::Command
 
 			{
 				ImGui::BeginDisabled(camera.rotationType() != video::CameraRotationType::Target);
-				glm::vec3 target = camera.target();
+				math::Vec3f target = camera.target();
 				if (ImGui::InputXYZ(_("Target"), target)) {
 					const core::String &cmd = core::String::format("camera_target %f %f %f", target.x, target.y, target.z);
 					command::executeCommands(cmd.c_str(), &listener);

@@ -14,6 +14,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -149,7 +150,7 @@ bool VelorenTerrainFormat::loadGroupsRGBA(const core::String &filename, const io
 	}
 	voxel::RawVolume *volume = new voxel::RawVolume(v.calculateRegion());
 	v.copyTo(*volume);
-	volume->region().shift(glm::ivec3(x * 32, 0, z * -32));
+	volume->region().shift(math::Vec3i(x * 32, 0, z * -32));
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume);
 	node.setName(core::string::extractFilename(filename));
@@ -189,7 +190,7 @@ bool VelorenTerrainFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, 
 	wrapBool(stream->writeUInt64(count))
 
 	for (int64_t i = 0; i < count; ++i) {
-		const glm::ivec3 pos = region.fromIndex(i);
+		const math::Vec3i pos = region.fromIndex(i);
 		const voxel::Voxel voxel = volume->voxel(pos);
 		const color::RGBA color = palette.color(voxel.getColor());
 		uint8_t blockType = BlockType::Earth;

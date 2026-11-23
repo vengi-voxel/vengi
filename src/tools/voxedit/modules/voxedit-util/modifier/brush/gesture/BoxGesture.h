@@ -6,6 +6,7 @@
 
 #include "voxel/Face.h"
 #include "voxel/Region.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -20,11 +21,11 @@ private:
 	bool _active = false;
 	bool _secondPositionValid = false;
 	voxel::FaceNames _face = voxel::FaceNames::Max;
-	glm::ivec3 _firstPosition{0};
-	glm::ivec3 _secondPosition{0};
+	math::Vec3i _firstPosition{0};
+	math::Vec3i _secondPosition{0};
 
 public:
-	static glm::ivec3 snapToGrid(const glm::ivec3 &position, const glm::ivec3 &resolution);
+	static math::Vec3i snapToGrid(const math::Vec3i &position, const math::Vec3i &resolution);
 	static bool needsDepth(const BrushContext &ctx, const voxel::Region &region);
 
 	void begin(const BrushContext &ctx, bool active);
@@ -34,7 +35,7 @@ public:
 	/** Stop spanning without changing the captured face or anchors. */
 	void stopSpanning();
 	bool step(const BrushContext &ctx, int radius);
-	glm::ivec3 cursorPosition(const BrushContext &ctx, int radius) const;
+	math::Vec3i cursorPosition(const BrushContext &ctx, int radius) const;
 	voxel::Region region(const BrushContext &ctx, bool center) const;
 
 	bool active() const {
@@ -52,7 +53,7 @@ public:
 	void setFace(voxel::FaceNames face) {
 		_face = face;
 	}
-	const glm::ivec3 &firstPosition() const {
+	const math::Vec3i &firstPosition() const {
 		return _firstPosition;
 	}
 	/** Plane extrusion supplies the surface bounds instead of capturing them with the mouse. */

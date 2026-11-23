@@ -16,7 +16,6 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "json/JSON.h"
-#include <glm/common.hpp>
 
 namespace voxelformat {
 

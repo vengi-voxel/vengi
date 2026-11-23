@@ -7,13 +7,12 @@
 #include "../WindowTitles.h"
 #include "TestUtil.h"
 #include "command/CommandHandler.h"
-#include "core/GLM.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxelpathtracer/PathTracerState.h"
-#include <glm/geometric.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/trigonometric.hpp>
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxedit {
 
@@ -88,13 +87,13 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK(_camera.size().x > 0);
 		IM_CHECK(_camera.size().y > 0);
-		const glm::quat rotated = glm::normalize(
-			glm::angleAxis(glm::radians(35.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * _camera.quaternion());
+		const math::Quatf rotated = math::normalize(
+			math::angleAxis(math::radians(35.0f), math::Vec3f(0.0f, 1.0f, 0.0f)) * _camera.quaternion());
 		_camera.setOrientation(rotated);
 		_camera.update(0.0);
-		const glm::quat expected = _camera.quaternion();
+		const math::Quatf expected = _camera.quaternion();
 		ctx->Yield(5);
-		IM_CHECK(glm::abs(glm::dot(_camera.quaternion(), expected)) > 0.99f);
+		IM_CHECK(math::abs(math::dot(_camera.quaternion(), expected)) > 0.99f);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "camera independent of viewport")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -118,14 +117,14 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK(vp->isVisible());
 		IM_CHECK(_camera.size().x > 0);
-		const glm::quat renderBefore = _camera.quaternion();
+		const math::Quatf renderBefore = _camera.quaternion();
 
-		const glm::quat rotated = glm::normalize(
-			glm::angleAxis(glm::radians(40.0f), glm::vec3(0.0f, 1.0f, 0.0f)) * vp->camera().quaternion());
+		const math::Quatf rotated = math::normalize(
+			math::angleAxis(math::radians(40.0f), math::Vec3f(0.0f, 1.0f, 0.0f)) * vp->camera().quaternion());
 		vp->camera().setOrientation(rotated);
 		vp->camera().update(0.0);
 		ctx->Yield(5);
-		IM_CHECK(glm::abs(glm::dot(_camera.quaternion(), renderBefore)) > 0.99f);
+		IM_CHECK(math::abs(math::dot(_camera.quaternion(), renderBefore)) > 0.99f);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "wasd moves render camera")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -143,14 +142,14 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(isHovered());
 		IM_CHECK(_sceneMgr->activeCamera() == &_camera);
 
-		const glm::vec3 renderBefore = _camera.worldPosition();
-		const glm::vec3 viewportBefore = vp->camera().worldPosition();
+		const math::Vec3f renderBefore = _camera.worldPosition();
+		const math::Vec3f viewportBefore = vp->camera().worldPosition();
 		command::executeCommands("+move_forward 1 0.0");
 		ctx->Yield(5);
 		command::executeCommands("-move_forward 1 0.0");
 		ctx->Yield();
-		IM_CHECK(glm::length(_camera.worldPosition() - renderBefore) > 0.01f);
-		IM_CHECK(glm::length(vp->camera().worldPosition() - viewportBefore) < 0.01f);
+		IM_CHECK(math::length(_camera.worldPosition() - renderBefore) > 0.01f);
+		IM_CHECK(math::length(vp->camera().worldPosition() - viewportBefore) < 0.01f);
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "shared sun angles")->TestFunc = [=](ImGuiTestContext *ctx) {
@@ -250,13 +249,13 @@ void RenderPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(isHovered());
 		IM_CHECK(_sceneMgr->activeCamera() == &_camera);
 
-		const glm::quat before = _camera.quaternion();
+		const math::Quatf before = _camera.quaternion();
 		command::executeCommands("+camera_rotate 1 0.0");
 		ctx->MouseMoveToPos(ImVec2(center.x + 80.0f, center.y));
 		ctx->Yield(5);
 		command::executeCommands("-camera_rotate 1 0.0");
 		ctx->Yield();
-		IM_CHECK(glm::abs(glm::dot(_camera.quaternion(), before)) < 0.999f);
+		IM_CHECK(math::abs(math::dot(_camera.quaternion(), before)) < 0.999f);
 	};
 }
 

@@ -6,14 +6,15 @@
 #include "app/tests/AbstractTest.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxelutil {
 
 class VolumeSelectTest : public app::AbstractTest {};
 
 static void fillBox(voxel::RawVolume &volume, const voxel::Region &r, const voxel::Voxel &v) {
-	const glm::ivec3 &lo = r.getLowerCorner();
-	const glm::ivec3 &hi = r.getUpperCorner();
+	const math::Vec3i &lo = r.getLowerCorner();
+	const math::Vec3i &hi = r.getUpperCorner();
 	for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 			for (int x = lo.x; x <= hi.x; ++x) {
@@ -27,7 +28,7 @@ TEST_F(VolumeSelectTest, testLineMarkSolidDiagonal) {
 	voxel::Region region(-5, 5);
 	voxel::RawVolume volume(region);
 	const voxel::Voxel solid = voxel::createVoxel(voxel::VoxelType::Generic, 1);
-	fillBox(volume, voxel::Region(glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2)), solid);
+	fillBox(volume, voxel::Region(math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2)), solid);
 
 	int marked = 0;
 	auto markFunc = [&](int x, int y, int z, const voxel::Voxel &) {
@@ -35,7 +36,7 @@ TEST_F(VolumeSelectTest, testLineMarkSolidDiagonal) {
 		EXPECT_EQ(y, z);
 		++marked;
 	};
-	lineMarkSolid(volume, glm::ivec3(-2, -2, -2), glm::ivec3(2, 2, 2), 1, region, markFunc);
+	lineMarkSolid(volume, math::Vec3i(-2, -2, -2), math::Vec3i(2, 2, 2), 1, region, markFunc);
 	EXPECT_EQ(marked, 5);
 }
 
@@ -52,15 +53,15 @@ TEST_F(VolumeSelectTest, testLineDrapeSurfaceAcrossStep) {
 		}
 	}
 
-	core::DynamicSet<glm::ivec3, 257, glm::hash<glm::ivec3>> selected;
-	auto markFunc = [&](int x, int y, int z, const voxel::Voxel &) { selected.insert(glm::ivec3(x, y, z)); };
+	core::DynamicSet<math::Vec3i, 257, math::Vec3iHash> selected;
+	auto markFunc = [&](int x, int y, int z, const voxel::Voxel &) { selected.insert(math::Vec3i(x, y, z)); };
 
-	lineDrapeSurface(volume, glm::ivec3(0, 10, 1), glm::ivec3(10, 9, 1), 0, 2, 1, true, 1, region, markFunc);
+	lineDrapeSurface(volume, math::Vec3i(0, 10, 1), math::Vec3i(10, 9, 1), 0, 2, 1, true, 1, region, markFunc);
 
-	EXPECT_TRUE(selected.has(glm::ivec3(5, 10, 1)));
-	EXPECT_TRUE(selected.has(glm::ivec3(6, 9, 1)));
-	EXPECT_TRUE(selected.has(glm::ivec3(10, 9, 1)));
-	EXPECT_FALSE(selected.has(glm::ivec3(5, 5, 1)));
+	EXPECT_TRUE(selected.has(math::Vec3i(5, 10, 1)));
+	EXPECT_TRUE(selected.has(math::Vec3i(6, 9, 1)));
+	EXPECT_TRUE(selected.has(math::Vec3i(10, 9, 1)));
+	EXPECT_FALSE(selected.has(math::Vec3i(5, 5, 1)));
 }
 
 } // namespace voxelutil

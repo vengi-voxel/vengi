@@ -9,6 +9,8 @@
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "video/Camera.h"
 #include "voxel/Region.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace scenegraph {
 class SceneGraph;
@@ -19,8 +21,8 @@ namespace voxelrender {
 /**
  * @see voxelformat::toCameraNode()
  */
-video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
-video::Camera toCamera(const glm::ivec2 &size, const scenegraph::SceneGraph &sceneGraph,
+video::Camera toCamera(const math::Vec2i &size, const scenegraph::SceneGraphNodeCamera &cameraNode);
+video::Camera toCamera(const math::Vec2i &size, const scenegraph::SceneGraph &sceneGraph,
 					   const scenegraph::SceneGraphNodeCamera &cameraNode, scenegraph::FrameIndex frameIdx);
 scenegraph::SceneGraphNodeCamera toCameraNode(const video::Camera &camera);
 enum class SceneCameraMode : uint8_t { Free, Top, Bottom, Left, Right, Front, Back, Max };
@@ -55,12 +57,12 @@ static_assert(lengthof(ToneMappingItems) == ToneMappingMax, "Tone mapping labels
  * @param[in] angles The angles to set the camera to (pitch, yaw, roll in radians)
  */
 void configureCamera(video::Camera &camera, const voxel::Region &sceneRegion, SceneCameraMode mode, float farPlane,
-					 const glm::vec3 &angles = {0.0f, 0.0f, 0.0f});
+					 const math::Vec3f &angles = {0.0f, 0.0f, 0.0f});
 
 /**
  * @brief Convert scene sun Euler angles in degrees (elevation/pitch, azimuth/yaw, unused roll)
  * to a unit direction vector. Matches the forward renderer sun.
  */
-glm::vec3 sunDirectionFromAngle(const glm::vec3 &angleDegrees);
+math::Vec3f sunDirectionFromAngle(const math::Vec3f &angleDegrees);
 
 } // namespace voxelrender

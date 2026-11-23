@@ -14,6 +14,7 @@
 #include "voxel/MaterialColor.h"
 #include "palette/PaletteLookup.h"
 #include "voxelformat/Format.h"
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -85,7 +86,7 @@ size_t SproxelFormat::loadPalette(const core::String &filename, const io::Archiv
 	const int32_t width = core::string::toInt(tok.tokens()[0]);
 	const int32_t height = core::string::toInt(tok.tokens()[1]);
 	const int32_t depth = core::string::toInt(tok.tokens()[2]);
-	glm::ivec3 size(width, height, depth);
+	math::Vec3i size(width, height, depth);
 
 	palette::RGBABuffer colors;
 	for (int y = size.y - 1; y >= 0; y--) {
@@ -214,7 +215,7 @@ bool SproxelFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const c
 	const voxel::Region &region = node->region();
 	const palette::Palette &palette = node->palette();
 	voxel::RawVolume::Sampler sampler(node->volume());
-	const glm::ivec3 &lower = region.getLowerCorner();
+	const math::Vec3i &lower = region.getLowerCorner();
 
 	const int width = region.getWidthInVoxels();
 	const int height = region.getHeightInVoxels();

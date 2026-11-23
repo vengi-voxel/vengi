@@ -6,7 +6,6 @@
 #include "color/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
-#include "core/GLM.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
@@ -20,7 +19,12 @@
 #include "voxel/MaterialColor.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
-#include <glm/common.hpp>
+#include "math/Mat4f.h"
+#include "math/Vec3u.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
+#include "math/Conversions.h"
 
 namespace voxelformat {
 
@@ -133,9 +137,9 @@ public:
 bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 						   const scenegraph::SceneGraphNode &node, bool colorMap) const {
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
-	const glm::ivec3 &mins = region.getLowerCorner();
-	const glm::ivec3 &maxs = region.getUpperCorner();
-	const glm::ivec3 size = region.getDimensionsInVoxels();
+	const math::Vec3i &mins = region.getLowerCorner();
+	const math::Vec3i &maxs = region.getUpperCorner();
+	const math::Vec3i size = region.getDimensionsInVoxels();
 
 	const palette::Palette &palette = node.palette();
 
@@ -181,7 +185,7 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	scenegraph::SceneGraphTransform transform = node.transform(keyFrameIdx);
 	const scenegraph::SceneGraphNode *parent = sceneGraph.parentNode(node);
-	glm::mat4 localMatrix = transform.calculateLocalMatrix();
+	math::Mat4f localMatrix = transform.calculateLocalMatrix();
 	// QBT model nodes have no transform fields. Fold group transforms into
 	// descendant matrices, stopping at the nearest compound or the root.
 	while (parent != nullptr && parent->type() == scenegraph::SceneGraphNodeType::Group) {
@@ -189,27 +193,27 @@ bool QBTFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sc
 		parent = sceneGraph.parentNode(*parent);
 	}
 	transform.setLocalMatrix(localMatrix);
-	const glm::vec3 scale = transform.localScale();
+	const math::Vec3f scale = transform.localScale();
 	for (int axis = 0; axis < 3; ++axis) {
 		if (!(scale[axis] >= 1.0f && (double)scale[axis] <= (double)UINT32_MAX) ||
-			scale[axis] != glm::floor(scale[axis])) {
+			scale[axis] != math::floor(scale[axis])) {
 			Log::error("QBT requires positive integer local scale");
 			return false;
 		}
 	}
-	const glm::vec3 pivot = node.pivot() * glm::vec3(size) - glm::vec3(mins);
-	glm::vec3 translation = transform.localTranslation() - scale * pivot;
+	const math::Vec3f pivot = node.pivot() * math::Vec3f(size) - math::Vec3f(mins);
+	math::Vec3f translation = transform.localTranslation() - scale * pivot;
 	if (parent != nullptr && parent->isAnyModelNode()) {
 		// Child positions in QBT are relative to the parent's grid origin.
 		const voxel::Region &parentRegion = sceneGraph.resolveRegion(*parent);
-		translation += parent->pivot() * glm::vec3(parentRegion.getDimensionsInVoxels()) - glm::vec3(parentRegion.getLowerCorner());
+		translation += parent->pivot() * math::Vec3f(parentRegion.getDimensionsInVoxels()) - math::Vec3f(parentRegion.getLowerCorner());
 	}
-	const glm::ivec3 offset = glm::round(translation);
+	const math::Vec3i offset = math::round(translation);
 	wrapSave(stream.writeInt32(offset.x));
 	wrapSave(stream.writeInt32(offset.y));
 	wrapSave(stream.writeInt32(offset.z));
 
-	const glm::uvec3 localScale(scale);
+	const math::Vec3u localScale((uint32_t)scale.x, (uint32_t)scale.y, (uint32_t)scale.z);
 	wrapSave(stream.writeUInt32(localScale.x));
 	wrapSave(stream.writeUInt32(localScale.y));
 	wrapSave(stream.writeUInt32(localScale.z));
@@ -316,9 +320,9 @@ bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 		return false;
 	}
 
-	const glm::vec3 globalScale = root.transform(0).localScale();
-	if (glm::any(glm::isnan(globalScale)) || glm::any(glm::isinf(globalScale)) ||
-		glm::any(glm::lessThanEqual(globalScale, glm::vec3(0.0f)))) {
+	const math::Vec3f globalScale = root.transform(0).localScale();
+	if (math::any(math::isnan(globalScale)) || math::any(math::isinf(globalScale)) ||
+		math::any(math::lessThanEqual(globalScale, math::Vec3f(0.0f)))) {
 		Log::error("Invalid QBT global scale");
 		return false;
 	}
@@ -424,31 +428,31 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	Log::debug("Matrix name: %s", name.c_str());
-	glm::ivec3 translation;
+	math::Vec3i translation;
 	scenegraph::SceneGraphTransform transform;
 	wrap(stream.readInt32(translation.x))
 	wrap(stream.readInt32(translation.y))
 	wrap(stream.readInt32(translation.z))
 
-	glm::uvec3 localScale;
+	math::Vec3u localScale;
 	wrap(stream.readUInt32(localScale.x))
 	wrap(stream.readUInt32(localScale.y))
 	wrap(stream.readUInt32(localScale.z))
-	if (glm::any(glm::equal(localScale, glm::uvec3(0)))) {
+	if (math::any(math::equal(localScale, math::Vec3u(0)))) {
 		Log::error("Invalid QBT local scale");
 		return false;
 	}
 
-	glm::vec3 pivot;
+	math::Vec3f pivot;
 	wrap(stream.readFloat(pivot.x))
 	wrap(stream.readFloat(pivot.y))
 	wrap(stream.readFloat(pivot.z))
-	if (glm::any(glm::isnan(pivot)) || glm::any(glm::isinf(pivot))) {
+	if (math::any(math::isnan(pivot)) || math::any(math::isinf(pivot))) {
 		Log::error("Invalid QBT pivot");
 		return false;
 	}
 
-	glm::uvec3 size;
+	math::Vec3u size;
 	wrap(stream.readUInt32(size.x))
 	wrap(stream.readUInt32(size.y))
 	wrap(stream.readUInt32(size.z))
@@ -464,17 +468,17 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::greaterThan(size, glm::uvec3(2048)))) {
+	if (math::any(math::greaterThan(size, math::Vec3u(2048)))) {
 		Log::warn("Size of matrix exceeds the max allowed value");
 		return false;
 	}
-	if (glm::any(glm::lessThan(size, glm::uvec3(1)))) {
+	if (math::any(math::lessThan(size, math::Vec3u(1)))) {
 		Log::warn("Size of matrix results in empty space - voxelDataSize: %u", voxelDataSize);
 		return false;
 	}
 	io::ZipReadStream zipStream(stream, voxelDataSize);
 
-	const voxel::Region &region = voxel::Region::fromSize(size);
+	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i((int)size.x, (int)size.y, (int)size.z));
 	if (!region.isValid()) {
 		Log::error("Invalid region");
 		return false;
@@ -511,16 +515,16 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume.release());
 	node.setName(name);
-	node.setPivot(pivot / glm::vec3(size));
+	node.setPivot(pivot / math::Vec3f(size));
 	node.setPalette(palette);
 	// Vengi translates at the pivot; QBT positions the unpivoted grid.
-	glm::vec3 localTranslation = glm::vec3(translation) + glm::vec3(localScale) * pivot;
+	math::Vec3f localTranslation = math::Vec3f(translation) + math::Vec3f(localScale) * pivot;
 	const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parent);
 	if (parentNode.isAnyModelNode()) {
-		localTranslation -= parentNode.pivot() * glm::vec3(parentNode.region().getDimensionsInVoxels());
+		localTranslation -= parentNode.pivot() * math::Vec3f(parentNode.region().getDimensionsInVoxels());
 	}
 	transform.setLocalTranslation(localTranslation);
-	transform.setLocalScale(glm::vec3(localScale));
+	transform.setLocalScale(math::Vec3f(localScale));
 	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
 	node.setTransform(keyFrameIdx, transform);
 	const int id = sceneGraph.emplace(core::move(node), parent);
@@ -655,8 +659,8 @@ bool QBTFormat::loadHeader(io::SeekableReadStream &stream, Header &state) {
 	wrap(stream.readFloat(state.globalScale.x));
 	wrap(stream.readFloat(state.globalScale.y));
 	wrap(stream.readFloat(state.globalScale.z));
-	if (glm::any(glm::isnan(state.globalScale)) || glm::any(glm::isinf(state.globalScale)) ||
-		glm::any(glm::lessThanEqual(state.globalScale, glm::vec3(0.0f)))) {
+	if (math::any(math::isnan(state.globalScale)) || math::any(math::isinf(state.globalScale)) ||
+		math::any(math::lessThanEqual(state.globalScale, math::Vec3f(0.0f)))) {
 		Log::error("Invalid QBT global scale");
 		return false;
 	}

@@ -27,11 +27,9 @@
 #include "voxel/Voxel.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/common.hpp>
-#include <glm/exponential.hpp>
-#include <glm/geometric.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelutil {
 
@@ -64,7 +62,7 @@ int importHeightMaxHeight(const image::ImagePtr &image, bool alphaAsHeight) {
 }
 
 int getHeightValueFromAlpha(uint8_t alpha, bool adoptHeight, int volumeHeight, int minHeight) {
-	int heightValue = adoptHeight ? (int)glm::round((float)alpha * (float)volumeHeight / 255.0f) : (int)alpha;
+	int heightValue = adoptHeight ? (int)math::round((float)alpha * (float)volumeHeight / 255.0f) : (int)alpha;
 	if (heightValue < minHeight) {
 		heightValue = minHeight;
 	}
@@ -80,7 +78,7 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 		const int volumeHeight = region.getHeightInVoxels();
 		const int volumeWidth = region.getWidthInVoxels();
 		const int volumeDepth = region.getDepthInVoxels();
-		const glm::ivec3 &mins = region.getLowerCorner();
+		const math::Vec3i &mins = region.getLowerCorner();
 		const int imageWidth = image->width();
 		const int imageHeight = image->height();
 		const float stepWidthY = (float)imageHeight / (float)volumeDepth;
@@ -98,13 +96,13 @@ void importColoredHeightmap(voxel::RawVolumeWrapper &volume, const palette::Pale
 				const uint8_t palidx = palLookup.findClosestIndex(rgba);
 				const voxel::Voxel surfaceVoxel = voxel::createVoxel(palLookup.palette(), palidx);
 				if (voxel::isAir(underground.getMaterial())) {
-					const glm::ivec3 pos(x, heightValue - 1, z);
-					const glm::ivec3 regionPos = mins + pos;
+					const math::Vec3i pos(x, heightValue - 1, z);
+					const math::Vec3i regionPos = mins + pos;
 					sampler.setPosition(regionPos);
 					sampler.setVoxel(surfaceVoxel);
 				} else {
-					const glm::ivec3 pos(x, 0, z);
-					const glm::ivec3 regionPos = mins + pos;
+					const math::Vec3i pos(x, 0, z);
+					const math::Vec3i regionPos = mins + pos;
 					sampler.setPosition(regionPos);
 
 					for (int y = 0; y < heightValue; ++y) {
@@ -132,7 +130,7 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 		const int volumeHeight = region.getHeightInVoxels();
 		const int volumeWidth = region.getWidthInVoxels();
 		const int volumeDepth = region.getDepthInVoxels();
-		const glm::ivec3 &mins = region.getLowerCorner();
+		const math::Vec3i &mins = region.getLowerCorner();
 		const float stepWidthY = (float)imageHeight / (float)volumeDepth;
 		const float stepWidthX = (float)imageWidth / (float)volumeWidth;
 		Log::debug("stepwidth: %f %f", stepWidthX, stepWidthY);
@@ -146,7 +144,7 @@ void importHeightmap(voxel::RawVolumeWrapper &volume, const image::ImagePtr &ima
 			for (int x = 0; x < volumeWidth; ++x, imageX += stepWidthX) {
 				voxel::RawVolumeWrapper::Sampler sampler3 = sampler2;
 				const color::RGBA heightmapPixel = image->colorAt((int)imageX, (int)imageY);
-				uint8_t heightValue = (uint8_t)(glm::round((float)(heightmapPixel.r) * scaleHeight));
+				uint8_t heightValue = (uint8_t)(math::round((float)(heightmapPixel.r) * scaleHeight));
 				if (heightValue < minHeight) {
 					heightValue = minHeight;
 				}
@@ -299,7 +297,7 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 				const float maxthickness = maxDepth;
 				const float height = thickness * maxthickness / 255.0f;
 				if (bothSides) {
-					const int heighti = (int)glm::ceil(height / 2.0f);
+					const int heighti = (int)math::ceil(height / 2.0f);
 					const int minZ = maxDepth - heighti;
 					const int maxZ = maxDepth + heighti;
 					voxel::RawVolume::Sampler sampler3 = sampler2;
@@ -308,7 +306,7 @@ voxel::RawVolume *importAsVolume(const image::ImagePtr &image, const image::Imag
 						sampler3.movePositiveZ();
 					}
 				} else {
-					const int heighti = (int)glm::ceil(height);
+					const int heighti = (int)math::ceil(height);
 					voxel::RawVolume::Sampler sampler3 = sampler2;
 					for (int z = volume->region().getLowerZ(); z < volume->region().getLowerZ() + heighti; ++z) {
 						sampler3.setVoxel(voxel);
@@ -351,44 +349,44 @@ const char *IsoSprite[IsoSpriteHeight] = {"  CCCC  ", "CCCCCCCC", "DDCCCCLL", "D
 // Light sits above-left of the camera so the left wall is brighter than the right.
 // shade = ambient + (1 - ambient) * max(0, N.L)
 // +a, +b and +h match IsoView::position(), so a stored world normal can use the same light.
-glm::vec3 isoLightDirection() {
-	const glm::vec3 light(-0.6f, 1.0f, -0.2f);
-	return light / glm::length(light);
+math::Vec3f isoLightDirection() {
+	const math::Vec3f light(-0.6f, 1.0f, -0.2f);
+	return light / math::length(light);
 }
 
-float isoLambert(const glm::vec3 &normal, const glm::vec3 &light) {
-	const float ndotl = glm::dot(normal, light);
+float isoLambert(const math::Vec3f &normal, const math::Vec3f &light) {
+	const float ndotl = math::dot(normal, light);
 	return 0.40f + 0.60f * (ndotl > 0.0f ? ndotl : 0.0f);
 }
 
-void isoViewAxes(voxel::FaceNames face, glm::vec3 &axisA, glm::vec3 &axisB, glm::vec3 &axisH) {
-	axisH = face == voxel::FaceNames::Down ? glm::vec3(0.0f, -1.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+void isoViewAxes(voxel::FaceNames face, math::Vec3f &axisA, math::Vec3f &axisB, math::Vec3f &axisH) {
+	axisH = face == voxel::FaceNames::Down ? math::Vec3f(0.0f, -1.0f, 0.0f) : math::Vec3f(0.0f, 1.0f, 0.0f);
 	switch (face) {
 	case voxel::FaceNames::Right:
-		axisA = glm::vec3(0.0f, 0.0f, -1.0f);
-		axisB = glm::vec3(-1.0f, 0.0f, 0.0f);
+		axisA = math::Vec3f(0.0f, 0.0f, -1.0f);
+		axisB = math::Vec3f(-1.0f, 0.0f, 0.0f);
 		break;
 	case voxel::FaceNames::Back:
-		axisA = glm::vec3(1.0f, 0.0f, 0.0f);
-		axisB = glm::vec3(0.0f, 0.0f, -1.0f);
+		axisA = math::Vec3f(1.0f, 0.0f, 0.0f);
+		axisB = math::Vec3f(0.0f, 0.0f, -1.0f);
 		break;
 	case voxel::FaceNames::Left:
-		axisA = glm::vec3(0.0f, 0.0f, 1.0f);
-		axisB = glm::vec3(1.0f, 0.0f, 0.0f);
+		axisA = math::Vec3f(0.0f, 0.0f, 1.0f);
+		axisB = math::Vec3f(1.0f, 0.0f, 0.0f);
 		break;
 	default:
-		axisA = glm::vec3(-1.0f, 0.0f, 0.0f);
-		axisB = glm::vec3(0.0f, 0.0f, 1.0f);
+		axisA = math::Vec3f(-1.0f, 0.0f, 0.0f);
+		axisB = math::Vec3f(0.0f, 0.0f, 1.0f);
 		break;
 	}
 }
 
 void isoShadeFactors(float lighting[(int)IsoShade::Max]) {
-	const glm::vec3 light = isoLightDirection();
+	const math::Vec3f light = isoLightDirection();
 	lighting[(int)IsoShade::Transparent] = 0.0f;
-	lighting[(int)IsoShade::Top] = isoLambert(glm::vec3(0.0f, 1.0f, 0.0f), light);
-	lighting[(int)IsoShade::Left] = isoLambert(glm::vec3(-1.0f, 0.0f, 0.0f), light);
-	lighting[(int)IsoShade::Right] = isoLambert(glm::vec3(0.0f, 0.0f, -1.0f), light);
+	lighting[(int)IsoShade::Top] = isoLambert(math::Vec3f(0.0f, 1.0f, 0.0f), light);
+	lighting[(int)IsoShade::Left] = isoLambert(math::Vec3f(-1.0f, 0.0f, 0.0f), light);
+	lighting[(int)IsoShade::Right] = isoLambert(math::Vec3f(0.0f, 0.0f, -1.0f), light);
 }
 
 color::RGBA isoBlend(color::RGBA src, color::RGBA dst) {
@@ -412,12 +410,12 @@ color::RGBA isoShade(color::RGBA c, float shade, const palette::Material &mat, c
 		shade = 1.0f;
 	}
 	if (config.materials) {
-		const float roughness = glm::clamp(mat.roughness, 0.0f, 1.0f);
-		const float metal = glm::clamp(mat.metal, 0.0f, 1.0f);
-		const float emit = glm::clamp(mat.emit, 0.0f, 1.0f);
-		shade = glm::mix(shade, 1.0f, roughness * 0.6f);
-		shade = glm::mix(shade, shade * shade, metal);
-		shade = glm::mix(shade, 1.0f, emit);
+		const float roughness = math::clamp(mat.roughness, 0.0f, 1.0f);
+		const float metal = math::clamp(mat.metal, 0.0f, 1.0f);
+		const float emit = math::clamp(mat.emit, 0.0f, 1.0f);
+		shade = math::mix(shade, 1.0f, roughness * 0.6f);
+		shade = math::mix(shade, shade * shade, metal);
+		shade = math::mix(shade, 1.0f, emit);
 	}
 	color::RGBA result = c;
 	if (!config.transparency) {
@@ -425,8 +423,8 @@ color::RGBA isoShade(color::RGBA c, float shade, const palette::Material &mat, c
 	}
 	for (int i = 0; i < 3; ++i) {
 		const float linear = color::srgbToLinear(c[i] / 255.0f);
-		const float value = glm::clamp(linear * shade, 0.0f, 1.0f);
-		const float srgb = value <= 0.0031308f ? value * 12.92f : 1.055f * glm::pow(value, 1.0f / 2.4f) - 0.055f;
+		const float value = math::clamp(linear * shade, 0.0f, 1.0f);
+		const float srgb = value <= 0.0031308f ? value * 12.92f : 1.055f * math::pow(value, 1.0f / 2.4f) - 0.055f;
 		((uint8_t *)&result)[i] = (uint8_t)(srgb * 255.0f);
 	}
 	return result;
@@ -456,7 +454,7 @@ struct IsoView {
 	}
 
 	IsoCover coverAt(int a, int b, int h) const {
-		const glm::ivec3 p = position(a, b, h);
+		const math::Vec3i p = position(a, b, h);
 		if (!volume->region().containsPoint(p)) {
 			return IsoCover::Empty;
 		}
@@ -506,7 +504,7 @@ struct IsoView {
 		return result;
 	}
 
-	glm::ivec3 position(int a, int b, int h) const {
+	math::Vec3i position(int a, int b, int h) const {
 		const voxel::Region &r = volume->region();
 		const int y = face == voxel::FaceNames::Down ? r.getUpperY() - h : r.getLowerY() + h;
 		// a is screen-right and follows the viewport camera: Front -X, Back +X, Left +Z, Right -Z.
@@ -523,7 +521,7 @@ struct IsoView {
 	}
 
 	bool occupied(int a, int b, int h) const {
-		const glm::ivec3 p = position(a, b, h);
+		const math::Vec3i p = position(a, b, h);
 		return volume->region().containsPoint(p) && !voxel::isAir(volume->voxel(p).getMaterial());
 	}
 };
@@ -563,7 +561,7 @@ static void applySharedImageCvars(color::RGBA &background, int &imgW, int &imgH,
 	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageBackground)) {
 		float c[4];
 		v->vec4Val(c);
-		background = color::getRGBA(glm::vec4(c[0], c[1], c[2], c[3]));
+		background = color::getRGBA(math::Vec4f(c[0], c[1], c[2], c[3]));
 	}
 	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageWidth)) {
 		imgW = v->intVal();
@@ -606,7 +604,7 @@ IsoRenderConfig IsoRenderConfig::fromCvars() {
 	if (const core::VarPtr &v = core::Var::findVar(cfg::ImageIsoOutlineColor)) {
 		float c[4];
 		v->vec4Val(c);
-		config.outlineColor = color::getRGBA(glm::vec4(c[0], c[1], c[2], c[3]));
+		config.outlineColor = color::getRGBA(math::Vec4f(c[0], c[1], c[2], c[3]));
 	}
 	return config;
 }
@@ -646,10 +644,10 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 	int normalCount = 0;
 	if (config.shading && config.normals && normalPalette != nullptr && normalPalette->size() > 0) {
 		normalCount = (int)normalPalette->size();
-		const glm::vec3 light = isoLightDirection();
-		glm::vec3 axisA(0.0f);
-		glm::vec3 axisB(0.0f);
-		glm::vec3 axisH(0.0f);
+		const math::Vec3f light = isoLightDirection();
+		math::Vec3f axisA(0.0f);
+		math::Vec3f axisB(0.0f);
+		math::Vec3f axisH(0.0f);
 		isoViewAxes(config.frontFace, axisA, axisB, axisH);
 		for (int i = 0; i < normalCount; ++i) {
 			normalReady[i] = 0;
@@ -657,13 +655,13 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 			if (encoded.a == 0) {
 				continue;
 			}
-			const glm::vec3 worldN = palette::NormalPalette::toVec3(encoded);
-			const glm::vec3 viewN(glm::dot(worldN, axisA), glm::dot(worldN, axisH), glm::dot(worldN, axisB));
-			const float len2 = glm::dot(viewN, viewN);
+			const math::Vec3f worldN = palette::NormalPalette::toVec3(encoded);
+			const math::Vec3f viewN(math::dot(worldN, axisA), math::dot(worldN, axisH), math::dot(worldN, axisB));
+			const float len2 = math::dot(viewN, viewN);
 			if (len2 <= 1.0e-8f) {
 				continue;
 			}
-			normalShade[i] = isoLambert(viewN * (1.0f / glm::sqrt(len2)), light);
+			normalShade[i] = isoLambert(viewN * (1.0f / math::sqrt(len2)), light);
 			normalReady[i] = 1;
 		}
 	}
@@ -762,10 +760,10 @@ image::ImagePtr renderIsometricImage(const voxel::RawVolume *volume, const palet
 	int imgH = config.imgH;
 	if (imgW > 0 || imgH > 0) {
 		if (imgW <= 0) {
-			imgW = core_max(1, (int)glm::round((float)width * imgH / nativeHeight));
+			imgW = core_max(1, (int)math::round((float)width * imgH / nativeHeight));
 		}
 		if (imgH <= 0) {
-			imgH = core_max(1, (int)glm::round((float)nativeHeight * imgW / width));
+			imgH = core_max(1, (int)math::round((float)nativeHeight * imgW / width));
 		}
 		if (config.upScale || (imgW <= width && imgH <= nativeHeight)) {
 			// Nearest sampling preserves the discrete shades and transparent silhouette.
@@ -794,7 +792,7 @@ image::ImagePtr renderFaceToImage(const voxel::RawVolume *volume, const palette:
 		return image::ImagePtr();
 	}
 
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 	int width = 1;
 	int height = 1;
 	if (voxel::isY(face)) {
@@ -816,7 +814,7 @@ image::ImagePtr renderFaceToImage(const voxel::RawVolume *volume, const palette:
 		}
 	}
 
-	const glm::ivec3 &mins = region.getLowerCorner();
+	const math::Vec3i &mins = region.getLowerCorner();
 	voxelutil::visitFace(*volume, region, face, [face, &palette, &image, &mins, width, height](int x, int y, int z, const voxel::Voxel &voxel) {
 		const color::RGBA rgba = palette.color(voxel.getColor());
 		int px = 0;
@@ -849,7 +847,7 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 	const float depthFactor = config.depthFactor;
 	image::ImagePtr image = core::make_shared<image::Image>("renderToImage");
 	const voxel::Region &region = volume->region();
-	const glm::ivec3 &dim = region.getDimensionsInVoxels();
+	const math::Vec3i &dim = region.getDimensionsInVoxels();
 	int width = 1;
 	int height = 1;
 	if (voxel::isY(frontFace)) {
@@ -916,11 +914,11 @@ image::ImagePtr renderToImage(const voxel::RawVolume *volume, const palette::Pal
 	if ((imgW > 0 && imgW != width) || (imgH > 0 && imgH != height)) {
 		if (imgW <= 0) {
 			const float factor = (float)imgH / (float)height;
-			imgW = (int)glm::round((float)width * factor);
+			imgW = (int)math::round((float)width * factor);
 		}
 		if (imgH <= 0) {
 			const float factor = (float)imgW / (float)width;
-			imgH = (int)glm::round((float)height * factor);
+			imgH = (int)math::round((float)height * factor);
 		}
 		const bool wouldUpscale = imgW > width || imgH > height;
 		if (upScale || !wouldUpscale) {

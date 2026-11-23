@@ -5,6 +5,7 @@
 #pragma once
 
 #include "AABBBrush.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -16,7 +17,7 @@ class PlaneBrush : public AABBBrush {
 private:
 	using Super = AABBBrush;
 	voxel::Voxel _hitVoxel;
-	glm::ivec3 _initialPlanePos{0};
+	math::Vec3i _initialPlanePos{0};
 
 protected:
 	void generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper, const BrushContext &ctx,
@@ -36,7 +37,7 @@ public:
 		return BrushPreviewStyle::Changes;
 	}
 	voxel::Region previewRegion(const BrushContext &ctx, const voxel::RawVolume *volume) const override;
-	bool projectCursor(const math::Ray &ray, glm::ivec3 &position) const override;
+	bool projectCursor(const math::Ray &ray, math::Vec3i &position) const override;
 	bool needsAdditionalAction(const BrushContext &) const override {
 		return false;
 	}

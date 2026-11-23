@@ -20,6 +20,7 @@
 #include "voxelgenerator/ShapeGenerator.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxel/tests/VoxelPrinter.h"
+#include "math/Vec3i.h"
 
 namespace voxelgenerator {
 
@@ -28,7 +29,7 @@ private:
 	using Super = app::AbstractTest;
 protected:
 	static const voxel::Region _region;
-	const glm::ivec3 _center { 15 };
+	const math::Vec3i _center { 15 };
 	static constexpr int _width { 32 };
 	static constexpr int _height { 32 };
 	static constexpr int _depth { 32 };
@@ -100,7 +101,7 @@ protected:
 
 	void testCreateEllipsePlane(math::Axis axis) {
 		voxel::RawVolumeWrapper wrapper(_volume);
-		glm::ivec3 centerBottom = _center;
+		math::Vec3i centerBottom = _center;
 		const int axisIdx = math::getIndexForAxis(axis);
 		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
 		shape::createEllipsePlane(wrapper, centerBottom, axis, _width, _depth, 10, _voxel);
@@ -109,7 +110,7 @@ protected:
 
 	void testCreateEllipse(math::Axis axis) {
 		voxel::RawVolumeWrapper wrapper(_volume);
-		glm::ivec3 centerBottom = _center;
+		math::Vec3i centerBottom = _center;
 		const int axisIdx = math::getIndexForAxis(axis);
 		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
 		shape::createEllipse(wrapper, centerBottom, axis, _width, _height, _depth, _voxel);
@@ -118,7 +119,7 @@ protected:
 
 	void testCreateCone(math::Axis axis) {
 		voxel::RawVolumeWrapper wrapper(_volume);
-		glm::ivec3 centerBottom = _center;
+		math::Vec3i centerBottom = _center;
 		const int axisIdx = math::getIndexForAxis(axis);
 		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
 		shape::createCone(wrapper, centerBottom, axis, false, _width, _height, _depth, _voxel);
@@ -127,7 +128,7 @@ protected:
 
 	void testCreateDome(math::Axis axis) {
 		voxel::RawVolumeWrapper wrapper(_volume);
-		glm::ivec3 centerBottom = _center;
+		math::Vec3i centerBottom = _center;
 		const int axisIdx = math::getIndexForAxis(axis);
 		centerBottom[axisIdx] = _region.getLowerCorner()[axisIdx];
 		shape::createDome(wrapper, centerBottom, axis, false, _width, _height, _depth, _voxel);
@@ -212,7 +213,7 @@ TEST_F(ShapeGeneratorTest, testCreateDomeZ) {
 
 TEST_F(ShapeGeneratorTest, testCreateCylinder) {
 	voxel::RawVolumeWrapper wrapper(_volume);
-	glm::ivec3 centerBottom = _center;
+	math::Vec3i centerBottom = _center;
 	centerBottom.y = _region.getLowerY();
 	shape::createCylinder(wrapper, centerBottom, math::Axis::Y, _width / 2, _height, _voxel);
 	verify("cylinder.qb");
@@ -220,7 +221,7 @@ TEST_F(ShapeGeneratorTest, testCreateCylinder) {
 
 TEST_F(ShapeGeneratorTest, testCreateCircleOutline) {
 	voxel::RawVolumeWrapper wrapper(_volume);
-	glm::ivec3 center = _center;
+	math::Vec3i center = _center;
 	center.y = _region.getLowerY();
 	const int radius = 10;
 	const int thickness = 2;
@@ -234,7 +235,7 @@ TEST_F(ShapeGeneratorTest, testCreateCircleOutline) {
 
 TEST_F(ShapeGeneratorTest, testCreateEllipseOutline) {
 	voxel::RawVolumeWrapper wrapper(_volume);
-	glm::ivec3 center = _center;
+	math::Vec3i center = _center;
 	center.y = _region.getLowerY();
 	const int width = 20;
 	const int depth = 14;

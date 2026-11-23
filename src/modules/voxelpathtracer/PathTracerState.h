@@ -8,8 +8,8 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelrender/RenderUtil.h"
-#include <glm/vec3.hpp>
 #include <stdint.h>
+#include "math/Vec3f.h"
 
 namespace voxelpathtracer {
 
@@ -41,18 +41,18 @@ struct PathTracerParams {
 	float sunElevation = 35.0f;
 	float sunIntensity = 3.0f;
 	float sunSoftness = 1.5f;
-	glm::vec3 sunColor{1.0f, 0.945f, 0.863f};
-	glm::vec3 skyTop{1.0f};
-	glm::vec3 skyHorizon{1.0f};
+	math::Vec3f sunColor{1.0f, 0.945f, 0.863f};
+	math::Vec3f skyTop{1.0f};
+	math::Vec3f skyHorizon{1.0f};
 	float skyIntensity = 1.0f;
 	bool floorEnabled = true;
 	bool depthOfField = false;
-	glm::vec3 floorColor{80.0f / 255.0f};
+	math::Vec3f floorColor{80.0f / 255.0f};
 	float floorY = 0.0f;
 	int background = PathTracerBackgroundSky;
-	glm::vec3 backgroundColor{27.0f / 255.0f, 29.0f / 255.0f, 34.0f / 255.0f};
+	math::Vec3f backgroundColor{27.0f / 255.0f, 29.0f / 255.0f, 34.0f / 255.0f};
 	float fogDensity = 0.0f;
-	glm::vec3 fogColor{184.0f / 255.0f, 198.0f / 255.0f, 217.0f / 255.0f};
+	math::Vec3f fogColor{184.0f / 255.0f, 198.0f / 255.0f, 217.0f / 255.0f};
 	float voxelEdge = 0.0f;
 	float bloom = 0.0f;
 	float atmosphere = 0.0f;

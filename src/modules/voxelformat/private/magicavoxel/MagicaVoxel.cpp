@@ -7,7 +7,6 @@
 #include "app/Async.h"
 #include "color/Color.h"
 #include "core/ConfigVar.h"
-#include "core/GLMConst.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
@@ -26,12 +25,6 @@
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
 #include <limits>
-#include <glm/gtc/matrix_access.hpp>
-#include <glm/gtc/quaternion.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/transform.hpp>
 #define OGT_VOX_BIGENDIAN_SWAP32 core_swap32le
 #define OGT_VOX_IMPLEMENTATION
 #define ogt_assert(x, msg) core_assert_msg(x, "%s", msg)
@@ -40,15 +33,24 @@
 		Log::warn("%s", msg);                                                                                                                                                                                          \
 	}
 #include "voxelformat/external/ogt_vox.h"
+#include "math/Quatf.h"
+#include "math/Mat4f.h"
+#include "math/Mat3f.h"
+#include "math/Vec4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Axes.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
-glm::mat4 ogtToMat(const ogt_vox_transform &t) {
-	const glm::vec4 col0(t.m00, t.m01, t.m02, t.m03);
-	const glm::vec4 col1(t.m10, t.m11, t.m12, t.m13);
-	const glm::vec4 col2(t.m20, t.m21, t.m22, t.m23);
-	const glm::vec4 col3(t.m30, t.m31, t.m32, t.m33);
-	return glm::mat4{col0, col1, col2, col3};
+math::Mat4f ogtToMat(const ogt_vox_transform &t) {
+	const math::Vec4f col0(t.m00, t.m01, t.m02, t.m03);
+	const math::Vec4f col1(t.m10, t.m11, t.m12, t.m13);
+	const math::Vec4f col2(t.m20, t.m21, t.m22, t.m23);
+	const math::Vec4f col3(t.m30, t.m31, t.m32, t.m33);
+	return math::Mat4f{col0, col1, col2, col3};
 }
 
 /**
@@ -56,8 +58,8 @@ glm::mat4 ogtToMat(const ogt_vox_transform &t) {
  * Independent per-column snapping can map two columns onto the same axis (e.g. 45-degree
  * rotations); ogt then writes an invalid packed _r (e.g. 15) and crashes on reload.
  */
-static void snapToSignedPermutation(glm::vec3 &x, glm::vec3 &y, glm::vec3 &z) {
-	const glm::vec3 cols[3] = {x, y, z};
+static void snapToSignedPermutation(math::Vec3f &x, math::Vec3f &y, math::Vec3f &z) {
+	const math::Vec3f cols[3] = {x, y, z};
 	// clang-format off
 	const int perms[6][3] = {
 		{0, 1, 2}, {0, 2, 1}, {1, 0, 2},
@@ -67,8 +69,8 @@ static void snapToSignedPermutation(glm::vec3 &x, glm::vec3 &y, glm::vec3 &z) {
 	int best[3] = {0, 1, 2};
 	float bestScore = -1.0f;
 	for (int p = 0; p < 6; ++p) {
-		const float score = glm::abs(cols[0][perms[p][0]]) + glm::abs(cols[1][perms[p][1]]) +
-							glm::abs(cols[2][perms[p][2]]);
+		const float score = math::abs(cols[0][perms[p][0]]) + math::abs(cols[1][perms[p][1]]) +
+							math::abs(cols[2][perms[p][2]]);
 		if (score > bestScore) {
 			bestScore = score;
 			best[0] = perms[p][0];
@@ -77,7 +79,7 @@ static void snapToSignedPermutation(glm::vec3 &x, glm::vec3 &y, glm::vec3 &z) {
 		}
 	}
 	auto axis = [](int index, float signedComponent) {
-		glm::vec3 v(0.0f);
+		math::Vec3f v(0.0f);
 		// Zero/NaN columns still need a cardinal axis so packing never sees an all-zero row.
 		const float sign = signedComponent < 0.0f ? -1.0f : 1.0f;
 		v[index] = sign;
@@ -88,11 +90,11 @@ static void snapToSignedPermutation(glm::vec3 &x, glm::vec3 &y, glm::vec3 &z) {
 	z = axis(best[2], cols[2][best[2]]);
 }
 
-ogt_vox_transform matToOgt(const glm::mat4 &mat) {
+ogt_vox_transform matToOgt(const math::Mat4f &mat) {
 	// MagicaVoxel / ogt only support signed-permutation rotations (see ogt_vox_transform).
-	glm::vec3 x(mat[0]);
-	glm::vec3 y(mat[1]);
-	glm::vec3 z(mat[2]);
+	math::Vec3f x(mat[0]);
+	math::Vec3f y(mat[1]);
+	math::Vec3f z(mat[2]);
 	snapToSignedPermutation(x, y, z);
 	ogt_vox_transform t = ogt_identity_transform;
 	// ogt stores columns: (m00,m01,m02)=x, (m10,m11,m12)=y, (m20,m21,m22)=z
@@ -105,17 +107,17 @@ ogt_vox_transform matToOgt(const glm::mat4 &mat) {
 	t.m20 = z.x;
 	t.m21 = z.y;
 	t.m22 = z.z;
-	t.m30 = glm::round(mat[3].x);
-	t.m31 = glm::round(mat[3].y);
-	t.m32 = glm::round(mat[3].z);
+	t.m30 = math::round(mat[3].x);
+	t.m31 = math::round(mat[3].y);
+	t.m32 = math::round(mat[3].z);
 	t.m33 = 1.0f;
 	checkRotation(t);
 	return t;
 }
 
-static glm::mat4 computeBakeMatrix(const glm::mat4 &ogtTransform, const glm::vec3 &pivot) {
-	const glm::mat4 shiftMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f));
-	const glm::mat4 pivotMatrix = glm::translate(glm::mat4(1.0f), -pivot);
+static math::Mat4f computeBakeMatrix(const math::Mat4f &ogtTransform, const math::Vec3f &pivot) {
+	const math::Mat4f shiftMatrix = math::translate(math::Mat4f(1.0f), math::Vec3f(0.5f));
+	const math::Mat4f pivotMatrix = math::translate(math::Mat4f(1.0f), -pivot);
 	return ogtTransform * shiftMatrix * pivotMatrix;
 }
 
@@ -136,23 +138,23 @@ static ogt_vox_transform instanceTransform(const ogt_vox_instance &instance, uin
 	return transform;
 }
 
-glm::mat4 ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frameIdx, const ogt_vox_scene *scene,
+math::Mat4f ogtInstanceBakeMatrix(const ogt_vox_instance &instance, uint32_t frameIdx, const ogt_vox_scene *scene,
 								const ogt_vox_model *model) {
 	const ogt_vox_transform t = instanceTransform(instance, frameIdx, scene);
-	return computeBakeMatrix(ogtToMat(t), glm::vec3(ogtVolumePivot(model)));
+	return computeBakeMatrix(ogtToMat(t), math::Vec3f(ogtVolumePivot(model)));
 }
 
-BakeAffine extractBakeAffine(const glm::mat4 &bakeMat) {
+BakeAffine extractBakeAffine(const math::Mat4f &bakeMat) {
 	BakeAffine affine;
 	for (int outAxis = 0; outAxis < 3; ++outAxis) {
 		int found = -1;
 		float foundVal = 0.0f;
 		for (int inAxis = 0; inAxis < 3; ++inAxis) {
 			const float v = bakeMat[inAxis][outAxis];
-			if (glm::abs(v) <= 0.0001f) {
+			if (math::abs(v) <= 0.0001f) {
 				continue;
 			}
-			if (glm::abs(glm::abs(v) - 1.0f) > 0.001f || found >= 0) {
+			if (math::abs(math::abs(v) - 1.0f) > 0.001f || found >= 0) {
 				affine.valid = false;
 				return affine;
 			}
@@ -165,27 +167,27 @@ BakeAffine extractBakeAffine(const glm::mat4 &bakeMat) {
 		}
 		affine.src[outAxis] = (int8_t)found;
 		affine.sign[outAxis] = foundVal > 0.0f ? (int8_t)1 : (int8_t)-1;
-		affine.translate[outAxis] = (int32_t)glm::floor(bakeMat[3][outAxis]);
+		affine.translate[outAxis] = (int32_t)math::floor(bakeMat[3][outAxis]);
 	}
 	affine.valid = true;
 	return affine;
 }
 
-glm::ivec3 bakeModelWorldShift(const ogt_vox_model *model, const glm::mat4 &bakeMat) {
-	const glm::vec3 volSize = ogtVolumeSize(model);
-	const glm::vec3 corners[8] = {glm::vec3(0),
-								  glm::vec3(volSize.x, 0, 0),
-								  glm::vec3(0, volSize.y, 0),
-								  glm::vec3(volSize.x, volSize.y, 0),
-								  glm::vec3(0, 0, volSize.z),
-								  glm::vec3(volSize.x, 0, volSize.z),
-								  glm::vec3(0, volSize.y, volSize.z),
+math::Vec3i bakeModelWorldShift(const ogt_vox_model *model, const math::Mat4f &bakeMat) {
+	const math::Vec3f volSize = ogtVolumeSize(model);
+	const math::Vec3f corners[8] = {math::Vec3f(0),
+								  math::Vec3f(volSize.x, 0, 0),
+								  math::Vec3f(0, volSize.y, 0),
+								  math::Vec3f(volSize.x, volSize.y, 0),
+								  math::Vec3f(0, 0, volSize.z),
+								  math::Vec3f(volSize.x, 0, volSize.z),
+								  math::Vec3f(0, volSize.y, volSize.z),
 								  volSize};
-	glm::ivec3 mins(std::numeric_limits<int>::max());
+	math::Vec3i mins(std::numeric_limits<int>::max());
 	for (int c = 0; c < 8; ++c) {
-		const glm::ivec3 ogtCorner = calcTransform(bakeMat, corners[c]);
-		const glm::ivec3 pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
-		mins = glm::min(mins, pos);
+		const math::Vec3i ogtCorner = calcTransform(bakeMat, corners[c]);
+		const math::Vec3i pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
+		mins = math::min(mins, pos);
 	}
 	return mins;
 }
@@ -218,7 +220,7 @@ CORE_NO_SANITIZE_ADDRESS static void bakeOgtAffineSlices(const ogt_vox_model *mo
 
 CORE_NO_SANITIZE_ADDRESS static void bakeOgtFloatSlices(const ogt_vox_model *model, const voxel::Voxel *lut,
 														voxel::Voxel *data, int width, int64_t stride,
-														const glm::ivec3 &shift, const glm::mat4 &bakeMat, int start,
+														const math::Vec3i &shift, const math::Mat4f &bakeMat, int start,
 														int end) {
 	const uint8_t *ogtVoxel = model->voxel_data + start * model->size_x * model->size_y;
 	const float m00 = bakeMat[0][0], m01 = bakeMat[1][0], m02 = bakeMat[2][0], m03 = bakeMat[3][0];
@@ -234,9 +236,9 @@ CORE_NO_SANITIZE_ADDRESS static void bakeOgtFloatSlices(const ogt_vox_model *mod
 				const float fi = (float)i;
 				const float fj = (float)j;
 				const float fk = (float)k;
-				const glm::ivec3 ogtPos((int)glm::floor(m00 * fi + m01 * fj + m02 * fk + m03),
-										(int)glm::floor(m10 * fi + m11 * fj + m12 * fk + m13),
-										(int)glm::floor(m20 * fi + m21 * fj + m22 * fk + m23));
+				const math::Vec3i ogtPos((int)math::floor(m00 * fi + m01 * fj + m02 * fk + m03),
+										(int)math::floor(m10 * fi + m11 * fj + m12 * fk + m13),
+										(int)math::floor(m20 * fi + m21 * fj + m22 * fk + m23));
 				const int x = -(ogtPos.x + 1) - shift.x;
 				const int y = ogtPos.z - shift.y;
 				const int z = ogtPos.y - shift.z;
@@ -247,26 +249,26 @@ CORE_NO_SANITIZE_ADDRESS static void bakeOgtFloatSlices(const ogt_vox_model *mod
 	}
 }
 
-CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const glm::mat4 &bakeMat,
-													   const palette::Palette &palette, glm::ivec3 &outShift,
+CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *model, const math::Mat4f &bakeMat,
+													   const palette::Palette &palette, math::Vec3i &outShift,
 													   bool parallelZ, const voxel::Voxel *lut) {
 	core_trace_scoped(VoxBakeOgtModel);
-	const glm::vec3 volSize = ogtVolumeSize(model);
-	const glm::vec3 corners[8] = {glm::vec3(0),
-								  glm::vec3(volSize.x, 0, 0),
-								  glm::vec3(0, volSize.y, 0),
-								  glm::vec3(volSize.x, volSize.y, 0),
-								  glm::vec3(0, 0, volSize.z),
-								  glm::vec3(volSize.x, 0, volSize.z),
-								  glm::vec3(0, volSize.y, volSize.z),
+	const math::Vec3f volSize = ogtVolumeSize(model);
+	const math::Vec3f corners[8] = {math::Vec3f(0),
+								  math::Vec3f(volSize.x, 0, 0),
+								  math::Vec3f(0, volSize.y, 0),
+								  math::Vec3f(volSize.x, volSize.y, 0),
+								  math::Vec3f(0, 0, volSize.z),
+								  math::Vec3f(volSize.x, 0, volSize.z),
+								  math::Vec3f(0, volSize.y, volSize.z),
 								  volSize};
-	glm::ivec3 mins(std::numeric_limits<int>::max());
-	glm::ivec3 maxs(std::numeric_limits<int>::min());
+	math::Vec3i mins(std::numeric_limits<int>::max());
+	math::Vec3i maxs(std::numeric_limits<int>::min());
 	for (int c = 0; c < 8; ++c) {
-		const glm::ivec3 ogtCorner = calcTransform(bakeMat, corners[c]);
-		const glm::ivec3 pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
-		mins = glm::min(mins, pos);
-		maxs = glm::max(maxs, pos);
+		const math::Vec3i ogtCorner = calcTransform(bakeMat, corners[c]);
+		const math::Vec3i pos(-(ogtCorner.x + 1), ogtCorner.z, ogtCorner.y);
+		mins = math::min(mins, pos);
+		maxs = math::max(maxs, pos);
 	}
 	voxel::Region region(mins, maxs);
 	outShift = region.getLowerCorner();
@@ -282,19 +284,19 @@ CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *mod
 	const BakeAffine affine = extractBakeAffine(bakeMat);
 	const int width = v->width();
 	const int64_t stride = v->region().stride();
-	const glm::ivec3 shift = outShift;
+	const math::Vec3i shift = outShift;
 	voxel::Voxel *data = v->voxels();
 
 	// volume: x=-(ogt.x+1)-shift.x, y=ogt.z-shift.y, z=ogt.y-shift.z
 	int64_t idxBase = 0;
 	int64_t dI = 0, dJ = 0, dK = 0;
 	if (affine.valid) {
-		const glm::ivec3 ogt0 = affine.apply(0, 0, 0);
+		const math::Vec3i ogt0 = affine.apply(0, 0, 0);
 		idxBase = (int64_t)(-(ogt0.x + 1) - shift.x) + (int64_t)(ogt0.z - shift.y) * (int64_t)width +
 				  (int64_t)(ogt0.y - shift.z) * stride;
-		const glm::ivec3 ogtI = affine.apply(1, 0, 0);
-		const glm::ivec3 ogtJ = affine.apply(0, 1, 0);
-		const glm::ivec3 ogtK = affine.apply(0, 0, 1);
+		const math::Vec3i ogtI = affine.apply(1, 0, 0);
+		const math::Vec3i ogtJ = affine.apply(0, 1, 0);
+		const math::Vec3i ogtK = affine.apply(0, 0, 1);
 		dI = (int64_t)(-(ogtI.x + 1) - shift.x) + (int64_t)(ogtI.z - shift.y) * (int64_t)width +
 			 (int64_t)(ogtI.y - shift.z) * stride - idxBase;
 		dJ = (int64_t)(-(ogtJ.x + 1) - shift.x) + (int64_t)(ogtJ.z - shift.y) * (int64_t)width +
@@ -321,38 +323,38 @@ CORE_NO_SANITIZE_ADDRESS voxel::RawVolume *bakeOgtModel(const ogt_vox_model *mod
 	return v;
 }
 
-glm::mat4 ogtMatToVengi(const glm::mat4 &ogtMat) {
+math::Mat4f ogtMatToVengi(const math::Mat4f &ogtMat) {
 	// loadModels stores MagicaVoxel (x,y,z) at vengi (sx-1-x, z, y). The previous bake path used
 	// transform * translate(0.5) * translate(-pivot) then remapped with (-(x+1), z, y) and floor().
 	// With pivot handled by SceneGraphTransform, match that placement with A-conjugation, the -1 X
 	// bias, the half-voxel shift, then snap translation to the integer grid MagicaVoxel uses.
 	// clang-format off
-	const glm::mat4 A(
+	const math::Mat4f A(
 		-1.0f, 0.0f, 0.0f, 0.0f,
 		 0.0f, 0.0f, 1.0f, 0.0f,
 		 0.0f, 1.0f, 0.0f, 0.0f,
 		 0.0f, 0.0f, 0.0f, 1.0f);
 	// clang-format on
-	const glm::mat4 offset = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-	const glm::mat4 halfVoxel = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f));
+	const math::Mat4f offset = math::translate(math::Mat4f(1.0f), math::Vec3f(-1.0f, 0.0f, 0.0f));
+	const math::Mat4f halfVoxel = math::translate(math::Mat4f(1.0f), math::Vec3f(0.5f));
 	return offset * A * (ogtMat * halfVoxel) * A;
 }
 
-glm::mat4 vengiMatToOgt(const glm::mat4 &vengiMat) {
+math::Mat4f vengiMatToOgt(const math::Mat4f &vengiMat) {
 	// Inverse: remove A/offset, then undo the half-voxel translation on the MagicaVoxel side.
 	// clang-format off
-	const glm::mat4 A(
+	const math::Mat4f A(
 		-1.0f, 0.0f, 0.0f, 0.0f,
 		 0.0f, 0.0f, 1.0f, 0.0f,
 		 0.0f, 1.0f, 0.0f, 0.0f,
 		 0.0f, 0.0f, 0.0f, 1.0f);
 	// clang-format on
-	const glm::mat4 offsetInv = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	const glm::mat4 halfVoxelInv = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f));
+	const math::Mat4f offsetInv = math::translate(math::Mat4f(1.0f), math::Vec3f(1.0f, 0.0f, 0.0f));
+	const math::Mat4f halfVoxelInv = math::translate(math::Mat4f(1.0f), math::Vec3f(-0.5f));
 	return (A * offsetInv * vengiMat * A) * halfVoxelInv;
 }
 
-glm::vec3 ogtNormalizedPivot(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ) {
+math::Vec3f ogtNormalizedPivot(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ) {
 	// MagicaVoxel pivot is floor(size/2) in model space.
 	// loadModels maps MagicaVoxel (x,y,z) -> vengi (sx-1-x, z, y).
 	const float sx = (float)sizeX;
@@ -361,10 +363,10 @@ glm::vec3 ogtNormalizedPivot(uint32_t sizeX, uint32_t sizeY, uint32_t sizeZ) {
 	const float px = (float)(int)(sizeX / 2);
 	const float py = (float)(int)(sizeY / 2);
 	const float pz = (float)(int)(sizeZ / 2);
-	return glm::vec3((sx - 1.0f - px) / sx, pz / sz, py / sy);
+	return math::Vec3f((sx - 1.0f - px) / sx, pz / sz, py / sy);
 }
 
-glm::vec3 ogtNormalizedPivot(const ogt_vox_model *model) {
+math::Vec3f ogtNormalizedPivot(const ogt_vox_model *model) {
 	return ogtNormalizedPivot(model->size_x, model->size_y, model->size_z);
 }
 
@@ -414,7 +416,7 @@ bool loadGroupKeyFrames(scenegraph::SceneGraphNode &node, const ogt_vox_anim_tra
 	scenegraph::SceneGraphKeyFrame sceneGraphKeyFrame;
 	sceneGraphKeyFrame.frameIdx = 0;
 	sceneGraphKeyFrame.interpolation = scenegraph::InterpolationType::Linear;
-	sceneGraphKeyFrame.transform().setWorldMatrix(glm::mat4(1.0f));
+	sceneGraphKeyFrame.transform().setWorldMatrix(math::Mat4f(1.0f));
 	kf.push_back(core::move(sceneGraphKeyFrame));
 	return node.setKeyFrames(kf);
 }
@@ -432,11 +434,11 @@ const ogt_vox_keyframe_transform *saveKeyFrames(const scenegraph::SceneGraph &sc
 
 	const bool applyTransform = core::getVar(cfg::VoxformatMVApplyTransform)->boolVal();
 	if (applyTransform || !node.isAnyModelNode()) {
-		glm::vec3 width(0.0f);
-		glm::vec3 mins(0.0f);
+		math::Vec3f width(0.0f);
+		math::Vec3f mins(0.0f);
 		if (node.isAnyModelNode()) {
 			const voxel::Region region = sceneGraph.resolveRegion(node);
-			width = glm::vec3(region.getDimensionsInVoxels());
+			width = math::Vec3f(region.getDimensionsInVoxels());
 			mins = region.getLowerCornerf();
 		}
 		for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
@@ -444,25 +446,25 @@ const ogt_vox_keyframe_transform *saveKeyFrames(const scenegraph::SceneGraph &sc
 			core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
 			ogt_keyframe.frame_index = kf.frameIdx;
 			ogt_keyframe.transform = ogt_identity_transform;
-			const glm::vec3 kftransform =
+			const math::Vec3f kftransform =
 				mins + kf.transform().worldTranslation() - node.pivot() * width + width / 2.0f;
-			ogt_keyframe.transform.m30 = -glm::floor(kftransform.x + 0.5f);
+			ogt_keyframe.transform.m30 = -math::floor(kftransform.x + 0.5f);
 			ogt_keyframe.transform.m31 = kftransform.z;
 			ogt_keyframe.transform.m32 = kftransform.y;
 			checkRotation(ogt_keyframe.transform);
 			ctx.keyframeTransforms.push_back(ogt_keyframe);
 		}
 	} else {
-		glm::mat4 pivotAdjust(1.0f);
+		math::Mat4f pivotAdjust(1.0f);
 		const voxel::Region region = sceneGraph.resolveRegion(node);
-		const glm::vec3 dims(region.getDimensionsInVoxels());
-		const glm::vec3 mvPivot = ogtNormalizedPivot((uint32_t)dims.x, (uint32_t)dims.z, (uint32_t)dims.y);
-		pivotAdjust = glm::translate(glm::mat4(1.0f), (mvPivot - node.pivot()) * dims);
+		const math::Vec3f dims(region.getDimensionsInVoxels());
+		const math::Vec3f mvPivot = ogtNormalizedPivot((uint32_t)dims.x, (uint32_t)dims.z, (uint32_t)dims.y);
+		pivotAdjust = math::translate(math::Mat4f(1.0f), (mvPivot - node.pivot()) * dims);
 		for (const scenegraph::SceneGraphKeyFrame &kf : keyFrames) {
 			ogt_vox_keyframe_transform ogt_keyframe;
 			core_memset(&ogt_keyframe, 0, sizeof(ogt_keyframe));
 			ogt_keyframe.frame_index = kf.frameIdx;
-			const glm::mat4 worldForMv = kf.transform().worldMatrix() * pivotAdjust;
+			const math::Mat4f worldForMv = kf.transform().worldMatrix() * pivotAdjust;
 			ogt_keyframe.transform = matToOgt(vengiMatToOgt(worldForMv));
 			ctx.keyframeTransforms.push_back(ogt_keyframe);
 		}
@@ -593,7 +595,7 @@ void printDetails(const ogt_vox_scene *scene) {
 }
 
 #ifdef DEBUG
-static bool checkRotationRow(const glm::vec3 &vec) {
+static bool checkRotationRow(const math::Vec3f &vec) {
 	int nonZero = 0;
 	for (int i = 0; i < 3; i++) {
 		if (vec[i] == 1.0f || vec[i] == -1.0f) {
@@ -622,16 +624,16 @@ void checkRotation(const ogt_vox_transform &transform) {
 void loadCameras(const ogt_vox_scene *scene, scenegraph::SceneGraph &sceneGraph) {
 	for (uint32_t n = 0; n < scene->num_cameras; ++n) {
 		const ogt_vox_cam &c = scene->cameras[n];
-		const glm::vec3 target(c.focus[0], c.focus[2], c.focus[1]);
-		const glm::vec3 angles(c.angle[0], -c.angle[1], c.angle[2]);
-		const glm::vec3 rangles = glm::radians(angles);
-		const glm::quat quat(rangles);
+		const math::Vec3f target(c.focus[0], c.focus[2], c.focus[1]);
+		const math::Vec3f angles(c.angle[0], -c.angle[1], c.angle[2]);
+		const math::Vec3f rangles = math::radians(angles);
+		const math::Quatf quat(rangles);
 		const float distance = (float)c.radius;
-		const glm::vec3 &forward = glm::conjugate(quat) * glm::forward();
-		const glm::vec3 &backward = -forward;
-		const glm::vec3 &newPosition = target + backward * distance;
-		const glm::mat4 &orientation = glm::mat4_cast(quat);
-		const glm::mat4 &viewMatrix = glm::translate(orientation, -newPosition);
+		const math::Vec3f &forward = math::conjugate(quat) * math::forward();
+		const math::Vec3f &backward = -forward;
+		const math::Vec3f &newPosition = target + backward * distance;
+		const math::Mat4f &orientation = math::mat4_cast(quat);
+		const math::Mat4f &viewMatrix = math::translate(orientation, -newPosition);
 
 		{
 			scenegraph::SceneGraphNodeCamera camNode;
@@ -735,8 +737,8 @@ core::DynamicArray<MVModelToNode> loadModels(const ogt_vox_scene *scene, const p
 				continue;
 			}
 			// MagicaVoxel Z-up -> vengi Y-up with X mirrored to match VisitorOrder::YZmX on save.
-			voxel::Region region(glm::ivec3(0),
-								 glm::ivec3(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
+			voxel::Region region(math::Vec3i(0),
+								 math::Vec3i(ogtModel->size_x - 1, ogtModel->size_z - 1, ogtModel->size_y - 1));
 			voxel::RawVolume *v = new voxel::RawVolume(region);
 
 			const uint8_t *ogtVoxel = ogtModel->voxel_data;
@@ -1220,19 +1222,19 @@ void readVoxCustomChunk(const ogt_vox_custom_chunk *chunk, void *userData, ogt_v
 	readFroxelCustomChunk(chunk, &ctx->froxel);
 }
 
-static glm::vec3 froxelVecToVengi(const float v[3]) {
-	return glm::vec3(-v[0], v[2], v[1]);
+static math::Vec3f froxelVecToVengi(const float v[3]) {
+	return math::Vec3f(-v[0], v[2], v[1]);
 }
 
-static glm::vec3 froxelScaleToVengi(const float s[3]) {
-	return glm::vec3(s[0], s[2], s[1]);
+static math::Vec3f froxelScaleToVengi(const float s[3]) {
+	return math::Vec3f(s[0], s[2], s[1]);
 }
 
-static glm::quat froxelQuatToVengi(const float r[4]) {
-	const glm::quat qMv(r[3], r[0], r[1], r[2]);
-	const glm::mat3 A(glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	const glm::quat qA = glm::normalize(glm::quat_cast(A));
-	return glm::normalize(qA * qMv * glm::conjugate(qA));
+static math::Quatf froxelQuatToVengi(const float r[4]) {
+	const math::Quatf qMv(r[3], r[0], r[1], r[2]);
+	const math::Mat3f A(math::Vec3f(-1.0f, 0.0f, 0.0f), math::Vec3f(0.0f, 0.0f, 1.0f), math::Vec3f(0.0f, 1.0f, 0.0f));
+	const math::Quatf qA = math::normalize(math::quat_cast(A));
+	return math::normalize(qA * qMv * math::conjugate(qA));
 }
 
 static int matchFroxelBind(const ogt_vox_scene *scene, const FroxelBind &bind,

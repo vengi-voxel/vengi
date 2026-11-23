@@ -15,6 +15,7 @@
 #include "voxelformat/private/voxelcdx/VCdxFormat.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "core/collection/DynamicArray.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -87,7 +88,7 @@ TEST_F(VCdxFormatTest, testSaveLayersWorldSpace) {
 		node.setUnownedVolume(&vol2);
 		node.setPalette(pal);
 		scenegraph::SceneGraphTransform transform;
-		transform.setWorldTranslation(glm::vec3(4.0f, 0.0f, 0.0f));
+		transform.setWorldTranslation(math::Vec3f(4.0f, 0.0f, 0.0f));
 		node.setTransform(0, transform);
 		ASSERT_NE(InvalidNodeId, sceneGraph.emplace(core::move(node)));
 	}

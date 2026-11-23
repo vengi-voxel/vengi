@@ -5,7 +5,6 @@
 #include "color/ColorUtil.h"
 #include "SceneGraphNode.h"
 #include "core/Assert.h"
-#include "core/GLM.h"
 #include "core/UUID.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -19,6 +18,8 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "voxelutil/VoxelUtil.h"
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
 
 namespace scenegraph {
 
@@ -306,22 +307,27 @@ bool SceneGraphNode::validate() const {
 	return true;
 }
 
-bool SceneGraphNode::setPivot(const glm::vec3 &pivot) {
-	glm_assert_vec3(pivot);
+bool SceneGraphNode::setPivot(const math::Vec3f &pivot) {
+	core_assert_msg(!math::isnan(pivot.x), "x is nan");
+	core_assert_msg(!math::isnan(pivot.y), "y is nan");
+	core_assert_msg(!math::isnan(pivot.z), "z is nan");
+	core_assert_msg(!math::isinf(pivot.x), "x is inf");
+	core_assert_msg(!math::isinf(pivot.y), "y is inf");
+	core_assert_msg(!math::isinf(pivot.z), "z is inf");
 	_pivot = pivot;
 	return true;
 }
 
-const glm::vec3 &SceneGraphNode::pivot() const {
+const math::Vec3f &SceneGraphNode::pivot() const {
 	return _pivot;
 }
 
-glm::vec3 SceneGraphNode::worldPivot() const {
+math::Vec3f SceneGraphNode::worldPivot() const {
 	const voxel::Region &r = region();
-	return r.getLowerCornerf() + _pivot * glm::vec3(r.getDimensionsInVoxels());
+	return r.getLowerCornerf() + _pivot * math::Vec3f(r.getDimensionsInVoxels());
 }
 
-void SceneGraphNode::localTranslate(const glm::vec3 &localTranslation) {
+void SceneGraphNode::localTranslate(const math::Vec3f &localTranslation) {
 	Log::debug("Translate the node by %f %f %f", localTranslation.x, localTranslation.y, localTranslation.z);
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
@@ -331,7 +337,7 @@ void SceneGraphNode::localTranslate(const glm::vec3 &localTranslation) {
 	}
 }
 
-void SceneGraphNode::setTranslation(const glm::vec3 &translation, bool world) {
+void SceneGraphNode::setTranslation(const math::Vec3f &translation, bool world) {
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();
@@ -344,7 +350,7 @@ void SceneGraphNode::setTranslation(const glm::vec3 &translation, bool world) {
 	}
 }
 
-void SceneGraphNode::setScale(const glm::vec3 &scale, bool world) {
+void SceneGraphNode::setScale(const math::Vec3f &scale, bool world) {
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();
@@ -357,7 +363,7 @@ void SceneGraphNode::setScale(const glm::vec3 &scale, bool world) {
 	}
 }
 
-void SceneGraphNode::setRotation(const glm::quat &rotation, bool world) {
+void SceneGraphNode::setRotation(const math::Quatf &rotation, bool world) {
 	for (auto *keyFrames : _keyFramesMap) {
 		for (SceneGraphKeyFrame &keyFrame : keyFrames->value) {
 			SceneGraphTransform &transform = keyFrame.transform();

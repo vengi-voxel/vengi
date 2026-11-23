@@ -9,6 +9,7 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelgenerator/ShapeGenerator.h"
+#include "math/Vec3i.h"
 
 class ModifierVolumeWrapperBenchmark : public app::AbstractBenchmark {
 protected:
@@ -31,8 +32,8 @@ public:
 };
 
 BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Place)(benchmark::State &state) {
-	const glm::ivec3 &mins = node->region().getLowerCorner();
-	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
+	const math::Vec3i &mins = node->region().getLowerCorner();
+	const math::Vec3i &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Place);
@@ -43,8 +44,8 @@ BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Place)(benchmark::State &stat
 }
 
 BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Override)(benchmark::State &state) {
-	const glm::ivec3 &mins = node->region().getLowerCorner();
-	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
+	const math::Vec3i &mins = node->region().getLowerCorner();
+	const math::Vec3i &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 
 	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Override);
@@ -55,8 +56,8 @@ BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Override)(benchmark::State &s
 }
 
 BENCHMARK_DEFINE_F(ModifierVolumeWrapperBenchmark, Erase)(benchmark::State &state) {
-	const glm::ivec3 &mins = node->region().getLowerCorner();
-	const glm::ivec3 &dim = node->region().getDimensionsInVoxels();
+	const math::Vec3i &mins = node->region().getLowerCorner();
+	const math::Vec3i &dim = node->region().getDimensionsInVoxels();
 	const voxel::Voxel voxel;
 
 	voxedit::ModifierVolumeWrapper wrapper(*node, ModifierType::Erase);

@@ -14,6 +14,7 @@
 #include "voxedit-util/modifier/brush/SelectBrush.h"
 #include "voxel/Region.h"
 #include "voxelui/LUAScriptParameters.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -28,10 +29,10 @@ void BrushPanelSelect::handleSelectBox3D(BrushPanelContext &ctx, int nodeId) {
 	}
 	ImGui::SeparatorText(_("Selection bounds"));
 	const voxel::Region &vol = node->region();
-	const glm::ivec3 &vMins = vol.getLowerCorner();
-	const glm::ivec3 &vMaxs = vol.getUpperCorner();
-	glm::ivec3 mins = sel.getLowerCorner();
-	glm::ivec3 maxs = sel.getUpperCorner();
+	const math::Vec3i &vMins = vol.getLowerCorner();
+	const math::Vec3i &vMaxs = vol.getUpperCorner();
+	math::Vec3i mins = sel.getLowerCorner();
+	math::Vec3i maxs = sel.getUpperCorner();
 	bool changed = false;
 
 	// TODO: SELECTION: this should be a default imgui component already. The slider does afair als have the +/-
@@ -41,7 +42,7 @@ void BrushPanelSelect::handleSelectBox3D(BrushPanelContext &ctx, int nodeId) {
 		const float btnW = ImGui::GetFrameHeight();
 		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 		if (ImGui::Button("-", ImVec2(btnW, 0))) {
-			*val = glm::max(*val - 1, lo);
+			*val = math::max(*val - 1, lo);
 			changed = true;
 		}
 		ImGui::SameLine(0, spacing);
@@ -49,7 +50,7 @@ void BrushPanelSelect::handleSelectBox3D(BrushPanelContext &ctx, int nodeId) {
 		changed |= ImGui::SliderInt("", val, lo, hi);
 		ImGui::SameLine(0, spacing);
 		if (ImGui::Button("+", ImVec2(btnW, 0))) {
-			*val = glm::min(*val + 1, hi);
+			*val = math::min(*val + 1, hi);
 			changed = true;
 		}
 		ImGui::PopID();
@@ -87,12 +88,12 @@ void BrushPanelSelect::handleSelectBox3D(BrushPanelContext &ctx, int nodeId) {
 
 	if (changed) {
 		// ensure min <= max after independent dragging
-		const glm::ivec3 newMins = glm::min(mins, maxs);
-		const glm::ivec3 newMaxs = glm::max(mins, maxs);
+		const math::Vec3i newMins = math::min(mins, maxs);
+		const math::Vec3i newMaxs = math::max(mins, maxs);
 		ctx.sceneMgr->selectionSetBounds(node->uuid(), voxel::Region(newMins, newMaxs));
 	}
 
-	const glm::ivec3 size = sel.getDimensionsInVoxels();
+	const math::Vec3i size = sel.getDimensionsInVoxels();
 	ImGui::Text(_("Size: %d x %d x %d"), size.x, size.y, size.z);
 }
 
@@ -104,9 +105,9 @@ void BrushPanelSelect::handleSelectCircle(BrushPanelContext &ctx, int nodeId) {
 	select::Circle &circle = ctx.sceneMgr->modifier().selectBrush().circle();
 	ImGui::SeparatorText(_("Circle selection"));
 	const voxel::Region &vol = node->region();
-	const glm::ivec3 &vMins = vol.getLowerCorner();
-	const glm::ivec3 &vMaxs = vol.getUpperCorner();
-	glm::ivec3 center = circle.center();
+	const math::Vec3i &vMins = vol.getLowerCorner();
+	const math::Vec3i &vMaxs = vol.getUpperCorner();
+	math::Vec3i center = circle.center();
 	int radiusU = circle.radiusU();
 	int radiusV = circle.radiusV();
 	bool changed = false;
@@ -121,7 +122,7 @@ void BrushPanelSelect::handleSelectCircle(BrushPanelContext &ctx, int nodeId) {
 		const float btnW = ImGui::GetFrameHeight();
 		const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 		if (ImGui::Button("-", ImVec2(btnW, 0))) {
-			*val = glm::max(*val - 1, lo);
+			*val = math::max(*val - 1, lo);
 			changed = true;
 		}
 		ImGui::SameLine(0, spacing);
@@ -129,7 +130,7 @@ void BrushPanelSelect::handleSelectCircle(BrushPanelContext &ctx, int nodeId) {
 		changed |= ImGui::SliderInt("", val, lo, hi);
 		ImGui::SameLine(0, spacing);
 		if (ImGui::Button("+", ImVec2(btnW, 0))) {
-			*val = glm::min(*val + 1, hi);
+			*val = math::min(*val + 1, hi);
 			changed = true;
 		}
 		ImGui::PopID();

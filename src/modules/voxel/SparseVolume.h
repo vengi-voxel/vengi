@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "core/GLM.h"
+#include "math/Vec3f.h"
 #include "core/SharedPtr.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
@@ -13,6 +13,7 @@
 #include "voxel/SparseVolumeUtil.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -28,7 +29,7 @@ private:
 	using Chunk = SparseChunk;
 	using ChunkPtr = core::SharedPtr<Chunk>;
 
-	core::DynamicMap<glm::ivec3, ChunkPtr, 1031, glm::hash<glm::ivec3>> _chunks;
+	core::DynamicMap<math::Vec3i, ChunkPtr, 1031, math::Vec3iHash> _chunks;
 	int _size = 0;
 	static const constexpr voxel::Voxel _emptyVoxel{VoxelType::Air, 0, 0, 0};
 	/** if this is a valid region, we limit the volume to this region */
@@ -38,12 +39,12 @@ private:
 
 	// Last accessed chunk cache for performance
 	mutable ChunkPtr _cachedChunkPtr;
-	mutable glm::ivec3 _cachedChunkPosition{INT32_MAX, INT32_MAX, INT32_MAX};
+	mutable math::Vec3i _cachedChunkPosition{INT32_MAX, INT32_MAX, INT32_MAX};
 
 	// Last written brick - must be invalidated whenever a brick or chunk gets released
 	Chunk *_cachedBrickChunk = nullptr;
 	SparseChunk::Brick *_cachedBrick = nullptr;
-	glm::ivec3 _cachedBrickPosition{INT32_MAX, INT32_MAX, INT32_MAX};
+	math::Vec3i _cachedBrickPosition{INT32_MAX, INT32_MAX, INT32_MAX};
 	// incremented whenever a brick or chunk gets released - samplers compare it before using their cached pointers
 	uint32_t _releaseGeneration = 0u;
 	// Changes in occupancy can shift packed rows, move their storage or make cached air rows obsolete.
@@ -51,26 +52,26 @@ private:
 
 	// direct mapped cache for the write path - spares the hashing for volumes with more than one chunk
 	struct ChunkCacheEntry {
-		glm::ivec3 pos{0};
+		math::Vec3i pos{0};
 		Chunk *chunk = nullptr;
 	};
 	static constexpr int ChunkCacheShift = 2;
 	static constexpr int ChunkCacheMask = (1 << ChunkCacheShift) - 1;
 	ChunkCacheEntry _writeChunkCache[1 << (3 * ChunkCacheShift)];
-	static inline int writeChunkCacheSlot(const glm::ivec3 &chunkPos) {
+	static inline int writeChunkCacheSlot(const math::Vec3i &chunkPos) {
 		return (chunkPos.x & ChunkCacheMask) | ((chunkPos.y & ChunkCacheMask) << ChunkCacheShift) |
 			   ((chunkPos.z & ChunkCacheMask) << (2 * ChunkCacheShift));
 	}
 
-	Chunk *findChunk(const glm::ivec3 &chunkPos) const;
-	Chunk *findOrCreateChunk(const glm::ivec3 &chunkPos);
-	void removeChunkIfEmpty(const glm::ivec3 &chunkPos, Chunk *chunk);
-	bool removeVoxel(Chunk *chunk, const glm::ivec3 &localPos);
+	Chunk *findChunk(const math::Vec3i &chunkPos) const;
+	Chunk *findOrCreateChunk(const math::Vec3i &chunkPos);
+	void removeChunkIfEmpty(const math::Vec3i &chunkPos, Chunk *chunk);
+	bool removeVoxel(Chunk *chunk, const math::Vec3i &localPos);
 
 	inline void invalidateBrickCache() {
 		_cachedBrick = nullptr;
 		_cachedBrickChunk = nullptr;
-		_cachedBrickPosition = glm::ivec3(INT32_MAX, INT32_MAX, INT32_MAX);
+		_cachedBrickPosition = math::Vec3i(INT32_MAX, INT32_MAX, INT32_MAX);
 		++_releaseGeneration;
 	}
 
@@ -159,7 +160,7 @@ public:
 
 		// Cached chunk for performance
 		mutable Chunk *_cachedChunk = nullptr;
-		mutable glm::ivec3 _cachedChunkPos{0, 0, 0};
+		mutable math::Vec3i _cachedChunkPos{0, 0, 0};
 		SparseChunk::Brick *_cachedBrick = nullptr;
 		const Voxel *_cachedPayload = nullptr;
 		int _cachedUpperX = 0;
@@ -167,15 +168,15 @@ public:
 		// SparseVolume::_releaseGeneration at the time _cachedChunk and _cachedBrick were resolved
 		uint32_t _cachedGeneration = 0u;
 		bool _cachedWholeBrick = false;
-		glm::ivec3 _cachedLower{0};
-		glm::ivec3 _cachedUpper{0};
+		math::Vec3i _cachedLower{0};
+		math::Vec3i _cachedUpper{0};
 
 		void invalidateSample() {
 			_cachedPayload = nullptr;
 		}
 
 		void updateCurrentVoxel(bool cacheRow = true);
-		void sampleVoxel(const glm::ivec3 &pos, bool cacheRow);
+		void sampleVoxel(const math::Vec3i &pos, bool cacheRow);
 		template<int Axis>
 		void moved(int oldCoord, int newCoord, int delta);
 	};
@@ -197,7 +198,7 @@ public:
 		return setVoxel({x, y, z}, voxel);
 	}
 
-	bool setVoxel(const glm::ivec3 &pos, const voxel::Voxel &voxel);
+	bool setVoxel(const math::Vec3i &pos, const voxel::Voxel &voxel);
 
 	// Batch set voxels in a row (same Y, same Z, varying X)
 	void setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel);
@@ -219,11 +220,11 @@ public:
 	 * @param pos The 3D position of the voxel
 	 * @return The voxel value
 	 */
-	[[nodiscard]] const Voxel &voxel(const glm::ivec3 &pos) const;
+	[[nodiscard]] const Voxel &voxel(const math::Vec3i &pos) const;
 
 	[[nodiscard]] bool hasVoxel(int x, int y, int z) const;
 
-	[[nodiscard]] bool hasVoxel(const glm::ivec3 &pos) const;
+	[[nodiscard]] bool hasVoxel(const math::Vec3i &pos) const;
 
 	[[nodiscard]] inline bool empty() const {
 		return size() == 0;

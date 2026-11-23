@@ -12,8 +12,8 @@
 #include "core/String.h"
 #include "core/SharedPtr.h"
 #include "video/RendererState.h"
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#include "math/Vec4f.h"
+#include "math/Vec3u.h"
 
 struct SDL_Window;
 
@@ -484,7 +484,7 @@ bool copyBufferSubData(Id readBuffer, intptr_t readOffset, Id writeBuffer, intpt
  * Some backends store framebuffer attachments flipped vertically; this
  * function returns a vec4 {u0, v0, u1, v1} suitable for sampling.
  */
-const glm::vec4 &framebufferUV();
+const math::Vec4f &framebufferUV();
 
 /**
  * @brief Attach a texture to a framebuffer's attachment point.
@@ -671,7 +671,7 @@ void setObjectName(Id handle, ObjectNameType type, const core::String &name);
  * successfully (after validation and issuing the dispatch), false on
  * validation failure.
  */
-bool runShader(Id program, const glm::uvec3 &workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
+bool runShader(Id program, const math::Vec3u &workGroups, MemoryBarrierType wait = MemoryBarrierType::None);
 bool runShaderIndirect(Id program, Id buffer, size_t offset, MemoryBarrierType wait = MemoryBarrierType::None);
 /**
  * @brief Wait for the execution of a compute shader

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
-#include <glm/fwd.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -97,7 +97,7 @@ struct ChunkMesh;
  * @li The user could provide a custom mesh class, e.g a thin wrapper around an openGL VBO to allow direct writing into this structure.
  */
 CORE_NO_SANITIZE_ADDRESS void extractCubicMesh(const voxel::RawVolume *volData, const Region &region, ChunkMesh *result,
-												const glm::ivec3 &translate, bool ambientOcclusion = true,
+												const math::Vec3i &translate, bool ambientOcclusion = true,
 												bool mergeQuads = true, bool reuseVertices = true,
 												bool preserveVoxelNormals = true);
 

@@ -7,7 +7,7 @@
 #include "voxelformat/private/mesh/MeshFormat.h"
 #include "core/collection/DynamicArray.h"
 #include "voxelformat/private/mesh/MeshMaterial.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -163,10 +163,10 @@ private:
 	bool loadQuake1Leaves(io::SeekableReadStream &stream, const BspHeader &header, core::Buffer<Quake1Leaf> &leaves);
 	bool loadQuake1BrushModels(io::SeekableReadStream &stream, const BspHeader &header,
 							   core::Buffer<Quake1Model> &models);
-	static float distSqPointTriangle(const glm::vec3 &p, const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c);
+	static float distSqPointTriangle(const math::Vec3f &p, const math::Vec3f &a, const math::Vec3f &b, const math::Vec3f &c);
 	static bool quakePointSolid(const core::Buffer<Quake1Plane> &planes, const core::Buffer<Quake1Node> &nodes,
-								const core::Buffer<Quake1Leaf> &leaves, int root, const glm::vec3 &pos,
-								const glm::vec3 &half);
+								const core::Buffer<Quake1Leaf> &leaves, int root, const math::Vec3f &pos,
+								const math::Vec3f &half);
 
 	bool voxelizeQuake1Models(const core::DynamicArray<Texture> &textures, core::Buffer<Face> &faces,
 							  const core::Buffer<BspEdge> &edges, const core::Buffer<int32_t> &surfEdges,
@@ -198,7 +198,7 @@ private:
 
 public:
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
-					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
+					const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale, bool quad,
 					bool withColor, bool withTexCoords) override {
 		return false;
 	}

@@ -15,6 +15,8 @@
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeRotator.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace memento {
 
@@ -22,7 +24,7 @@ class MementoChunkTest : public app::AbstractTest {};
 
 TEST_F(MementoChunkTest, SerializesWithoutMaterializingSource) {
 	voxel::RawVolume source(voxel::Region(-40, 216));
-	const glm::ivec3 pos(-8, 12, 24);
+	const math::Vec3i pos(-8, 12, 24);
 	const voxel::Voxel value(voxel::VoxelType::Generic, 17, 8, voxel::FlagOutline, 3);
 	source.setVoxel(pos, value);
 	const size_t allocated = source.allocatedBytes();
@@ -89,7 +91,7 @@ protected:
 		bool markUndo(int parentId, int nodeId, int referenceId, const core::String &name,
 					  scenegraph::SceneGraphNodeType nodeType, const voxel::RawVolume *volume, MementoType type,
 					  const voxel::Region &region = voxel::Region::InvalidRegion,
-					  const glm::vec3 &pivot = glm::vec3(0.0f),
+					  const math::Vec3f &pivot = math::Vec3f(0.0f),
 					  const scenegraph::SceneGraphKeyFramesMap &allKeyFrames = {}, const palette::Palette &palette = {},
 					  const palette::NormalPalette &normalPalette = {},
 					  const scenegraph::SceneGraphNodeProperties &properties = {}) {
@@ -128,8 +130,8 @@ protected:
 	}
 	// Helper function to verify exact voxel states in a memento volume
 	void verifyVoxelState(const MementoState &state, const core::String &description,
-						  const core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> &expectedVoxels,
-						  const core::DynamicArray<glm::ivec3> &expectedAirVoxels = core::DynamicArray<glm::ivec3>()) {
+						  const core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> &expectedVoxels,
+						  const core::DynamicArray<math::Vec3i> &expectedAirVoxels = core::DynamicArray<math::Vec3i>()) {
 		ASSERT_TRUE(state.hasVolumeData()) << "State " << description << " should have volume data";
 
 		// Extract volume from memento state
@@ -138,8 +140,8 @@ protected:
 			<< "Failed to extract volume from state " << description;
 
 		// Check expected voxels with specific colors
-		for (const core::Pair<glm::ivec3, uint8_t> &expectedVoxel : expectedVoxels) {
-			const glm::ivec3 &pos = expectedVoxel.first;
+		for (const core::Pair<math::Vec3i, uint8_t> &expectedVoxel : expectedVoxels) {
+			const math::Vec3i &pos = expectedVoxel.first;
 			const uint8_t expectedColor = expectedVoxel.second;
 
 			ASSERT_TRUE(volume.region().containsPoint(pos)) << "State " << description << ": Position " << pos.x << ","
@@ -153,7 +155,7 @@ protected:
 		}
 
 		// Check expected air voxels
-		for (const glm::ivec3 &pos : expectedAirVoxels) {
+		for (const math::Vec3i &pos : expectedAirVoxels) {
 			if (volume.region().containsPoint(pos)) {
 				const voxel::Voxel &voxelAtPos = volume.voxel(pos);
 				EXPECT_TRUE(voxel::isAir(voxelAtPos.getMaterial()))
@@ -168,11 +170,11 @@ TEST_F(MementoHandlerTest, testNormalPaletteUndoUsesFinalGroupedSnapshot) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.findNodeByUUID(core::UUID(1));
 	ASSERT_NE(nullptr, node);
 	palette::NormalPalette original;
-	original.setNormal(0, glm::vec3(1, 0, 0));
+	original.setNormal(0, math::Vec3f(1, 0, 0));
 	node->setNormalPalette(original);
 	ASSERT_TRUE(_mementoHandler.markNormalPaletteChange(_sceneGraph, *node));
 	palette::NormalPalette intermediate;
-	intermediate.setNormal(0, glm::vec3(0, 1, 0));
+	intermediate.setNormal(0, math::Vec3f(0, 1, 0));
 	{
 		ScopedMementoGroup group(_mementoHandler, "volume and normals");
 		ASSERT_TRUE(_mementoHandler.markModification(_sceneGraph, *node, node->region()));
@@ -180,7 +182,7 @@ TEST_F(MementoHandlerTest, testNormalPaletteUndoUsesFinalGroupedSnapshot) {
 		ASSERT_TRUE(_mementoHandler.markNormalPaletteChange(_sceneGraph, *node));
 	}
 	palette::NormalPalette final;
-	final.setNormal(0, glm::vec3(0, 0, 1));
+	final.setNormal(0, math::Vec3f(0, 0, 1));
 	node->setNormalPalette(final);
 	ASSERT_TRUE(_mementoHandler.markNormalPaletteChange(_sceneGraph, *node));
 	const MementoState state = firstState(_mementoHandler.undo());
@@ -857,8 +859,8 @@ TEST_F(MementoHandlerTest, testSceneNodeMove) {
 TEST_F(MementoHandlerTest, testSceneNodeTransform) {
 	scenegraph::SceneGraphNode *node = _sceneGraph.firstModelNode();
 	ASSERT_NE(nullptr, node);
-	const glm::vec3 initial(1.0f, 2.0f, 3.0f);
-	glm::vec3 mirrored;
+	const math::Vec3f initial(1.0f, 2.0f, 3.0f);
+	math::Vec3f mirrored;
 	{
 		scenegraph::SceneGraphTransform transform;
 		transform.setLocalTranslation(initial);
@@ -978,9 +980,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 			EXPECT_EQ(2, (int)_mementoHandler.statePosition());
 
 			// Verify we're back to second state voxel colors
-			core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> expectedSecond = {
-				{glm::ivec3(0, 0, 0), 3}, {glm::ivec3(1, 0, 0), 4}, {glm::ivec3(2, 0, 0), 5}};
-			core::DynamicArray<glm::ivec3> expectedAirSecond = {glm::ivec3(3, 0, 0)};
+			core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> expectedSecond = {
+				{math::Vec3i(0, 0, 0), 3}, {math::Vec3i(1, 0, 0), 4}, {math::Vec3i(2, 0, 0), 5}};
+			core::DynamicArray<math::Vec3i> expectedAirSecond = {math::Vec3i(3, 0, 0)};
 			verifyVoxelState(undoState, "undo to second state", expectedSecond, expectedAirSecond);
 		}
 
@@ -991,9 +993,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 			EXPECT_EQ(1, (int)_mementoHandler.statePosition());
 
 			// Verify we're back to first state voxel colors
-			core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> expectedFirst = {{glm::ivec3(0, 0, 0), 1},
-																				 {glm::ivec3(1, 0, 0), 2}};
-			core::DynamicArray<glm::ivec3> expectedAirFirst = {glm::ivec3(2, 0, 0), glm::ivec3(3, 0, 0)};
+			core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> expectedFirst = {{math::Vec3i(0, 0, 0), 1},
+																				 {math::Vec3i(1, 0, 0), 2}};
+			core::DynamicArray<math::Vec3i> expectedAirFirst = {math::Vec3i(2, 0, 0), math::Vec3i(3, 0, 0)};
 			verifyVoxelState(undoState, "undo to first state", expectedFirst, expectedAirFirst);
 		}
 
@@ -1004,9 +1006,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 			EXPECT_EQ(0, (int)_mementoHandler.statePosition());
 
 			// Verify we're back to initial state (all air)
-			core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> expectedInitial = {};
-			core::DynamicArray<glm::ivec3> expectedAirInitial = {glm::ivec3(0, 0, 0), glm::ivec3(1, 0, 0),
-																 glm::ivec3(2, 0, 0), glm::ivec3(3, 0, 0)};
+			core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> expectedInitial = {};
+			core::DynamicArray<math::Vec3i> expectedAirInitial = {math::Vec3i(0, 0, 0), math::Vec3i(1, 0, 0),
+																 math::Vec3i(2, 0, 0), math::Vec3i(3, 0, 0)};
 			verifyVoxelState(undoState, "undo to initial state", expectedInitial, expectedAirInitial);
 		}
 
@@ -1018,9 +1020,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 			EXPECT_EQ(1, (int)_mementoHandler.statePosition());
 
 			// Verify we're back to first state
-			core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> redoFirstExpected = {{glm::ivec3(0, 0, 0), 1},
-																					 {glm::ivec3(1, 0, 0), 2}};
-			core::DynamicArray<glm::ivec3> redoFirstAir = {glm::ivec3(2, 0, 0), glm::ivec3(3, 0, 0)};
+			core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> redoFirstExpected = {{math::Vec3i(0, 0, 0), 1},
+																					 {math::Vec3i(1, 0, 0), 2}};
+			core::DynamicArray<math::Vec3i> redoFirstAir = {math::Vec3i(2, 0, 0), math::Vec3i(3, 0, 0)};
 			verifyVoxelState(redoState, "redo to first state", redoFirstExpected, redoFirstAir);
 		}
 
@@ -1031,9 +1033,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 			EXPECT_EQ(2, (int)_mementoHandler.statePosition());
 
 			// Verify we're back to second state with modified colors
-			core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> redoSecondExpected = {
-				{glm::ivec3(0, 0, 0), 3}, {glm::ivec3(1, 0, 0), 4}, {glm::ivec3(2, 0, 0), 5}};
-			core::DynamicArray<glm::ivec3> redoSecondAir = {glm::ivec3(3, 0, 0)};
+			core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> redoSecondExpected = {
+				{math::Vec3i(0, 0, 0), 3}, {math::Vec3i(1, 0, 0), 4}, {math::Vec3i(2, 0, 0), 5}};
+			core::DynamicArray<math::Vec3i> redoSecondAir = {math::Vec3i(3, 0, 0)};
 			verifyVoxelState(redoState, "redo to second state", redoSecondExpected, redoSecondAir);
 		}
 
@@ -1044,9 +1046,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 			EXPECT_EQ(3, (int)_mementoHandler.statePosition());
 
 			// Verify we're back to third state with all final colors
-			core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> redoThirdExpected = {
-				{glm::ivec3(0, 0, 0), 6}, {glm::ivec3(1, 0, 0), 7}, {glm::ivec3(2, 0, 0), 8}, {glm::ivec3(3, 0, 0), 9}};
-			core::DynamicArray<glm::ivec3> redoThirdAir = {};
+			core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> redoThirdExpected = {
+				{math::Vec3i(0, 0, 0), 6}, {math::Vec3i(1, 0, 0), 7}, {math::Vec3i(2, 0, 0), 8}, {math::Vec3i(3, 0, 0), 9}};
+			core::DynamicArray<math::Vec3i> redoThirdAir = {};
 			verifyVoxelState(redoState, "redo to third state", redoThirdExpected, redoThirdAir);
 		}
 	}
@@ -1062,9 +1064,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 	EXPECT_EQ(2, (int)_mementoHandler.statePosition());
 
 	// Verify partial redo restored second state correctly
-	core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> partialRedoExpected = {
-		{glm::ivec3(0, 0, 0), 3}, {glm::ivec3(1, 0, 0), 4}, {glm::ivec3(2, 0, 0), 5}};
-	core::DynamicArray<glm::ivec3> partialRedoAir = {glm::ivec3(3, 0, 0)};
+	core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> partialRedoExpected = {
+		{math::Vec3i(0, 0, 0), 3}, {math::Vec3i(1, 0, 0), 4}, {math::Vec3i(2, 0, 0), 5}};
+	core::DynamicArray<math::Vec3i> partialRedoAir = {math::Vec3i(3, 0, 0)};
 	verifyVoxelState(partialRedo, "partial redo to second state", partialRedoExpected, partialRedoAir);
 
 	// Undo again: from position 2 to position 1
@@ -1073,9 +1075,9 @@ TEST_F(MementoHandlerTest, testMarkModificationWithUndoRedoCycles) {
 	EXPECT_EQ(1, (int)_mementoHandler.statePosition());
 
 	// Verify partial undo restored first state correctly
-	core::DynamicArray<core::Pair<glm::ivec3, uint8_t>> partialUndoExpected = {{glm::ivec3(0, 0, 0), 1},
-																			   {glm::ivec3(1, 0, 0), 2}};
-	core::DynamicArray<glm::ivec3> partialUndoAir = {glm::ivec3(2, 0, 0), glm::ivec3(3, 0, 0)};
+	core::DynamicArray<core::Pair<math::Vec3i, uint8_t>> partialUndoExpected = {{math::Vec3i(0, 0, 0), 1},
+																			   {math::Vec3i(1, 0, 0), 2}};
+	core::DynamicArray<math::Vec3i> partialUndoAir = {math::Vec3i(2, 0, 0), math::Vec3i(3, 0, 0)};
 	verifyVoxelState(partialUndo, "partial undo to first state", partialUndoExpected, partialUndoAir);
 }
 

@@ -6,11 +6,11 @@
 #pragma once
 
 #include "io/Stream.h"
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
 
 namespace io {
 
-inline bool readQuat(io::ReadStream &s, glm::quat &q) {
+inline bool readQuat(io::ReadStream &s, math::Quatf &q) {
 	return s.readFloat(q.x) == 0 && s.readFloat(q.y) == 0 && s.readFloat(q.z) == 0 && s.readFloat(q.w) == 0;
 }
 

@@ -18,6 +18,7 @@
 #include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxel/Region.h"
 #include "voxelui/DragAndDropPayload.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -64,7 +65,7 @@ void BrushPanelStamp::stampBrushOptions(BrushPanelContext &ctx, scenegraph::Scen
 	}
 	ImGui::TooltipCommand("togglestampbrushcontinuous");
 
-	glm::ivec3 offset = brush.offset();
+	math::Vec3i offset = brush.offset();
 	if (ImGui::InputXYZ(_("Offset"), offset)) {
 		brush.setOffset(offset);
 	}
@@ -109,10 +110,10 @@ void BrushPanelStamp::stampBrushOptions(BrushPanelContext &ctx, scenegraph::Scen
 
 	if (ImGui::CollapsingHeader(_("Crop stamp"))) {
 		voxel::Region region = brush.volume()->region();
-		glm::ivec3 size = region.getDimensionsInVoxels();
+		math::Vec3i size = region.getDimensionsInVoxels();
 		if (ImGui::InputXYZ(_("Size"), size, nullptr, ImGuiInputTextFlags_EnterReturnsTrue)) {
-			if (glm::any(glm::greaterThan(size, region.getDimensionsInVoxels()))) {
-				size = glm::min(size, region.getDimensionsInVoxels());
+			if (math::any(math::greaterThan(size, region.getDimensionsInVoxels()))) {
+				size = math::min(size, region.getDimensionsInVoxels());
 			}
 			brush.setSize(size);
 		}

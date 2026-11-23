@@ -6,6 +6,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeSamplerUtil.h"
 #include "voxel/VoxelSampling.h"
+#include "math/Vec3f.h"
 
 class VolumeSamplerBenchmark : public app::AbstractBenchmark {
 protected:
@@ -27,7 +28,7 @@ protected:
 
 BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleNearest)(benchmark::State &state) {
 	voxel::RawVolume::Sampler sampler(&v);
-	const glm::vec3 pos(15.3f, 15.7f, 15.1f);
+	const math::Vec3f pos(15.3f, 15.7f, 15.1f);
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(voxel::sampleVoxel(sampler, voxel::VoxelSampling::Nearest, pos));
 	}
@@ -38,7 +39,7 @@ BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleNearestGap)(benchmark::State &s
 	voxel::RawVolume gapVol(v);
 	gapVol.setVoxel(15, 16, 15, voxel::Voxel());
 	voxel::RawVolume::Sampler sampler(&gapVol);
-	const glm::vec3 pos(15.3f, 15.7f, 15.1f);
+	const math::Vec3f pos(15.3f, 15.7f, 15.1f);
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(voxel::sampleVoxel(sampler, voxel::VoxelSampling::Nearest, pos));
 	}
@@ -46,7 +47,7 @@ BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleNearestGap)(benchmark::State &s
 
 BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleLinear)(benchmark::State &state) {
 	voxel::RawVolume::Sampler sampler(&v);
-	const glm::vec3 pos(15.3f, 15.7f, 15.1f);
+	const math::Vec3f pos(15.3f, 15.7f, 15.1f);
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(voxel::sampleVoxel(sampler, voxel::VoxelSampling::Linear, pos));
 	}
@@ -54,7 +55,7 @@ BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleLinear)(benchmark::State &state
 
 BENCHMARK_DEFINE_F(VolumeSamplerBenchmark, SampleCubic)(benchmark::State &state) {
 	voxel::RawVolume::Sampler sampler(&v);
-	const glm::vec3 pos(15.3f, 15.7f, 15.1f);
+	const math::Vec3f pos(15.3f, 15.7f, 15.1f);
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(voxel::sampleVoxel(sampler, voxel::VoxelSampling::Cubic, pos));
 	}

@@ -7,7 +7,6 @@
 #include "VXMFormat.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
-#include "core/GLM.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
@@ -21,8 +20,10 @@
 #include "scenegraph/SceneGraphUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxelformat/Format.h"
-#include <glm/common.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/QuatOps.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 
@@ -118,7 +119,7 @@ bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode *node, io::S
 			wrapBool(stream.writeString("", true))
 			wrapBool(stream.writeBool(true))
 			wrapBool(stream.writeFloat(0.0f))
-			wrapBool(stream.writeFloat(glm::two_pi<float>()))
+			wrapBool(stream.writeFloat(math::twoPi))
 			wrapBool(stream.writeUInt32(0))
 		}
 	} else {
@@ -126,7 +127,7 @@ bool VXRFormat::saveNodeProperties(const scenegraph::SceneGraphNode *node, io::S
 		wrapBool(stream.writeString("", true))
 		wrapBool(stream.writeBool(true))
 		wrapBool(stream.writeFloat(0.0f))
-		wrapBool(stream.writeFloat(glm::two_pi<float>()))
+		wrapBool(stream.writeFloat(math::twoPi))
 		wrapBool(stream.writeUInt32(0))
 	}
 	return true;
@@ -202,7 +203,7 @@ bool VXRFormat::loadChildVXM(const core::String &vxmPath, const io::ArchivePtr &
 	childModelNode.releaseOwnership();
 
 	const core::String nodeName = node.name();
-	const glm::vec3 pivot = childModelNode.pivot();
+	const math::Vec3f pivot = childModelNode.pivot();
 	scenegraph::copyNode(childModelNode, node, false, version >= 3);
 	node.setVolume(childModelNode.volume());
 	node.setPivot(pivot);
@@ -268,12 +269,12 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		}
 		scenegraph::SceneGraphTransform &transform = keyFrame.transform();
 
-		glm::quat localOrientation;
-		glm::vec3 localTranslation{0.0f};
+		math::Quatf localOrientation;
+		math::Vec3f localTranslation{0.0f};
 		float localScale = 1.0f;
 
-		glm::quat ignoredOrientation;
-		glm::vec3 ignoredTranslation{0.0f};
+		math::Quatf ignoredOrientation;
+		math::Vec3f ignoredTranslation{0.0f};
 		float ignoredScale = 1.0f;
 
 		wrapBool(io::readVec3(stream, localTranslation))
@@ -288,11 +289,11 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			localOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			localOrientation = math::Quatf(math::Vec3f(rotationx, rotationy, rotationz));
 			wrap(stream.readFloat(rotationx))
 			wrap(stream.readFloat(rotationy))
 			wrap(stream.readFloat(rotationz))
-			ignoredOrientation = glm::quat(glm::vec3(rotationx, rotationy, rotationz));
+			ignoredOrientation = math::Quatf(math::Vec3f(rotationx, rotationy, rotationz));
 		} else {
 			wrapBool(io::readQuat(stream, localOrientation))
 			wrapBool(io::readQuat(stream, ignoredOrientation))
@@ -301,7 +302,7 @@ bool VXRFormat::importChildVersion3AndEarlier(const core::String &filename, io::
 		if (version >= 3) {
 			wrap(stream.readFloat(ignoredScale))
 		}
-		transform.setLocalScale(glm::vec3(localScale));
+		transform.setLocalScale(math::Vec3f(localScale));
 		transform.setLocalTranslation(localTranslation);
 		transform.setLocalOrientation(localOrientation);
 	}

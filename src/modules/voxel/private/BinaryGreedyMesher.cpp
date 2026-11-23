@@ -49,6 +49,9 @@ SOFTWARE.
 #include "voxel/Voxel.h"
 #include "voxel/VoxelVertex.h"
 #include <stdint.h>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace voxel {
 
@@ -145,9 +148,9 @@ CORE_FORCE_INLINE bool solid_check<0>(const voxel::Voxel &voxel) {
  * The AO calculation samples these neighbors to determine how much ambient light
  * reaches each vertex of a face.
  */
-static const glm::ivec2 ao_dirs[8] = {
-	glm::ivec2(-1, 0),	glm::ivec2(0, -1), glm::ivec2(0, 1),  glm::ivec2(1, 0),
-	glm::ivec2(-1, -1), glm::ivec2(-1, 1), glm::ivec2(1, -1), glm::ivec2(1, 1),
+static const math::Vec2i ao_dirs[8] = {
+	math::Vec2i(-1, 0),	math::Vec2i(0, -1), math::Vec2i(0, 1),  math::Vec2i(1, 0),
+	math::Vec2i(-1, -1), math::Vec2i(-1, 1), math::Vec2i(1, -1), math::Vec2i(1, 1),
 };
 
 /**
@@ -273,9 +276,9 @@ CORE_FORCE_INLINE void insert_quad(Mesh &mesh, uint32_t v1, uint32_t v2, uint32_
  * @return Index of the vertex in the mesh
  */
 CORE_FORCE_INLINE uint32_t get_vertex(Mesh &mesh, int32_t x, int32_t y, int32_t z, const voxel::Voxel &voxel,
-									  uint32_t norm, uint32_t ao, const glm::ivec3 &translate) {
+									  uint32_t norm, uint32_t ao, const math::Vec3i &translate) {
 	VoxelVertex vertex;
-	vertex.position = glm::vec3(x - 1 + translate.x, y - 1 + translate.y, z - 1 + translate.z);
+	vertex.position = math::Vec3f(x - 1 + translate.x, y - 1 + translate.y, z - 1 + translate.z);
 	vertex.ambientOcclusion = ao;
 	vertex.colorIndex = voxel.getColor();
 	vertex.flags = voxel.getFlags();
@@ -342,7 +345,7 @@ static const uint64_t BORDER_MASK = (1ULL | (1ULL << (CS_P - 1)));
  * @param mesh Output mesh to populate with geometry
  */
 template<int MeshType>
-CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMeshType(const glm::ivec3 &translate, bool ambientOcclusion,
+CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMeshType(const math::Vec3i &translate, bool ambientOcclusion,
 														  VoxelData voxels, Mesh &mesh) {
 	core_trace_scoped(ExtractBinaryGreedyMeshType);
 
@@ -677,8 +680,8 @@ CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMeshType(const glm::ivec3 &tran
 
 core::DynamicArray<voxel::Region> getBinaryMesherRegions(const voxel::Region &region) {
 	core::DynamicArray<voxel::Region> regions;
-	const glm::ivec3 mins = region.getLowerCorner();
-	const glm::ivec3 maxs = region.getUpperCorner();
+	const math::Vec3i mins = region.getLowerCorner();
+	const math::Vec3i maxs = region.getUpperCorner();
 
 	for (int z = mins.z; z < maxs.z; z += CS) {
 		const int cz = core_min(maxs.z - z, CS);
@@ -686,7 +689,7 @@ core::DynamicArray<voxel::Region> getBinaryMesherRegions(const voxel::Region &re
 			const int cy = core_min(maxs.y - y, CS);
 			for (int x = mins.x; x < maxs.x; x += CS) {
 				const int cx = core_min(maxs.x - x, CS);
-				const voxel::Region r(glm::ivec3(x, y, z), glm::ivec3(x + cx, y + cy, z + cz));
+				const voxel::Region r(math::Vec3i(x, y, z), math::Vec3i(x + cx, y + cy, z + cz));
 				core_assert(region.isValid());
 				regions.emplace_back(r);
 			}
@@ -696,7 +699,7 @@ core::DynamicArray<voxel::Region> getBinaryMesherRegions(const voxel::Region &re
 }
 
 bool exceedsBinaryMesherRegion(const voxel::Region &region) {
-	const glm::ivec3 size = region.getDimensionsInVoxels();
+	const math::Vec3i size = region.getDimensionsInVoxels();
 	return size.x > CS || size.y > CS || size.z > CS;
 }
 
@@ -715,8 +718,8 @@ bool exceedsBinaryMesherRegion(const voxel::Region &region) {
  * @param translate World space offset for vertex positions
  * @param ambientOcclusion Whether to calculate ambient occlusion
  */
-CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const glm::ivec3 &offset,
-													  ChunkMesh *result, const glm::ivec3 &translate,
+CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMesh(const voxel::RawVolume *volData, const math::Vec3i &offset,
+													  ChunkMesh *result, const math::Vec3i &translate,
 													  bool ambientOcclusion, bool preserveVoxelNormals) {
 	core_trace_scoped(ExtractBinaryGreedyMesh);
 
@@ -733,8 +736,8 @@ CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMesh(const voxel::RawVolume *vo
 	 * The chunkPos is offset by -1 to include the border padding from
 	 * neighboring chunks in the negative direction.
 	 */
-	const glm::ivec3 chunkPos = offset - 1;
-	const voxel::Region copyRegion(chunkPos, chunkPos + glm::ivec3(CS_P - 1));
+	const math::Vec3i chunkPos = offset - 1;
+	const voxel::Region copyRegion(chunkPos, chunkPos + math::Vec3i(CS_P - 1));
 	voxel::RawVolume copy(copyRegion);
 	copy.copyInto(*volData, copyRegion);
 	if (!preserveVoxelNormals) {

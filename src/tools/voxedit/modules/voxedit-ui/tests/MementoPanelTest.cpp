@@ -8,6 +8,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/Voxel.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -23,8 +24,8 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// modify the scene to create undo states
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(2, 2, 2), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(1, 1, 1), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(2, 2, 2), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 
 		// verify we can undo
 		IM_CHECK(mementoHandler.canUndo());
@@ -47,9 +48,9 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		// create some undo states
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 3)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 3)));
 
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		IM_CHECK((int)mementoHandler.stateSize() >= 3);
@@ -78,8 +79,8 @@ void MementoPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 
 		scenegraph::SceneGraphNode *model = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
 		IM_CHECK(model != nullptr);
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_sceneMgr, model, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_sceneMgr, model, math::Vec3i(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 
 		const memento::MementoHandler &mementoHandler = _sceneMgr->mementoHandler();
 		const int posAtEnd = mementoHandler.statePosition();

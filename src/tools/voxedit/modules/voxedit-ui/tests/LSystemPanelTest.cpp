@@ -12,6 +12,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Scalar.h"
 
 namespace voxedit {
 
@@ -76,7 +77,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		IM_CHECK(focusWindow(ctx, id));
 
 		ctx->ItemInputValue("Angle", 45.0f);
-		IM_CHECK_EQ((int)glm::degrees(_conf.angle), 45);
+		IM_CHECK_EQ((int)math::degrees(_conf.angle), 45);
 
 		ctx->ItemInputValue("Length", 5.0f);
 		IM_CHECK_EQ((int)_conf.length, 5);
@@ -86,7 +87,7 @@ void LSystemPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->ItemInputValue("Minimum length", 1.0f);
 		IM_CHECK_EQ(_conf.minLength, 1.0f);
 		ctx->ItemInputValue("Angle variation", 5.0f);
-		IM_CHECK_EQ((int)glm::degrees(_conf.angleVariation), 5);
+		IM_CHECK_EQ((int)math::degrees(_conf.angleVariation), 5);
 		ctx->ItemInputValue("Seed", 42);
 		IM_CHECK_EQ(_conf.seed, 42);
 		ctx->ItemInputValue("Leaf color", 2);

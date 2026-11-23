@@ -4,6 +4,7 @@
 
 #include "voxelformat/private/slab6/KVXFormat.h"
 #include "AbstractFormatTest.h"
+#include "math/Vec3f.h"
 
 namespace voxelformat {
 
@@ -22,30 +23,30 @@ TEST_F(KVXFormatTest, testSaveSmallVoxel) {
 TEST_F(KVXFormatTest, testSaveLoadTranslationBakedIntoPivot) {
 	// Scene-mode move must persist as a pivot change - KVX has no translation field.
 	KVXFormat f;
-	const glm::vec3 translation(4.0f, 8.0f, -2.0f);
-	const glm::vec3 dims(8.0f);
-	testSaveLoadBakedPivot("kvx-translation-pivot.kvx", &f, glm::vec3(0.0f), translation, -translation / dims);
+	const math::Vec3f translation(4.0f, 8.0f, -2.0f);
+	const math::Vec3f dims(8.0f);
+	testSaveLoadBakedPivot("kvx-translation-pivot.kvx", &f, math::Vec3f(0.0f), translation, -translation / dims);
 }
 
 TEST_F(KVXFormatTest, testSaveLoadRaisedCenterPivot) {
 	// Center pivot + raise by half height -> bottom-center (sits on the waterline).
 	KVXFormat f;
-	testSaveLoadBakedPivot("kvx-raised-center-pivot.kvx", &f, glm::vec3(0.5f), glm::vec3(0.0f, 4.0f, 0.0f),
-						   glm::vec3(0.5f, 0.0f, 0.5f));
+	testSaveLoadBakedPivot("kvx-raised-center-pivot.kvx", &f, math::Vec3f(0.5f), math::Vec3f(0.0f, 4.0f, 0.0f),
+						   math::Vec3f(0.5f, 0.0f, 0.5f));
 }
 
 TEST_F(KVXFormatTest, testSaveLoadCenteredAabbTranslation) {
 	// MagicaVoxel apply-transform: pivot 0 and translation = AABB mins (model was centered).
 	KVXFormat f;
-	testSaveLoadBakedPivot("kvx-centered-aabb.kvx", &f, glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f),
-						   glm::vec3(0.5f, 0.0f, 0.5f));
+	testSaveLoadBakedPivot("kvx-centered-aabb.kvx", &f, math::Vec3f(0.0f), math::Vec3f(-4.0f, 0.0f, -4.0f),
+						   math::Vec3f(0.5f, 0.0f, 0.5f));
 }
 
 TEST_F(KVXFormatTest, testSaveLoadDirtyWorldTranslation) {
 	// MagicaVoxel load sets world translation; save-as KVX may happen before updateTransforms().
 	KVXFormat f;
-	testSaveLoadBakedPivot("kvx-dirty-translation.kvx", &f, glm::vec3(0.0f), glm::vec3(-4.0f, 0.0f, -4.0f),
-						   glm::vec3(0.5f, 0.0f, 0.5f), false);
+	testSaveLoadBakedPivot("kvx-dirty-translation.kvx", &f, math::Vec3f(0.0f), math::Vec3f(-4.0f, 0.0f, -4.0f),
+						   math::Vec3f(0.5f, 0.0f, 0.5f), false);
 }
 
 } // namespace voxelformat

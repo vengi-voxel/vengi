@@ -39,6 +39,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
 
 namespace palette {
 class Palette;
@@ -116,7 +118,7 @@ protected:
 	void restoreEditOverride();
 	void captureEditTargets();
 	void notifySessionSample(const BrushEditTarget &target, const BrushApplyResult &result);
-	BrushApplyResult applySessionSample(BrushEditTarget &target, const glm::ivec3 &sample);
+	BrushApplyResult applySessionSample(BrushEditTarget &target, const math::Vec3i &sample);
 	bool applySessionTargets();
 	bool isStrokeEdit() const;
 
@@ -187,7 +189,7 @@ public:
 	void setHighlightRegion(const voxel::Region &region, uint64_t renderRegionMillis);
 
 	void render(voxelrender::RenderContext &renderContext, const video::Camera &camera, palette::Palette &activePalette,
-				const glm::mat4 &model = glm::mat4(1.0f));
+				const math::Mat4f &model = math::Mat4f(1.0f));
 
 	ModifierType modifierType() const;
 	ModifierType setModifierType(ModifierType type);
@@ -366,12 +368,12 @@ public:
 	 * @param[in] pos The position inside the volume - given in absolute world coordinates
 	 * @param[in] face The voxel::FaceNames values where the trace hits an existing voxel
 	 */
-	void setCursorPosition(const glm::ivec3 &pos, voxel::FaceNames face);
-	const glm::ivec3 &cursorPosition() const;
-	glm::ivec3 currentCursorPosition();
+	void setCursorPosition(const math::Vec3i &pos, voxel::FaceNames face);
+	const math::Vec3i &cursorPosition() const;
+	math::Vec3i currentCursorPosition();
 
-	const glm::ivec3 &referencePosition() const;
-	virtual void setReferencePosition(const glm::ivec3 &pos);
+	const math::Vec3i &referencePosition() const;
+	virtual void setReferencePosition(const math::Vec3i &pos);
 
 	const voxel::Voxel &hitCursorVoxel() const;
 	void setHitCursorVoxel(const voxel::Voxel &);
@@ -381,9 +383,9 @@ public:
 
 	voxel::FaceNames cursorFace() const;
 
-	void setGridResolution(const glm::ivec3 &gridSize);
+	void setGridResolution(const math::Vec3i &gridSize);
 	void setGridResolution(int gridSize);
-	const glm::ivec3 &gridResolution() const;
+	const math::Vec3i &gridResolution() const;
 
 	// TODO: only used internally or for tests
 	bool autoSelect() const;
@@ -470,7 +472,7 @@ inline RulerBrush &Modifier::rulerBrush() {
 	return *_registry.get<RulerBrush>("ruler");
 }
 
-inline const glm::ivec3 &Modifier::gridResolution() const {
+inline const math::Vec3i &Modifier::gridResolution() const {
 	return _brushContext.gridResolution;
 }
 
@@ -478,7 +480,7 @@ inline const voxel::Voxel &Modifier::hitCursorVoxel() const {
 	return _brushContext.hitCursorVoxel;
 }
 
-inline const glm::ivec3 &Modifier::referencePosition() const {
+inline const math::Vec3i &Modifier::referencePosition() const {
 	return _brushContext.referencePos;
 }
 
@@ -497,7 +499,7 @@ inline bool Modifier::aborted() const {
 	return false;
 }
 
-inline void Modifier::setCursorPosition(const glm::ivec3 &pos, voxel::FaceNames face) {
+inline void Modifier::setCursorPosition(const math::Vec3i &pos, voxel::FaceNames face) {
 	if ((_brushContext.cursorPosition != pos || _brushContext.cursorFace != face) && currentBrush() &&
 		!isAdjustable()) {
 		currentBrush()->markDirty();
@@ -524,7 +526,7 @@ inline const voxel::Voxel &Modifier::cursorVoxel() const {
 	return _brushContext.cursorVoxel;
 }
 
-inline const glm::ivec3 &Modifier::cursorPosition() const {
+inline const math::Vec3i &Modifier::cursorPosition() const {
 	return _brushContext.cursorPosition;
 }
 

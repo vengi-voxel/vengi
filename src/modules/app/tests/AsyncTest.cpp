@@ -4,11 +4,7 @@
 
 #include "app/Async.h"
 #include "app/tests/AbstractTest.h"
-#include <glm/vec3.hpp>
-#ifndef GLM_ENABLE_EXPERIMENTAL
-#define GLM_ENABLE_EXPERIMENTAL
-#endif
-#include <glm/gtx/norm.hpp>
+#include "math/Vec3f.h"
 
 namespace app {
 
@@ -79,14 +75,14 @@ TEST_F(AsyncTest, testPartially) {
 
 TEST_F(AsyncTest, testSortLarge) {
 	constexpr int size = 10240;
-	core::Array<glm::vec3, size> foo;
+	core::Array<math::Vec3f, size> foo;
 	// Fill with reverse order
 	for (size_t i = 0; i < foo.size(); ++i) {
-		foo[i] = glm::vec3(size - i, size, i);
+		foo[i] = math::Vec3f(size - i, size, i);
 	}
-	glm::vec3 cameraPos(0.0f, 0.0f, 0.0f);
-	app::sort_parallel(foo.begin(), foo.end(), [&cameraPos] (const glm::vec3& lhs, const glm::vec3& rhs) {
-		return glm::distance2(lhs, cameraPos) < glm::distance2(rhs, cameraPos);
+	math::Vec3f cameraPos(0.0f, 0.0f, 0.0f);
+	app::sort_parallel(foo.begin(), foo.end(), [&cameraPos] (const math::Vec3f& lhs, const math::Vec3f& rhs) {
+		return math::distance2(lhs, cameraPos) < math::distance2(rhs, cameraPos);
 	});
 }
 

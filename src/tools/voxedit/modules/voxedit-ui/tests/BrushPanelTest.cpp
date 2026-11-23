@@ -15,6 +15,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -185,9 +186,9 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 
 		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphModelNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(node != nullptr);
-		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
-		IM_CHECK(setVoxel(_ctx.sceneMgr, node, glm::ivec3(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+		IM_CHECK(setVoxel(_ctx.sceneMgr, node, math::Vec3i(0, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_ctx.sceneMgr, node, math::Vec3i(1, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		IM_CHECK(setVoxel(_ctx.sceneMgr, node, math::Vec3i(2, 0, 0), voxel::createVoxel(voxel::VoxelType::Generic, 2)));
 
 		const core::Function<int()> selectedCount = [&]() {
 			int count = 0;
@@ -632,7 +633,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		scenegraph::SceneGraphNode *node = _ctx.sceneMgr->sceneGraphNodeByUUID(_ctx.sceneMgr->activeNodeUUID());
 		IM_CHECK(node != nullptr);
 		const core::UUID uuid = node->uuid();
-		const glm::ivec3 position = node->region().getCenter();
+		const math::Vec3i position = node->region().getCenter();
 		voxel::Voxel selected = voxel::createVoxel(voxel::VoxelType::Generic, 1);
 		selected.setOutline();
 		node->volume()->setVoxel(position, selected);
@@ -655,7 +656,7 @@ void BrushPanel::registerUITests(ImGuiTestEngine *engine, const char *toolbarId)
 		ctx->Yield(2);
 		IM_CHECK(!modifier.hasDraft());
 		IM_CHECK(voxel::isAir(node->volume()->voxel(position).getMaterial()));
-		IM_CHECK(node->volume()->voxel(position + glm::ivec3(1, 0, 0)) == selected);
+		IM_CHECK(node->volume()->voxel(position + math::Vec3i(1, 0, 0)) == selected);
 		IM_CHECK(_ctx.sceneMgr->undo());
 		IM_CHECK(_ctx.sceneMgr->sceneGraphNodeByUUID(uuid)->volume()->voxel(position) == selected);
 	};

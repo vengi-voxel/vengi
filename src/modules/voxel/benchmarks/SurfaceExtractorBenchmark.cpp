@@ -8,6 +8,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelformat/FormatConfig.h"
+#include "math/Vec3i.h"
 
 class SurfaceExtractorBenchmark : public app::AbstractBenchmark {
 private:
@@ -122,7 +123,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, CubicSparse)(benchmark::State &sta
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildCubicContext(&v, v.region(), mesh, glm::ivec3(0), true, true, false);
+			voxel::buildCubicContext(&v, v.region(), mesh, math::Vec3i(0), true, true, false);
 		voxel::extractSurface(ctx);
 	}
 }
@@ -131,7 +132,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, BinarySparse)(benchmark::State &st
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildBinaryContext(&v, v.region(), mesh, glm::ivec3(0), false);
+			voxel::buildBinaryContext(&v, v.region(), mesh, math::Vec3i(0), false);
 		voxel::extractSurface(ctx);
 	}
 }
@@ -160,7 +161,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, CubicSolid)(benchmark::State &stat
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildCubicContext(&solid, solid.region(), mesh, glm::ivec3(0), true, true, false);
+			voxel::buildCubicContext(&solid, solid.region(), mesh, math::Vec3i(0), true, true, false);
 		voxel::extractSurface(ctx);
 	}
 }
@@ -169,7 +170,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, CubicSolidAO)(benchmark::State &st
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildCubicContext(&solid, solid.region(), mesh, glm::ivec3(0), true, true, true);
+			voxel::buildCubicContext(&solid, solid.region(), mesh, math::Vec3i(0), true, true, true);
 		voxel::extractSurface(ctx);
 	}
 }
@@ -178,7 +179,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, BinarySolid)(benchmark::State &sta
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildBinaryContext(&solid, solid.region(), mesh, glm::ivec3(0), false);
+			voxel::buildBinaryContext(&solid, solid.region(), mesh, math::Vec3i(0), false);
 		voxel::extractSurface(ctx);
 	}
 }
@@ -187,7 +188,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, BinarySolidAO)(benchmark::State &s
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildBinaryContext(&solid, solid.region(), mesh, glm::ivec3(0), true);
+			voxel::buildBinaryContext(&solid, solid.region(), mesh, math::Vec3i(0), true);
 		voxel::extractSurface(ctx);
 	}
 }
@@ -216,7 +217,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, CubicChecker)(benchmark::State &st
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildCubicContext(&checker, checker.region(), mesh, glm::ivec3(0), true, true, false);
+			voxel::buildCubicContext(&checker, checker.region(), mesh, math::Vec3i(0), true, true, false);
 		voxel::extractSurface(ctx);
 	}
 }
@@ -225,7 +226,7 @@ BENCHMARK_DEFINE_F(SurfaceExtractorBenchmark, BinaryChecker)(benchmark::State &s
 	for (auto _ : state) {
 		voxel::ChunkMesh mesh{65536, 65536, false};
 		voxel::SurfaceExtractionContext ctx =
-			voxel::buildBinaryContext(&checker, checker.region(), mesh, glm::ivec3(0), false);
+			voxel::buildBinaryContext(&checker, checker.region(), mesh, math::Vec3i(0), false);
 		voxel::extractSurface(ctx);
 	}
 }

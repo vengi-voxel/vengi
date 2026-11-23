@@ -7,6 +7,7 @@
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 namespace select {
@@ -17,7 +18,7 @@ void Connected::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapp
 	if (voxel::isAir(referenceVoxel.getMaterial())) {
 		return;
 	}
-	const glm::ivec3 &startPos = ctx.cursorPosition;
+	const math::Vec3i &startPos = ctx.cursorPosition;
 	if (wrapper.modifierType() == ModifierType::Erase) {
 		wrapper.removeFlagAt(startPos.x, startPos.y, startPos.z, voxel::FlagOutline);
 	} else {

@@ -7,7 +7,6 @@
 #include "app/ForParallel.h"
 #include "core/Log.h"
 #include "core/collection/DynamicArray.h"
-#include "math/Math.h"
 #include "render/CameraRenderer.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
@@ -18,6 +17,9 @@
 #include "voxelrender/RawVolumeRenderer.h"
 #include "voxelrender/RenderUtil.h"
 #include <limits>
+#include "math/Mat4f.h"
+#include "math/Vec3f.h"
+#include "math/Vec2i.h"
 
 namespace voxelrender {
 
@@ -80,15 +82,15 @@ void SceneGraphRenderer::scheduleRegionExtraction(const voxel::MeshStatePtr &mes
 	_volumeRenderer.scheduleRegionExtraction(meshState, idx, region);
 }
 
-void SceneGraphRenderer::setAmbientColor(const glm::vec3 &color) {
+void SceneGraphRenderer::setAmbientColor(const math::Vec3f &color) {
 	_volumeRenderer.setAmbientColor(color);
 }
 
-void SceneGraphRenderer::setDiffuseColor(const glm::vec3 &color) {
+void SceneGraphRenderer::setDiffuseColor(const math::Vec3f &color) {
 	_volumeRenderer.setDiffuseColor(color);
 }
 
-void SceneGraphRenderer::setSunAngle(const glm::vec3 &angle) {
+void SceneGraphRenderer::setSunAngle(const math::Vec3f &angle) {
 	_volumeRenderer.setSunAngle(angle);
 }
 
@@ -167,18 +169,18 @@ void SceneGraphRenderer::prepareMeshStateTransform(const voxel::MeshStatePtr &me
 	const voxel::Region &region = sceneGraph.resolveRegion(node);
 
 	const scenegraph::FrameTransform frameTransform = sceneGraph.transformForFrame(node, frame);
-	const glm::mat4 &wm = frameTransform.worldMatrix();
+	const math::Mat4f &wm = frameTransform.worldMatrix();
 	meshState->setCullFace(idx, math::det3x3(wm) < 0.0f ? video::Face::Front : video::Face::Back);
 
-	const glm::vec3 &pivot = node.pivot();
-	const glm::vec3 dimensions(region.getDimensionsInVoxels());
-	const glm::mat4 worldMatrix = glm::translate(wm, -pivot * dimensions);
+	const math::Vec3f &pivot = node.pivot();
+	const math::Vec3f dimensions(region.getDimensionsInVoxels());
+	const math::Mat4f worldMatrix = math::translate(wm, -pivot * dimensions);
 	// Static scenes recompute the same matrix every frame; skip AABB rebuild when unchanged.
 	if (meshState->sameModelMatrix(idx, worldMatrix)) {
 		return;
 	}
-	glm::vec3 mins;
-	glm::vec3 maxs;
+	math::Vec3f mins;
+	math::Vec3f maxs;
 	region.transformArvo(worldMatrix, mins, maxs);
 	meshState->setModelMatrix(idx, worldMatrix, mins, maxs);
 }
@@ -220,7 +222,7 @@ void SceneGraphRenderer::handleSliceView(const voxel::MeshStatePtr &meshState, s
 		_sliceVolumeNodeUUID = node.uuid();
 
 		const voxel::Region &region = _sliceVolume->region();
-		meshState->setModelMatrix(idx, glm::mat4(1.0f), region.getLowerCorner(), region.getUpperCorner());
+		meshState->setModelMatrix(idx, math::Mat4f(1.0f), region.getLowerCorner(), region.getUpperCorner());
 	}
 	_sliceVolumeDirty = false;
 }
@@ -303,7 +305,7 @@ void SceneGraphRenderer::prepareCameraNodes(const RenderContext &renderContext) 
 			continue;
 		}
 		core_trace_scoped(PrepareCameraNode);
-		const glm::ivec2 size(cameraNode.width(), cameraNode.height());
+		const math::Vec2i size(cameraNode.width(), cameraNode.height());
 		_cameras.emplace_back(cameraNode.id(), toCamera(size, sceneGraph, cameraNode, renderContext.frame), cameraNode.color());
 	}
 }
@@ -316,7 +318,7 @@ void SceneGraphRenderer::applyTransform(const voxel::MeshStatePtr &meshState, co
 	} else {
 		meshState->setCullFace(idx, video::Face::Back);
 		const voxel::Region &region = node.region();
-		meshState->setModelMatrix(idx, glm::mat4(1.0f), region.getLowerCorner(), region.getUpperCorner());
+		meshState->setModelMatrix(idx, math::Mat4f(1.0f), region.getLowerCorner(), region.getUpperCorner());
 	}
 }
 

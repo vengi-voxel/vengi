@@ -9,17 +9,19 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
-#include <glm/gtc/epsilon.hpp>
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Scalar.h"
 
 namespace voxelformat {
 namespace priv {
 
-glm::vec3 nodeTranslation(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
+math::Vec3f nodeTranslation(const scenegraph::SceneGraph &sceneGraph, const scenegraph::SceneGraphNode &node) {
 	const scenegraph::SceneGraphTransform &t = node.transform(0);
 	if (t.dirty()) {
 		// World or local was set but update() was not called yet (e.g. right after a VOX load).
-		const glm::vec3 &world = t.worldTranslation();
-		if (!glm::all(glm::epsilonEqual(world, glm::vec3(0.0f), 0.0001f))) {
+		const math::Vec3f &world = t.worldTranslation();
+		if (!math::all(math::epsilonEqual(world, math::Vec3f(0.0f), 0.0001f))) {
 			return world;
 		}
 		return t.localTranslation();
@@ -27,8 +29,8 @@ glm::vec3 nodeTranslation(const scenegraph::SceneGraph &sceneGraph, const sceneg
 	return sceneGraph.transformForFrame(node, 0).worldTranslation();
 }
 
-glm::vec3 bakedNormalizedPivot(const glm::vec3 &normalizedPivot, const glm::vec3 &translation, const glm::ivec3 &dims) {
-	const glm::vec3 d(dims);
+math::Vec3f bakedNormalizedPivot(const math::Vec3f &normalizedPivot, const math::Vec3f &translation, const math::Vec3i &dims) {
+	const math::Vec3f d(dims);
 	return normalizedPivot - translation / d;
 }
 

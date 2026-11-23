@@ -1,9 +1,9 @@
+#include "math/Vec2i.h"
 /**
  * @file
  */
 #pragma once
 
-#include <glm/fwd.hpp>
 
 namespace video {
 
@@ -20,8 +20,8 @@ private:
 	bool _oldState;
 public:
 	ScopedScissor(int x, int y, int w, int h);
-	ScopedScissor(const glm::ivec2& pos, const glm::ivec2& size);
-	ScopedScissor(const glm::ivec2& pos, int w, int h);
+	ScopedScissor(const math::Vec2i& pos, const math::Vec2i& size);
+	ScopedScissor(const math::Vec2i& pos, int w, int h);
 
 	~ScopedScissor();
 };

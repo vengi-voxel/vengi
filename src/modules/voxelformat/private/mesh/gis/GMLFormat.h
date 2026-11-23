@@ -5,6 +5,8 @@
 #pragma once
 
 #include "voxelformat/private/mesh/MeshFormat.h"
+#include "math/Vec3d.h"
+#include "math/Vec3f.h"
 
 namespace tinyxml2 {
 class XMLElement;
@@ -53,7 +55,7 @@ private:
 	enum class SurfaceType : uint8_t { Unknown, Wall, Roof, Ground, LandUse, Vegetation, Water, Terrain, Road, Bridge };
 
 	struct GMLPolygon {
-		core::DynamicArray<glm::vec3> vertices;
+		core::DynamicArray<math::Vec3f> vertices;
 		core::String id;
 		SurfaceType surfaceType = SurfaceType::Unknown;
 	};
@@ -62,7 +64,7 @@ private:
 	struct GMLMetadata {
 		core::String name;
 		core::String description;
-		glm::dvec3 offset{0.0};
+		math::Vec3d offset{0.0};
 	};
 
 	// Represents a single city object (building, bridge, etc.) with its own polygons
@@ -70,47 +72,47 @@ private:
 		core::String name;
 		core::String type;
 		core::DynamicArray<GMLPolygon> polygons;
-		glm::dvec3 offset{0.0}; // envelope offset used during parsing
+		math::Vec3d offset{0.0}; // envelope offset used during parsing
 	};
 
 	static color::RGBA surfaceTypeColor(SurfaceType type);
 	static SurfaceType surfaceTypeFromName(const char *name);
 
 	// Parse a space-separated list of coordinates (3 doubles per vertex by default)
-	bool parsePosList(const char *posData, core::DynamicArray<glm::vec3> &vertices, const glm::dvec3 &offset,
+	bool parsePosList(const char *posData, core::DynamicArray<math::Vec3f> &vertices, const math::Vec3d &offset,
 					  int srsDimension = 3) const;
 	// Parse the deprecated gml:coordinates element (cs/ts/decimal separators)
-	bool parseCoordinatesElement(const tinyxml2::XMLElement *coordsElement, core::DynamicArray<glm::vec3> &vertices,
-								 const glm::dvec3 &offset) const;
-	bool parseLinearRing(const tinyxml2::XMLElement *linearRing, GMLPolygon &polygon, const glm::dvec3 &offset) const;
+	bool parseCoordinatesElement(const tinyxml2::XMLElement *coordsElement, core::DynamicArray<math::Vec3f> &vertices,
+								 const math::Vec3d &offset) const;
+	bool parseLinearRing(const tinyxml2::XMLElement *linearRing, GMLPolygon &polygon, const math::Vec3d &offset) const;
 	// Parse a gml:Polygon (exterior + optional interior rings)
 	bool parsePolygon(const tinyxml2::XMLElement *polygonElement, core::DynamicArray<GMLPolygon> &polygons,
-					  const glm::dvec3 &offset, SurfaceType surfaceType) const;
+					  const math::Vec3d &offset, SurfaceType surfaceType) const;
 	bool parseMultiSurface(const tinyxml2::XMLElement *multiSurface, core::DynamicArray<GMLPolygon> &polygons,
-						   const glm::dvec3 &offset, SurfaceType surfaceType) const;
+						   const math::Vec3d &offset, SurfaceType surfaceType) const;
 	bool parseMultiGeometry(const tinyxml2::XMLElement *multiGeometry, core::DynamicArray<GMLPolygon> &polygons,
-							const glm::dvec3 &offset, SurfaceType surfaceType) const;
+							const math::Vec3d &offset, SurfaceType surfaceType) const;
 	bool parseAnyGeometry(const tinyxml2::XMLElement *parent, core::DynamicArray<GMLPolygon> &polygons,
-						  const glm::dvec3 &offset, SurfaceType surfaceType) const;
+						  const math::Vec3d &offset, SurfaceType surfaceType) const;
 	bool parseCityGMLBoundedBy(const tinyxml2::XMLElement *boundedBy, core::DynamicArray<GMLPolygon> &polygons,
-							   const glm::dvec3 &offset) const;
+							   const math::Vec3d &offset) const;
 	bool parseBuilding(const tinyxml2::XMLElement *building, core::DynamicArray<GMLPolygon> &polygons,
-					   const glm::dvec3 &offset) const;
+					   const math::Vec3d &offset) const;
 	bool parseLandUse(const tinyxml2::XMLElement *landUse, core::DynamicArray<GMLPolygon> &polygons,
-					  const glm::dvec3 &offset) const;
+					  const math::Vec3d &offset) const;
 	bool parseReliefFeature(const tinyxml2::XMLElement *relief, core::DynamicArray<GMLPolygon> &polygons,
-							const glm::dvec3 &offset) const;
+							const math::Vec3d &offset) const;
 	bool parseVegetation(const tinyxml2::XMLElement *vegetation, core::DynamicArray<GMLPolygon> &polygons,
-						 const glm::dvec3 &offset) const;
+						 const math::Vec3d &offset) const;
 	bool parseWaterBody(const tinyxml2::XMLElement *waterBody, core::DynamicArray<GMLPolygon> &polygons,
-						const glm::dvec3 &offset) const;
+						const math::Vec3d &offset) const;
 	bool parseTransportation(const tinyxml2::XMLElement *transportation, core::DynamicArray<GMLPolygon> &polygons,
-							 const glm::dvec3 &offset) const;
+							 const math::Vec3d &offset) const;
 	bool parseBridge(const tinyxml2::XMLElement *bridge, core::DynamicArray<GMLPolygon> &polygons,
-					 const glm::dvec3 &offset) const;
+					 const math::Vec3d &offset) const;
 	bool parseGenericCityObject(const tinyxml2::XMLElement *obj, core::DynamicArray<GMLPolygon> &polygons,
-								const glm::dvec3 &offset) const;
-	bool parseEnvelope(const tinyxml2::XMLElement *envelope, glm::dvec3 &lowerCorner, glm::dvec3 &upperCorner) const;
+								const math::Vec3d &offset) const;
+	bool parseEnvelope(const tinyxml2::XMLElement *envelope, math::Vec3d &lowerCorner, math::Vec3d &upperCorner) const;
 	static core::String getObjectName(const tinyxml2::XMLElement *element, const char *typeName);
 	bool polygonsToMesh(const core::DynamicArray<GMLPolygon> &polygons, Mesh &mesh) const;
 
@@ -129,13 +131,13 @@ protected:
 						const LoadContext &ctx) override;
 
 	bool saveMeshes(const core::Map<int, int> &, const scenegraph::SceneGraph &, const ChunkMeshes &meshes,
-					const core::String &filename, const io::ArchivePtr &archive, const glm::vec3 &scale, bool quad,
+					const core::String &filename, const io::ArchivePtr &archive, const math::Vec3f &scale, bool quad,
 					bool withColor, bool withTexCoords) override {
 		return false; // Save not supported
 	}
 
 public:
-	static bool parseRegionFilter(const core::String &regionStr, glm::dvec3 &mins, glm::dvec3 &maxs);
+	static bool parseRegionFilter(const core::String &regionStr, math::Vec3d &mins, math::Vec3d &maxs);
 
 	static const io::FormatDescription &format() {
 		static io::FormatDescription f{"Geography Markup Language", "", {"gml", "xml"}, {}, VOX_FORMAT_FLAG_MESH};

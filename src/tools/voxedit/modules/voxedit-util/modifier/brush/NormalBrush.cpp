@@ -10,6 +10,7 @@
 #include "voxel/Voxel.h"
 #include "voxel/VoxelNormalUtil.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
@@ -21,7 +22,7 @@ void NormalBrush::generate(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWra
 		auto func = [&](int x, int y, int z, voxel::Voxel voxel) {
 			voxel::RawVolume::Sampler sampler(source);
 			sampler.setPosition(x, y, z);
-			const glm::vec3 &normal = voxel::calculateNormal(sampler, voxel::Connectivity::TwentySixConnected);
+			const math::Vec3f &normal = voxel::calculateNormal(sampler, voxel::Connectivity::TwentySixConnected);
 			const int normalPaletteIndex = wrapper.node().normalPalette().getClosestMatch(normal);
 			if (normalPaletteIndex == palette::PaletteNormalNotFound) {
 				return;

@@ -7,7 +7,7 @@
 #include "color/RGBA.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
-#include <glm/vec3.hpp>
+#include "math/Vec3f.h"
 
 namespace core {
 class Tokenizer;
@@ -18,9 +18,9 @@ namespace voxelformat {
 struct MediaCanvas {
 	int mediaStartTime = 0;
 	int mediaVolume = 0;
-	glm::vec3 localPos{0.0f};
-	glm::vec3 localRot{0.0f};
-	glm::vec3 localScale{0.0f};
+	math::Vec3f localPos{0.0f};
+	math::Vec3f localRot{0.0f};
+	math::Vec3f localScale{0.0f};
 };
 
 struct AnimSpec {
@@ -43,9 +43,9 @@ struct NodeSpec {
 	core::String mediaName; // image that should get added to the scene as plane
 	MediaCanvas mediaCanvas;
 	float opacity = 1.0f;
-	glm::vec3 localPos{0.0f};
-	glm::vec3 localRot{0.0f};
-	glm::vec3 localSize{0.0f};
+	math::Vec3f localPos{0.0f};
+	math::Vec3f localRot{0.0f};
+	math::Vec3f localSize{0.0f};
 	float scale = 1.0f;
 	color::RGBA color{0, 0, 0, 255};
 	core::DynamicArray<NodeSpec> children;

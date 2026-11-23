@@ -6,8 +6,8 @@
 #pragma once
 
 #include "core/collection/Buffer.h"
-#include <glm/mat4x4.hpp>
 #include <stdint.h>
+#include "math/Mat4f.h"
 
 namespace voxelrender {
 
@@ -16,7 +16,7 @@ namespace voxelrender {
  * Layout must match DrawInstance in shaders/_drawinstance.glsl.
  */
 struct DrawInstanceData {
-	glm::mat4 model{1.0f};
+	math::Mat4f model{1.0f};
 	int32_t gray = 0;
 	int32_t locked = 0;
 	float opacity = 1.0f;

@@ -5,7 +5,7 @@
 #include "TextureConfig.h"
 #include "core/Log.h"
 #include "video/Renderer.h"
-#include <glm/common.hpp>
+#include "math/Vec4f.h"
 
 namespace video {
 
@@ -62,7 +62,7 @@ TextureConfig& TextureConfig::maxAnisotropy(float aniso) {
 		aniso = maxAnisotropy;
 	}
 	// Anisotropy values < 1.0 are not meaningful. Enforce a sensible minimum here.
-	_samplerConfig.maxAnisotropy = glm::clamp(aniso, 1.0f, maxAnisotropy);
+	_samplerConfig.maxAnisotropy = math::clamp(aniso, 1.0f, maxAnisotropy);
 	return *this;
 }
 
@@ -81,7 +81,7 @@ TextureConfig& TextureConfig::compareMode(TextureCompareMode mode) {
 	return *this;
 }
 
-TextureConfig& TextureConfig::borderColor(const glm::vec4& borderColor) {
+TextureConfig& TextureConfig::borderColor(const math::Vec4f& borderColor) {
 	_samplerConfig.useBorderColor = true;
 	_samplerConfig.borderColor = borderColor;
 	return *this;
@@ -114,7 +114,7 @@ TextureConfig& TextureConfig::alignment(uint8_t alignment) {
 
 TextureConfig& TextureConfig::samples(int samples) {
 	const int maxSamples = video::limiti(Limit::MaxSamples);
-	_samples = glm::clamp(samples, 0, maxSamples);
+	_samples = math::clamp(samples, 0, maxSamples);
 	// MaxSamples==0 means MSAA is unavailable (e.g. Vulkan until MSAA FBOs exist).
 	if (samples != _samples && maxSamples > 0) {
 		Log::warn("Could not get the requested number of samples - using %i instead of %i", _samples, samples);

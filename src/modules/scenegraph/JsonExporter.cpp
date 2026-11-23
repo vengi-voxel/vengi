@@ -11,7 +11,10 @@
 #include "voxel/RawVolume.h"
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
-#include <glm/gtc/quaternion.hpp>
+#include "math/Quatf.h"
+#include "math/Vec3f.h"
+#include "math/QuatOps.h"
+#include "math/Scalar.h"
 
 namespace scenegraph {
 
@@ -44,7 +47,7 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 	stream.writeStringFormat(false, "\"parent\":\"%s\",", node.parentUUID().str().c_str());
 	stream.writeStringFormat(false, "\"name\":\"%s\",", node.name().c_str());
 	stream.writeStringFormat(false, "\"type\":\"%s\",", scenegraph::SceneGraphNodeTypeStr[core::enumVal(type)]);
-	const glm::vec3 &pivot = node.pivot();
+	const math::Vec3f &pivot = node.pivot();
 	stream.writeStringFormat(false, "\"pivot\":\"%f:%f:%f\"", pivot.x, pivot.y, pivot.z);
 	if ((flags & JSONEXPORTER_PALETTE) && node.hasPalette()) {
 		stream.writeStringFormat(false, ",\"palette\":{\n");
@@ -173,20 +176,20 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 										 scenegraph::InterpolationTypeStr[core::enumVal(kf.interpolation)]);
 				stream.writeStringFormat(false, "\"transform\":{");
 				const scenegraph::SceneGraphTransform &transform = kf.transform();
-				const glm::vec3 &tr = transform.worldTranslation();
+				const math::Vec3f &tr = transform.worldTranslation();
 				stream.writeStringFormat(false, "\"world_translation\":{");
 				stream.writeStringFormat(false, "\"x\":%f,", tr.x);
 				stream.writeStringFormat(false, "\"y\":%f,", tr.y);
 				stream.writeStringFormat(false, "\"z\":%f", tr.z);
 				stream.writeStringFormat(false, "},");
-				const glm::vec3 &ltr = transform.localTranslation();
+				const math::Vec3f &ltr = transform.localTranslation();
 				stream.writeStringFormat(false, "\"local_translation\":{");
 				stream.writeStringFormat(false, "\"x\":%f,", ltr.x);
 				stream.writeStringFormat(false, "\"y\":%f,", ltr.y);
 				stream.writeStringFormat(false, "\"z\":%f", ltr.z);
 				stream.writeStringFormat(false, "},");
-				const glm::quat &rt = transform.worldOrientation();
-				const glm::vec3 &rtEuler = glm::degrees(glm::eulerAngles(rt));
+				const math::Quatf &rt = transform.worldOrientation();
+				const math::Vec3f &rtEuler = math::degrees(math::eulerAngles(rt));
 				stream.writeStringFormat(false, "\"world_orientation\":{");
 				stream.writeStringFormat(false, "\"x\":%f,", rt.x);
 				stream.writeStringFormat(false, "\"y\":%f,", rt.y);
@@ -198,8 +201,8 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 				stream.writeStringFormat(false, "\"y\":%f,", rtEuler.y);
 				stream.writeStringFormat(false, "\"z\":%f", rtEuler.z);
 				stream.writeStringFormat(false, "},");
-				const glm::quat &lrt = transform.localOrientation();
-				const glm::vec3 &lrtEuler = glm::degrees(glm::eulerAngles(lrt));
+				const math::Quatf &lrt = transform.localOrientation();
+				const math::Vec3f &lrtEuler = math::degrees(math::eulerAngles(lrt));
 				stream.writeStringFormat(false, "\"local_orientation\":{");
 				stream.writeStringFormat(false, "\"x\":%f,", lrt.x);
 				stream.writeStringFormat(false, "\"y\":%f,", lrt.y);
@@ -211,13 +214,13 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 				stream.writeStringFormat(false, "\"y\":%f,", lrtEuler.y);
 				stream.writeStringFormat(false, "\"z\":%f", lrtEuler.z);
 				stream.writeStringFormat(false, "},");
-				const glm::vec3 &sc = transform.worldScale();
+				const math::Vec3f &sc = transform.worldScale();
 				stream.writeStringFormat(false, "\"world_scale\":{");
 				stream.writeStringFormat(false, "\"x\":%f,", sc.x);
 				stream.writeStringFormat(false, "\"y\":%f,", sc.y);
 				stream.writeStringFormat(false, "\"z\":%f", sc.z);
 				stream.writeStringFormat(false, "},");
-				const glm::vec3 &lsc = transform.localScale();
+				const math::Vec3f &lsc = transform.localScale();
 				stream.writeStringFormat(false, "\"local_scale\":{");
 				stream.writeStringFormat(false, "\"x\":%f,", lsc.x);
 				stream.writeStringFormat(false, "\"y\":%f,", lsc.y);

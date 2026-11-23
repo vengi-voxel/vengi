@@ -9,6 +9,7 @@
 #include "voxedit-util/modifier/brush/gesture/BoxGesture.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/gesture/StrokeGesture.h"
+#include "math/Vec3i.h"
 
 namespace voxedit {
 
@@ -18,14 +19,14 @@ TEST_F(BrushGestureTest, testBoxCapturesPlaneBeforeDepth) {
 	BoxGesture gesture;
 	BrushContext ctx;
 	ctx.cursorFace = voxel::FaceNames::PositiveY;
-	ctx.cursorPosition = glm::ivec3(1, 2, 3);
+	ctx.cursorPosition = math::Vec3i(1, 2, 3);
 	gesture.begin(ctx, true);
-	ctx.cursorPosition = glm::ivec3(4, 2, 7);
+	ctx.cursorPosition = math::Vec3i(4, 2, 7);
 	EXPECT_TRUE(BoxGesture::needsDepth(ctx, gesture.region(ctx, false)));
 	ASSERT_TRUE(gesture.step(ctx, 0));
-	ctx.cursorPosition = glm::ivec3(20, 6, 30);
+	ctx.cursorPosition = math::Vec3i(20, 6, 30);
 	ctx.cursorFace = voxel::FaceNames::PositiveX;
-	EXPECT_EQ(gesture.cursorPosition(ctx, 0), glm::ivec3(4, 6, 7));
+	EXPECT_EQ(gesture.cursorPosition(ctx, 0), math::Vec3i(4, 6, 7));
 	EXPECT_EQ(gesture.region(ctx, false), voxel::Region(1, 2, 3, 4, 6, 7));
 	EXPECT_FALSE(BoxGesture::needsDepth(ctx, gesture.region(ctx, false)));
 	gesture.end();
@@ -37,14 +38,14 @@ TEST_F(BrushGestureTest, testBoxCapturesPlaneBeforeDepth) {
 TEST_F(BrushGestureTest, testBoxCenterAndGrid) {
 	BoxGesture gesture;
 	BrushContext ctx;
-	ctx.gridResolution = glm::ivec3(2, 3, 4);
-	ctx.cursorPosition = glm::ivec3(5, 7, 11);
+	ctx.gridResolution = math::Vec3i(2, 3, 4);
+	ctx.cursorPosition = math::Vec3i(5, 7, 11);
 	gesture.begin(ctx, true);
-	EXPECT_EQ(gesture.firstPosition(), glm::ivec3(4, 6, 8));
-	ctx.cursorPosition = glm::ivec3(2, 3, 4);
+	EXPECT_EQ(gesture.firstPosition(), math::Vec3i(4, 6, 8));
+	ctx.cursorPosition = math::Vec3i(2, 3, 4);
 	EXPECT_EQ(gesture.region(ctx, false), voxel::Region(2, 3, 4, 5, 8, 11));
 	EXPECT_EQ(gesture.region(ctx, true), voxel::Region(2, 3, 4, 6, 9, 12));
-	EXPECT_EQ(BoxGesture::snapToGrid(glm::ivec3(-5, -7, -11), ctx.gridResolution), glm::ivec3(-4, -6, -8));
+	EXPECT_EQ(BoxGesture::snapToGrid(math::Vec3i(-5, -7, -11), ctx.gridResolution), math::Vec3i(-4, -6, -8));
 }
 
 TEST_F(BrushGestureTest, testBoxAxisLockAndPlaneBounds) {
@@ -52,7 +53,7 @@ TEST_F(BrushGestureTest, testBoxAxisLockAndPlaneBounds) {
 	BrushContext ctx;
 	ctx.cursorFace = voxel::FaceNames::NegativeZ;
 	gesture.begin(ctx, true);
-	ctx.cursorPosition = glm::ivec3(4, 5, 0);
+	ctx.cursorPosition = math::Vec3i(4, 5, 0);
 	ctx.lockedAxis = math::Axis::Z;
 	EXPECT_FALSE(BoxGesture::needsDepth(ctx, gesture.region(ctx, false)));
 	EXPECT_FALSE(gesture.step(ctx, 0));
@@ -60,52 +61,52 @@ TEST_F(BrushGestureTest, testBoxAxisLockAndPlaneBounds) {
 	ctx.lockedAxis = math::Axis::None;
 	EXPECT_FALSE(gesture.step(ctx, 2));
 	gesture.setPlaneBounds(voxel::Region(1, 2, 3, 4, 5, 3));
-	ctx.cursorPosition = glm::ivec3(99, 99, -2);
+	ctx.cursorPosition = math::Vec3i(99, 99, -2);
 	EXPECT_EQ(gesture.region(ctx, false), voxel::Region(1, 2, -2, 4, 5, 3));
-	EXPECT_EQ(gesture.cursorPosition(ctx, 2), glm::ivec3(4, 5, 3));
+	EXPECT_EQ(gesture.cursorPosition(ctx, 2), math::Vec3i(4, 5, 3));
 	gesture.reset();
 	EXPECT_FALSE(gesture.active());
 	EXPECT_FALSE(gesture.hasSecondPosition());
 	EXPECT_EQ(gesture.face(), voxel::FaceNames::Max);
-	EXPECT_EQ(gesture.firstPosition(), glm::ivec3(0));
+	EXPECT_EQ(gesture.firstPosition(), math::Vec3i(0));
 }
 
 TEST_F(BrushGestureTest, testStrokeFillsGapsAndRepeatsStationarySamples) {
 	StrokeGesture gesture;
-	core::DynamicArray<glm::ivec3> positions;
-	auto visit = [&](const glm::ivec3 &pos) { positions.push_back(pos); };
+	core::DynamicArray<math::Vec3i> positions;
+	auto visit = [&](const math::Vec3i &pos) { positions.push_back(pos); };
 	gesture.begin();
-	gesture.visit(glm::ivec3(0), visit);
-	gesture.visit(glm::ivec3(3, 0, 0), visit);
+	gesture.visit(math::Vec3i(0), visit);
+	gesture.visit(math::Vec3i(3, 0, 0), visit);
 	ASSERT_EQ(positions.size(), 4u);
 	for (int i = 0; i < 4; ++i) {
-		EXPECT_EQ(positions[i], glm::ivec3(i, 0, 0));
+		EXPECT_EQ(positions[i], math::Vec3i(i, 0, 0));
 	}
-	gesture.visit(glm::ivec3(3, 0, 0), visit);
+	gesture.visit(math::Vec3i(3, 0, 0), visit);
 	ASSERT_EQ(positions.size(), 5u);
-	EXPECT_EQ(positions.back(), glm::ivec3(3, 0, 0));
+	EXPECT_EQ(positions.back(), math::Vec3i(3, 0, 0));
 	gesture.end();
 	gesture.begin();
 	positions.clear();
-	gesture.visit(glm::ivec3(10), visit);
+	gesture.visit(math::Vec3i(10), visit);
 	ASSERT_EQ(positions.size(), 1u) << "A new stroke must not connect to the previous path";
-	EXPECT_EQ(positions[0], glm::ivec3(10));
+	EXPECT_EQ(positions[0], math::Vec3i(10));
 }
 
 TEST_F(BrushGestureTest, testStrokeEndDiscardsSamplingState) {
 	StrokeGesture gesture;
 	gesture.begin();
-	gesture.visit(glm::ivec3(4), [](const glm::ivec3 &) {});
-	EXPECT_TRUE(gesture.sampled(glm::ivec3(4)));
+	gesture.visit(math::Vec3i(4), [](const math::Vec3i &) {});
+	EXPECT_TRUE(gesture.sampled(math::Vec3i(4)));
 	gesture.end();
 	EXPECT_FALSE(gesture.active());
-	EXPECT_FALSE(gesture.sampled(glm::ivec3(4)));
+	EXPECT_FALSE(gesture.sampled(math::Vec3i(4)));
 }
 
 TEST_F(BrushGestureTest, testStrokeFootprint) {
-	const glm::ivec3 position(4, 5, 6);
-	EXPECT_EQ(StrokeGesture::region(position, 0, glm::ivec3(1, 2, 3)), voxel::Region(4, 5, 6, 4, 6, 8));
-	EXPECT_EQ(StrokeGesture::region(position, 2, glm::ivec3(1, 2, 3)), voxel::Region(2, 3, 4, 6, 7, 8));
+	const math::Vec3i position(4, 5, 6);
+	EXPECT_EQ(StrokeGesture::region(position, 0, math::Vec3i(1, 2, 3)), voxel::Region(4, 5, 6, 4, 6, 8));
+	EXPECT_EQ(StrokeGesture::region(position, 2, math::Vec3i(1, 2, 3)), voxel::Region(2, 3, 4, 6, 7, 8));
 }
 
 TEST_F(BrushGestureTest, testPreviewDoesNotAdvanceShapeStroke) {
@@ -122,7 +123,7 @@ TEST_F(BrushGestureTest, testPreviewDoesNotAdvanceShapeStroke) {
 	ModifierVolumeWrapper first(node, ModifierType::Place);
 	StrokeGesture stroke;
 	stroke.begin();
-	stroke.visit(ctx.cursorPosition, [&](const glm::ivec3 &position) {
+	stroke.visit(ctx.cursorPosition, [&](const math::Vec3i &position) {
 		BrushContext dab = ctx;
 		dab.cursorPosition = position;
 		brush.executeSample(sceneGraph, first, dab);
@@ -139,7 +140,7 @@ TEST_F(BrushGestureTest, testPreviewDoesNotAdvanceShapeStroke) {
 	ctx.cursorPosition.x = 3;
 	ctx.preview = false;
 	ModifierVolumeWrapper last(node, ModifierType::Place);
-	stroke.visit(ctx.cursorPosition, [&](const glm::ivec3 &position) {
+	stroke.visit(ctx.cursorPosition, [&](const math::Vec3i &position) {
 		BrushContext dab = ctx;
 		dab.cursorPosition = position;
 		brush.executeSample(sceneGraph, last, dab);
@@ -162,7 +163,7 @@ TEST_F(BrushGestureTest, testBrushResetPreservesSettingsButDiscardsGesture) {
 	BrushContext ctx;
 	ctx.cursorFace = voxel::FaceNames::PositiveZ;
 	ASSERT_TRUE(brush.beginBrush(ctx));
-	ctx.cursorPosition = glm::ivec3(4, 5, 0);
+	ctx.cursorPosition = math::Vec3i(4, 5, 0);
 	brush.step(ctx);
 	brush.reset();
 	EXPECT_TRUE(brush.centerMode());

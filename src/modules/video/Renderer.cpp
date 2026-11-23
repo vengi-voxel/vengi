@@ -14,6 +14,9 @@
 #include "core/Assert.h"
 #include "TextureConfig.h"
 #include "core/Var.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace video {
 
@@ -165,11 +168,11 @@ float currentLineWidth() {
 	return rendererState().pendingLineWidth;
 }
 
-const glm::vec4 &currentClearColor() {
+const math::Vec4f &currentClearColor() {
 	return rendererState().pendingClearColor;
 }
 
-bool clearColor(const glm::vec4 &clearColor) {
+bool clearColor(const math::Vec4f &clearColor) {
 	RendererState &rs = rendererState();
 	if (rs.pendingClearColor == clearColor) {
 		return false;
@@ -342,7 +345,7 @@ PolygonMode polygonMode(Face face, PolygonMode mode) {
 	return old;
 }
 
-bool polygonOffset(const glm::vec2 &offset) {
+bool polygonOffset(const math::Vec2f &offset) {
 	RendererState &rs = rendererState();
 	if (rs.pendingPolygonOffset == offset) {
 		return false;
@@ -424,8 +427,8 @@ void resize(int windowWidth, int windowHeight, float scaleFactor) {
 	rendererState().scaleFactor = scaleFactor;
 }
 
-glm::ivec2 getWindowSize() {
-	return glm::ivec2(rendererState().windowWidth, rendererState().windowHeight);
+math::Vec2i getWindowSize() {
+	return math::Vec2i(rendererState().windowWidth, rendererState().windowHeight);
 }
 
 float getScaleFactor() {

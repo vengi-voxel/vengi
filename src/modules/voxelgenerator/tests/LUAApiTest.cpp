@@ -14,6 +14,9 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxelformat/FormatConfig.h"
+#include "math/Quatf.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxelgenerator {
 
@@ -22,13 +25,13 @@ const size_t InitialSceneGraphModelSize = 2u;
 class LUAApiTest : public app::AbstractTest {
 protected:
 	const voxel::Region _region{0, 0, 0, 7, 7, 7};
-	const glm::ivec3 voxels[6] {
-		glm::ivec3(0, 0, 0),
-		glm::ivec3(0, 1, 0),
-		glm::ivec3(0, 2, 0),
-		glm::ivec3(2, 0, 0),
-		glm::ivec3(2, 1, 0),
-		glm::ivec3(2, 2, 0)
+	const math::Vec3i voxels[6] {
+		math::Vec3i(0, 0, 0),
+		math::Vec3i(0, 1, 0),
+		math::Vec3i(0, 2, 0),
+		math::Vec3i(2, 0, 0),
+		math::Vec3i(2, 1, 0),
+		math::Vec3i(2, 2, 0)
 	};
 
 	virtual bool onInitApp() {
@@ -314,8 +317,8 @@ TEST_F(LUAApiTest, testShapeBezierHelpers) {
 	EXPECT_EQ(42u, volume->voxel(7, 6, 7).getColor());
 	EXPECT_FALSE(voxel::isBlocked(volume->voxel(4, 6, 7).getMaterial()));
 
-	const math::Bezier<int> bezier(glm::ivec3(1, 7, 1), glm::ivec3(7, 7, 1), glm::ivec3(4, 5, 1));
-	const glm::ivec3 bezierMid = bezier.getPoint(0.5f);
+	const math::Bezier<int> bezier(math::Vec3i(1, 7, 1), math::Vec3i(7, 7, 1), math::Vec3i(4, 5, 1));
+	const math::Vec3i bezierMid = bezier.getPoint(0.5f);
 	EXPECT_EQ(42u, volume->voxel(bezierMid).getColor());
 }
 
@@ -720,10 +723,10 @@ TEST_F(LUAApiTest, testScriptAnimExportImport) {
 	ASSERT_FALSE(importScript.empty()) << "Could not load anim_import.lua";
 
 	const voxel::Voxel voxel = voxel::createVoxel(voxel::VoxelType::Generic, 42);
-	const glm::vec3 expectedTranslation0(1.0f, 2.0f, 3.0f);
-	const glm::quat expectedOrientation0 = glm::quat::wxyz(0.707f, 0.0f, 0.707f, 0.0f);
-	const glm::vec3 expectedTranslation1(4.0f, 5.0f, 6.0f);
-	const glm::quat expectedOrientation1 = glm::quat::wxyz(0.707f, 0.0f, 0.0f, 0.707f);
+	const math::Vec3f expectedTranslation0(1.0f, 2.0f, 3.0f);
+	const math::Quatf expectedOrientation0 = math::Quatf::wxyz(0.707f, 0.0f, 0.707f, 0.0f);
+	const math::Vec3f expectedTranslation1(4.0f, 5.0f, 6.0f);
+	const math::Quatf expectedOrientation1 = math::Quatf::wxyz(0.707f, 0.0f, 0.0f, 0.707f);
 
 	// Step 1: build a scene graph with animation keyframes from C++
 	scenegraph::SceneGraph exportGraph;
@@ -761,7 +764,7 @@ TEST_F(LUAApiTest, testScriptAnimExportImport) {
 	{
 		scenegraph::SceneGraphNode &head = exportGraph.node(headNodeId);
 		scenegraph::SceneGraphKeyFrame &kf0 = head.keyFrame(0);
-		kf0.transform().setLocalTranslation(glm::vec3(7.0f, 8.0f, 9.0f));
+		kf0.transform().setLocalTranslation(math::Vec3f(7.0f, 8.0f, 9.0f));
 	}
 
 	exportGraph.updateTransforms();
@@ -822,17 +825,17 @@ TEST_F(LUAApiTest, testScriptAnimExportImport) {
 		scenegraph::SceneGraphNode &belt = importGraph.node(importBeltId);
 		ASSERT_GE(belt.keyFrames()->size(), 2u) << "Expected at least 2 keyframes after import";
 		const scenegraph::SceneGraphKeyFrame &kf0 = belt.keyFrame(0);
-		const glm::vec3 &t0 = kf0.transform().localTranslation();
+		const math::Vec3f &t0 = kf0.transform().localTranslation();
 		EXPECT_NEAR(t0.x, expectedTranslation0.x, 0.01f);
 		EXPECT_NEAR(t0.y, expectedTranslation0.y, 0.01f);
 		EXPECT_NEAR(t0.z, expectedTranslation0.z, 0.01f);
-		const glm::quat &o0 = kf0.transform().localOrientation();
+		const math::Quatf &o0 = kf0.transform().localOrientation();
 		EXPECT_NEAR(o0.x, expectedOrientation0.x, 0.01f);
 		EXPECT_NEAR(o0.y, expectedOrientation0.y, 0.01f);
 		EXPECT_NEAR(o0.z, expectedOrientation0.z, 0.01f);
 		EXPECT_NEAR(o0.w, expectedOrientation0.w, 0.01f);
 		const scenegraph::SceneGraphKeyFrame &kf1 = belt.keyFrame(1);
-		const glm::vec3 &t1 = kf1.transform().localTranslation();
+		const math::Vec3f &t1 = kf1.transform().localTranslation();
 		EXPECT_NEAR(t1.x, expectedTranslation1.x, 0.01f);
 		EXPECT_NEAR(t1.y, expectedTranslation1.y, 0.01f);
 		EXPECT_NEAR(t1.z, expectedTranslation1.z, 0.01f);

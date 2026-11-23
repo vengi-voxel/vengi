@@ -8,7 +8,7 @@
 #include "math/Random.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxel/Region.h"
-#include <glm/geometric.hpp>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -16,7 +16,7 @@ class AbstractVoxelTest: public app::AbstractTest {
 protected:
 	math::Random _random;
 	unsigned int _seed = 0;
-	const voxel::Region _region { glm::ivec3(0), glm::ivec3(63) };
+	const voxel::Region _region { math::Vec3i(0), math::Vec3i(63) };
 
 public:
 	AbstractVoxelTest(size_t threadPoolSize = 1) : app::AbstractTest(threadPoolSize) {

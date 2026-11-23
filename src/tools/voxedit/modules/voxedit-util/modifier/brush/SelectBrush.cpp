@@ -3,6 +3,7 @@
  */
 
 #include "SelectBrush.h"
+#include "math/Mat4f.h"
 
 namespace voxedit {
 
@@ -195,7 +196,7 @@ void SelectBrush::describeHandle(const BrushContext &ctx, BrushGizmoState &state
 	activeStrategy()->describeHandle(ctx, buildState(ctx), state);
 }
 
-bool SelectBrush::editHandle(uint32_t handleId, BrushContext &ctx, const glm::mat4 &matrix, const glm::mat4 &deltaMatrix,
+bool SelectBrush::editHandle(uint32_t handleId, BrushContext &ctx, const math::Mat4f &matrix, const math::Mat4f &deltaMatrix,
 								  uint32_t operation) {
 	if (activeStrategy()->editHandle(handleId, ctx, matrix, deltaMatrix, operation)) {
 		markDirty();

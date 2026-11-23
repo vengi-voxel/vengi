@@ -18,6 +18,9 @@
 #include "voxelformat/private/mesh/GLTFFormat.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelutil/VolumeVisitor.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxelformat {
 
@@ -46,7 +49,7 @@ TEST_F(VENGIFormatTest, testMeshChrKnightGreedyTexture) {
 		const voxel::RawVolume *v = node.volume();
 		voxel::ChunkMesh mesh;
 		voxel::SurfaceExtractionContext ctx = voxel::createContext(voxel::SurfaceExtractionType::GreedyTexture, v,
-																   v->region(), node.palette(), mesh, glm::ivec3(0));
+																   v->region(), node.palette(), mesh, math::Vec3i(0));
 		voxel::extractSurface(ctx);
 		EXPECT_EQ(expected[nodes].vertices, mesh.mesh[0].getVertexVector().size());
 		EXPECT_EQ(expected[nodes].indices, mesh.mesh[0].getIndexVector().size());
@@ -68,7 +71,7 @@ TEST_F(VENGIFormatTest, testMeshCubeGreedyTexture) {
 	const voxel::RawVolume *v = node->volume();
 	voxel::ChunkMesh mesh;
 	voxel::SurfaceExtractionContext ctx = voxel::createContext(voxel::SurfaceExtractionType::GreedyTexture, v,
-															   v->region(), node->palette(), mesh, glm::ivec3(0));
+															   v->region(), node->palette(), mesh, math::Vec3i(0));
 	voxel::extractSurface(ctx);
 	uint32_t expectedFaces = 6u;
 	const voxel::VertexArray &vertices = mesh.mesh[0].getVertexVector();
@@ -85,7 +88,7 @@ TEST_F(VENGIFormatTest, testMeshCubeGreedyTexture) {
 		16, 17, 18, 16, 18, 19,
 		20, 21, 22, 20, 22, 23
 	};
-	const glm::vec3 expectedPositions[] = {
+	const math::Vec3f expectedPositions[] = {
 		{0, 0, 0}, {0, 0, 3}, {0, 3, 3}, {0, 3, 0},
 		{3, 0, 0}, {3, 3, 0}, {3, 3, 3}, {3, 0, 3},
 		{0, 0, 0}, {3, 0, 0}, {3, 0, 3}, {0, 0, 3},
@@ -168,7 +171,7 @@ TEST_F(VENGIFormatTest, testSaveLoadIKConstraint) {
 		ik.visible = false;
 		ik.anchor = true;
 		scenegraph::IKConstraint::RadiusConstraint swing;
-		swing.center = glm::vec2(0.5f, 1.0f);
+		swing.center = math::Vec2f(0.5f, 1.0f);
 		swing.radius = 0.75f;
 		ik.swingLimits.push_back(swing);
 		node.setIkConstraint(ik);

@@ -9,6 +9,7 @@
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"
 #include <gtest/gtest.h>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -18,10 +19,10 @@ protected:
 	void testRecorder(Volume &v) {
 		voxel::ModificationRecorder recorder(v);
 		voxel::Voxel voxel = createVoxel(voxel::VoxelType::Generic, 1);
-		ASSERT_TRUE(recorder.setVoxel(glm::ivec3(1, 1, 0), voxel));
-		ASSERT_TRUE(recorder.setVoxel(glm::ivec3(3, 2, 0), voxel));
-		EXPECT_TRUE(isAir(v.voxel(glm::ivec3(1, 1, 0)).getMaterial()));
-		EXPECT_TRUE(isAir(v.voxel(glm::ivec3(3, 2, 0)).getMaterial()));
+		ASSERT_TRUE(recorder.setVoxel(math::Vec3i(1, 1, 0), voxel));
+		ASSERT_TRUE(recorder.setVoxel(math::Vec3i(3, 2, 0), voxel));
+		EXPECT_TRUE(isAir(v.voxel(math::Vec3i(1, 1, 0)).getMaterial()));
+		EXPECT_TRUE(isAir(v.voxel(math::Vec3i(3, 2, 0)).getMaterial()));
 		const voxel::Region region = recorder.dirtyRegion();
 		EXPECT_EQ(1, region.getLowerX());
 		EXPECT_EQ(3, region.getUpperX());

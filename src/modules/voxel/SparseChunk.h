@@ -8,8 +8,8 @@
 #include "core/NonCopyable.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/Voxel.h"
-#include <glm/vec3.hpp>
 #include <stdint.h>
+#include "math/Vec3i.h"
 
 namespace voxel {
 
@@ -345,7 +345,7 @@ public:
 	 * @brief Read a box wholly within the chunk into a tightly packed, X-major buffer.
 	 * Unstored cells are copied as default air and stored voxels retain all their fields.
 	 */
-	void readRegion(const glm::ivec3 &mins, const glm::ivec3 &size, Voxel *target) const;
+	void readRegion(const math::Vec3i &mins, const math::Vec3i &size, Voxel *target) const;
 
 	void clear();
 
@@ -386,7 +386,7 @@ public:
 	 * @brief Calculate the local bounds of all stored voxels
 	 * @return @c false if the chunk doesn't contain any voxel
 	 */
-	bool calculateBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const;
+	bool calculateBounds(math::Vec3i &mins, math::Vec3i &maxs) const;
 
 	/**
 	 * @brief Visit every live brick in the chunk with its local origin (bx, by, bz) and brick reference.

@@ -29,6 +29,7 @@
 #include "util/VarUtil.h"
 #include "voxelformat/private/mesh/GodotSceneFormat.h"
 #include <SDL3/SDL_stdinc.h>
+#include "math/Vec3i.h"
 
 namespace voxelformat {
 
@@ -380,7 +381,7 @@ bool PxoFormat::addFrame(scenegraph::SceneGraph &sceneGraph, const core::String 
 	node.setVolume(volume);
 	node.setName(core::String::format("%s_%i", name.c_str(), frameIndex));
 	node.setPalette(palette);
-	glm::ivec3 sliceOffset(0);
+	math::Vec3i sliceOffset(0);
 	sliceOffset[math::getIndexForAxis(axis)] = offset;
 	sliceOffset *= frameIndex;
 	node.volume()->translate(sliceOffset);

@@ -22,8 +22,10 @@
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
-#include <glm/gtc/type_ptr.hpp>
 
 #define wrapBool(action)                                                                                               \
 	if ((action) != true) {                                                                                            \
@@ -138,7 +140,7 @@ bool VENGIFormat::saveNodeData(const scenegraph::SceneGraph &sceneGraph, const s
 	}
 	const voxel::Voxel *voxels = v->linearVoxels();
 	const int64_t zStride = region.stride();
-	const glm::ivec3 &lower = region.getLowerCorner();
+	const math::Vec3i &lower = region.getLowerCorner();
 	app::for_parallel(0, w, [&](int start, int end) {
 		if (voxels != nullptr) {
 			for (int x = start; x < end; ++x) {
@@ -258,7 +260,7 @@ bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyfram
 	wrapBool(stream.writeBool(keyframe.longRotation))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::InterpolationTypeStr[(int)keyframe.interpolation]))
 	const scenegraph::SceneGraphTransform &transform = keyframe.transform();
-	const float *localMatrix = glm::value_ptr(transform.localMatrix());
+	const float *localMatrix = math::value_ptr(transform.localMatrix());
 	for (int i = 0; i < 16; ++i) {
 		wrapBool(stream.writeFloat(localMatrix[i]))
 	}
@@ -399,7 +401,7 @@ template<typename Reader>
 static bool loadVoxels(Reader &reader, voxel::RawVolume &volume, const palette::Palette &palette, uint32_t version) {
 	const voxel::Region &region = volume.region();
 	voxel::Voxel *data = volume.linearVoxels();
-	const glm::ivec3 &lower = region.getLowerCorner();
+	const math::Vec3i &lower = region.getLowerCorner();
 	const int32_t w = region.getWidthInVoxels();
 	const int32_t h = region.getHeightInVoxels();
 	const int32_t d = region.getDepthInVoxels();
@@ -442,7 +444,7 @@ static bool loadVoxels(Reader &reader, voxel::RawVolume &volume, const palette::
 
 bool VENGIFormat::loadNodeData(scenegraph::SceneGraph &sceneGraph, scenegraph::SceneGraphNode &node, uint32_t version,
 							   io::ZipReadStream &stream) {
-	glm::ivec3 mins, maxs;
+	math::Vec3i mins, maxs;
 	wrap(stream.readInt32(mins.x))
 	wrap(stream.readInt32(mins.y))
 	wrap(stream.readInt32(mins.z))
@@ -612,14 +614,14 @@ bool VENGIFormat::loadNodeKeyFrame(scenegraph::SceneGraph &sceneGraph, scenegrap
 	keyframe.interpolation = toInterpolationType(interpolationType);
 	Log::debug("Load animation keyframe %u: %s", frameIdx, interpolationType.c_str());
 	scenegraph::SceneGraphTransform &transform = keyframe.transform();
-	glm::mat4 localMatrix;
-	float *localMatrixPtr = glm::value_ptr(localMatrix);
+	math::Mat4f localMatrix;
+	float *localMatrixPtr = math::value_ptr(localMatrix);
 	for (int i = 0; i < 16; ++i) {
 		wrap(stream.readFloat(localMatrixPtr[i]))
 	}
 	transform.setLocalMatrix(localMatrix);
 	if (version <= 2) {
-		glm::vec3 pivot;
+		math::Vec3f pivot;
 		wrap(stream.readFloat(pivot.x))
 		wrap(stream.readFloat(pivot.y))
 		wrap(stream.readFloat(pivot.z))
@@ -686,7 +688,7 @@ bool VENGIFormat::loadNode(scenegraph::SceneGraph &sceneGraph, int parent, uint3
 	color::RGBA color;
 	wrap(stream.readUInt32(color.rgba))
 	node.setColor(color);
-	glm::vec3 pivot(0.0f);
+	math::Vec3f pivot(0.0f);
 	if (version >= 3) {
 		wrap(stream.readFloat(pivot.x))
 		wrap(stream.readFloat(pivot.y))

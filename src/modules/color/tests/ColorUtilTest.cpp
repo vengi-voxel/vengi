@@ -7,8 +7,9 @@
 #include "color/Color.h"
 #include "color/RGBA.h"
 #include "core/Endian.h"
-#include <glm/vec3.hpp>
 #include <gtest/gtest.h>
+#include "math/Vec4f.h"
+#include "math/Vec3f.h"
 
 namespace color {
 
@@ -26,7 +27,7 @@ TEST_F(ColorUtilTest, testRGBA) {
 	EXPECT_EQ(0x66, color.b);
 	EXPECT_EQ(0xff, color.a);
 
-	const glm::vec4 fcolor = color::fromRGBA(color);
+	const math::Vec4f fcolor = color::fromRGBA(color);
 	EXPECT_FLOAT_EQ(color.r / color::magnitudef, fcolor.r);
 	EXPECT_FLOAT_EQ(color.g / color::magnitudef, fcolor.g);
 	EXPECT_FLOAT_EQ(color.b / color::magnitudef, fcolor.b);
@@ -121,7 +122,7 @@ TEST_F(ColorUtilTest, testCIELab) {
 	EXPECT_NEAR(80.1093f, a, 0.01f);
 	EXPECT_NEAR(67.2200f, b, 0.01f);
 
-	color::RGBA rgba = color::fromCIELab(glm::vec4(l, a, b, 1.0f));
+	color::RGBA rgba = color::fromCIELab(math::Vec4f(l, a, b, 1.0f));
 	EXPECT_NEAR(255, (int)rgba.r, 1);
 	EXPECT_NEAR(0, (int)rgba.g, 1);
 	EXPECT_NEAR(0, (int)rgba.b, 1);
@@ -136,7 +137,7 @@ TEST_F(ColorUtilTest, testDeltaE76) {
 }
 
 TEST_F(ColorUtilTest, testGray) {
-	glm::vec3 g = color::gray(glm::vec3(1.0f, 0.0f, 0.0f));
+	math::Vec3f g = color::gray(math::Vec3f(1.0f, 0.0f, 0.0f));
 	EXPECT_NEAR(0.21f, g.r, 0.001f);
 	EXPECT_NEAR(0.21f, g.g, 0.001f);
 	EXPECT_NEAR(0.21f, g.b, 0.001f);
@@ -173,8 +174,8 @@ TEST_F(ColorUtilTest, testFlattenRGB) {
 }
 
 TEST_F(ColorUtilTest, testContrastTextColor) {
-	glm::vec4 white(1.0f);
-	glm::vec4 black(0.0f, 0.0f, 0.0f, 1.0f);
+	math::Vec4f white(1.0f);
+	math::Vec4f black(0.0f, 0.0f, 0.0f, 1.0f);
 	EXPECT_EQ(black, color::contrastTextColor(white));
 	EXPECT_EQ(white, color::contrastTextColor(black));
 }
@@ -203,10 +204,15 @@ TEST_F(ColorUtilTest, testSrgbToLinear) {
 	EXPECT_NEAR(0.04045f / 12.92f, color::srgbToLinear(0.04045f), 0.0001f);
 	EXPECT_NEAR((float)color::srgbToLinear((uint8_t)127), color::srgbToLinear(127.0f / 255.0f), 0.0001f);
 
-	const glm::vec3 linear = color::srgbToLinear(glm::vec3(0.0f, 127.0f / 255.0f, 1.0f));
+	const math::Vec3f linear = color::srgbToLinear(math::Vec3f(0.0f, 127.0f / 255.0f, 1.0f));
 	EXPECT_NEAR(0.0f, linear.x, 0.0001f);
 	EXPECT_NEAR((float)color::srgbToLinear((uint8_t)127), linear.y, 0.0001f);
 	EXPECT_NEAR(1.0f, linear.z, 0.0001f);
+
+	EXPECT_NEAR(0.0f, color::linearToSrgb(0.0f), 0.0001f);
+	EXPECT_NEAR(1.0f, color::linearToSrgb(1.0f), 0.0001f);
+	EXPECT_NEAR(0.04045f, color::linearToSrgb(color::srgbToLinear(0.04045f)), 0.0001f);
+	EXPECT_NEAR(127.0f / 255.0f, color::linearToSrgb(color::srgbToLinear(127.0f / 255.0f)), 0.0001f);
 }
 
 TEST_F(ColorUtilTest, testRgbToXyz) {
@@ -238,7 +244,7 @@ TEST_F(ColorUtilTest, testGetDistanceHSBValues) {
 }
 
 TEST_F(ColorUtilTest, testGetRGBAFromVec3) {
-	glm::vec3 v(1.0f, 0.0f, 0.0f);
+	math::Vec3f v(1.0f, 0.0f, 0.0f);
 	color::RGBA c = color::getRGB(v);
 	EXPECT_EQ(255, c.r);
 	EXPECT_EQ(0, c.g);
@@ -247,7 +253,7 @@ TEST_F(ColorUtilTest, testGetRGBAFromVec3) {
 }
 
 TEST_F(ColorUtilTest, testGetHSBVec4) {
-	glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
+	math::Vec4f v(1.0f, 0.0f, 0.0f, 1.0f);
 	float h, s, b;
 	color::getHSB(v, h, s, b);
 	EXPECT_FLOAT_EQ(0.0f, h);
@@ -256,7 +262,7 @@ TEST_F(ColorUtilTest, testGetHSBVec4) {
 }
 
 TEST_F(ColorUtilTest, testGetCIELabVec4) {
-	glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
+	math::Vec4f v(1.0f, 0.0f, 0.0f, 1.0f);
 	float l, a, b;
 	color::getCIELab(v, l, a, b);
 	EXPECT_NEAR(53.2328f, l, 0.01f);
@@ -265,8 +271,8 @@ TEST_F(ColorUtilTest, testGetCIELabVec4) {
 }
 
 TEST_F(ColorUtilTest, testAlpha) {
-	glm::vec4 v(1.0f, 1.0f, 1.0f, 0.5f);
-	glm::vec4 v2 = color::alpha(v, 0.8f);
+	math::Vec4f v(1.0f, 1.0f, 1.0f, 0.5f);
+	math::Vec4f v2 = color::alpha(v, 0.8f);
 	EXPECT_FLOAT_EQ(0.8f, v2.a);
 	EXPECT_FLOAT_EQ(1.0f, v2.r);
 
@@ -277,23 +283,23 @@ TEST_F(ColorUtilTest, testAlpha) {
 }
 
 TEST_F(ColorUtilTest, testBrightnessVec4) {
-	glm::vec4 v(1.0f, 0.5f, 0.0f, 1.0f);
+	math::Vec4f v(1.0f, 0.5f, 0.0f, 1.0f);
 	// Brightness is max(r, g, b)
 	EXPECT_FLOAT_EQ(1.0f, color::brightness(v));
 
-	glm::vec4 v2(0.1f, 0.5f, 0.2f, 1.0f);
+	math::Vec4f v2(0.1f, 0.5f, 0.2f, 1.0f);
 	EXPECT_FLOAT_EQ(0.5f, color::brightness(v2));
 }
 
 TEST_F(ColorUtilTest, testIntensity) {
-	glm::vec4 v(1.0f, 0.5f, 0.0f, 1.0f);
+	math::Vec4f v(1.0f, 0.5f, 0.0f, 1.0f);
 	// Intensity is average(r, g, b)
 	EXPECT_FLOAT_EQ(0.5f, color::intensity(v));
 }
 
 TEST_F(ColorUtilTest, testGrayVec4) {
-	glm::vec4 v(1.0f, 0.0f, 0.0f, 1.0f);
-	glm::vec4 g = color::gray(v);
+	math::Vec4f v(1.0f, 0.0f, 0.0f, 1.0f);
+	math::Vec4f g = color::gray(v);
 	EXPECT_NEAR(0.21f, g.r, 0.01f);
 	EXPECT_NEAR(0.21f, g.g, 0.01f);
 	EXPECT_NEAR(0.21f, g.b, 0.01f);
@@ -301,13 +307,13 @@ TEST_F(ColorUtilTest, testGrayVec4) {
 }
 
 TEST_F(ColorUtilTest, testDarkerBrighterVec4) {
-	glm::vec4 red(1.0f, 0.0f, 0.0f, 1.0f);
-	glm::vec4 darkRed = color::darker(red, 0.5f);
+	math::Vec4f red(1.0f, 0.0f, 0.0f, 1.0f);
+	math::Vec4f darkRed = color::darker(red, 0.5f);
 	EXPECT_LT(darkRed.r, red.r);
 	EXPECT_FLOAT_EQ(darkRed.g, red.g);
 	EXPECT_FLOAT_EQ(darkRed.b, red.b);
 
-	glm::vec4 brightRed = color::brighter(darkRed, 2.0f);
+	math::Vec4f brightRed = color::brighter(darkRed, 2.0f);
 	EXPECT_GT(brightRed.r, darkRed.r);
 }
 

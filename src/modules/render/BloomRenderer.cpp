@@ -18,6 +18,9 @@
 #include "video/Shader.h"
 #include "video/Texture.h"
 #include "video/Types.h"
+#include "math/Vec4f.h"
+#include "math/Vec2i.h"
+#include "math/Vec2f.h"
 
 namespace render {
 
@@ -55,8 +58,8 @@ bool BloomRenderer::init(bool yFlipped, int width, int height) {
 	core_assert(_convolutionShader.getLocationTexcoord() == _textureShader.getLocationTexcoord());
 	core_assert(_convolutionShader.getLocationPos() == _combine2Shader.getLocationPos());
 	core_assert(_convolutionShader.getLocationTexcoord() == _combine2Shader.getLocationTexcoord());
-	core_assert_always(_vbo.addAttribute(_combine2Shader.getPosAttribute(_bufferIndex, &glm::vec2::x)));
-	core_assert_always(_vbo.addAttribute(_combine2Shader.getTexcoordAttribute(_texBufferIndex, &glm::vec2::x)));
+	core_assert_always(_vbo.addAttribute(_combine2Shader.getPosAttribute(_bufferIndex, &math::Vec2f::x)));
+	core_assert_always(_vbo.addAttribute(_combine2Shader.getTexcoordAttribute(_texBufferIndex, &math::Vec2f::x)));
 
 	_bloomPasses = core::findVar(cfg::ClientBloomPasses);
 	return true;
@@ -88,14 +91,14 @@ bool BloomRenderer::resize(int width, int height) {
 	video::TextureConfig tcfg = video::createDefaultTextureConfig();
 	tcfg.filterMin(video::TextureFilter::Nearest);
 	tcfg.filterMag(video::TextureFilter::Linear);
-	tcfg.borderColor(glm::vec4(0.0f));
+	tcfg.borderColor(math::Vec4f(0.0f));
 
 	if (width <= (1 << passes()) || height <= (1 << passes())) {
 		Log::debug("Given width and height of the bloom renderer is not enough: %i:%i", width, height);
 	}
 
 	video::FrameBufferConfig bloomCfg;
-	bloomCfg.dimension(glm::ivec2(width, height));
+	bloomCfg.dimension(math::Vec2i(width, height));
 	bloomCfg.addTextureAttachment(tcfg, video::FrameBufferAttachment::Color0);
 
 	for (int i = 0; i < lengthof(_bloom); ++i) {
@@ -109,7 +112,7 @@ bool BloomRenderer::resize(int width, int height) {
 		const int h = core_max(1, height / (1 << (i + 1)));
 		const int w = core_max(1, width / (1 << (i + 1)));
 		video::FrameBufferConfig cfg;
-		cfg.dimension(glm::ivec2(w, h));
+		cfg.dimension(math::Vec2i(w, h));
 		cfg.addTextureAttachment(tcfg, video::FrameBufferAttachment::Color0);
 		_frameBuffers0[i].shutdown();
 		_frameBuffers1[i].shutdown();

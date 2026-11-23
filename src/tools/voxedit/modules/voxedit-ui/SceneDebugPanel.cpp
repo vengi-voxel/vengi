@@ -18,14 +18,16 @@
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/ISceneRenderer.h"
 #include "voxedit-util/SceneManager.h"
+#include "math/Vec3f.h"
+#include "math/Vec2f.h"
 
 namespace voxedit {
 
 struct ContactState : public scenegraph::ContactListener {
-	void onContact(const glm::vec3 &point) override {
+	void onContact(const math::Vec3f &point) override {
 		contactPoints.push_back(point);
 	}
-	core::RingBuffer<glm::vec3, 8> contactPoints;
+	core::RingBuffer<math::Vec3f, 8> contactPoints;
 };
 
 ContactState g_contactState;
@@ -90,7 +92,7 @@ void SceneDebugPanel::update(const char *id) {
 		ImGui::InputVec3(_("Camera extents"), body.extents);
 		ImGui::InputFloat(_("Camera friction decay"), &body.frictionDecay);
 		const Viewport *viewport = _mainWindow->hoveredViewport();
-		for (const glm::vec3 &p : g_contactState.contactPoints) {
+		for (const math::Vec3f &p : g_contactState.contactPoints) {
 			ImGui::Text(_("Recent contact point: %.2f %.2f %.2f"), p.x, p.y, p.z);
 			if (viewport == nullptr) {
 				continue;
@@ -99,7 +101,7 @@ void SceneDebugPanel::update(const char *id) {
 			if (!camera.isVisible(p)) {
 				continue;
 			}
-			const glm::vec2 &screenPos = viewport->pos() + camera.worldToScreen(p);
+			const math::Vec2f &screenPos = viewport->pos() + camera.worldToScreen(p);
 			ImGui::GetForegroundDrawList()->AddCircleFilled(ImVec2(screenPos.x, screenPos.y), 5.0f,
 															IM_COL32(255, 0, 0, 255));
 		}

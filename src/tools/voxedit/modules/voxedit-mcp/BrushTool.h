@@ -7,7 +7,6 @@
 #include "Tool.h"
 #include "voxedit-util/modifier/ModifierType.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
-#include <glm/fwd.hpp>
 
 namespace voxedit {
 

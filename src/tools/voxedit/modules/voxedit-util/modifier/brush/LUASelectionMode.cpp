@@ -18,12 +18,15 @@
 
 #include "LUAIconMapping.h"
 #include "ui/IconsLucide.h"
+#include "math/Mat4f.h"
+#include "math/Vec3i.h"
+#include "math/Vec3f.h"
 
 namespace voxedit {
 
 struct SelectionContext {
 	const BrushContext *brushCtx = nullptr;
-	const glm::ivec3 *aabbFirstPos = nullptr;
+	const math::Vec3i *aabbFirstPos = nullptr;
 	voxel::FaceNames aabbFace = voxel::FaceNames::Max;
 };
 
@@ -394,7 +397,7 @@ bool LUASelectionMode::loadScript(const core::String &filename) {
 
 bool LUASelectionMode::execute(scenegraph::SceneGraph &sceneGraph, ModifierVolumeWrapper &wrapper,
 							   const BrushContext &ctx, const voxel::Region &region,
-							   const glm::ivec3 &aabbFirstPos, voxel::FaceNames aabbFace) {
+							   const math::Vec3i &aabbFirstPos, voxel::FaceNames aabbFace) {
 	if (!_scriptLoaded) {
 		return false;
 	}
@@ -488,7 +491,7 @@ bool LUASelectionMode::callGizmo(lua_State *s) const {
 	return lua_istable(s, -1);
 }
 
-bool LUASelectionMode::hasHandle(const BrushContext &ctx, const glm::ivec3 &aabbFirstPos,
+bool LUASelectionMode::hasHandle(const BrushContext &ctx, const math::Vec3i &aabbFirstPos,
 									  voxel::FaceNames aabbFace) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		return false;
@@ -507,7 +510,7 @@ bool LUASelectionMode::hasHandle(const BrushContext &ctx, const glm::ivec3 &aabb
 	return hasGizmo;
 }
 
-void LUASelectionMode::describeHandle(const BrushContext &ctx, BrushGizmoState &state, const glm::ivec3 &aabbFirstPos,
+void LUASelectionMode::describeHandle(const BrushContext &ctx, BrushGizmoState &state, const math::Vec3i &aabbFirstPos,
 									   voxel::FaceNames aabbFace) const {
 	if (!_hasGizmo || !_scriptLoaded) {
 		state.operations = BrushGizmo_None;
@@ -537,7 +540,7 @@ void LUASelectionMode::describeHandle(const BrushContext &ctx, BrushGizmoState &
 		const float py = (float)lua_tonumber(s, -2);
 		const float pz = (float)lua_tonumber(s, -1);
 		lua_pop(s, 3);
-		state.matrix = glm::translate(glm::mat4(1.0f), glm::vec3(px, py, pz));
+		state.matrix = math::translate(math::Mat4f(1.0f), math::Vec3f(px, py, pz));
 	}
 	lua_pop(s, 1);
 
