@@ -52,6 +52,17 @@ TEST_F(CanvasRendererTest, NativeCanvasClipsBlendsAndRestoresScissorOnHighDpiTar
 	EXPECT_GT(outside.r, 240);
 	EXPECT_EQ(0, outside.b);
 	EXPECT_GT(result->colorAt(48, 48).g, 240);
+	bool glyphVisible = false;
+	for (int pixelY = 84; pixelY < 128 && !glyphVisible; ++pixelY) {
+		for (int pixelX = 0; pixelX < 64; ++pixelX) {
+			const auto pixel = result->colorAt(pixelX, pixelY);
+			if (pixel.g > 64 && pixel.b > 64) {
+				glyphVisible = true;
+				break;
+			}
+		}
+	}
+	EXPECT_TRUE(glyphVisible);
 	target.unbind();
 	canvas.shutdown();
 	target.shutdown();
