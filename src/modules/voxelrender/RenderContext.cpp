@@ -5,6 +5,7 @@
 #include "RenderContext.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
+#include "core/Platform.h"
 #include "core/Var.h"
 #include "video/FrameBufferConfig.h"
 #include "video/Renderer.h"
@@ -65,12 +66,8 @@ static bool initOitFrameBuffer(video::FrameBuffer &oitFrameBuffer, const glm::iv
 }
 
 static bool multisamplingRequested(int requestedSamples) {
-#ifdef __EMSCRIPTEN__
-	// Scene MSAA is implemented with GL_TEXTURE_2D_MULTISAMPLE. WebGL has no such target.
-	return false;
-#else
-	return requestedSamples > 1;
-#endif
+	// Scene MSAA requires multisampled textures, which WebGL lacks.
+	return !core::isWebPlatform() && requestedSamples > 1;
 }
 
 bool RenderContext::init(const glm::ivec2 &size) {

@@ -1149,7 +1149,7 @@ void RawVolume::notifySparseModified() {
 	}
 }
 
-const uint32_t *RawVolume::sparseGenerationPtr() const {
+const core::AtomicInt *RawVolume::sparseGenerationPtr() const {
 	return _storage != nullptr ? _storage->generationPtr() : nullptr;
 }
 

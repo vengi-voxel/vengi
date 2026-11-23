@@ -7,6 +7,13 @@
 
 namespace core {
 
+TEST(BitsTest, countTrailingZeros) {
+	EXPECT_EQ(64, countTrailingZeros(0));
+	for (int bit = 0; bit < 64; ++bit) {
+		EXPECT_EQ(bit, countTrailingZeros(~0ull << bit));
+	}
+}
+
 TEST(BitsTest, extract1111) {
 	uint32_t input = 0b1111;
 	EXPECT_EQ(3u, bits(input, 0, 2));

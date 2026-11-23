@@ -83,7 +83,7 @@ public:
 		return _volume->borderValue();
 	}
 
-	inline const uint32_t *sparseGenerationPtr() const {
+	inline const core::AtomicInt *sparseGenerationPtr() const {
 		return _volume->sparseGenerationPtr();
 	}
 

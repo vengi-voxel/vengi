@@ -955,7 +955,7 @@ static int visitSparseRawVolumeZYX(const voxel::RawVolume &volume, const voxel::
 							} else {
 								uint32_t bits = spanBits;
 								while (bits != 0u) {
-									const int bit = voxel::SparseChunk::ctz64(bits);
+									const int bit = core::countTrailingZeros(bits);
 									bits &= bits - 1u;
 									const voxel::Voxel &voxel = row[bit];
 									if (voxel::isAir(voxel.getMaterial())) {
@@ -981,7 +981,7 @@ static int visitSparseRawVolumeZYX(const voxel::RawVolume &volume, const voxel::
 								voxel::SparseChunk::popcount64(sliceWord & (((uint64_t)1u << firstBitPos) - 1u));
 							uint32_t bits = spanBits;
 							while (bits != 0u) {
-								const int bit = voxel::SparseChunk::ctz64(bits);
+								const int bit = core::countTrailingZeros(bits);
 								bits &= bits - 1u;
 								const voxel::Voxel &voxel = b->voxels[packedIdx++];
 								if (voxel::isAir(voxel.getMaterial())) {
@@ -1003,7 +1003,7 @@ static int visitSparseRawVolumeZYX(const voxel::RawVolume &volume, const voxel::
 					} else {
 						uint32_t bits = spanBits;
 						while (bits != 0u) {
-							const int bit = voxel::SparseChunk::ctz64(bits);
+							const int bit = core::countTrailingZeros(bits);
 							bits &= bits - 1u;
 							const int32_t wx = x + bit;
 							sampler.setPosition(wx, y, z);
@@ -1232,7 +1232,7 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 							continue;
 						}
 						while (bits != 0u) {
-							const int bit = voxel::SparseChunk::ctz64(bits);
+							const int bit = core::countTrailingZeros(bits);
 							bits &= bits - 1u;
 							const voxel::Voxel &v = dense ? b->voxels[(w << 6) | bit] : b->voxels[packed++];
 							const int wx = ox + (bit & 7);

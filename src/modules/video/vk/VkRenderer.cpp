@@ -24,7 +24,10 @@
 #include "video/Types.h"
 #include "video/vk/VkMapping.h"
 #include "video/vk/VkMemoryRanges.h"
+// Use the Vulkan declarations from flextVk with SDL's surface API.
+#define NO_SDL_VULKAN_TYPEDEFS
 #include <SDL3/SDL_vulkan.h>
+#undef NO_SDL_VULKAN_TYPEDEFS
 
 // flextVk is generated from a 1.0 profile that does not include validation-layer
 // pNext structs used by synchronization validation and best practices.

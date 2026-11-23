@@ -63,6 +63,7 @@ set(SRCS
 	Optional.h
 	Pair.h
 	Path.cpp Path.h
+	Platform.h
 	PoolAllocator.h
 	Process.cpp Process.h
 	ProgressBar.cpp ProgressBar.h

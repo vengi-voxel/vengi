@@ -652,7 +652,7 @@ void SparseRawVolumeStorage::modifyFlags(const glm::ivec3 &localMins, const glm:
 				for (int z = 0; z < BrickSide; ++z) {
 					uint64_t bits = b.mask[z];
 					while (bits != 0u) {
-						const int bit = __builtin_ctzll(bits);
+						const int bit = core::countTrailingZeros(bits);
 						bits &= bits - 1u;
 						const int idx = (z << 6) | bit;
 						Voxel *vp = SparseChunk::mutableVoxelIfPresent(&b, idx);
@@ -719,7 +719,7 @@ bool SparseRawVolumeStorage::computeSolidBounds(glm::ivec3 &outMins, glm::ivec3 
 						for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
 							uint64_t bits = b.mask[w];
 							while (bits != 0u) {
-								const int bit = __builtin_ctzll(bits);
+								const int bit = core::countTrailingZeros(bits);
 								bits &= bits - 1u;
 								const Voxel &v = dense ? b.voxels[(w << 6) | bit] : b.voxels[packed++];
 								if (isAir(v.getMaterial())) {
@@ -995,7 +995,7 @@ bool SparseRawVolumeStorage::readBrickTile(int lx, int ly, int lz, Voxel (&outTi
 	for (int w = 0; w < SparseChunk::BrickMaskWords; ++w) {
 		uint64_t bits = b->mask[w];
 		while (bits != 0u) {
-			const int bit = SparseChunk::ctz64(bits);
+			const int bit = core::countTrailingZeros(bits);
 			bits &= bits - 1u;
 			const int idx = (w << 6) | bit;
 			outTile[idx].overwrite(dense ? b->voxels[idx] : b->voxels[packed++]);
@@ -1229,7 +1229,7 @@ bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 										} else {
 											uint32_t bits = spanBits;
 											while (bits != 0u) {
-												const int b = SparseChunk::ctz64(bits);
+												const int b = core::countTrailingZeros(bits);
 												bits &= bits - 1u;
 												tile[dstRowBase + lx + b].overwrite(srcRow[b]);
 												sliceMask |= (uint64_t)1u << ((ly << 3) | (lx + b));
@@ -1243,7 +1243,7 @@ bool SparseRawVolumeStorage::move(const glm::ivec3 &shift) {
 											SparseChunk::popcount64(sliceWord & (((uint64_t)1u << firstBitPos) - 1u));
 										uint32_t bits = spanBits;
 										while (bits != 0u) {
-											const int b = SparseChunk::ctz64(bits);
+											const int b = core::countTrailingZeros(bits);
 											bits &= bits - 1u;
 											tile[dstRowBase + lx + b].overwrite(srcBrick->voxels[packedIdx++]);
 											sliceMask |= (uint64_t)1u << ((ly << 3) | (lx + b));
@@ -1291,7 +1291,7 @@ void SparseRawVolumeStorage::sampleAt(int lx, int ly, int lz, const SparseChunk 
 									  const SparseChunk::Brick *&outBrick, const Voxel *&outRow, bool &outWholeBrick,
 									  glm::ivec3 &outLower, glm::ivec3 &outUpper, Voxel &outFallbackVoxel,
 									  uint32_t &outGen) const {
-	outGen = generation();
+	outGen = (uint32_t)_generation;
 	outChunk = _slots[chunkIndexForLocal(lx, ly, lz)].chunk.load();
 	const int clx = lx & ChunkMask;
 	const int cly = ly & ChunkMask;

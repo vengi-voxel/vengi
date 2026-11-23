@@ -17,7 +17,7 @@ TEST_F(ZipStreamTest, testSizeMismatches) {
 	BufferedReadWriteStream compressed;
 	{
 		ZipWriteStream zip(compressed);
-		ASSERT_GE(zip.write(payload.c_str(), payload.size()), 0);
+		ASSERT_EQ((int)payload.size(), zip.write(payload.c_str(), payload.size()));
 		ASSERT_TRUE(zip.flush());
 	}
 	core::Buffer<uint8_t> output;

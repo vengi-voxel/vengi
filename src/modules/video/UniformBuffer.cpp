@@ -5,6 +5,7 @@
 #include "UniformBuffer.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/Platform.h"
 #if VIDEO_UNIFORM_BUFFER_HASH_COMPARE
 #include "core/Hash.h"
 #endif
@@ -51,9 +52,9 @@ bool UniformBuffer::update(const void *data, size_t size) {
 		_hash = 0u;
 	}
 #endif
-#ifndef __EMSCRIPTEN__
-	core_assert_16byte_aligned(data);
-#endif
+	if (!core::isWebPlatform()) {
+		core_assert_16byte_aligned(data);
+	}
 	video::bufferData(_handle, BufferType::UniformBuffer, BufferMode::Dynamic, data, size);
 	_size = size;
 	return true;

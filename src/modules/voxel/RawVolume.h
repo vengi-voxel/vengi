@@ -225,7 +225,7 @@ public:
 	void collectOccupiedSparseBricks(const Region &region, core::DynamicArray<OccupiedBrickSpan> &out) const;
 	void notifySparseModified();
 
-	const uint32_t *sparseGenerationPtr() const;
+	const core::AtomicInt *sparseGenerationPtr() const;
 
 	void sampleSparseAt(int lx, int ly, int lz, const SparseChunk *&outChunk, const SparseChunk::Brick *&outBrick,
 						const Voxel *&outRow, bool &outWholeBrick, glm::ivec3 &outLower, glm::ivec3 &outUpper,

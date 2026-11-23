@@ -12,6 +12,7 @@
 #include "core/Common.h"
 #include "core/Enum.h"
 #include "core/Log.h"
+#include "core/Platform.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
 #include "core/Var.h"
@@ -393,12 +394,8 @@ static_assert((size_t)video::ImageFormat::Max == lengthof(ImageFormatTypes), "mi
 
 static int _recompileErrors = 0;
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-void __stdcall
-#else
-void
-#endif
-debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+void APIENTRY debugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+								const GLchar *message, const void *userParam) {
 	if (id == 131218) {
 		++_recompileErrors;
 		if (_recompileErrors <= 10) {
@@ -2380,19 +2377,19 @@ void _priv::GLRenderer::setupTexture(Id texture, const TextureConfig &config) {
 				glTextureParameteri(texture, GL_TEXTURE_COMPARE_FUNC, glFunc);
 				checkError();
 			}
-#ifndef __EMSCRIPTEN__
-			if (config.useBorderColor()) {
-				glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+			if (!core::isWebPlatform()) {
+				if (config.useBorderColor()) {
+					glTextureParameterfv(texture, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+				}
+				if (config.lodBias() != 0.0f) {
+					const GLfloat requested = config.lodBias();
+					const GLfloat maxLodBias = limit(Limit::MaxLodBias);
+					const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+					core_assert(glTextureParameterf != nullptr);
+					glTextureParameterf(texture, GL_TEXTURE_LOD_BIAS, clamped);
+					checkError();
+				}
 			}
-			if (config.lodBias() != 0.0f) {
-				const GLfloat requested = config.lodBias();
-				const GLfloat maxLodBias = limit(Limit::MaxLodBias);
-				const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
-				core_assert(glTextureParameterf != nullptr);
-				glTextureParameterf(texture, GL_TEXTURE_LOD_BIAS, clamped);
-				checkError();
-			}
-#endif
 			/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
 			// glTextureParameteri(texture, GL_TEXTURE_BASE_LEVEL, 0);
 			/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
@@ -2449,19 +2446,19 @@ void _priv::GLRenderer::setupTexture(Id texture, const TextureConfig &config) {
 				glTexParameteri(glType, GL_TEXTURE_COMPARE_FUNC, glFunc);
 				checkError();
 			}
-#ifndef __EMSCRIPTEN__
-			if (config.useBorderColor()) {
-				glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+			if (!core::isWebPlatform()) {
+				if (config.useBorderColor()) {
+					glTexParameterfv(glType, GL_TEXTURE_BORDER_COLOR, glm::value_ptr(config.borderColor()));
+				}
+				if (config.lodBias() != 0.0f) {
+					const GLfloat requested = config.lodBias();
+					const GLfloat maxLodBias = limit(Limit::MaxLodBias);
+					const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
+					core_assert(glTexParameterf != nullptr);
+					glTexParameterf(glType, GL_TEXTURE_LOD_BIAS, clamped);
+					checkError();
+				}
 			}
-			if (config.lodBias() != 0.0f) {
-				const GLfloat requested = config.lodBias();
-				const GLfloat maxLodBias = limit(Limit::MaxLodBias);
-				const GLfloat clamped = (maxLodBias > 0.0f) ? glm::clamp(requested, -maxLodBias, maxLodBias) : requested;
-				core_assert(glTexParameterf != nullptr);
-				glTexParameterf(glType, GL_TEXTURE_LOD_BIAS, clamped);
-				checkError();
-			}
-#endif
 			/** Specifies the index of the lowest defined mipmap level. This is an integer value. The initial value is 0. */
 			// glTexParameteri(glType, GL_TEXTURE_BASE_LEVEL, 0);
 			/** Sets the index of the highest defined mipmap level. This is an integer value. The initial value is 1000. */
@@ -3218,37 +3215,37 @@ bool _priv::GLRenderer::init(int windowWidth, int windowHeight, float scaleFacto
 	// https://www.glprogramming.com/red/appendixb.html
 	rs.states.set(core::enumVal(video::State::DepthMask), true);
 	rs.pendingStates.set(core::enumVal(video::State::DepthMask), true);
-#ifdef __EMSCRIPTEN__
-	// WebGL rejects GL_POINT_SIZE (0x0B11) and GL_LINE_WIDTH_RANGE (0x0B22). Width is fixed at 1.
-	rs.pointSize = 1.0f;
-	rs.pendingPointSize = 1.0f;
-	rs.smoothedLineWidth = glm::vec2(1.0f);
-	rs.aliasedLineWidth = glm::vec2(1.0f);
-#else
-	glGetFloatv(GL_POINT_SIZE, &rs.pointSize);
-	if (rs.smoothedLineWidth.x < 0.0f) {
+	if (core::isWebPlatform()) {
+		// WebGL rejects GL_POINT_SIZE (0x0B11) and GL_LINE_WIDTH_RANGE (0x0B22). Width is fixed at 1.
+		rs.pointSize = 1.0f;
+		rs.pendingPointSize = 1.0f;
+		rs.smoothedLineWidth = glm::vec2(1.0f);
+		rs.aliasedLineWidth = glm::vec2(1.0f);
+	} else {
+		glGetFloatv(GL_POINT_SIZE, &rs.pointSize);
+		if (rs.smoothedLineWidth.x < 0.0f) {
 #ifdef USE_OPENGLES
-		GLfloat buf[2];
-		core_assert(glGetFloatv != nullptr);
-		glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		rs.smoothedLineWidth.x = buf[0];
-		rs.smoothedLineWidth.y = buf[1];
-		glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		rs.aliasedLineWidth.x = buf[0];
-		rs.aliasedLineWidth.y = buf[1];
+			GLfloat buf[2];
+			core_assert(glGetFloatv != nullptr);
+			glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+			rs.smoothedLineWidth.x = buf[0];
+			rs.smoothedLineWidth.y = buf[1];
+			glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, buf);
+			rs.aliasedLineWidth.x = buf[0];
+			rs.aliasedLineWidth.y = buf[1];
 #else
-		GLdouble buf[2];
-		core_assert(glGetDoublev != nullptr);
-		glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
-		rs.smoothedLineWidth.x = (float)buf[0];
-		rs.smoothedLineWidth.y = (float)buf[1];
-		glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
-		rs.aliasedLineWidth.x = (float)buf[0];
-		rs.aliasedLineWidth.y = (float)buf[1];
+			GLdouble buf[2];
+			core_assert(glGetDoublev != nullptr);
+			glGetDoublev(GL_SMOOTH_LINE_WIDTH_RANGE, buf);
+			rs.smoothedLineWidth.x = (float)buf[0];
+			rs.smoothedLineWidth.y = (float)buf[1];
+			glGetDoublev(GL_ALIASED_LINE_WIDTH_RANGE, buf);
+			rs.aliasedLineWidth.x = (float)buf[0];
+			rs.aliasedLineWidth.y = (float)buf[1];
 #endif
-		// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
+			// TODO GL_SMOOTH_LINE_WIDTH_GRANULARITY
+		}
 	}
-#endif
 	if (multisampling) {
 		video::enable(video::State::MultiSample);
 	}

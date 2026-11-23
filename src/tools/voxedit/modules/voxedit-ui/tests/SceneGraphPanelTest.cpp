@@ -18,9 +18,9 @@
 namespace voxedit {
 
 static void contextMenuForNode(const SceneManagerPtr &sceneMgr, ImGuiTestContext *ctx, int nodeId, const char *uiId) {
-	scenegraph::SceneGraphNode *modelNode = sceneMgr->sceneGraphModelNode(nodeId);
-	IM_CHECK(modelNode != nullptr);
-	const core::String uiNodeId = core::String::format("##nodelist/%s##%s", modelNode->name().c_str(), modelNode->uuid().str().c_str());
+	const scenegraph::SceneGraphNode *node = sceneMgr->sceneGraphNode(nodeId);
+	IM_CHECK(node != nullptr);
+	const core::String uiNodeId = core::String::format("##nodelist/%s##%s", node->name().c_str(), node->uuid().str().c_str());
 	// move to the node and open the context menu
 	ctx->MouseMove(uiNodeId.c_str());
 	ctx->MouseClick(ImGuiMouseButton_Right);

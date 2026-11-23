@@ -63,6 +63,9 @@ ZipWriteStream::~ZipWriteStream() {
 }
 
 int ZipWriteStream::write(const void *buf, size_t size) {
+	if (size > INT32_MAX) {
+		return -1;
+	}
 #if USE_LIBDEFLATE
 	ZipWriteLibDeflateState *state = (ZipWriteLibDeflateState *)_stream;
 	const uint8_t *p = (const uint8_t *)buf;
@@ -71,12 +74,10 @@ int ZipWriteStream::write(const void *buf, size_t size) {
 		state->inputBuffer.reserve(core_max(state->inputBuffer.capacity() * 2, newSize));
 	}
 	state->inputBuffer.append(p, size);
-	return (int)size;
 #else
 	((z_stream *)_stream)->next_in = (const unsigned char *)buf;
 	((z_stream *)_stream)->avail_in = static_cast<unsigned int>(size);
 
-	uint32_t writtenBytes = 0;
 	while (((z_stream *)_stream)->avail_in > 0) {
 		((z_stream *)_stream)->avail_out = (uInt)OutChunkBytes;
 		((z_stream *)_stream)->next_out = _out;
@@ -91,12 +92,11 @@ int ZipWriteStream::write(const void *buf, size_t size) {
 			if (_outStream.write(_out, written) != (int)written) {
 				return -1;
 			}
-			writtenBytes += written;
 			_pos += written;
 		}
 	}
-	return (int)writtenBytes;
 #endif
+	return (int)size;
 }
 
 bool ZipWriteStream::flush() {

@@ -346,7 +346,7 @@ inline void forEachOccupiedVoxelParallel(RawVolume &vol, const Region &region, V
 						continue;
 					}
 					while (bits != 0u) {
-						const int bit = SparseChunk::ctz64(bits);
+						const int bit = core::countTrailingZeros(bits);
 						bits &= bits - 1u;
 						Voxel &v = dense ? b->voxels[(w << 6) | bit] : b->voxels[packed++];
 						const int wx = ox + (bit & 7);

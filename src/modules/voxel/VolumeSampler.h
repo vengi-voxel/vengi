@@ -5,6 +5,7 @@
 #pragma once
 
 #include "core/Common.h"
+#include "core/concurrent/Atomic.h"
 #include "math/Axis.h"
 #include "voxel/Region.h"
 #include "voxel/SparseChunk.h"
@@ -72,7 +73,7 @@ private:
 	static const uint8_t SAMPLER_INVALIDZ = 1 << 2;
 
 	CORE_FORCE_INLINE uint32_t currentSparseGen() const {
-		return _sparseGenPtr != nullptr ? __atomic_load_n(_sparseGenPtr, __ATOMIC_RELAXED) : 0u;
+		return _sparseGenPtr != nullptr ? (uint32_t)*_sparseGenPtr : 0u;
 	}
 
 	CORE_FORCE_INLINE void refreshSparseAtCurrent() {
@@ -612,7 +613,7 @@ protected:
 	bool _isSparse = false;
 	bool _sparseWholeBrick = false;
 	uint32_t _sparseGen = 0u;
-	const uint32_t *_sparseGenPtr = nullptr;
+	const core::AtomicInt *_sparseGenPtr = nullptr;
 	glm::ivec3 _localPos{0};
 	glm::ivec3 _sparseLower{0};
 	glm::ivec3 _sparseUpper{0};

@@ -56,11 +56,7 @@ public:
 		return _defaultIsZero;
 	}
 
-	inline uint32_t generation() const {
-		return __atomic_load_n(&_generation, __ATOMIC_RELAXED);
-	}
-
-	inline const uint32_t *generationPtr() const {
+	inline const core::AtomicInt *generationPtr() const {
 		return &_generation;
 	}
 
@@ -186,10 +182,10 @@ private:
 	ChunkSlot *_slots = nullptr;
 	Voxel _default{};
 	bool _defaultIsZero = true;
-	uint32_t _generation = 1u;
+	core::AtomicInt _generation{1};
 
 	inline void bumpGeneration() {
-		__atomic_add_fetch(&_generation, 1u, __ATOMIC_RELAXED);
+		++_generation;
 	}
 
 	inline size_t chunkIndex(int cx, int cy, int cz) const {

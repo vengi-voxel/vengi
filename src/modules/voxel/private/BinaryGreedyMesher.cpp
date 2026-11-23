@@ -38,6 +38,7 @@ SOFTWARE.
  */
 
 #include "BinaryGreedyMesher.h"
+#include "core/Bits.h"
 #include "core/Common.h"
 #include "core/Trace.h"
 #include "core/collection/Array.h"
@@ -480,23 +481,17 @@ CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMeshType(const glm::ivec3 &tran
 				uint64_t bits_merging_forward = bits_here & bits_forward & ~bits_walking_right;
 				const uint64_t bits_merging_right = bits_here & bits_right;
 
-				unsigned long bit_pos;
-
 				/**
 				 * Process faces that can merge forward.
 				 *
-				 * Uses __builtin_ctzll (Count Trailing Zeros) to efficiently find
+				 * Counts trailing zeros to find
 				 * the position of the lowest set bit. This is a key optimization
 				 * that allows processing only the bits that are actually set,
 				 * skipping empty positions entirely.
 				 */
 				uint64_t copy_front = bits_merging_forward;
 				while (copy_front) {
-#ifdef _MSC_VER
-					_BitScanForward64(&bit_pos, copy_front);
-#else
-					bit_pos = __builtin_ctzll(copy_front);
-#endif
+					const int bit_pos = core::countTrailingZeros(copy_front);
 
 					copy_front &= ~(1ULL << bit_pos);
 
@@ -534,11 +529,7 @@ CORE_NO_SANITIZE_ADDRESS void extractBinaryGreedyMeshType(const glm::ivec3 &tran
 				 */
 				uint64_t bits_stopped_forward = bits_here & ~bits_merging_forward;
 				while (bits_stopped_forward) {
-#ifdef _MSC_VER
-					_BitScanForward64(&bit_pos, bits_stopped_forward);
-#else
-					bit_pos = __builtin_ctzll(bits_stopped_forward);
-#endif
+					const int bit_pos = core::countTrailingZeros(bits_stopped_forward);
 
 					bits_stopped_forward &= ~(1ULL << bit_pos);
 

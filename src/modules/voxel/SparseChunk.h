@@ -4,14 +4,12 @@
 
 #pragma once
 
+#include "core/Bits.h"
 #include "core/NonCopyable.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/Voxel.h"
 #include <glm/vec3.hpp>
 #include <stdint.h>
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
 
 namespace voxel {
 
@@ -91,16 +89,6 @@ public:
 			capacity = 0u;
 		}
 	};
-
-	static inline int ctz64(uint64_t v) {
-#ifdef _MSC_VER
-		unsigned long pos;
-		_BitScanForward64(&pos, v);
-		return (int)pos;
-#else
-		return __builtin_ctzll(v);
-#endif
-	}
 
 	// the build doesn't enable the popcnt instruction - the builtin would be a library call
 	static inline int popcount64(uint64_t v) {
@@ -450,7 +438,7 @@ public:
 			for (int w = 0; w < BrickMaskWords; ++w) {
 				uint64_t bits = brick->mask[w];
 				while (bits != 0u) {
-					const int bit = ctz64(bits);
+					const int bit = core::countTrailingZeros(bits);
 					bits &= bits - 1u;
 					const Voxel &v = dense ? brick->voxels[(w << 6) | bit] : brick->voxels[packed++];
 					func(bx + (bit & 7), by + (bit >> 3), bz + w, v);

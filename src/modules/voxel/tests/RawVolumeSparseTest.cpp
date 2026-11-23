@@ -213,6 +213,23 @@ TEST_F(RawVolumeSparseTest, SamplerTraversalAndPeeksAcrossBrickAndChunkBoundarie
 	EXPECT_EQ(s.voxel(), border);
 }
 
+TEST_F(RawVolumeSparseTest, SamplerRefreshesAfterBrickAllocationAndRelease) {
+	RawVolume::setChunkedStorageThreshold(16);
+	RawVolume vol(Region(0, 15));
+	ASSERT_TRUE(vol.isSparse());
+
+	RawVolume::Sampler sampler(vol);
+	ASSERT_TRUE(sampler.setPosition(0, 0, 0));
+	EXPECT_TRUE(isAir(sampler.voxel().getMaterial()));
+
+	const Voxel solid = createVoxel(VoxelType::Generic, 7);
+	ASSERT_TRUE(vol.setVoxel(0, 0, 0, solid));
+	EXPECT_EQ(sampler.voxel(), solid);
+
+	ASSERT_TRUE(vol.setVoxel(0, 0, 0, Voxel()));
+	EXPECT_TRUE(isAir(sampler.voxel().getMaterial()));
+}
+
 TEST_F(RawVolumeSparseTest, MoveCopyAndMaterialize) {
 	RawVolume::setChunkedStorageThreshold(16);
 	RawVolume sparse(Region(-8, -8, -8, 23, 23, 23));

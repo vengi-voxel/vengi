@@ -24,57 +24,24 @@ struct to_type {
 
 DataType mapIndexTypeBySize(size_t size);
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4702) // unreachable code
-#endif
-
-/**
- * @brief Maps data types to GL enums
- */
+/** @brief Maps a scalar C++ type to the renderer data type. */
 template <typename DATATYPE>
 constexpr inline DataType mapType() {
-	static_assert(core::is_fundamental<typename _priv::to_type<DATATYPE>::type>::value,
-				  "Given datatype is not fundamental");
-
-	constexpr size_t size = sizeof(typename _priv::to_type<DATATYPE>::type);
-	static_assert(size != 8u, "Long types are not supported");
-	static_assert(size != 12u, "Invalid data type given (size 12)");
-	static_assert(size != 16u, "Invalid data type given (size 16)");
-	static_assert(size != 36u, "Invalid data type given (size 36)");
-	static_assert(size != 64u, "Invalid data type given (size 64)");
+	using Type = typename _priv::to_type<DATATYPE>::type;
+	static_assert(core::is_fundamental<Type>::value, "Given datatype is not fundamental");
+	constexpr size_t size = sizeof(Type);
 	static_assert(size == 1u || size == 2u || size == 4u, "Only datatypes of size 1, 2 or 4 are supported");
-	if (core::is_floating_point<typename _priv::to_type<DATATYPE>::type>::value) {
-		// if constexpr (size == 4u) {
+	constexpr bool isUnsigned = core::is_unsigned<Type>::value;
+	if constexpr (core::is_floating_point<Type>::value) {
 		return DataType::Float;
-		// }
-		// return DataType::Double;
+	} else if constexpr (size == 1u) {
+		return isUnsigned ? DataType::UnsignedByte : DataType::Byte;
+	} else if constexpr (size == 2u) {
+		return isUnsigned ? DataType::UnsignedShort : DataType::Short;
+	} else {
+		return isUnsigned ? DataType::UnsignedInt : DataType::Int;
 	}
-
-	constexpr bool isUnsigned = core::is_unsigned<typename _priv::to_type<DATATYPE>::type>::value;
-	if constexpr (size == 1u) {
-		if constexpr (isUnsigned) {
-			return DataType::UnsignedByte;
-		}
-		return DataType::Byte;
-	}
-	if constexpr (size == 2u) {
-		if constexpr (isUnsigned) {
-			return DataType::UnsignedShort;
-		}
-		return DataType::Short;
-	}
-
-	static_assert(size <= 4u, "No match found");
-	if constexpr (isUnsigned) {
-		return DataType::UnsignedInt;
-	}
-	return DataType::Int;
 }
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 template <> constexpr inline DataType mapType<glm::ivec2>() {
 	return mapType<typename glm::ivec2::value_type>();

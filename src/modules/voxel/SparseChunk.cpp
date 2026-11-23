@@ -13,7 +13,7 @@ void SparseChunk::makeDense(Brick *b) {
 	for (int w = 0; w < BrickMaskWords; ++w) {
 		uint64_t bits = b->mask[w];
 		while (bits != 0u) {
-			const int bit = ctz64(bits);
+			const int bit = core::countTrailingZeros(bits);
 			bits &= bits - 1u;
 			dense[(w << 6) | bit].overwrite(b->voxels[packed++]);
 		}
@@ -202,7 +202,7 @@ int SparseChunk::setVoxelsRow(int x, int y, int z, int count, const Voxel &voxel
 const Voxel *SparseChunk::unpackRow(uint64_t bits, const Voxel *v, int width, Voxel *scratch) {
 	memcpy((void *)scratch, EmptyRow, width * sizeof(Voxel));
 	while (bits != 0) {
-		scratch[ctz64(bits)].overwrite(*v++);
+		scratch[core::countTrailingZeros(bits)].overwrite(*v++);
 		bits &= bits - 1;
 	}
 	return scratch;
@@ -281,7 +281,7 @@ bool SparseChunk::calculateBounds(glm::ivec3 &mins, glm::ivec3 &maxs) const {
 			ymax = row;
 			rows |= xbits;
 		}
-		const int xmin = ctz64(rows);
+		const int xmin = core::countTrailingZeros(rows);
 		int xmax = BrickSide - 1;
 		while ((rows & (1u << xmax)) == 0u) {
 			--xmax;
@@ -335,7 +335,7 @@ SparseChunk::PreparedBrick SparseChunk::prepareBrick(int bx, int by, int bz, con
 		pb.prefix[w] = (uint8_t)packed;
 		uint64_t bits = mask[w];
 		while (bits != 0u) {
-			const int bit = ctz64(bits);
+			const int bit = core::countTrailingZeros(bits);
 			bits &= bits - 1u;
 			dst[packed++].overwrite(tile[(w << 6) | bit]);
 		}

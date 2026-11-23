@@ -7,6 +7,7 @@
 #include "UploadRing.h"
 #include "core/Assert.h"
 #include "core/Log.h"
+#include "core/Platform.h"
 #include "core/Trace.h"
 #if VIDEO_BUFFER_HASH_COMPARE
 #include "core/Hash.h"
@@ -214,9 +215,9 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 	}
 #endif
 	_size[idx] = size;
-#ifndef __EMSCRIPTEN__
-	core_assert_16byte_aligned(data);
-#endif
+	if (!core::isWebPlatform()) {
+		core_assert_16byte_aligned(data);
+	}
 	//core_assert_msg((_size[idx] & 15) == 0, "Size is not aligned properly: %i", (int)_size[idx]);
 	const BufferType type = _targets[idx];
 	const Id id = _handles[idx];
@@ -238,8 +239,7 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 			}
 		}
 	}
-	if (size > 0) {
-#ifdef __EMSCRIPTEN__
+	if (size > 0 && core::isWebPlatform()) {
 		// WebGL has no native buffer mapping. Upload directly instead of using
 		// Emscripten's temporary mapping emulation and unsupported map flags.
 		if (orphaning || oldSize < size || _modes[idx] == BufferMode::Static) {
@@ -247,7 +247,7 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 		} else {
 			video::bufferSubData(id, type, 0, data, size);
 		}
-#else
+	} else if (size > 0) {
 		if (orphaning) {
 			// Orphaning strategy: allocate new buffer storage to avoid GPU stalls
 			// Always call bufferData with nullptr to orphan the old storage, regardless of size
@@ -279,7 +279,6 @@ bool Buffer::update(int32_t idx, const void* data, size_t size, bool orphaning) 
 			// Full reallocation for static buffers or when size changes
 			video::bufferData(id, type, _modes[idx], data, size);
 		}
-#endif
 	}
 
 	return true;

@@ -35,9 +35,7 @@ public:
 	/**
 	 * @param buf The buffer to add to the output stream.
 	 * @param size The size of the buffer.
-	 * @return @c -1 on error - otherwise the amount of bytes that were written to the output stream.
-	 * The amount of bytes written are usually less than the given input buffer size, as the bytes
-	 * that are written to the output buffer are compressed already.
+	 * @return @c -1 on error, otherwise the number of uncompressed input bytes consumed.
 	 * @note The write() call doesn't flush pending writes into the output buffer.
 	 * @see flush()
 	 */

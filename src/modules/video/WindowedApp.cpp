@@ -8,6 +8,7 @@
 #include "command/Command.h"
 #include "core/Common.h"
 #include "core/Log.h"
+#include "core/Platform.h"
 #include "core/Singleton.h"
 #include "core/StringUtil.h"
 #include "core/TimeProvider.h"
@@ -30,10 +31,6 @@
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#include <windows.h>
-#endif
-
 #define sdlCheckError() checkSDLError(__FILE__, __LINE__, "UNKNOWN")
 
 namespace video {
@@ -52,11 +49,7 @@ inline void checkSDLError(const char *file, unsigned int line, const char *funct
 
 WindowedApp::WindowedApp(const io::FilesystemPtr& filesystem, const core::TimeProviderPtr& timeProvider, size_t threadPoolSize) :
 		Super(filesystem, timeProvider, threadPoolSize), _frameBufferDimension(-1), _mouseRelativePos(-1) {
-#if defined(__EMSCRIPTEN__) || defined(__ANDROID__) || (defined(__APPLE__) && TARGET_OS_IOS)
-	_singleWindowMode = true;
-#else
-	_singleWindowMode = false;
-#endif
+	_singleWindowMode = core::isWebPlatform() || core::isMobilePlatform();
 	core::registerBindingContext("ui", core::BindingContext::UI);
 	core::registerBindingContext("all", core::BindingContext::All);
 }
@@ -151,8 +144,7 @@ app::AppState WindowedApp::onRunning() {
 	// blocking SDL_WaitEvent loop here freezes the tab: the main loop never returns, so the
 	// browser cannot deliver the SHOWN event that would exit the wait (github issue #244).
 	// Background tabs are already throttled via requestAnimationFrame.
-#ifndef __EMSCRIPTEN__
-	if (_powerSaveMode && _showWindow) {
+	if (!core::isWebPlatform() && _powerSaveMode && _showWindow) {
 		bool windowIsHidden = SDL_GetWindowFlags(_window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED);
 		while (windowIsHidden) {
 			if (SDL_WaitEvent(&event)) {
@@ -161,7 +153,6 @@ app::AppState WindowedApp::onRunning() {
 			}
 		}
 	}
-#endif
 	while (SDL_PollEvent(&event)) {
 		quit |= handleSDLEvent(event);
 	}
@@ -554,9 +545,9 @@ app::AppState WindowedApp::onInit() {
 #ifdef SDL_HINT_VIDEO_ALLOW_SCREENSAVER
 	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 #endif
-#ifdef __ANDROID__
-	SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
-#endif
+	if (core::isAndroidPlatform()) {
+		SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
+	}
 	// done in application.manifest.in
 	// #ifdef SDL_HINT_WINDOWS_DPI_AWARENESS
 	// 	SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
@@ -606,15 +597,15 @@ app::AppState WindowedApp::onInit() {
 	}
 
 	if (_fullScreenApplication) {
-#ifdef __ANDROID__
-		// Fullscreen asks SDL to hide the status and navigation bars. The activity
-		// stays the full display, so the UI does not need a safe-area inset.
-		if (!SDL_SetWindowFullscreen(_window, true)) {
-			Log::warn("Failed to enter fullscreen: %s", SDL_GetError());
+		if (core::isAndroidPlatform()) {
+			// Fullscreen asks SDL to hide the status and navigation bars. The activity
+			// stays the full display, so the UI does not need a safe-area inset.
+			if (!SDL_SetWindowFullscreen(_window, true)) {
+				Log::warn("Failed to enter fullscreen: %s", SDL_GetError());
+			}
+		} else {
+			SDL_MaximizeWindow(_window);
 		}
-#else
-		SDL_MaximizeWindow(_window);
-#endif
 	}
 
 	setWindowIcon();
