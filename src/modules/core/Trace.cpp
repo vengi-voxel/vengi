@@ -90,7 +90,7 @@ void traceAppInfo(const char *name) {
 	if (name == nullptr || name[0] == '\0') {
 		return;
 	}
-	TracyAppInfo(name, strlen(name));
+	TracyCAppInfo(name, strlen(name));
 #else
 	(void)name;
 #endif
@@ -138,7 +138,7 @@ void traceThread(const char* name) {
 	_threadName = name;
 #ifdef TRACY_ENABLE
 	if (name != nullptr && name[0] != '\0') {
-		tracy::SetThreadName(name);
+		___tracy_set_thread_name(name);
 	}
 #endif
 }
