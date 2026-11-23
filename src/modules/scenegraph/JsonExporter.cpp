@@ -137,9 +137,13 @@ NodeStats sceneGraphNodeJson(const scenegraph::SceneGraph &sceneGraph, int nodeI
 			const bool ambientOcclusion = core::getVar(cfg::VoxformatAmbientocclusion)->boolVal();
 			const voxel::SurfaceExtractionType meshType =
 				(voxel::SurfaceExtractionType)core::getVar(cfg::VoxformatMeshMode)->intVal();
+			voxel::Region region = node.region();
+			if (meshType == voxel::SurfaceExtractionType::DualContouring) {
+				region.shiftUpperCorner(1, 1, 1);
+			}
 			voxel::ChunkMesh mesh;
 			voxel::SurfaceExtractionContext ctx =
-				voxel::createContext(meshType, node.volume(), node.region(), node.palette(), mesh, {0, 0, 0},
+				voxel::createContext(meshType, node.volume(), region, node.palette(), mesh, {0, 0, 0},
 									 mergeQuads, reuseVertices, ambientOcclusion);
 
 			voxel::extractSurface(ctx);

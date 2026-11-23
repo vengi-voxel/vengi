@@ -55,7 +55,7 @@ bool FormatConfig::init() {
 	const core::VarDef voxformatMeshMode(
 		cfg::VoxformatMeshMode, (int)voxel::SurfaceExtractionType::Binary, (int)voxel::SurfaceExtractionType::Cubic,
 		(int)voxel::SurfaceExtractionType::Max - 1, N_("Mesh mode"),
-		NC_("Voxel mesh mode description", "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"),
+		NC_("Voxel mesh mode description", "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture, 4 = dual contouring"),
 		core::CV_NOPERSIST);
 	core::registerVar(voxformatMeshMode);
 	const core::VarDef voxformatReusevertices(cfg::VoxformatReusevertices, true, N_("Reuse vertices"),
@@ -400,7 +400,7 @@ bool FormatConfig::init() {
 }
 
 // Display order is the FileDialogOptions widget order (save entries first, then load).
-static const char *const g_meshModeTitles[] = {N_("Cubes"), N_("Marching cubes"), N_("Binary"), N_("Greedy texture")};
+static const char *const g_meshModeTitles[] = {N_("Cubes"), N_("Marching cubes"), N_("Binary"), N_("Greedy texture"), N_("Dual contouring")};
 static_assert(lengthof(g_meshModeTitles) == (int)voxel::SurfaceExtractionType::Max, "Update mesh mode value titles");
 
 static const FormatVarMeta g_formatCVars[] = {
@@ -425,7 +425,7 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxformatGLTF_KHR_materials_specular, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {&GLTFFormat::format()}, {}},
 	{cfg::VoxformatGodotProject, FormatCVarFlag_Save, {&GodotSceneFormat::format()}, {}},
 	{cfg::VoxformatWithMaterials, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
-	{cfg::VoxformatMeshMode, FormatCVarFlag_Save | FormatCVarFlag_Mesh | FormatCVarFlag_Primary, {}, {g_meshModeTitles[0], g_meshModeTitles[1], g_meshModeTitles[2], g_meshModeTitles[3]}},
+	{cfg::VoxformatMeshMode, FormatCVarFlag_Save | FormatCVarFlag_Mesh | FormatCVarFlag_Primary, {}, {g_meshModeTitles[0], g_meshModeTitles[1], g_meshModeTitles[2], g_meshModeTitles[3], g_meshModeTitles[4]}},
 	{cfg::VoxformatBinvoxVersion, FormatCVarFlag_Save, {&BinVoxFormat::format()}, {nullptr, N_("Binvox 1 (white)"), N_("Binvox 2 (multi colors)"), N_("Binvox 3 (unofficial)")}},
 	{cfg::VoxformatSchematicType, FormatCVarFlag_Save, {&SchematicFormat::format()}, {}},
 	{cfg::VoxformatQBTPaletteMode, FormatCVarFlag_Save, {&QBTFormat::format()}, {}},

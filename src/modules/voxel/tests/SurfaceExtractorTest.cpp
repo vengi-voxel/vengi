@@ -10,6 +10,8 @@
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"
+#include <glm/common.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtc/epsilon.hpp>
 #include "voxel/private/BinaryGreedyMesher.h"
 #include "voxelformat/FormatConfig.h"
@@ -270,6 +272,76 @@ TEST_F(SurfaceExtractorTest, testMeshExtractionMarchingCubes) {
 		voxel::buildMarchingCubesContext(&v, region, mesh, pal);
 	voxel::extractSurface(ctx);
 	EXPECT_EQ(30, (int)mesh.mesh[0].getNoOfVertices());
+}
+
+TEST_F(SurfaceExtractorTest, testDualContouringSingleVoxel) {
+	const glm::ivec3 pos(-3, 7, 12);
+	RawVolume volume(Region(pos, pos));
+	const Region region(pos, pos + 1);
+	ChunkMesh mesh;
+	auto ctx = buildDualContouringContext(&volume, region, mesh, pos);
+	extractSurface(ctx);
+	EXPECT_TRUE(mesh.isEmpty());
+
+	ASSERT_TRUE(volume.setVoxel(pos, createVoxel(VoxelType::Generic, 42)));
+	extractSurface(ctx);
+	const Mesh &opaque = mesh.mesh[0];
+	ASSERT_EQ(8u, opaque.getNoOfVertices());
+	ASSERT_EQ(36u, opaque.getNoOfIndices());
+	ASSERT_EQ(8u, opaque.getNormalVector().size());
+	EXPECT_TRUE(mesh.mesh[1].isEmpty());
+	EXPECT_EQ(pos, opaque.getOffset());
+	for (IndexType i = 0; i < opaque.getNoOfVertices(); ++i) {
+		const VoxelVertex &v = opaque.getVertex(i);
+		EXPECT_EQ(42, v.colorIndex);
+		EXPECT_EQ(NO_NORMAL, v.normalIndex);
+		const glm::vec3 local = v.position - glm::vec3(pos);
+		for (int axis = 0; axis < 3; ++axis) {
+			EXPECT_NEAR(0.5f, glm::abs(local[axis] - 0.5f), 0.00001f);
+		}
+		EXPECT_NEAR(1.0f, glm::length(opaque.getNormalVector()[i]), 0.00001f);
+		EXPECT_GT(glm::dot(opaque.getNormalVector()[i], local - 0.5f), 0.0f);
+	}
+	for (IndexType i = 0; i < opaque.getNoOfIndices(); i += 3) {
+		const glm::vec3 a = opaque.getVertex(opaque.getIndex(i)).position - glm::vec3(pos) - 0.5f;
+		const glm::vec3 b = opaque.getVertex(opaque.getIndex(i + 1)).position - glm::vec3(pos) - 0.5f;
+		const glm::vec3 c = opaque.getVertex(opaque.getIndex(i + 2)).position - glm::vec3(pos) - 0.5f;
+		EXPECT_GT(glm::dot(glm::cross(b - a, c - a), a), 0.0f);
+	}
+}
+
+TEST_F(SurfaceExtractorTest, testDualContouringColorsAndTransparency) {
+	RawVolume volume(Region(0, 0, 0, 2, 0, 0));
+	ASSERT_TRUE(volume.setVoxel(0, 0, 0, createVoxel(VoxelType::Generic, 42, 1, FlagOutline)));
+	ASSERT_TRUE(volume.setVoxel(1, 0, 0, createVoxel(VoxelType::Generic, 43)));
+	ASSERT_TRUE(volume.setVoxel(2, 0, 0, createVoxel(VoxelType::Transparent, 44)));
+	const Region region(0, 0, 0, 3, 1, 1);
+	palette::Palette palette;
+	ChunkMesh mesh;
+	auto ctx = createContext(SurfaceExtractionType::DualContouring, &volume, region, palette, mesh, glm::ivec3(0));
+	extractSurface(ctx);
+
+	const Mesh &opaque = mesh.mesh[0];
+	const Mesh &transparent = mesh.mesh[1];
+	EXPECT_EQ(60u, opaque.getNoOfIndices());
+	EXPECT_EQ(30u, transparent.getNoOfIndices());
+	EXPECT_EQ(10, countTrianglesWithColor(opaque, 42));
+	EXPECT_EQ(10, countTrianglesWithColor(opaque, 43));
+	EXPECT_EQ(10, countTrianglesWithColor(transparent, 44));
+	for (const Mesh &part : mesh.mesh) {
+		ASSERT_EQ(part.getNoOfVertices(), part.getNormalVector().size());
+		for (IndexType i = 0; i < part.getNoOfIndices(); i += 3) {
+			const VoxelVertex &a = part.getVertex(part.getIndex(i));
+			const VoxelVertex &b = part.getVertex(part.getIndex(i + 1));
+			const VoxelVertex &c = part.getVertex(part.getIndex(i + 2));
+			EXPECT_EQ(a.colorIndex, b.colorIndex);
+			EXPECT_EQ(a.colorIndex, c.colorIndex);
+		}
+	}
+	for (const VoxelVertex &vertex : opaque.getVertexVector()) {
+		EXPECT_EQ(vertex.colorIndex == 42 ? FlagOutline : 0, vertex.flags);
+		EXPECT_EQ(NO_NORMAL, vertex.normalIndex);
+	}
 }
 
 TEST_F(SurfaceExtractorTest, testBinaryGreedyMesherSingleVoxel) {

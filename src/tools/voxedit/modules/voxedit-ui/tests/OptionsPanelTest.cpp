@@ -63,6 +63,10 @@ void OptionsPanel::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		ctx->Yield();
 		IM_CHECK_EQ(meshMode->intVal(), (int)voxel::SurfaceExtractionType::MarchingCubes);
 
+		ctx->ComboClick("Mesh mode/Dual contouring");
+		ctx->Yield();
+		IM_CHECK_EQ(meshMode->intVal(), (int)voxel::SurfaceExtractionType::DualContouring);
+
 		ctx->ComboClick("Mesh mode/Binary");
 		ctx->Yield();
 		IM_CHECK_EQ(meshMode->intVal(), (int)voxel::SurfaceExtractionType::Binary);

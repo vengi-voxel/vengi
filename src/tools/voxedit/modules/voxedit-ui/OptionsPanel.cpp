@@ -271,9 +271,8 @@ void OptionsPanel::renderDisplay() {
 }
 
 void OptionsPanel::renderRendering() {
-	const bool isMarchingCubes =
-		core::getVar(cfg::VoxelMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes;
-	ImGui::BeginDisabled(isMarchingCubes);
+	const voxel::SurfaceExtractionType meshMode = (voxel::SurfaceExtractionType)core::getVar(cfg::VoxelMeshMode)->intVal();
+	ImGui::BeginDisabled(voxel::hasGeneratedNormals(meshMode));
 	if (matchesVarFilter(cfg::RenderOutline)) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderOutline);
 	}

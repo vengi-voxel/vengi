@@ -136,7 +136,7 @@ public:
 	const palette::NormalPalette &normalsPalette(int idx) const;
 
 	bool hasNormals() const {
-		return meshMode() == voxel::SurfaceExtractionType::MarchingCubes;
+		return hasGeneratedNormals(meshMode());
 	}
 
 	/**

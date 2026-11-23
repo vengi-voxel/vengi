@@ -1,6 +1,7 @@
 set(LIB voxel)
 set(SRCS
 	private/CubicSurfaceExtractor.h private/CubicSurfaceExtractor.cpp
+	private/DualContouringSurfaceExtractor.h private/DualContouringSurfaceExtractor.cpp
 	private/MarchingCubesSurfaceExtractor.h private/MarchingCubesSurfaceExtractor.cpp
 	private/MarchingCubesTables.h
 	private/BinaryGreedyMesher.h private/BinaryGreedyMesher.cpp

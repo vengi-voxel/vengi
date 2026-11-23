@@ -32,7 +32,8 @@ void MenuBar::viewportOptions() {
 	ImGui::IconCheckboxVar(ICON_LC_FRAME, cfg::VoxEditShowPlane);
 	ImGui::IconSliderVarInt(ICON_LC_GRIP, cfg::VoxEditPlaneSize);
 
-	ImGui::BeginDisabled(core::getVar(cfg::VoxelMeshMode)->intVal() == (int)voxel::SurfaceExtractionType::MarchingCubes);
+	const voxel::SurfaceExtractionType meshMode = (voxel::SurfaceExtractionType)core::getVar(cfg::VoxelMeshMode)->intVal();
+	ImGui::BeginDisabled(voxel::hasGeneratedNormals(meshMode));
 	ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderOutline);
 	if (core::getVar(cfg::VoxEditShowNormalPalette)->boolVal()) {
 		ImGui::IconCheckboxVar(ICON_LC_BOX, cfg::RenderNormals);

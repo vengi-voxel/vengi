@@ -530,6 +530,69 @@ TEST_F(MeshStateTest, testCubicNoDuplicateTriangles_FullVolume) {
 	(void)meshState.shutdown();
 }
 
+TEST_F(MeshStateTest, testDualContouringChunkSeams) {
+	RawVolume volume(Region(13, -2, -2, 18, 2, 2));
+	for (int x = 14; x <= 17; ++x) {
+		for (int y = -1; y <= 0; ++y) {
+			for (int z = -1; z <= 0; ++z) {
+				ASSERT_TRUE(volume.setVoxel(x, y, z, createVoxel(VoxelType::Generic, 42)));
+			}
+		}
+	}
+
+	MeshState meshState;
+	meshState.construct();
+	const core::VarPtr &mode = core::getVar(cfg::VoxelMeshMode);
+	EXPECT_FALSE(mode->setVal((int)SurfaceExtractionType::GreedyTexture));
+	ASSERT_TRUE(mode->setVal((int)SurfaceExtractionType::DualContouring));
+	ASSERT_TRUE(meshState.init());
+	EXPECT_TRUE(meshState.hasNormals());
+	bool deleted = false;
+	palette::Palette palette;
+	(void)meshState.setVolume(0, &volume, &palette, nullptr, true, deleted);
+	meshState.scheduleRegionExtraction(0, volume.region());
+	meshState.extractAllPending();
+
+	size_t vertices = 0, normals = 0, indices = 0;
+	meshState.count(MeshType_Opaque, 0, vertices, normals, indices);
+	EXPECT_EQ(vertices, normals);
+	EXPECT_EQ(40u * 6u, indices);
+
+	// Pair triangle edges by position across all chunks to check the surface for cracks or duplicate faces.
+	struct Edge {
+		glm::vec3 a;
+		glm::vec3 b;
+	};
+	core::DynamicArray<Edge> edges;
+	for (const auto &chunk : meshState.meshes(MeshType_Opaque)) {
+		const Mesh *mesh = chunk->value[0];
+		if (mesh == nullptr) {
+			continue;
+		}
+		for (IndexType i = 0; i < mesh->getNoOfIndices(); i += 3) {
+			for (IndexType e = 0; e < 3; ++e) {
+				const glm::vec3 a = mesh->getVertex(mesh->getIndex(i + e)).position;
+				const glm::vec3 b = mesh->getVertex(mesh->getIndex(i + (e + 1) % 3)).position;
+				EXPECT_NE(a, b);
+				edges.push_back({a, b});
+			}
+		}
+	}
+	for (const Edge &edge : edges) {
+		int matches = 0;
+		for (const Edge &other : edges) {
+			matches += edge.a == other.b && edge.b == other.a;
+		}
+		EXPECT_EQ(1, matches);
+	}
+
+	// A corner gradient in the chunk ending at x=15 can depend on a sample at x=17.
+	meshState.scheduleRegionExtraction(0, Region(17, 2, 2, 17, 2, 2));
+	EXPECT_EQ(2, meshState.pendingExtractions());
+
+	(void)meshState.shutdown();
+}
+
 // Same test for the binary mesher
 TEST_F(MeshStateTest, testBinaryNoDuplicateTriangles_FullVolume) {
 	voxel::RawVolume v(voxel::Region(0, 0, 0, 31, 3, 47));

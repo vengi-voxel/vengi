@@ -33,7 +33,6 @@
 #include "voxel/MeshState.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
-#include "voxel/SurfaceExtractor.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "RenderUtil.h"
@@ -1393,8 +1392,7 @@ void RawVolumeRenderer::render(const voxel::MeshStatePtr &meshState, RenderConte
 			core_assert_always(_voxelData.update(_voxelShaderFragData));
 		}
 
-		const voxel::SurfaceExtractionType meshMode = meshState->meshMode();
-		const bool normals = meshMode == voxel::SurfaceExtractionType::MarchingCubes;
+		const bool normals = meshState->hasNormals();
 		video::Id oldShader = video::getProgram();
 		{
 			core_trace_scoped(ActivateVoxelShader);

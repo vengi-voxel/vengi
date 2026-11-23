@@ -16,7 +16,11 @@ class RawVolume;
 class Region;
 struct ChunkMesh;
 
-enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, GreedyTexture, Max };
+enum class SurfaceExtractionType { Cubic, MarchingCubes, Binary, GreedyTexture, DualContouring, Max };
+
+inline bool hasGeneratedNormals(SurfaceExtractionType type) {
+	return type == SurfaceExtractionType::MarchingCubes || type == SurfaceExtractionType::DualContouring;
+}
 
 struct SurfaceExtractionContext {
 	SurfaceExtractionContext(const RawVolume *_volume, const palette::Palette &_palette, const Region &_region,
@@ -58,6 +62,9 @@ SurfaceExtractionContext buildMarchingCubesContext(const RawVolume *volume, cons
 												   const palette::Palette &palette, bool optimize = false);
 SurfaceExtractionContext buildGreedyTextureContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
 												   const palette::Palette &palette, bool optimize = false);
+// The region owns edges by their upper endpoint. Extend the upper corner by one for a whole volume.
+SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
+													const glm::ivec3 &translate = glm::ivec3(0), bool optimize = false);
 
 void extractSurface(SurfaceExtractionContext &ctx);
 

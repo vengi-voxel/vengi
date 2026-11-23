@@ -48,10 +48,11 @@ void MeshState::construct() {
 									 core::CV_READONLY | core::CV_NOPERSIST);
 	_meshSize = core::Var::registerVar(voxelMeshSize);
 	// Editor/render mesh mode - excludes GreedyTexture as it's not supported by the renderer
-	const core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Binary,
-										 (int)voxel::SurfaceExtractionType::Cubic,
-										 (int)voxel::SurfaceExtractionType::Binary, N_("Mesh mode"),
-										 N_("0 = cubes, 1 = marching cubes, 2 = binary mesher"));
+	core::VarDef voxRenderMeshMode(cfg::VoxelMeshMode, (int)voxel::SurfaceExtractionType::Binary,
+								  (int)voxel::SurfaceExtractionType::Cubic,
+								  (int)voxel::SurfaceExtractionType::DualContouring, N_("Mesh mode"),
+								  N_("0 = cubes, 1 = marching cubes, 2 = binary mesher, 4 = dual contouring"));
+	voxRenderMeshMode.validValues = {"0", "1", "2", "4"};
 	core::Var::registerVar(voxRenderMeshMode);
 	const core::VarDef voxMeshAlloc(cfg::VoxelMeshAlloc, 0, 0, 1,
 									N_("Mesh allocation strategy"),
@@ -370,8 +371,10 @@ bool MeshState::scheduleRegionExtraction(int idx, const voxel::Region &region) {
 	// correctly map to the chunk with the lower index.
 	// Resulting neighbor counts for a single voxel: interior=1, face=2, edge=4, corner=8
 	auto floorDiv = [](int a, int b) { return (a / b) - (a % b != 0 && (a ^ b) < 0); };
-	const glm::ivec3 lv = region.getLowerCorner() - 1;
-	const glm::ivec3 uv = region.getUpperCorner() + 1;
+	// Dual contouring also samples the gradient at each corner of the neighboring cells.
+	const int halo = meshMode() == SurfaceExtractionType::DualContouring ? 2 : 1;
+	const glm::ivec3 lv = region.getLowerCorner() - halo;
+	const glm::ivec3 uv = region.getUpperCorner() + halo;
 	const glm::ivec3 l(floorDiv(lv.x, s), floorDiv(lv.y, s), floorDiv(lv.z, s));
 	const glm::ivec3 u(floorDiv(uv.x, s), floorDiv(uv.y, s), floorDiv(uv.z, s));
 

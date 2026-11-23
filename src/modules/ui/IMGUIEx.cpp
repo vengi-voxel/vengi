@@ -10,6 +10,7 @@
 #include "Style.h"
 #include "app/App.h"
 #include "color/ColorUtil.h"
+#include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/StringUtil.h"
 #include "core/collection/DynamicArray.h"
@@ -301,8 +302,13 @@ bool ComboVar(const core::VarPtr &var, const char *const *titles, int titleCount
 	const core::String label = _priv::varLabel(var);
 	bool changed = false;
 	if (ImGui::BeginCombo(label.c_str(), preview)) {
+		const core::DynamicArray<core::String> &validValues = var->validValues();
 		for (int i = minV; i <= maxV; ++i) {
 			if (titles[i] == nullptr || titles[i][0] == '\0') {
+				continue;
+			}
+			if (!validValues.empty() &&
+				core::find(validValues.begin(), validValues.end(), core::string::toString(i)) == validValues.end()) {
 				continue;
 			}
 			const bool selected = i == current;

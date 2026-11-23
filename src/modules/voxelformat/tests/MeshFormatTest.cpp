@@ -10,6 +10,7 @@
 #include "core/tests/TestColorHelper.h"
 #include "image/Image.h"
 #include "io/Archive.h"
+#include "io/BufferedReadWriteStream.h"
 #include "io/MemoryArchive.h"
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/GLTFFormat.h"
@@ -20,7 +21,7 @@
 #include "voxelformat/external/cgltf.h"
 #include "voxelformat/external/ufbx.h"
 #include "palette/Palette.h"
-#include "palette/NormalPaletteLookup.h"
+#include "scenegraph/JsonExporter.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "util/VarUtil.h"
@@ -191,6 +192,77 @@ TEST_F(MeshFormatTest, testExportVoxelNormals) {
 	ASSERT_TRUE(unsupported.saveGroups(graph, "mesh.stl", {}, testSaveCtx));
 	EXPECT_EQ(0u, unsupported.stored);
 	EXPECT_GT(unsupported.fallback, 0u);
+}
+
+TEST_F(MeshFormatTest, testDualContouringGLTFMaterials) {
+	util::ScopedVarChange meshMode(cfg::VoxformatMeshMode, (int)voxel::SurfaceExtractionType::DualContouring);
+	util::ScopedVarChange materials(cfg::VoxformatWithMaterials, true);
+	util::ScopedVarChange texture(cfg::VoxformatWithtexcoords, true);
+	util::ScopedVarChange color(cfg::VoxformatWithColor, true);
+	util::ScopedVarChange normals(cfg::VoxformatWithNormals, true);
+	scenegraph::SceneGraph graph;
+	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+	node.createVolume(voxel::Region(5, -1, 0, 6, -1, 0));
+	palette::Palette palette;
+	palette.setColor(3, color::RGBA(255, 0, 0));
+	palette.setMaterialValue(3, palette::MaterialMetal, 0.75f);
+	palette.setColor(7, color::RGBA(0, 0, 255, 128));
+	palette.setMaterialValue(7, palette::MaterialRoughness, 0.25f);
+	node.setPalette(palette);
+	ASSERT_TRUE(node.volume()->setVoxel(5, -1, 0, voxel::createVoxel(palette, 3)));
+	ASSERT_TRUE(node.volume()->setVoxel(6, -1, 0, voxel::createVoxel(palette, 7)));
+	graph.emplace(core::move(node));
+	graph.updateTransforms();
+
+	io::BufferedReadWriteStream jsonStream;
+	scenegraph::sceneGraphJson(graph, jsonStream,
+							  scenegraph::JSONEXPORTER_NODEDETAILS | scenegraph::JSONEXPORTER_MESHDETAILS |
+								  scenegraph::JSONEXPORTER_CHILDREN);
+	const core::String json((const char *)jsonStream.getBuffer(), jsonStream.size());
+	EXPECT_NE(core::String::npos, json.find("\"indices\":66"));
+
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	GLTFFormat format;
+	ASSERT_TRUE(format.saveGroups(graph, "dual.glb", archive, testSaveCtx));
+	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream("dual.glb"));
+	ASSERT_TRUE(stream);
+	core::Buffer<uint8_t> glb((size_t)stream->size());
+	ASSERT_EQ((int)glb.size(), stream->read(glb.data(), glb.size()));
+	cgltf_options options{};
+	cgltf_data *data = nullptr;
+	ASSERT_EQ(cgltf_result_success, cgltf_parse(&options, glb.data(), glb.size(), &data));
+	const std::unique_ptr<cgltf_data, decltype(&cgltf_free)> freeData(data, cgltf_free);
+	ASSERT_EQ(cgltf_result_success, cgltf_load_buffers(&options, data, nullptr));
+	ASSERT_EQ(cgltf_result_success, cgltf_validate(data));
+	ASSERT_EQ(2u, data->meshes_count);
+	bool seenOpaque = false;
+	bool seenTransparent = false;
+	for (cgltf_size i = 0; i < data->meshes_count; ++i) {
+		ASSERT_EQ(1u, data->meshes[i].primitives_count);
+		const cgltf_primitive &primitive = data->meshes[i].primitives[0];
+		ASSERT_NE(nullptr, primitive.material);
+		const bool transparent = primitive.material->alpha_mode == cgltf_alpha_mode_blend;
+		if (transparent) {
+			seenTransparent = true;
+			EXPECT_FLOAT_EQ(0.25f, primitive.material->pbr_metallic_roughness.roughness_factor);
+		} else {
+			seenOpaque = true;
+			EXPECT_FLOAT_EQ(0.75f, primitive.material->pbr_metallic_roughness.metallic_factor);
+		}
+		EXPECT_EQ(transparent ? 30u : 36u, primitive.indices->count);
+		const auto *colors = cgltf_find_accessor(&primitive, cgltf_attribute_type_color, 0);
+		ASSERT_NE(nullptr, colors);
+		EXPECT_NE(nullptr, cgltf_find_accessor(&primitive, cgltf_attribute_type_normal, 0));
+		for (cgltf_size j = 0; j < primitive.indices->count; ++j) {
+			float rgba[4];
+			ASSERT_TRUE(cgltf_accessor_read_float(colors, cgltf_accessor_read_index(primitive.indices, j), rgba, 4));
+			EXPECT_FLOAT_EQ(transparent ? 0.0f : 1.0f, rgba[0]);
+			EXPECT_FLOAT_EQ(0.0f, rgba[1]);
+			EXPECT_FLOAT_EQ(transparent ? 1.0f : 0.0f, rgba[2]);
+			EXPECT_FLOAT_EQ(transparent ? 128.0f / 255.0f : 1.0f, rgba[3]);
+		}
+	}
+	EXPECT_TRUE(seenOpaque && seenTransparent);
 }
 
 TEST_F(MeshFormatTest, testVoxelNormalWriters) {

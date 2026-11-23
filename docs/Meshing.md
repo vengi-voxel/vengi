@@ -16,6 +16,7 @@ Quick selection guide:
 - **Cubic** - Default choice, good balance of speed and quality
 - **Marching Cubes** - Smooth organic shapes, hide voxel structure
 - **Binary** - Same as cubic mesher, faster in some situations
+- **Dual Contouring** - Smooth surfaces with sharp features and distinct voxel colors
 - **Texture** - When exporting to texture-based engines/formats (export only, not available for editor rendering)
 
 ## Cubic Mesher
@@ -74,3 +75,13 @@ With `voxel_texture_dedupe` enabled (default), identical color patches (same siz
 - Formats requiring texture coordinates
 - When you need a traditional textured mesh workflow
 - Reducing vertices for the mesh
+
+## Dual Contouring
+
+**Mode:** `voxel_meshmode=4` / `voxformat_meshmode=4`
+
+Fits a vertex in each surface cell using the positions and normals of voxel boundary crossings. This
+keeps sharp features where the sampled normals support them. Each face takes its palette index from
+the voxel that generated it, so color boundaries and palette materials are retained. Transparent
+surfaces use a separate mesh, and the opaque side supplies the face where opaque and transparent
+voxels meet.

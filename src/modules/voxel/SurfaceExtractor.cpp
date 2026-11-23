@@ -13,6 +13,7 @@
 #include "voxel/RawVolume.h"
 #include "voxel/private/BinaryGreedyMesher.h"
 #include "voxel/private/CubicSurfaceExtractor.h"
+#include "voxel/private/DualContouringSurfaceExtractor.h"
 #include "voxel/private/MarchingCubesSurfaceExtractor.h"
 #include "voxel/private/TextureSurfaceExtractor.h"
 
@@ -46,6 +47,13 @@ SurfaceExtractionContext buildBinaryContext(const RawVolume *volume, const Regio
 									false, false, ambientOcclusion, optimize);
 }
 
+SurfaceExtractionContext buildDualContouringContext(const RawVolume *volume, const Region &region, ChunkMesh &mesh,
+													const glm::ivec3 &translate, bool optimize) {
+	static palette::Palette unused;
+	return SurfaceExtractionContext(volume, unused, region, mesh, translate, SurfaceExtractionType::DualContouring,
+									false, false, false, optimize);
+}
+
 void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	core_assert_msg(ctx.volume != nullptr, "Provided volume cannot be null");
 	const glm::ivec3 &mins = ctx.region.getLowerCorner();
@@ -55,6 +63,8 @@ void extractSurface(voxel::SurfaceExtractionContext &ctx) {
 	ctx.mesh.clear();
 	if (ctx.type == voxel::SurfaceExtractionType::MarchingCubes) {
 		voxel::extractMarchingCubesMesh(ctx.volume, ctx.palette, ctx.region, &ctx.mesh);
+	} else if (ctx.type == SurfaceExtractionType::DualContouring) {
+		extractDualContouringMesh(ctx);
 	} else if (ctx.type == voxel::SurfaceExtractionType::GreedyTexture) {
 		voxel::extractTextureMesh(ctx);
 	} else if (ctx.type == voxel::SurfaceExtractionType::Binary) {
@@ -92,6 +102,8 @@ voxel::SurfaceExtractionContext createContext(voxel::SurfaceExtractionType type,
 		return voxel::buildBinaryContext(volume, region, mesh, translate, ambientOcclusion, optimize);
 	} else if (type == voxel::SurfaceExtractionType::GreedyTexture) {
 		return voxel::buildGreedyTextureContext(volume, region, mesh, palette, optimize);
+	} else if (type == SurfaceExtractionType::DualContouring) {
+		return buildDualContouringContext(volume, region, mesh, translate, optimize);
 	}
 	return voxel::buildCubicContext(volume, region, mesh, translate, mergeQuads, reuseVertices, ambientOcclusion,
 									optimize);
