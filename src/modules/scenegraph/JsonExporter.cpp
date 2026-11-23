@@ -12,7 +12,6 @@
 #include "voxel/SurfaceExtractor.h"
 #include "voxelutil/VolumeVisitor.h"
 #include <glm/gtc/quaternion.hpp>
-#include <inttypes.h>
 
 namespace scenegraph {
 
