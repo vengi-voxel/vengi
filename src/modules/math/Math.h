@@ -10,6 +10,28 @@
 namespace math {
 
 /**
+ * @brief Round toward -infinity. A C cast truncates toward zero, so a negative fraction needs one extra step.
+ */
+inline int floorToInt(float value) {
+	int whole = (int)value;
+	if ((float)whole > value) {
+		--whole;
+	}
+	return whole;
+}
+
+/**
+ * @brief Round toward +infinity. A C cast truncates toward zero, so a positive fraction needs one extra step.
+ */
+inline int ceilToInt(float value) {
+	int whole = (int)value;
+	if ((float)whole < value) {
+		++whole;
+	}
+	return whole;
+}
+
+/**
  * @brief Compute the determinant of the upper-left 3x3 submatrix of a 4x4 matrix.
  * Useful for checking if a transform has an odd number of reflections (negative determinant
  * means 1 or 3 negative scale axes).

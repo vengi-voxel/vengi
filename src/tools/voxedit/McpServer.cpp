@@ -34,6 +34,13 @@
 #include "voxedit-mcp/NodeSetPropertiesTool.h"
 #include "voxedit-mcp/PaintBrushTool.h"
 #include "voxedit-mcp/PlaceVoxelsTool.h"
+#include "voxedit-mcp/DrawSlicesTool.h"
+#include "voxedit-mcp/DrawShapeTool.h"
+#include "voxedit-mcp/RecolorTool.h"
+#include "voxedit-mcp/MirrorTool.h"
+#include "voxedit-mcp/ShiftVoxelsTool.h"
+#include "voxedit-mcp/SetPaletteColorTool.h"
+#include "voxedit-mcp/ResizeVolumeTool.h"
 #include "voxedit-mcp/PlaneBrushTool.h"
 #include "voxedit-mcp/ScriptApiTool.h"
 #include "voxedit-mcp/ScriptCreateTool.h"
@@ -138,6 +145,13 @@ app::AppState McpServer::onConstruct() {
 	_toolRegistry.registerTool(new voxedit::NodeRenameTool());
 	_toolRegistry.registerTool(new voxedit::NodeSetPropertiesTool());
 	_toolRegistry.registerTool(new voxedit::PlaceVoxelsTool());
+	_toolRegistry.registerTool(new voxedit::DrawSlicesTool());
+	_toolRegistry.registerTool(new voxedit::DrawShapeTool());
+	_toolRegistry.registerTool(new voxedit::RecolorTool());
+	_toolRegistry.registerTool(new voxedit::MirrorTool());
+	_toolRegistry.registerTool(new voxedit::ShiftVoxelsTool());
+	_toolRegistry.registerTool(new voxedit::SetPaletteColorTool());
+	_toolRegistry.registerTool(new voxedit::ResizeVolumeTool());
 	_toolRegistry.registerTool(new voxedit::ScriptApiTool());
 	_toolRegistry.registerTool(new voxedit::ScriptCreateTool());
 	_toolRegistry.registerTool(new voxedit::ShapeBrushTool());

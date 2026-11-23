@@ -8,6 +8,7 @@
 #include "core/Var.h"
 #include "image/Image.h"
 #include "json/JSON.h"
+#include "color/RGBA.h"
 #include "voxel/RawVolume.h"
 #include "voxedit-mcp/AnimationAddTool.h"
 #include "voxedit-mcp/AnimationSetTool.h"
@@ -31,6 +32,13 @@
 #include "voxedit-mcp/NodeSetPropertiesTool.h"
 #include "voxedit-mcp/PaintBrushTool.h"
 #include "voxedit-mcp/PlaceVoxelsTool.h"
+#include "voxedit-mcp/DrawShapeTool.h"
+#include "voxedit-mcp/DrawSlicesTool.h"
+#include "voxedit-mcp/MirrorTool.h"
+#include "voxedit-mcp/RecolorTool.h"
+#include "voxedit-mcp/ResizeVolumeTool.h"
+#include "voxedit-mcp/SetPaletteColorTool.h"
+#include "voxedit-mcp/ShiftVoxelsTool.h"
 #include "voxedit-mcp/PlaneBrushTool.h"
 #include "voxedit-mcp/ScriptApiTool.h"
 #include "voxedit-mcp/ScriptCreateTool.h"
@@ -359,6 +367,13 @@ TEST_F(ToolsTest, registeredToolsHaveValidMcpInputSchemas) {
 	registry.registerTool(new NodeRenameTool());
 	registry.registerTool(new NodeSetPropertiesTool());
 	registry.registerTool(new PlaceVoxelsTool());
+	registry.registerTool(new DrawSlicesTool());
+	registry.registerTool(new DrawShapeTool());
+	registry.registerTool(new RecolorTool());
+	registry.registerTool(new MirrorTool());
+	registry.registerTool(new ShiftVoxelsTool());
+	registry.registerTool(new SetPaletteColorTool());
+	registry.registerTool(new ResizeVolumeTool());
 	registry.registerTool(new ScriptApiTool());
 	registry.registerTool(new ScriptCreateTool());
 	registry.registerTool(new ShapeBrushTool());
@@ -410,6 +425,199 @@ TEST_F(ToolsTest, brushRequestPreservesActiveToolAndSettings) {
 	EXPECT_EQ(1, node->volume()->voxel(2, 2, 2).getColor());
 	ASSERT_TRUE(_sceneMgr->undo());
 	EXPECT_TRUE(voxel::isAir(_sceneMgr->volume(node->uuid())->voxel(1, 1, 1).getMaterial()));
+}
+
+static ToolContext textContext(SceneManager *sceneMgr, TextResultCapture &capture) {
+	TextResultCapture::_instance = &capture;
+	ToolContext ctx;
+	ctx.sceneMgr = sceneMgr;
+	ctx.result = TextResultCapture::capture;
+	return ctx;
+}
+
+TEST_F(ToolsTest, drawSlicesAndShape) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, node);
+
+	DrawSlicesTool slices;
+	TextResultCapture capture;
+	ToolContext ctx = textContext(_sceneMgr.get(), capture);
+	json::Json args = json::Json::parse(
+		"{\"origin\":[0,0,0],\"plane\":\"xz\",\"slices\":[[\"#.\"],[\".#\"]],\"legend\":{\"#\":\"#ff0000\"}}");
+	ASSERT_TRUE(args.isValid());
+	ASSERT_TRUE(slices.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+
+	int red = -1;
+	const palette::Palette &palette = node->palette();
+	for (int i = 0; i < palette.colorCount(); ++i) {
+		if (palette.color((uint8_t)i) == color::RGBA(255, 0, 0, 255)) {
+			red = i;
+		}
+	}
+	ASSERT_GE(red, 0);
+	EXPECT_EQ(red, node->volume()->voxel(0, 0, 0).getColor());
+	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(1, 0, 0).getMaterial()));
+	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(0, 1, 0).getMaterial()));
+	EXPECT_EQ(red, node->volume()->voxel(1, 1, 0).getColor());
+
+	DrawShapeTool shape;
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"shape\":\"box\",\"from\":[1,1,1],\"to\":[3,3,3],\"color\":1,\"hollow\":true}");
+	ASSERT_TRUE(shape.execute(json::Json::parse("2"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(1, 1, 1).getMaterial()));
+	EXPECT_EQ(1, node->volume()->voxel(1, 1, 1).getColor());
+	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(2, 2, 2).getMaterial()));
+
+	ASSERT_TRUE(_sceneMgr->undo());
+	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(1, 1, 1).getMaterial()));
+	EXPECT_EQ(red, node->volume()->voxel(0, 0, 0).getColor());
+}
+
+TEST_F(ToolsTest, mirrorShiftRecolorAndPalette) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, node);
+	voxel::RawVolume *volume = node->volume();
+	ASSERT_TRUE(volume->setVoxel(5, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+	ASSERT_TRUE(volume->setVoxel(1, 1, 1, voxel::createVoxel(voxel::VoxelType::Generic, 2)));
+
+	MirrorTool mirror;
+	TextResultCapture capture;
+	ToolContext ctx = textContext(_sceneMgr.get(), capture);
+	json::Json args = json::Json::parse("{\"axis\":\"x\"}");
+	ASSERT_TRUE(mirror.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	EXPECT_EQ(1, volume->voxel(5, 1, 1).getColor());
+	EXPECT_EQ(1, volume->voxel(2, 1, 1).getColor());
+	EXPECT_TRUE(voxel::isAir(volume->voxel(1, 1, 1).getMaterial()));
+
+	ShiftVoxelsTool shift;
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"offset\":[1,0,0]}");
+	ASSERT_TRUE(shift.execute(json::Json::parse("2"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	EXPECT_TRUE(voxel::isAir(volume->voxel(5, 1, 1).getMaterial()));
+	EXPECT_EQ(1, volume->voxel(6, 1, 1).getColor());
+
+	RecolorTool recolor;
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"fromColor\":1,\"toColor\":\"#010203\"}");
+	ASSERT_TRUE(recolor.execute(json::Json::parse("3"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	const uint8_t painted = volume->voxel(6, 1, 1).getColor();
+	EXPECT_EQ(color::RGBA(1, 2, 3, 255), node->palette().color(painted));
+
+	SetPaletteColorTool setColor;
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"index\":2,\"color\":\"#112233\"}");
+	ASSERT_TRUE(setColor.execute(json::Json::parse("4"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	EXPECT_EQ(color::RGBA(17, 34, 51, 255), node->palette().color(2));
+
+	PlaceVoxelsTool place;
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"voxels\":[[0,0,0,\"#00ff00\"]]}");
+	ASSERT_TRUE(place.execute(json::Json::parse("5"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	const uint8_t green = volume->voxel(0, 0, 0).getColor();
+	EXPECT_EQ(color::RGBA(0, 255, 0, 255), node->palette().color(green));
+}
+
+TEST_F(ToolsTest, placeVoxelSlotZeroAndEraseWithMinusOne) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, node);
+
+	SetPaletteColorTool setColor;
+	TextResultCapture capture;
+	ToolContext ctx = textContext(_sceneMgr.get(), capture);
+	json::Json args = json::Json::parse("{\"index\":0,\"color\":\"#010203\"}");
+	ASSERT_TRUE(setColor.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+
+	PlaceVoxelsTool place;
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"voxels\":[[2,2,2,0]]}");
+	ASSERT_TRUE(place.execute(json::Json::parse("2"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	EXPECT_FALSE(voxel::isAir(node->volume()->voxel(2, 2, 2).getMaterial()));
+	EXPECT_EQ(0, node->volume()->voxel(2, 2, 2).getColor());
+
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"voxels\":[[2,2,2,-1]]}");
+	ASSERT_TRUE(place.execute(json::Json::parse("3"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	EXPECT_TRUE(voxel::isAir(node->volume()->voxel(2, 2, 2).getMaterial()));
+}
+
+TEST_F(ToolsTest, resizeVolumeSizeAndFit) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, node);
+	ASSERT_TRUE(node->volume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ResizeVolumeTool tool;
+	TextResultCapture capture;
+	ToolContext ctx = textContext(_sceneMgr.get(), capture);
+	json::Json args = json::Json::parse("{\"fit\":true,\"padding\":1}");
+	ASSERT_TRUE(tool.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	const voxel::RawVolume *fitted = _sceneMgr->volume(node->uuid());
+	ASSERT_NE(nullptr, fitted);
+	EXPECT_EQ(1, fitted->region().getLowerCorner().x);
+	EXPECT_EQ(1, fitted->region().getLowerCorner().y);
+	EXPECT_EQ(1, fitted->region().getLowerCorner().z);
+	EXPECT_EQ(3, fitted->region().getUpperCorner().x);
+	EXPECT_EQ(3, fitted->region().getUpperCorner().y);
+	EXPECT_EQ(3, fitted->region().getUpperCorner().z);
+	EXPECT_EQ(1, fitted->voxel(2, 2, 2).getColor());
+
+	capture = TextResultCapture{};
+	ctx = textContext(_sceneMgr.get(), capture);
+	args = json::Json::parse("{\"size\":[4,4,4]}");
+	ASSERT_TRUE(tool.execute(json::Json::parse("2"), args, ctx));
+	ASSERT_FALSE(capture.isError) << capture.text.c_str();
+	const voxel::RawVolume *resized = _sceneMgr->volume(node->uuid());
+	ASSERT_NE(nullptr, resized);
+	EXPECT_EQ(1, resized->region().getLowerCorner().x);
+	EXPECT_EQ(1, resized->region().getLowerCorner().y);
+	EXPECT_EQ(1, resized->region().getLowerCorner().z);
+	EXPECT_EQ(4, resized->region().getUpperCorner().x);
+	EXPECT_EQ(4, resized->region().getUpperCorner().y);
+	EXPECT_EQ(4, resized->region().getUpperCorner().z);
+}
+
+TEST_F(ToolsTest, screenshotToolSheet) {
+	scenegraph::SceneGraphNode *node = _sceneMgr->sceneGraphModelNodeByUUID(_sceneMgr->activeNodeUUID());
+	ASSERT_NE(nullptr, node);
+	ASSERT_TRUE(node->volume()->setVoxel(2, 2, 2, voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+
+	ScreenshotTool tool;
+	ImageResultCapture capture;
+	ImageResultCapture::_instance = &capture;
+	ToolContext ctx;
+	ctx.sceneMgr = _sceneMgr.get();
+	ctx.result = ImageResultCapture::textFallback;
+	ctx.resultImage = ImageResultCapture::capture;
+
+	json::Json args = json::Json::object();
+	args.set("nodeUUID", node->uuid().str().c_str());
+	args.set("view", "sheet");
+	args.set("size", 192);
+	ASSERT_TRUE(tool.execute(json::Json::parse("1"), args, ctx));
+	ASSERT_TRUE(capture.called);
+	ASSERT_FALSE(capture.isError);
+	EXPECT_EQ("image/png", capture.mimeType);
+	EXPECT_TRUE(core::string::startsWith(capture.pngBase64, "iVBORw0KGgo"));
+	EXPECT_TRUE(capture.text.contains("sheet"));
+	EXPECT_TRUE(capture.text.contains("front"));
+	ImageResultCapture::_instance = nullptr;
 }
 
 } // namespace voxedit

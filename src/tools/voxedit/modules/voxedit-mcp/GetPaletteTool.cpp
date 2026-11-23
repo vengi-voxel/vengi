@@ -3,6 +3,7 @@
  */
 
 #include "GetPaletteTool.h"
+#include "color/ColorUtil.h"
 #include "palette/Material.h"
 #include "voxedit-util/SceneManager.h"
 
@@ -38,6 +39,7 @@ bool GetPaletteTool::execute(const json::Json &id, const json::Json &args, ToolC
 		const color::RGBA &color = palette.color(i);
 		json::Json colorJson = json::Json::object();
 		colorJson.set("index", (int)i);
+		colorJson.set("hex", color::toHex(color).c_str());
 		colorJson.set("r", color.r);
 		colorJson.set("g", color.g);
 		colorJson.set("b", color.b);

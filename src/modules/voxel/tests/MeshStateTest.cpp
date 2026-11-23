@@ -564,15 +564,15 @@ TEST_F(MeshStateTest, testDualContouringChunkSeams) {
 		glm::vec3 b;
 	};
 	core::DynamicArray<Edge> edges;
-	for (const auto &chunk : meshState.meshes(MeshType_Opaque)) {
+	for (const MeshState::MeshesMap::KeyValue *chunk : meshState.meshes(MeshType_Opaque)) {
 		const Mesh *mesh = chunk->value[0];
 		if (mesh == nullptr) {
 			continue;
 		}
 		for (IndexType i = 0; i < mesh->getNoOfIndices(); i += 3) {
 			for (IndexType e = 0; e < 3; ++e) {
-				const glm::vec3 a = mesh->getVertex(mesh->getIndex(i + e)).position;
-				const glm::vec3 b = mesh->getVertex(mesh->getIndex(i + (e + 1) % 3)).position;
+				const glm::vec3 &a = mesh->getVertex(mesh->getIndex(i + e)).position;
+				const glm::vec3 &b = mesh->getVertex(mesh->getIndex(i + (e + 1) % 3)).position;
 				EXPECT_NE(a, b);
 				edges.push_back({a, b});
 			}

@@ -24,6 +24,14 @@ set(SRCS
 	GetSceneStateTool.h GetSceneStateTool.cpp
 	GetVoxelsTool.h GetVoxelsTool.cpp
 	PlaceVoxelsTool.h PlaceVoxelsTool.cpp
+	Authoring.h Authoring.cpp
+	DrawSlicesTool.h DrawSlicesTool.cpp
+	DrawShapeTool.h DrawShapeTool.cpp
+	RecolorTool.h RecolorTool.cpp
+	MirrorTool.h MirrorTool.cpp
+	ShiftVoxelsTool.h ShiftVoxelsTool.cpp
+	SetPaletteColorTool.h SetPaletteColorTool.cpp
+	ResizeVolumeTool.h ResizeVolumeTool.cpp
 	GetPaletteTool.h GetPaletteTool.cpp
 	HistogramTool.h HistogramTool.cpp
 	FindColorTool.h FindColorTool.cpp

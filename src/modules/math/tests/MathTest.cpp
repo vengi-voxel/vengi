@@ -27,6 +27,21 @@ TEST(MathTest, testTransformVec3) {
 	EXPECT_NEAR(expected.z, destination.z, 0.0001f);
 }
 
+TEST(MathTest, testFloorCeilToInt) {
+	EXPECT_EQ(2, math::floorToInt(2.0f));
+	EXPECT_EQ(2, math::ceilToInt(2.0f));
+	EXPECT_EQ(2, math::floorToInt(2.3f));
+	EXPECT_EQ(3, math::ceilToInt(2.3f));
+	EXPECT_EQ(-2, math::floorToInt(-2.0f));
+	EXPECT_EQ(-2, math::ceilToInt(-2.0f));
+	EXPECT_EQ(-3, math::floorToInt(-2.3f));
+	EXPECT_EQ(-2, math::ceilToInt(-2.3f));
+	EXPECT_EQ(0, math::floorToInt(0.0f));
+	EXPECT_EQ(0, math::ceilToInt(0.0f));
+	EXPECT_EQ(-1, math::floorToInt(-0.1f));
+	EXPECT_EQ(0, math::ceilToInt(-0.1f));
+}
+
 TEST(MathTest, testLogBase2) {
 	EXPECT_EQ(0, math::logBase2(1));
 	EXPECT_EQ(1, math::logBase2(2));

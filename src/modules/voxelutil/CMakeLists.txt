@@ -16,6 +16,7 @@ set(SRCS
 	VolumeResizer.h VolumeResizer.cpp
 	VolumeCropper.h VolumeCropper.cpp
 	VolumeSplitter.h VolumeSplitter.cpp
+	VisitInside.h
 	VolumeVisitor.h
 	VolumeSelect.h VolumeSelect.cpp
 	VolumeSculpt.h VolumeSculpt.cpp
@@ -36,6 +37,7 @@ set(TEST_SRCS
 	tests/VolumeSplitterTest.cpp
 	tests/VolumeMoverTest.cpp
 	tests/VolumeCropperTest.cpp
+	tests/VisitInsideTest.cpp
 	tests/VolumeVisitorTest.cpp
 	tests/VolumeSelectTest.cpp
 	tests/VolumeSculptTest.cpp

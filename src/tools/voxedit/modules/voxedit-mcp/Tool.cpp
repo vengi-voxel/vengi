@@ -74,17 +74,33 @@ bool Tool::sendMessage(ToolContext &ctx, const network::ProtocolMessage &msg) {
 }
 
 json::Json Tool::propVoxels() {
-	json::Json itemsSchema = json::Json::object();
-	itemsSchema.set("type", "object");
+	json::Json objectItem = json::Json::object();
+	objectItem.set("type", "object");
 	json::Json itemProps = json::Json::object();
 	itemProps.set("x", propTypeDescription("integer", "X coordinate of the voxel"));
-	itemProps.set("y", propTypeDescription("integer", "Y coordinate of the voxel"));
+	itemProps.set("y", propTypeDescription("integer", "Y coordinate of the voxel (up)"));
 	itemProps.set("z", propTypeDescription("integer", "Z coordinate of the voxel"));
-	itemProps.set("idx", propTypeDescription("integer", "Node palette color index of the voxel"));
-	itemsSchema.set("properties", itemProps);
+	itemProps.set("idx", propTypeDescription("integer", "Palette index. 0 is a real slot. Ignored when color is set."));
+	json::Json colorProp = json::Json::object();
+	colorProp.set("description", "#RRGGBB or a palette index. -1 erases. A new hex color is added to the palette.");
+	itemProps.set("color", colorProp);
+	objectItem.set("properties", itemProps);
 
-	json::Json voxelsProp = propTypeDescription("array", "Array of {x, y, z, colorIndex} objects there y is pointing upwards.");
-	voxelsProp.set("items", itemsSchema);
+	json::Json arrayItem = json::Json::object();
+	arrayItem.set("type", "array");
+	arrayItem.set("minItems", 4);
+	arrayItem.set("maxItems", 4);
+	arrayItem.set("description", "[x, y, z, color]. color is #RRGGBB or a palette index. -1 erases.");
+
+	json::Json oneOf = json::Json::array();
+	oneOf.push(core::move(objectItem));
+	oneOf.push(core::move(arrayItem));
+	json::Json items = json::Json::object();
+	items.set("oneOf", core::move(oneOf));
+
+	json::Json voxelsProp = propTypeDescription(
+		"array", "Voxels as {x, y, z, idx}, {x, y, z, color} or [x, y, z, color]. Y is up. At most 50000 per call.");
+	voxelsProp.set("items", core::move(items));
 	return voxelsProp;
 }
 
