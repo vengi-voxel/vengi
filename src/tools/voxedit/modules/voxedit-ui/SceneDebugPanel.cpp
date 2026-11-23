@@ -5,12 +5,14 @@
 #include "SceneDebugPanel.h"
 #include "voxelrender/CameraMovement.h"
 #include "app/I18N.h"
+#include "core/StringUtil.h"
 #include "core/collection/RingBuffer.h"
 #include "scenegraph/Physics.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "video/Renderer.h"
 #include "video/RenderStats.h"
+#include "voxel/RawVolume.h"
 #include "voxedit-ui/MainWindow.h"
 #include "voxedit-ui/Viewport.h"
 #include "voxedit-util/ISceneRenderer.h"
@@ -52,6 +54,19 @@ void SceneDebugPanel::update(const char *id) {
 		ImGui::Text(_("Mapped nodes: %i"), stats.mappedNodes);
 		ImGui::Text(_("Volume index high-water: %i"), stats.nextVolumeIdx);
 		ImGui::Text(_("Free volume indices: %i"), stats.freeVolumeIndices);
+		size_t volumeBytes = 0;
+		int volumes = 0;
+		const scenegraph::SceneGraph &sceneGraph = _sceneMgr->sceneGraph();
+		for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
+			const voxel::RawVolume *volume = (*iter).volume();
+			if (volume == nullptr) {
+				continue;
+			}
+			volumeBytes += volume->allocatedBytes();
+			++volumes;
+		}
+		const core::String &volumeSize = core::string::humanSize(volumeBytes);
+		ImGui::Text(_("Volume memory: %s (%i)"), volumeSize.c_str(), volumes);
 		ImGui::CheckboxVar(cfg::RenderCullNodes);
 		if (ImGui::CollapsingHeader(_("Render stats"), ImGuiTreeNodeFlags_DefaultOpen)) {
 			const video::RenderStats &videoStats = video::renderStats();
