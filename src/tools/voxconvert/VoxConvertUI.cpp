@@ -49,7 +49,7 @@ app::AppState VoxConvertUI::onInit() {
 	if (!_luaApi.init()) {
 		Log::error("Failed to initialize LUA API");
 	}
-	_voxconvertBinary = _filesystem->sysFindBinary("vengi-voxconvert");
+	_voxconvertBinary = _filesystem->sysFindBinary("vengi-voxconvert").str();
 
 	_paletteCache.detectPalettes();
 

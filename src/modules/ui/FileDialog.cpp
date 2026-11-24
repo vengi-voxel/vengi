@@ -232,7 +232,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 		if (_app->filesystem()->exists(lastDir)) {
 			_currentPath = lastDir;
 		} else {
-			_currentPath = _app->filesystem()->homePath();
+			_currentPath = _app->filesystem()->homePath().str();
 		}
 	} else {
 		_currentPath = filePath;
@@ -241,7 +241,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 	_entryIndex = -1;
 
 	if (!_app->filesystem()->exists(_currentPath)) {
-		_currentPath = _app->filesystem()->homePath();
+		_currentPath = _app->filesystem()->homePath().str();
 		_lastDirVar->setVal(_currentPath);
 	}
 
@@ -342,8 +342,8 @@ bool FileDialog::quickAccessPanel(video::OpenFileMode type, const core::String &
 			quickAccessEntry(index++, type, dir, contentRegionWidth, folderNames[n], folderIcons[n]);
 		}
 		const io::Paths& paths = _app->filesystem()->registeredPaths();
-		for (const core::String& path : paths) {
-			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path);
+		for (const core::Path& path : paths) {
+			const core::String& absPath = _app->filesystem()->sysAbsolutePath(path.str());
 			if (absPath.empty()) {
 				continue;
 			}

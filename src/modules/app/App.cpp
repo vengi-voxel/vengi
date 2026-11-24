@@ -580,9 +580,9 @@ AppState App::onConstruct() {
 	}
 	core_assert_init(_filesystem->homePath().c_str());
 
-	for (const core::String &path : _filesystem->registeredPaths()) {
-		_dictManager.addDirectory(path);
-		_dictManager.addDirectory(core::string::path(path, "po"));
+	for (const core::Path &path : _filesystem->registeredPaths()) {
+		_dictManager.addDirectory(path.str());
+		_dictManager.addDirectory(path.append("po").str());
 	}
 
 	if (!_systemLanguage) {
@@ -1663,7 +1663,7 @@ void App::usage() const {
 	Log::info("------------");
 	Log::info("Search paths:");
 	const io::Paths &paths = _filesystem->registeredPaths();
-	for (const core::String &path : paths) {
+	for (const core::Path &path : paths) {
 		Log::info(" * %s", path.c_str());
 	}
 	Log::info("------------");

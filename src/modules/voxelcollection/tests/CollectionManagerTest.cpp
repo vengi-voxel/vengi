@@ -24,8 +24,8 @@ protected:
 		// _texturePool->init();
 		_mgr = core::make_shared<CollectionManager>(_testApp->filesystem(), _texturePool);
 		ASSERT_TRUE(_mgr->init());
-		_mgr->setLocalDir(_testApp->filesystem()->homePath());
-		ASSERT_EQ(_testApp->filesystem()->homePath(), _mgr->localDir());
+		_mgr->setLocalDir(_testApp->filesystem()->homePath().str());
+		ASSERT_EQ(_testApp->filesystem()->homePath().str(), _mgr->localDir());
 	}
 
 	virtual void TearDown() override {

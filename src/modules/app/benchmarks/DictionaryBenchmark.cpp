@@ -49,7 +49,7 @@ msgid "Hello World"
 msgstr "Hallo Welt"
 )");
 	DictionaryManager mgr(filesystem);
-	mgr.addDirectory(filesystem->homePath() + "locales");
+	mgr.addDirectory((filesystem->homePath() + "locales").str());
 	mgr.setLanguage(Language::fromSpec("de"));
 
 	for (auto _ : state) {

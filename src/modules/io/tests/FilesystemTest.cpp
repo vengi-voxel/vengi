@@ -129,10 +129,10 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(io::Filesystem::sysCreateDir("absolutePathInCurDir"));
 	const core::String &absolutePathInCurDir = fs.sysAbsolutePath("absolutePathInCurDir");
-	EXPECT_EQ(core::string::path(io::Filesystem::sysCurrentDir(), "absolutePathInCurDir"), absolutePathInCurDir);
+	EXPECT_EQ(core::string::path(io::Filesystem::sysCurrentDir().str(), "absolutePathInCurDir"), absolutePathInCurDir);
 	EXPECT_TRUE(core::string::isAbsolutePath(absolutePathInCurDir));
 	const core::String &abspath = fs.sysAbsolutePath("");
-	EXPECT_EQ(io::Filesystem::sysCurrentDir(), abspath);
+	EXPECT_EQ(io::Filesystem::sysCurrentDir().str(), abspath);
 	fs.shutdown();
 }
 
@@ -257,7 +257,7 @@ TEST_F(FilesystemTest, testHomeWritePathTraversal) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	// valid relative path should produce a result under home
 	EXPECT_FALSE(fs.homeWritePath("testfile").empty());
-	EXPECT_TRUE(core::string::startsWith(fs.homeWritePath("testfile"), fs.homePath()));
+	EXPECT_TRUE(core::string::startsWith(fs.homeWritePath("testfile"), fs.homePath().str()));
 	// path traversal attempts must return empty
 	EXPECT_TRUE(fs.homeWritePath("../../etc/passwd").empty());
 	EXPECT_TRUE(fs.homeWritePath("subdir/../../..").empty());
