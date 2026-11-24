@@ -280,4 +280,35 @@ TEST_F(FilesystemTest, testSysOfferDownload) {
 #endif
 }
 
+TEST_F(FilesystemTest, testRelativeScriptsFolder) {
+	io::Filesystem fs;
+	ASSERT_TRUE(fs.init("test", "test"));
+	const core::String sandbox = "rel-scripts-sandbox";
+	ASSERT_TRUE(io::Filesystem::sysCreateDir(core::string::path(sandbox, "scripts")));
+	ASSERT_TRUE(io::Filesystem::sysWrite(core::string::path(sandbox, "scripts", "relscript-mod.lua"), "return 1"));
+	ASSERT_TRUE(fs.sysPushDir(core::Path(sandbox)));
+	ASSERT_TRUE(fs.registerPath("scripts/"));
+
+	core::DynamicArray<io::FilesystemEntry> entities;
+	fs.list("scripts", entities, "relscript-mod.lua");
+	int mods = 0;
+	for (const io::FilesystemEntry &entry : entities) {
+		if (entry.name == "relscript-mod.lua") {
+			++mods;
+		}
+	}
+	EXPECT_EQ(1, mods) << entities;
+
+	const io::FilePtr file = fs.open("relscript-mod.lua");
+	ASSERT_TRUE(file);
+	EXPECT_TRUE(file->exists()) << file->name().c_str();
+	EXPECT_TRUE(core::string::endsWith(file->name(), "scripts/relscript-mod.lua")) << file->name().c_str();
+
+	ASSERT_TRUE(fs.sysPopDir());
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile(core::string::path(sandbox, "scripts", "relscript-mod.lua")));
+	EXPECT_TRUE(io::Filesystem::sysRemoveDir(core::string::path(sandbox, "scripts")));
+	EXPECT_TRUE(io::Filesystem::sysRemoveDir(sandbox));
+	fs.shutdown();
+}
+
 } // namespace io

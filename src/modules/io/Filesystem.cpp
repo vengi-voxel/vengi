@@ -279,20 +279,47 @@ bool Filesystem::_list(const core::Path &directory, core::DynamicArray<Filesyste
 
 bool Filesystem::list(const core::Path &directory, core::DynamicArray<FilesystemEntry> &entities,
 					  const core::String &filter, int depth) const {
-	if (sysIsRelativePath(directory)) {
-		const core::Path cwd = sysCurrentDir();
-		for (const core::Path &p : _paths) {
-			const core::Path fullDir = p.append(directory);
-			if (fullDir == cwd) {
-				continue;
-			}
-			_list(fullDir, entities, filter, depth);
-		}
-		if (directory.empty()) {
-			_list(cwd, entities, filter, depth);
-		}
-	} else {
+	if (!sysIsRelativePath(directory)) {
 		_list(directory, entities, filter, depth);
+		return true;
+	}
+
+	// A registered folder such as "scripts/" is itself a search root. Listing "scripts" must scan that
+	// folder, not "scripts/scripts". The same directory can also be reached through the base path.
+	const core::Path cwd = sysCurrentDir();
+	core::DynamicArray<core::Path> seen;
+	auto visit = [&](const core::Path &dir) {
+		if (dir.empty()) {
+			return;
+		}
+		// "scripts/" and "<cwd>/scripts" are the same folder once the search root is relative
+		core::Path absolute = dir;
+		if (sysIsRelativePath(absolute)) {
+			absolute = cwd.append(absolute);
+		}
+		for (const core::Path &known : seen) {
+			if (known == absolute) {
+				return;
+			}
+		}
+		seen.push_back(absolute);
+		_list(absolute, entities, filter, depth);
+	};
+
+	for (const core::Path &p : _paths) {
+		core::Path fullDir;
+		if (directory.empty() || (sysIsRelativePath(p) && p == directory)) {
+			fullDir = p;
+		} else {
+			fullDir = p.append(directory);
+		}
+		if (fullDir == cwd) {
+			continue;
+		}
+		visit(fullDir);
+	}
+	if (directory.empty()) {
+		visit(cwd);
 	}
 	return true;
 }
@@ -439,7 +466,8 @@ bool Filesystem::exists(const core::String& filename) const {
 		}
 		if (sysIsRelativePath(p)) {
 			for (const core::Path &s : _paths) {
-				if (s == p) {
+				// scripts/ is attached to absolute search roots, not to other relative folders
+				if (sysIsRelativePath(s) || s == p) {
 					continue;
 				}
 				const core::Path fullrelpath = s + p + file;
@@ -494,7 +522,8 @@ io::FilePtr Filesystem::open(const core::Path &filename, FileMode mode) const {
 		}
 		if (sysIsRelativePath(p)) {
 			for (const core::Path &s : _paths) {
-				if (s == p) {
+				// scripts/ is attached to absolute search roots, not to other relative folders
+				if (sysIsRelativePath(s) || s == p) {
 					continue;
 				}
 				const core::Path fullrelpath = s + p + filename;
