@@ -4,6 +4,8 @@
 
 #include "../Viewport.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "voxedit-util/modifier/brush/PaintBrush.h"
 #include "voxedit-util/modifier/PreviewManager.h"
 #include "../WindowTitles.h"
 #include "command/CommandHandler.h"

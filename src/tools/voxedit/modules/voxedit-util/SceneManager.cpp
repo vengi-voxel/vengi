@@ -5,6 +5,8 @@
 #include "SceneManager.h"
 #include "core/TraceScoped.h"
 #include "modifier/Modifier.h"
+#include "modifier/brush/PaintBrush.h"
+#include "modifier/brush/SelectBrush.h"
 #include "voxedit-util/AddNodePreview.h"
 #include "sound/SoundManager.h"
 #include "voxelrender/CameraMovement.h"

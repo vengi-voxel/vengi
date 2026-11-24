@@ -16,6 +16,7 @@
 #include "voxedit-util/Config.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/brush/SelectBrush.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Region.h"
 #include "voxel/Voxel.h"

@@ -53,6 +53,7 @@
 #include "voxedit-util/SceneManager.h"
 #include "voxedit-util/modifier/IModifierRenderer.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/brush/ShapeBrush.h"
 
 namespace voxedit {
 

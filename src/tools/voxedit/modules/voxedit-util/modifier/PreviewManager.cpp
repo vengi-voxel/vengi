@@ -6,6 +6,7 @@
 #include "BrushApply.h"
 #include "BrushRadiusPreview.h"
 #include "Modifier.h"
+#include "brush/SelectBrush.h"
 #include "core/Log.h"
 #include "core/Trace.h"
 #include "palette/Palette.h"

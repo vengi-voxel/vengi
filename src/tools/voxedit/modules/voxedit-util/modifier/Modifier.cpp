@@ -22,7 +22,19 @@
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/modifier/brush/BrushType.h"
+#include "voxedit-util/modifier/brush/ExtrudeBrush.h"
+#include "voxedit-util/modifier/brush/LineBrush.h"
+#include "voxedit-util/modifier/brush/NormalBrush.h"
+#include "voxedit-util/modifier/brush/PaintBrush.h"
+#include "voxedit-util/modifier/brush/PlaneBrush.h"
+#include "voxedit-util/modifier/brush/RulerBrush.h"
 #include "voxedit-util/modifier/brush/SculptBrush.h"
+#include "voxedit-util/modifier/brush/SelectBrush.h"
+#include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "voxedit-util/modifier/brush/StampBrush.h"
+#include "voxedit-util/modifier/brush/TextBrush.h"
+#include "voxedit-util/modifier/brush/TextureBrush.h"
+#include "voxedit-util/modifier/brush/TransformBrush.h"
 #include "voxedit-util/modifier/SceneModifiedFlags.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
@@ -1060,6 +1072,58 @@ void Modifier::render(voxelrender::RenderContext &renderContext, const video::Ca
 
 	// Render everything
 	_modifierRenderer->render(renderContext, camera, model);
+}
+
+TextBrush &Modifier::textBrush() {
+	return *_registry.get<TextBrush>("text");
+}
+
+LineBrush &Modifier::lineBrush() {
+	return *_registry.get<LineBrush>("line");
+}
+
+ShapeBrush &Modifier::shapeBrush() {
+	return *_registry.get<ShapeBrush>("shape");
+}
+
+StampBrush &Modifier::stampBrush() {
+	return *_registry.get<StampBrush>("stamp");
+}
+
+PlaneBrush &Modifier::planeBrush() {
+	return *_registry.get<PlaneBrush>("plane");
+}
+
+PaintBrush &Modifier::paintBrush() {
+	return *_registry.get<PaintBrush>("paint");
+}
+
+NormalBrush &Modifier::normalBrush() {
+	return *_registry.get<NormalBrush>("normal");
+}
+
+SelectBrush &Modifier::selectBrush() {
+	return *_registry.get<SelectBrush>("select");
+}
+
+TextureBrush &Modifier::textureBrush() {
+	return *_registry.get<TextureBrush>("texture");
+}
+
+ExtrudeBrush &Modifier::extrudeBrush() {
+	return *_registry.get<ExtrudeBrush>("extrude");
+}
+
+TransformBrush &Modifier::transformBrush() {
+	return *_registry.get<TransformBrush>("transform");
+}
+
+SculptBrush &Modifier::sculptBrush() {
+	return *_registry.get<SculptBrush>("sculpt");
+}
+
+RulerBrush &Modifier::rulerBrush() {
+	return *_registry.get<RulerBrush>("ruler");
 }
 
 } // namespace voxedit

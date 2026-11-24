@@ -12,6 +12,7 @@
 #include "ui/ScopedPanel.h"
 #include "voxedit-util/Config.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/brush/StampBrush.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelui/DragAndDropPayload.h"
 

@@ -3,6 +3,11 @@
  */
 
 #include "../modifier/Modifier.h"
+#include "voxedit-util/modifier/brush/ShapeBrush.h"
+#include "voxedit-util/modifier/brush/TextBrush.h"
+#include "voxedit-util/modifier/brush/PaintBrush.h"
+#include "voxedit-util/modifier/brush/NormalBrush.h"
+#include "voxedit-util/modifier/brush/ExtrudeBrush.h"
 #include "app/tests/AbstractTest.h"
 #include "command/Command.h"
 #include "core/SharedPtr.h"

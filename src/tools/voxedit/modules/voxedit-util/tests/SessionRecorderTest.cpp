@@ -5,6 +5,7 @@
 #include "voxedit-util/network/SessionRecorder.h"
 #include "memento/MementoHandler.h"
 #include "voxedit-util/modifier/Modifier.h"
+#include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "AbstractSceneManagerTest.h"
 #include "core/FourCC.h"
 #include "io/File.h"

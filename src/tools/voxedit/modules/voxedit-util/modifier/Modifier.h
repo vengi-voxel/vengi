@@ -16,25 +16,11 @@
 #include "ScriptManager.h"
 #include "brush/Brush.h"
 #include "brush/BrushType.h"
-#include "brush/LineBrush.h"
-#include "brush/LUASelectionMode.h"
-#include "brush/PaintBrush.h"
-#include "brush/PlaneBrush.h"
-#include "brush/ExtrudeBrush.h"
-#include "brush/SelectBrush.h"
-#include "brush/TransformBrush.h"
-#include "brush/RulerBrush.h"
-#include "brush/SculptBrush.h"
-#include "brush/ShapeBrush.h"
-#include "brush/StampBrush.h"
-#include "brush/TextBrush.h"
-#include "brush/TextureBrush.h"
 #include "core/IComponent.h"
 #include "core/Var.h"
 #include "core/collection/Buffer.h"
 #include "math/Axis.h"
 #include "scenegraph/SceneGraphNode.h"
-#include "voxedit-util/modifier/brush/NormalBrush.h"
 #include "voxel/Face.h"
 #include "voxel/RawVolume.h"
 #include "voxel/RawVolumeWrapper.h"
@@ -57,6 +43,19 @@ struct RenderContext;
 namespace voxedit {
 
 class SceneManager;
+class ShapeBrush;
+class TextBrush;
+class LineBrush;
+class StampBrush;
+class PlaneBrush;
+class PaintBrush;
+class SelectBrush;
+class TextureBrush;
+class NormalBrush;
+class ExtrudeBrush;
+class TransformBrush;
+class SculptBrush;
+class RulerBrush;
 
 /**
  * @brief Owns brushes, the live input context, and edit lifecycle.
@@ -418,58 +417,6 @@ inline const BrushContext &Modifier::brushContext() const {
 
 inline BrushType Modifier::brushType() const {
 	return _brushType;
-}
-
-inline TextBrush &Modifier::textBrush() {
-	return *_registry.get<TextBrush>("text");
-}
-
-inline LineBrush &Modifier::lineBrush() {
-	return *_registry.get<LineBrush>("line");
-}
-
-inline ShapeBrush &Modifier::shapeBrush() {
-	return *_registry.get<ShapeBrush>("shape");
-}
-
-inline StampBrush &Modifier::stampBrush() {
-	return *_registry.get<StampBrush>("stamp");
-}
-
-inline PlaneBrush &Modifier::planeBrush() {
-	return *_registry.get<PlaneBrush>("plane");
-}
-
-inline PaintBrush &Modifier::paintBrush() {
-	return *_registry.get<PaintBrush>("paint");
-}
-
-inline NormalBrush &Modifier::normalBrush() {
-	return *_registry.get<NormalBrush>("normal");
-}
-
-inline SelectBrush &Modifier::selectBrush() {
-	return *_registry.get<SelectBrush>("select");
-}
-
-inline TextureBrush &Modifier::textureBrush() {
-	return *_registry.get<TextureBrush>("texture");
-}
-
-inline ExtrudeBrush &Modifier::extrudeBrush() {
-	return *_registry.get<ExtrudeBrush>("extrude");
-}
-
-inline TransformBrush &Modifier::transformBrush() {
-	return *_registry.get<TransformBrush>("transform");
-}
-
-inline SculptBrush &Modifier::sculptBrush() {
-	return *_registry.get<SculptBrush>("sculpt");
-}
-
-inline RulerBrush &Modifier::rulerBrush() {
-	return *_registry.get<RulerBrush>("ruler");
 }
 
 inline const math::Vec3i &Modifier::gridResolution() const {
