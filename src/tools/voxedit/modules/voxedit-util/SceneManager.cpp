@@ -4538,7 +4538,7 @@ void SceneManager::construct() {
 				dir = core::string::extractDir(getSuggestedFilename());
 			}
 			if (dir.empty()) {
-				dir = _filesystem->homePath();
+				dir = _filesystem->homePath().str();
 			}
 			if (!saveModels(dir)) {
 				Log::error("Failed to save models to dir: %s", dir.c_str());

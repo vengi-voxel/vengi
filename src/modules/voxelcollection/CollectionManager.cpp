@@ -48,7 +48,7 @@ bool CollectionManager::init() {
 		documents = _filesystem->sysSpecialDir(io::FilesystemDirectories::FS_Dir_Download);
 	}
 	if (documents.empty()) {
-		documents = _filesystem->homePath();
+		documents = _filesystem->homePath().str();
 	}
 	core_assert(!documents.empty());
 	const core::VarDef assetPanelLocalDirectory(cfg::AssetPanelLocalDirectory, documents, N_("Local directory"), N_("The local directory to load voxel files from"));

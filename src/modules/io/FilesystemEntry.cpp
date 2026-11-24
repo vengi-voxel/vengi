@@ -31,7 +31,7 @@ FilesystemEntry createFilesystemEntry(const core::String &filename) {
 	const core::String normalized = core::string::sanitizePath(filename);
 	entry.name = core::string::extractFilenameWithExtension(normalized);
 	entry.fullPath = normalized;
-	if (!fs_stat(normalized.c_str(), entry)) {
+	if (!fs_stat(core::Path(normalized), entry)) {
 		Log::trace("Could not stat '%s'", normalized.c_str());
 	}
 	return entry;

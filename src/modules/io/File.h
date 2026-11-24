@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "core/Path.h"
 #include "core/ArrayLength.h"
 #include "core/String.h"
 #include "core/SharedPtr.h"
@@ -54,7 +55,7 @@ class File : public IOResource {
 	friend class core::SharedPtr<io::File>;
 protected:
 	SDL_IOStream* _file;
-	core::String _rawPath;
+	core::Path _rawPath;
 	FileMode _mode;
 	mutable core::String _error;
 
@@ -63,6 +64,7 @@ protected:
 	void error(CORE_FORMAT_STRING const char *msg, ...) const CORE_PRINTF_VARARG_FUNC(2);
 
 public:
+	File(const core::Path& rawPath, FileMode mode = FileMode::Read);
 	File(const core::String& rawPath, FileMode mode = FileMode::Read);
 	File(core::String&& rawPath, FileMode mode = FileMode::Read);
 	virtual ~File();
@@ -99,7 +101,7 @@ public:
 	 * @return The path of the file, without the name - or an
 	 * empty string if no path component was found
 	 */
-	core::String dir() const;
+	core::Path dir() const;
 	/**
 	 * @return Just the base file name component part - without
 	 * path and extension

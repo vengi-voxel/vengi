@@ -60,7 +60,7 @@ void ShaderTool::validate(const core::String &name, bool essl) {
 	if (_glslangValidatorBin.empty()) {
 		return;
 	}
-	const core::String &writePath = filesystem()->homePath();
+	const core::String &writePath = filesystem()->homePath().str();
 	core::DynamicArray<core::String> args;
 	if (essl) {
 		args.push_back("--glsl-version");
@@ -171,7 +171,7 @@ bool ShaderTool::compileSPIRV(const core::String& source, const core::String& sh
 		}
 	}
 
-	const core::String &writePath = filesystem()->homePath();
+	const core::String &writePath = filesystem()->homePath().str();
 	const core::String tmpInput = writePath + _shaderfile + "_spirv_tmp" + shaderType;
 	const core::String tmpOutput = tmpInput + ".spv";
 	if (!io::Filesystem::sysWrite(tmpInput, processed)) {
@@ -274,7 +274,7 @@ app::AppState ShaderTool::onRunning() {
 		_constantsTemplateFile            = getArgVal("--constantstemplate");
 		_shaderDirectory                  = getArgVal("--shaderdir");
 		_sourceDirectory                  = getArgVal("--sourcedir",
-				core::string::path(_filesystem->basePath(), "src", "modules", _namespaceSrc));
+				core::string::path(_filesystem->basePath().str(), "src", "modules", _namespaceSrc));
 		_postfix                          = getArgVal("--postfix", "");
 
 		// handle include dirs
@@ -308,7 +308,7 @@ app::AppState ShaderTool::onRunning() {
 
 	video::Shader shader;
 
-	const core::String& writePath = fs->homePath();
+	const core::String& writePath = fs->homePath().str();
 	Log::debug("Writing shader file %s to %s", _shaderfile.c_str(), writePath.c_str());
 
 	const core::String& templateShaderHeader = fs->load(_headerTemplateFile);

@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/concurrent/Lock.h"
+#include "core/Path.h"
 #include "io/system/System.h"
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_error.h>
@@ -29,7 +30,7 @@ core_trace_mutex(core::Lock, _openedFileLock, "openedFileLock");
 
 void trackOpenedFile(const core::String &path, FileMode mode) {
 	core::ScopedLock lock(_openedFileLock);
-	core::String absPath = fs_realpath(path.c_str());
+	core::String absPath = fs_realpath(core::Path(path)).str();
 	normalizePath(absPath);
 	if (absPath.empty()) {
 		Log::debug("Failed to track opened file %s", path.c_str());
@@ -58,7 +59,7 @@ void trackOpenedFile(const core::String &path, FileMode mode) {
 
 void untrackOpenedFile(const core::String &path, FileMode mode) {
 	core::ScopedLock lock(_openedFileLock);
-	core::String absPath = fs_realpath(path.c_str());
+	core::String absPath = fs_realpath(core::Path(path)).str();
 	normalizePath(absPath);
 	if (absPath.empty()) {
 		Log::debug("Failed to track opened file %s", path.c_str());
@@ -110,7 +111,7 @@ static void resolveAndroidShellPath(core::String &path) {
 	if (path.empty() || core::string::isAbsolutePath(path)) {
 		return;
 	}
-	const core::String cwd = fs_cwd();
+	const core::String cwd = fs_cwd().str();
 	if (cwd.empty()) {
 		return;
 	}
@@ -132,21 +133,18 @@ static bool androidShellStdioOpenable(const char *path, const char *fmode) {
 }
 #endif
 
-File::File(const core::String& rawPath, FileMode mode) :
-		IOResource(), _rawPath(rawPath), _mode(mode) {
-	normalizePath(_rawPath);
-#if defined(__ANDROID__)
-	resolveAndroidShellPath(_rawPath);
-#endif
-	_file = createRWops(mode);
+File::File(const core::Path &rawPath, FileMode mode) : File(rawPath.str(), mode) {
 }
 
-File::File(core::String&& rawPath, FileMode mode) :
-		IOResource(), _rawPath(core::move(rawPath)), _mode(mode) {
-	normalizePath(_rawPath);
+File::File(const core::String &rawPath, FileMode mode) : File(core::String(rawPath), mode) {
+}
+
+File::File(core::String &&rawPath, FileMode mode) : IOResource(), _mode(mode) {
+	normalizePath(rawPath);
 #if defined(__ANDROID__)
-	resolveAndroidShellPath(_rawPath);
+	resolveAndroidShellPath(rawPath);
 #endif
+	_rawPath = core::Path(core::move(rawPath));
 	_file = createRWops(mode);
 }
 
@@ -163,11 +161,11 @@ bool File::exists() const {
 		return _file != nullptr;
 	}
 
-	return fs_exists(_rawPath.c_str());
+	return fs_exists(_rawPath);
 }
 
 const core::String& File::name() const {
-	return _rawPath;
+	return _rawPath.str();
 }
 
 core::String File::load() {
@@ -199,7 +197,7 @@ void File::error(const char *msg, ...) const {
 void File::closeRWops(SDL_IOStream *handle) const {
 	if (handle != nullptr) {
 		SDL_CloseIO(handle);
-		priv::untrackOpenedFile(_rawPath, _mode);
+		priv::untrackOpenedFile(_rawPath.str(), _mode);
 	}
 }
 
@@ -224,7 +222,7 @@ SDL_IOStream* File::createRWops(FileMode mode) const {
 	if (rwops == nullptr) {
 		error("%s", SDL_GetError());
 	} else {
-		priv::trackOpenedFile(_rawPath, mode);
+		priv::trackOpenedFile(_rawPath.str(), mode);
 	}
 	return rwops;
 }
@@ -286,21 +284,16 @@ long File::write(const unsigned char *buf, size_t len) const {
 	return (long)len;
 }
 
-core::String File::dir() const {
-	return core::string::extractDir(name());
+core::Path File::dir() const {
+	return core::Path(core::string::extractDir(name()));
 }
 
 core::String File::fileName() const {
-	return core::string::extractFilename(name());
+	return core::string::stripExtension(_rawPath.basename().str());
 }
 
 core::String File::extension() const {
-	const char *ext = SDL_strrchr(name().c_str(), '.');
-	if (ext == nullptr) {
-		return core::String::Empty;
-	}
-	++ext;
-	return core::String(ext);
+	return _rawPath.extension();
 }
 
 long File::length() const {

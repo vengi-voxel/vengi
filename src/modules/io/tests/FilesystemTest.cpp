@@ -129,10 +129,10 @@ TEST_F(FilesystemTest, testAbsolutePath) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	EXPECT_TRUE(io::Filesystem::sysCreateDir("absolutePathInCurDir"));
 	const core::String &absolutePathInCurDir = fs.sysAbsolutePath("absolutePathInCurDir");
-	EXPECT_EQ(core::string::path(io::Filesystem::sysCurrentDir(), "absolutePathInCurDir"), absolutePathInCurDir);
+	EXPECT_EQ(core::string::path(io::Filesystem::sysCurrentDir().str(), "absolutePathInCurDir"), absolutePathInCurDir);
 	EXPECT_TRUE(core::string::isAbsolutePath(absolutePathInCurDir));
 	const core::String &abspath = fs.sysAbsolutePath("");
-	EXPECT_EQ(io::Filesystem::sysCurrentDir(), abspath);
+	EXPECT_EQ(io::Filesystem::sysCurrentDir().str(), abspath);
 	fs.shutdown();
 }
 
@@ -224,7 +224,7 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 	{
 		const io::FilePtr& file = fs.open("dir123/testfile");
 		filename = file->name();
-		filepath = file->dir();
+		filepath = file->dir().str();
 		content = file->load();
 		file->close();
 	}
@@ -257,7 +257,7 @@ TEST_F(FilesystemTest, testHomeWritePathTraversal) {
 	EXPECT_TRUE(fs.init("test", "test")) << "Failed to initialize the filesystem";
 	// valid relative path should produce a result under home
 	EXPECT_FALSE(fs.homeWritePath("testfile").empty());
-	EXPECT_TRUE(core::string::startsWith(fs.homeWritePath("testfile"), fs.homePath()));
+	EXPECT_TRUE(core::string::startsWith(fs.homeWritePath("testfile"), fs.homePath().str()));
 	// path traversal attempts must return empty
 	EXPECT_TRUE(fs.homeWritePath("../../etc/passwd").empty());
 	EXPECT_TRUE(fs.homeWritePath("subdir/../../..").empty());
@@ -278,6 +278,39 @@ TEST_F(FilesystemTest, testSysOfferDownload) {
 	EXPECT_TRUE(io::Filesystem::sysRemoveDir("offerdownloadtest"));
 	fs.shutdown();
 #endif
+}
+
+TEST_F(FilesystemTest, testRelativeScriptsFolder) {
+	io::Filesystem fs;
+	ASSERT_TRUE(fs.init("test", "test"));
+	const core::String sandbox = "rel-scripts-sandbox";
+	ASSERT_TRUE(io::Filesystem::sysCreateDir(core::string::path(sandbox, "scripts")));
+	ASSERT_TRUE(io::Filesystem::sysWrite(core::string::path(sandbox, "scripts", "relscript-mod.lua"), "return 1"));
+	ASSERT_TRUE(fs.sysPushDir(core::Path(sandbox)));
+	ASSERT_TRUE(fs.registerPath("scripts/"));
+
+	core::DynamicArray<io::FilesystemEntry> entities;
+	fs.list("scripts", entities, "relscript-mod.lua");
+	int mods = 0;
+	for (const io::FilesystemEntry &entry : entities) {
+		if (entry.name == "relscript-mod.lua") {
+			++mods;
+		}
+	}
+	EXPECT_EQ(1, mods) << entities;
+
+	const io::FilePtr file = fs.open("relscript-mod.lua");
+	ASSERT_TRUE(file);
+	EXPECT_TRUE(file->exists()) << file->name().c_str();
+	EXPECT_TRUE(core::string::endsWith(file->name(), "scripts/relscript-mod.lua")) << file->name().c_str();
+	// Windows cannot unlink a file that still has an open handle
+	file->close();
+
+	ASSERT_TRUE(fs.sysPopDir());
+	EXPECT_TRUE(io::Filesystem::sysRemoveFile(core::string::path(sandbox, "scripts", "relscript-mod.lua")));
+	EXPECT_TRUE(io::Filesystem::sysRemoveDir(core::string::path(sandbox, "scripts")));
+	EXPECT_TRUE(io::Filesystem::sysRemoveDir(sandbox));
+	fs.shutdown();
 }
 
 } // namespace io

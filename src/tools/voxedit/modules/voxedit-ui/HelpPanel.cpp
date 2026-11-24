@@ -62,7 +62,7 @@ void HelpPanel::setMarkdownFile(const core::String &file) {
 		return;
 	}
 	State state;
-	state._basePath = markdownFile->dir();
+	state._basePath = markdownFile->dir().str();
 	state._filename = core::string::extractFilenameWithExtension(markdownFile->name());
 	markdownFile->close();
 	setMarkdownState(state);

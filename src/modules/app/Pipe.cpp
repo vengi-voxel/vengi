@@ -86,7 +86,7 @@ bool Pipe::init() {
 	}
 
 #else
-	const core::String &homeDir = app::App::getInstance()->filesystem()->homePath();
+	const core::String &homeDir = app::App::getInstance()->filesystem()->homePath().str();
 	_pipeName = core::string::path(homeDir, "." + pipeName);
 
 	if (mkfifo(_pipeName.c_str(), 0666) == -1) {

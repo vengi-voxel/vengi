@@ -16,7 +16,7 @@
 
 namespace io {
 
-using Paths = core::DynamicArray<core::String>;
+using Paths = core::DynamicArray<core::Path>;
 
 enum FilesystemDirectories {
 	FS_Dir_Download,
@@ -60,14 +60,14 @@ private:
 	 * the installation directory or the current working directory. In case the
 	 * binary is a symlink, it it resolved.
 	 */
-	core::String _basePath;
-	core::String _homePath;
+	core::Path _basePath;
+	core::Path _homePath;
 	FilesystemState _state;
 	Paths _paths;
 
 	core::Stack<core::Path, 32> _dirStack;
 
-	static bool _list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0);
+	static bool _list(const core::Path& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0);
 
 public:
 	~Filesystem();
@@ -80,7 +80,10 @@ public:
 	 * @param[in] path If this is a relative path the filesystem will append this relative path to all
 	 * known search paths when trying to find a file.
 	 */
-	bool registerPath(const core::String& path);
+	bool registerPath(const core::Path& path);
+	bool registerPath(const core::String& path) {
+		return registerPath(core::Path(path));
+	}
 
 	/**
 	 * @brief Get the path where the application resides.
@@ -90,12 +93,12 @@ public:
 	 * be the process's current working directory.
 	 * @note Ends with path separator
 	 */
-	const core::String& basePath() const;
+	const core::Path& basePath() const;
 	/**
 	 * @brief The path where the application can store data
 	 * @note Ends with path separator
 	 */
-	const core::String& homePath() const;
+	const core::Path& homePath() const;
 
 	bool exists(const core::String& filename) const;
 
@@ -106,12 +109,15 @@ public:
 	 * @param[in] filter Wildcard for filtering the returned entities. Separated by a comma. Example *.vox,*.qb,*.mcr
 	 * @return @c true if the directory could get opened
 	 */
-	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0) const;
-
-	io::FilePtr open(const core::String& filename, FileMode mode = FileMode::Read) const;
-	io::FilePtr open(const core::Path& path, FileMode mode = FileMode::Read) const {
-		return open(path.str(), mode);
+	bool list(const core::String& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0) const {
+		return list(core::Path(directory), entities, filter, depth);
 	}
+	bool list(const core::Path& directory, core::DynamicArray<FilesystemEntry>& entities, const core::String& filter = "", int depth = 0) const;
+
+	io::FilePtr open(const core::String& filename, FileMode mode = FileMode::Read) const {
+		return open(core::Path(filename), mode);
+	}
+	io::FilePtr open(const core::Path& filename, FileMode mode = FileMode::Read) const;
 
 	core::String filePath(const core::String& filename) const;
 
@@ -153,34 +159,39 @@ public:
 	}
 	static bool sysExists(const core::Path& path);
 
-	core::String sysFindBinary(const core::String &binaryName) const;
+	core::Path sysFindBinary(const core::String &binaryName) const;
 
 	/**
 	 * @brief The current working directory without a tailing /
 	 */
-	static core::String sysCurrentDir();
+	static core::Path sysCurrentDir();
 
 	static bool sysIsReadableDir(const core::String& name);
 	static bool sysIsReadableDir(const core::Path& name) {
 		return sysIsReadableDir(name.str());
 	}
-	static bool sysIsHidden(const core::String &name);
-	static bool sysIsHidden(const core::Path &name) {
-		return sysIsHidden(name.str());
+	static bool sysIsHidden(const core::Path &name);
+	static bool sysIsHidden(const core::String &name) {
+		return sysIsHidden(core::Path(name));
 	}
 	static bool sysIsRelativePath(const core::String &name);
 	static bool sysIsRelativePath(const core::Path &name) {
 		return sysIsRelativePath(name.str());
 	}
-	core::String sysAbsolutePath(const core::String& path) const;
+	core::Path sysAbsolutePath(const core::Path& path) const;
+	core::String sysAbsolutePath(const core::String& path) const {
+		return sysAbsolutePath(core::Path(path)).str();
+	}
 
 	/**
 	 * @brief Changes the current working directory
 	 * @see popDir()
 	 * @see pushDir()
 	 */
-	static bool sysChdir(const core::String& directory);
 	static bool sysChdir(const core::Path& directory);
+	static bool sysChdir(const core::String& directory) {
+		return sysChdir(core::Path(directory));
+	}
 
 	/**
 	 * @note The difference to the usual write() methods is that the given path is not put into the
@@ -206,18 +217,18 @@ public:
 	 * @brief This will create the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
-	static bool sysCreateDir(const core::String& dir, bool recursive = true);
-	static bool sysCreateDir(const core::Path& dir, bool recursive = true) {
-		return sysCreateDir(dir.str(), recursive);
+	static bool sysCreateDir(const core::Path& dir, bool recursive = true);
+	static bool sysCreateDir(const core::String& dir, bool recursive = true) {
+		return sysCreateDir(core::Path(dir), recursive);
 	}
 
 	/**
 	 * @brief This will remove the directory without taking the write path into account. BEWARE!
 	 * @param dir The full path to the directory or relative to the current working dir of your app.
 	 */
-	static bool sysRemoveDir(const core::String& dir, bool recursive = false);
-	static bool sysRemoveDir(const core::Path& dir, bool recursive = false) {
-		return sysRemoveDir(dir.str(), recursive);
+	static bool sysRemoveDir(const core::Path& dir, bool recursive = false);
+	static bool sysRemoveDir(const core::String& dir, bool recursive = false) {
+		return sysRemoveDir(core::Path(dir), recursive);
 	}
 	/** Rename a path as given, replacing an existing file without following its symlink. */
 	static bool sysRenamePath(const core::String &from, const core::String &to);
@@ -230,9 +241,9 @@ public:
 	 * @param file The full path to the file or relative to the current working dir of your app.
 	 */
 
-	static bool sysRemoveFile(const core::String& file);
-	static bool sysRemoveFile(const core::Path& file) {
-		return sysRemoveFile(file.str());
+	static bool sysRemoveFile(const core::Path& file);
+	static bool sysRemoveFile(const core::String& file) {
+		return sysRemoveFile(core::Path(file));
 	}
 };
 
@@ -240,11 +251,11 @@ inline const Paths& Filesystem::registeredPaths() const {
 	return _paths;
 }
 
-inline const core::String& Filesystem::basePath() const {
+inline const core::Path& Filesystem::basePath() const {
 	return _basePath;
 }
 
-inline const core::String& Filesystem::homePath() const {
+inline const core::Path& Filesystem::homePath() const {
 	return _homePath;
 }
 
