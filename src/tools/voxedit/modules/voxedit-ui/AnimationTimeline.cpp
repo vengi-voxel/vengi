@@ -3,6 +3,7 @@
  */
 
 #include "AnimationTimeline.h"
+#include "core/TraceScoped.h"
 #include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"

@@ -7,7 +7,6 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
 #include "core/Common.h"
-#include "core/Trace.h"
 #include <stdint.h>
 #include <unordered_set>
 

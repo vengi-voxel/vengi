@@ -3,6 +3,7 @@
  */
 
 #include "NodePropertiesPanel.h"
+#include "core/TraceScoped.h"
 #include "ScopedID.h"
 #include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"

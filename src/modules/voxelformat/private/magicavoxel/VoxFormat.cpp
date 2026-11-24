@@ -3,6 +3,7 @@
  */
 
 #include "VoxFormat.h"
+#include "core/TraceScoped.h"
 #include "TrenchblocksFormat.h"
 #include "app/Async.h"
 #include "color/ColorUtil.h"
@@ -11,7 +12,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/Map.h"

@@ -3,8 +3,8 @@
  */
 
 #include "DualContouringSurfaceExtractor.h"
+#include "core/TraceScoped.h"
 #include "core/Assert.h"
-#include "core/Trace.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/ChunkMesh.h"

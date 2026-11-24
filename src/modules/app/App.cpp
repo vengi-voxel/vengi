@@ -3,6 +3,7 @@
  */
 
 #include "App.h"
+#include "core/TraceScoped.h"
 #include "app/AppCommand.h"
 #include "app/I18N.h"
 #include "command/Alias.h"

@@ -3,9 +3,9 @@
  */
 
 #include "MarchingCubesSurfaceExtractor.h"
+#include "core/TraceScoped.h"
 #include "color/Color.h"
 #include "core/Common.h"
-#include "core/Trace.h"
 #include "core/collection/Array2DView.h"
 #include "MarchingCubesTables.h"
 #include "math/Axis.h"

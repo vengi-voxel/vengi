@@ -3,6 +3,7 @@
  */
 
 #include "RawVolumeRenderer.h"
+#include "core/TraceScoped.h"
 #include "ShaderAttribute.h"
 #include "VoxelShaderConstants.h"
 #include "app/App.h"
@@ -13,7 +14,6 @@
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/Trace.h"
 #include "core/Var.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"

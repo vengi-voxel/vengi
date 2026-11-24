@@ -3,10 +3,10 @@
  */
 
 #include "VolumeSculpt.h"
+#include "core/TraceScoped.h"
 #include "core/Log.h"
 #include "app/ForParallel.h"
 #include "core/GLM.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicSet.h"

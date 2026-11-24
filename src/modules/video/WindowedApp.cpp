@@ -3,6 +3,7 @@
  */
 
 #include "WindowedApp.h"
+#include "core/TraceScoped.h"
 #include "Renderer.h"
 #include "app/I18N.h"
 #include "command/Command.h"

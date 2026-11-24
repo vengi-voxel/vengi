@@ -38,9 +38,9 @@ SOFTWARE.
  */
 
 #include "BinaryGreedyMesher.h"
+#include "core/TraceScoped.h"
 #include "core/Bits.h"
 #include "core/Common.h"
-#include "core/Trace.h"
 #include "core/collection/Array.h"
 #include "core/collection/DynamicArray.h"
 #include "voxel/ChunkMesh.h"

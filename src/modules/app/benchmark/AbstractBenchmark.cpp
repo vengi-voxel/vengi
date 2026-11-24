@@ -3,6 +3,7 @@
  */
 
 #include "AbstractBenchmark.h"
+#include "core/TraceScoped.h"
 #include "core/Log.h"
 #include "core/Var.h"
 #include "command/Command.h"

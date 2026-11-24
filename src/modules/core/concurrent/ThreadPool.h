@@ -36,7 +36,6 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
 #include "core/concurrent/Thread.h"
-#include "core/Trace.h"
 
 namespace core {
 

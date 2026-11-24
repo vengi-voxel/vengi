@@ -5,13 +5,13 @@
 #pragma once
 
 #include "app/ForParallel.h"
+#include "core/TraceScoped.h"
 #include "core/concurrent/Atomic.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/VolumeTileDispatch.h"
 #include "voxel/Voxel.h"
 #include "voxel/Region.h"
-#include "core/Trace.h"
 #include <type_traits>
 
 namespace voxelutil {

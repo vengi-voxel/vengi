@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/App.h"
+#include "core/TraceScoped.h"
 #include "app/ForParallel.h"
 #include "core/ResultType.h"
 #include "core/concurrent/Future.h"

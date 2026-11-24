@@ -3,9 +3,9 @@
  */
 
 #include "ThreadPool.h"
+#include "core/TraceScoped.h"
 #include "core/Log.h"
 #include "core/String.h"
-#include "core/Trace.h"
 #include "core/concurrent/Concurrency.h"
 
 namespace core {

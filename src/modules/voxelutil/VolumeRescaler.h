@@ -4,8 +4,8 @@
 #pragma once
 
 #include "app/ForParallel.h"
+#include "core/TraceScoped.h"
 #include "core/ProgressScope.h"
-#include "core/Trace.h"
 #include "palette/Palette.h"
 #include "voxel/Face.h"
 #include "voxel/MaterialColor.h"

@@ -3,9 +3,9 @@
  */
 
 #include "SculptOperation.h"
+#include "core/TraceScoped.h"
 #include "core/GLM.h"
 #include "core/Log.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicMap.h"
 #include "math/Axis.h"

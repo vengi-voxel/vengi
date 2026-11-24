@@ -3,6 +3,7 @@
  */
 
 #include "MementoHandler.h"
+#include "core/TraceScoped.h"
 
 #include "command/Command.h"
 #include "core/ArrayLength.h"
@@ -11,7 +12,6 @@
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "io/BufferedReadWriteStream.h"

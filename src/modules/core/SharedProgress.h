@@ -6,7 +6,6 @@
 
 #include "core/IProgress.h"
 #include "core/String.h"
-#include "core/Trace.h"
 #include "core/concurrent/Lock.h"
 
 namespace core {

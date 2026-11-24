@@ -3,6 +3,7 @@
  */
 
 #include "MagicaVoxel.h"
+#include "core/TraceScoped.h"
 #include "app/Async.h"
 #include "color/Color.h"
 #include "core/ConfigVar.h"
@@ -10,7 +11,6 @@
 #include "core/Log.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "core/Var.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"

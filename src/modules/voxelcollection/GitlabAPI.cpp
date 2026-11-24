@@ -3,10 +3,10 @@
  */
 
 #include "GitlabAPI.h"
+#include "core/TraceScoped.h"
 #include "app/App.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "core/collection/StringMap.h"
 #include "http/HttpCacheStream.h"
 #include "http/Request.h"

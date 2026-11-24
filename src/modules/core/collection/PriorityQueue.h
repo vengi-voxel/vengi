@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/Trace.h"
 #include <algorithm>
 #include <stdint.h>
 #include <vector>

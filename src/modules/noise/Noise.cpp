@@ -3,7 +3,7 @@
  */
 
 #include "Noise.h"
-#include "core/Trace.h"
+#include "core/TraceScoped.h"
 #include "core/Log.h"
 #include "core/Common.h"
 #include "core/collection/Buffer.h"

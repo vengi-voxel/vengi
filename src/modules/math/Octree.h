@@ -5,12 +5,12 @@
 #pragma once
 
 #include <vector>
+#include "core/TraceScoped.h"
 #include <list>
 #include <algorithm>
 #include <iterator>
 #include "AABB.h"
 #include "Frustum.h"
-#include "core/Trace.h"
 #include <glm/vec3.hpp>
 
 namespace math {

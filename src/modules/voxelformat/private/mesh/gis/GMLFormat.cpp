@@ -3,6 +3,7 @@
  */
 
 #include "GMLFormat.h"
+#include "core/TraceScoped.h"
 #include "app/Async.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
@@ -10,7 +11,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "core/Var.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"

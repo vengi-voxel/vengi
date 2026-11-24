@@ -3,9 +3,9 @@
  */
 
 #include "CommandHandler.h"
+#include "core/TraceScoped.h"
 #include "core/BindingContext.h"
 #include "core/Pair.h"
-#include "core/Trace.h"
 #include "command/Command.h"
 #include "core/Tokenizer.h"
 #include "core/Log.h"

@@ -11,7 +11,6 @@
 #include "core/UUID.h"
 #include "core/collection/RingBuffer.h"
 #include "core/concurrent/Lock.h"
-#include "core/Trace.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/IKConstraint.h"

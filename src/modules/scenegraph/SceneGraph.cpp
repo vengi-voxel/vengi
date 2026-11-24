@@ -3,6 +3,7 @@
  */
 
 #include "SceneGraph.h"
+#include "core/TraceScoped.h"
 #include "SceneUtil.h"
 #include "app/Async.h"
 #include "core/Algorithm.h"
@@ -10,7 +11,6 @@
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "palette/Palette.h"

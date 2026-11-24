@@ -3,6 +3,7 @@
  */
 
 #include "CubicSurfaceExtractor.h"
+#include "core/TraceScoped.h"
 #include "core/Common.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"
@@ -15,7 +16,6 @@
 #include "core/NonCopyable.h"
 #include "core/collection/DynamicMap.h"
 #include "voxel/Region.h"
-#include "core/Trace.h"
 #include "voxel/Face.h"
 #include <glm/vec3.hpp>
 #include <list>

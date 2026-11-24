@@ -6,7 +6,6 @@
 
 #include "core/GLM.h"
 #include "core/SharedPtr.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicMap.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"

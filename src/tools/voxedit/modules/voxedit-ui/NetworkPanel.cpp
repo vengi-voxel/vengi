@@ -3,6 +3,7 @@
  */
 
 #include "NetworkPanel.h"
+#include "core/TraceScoped.h"
 #include "sound/SoundManager.h"
 #include "IconsLucide.h"
 #include "command/Command.h"

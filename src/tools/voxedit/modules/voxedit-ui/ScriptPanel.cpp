@@ -3,6 +3,7 @@
  */
 
 #include "ScriptPanel.h"
+#include "core/TraceScoped.h"
 #include "command/CommandHandler.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"

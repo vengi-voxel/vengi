@@ -3,6 +3,7 @@
  */
 
 #include "HelpPanel.h"
+#include "core/TraceScoped.h"
 #include "IconsLucide.h"
 #include "core/StringUtil.h"
 #include "io/File.h"

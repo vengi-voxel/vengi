@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
 #include "voxel/RawVolume.h"

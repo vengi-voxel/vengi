@@ -3,6 +3,7 @@
  */
 
 #include "MenuBar.h"
+#include "core/TraceScoped.h"
 #include "memento/MementoHandler.h"
 #include "OptionsPanel.h"
 #include "SceneDebugPanel.h"

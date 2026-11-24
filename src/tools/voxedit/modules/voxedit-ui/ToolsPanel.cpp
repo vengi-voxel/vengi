@@ -3,6 +3,7 @@
  */
 
 #include "ToolsPanel.h"
+#include "core/TraceScoped.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "command/CommandHandler.h"
 #include "scenegraph/SceneGraphNode.h"

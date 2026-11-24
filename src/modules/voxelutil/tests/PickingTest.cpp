@@ -3,6 +3,7 @@
  */
 
 #include "voxelutil/Picking.h"
+#include "core/TraceScoped.h"
 #include "app/tests/AbstractTest.h"
 #include "core/GLM.h"
 #include "math/tests/TestMathHelper.h"

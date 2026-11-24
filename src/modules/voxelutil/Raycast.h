@@ -69,7 +69,7 @@
 #pragma once
 
 #include "core/Common.h"
-#include "core/Trace.h"
+#include "core/TraceScoped.h"
 #include "voxel/Face.h"
 #include "voxel/Region.h"
 #include <glm/ext/scalar_constants.hpp>

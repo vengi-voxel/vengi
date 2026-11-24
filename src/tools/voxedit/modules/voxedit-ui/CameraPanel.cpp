@@ -3,6 +3,7 @@
  */
 
 #include "CameraPanel.h"
+#include "core/TraceScoped.h"
 #include "Toolbar.h"
 #include "app/I18N.h"
 #include "command/CommandHandler.h"

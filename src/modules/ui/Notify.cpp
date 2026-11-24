@@ -3,10 +3,10 @@
  */
 
 #include "Notify.h"
+#include "core/TraceScoped.h"
 #include "IconsLucide.h"
 #include "app/App.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "core/Var.h"
 
 #define NOTIFY_PADDING_X 20.0f		  // Bottom-left X padding

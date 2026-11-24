@@ -3,6 +3,7 @@
  */
 
 #include "Viewport.h"
+#include "core/TraceScoped.h"
 #include "BrushHandleUI.h"
 #include "memento/MementoHandler.h"
 #include "voxelrender/CameraMovement.h"

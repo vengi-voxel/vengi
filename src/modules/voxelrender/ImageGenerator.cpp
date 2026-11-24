@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/FormatThumbnail.h"
+#include "core/TraceScoped.h"
 #include "ImageGenerator.h"
 #include "app/App.h"
 #include "core/Log.h"

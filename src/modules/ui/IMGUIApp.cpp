@@ -3,6 +3,7 @@
  */
 
 #include "color/ColorUtil.h"
+#include "core/TraceScoped.h"
 #include "IMGUIApp.h"
 #include "IconsLucide.h"
 #include "Panel.h"

@@ -7,7 +7,6 @@
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
-#include "core/Trace.h"
 #include "core/Common.h"
 #include <stdint.h>
 #include <vector>

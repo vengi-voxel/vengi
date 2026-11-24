@@ -7,7 +7,6 @@
 #include "IMetricSender.h"
 #include "core/String.h"
 #include "core/concurrent/Lock.h"
-#include "core/Trace.h"
 
 #include <stdint.h>
 

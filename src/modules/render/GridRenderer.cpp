@@ -3,10 +3,10 @@
  */
 
 #include "GridRenderer.h"
+#include "core/TraceScoped.h"
 #include "color/Color.h"
 #include "color/ColorUtil.h"
 #include "core/Log.h"
-#include "core/Trace.h"
 #include "math/AABB.h"
 #include "video/Camera.h"
 #include "video/Renderer.h"

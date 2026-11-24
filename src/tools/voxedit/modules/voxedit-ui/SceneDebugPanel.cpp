@@ -3,6 +3,7 @@
  */
 
 #include "SceneDebugPanel.h"
+#include "core/TraceScoped.h"
 #include "voxelrender/CameraMovement.h"
 #include "app/I18N.h"
 #include "core/StringUtil.h"

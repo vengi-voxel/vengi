@@ -6,7 +6,6 @@
 
 #include "core/Common.h"
 #include "core/IProgress.h"
-#include "core/Trace.h"
 #include "core/concurrent/Lock.h"
 #include <stddef.h>
 

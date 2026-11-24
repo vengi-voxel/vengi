@@ -3,6 +3,7 @@
  */
 
 #include "VolumeCropper.h"
+#include "core/TraceScoped.h"
 #include "core/Algorithm.h"
 #include "core/Common.h"
 #include "core/ProgressScope.h"

@@ -3,10 +3,10 @@
  */
 
 #include "NormalPalettePanel.h"
+#include "core/TraceScoped.h"
 #include "app/I18N.h"
 #include "color/Color.h"
 #include "command/CommandHandler.h"
-#include "core/Trace.h"
 #include "math/Math.h"
 #include "memento/MementoHandler.h"
 #include "palette/NormalPalette.h"

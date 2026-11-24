@@ -3,13 +3,13 @@
  */
 
 #include "Mesh.h"
+#include "core/TraceScoped.h"
 #include "app/Async.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
-#include "core/Trace.h"
 #include "meshoptimizer.h"
 #include "util/BufferUtil.h"
 #include <glm/common.hpp>

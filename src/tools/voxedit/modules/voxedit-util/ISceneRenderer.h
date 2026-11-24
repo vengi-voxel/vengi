@@ -6,7 +6,6 @@
 
 #include "core/IComponent.h"
 #include "core/SharedPtr.h"
-#include "core/Trace.h"
 #include "core/UUID.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"

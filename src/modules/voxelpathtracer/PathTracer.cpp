@@ -3,6 +3,7 @@
  */
 
 #include "PathTracer.h"
+#include "core/TraceScoped.h"
 #include "PathTracerConfig.h"
 #include "PathTracerScene.h"
 #include "VoxelpathtracerBloomShader.h"
@@ -15,7 +16,6 @@
 #include "core/GLM.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/Trace.h"
 #include "core/collection/Buffer.h"
 #include "image/Image.h"
 #include "palette/Palette.h"

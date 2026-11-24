@@ -8,7 +8,6 @@
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"
 #include "core/collection/DynamicArray.h"
-#include "core/Trace.h"
 #include "core/Common.h"
 #include "core/Assert.h"
 #include <stdint.h>

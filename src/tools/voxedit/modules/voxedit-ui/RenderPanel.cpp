@@ -3,6 +3,7 @@
  */
 
 #include "RenderPanel.h"
+#include "core/TraceScoped.h"
 #include "SunAngleSettings.h"
 #include "app/Async.h"
 #include "core/ArrayLength.h"

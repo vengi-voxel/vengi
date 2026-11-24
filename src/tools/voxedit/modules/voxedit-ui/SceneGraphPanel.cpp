@@ -3,13 +3,13 @@
  */
 
 #include "color/ColorUtil.h"
+#include "core/TraceScoped.h"
 #include "SceneGraphPanel.h"
 #include "DragAndDropPayload.h"
 #include "command/CommandHandler.h"
 #include "core/Log.h"
 #include "core/Optional.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeType.h"
 #include "voxel/RawVolume.h"

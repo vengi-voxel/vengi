@@ -5,6 +5,7 @@
 #pragma once
 
 #include "app/ForParallel.h"
+#include "core/TraceScoped.h"
 #include "core/collection/Buffer.h"
 #include "core/concurrent/Atomic.h"
 #include "palette/PaletteLookup.h"
@@ -12,7 +13,6 @@
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/VolumeTileDispatch.h"
 #include "palette/Palette.h"
-#include "core/Trace.h"
 #include "core/Assert.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"

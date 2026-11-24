@@ -3,6 +3,7 @@
  */
 
 #include "NodeInspectorPanel.h"
+#include "core/TraceScoped.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"

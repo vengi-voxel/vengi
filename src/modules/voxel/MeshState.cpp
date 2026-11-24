@@ -3,6 +3,7 @@
  */
 
 #include "MeshState.h"
+#include "core/TraceScoped.h"
 #include "app/App.h"
 #include "app/ForParallel.h"
 #include "app/I18NMarkers.h"

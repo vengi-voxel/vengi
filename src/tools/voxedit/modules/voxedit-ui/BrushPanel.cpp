@@ -3,6 +3,7 @@
  */
 
 #include "BrushPanel.h"
+#include "core/TraceScoped.h"
 #include "BrushPanelCommon.h"
 #include "ScopedStyle.h"
 #include "Style.h"
@@ -12,7 +13,6 @@
 #include "command/CommandHandler.h"
 #include "core/Bits.h"
 #include "core/Enum.h"
-#include "core/Trace.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"
 #include "ui/ScopedPanel.h"

@@ -3,6 +3,7 @@
  */
 
 #include "GameModePanel.h"
+#include "core/TraceScoped.h"
 #include "MainWindow.h"
 #include "command/CommandHandler.h"
 #include "ui/IMGUIEx.h"

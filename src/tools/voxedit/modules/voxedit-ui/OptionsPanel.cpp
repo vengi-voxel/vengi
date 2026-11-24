@@ -3,6 +3,7 @@
  */
 
 #include "OptionsPanel.h"
+#include "core/TraceScoped.h"
 #include "IMGUIStyle.h"
 #include "SunAngleSettings.h"
 #include "core/Common.h"

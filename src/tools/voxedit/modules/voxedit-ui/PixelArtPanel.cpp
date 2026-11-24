@@ -3,6 +3,7 @@
  */
 
 #include "PixelArtPanel.h"
+#include "core/TraceScoped.h"
 #include "app/I18N.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"

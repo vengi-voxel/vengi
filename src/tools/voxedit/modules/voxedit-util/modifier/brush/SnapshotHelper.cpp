@@ -3,10 +3,10 @@
  */
 
 #include "SnapshotHelper.h"
+#include "core/TraceScoped.h"
 #include "app/App.h"
 #include "app/ForParallel.h"
 #include "core/Common.h"
-#include "core/Trace.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/DynamicVoxelArray.h"
 #include "voxel/RawVolume.h"

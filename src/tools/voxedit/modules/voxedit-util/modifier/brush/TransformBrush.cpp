@@ -3,7 +3,7 @@
  */
 
 #include "TransformBrush.h"
-#include "core/Trace.h"
+#include "core/TraceScoped.h"
 #include "core/collection/DynamicArray.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/RawVolume.h"

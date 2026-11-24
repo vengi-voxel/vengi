@@ -3,11 +3,11 @@
  */
 
 #include "SceneRenderer.h"
+#include "core/TraceScoped.h"
 #include "app/App.h"
 #include "app/I18N.h"
 #include "color/ColorUtil.h"
 #include "core/Log.h"
-#include "core/Trace.h"
 #include "core/concurrent/Thread.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraphNode.h"

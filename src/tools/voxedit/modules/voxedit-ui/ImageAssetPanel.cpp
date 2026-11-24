@@ -3,6 +3,7 @@
  */
 
 #include "ImageAssetPanel.h"
+#include "core/TraceScoped.h"
 #include "app/Async.h"
 #include "core/StringUtil.h"
 #include "image/Image.h"

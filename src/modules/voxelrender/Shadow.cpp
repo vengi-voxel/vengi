@@ -3,6 +3,7 @@
  */
 
 #include "Shadow.h"
+#include "core/TraceScoped.h"
 #include "math/Frustum.h"
 #include "video/Camera.h"
 #include "core/GLM.h"

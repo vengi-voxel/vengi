@@ -3,6 +3,7 @@
  */
 
 #include "VoxConvertUI.h"
+#include "core/TraceScoped.h"
 #include "IMGUIStyle.h"
 #include "PopupAbout.h"
 #include "app/App.h"

@@ -3,13 +3,13 @@
  */
 
 #include "BloomRenderer.h"
+#include "core/TraceScoped.h"
 #include "ConvolutionShaderConstants.h"
 #include "ConvolutionShader.h"
 #include "TextureShader.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ArrayLength.h"
-#include "core/Trace.h"
 #include "video/FrameBufferConfig.h"
 #include "video/Renderer.h"
 #include "video/ScopedBlendMode.h"

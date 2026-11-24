@@ -5,12 +5,12 @@
 #pragma once
 
 #include <vector>
+#include "core/TraceScoped.h"
 #include <list>
 #include <algorithm>
 #include <limits>
 #include <glm/vec2.hpp>
 #include "Rect.h"
-#include "core/Trace.h"
 #include "core/DirtyState.h"
 
 namespace math {

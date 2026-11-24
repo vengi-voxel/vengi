@@ -3,12 +3,12 @@
  */
 
 #include "Modifier.h"
+#include "core/TraceScoped.h"
 #include "app/App.h"
 #include "app/I18N.h"
 #include "command/Command.h"
 #include "command/CommandCompleter.h"
 #include "core/Log.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "math/Axis.h"
 #include "memento/MementoHandler.h"

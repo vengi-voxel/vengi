@@ -6,8 +6,8 @@
 
 #include "app/i18n/DictionaryManager.h"
 #include "app/Pipe.h"
-#include "core/Trace.h"
 #include "core/Log.h"
+#include "core/Trace.h"
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "core/SharedPtr.h"

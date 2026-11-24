@@ -11,7 +11,6 @@
 #include "SceneGraphNode.h"
 #include "core/Common.h"
 #include "core/DirtyState.h"
-#include "core/Trace.h"
 #include "core/UUID.h"
 #include "core/collection/Buffer.h"
 #include "core/collection/DynamicMap.h"

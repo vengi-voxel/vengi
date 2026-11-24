@@ -3,6 +3,7 @@
  */
 
 #include "ModelAssetPanel.h"
+#include "core/TraceScoped.h"
 #include "command/CommandHandler.h"
 #include "core/StringUtil.h"
 #include "ui/IMGUIApp.h"

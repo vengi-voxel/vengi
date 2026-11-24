@@ -3,6 +3,7 @@
  */
 
 #include "AnimationPanel.h"
+#include "core/TraceScoped.h"
 #include "core/Log.h"
 #include "ui/IMGUIEx.h"
 #include "ui/IconsLucide.h"

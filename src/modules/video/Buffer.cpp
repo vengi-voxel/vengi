@@ -3,12 +3,12 @@
  */
 
 #include "Buffer.h"
+#include "core/TraceScoped.h"
 #include "Renderer.h"
 #include "UploadRing.h"
 #include "core/Assert.h"
 #include "core/Log.h"
 #include "core/Platform.h"
-#include "core/Trace.h"
 #if VIDEO_BUFFER_HASH_COMPARE
 #include "core/Hash.h"
 #endif

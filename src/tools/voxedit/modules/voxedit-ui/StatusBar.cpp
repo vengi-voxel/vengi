@@ -3,6 +3,7 @@
  */
 
 #include "StatusBar.h"
+#include "core/TraceScoped.h"
 #include "video/WindowedApp.h"
 #include "voxedit-util/Config.h"
 #include "ui/ScopedStyle.h"

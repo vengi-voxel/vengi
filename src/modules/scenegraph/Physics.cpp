@@ -3,7 +3,7 @@
  */
 
 #include "Physics.h"
-#include "core/Trace.h"
+#include "core/TraceScoped.h"
 #include "math/Axis.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraph.h"

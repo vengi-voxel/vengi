@@ -3,13 +3,13 @@
  */
 
 #include "RawVolume.h"
+#include "core/TraceScoped.h"
 #include "app/ForParallel.h"
 #include "core/Algorithm.h"
 #include "core/Assert.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StandardLib.h"
-#include "core/Trace.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Atomic.h"
 #include "private/SparseRawVolumeStorage.h"

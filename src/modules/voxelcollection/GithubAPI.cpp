@@ -3,9 +3,9 @@
  */
 
 #include "GithubAPI.h"
+#include "core/TraceScoped.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
-#include "core/Trace.h"
 #include "http/HttpCacheStream.h"
 #include "json/JSON.h"
 

@@ -6,7 +6,6 @@
 
 #include "core/Common.h"
 #include "core/StandardLib.h"
-#include "core/Trace.h"
 #include "core/concurrent/Atomic.h"
 #include "core/concurrent/Lock.h"
 #include "core/concurrent/ConditionVariable.h"

@@ -3,6 +3,7 @@
  */
 
 #include "MementoPanel.h"
+#include "core/TraceScoped.h"
 #include "command/CommandHandler.h"
 #include "memento/MementoHandler.h"
 #include "scenegraph/SceneGraphNode.h"

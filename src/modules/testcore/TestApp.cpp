@@ -3,6 +3,7 @@
  */
 
 #include "TestApp.h"
+#include "core/TraceScoped.h"
 #include "IMGUIEx.h"
 #include "app/i18n/Language.h"
 #include "color/Color.h"

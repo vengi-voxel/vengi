@@ -81,7 +81,7 @@ set(SRCS
 	TimeProvider.h TimeProvider.cpp
 	TimedValue.h
 	Tokenizer.h Tokenizer.cpp
-	Trace.cpp Trace.h
+	Trace.cpp Trace.h TraceScoped.h
 	Tuple.h
 	Unicode.cpp Unicode.h
 	UUID.cpp UUID.h

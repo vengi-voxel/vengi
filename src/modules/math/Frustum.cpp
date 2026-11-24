@@ -3,7 +3,7 @@
  */
 
 #include "Frustum.h"
-#include "core/Trace.h"
+#include "core/TraceScoped.h"
 #include "core/Assert.h"
 #include "core/GLM.h"
 #include "math/AABB.h"
