@@ -7,6 +7,7 @@
 #include "core/Log.h"
 #include "core/StringUtil.h"
 #include "core/concurrent/Lock.h"
+#include "core/Path.h"
 #include "io/system/System.h"
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_error.h>
@@ -29,7 +30,7 @@ core_trace_mutex(core::Lock, _openedFileLock, "openedFileLock");
 
 void trackOpenedFile(const core::String &path, FileMode mode) {
 	core::ScopedLock lock(_openedFileLock);
-	core::String absPath = fs_realpath(path.c_str());
+	core::String absPath = fs_realpath(core::Path(path)).str();
 	normalizePath(absPath);
 	if (absPath.empty()) {
 		Log::debug("Failed to track opened file %s", path.c_str());
@@ -58,7 +59,7 @@ void trackOpenedFile(const core::String &path, FileMode mode) {
 
 void untrackOpenedFile(const core::String &path, FileMode mode) {
 	core::ScopedLock lock(_openedFileLock);
-	core::String absPath = fs_realpath(path.c_str());
+	core::String absPath = fs_realpath(core::Path(path)).str();
 	normalizePath(absPath);
 	if (absPath.empty()) {
 		Log::debug("Failed to track opened file %s", path.c_str());
@@ -110,7 +111,7 @@ static void resolveAndroidShellPath(core::String &path) {
 	if (path.empty() || core::string::isAbsolutePath(path)) {
 		return;
 	}
-	const core::String cwd = fs_cwd();
+	const core::String cwd = fs_cwd().str();
 	if (cwd.empty()) {
 		return;
 	}
@@ -163,7 +164,7 @@ bool File::exists() const {
 		return _file != nullptr;
 	}
 
-	return fs_exists(_rawPath.c_str());
+	return fs_exists(core::Path(_rawPath));
 }
 
 const core::String& File::name() const {
