@@ -496,7 +496,7 @@ void recolorSelected(voxel::RawVolumeWrapper &in, const voxel::RawVolume &volume
 			voxel::Voxel recolored = voxel::createVoxel(voxel.getMaterial(), colorIndex, voxel.getNormal(), voxel.getFlags(), voxel.getBoneIdx());
 			in.setVoxel(x, y, z, recolored);
 		}
-	}, voxelutil::VisitSolid(), voxelutil::VisitorOrder::ZYX);
+	}, voxelutil::VisitSolid());
 }
 
 } // namespace voxelutil

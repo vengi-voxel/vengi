@@ -188,13 +188,13 @@ bool QBFormat::saveMatrix(io::SeekableWriteStream &stream, const scenegraph::Sce
 		wrapSave(stream.writeInt32(offset.y));
 		wrapSave(stream.writeInt32(offset.x));
 	}
-	voxelutil::VisitorOrder visitOrder = voxelutil::VisitorOrder::ZYX;
-	if (!leftHanded) {
-		visitOrder = voxelutil::VisitorOrder::XYZ;
-	}
 	MatrixWriter writer(stream, sceneGraph, node, leftHanded, rleCompressed);
 	auto func = [&writer](int x, int y, int z, const voxel::Voxel &voxel) { writer.addVoxel(x, y, z, voxel); };
-	voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll(), visitOrder);
+	if (leftHanded) {
+		voxelutil::visitVolume<voxelutil::VisitorOrder::ZYX>(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll());
+	} else {
+		voxelutil::visitVolume<voxelutil::VisitorOrder::XYZ>(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll());
+	}
 	return writer.success();
 }
 

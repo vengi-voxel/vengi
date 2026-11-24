@@ -313,7 +313,7 @@ bool XRawFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core
 			stream->writeUInt8(voxel.getColor());
 		}
 	};
-	voxelutil::visitVolume(*node->volume(), func, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+	voxelutil::visitVolume<voxelutil::VisitorOrder::YZmX>(*node->volume(), func, voxelutil::VisitAll());
 
 	wrapBool(stream->writeUInt32(0)) // first palette entry is always 0 - empty voxel
 	for (int i = 1; i < palette.colorCount(); ++i) {

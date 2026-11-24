@@ -94,6 +94,122 @@ static const char *VisitorOrderStr[] = {
 };
 static_assert(lengthof(VisitorOrderStr) == (int)VisitorOrder::Max, "Array size mismatch");
 
+template<VisitorOrder Order>
+struct VisitorOrderTag {
+	static constexpr VisitorOrder value = Order;
+};
+
+/** 0 = x, 1 = y, 2 = z. The outer axis of a visitor order. Max has no axis. */
+inline constexpr int visitorOrderOuterAxis(VisitorOrder order) {
+	switch (order) {
+	case VisitorOrder::XYZ:
+	case VisitorOrder::XZmY:
+	case VisitorOrder::XmZmY:
+	case VisitorOrder::XZY:
+	case VisitorOrder::XmZY:
+	case VisitorOrder::mXZY:
+	case VisitorOrder::mXmZY:
+	case VisitorOrder::mXZmY:
+	case VisitorOrder::mXmZmY:
+		return 0;
+	case VisitorOrder::YXZ:
+	case VisitorOrder::YZX:
+	case VisitorOrder::YmXZ:
+	case VisitorOrder::YZmX:
+	case VisitorOrder::YXmZ:
+	case VisitorOrder::mYZX:
+	case VisitorOrder::mYmXZ:
+	case VisitorOrder::mYXmZ:
+	case VisitorOrder::mYmZmX:
+	case VisitorOrder::mYmXmZ:
+	case VisitorOrder::mYZmX:
+	case VisitorOrder::mYXZ:
+		return 1;
+	case VisitorOrder::ZYX:
+	case VisitorOrder::ZXY:
+	case VisitorOrder::ZXmY:
+	case VisitorOrder::ZmXmY:
+	case VisitorOrder::ZmXY:
+	case VisitorOrder::mZXY:
+	case VisitorOrder::mZXmY:
+	case VisitorOrder::mZmXY:
+	case VisitorOrder::mZmXmY:
+		return 2;
+	case VisitorOrder::Max:
+		break;
+	}
+	return -1;
+}
+
+template<class Fn>
+inline int dispatchVisitorOrder(VisitorOrder order, Fn &&fn) {
+	switch (order) {
+	case VisitorOrder::XYZ:
+		return fn(VisitorOrderTag<VisitorOrder::XYZ>{});
+	case VisitorOrder::ZYX:
+		return fn(VisitorOrderTag<VisitorOrder::ZYX>{});
+	case VisitorOrder::ZXY:
+		return fn(VisitorOrderTag<VisitorOrder::ZXY>{});
+	case VisitorOrder::XmZY:
+		return fn(VisitorOrderTag<VisitorOrder::XmZY>{});
+	case VisitorOrder::mXZY:
+		return fn(VisitorOrderTag<VisitorOrder::mXZY>{});
+	case VisitorOrder::mXmZY:
+		return fn(VisitorOrderTag<VisitorOrder::mXmZY>{});
+	case VisitorOrder::mXZmY:
+		return fn(VisitorOrderTag<VisitorOrder::mXZmY>{});
+	case VisitorOrder::XmZmY:
+		return fn(VisitorOrderTag<VisitorOrder::XmZmY>{});
+	case VisitorOrder::mXmZmY:
+		return fn(VisitorOrderTag<VisitorOrder::mXmZmY>{});
+	case VisitorOrder::XZY:
+		return fn(VisitorOrderTag<VisitorOrder::XZY>{});
+	case VisitorOrder::XZmY:
+		return fn(VisitorOrderTag<VisitorOrder::XZmY>{});
+	case VisitorOrder::YXZ:
+		return fn(VisitorOrderTag<VisitorOrder::YXZ>{});
+	case VisitorOrder::YZX:
+		return fn(VisitorOrderTag<VisitorOrder::YZX>{});
+	case VisitorOrder::YmXZ:
+		return fn(VisitorOrderTag<VisitorOrder::YmXZ>{});
+	case VisitorOrder::mYZX:
+		return fn(VisitorOrderTag<VisitorOrder::mYZX>{});
+	case VisitorOrder::YZmX:
+		return fn(VisitorOrderTag<VisitorOrder::YZmX>{});
+	case VisitorOrder::mYmXZ:
+		return fn(VisitorOrderTag<VisitorOrder::mYmXZ>{});
+	case VisitorOrder::mYXmZ:
+		return fn(VisitorOrderTag<VisitorOrder::mYXmZ>{});
+	case VisitorOrder::mYmZmX:
+		return fn(VisitorOrderTag<VisitorOrder::mYmZmX>{});
+	case VisitorOrder::mYmXmZ:
+		return fn(VisitorOrderTag<VisitorOrder::mYmXmZ>{});
+	case VisitorOrder::mZmXmY:
+		return fn(VisitorOrderTag<VisitorOrder::mZmXmY>{});
+	case VisitorOrder::ZmXmY:
+		return fn(VisitorOrderTag<VisitorOrder::ZmXmY>{});
+	case VisitorOrder::ZmXY:
+		return fn(VisitorOrderTag<VisitorOrder::ZmXY>{});
+	case VisitorOrder::YXmZ:
+		return fn(VisitorOrderTag<VisitorOrder::YXmZ>{});
+	case VisitorOrder::ZXmY:
+		return fn(VisitorOrderTag<VisitorOrder::ZXmY>{});
+	case VisitorOrder::mZXY:
+		return fn(VisitorOrderTag<VisitorOrder::mZXY>{});
+	case VisitorOrder::mYZmX:
+		return fn(VisitorOrderTag<VisitorOrder::mYZmX>{});
+	case VisitorOrder::mYXZ:
+		return fn(VisitorOrderTag<VisitorOrder::mYXZ>{});
+	case VisitorOrder::mZXmY:
+		return fn(VisitorOrderTag<VisitorOrder::mZXmY>{});
+	case VisitorOrder::mZmXY:
+		return fn(VisitorOrderTag<VisitorOrder::mZmXY>{});
+	case VisitorOrder::Max:
+		break;
+	}
+	return 0;
+}
+
 /**
  * @brief Will skip air voxels on volume
  * @note Visitor condition
@@ -261,15 +377,13 @@ struct EmptyVisitor {
 		++cnt;                                                                                                         \
 	}
 
-template<class Sampler, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+template<VisitorOrder Order, class Sampler, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
 CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region &region, int xOff, int yOff, int zOff,
-										  Visitor &&visitor = Visitor(), Condition condition = Condition(),
-										  VisitorOrder order = VisitorOrder::ZYX) {
+										  Visitor &&visitor = Visitor(), Condition condition = Condition()) {
 	core_trace_scoped(VisitVolume);
 	int cnt = 0;
 
-	switch (order) {
-	case VisitorOrder::XYZ:
+	if constexpr (Order == VisitorOrder::XYZ) {
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 			Sampler sampler2 = sampler;
@@ -288,8 +402,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveX(xOff);
 		}
-		break;
-	case VisitorOrder::ZYX:
+	} else if constexpr (Order == VisitorOrder::ZYX) {
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 			Sampler sampler2 = sampler;
@@ -308,8 +421,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveZ(zOff);
 		}
-		break;
-	case VisitorOrder::ZXY:
+	} else if constexpr (Order == VisitorOrder::ZXY) {
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 			Sampler sampler2 = sampler;
@@ -328,8 +440,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveZ(zOff);
 		}
-		break;
-	case VisitorOrder::XZY:
+	} else if constexpr (Order == VisitorOrder::XZY) {
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 			Sampler sampler2 = sampler;
@@ -348,8 +459,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveX(xOff);
 		}
-		break;
-	case VisitorOrder::XZmY:
+	} else if constexpr (Order == VisitorOrder::XZmY) {
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 			Sampler sampler2 = sampler;
@@ -368,8 +478,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveX(xOff);
 		}
-		break;
-	case VisitorOrder::mXmZY:
+	} else if constexpr (Order == VisitorOrder::mXmZY) {
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 			Sampler sampler2 = sampler;
@@ -388,8 +497,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeX(xOff);
 		}
-		break;
-	case VisitorOrder::mXZY:
+	} else if constexpr (Order == VisitorOrder::mXZY) {
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 			Sampler sampler2 = sampler;
@@ -408,8 +516,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeX(xOff);
 		}
-		break;
-	case VisitorOrder::XmZY:
+	} else if constexpr (Order == VisitorOrder::XmZY) {
 		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 			Sampler sampler2 = sampler;
@@ -428,8 +535,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveX(xOff);
 		}
-		break;
-	case VisitorOrder::XmZmY:
+	} else if constexpr (Order == VisitorOrder::XmZmY) {
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t x = region.getLowerX(); x <= region.getUpperX(); x += xOff) {
 			Sampler sampler2 = sampler;
@@ -448,8 +554,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveX(xOff);
 		}
-		break;
-	case VisitorOrder::mXmZmY:
+	} else if constexpr (Order == VisitorOrder::mXmZmY) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 			Sampler sampler2 = sampler;
@@ -468,8 +573,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeX(xOff);
 		}
-		break;
-	case VisitorOrder::mXZmY:
+	} else if constexpr (Order == VisitorOrder::mXZmY) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t x = region.getUpperX(); x >= region.getLowerX(); x -= xOff) {
 			Sampler sampler2 = sampler;
@@ -488,8 +592,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeX(xOff);
 		}
-		break;
-	case VisitorOrder::YXZ:
+	} else if constexpr (Order == VisitorOrder::YXZ) {
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 			Sampler sampler2 = sampler;
@@ -508,8 +611,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveY(yOff);
 		}
-		break;
-	case VisitorOrder::mZmXY:
+	} else if constexpr (Order == VisitorOrder::mZmXY) {
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 			Sampler sampler2 = sampler;
@@ -528,8 +630,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeZ(zOff);
 		}
-		break;
-	case VisitorOrder::mZXmY:
+	} else if constexpr (Order == VisitorOrder::mZXmY) {
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 			Sampler sampler2 = sampler;
@@ -548,8 +649,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeZ(zOff);
 		}
-		break;
-	case VisitorOrder::mYXZ:
+	} else if constexpr (Order == VisitorOrder::mYXZ) {
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 			Sampler sampler2 = sampler;
@@ -568,8 +668,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeY(yOff);
 		}
-		break;
-	case VisitorOrder::YZX:
+	} else if constexpr (Order == VisitorOrder::YZX) {
 		sampler.setPosition(region.getLowerCorner());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 			Sampler sampler2 = sampler;
@@ -588,8 +687,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveY(yOff);
 		}
-		break;
-	case VisitorOrder::mYZmX:
+	} else if constexpr (Order == VisitorOrder::mYZmX) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 			Sampler sampler2 = sampler;
@@ -608,8 +706,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeY(yOff);
 		}
-		break;
-	case VisitorOrder::YZmX:
+	} else if constexpr (Order == VisitorOrder::YZmX) {
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 			Sampler sampler2 = sampler;
@@ -628,8 +725,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveY(yOff);
 		}
-		break;
-	case VisitorOrder::mYZX:
+	} else if constexpr (Order == VisitorOrder::mYZX) {
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 			Sampler sampler2 = sampler;
@@ -648,8 +744,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeY(yOff);
 		}
-		break;
-	case VisitorOrder::mYmXZ:
+	} else if constexpr (Order == VisitorOrder::mYmXZ) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 			Sampler sampler2 = sampler;
@@ -668,8 +763,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeY(yOff);
 		}
-		break;
-	case VisitorOrder::mYXmZ:
+	} else if constexpr (Order == VisitorOrder::mYXmZ) {
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 			Sampler sampler2 = sampler;
@@ -688,8 +782,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeY(yOff);
 		}
-		break;
-	case VisitorOrder::mYmXmZ:
+	} else if constexpr (Order == VisitorOrder::mYmXmZ) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 			Sampler sampler2 = sampler;
@@ -708,8 +801,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeY(yOff);
 		}
-		break;
-	case VisitorOrder::mYmZmX:
+	} else if constexpr (Order == VisitorOrder::mYmZmX) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t y = region.getUpperY(); y >= region.getLowerY(); y -= yOff) {
 			Sampler sampler2 = sampler;
@@ -728,8 +820,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeY(yOff);
 		}
-		break;
-	case VisitorOrder::mZmXmY:
+	} else if constexpr (Order == VisitorOrder::mZmXmY) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 			Sampler sampler2 = sampler;
@@ -748,8 +839,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeZ(zOff);
 		}
-		break;
-	case VisitorOrder::ZmXmY:
+	} else if constexpr (Order == VisitorOrder::ZmXmY) {
 		sampler.setPosition(region.getUpperX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 			Sampler sampler2 = sampler;
@@ -768,8 +858,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveZ(zOff);
 		}
-		break;
-	case VisitorOrder::YmXZ:
+	} else if constexpr (Order == VisitorOrder::YmXZ) {
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 			Sampler sampler2 = sampler;
@@ -788,8 +877,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveY(yOff);
 		}
-		break;
-	case VisitorOrder::ZmXY:
+	} else if constexpr (Order == VisitorOrder::ZmXY) {
 		sampler.setPosition(region.getUpperX(), region.getLowerY(), region.getLowerZ());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 			Sampler sampler2 = sampler;
@@ -808,8 +896,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveZ(zOff);
 		}
-		break;
-	case VisitorOrder::YXmZ:
+	} else if constexpr (Order == VisitorOrder::YXmZ) {
 		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t y = region.getLowerY(); y <= region.getUpperY(); y += yOff) {
 			Sampler sampler2 = sampler;
@@ -828,8 +915,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveY(yOff);
 		}
-		break;
-	case VisitorOrder::mZXY:
+	} else if constexpr (Order == VisitorOrder::mZXY) {
 		sampler.setPosition(region.getLowerX(), region.getLowerY(), region.getUpperZ());
 		for (int32_t z = region.getUpperZ(); z >= region.getLowerZ(); z -= zOff) {
 			Sampler sampler2 = sampler;
@@ -848,8 +934,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.moveNegativeZ(zOff);
 		}
-		break;
-	case VisitorOrder::ZXmY:
+	} else if constexpr (Order == VisitorOrder::ZXmY) {
 		sampler.setPosition(region.getLowerX(), region.getUpperY(), region.getLowerZ());
 		for (int32_t z = region.getLowerZ(); z <= region.getUpperZ(); z += zOff) {
 			Sampler sampler2 = sampler;
@@ -868,9 +953,7 @@ CORE_NO_SANITIZE_ADDRESS int visitSampler(Sampler &sampler, const voxel::Region 
 			}
 			sampler.movePositiveZ(zOff);
 		}
-		break;
-	case VisitorOrder::Max:
-		break;
+	} else if constexpr (Order == VisitorOrder::Max) {
 	}
 
 #undef LOOP
@@ -1035,35 +1118,59 @@ static int visitSparseRawVolumeZYX(const voxel::RawVolume &volume, const voxel::
 	return cnt;
 }
 
-template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
 int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor = Visitor(),
-				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
-	if constexpr (std::is_same_v<std::decay_t<Volume>, voxel::RawVolume> && ConditionSkipsAir<Condition>::value) {
-		if (volume.isSparseAirDefault() && xOff == 1 && yOff == 1 && zOff == 1 && order == VisitorOrder::ZYX) {
+				Condition condition = Condition()) {
+	if constexpr (Order == VisitorOrder::ZYX && std::is_same_v<std::decay_t<Volume>, voxel::RawVolume> &&
+				  ConditionSkipsAir<Condition>::value) {
+		if (volume.isSparseAirDefault() && xOff == 1 && yOff == 1 && zOff == 1) {
 			return visitSparseRawVolumeZYX(volume, region, visitor, condition);
 		}
 	}
 	return voxel::withVolumeSampler(volume, [&](auto &sampler) {
-		return visitSampler(sampler, region, xOff, yOff, zOff, visitor, condition, order);
+		return visitSampler<Order>(sampler, region, xOff, yOff, zOff, visitor, condition);
 	});
 }
 
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, const voxel::Region &region, int xOff, int yOff, int zOff, Visitor &&visitor,
+				Condition condition, VisitorOrder order) {
+	return dispatchVisitorOrder(order, [&](auto orderTag) {
+		constexpr VisitorOrder Order = decltype(orderTag)::value;
+		return visitVolume<Order>(volume, region, xOff, yOff, zOff, visitor, condition);
+	});
+}
+
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
 int visitVolume(const Volume &volume, int xOff, int yOff, int zOff, Visitor &&visitor = Visitor(),
-				Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+				Condition condition = Condition()) {
+	const voxel::Region &region = volume.region();
+	return visitVolume<Order>(volume, region, xOff, yOff, zOff, visitor, condition);
+}
+
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, int xOff, int yOff, int zOff, Visitor &&visitor, Condition condition, VisitorOrder order) {
 	const voxel::Region &region = volume.region();
 	return visitVolume(volume, region, xOff, yOff, zOff, visitor, condition, order);
 }
 
-template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
-int visitVolume(const Volume &volume, Visitor &&visitor = Visitor(), Condition condition = Condition(),
-				VisitorOrder order = VisitorOrder::ZYX) {
-	return visitVolume(volume, 1, 1, 1, visitor, condition, order);
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, Visitor &&visitor = Visitor(), Condition condition = Condition()) {
+	return visitVolume<Order>(volume, 1, 1, 1, visitor, condition);
 }
 
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
-int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor = Visitor(), Condition condition = Condition(),
-				VisitorOrder order = VisitorOrder::ZYX) {
+int visitVolume(const Volume &volume, Visitor &&visitor, Condition condition, VisitorOrder order) {
+	return visitVolume(volume, 1, 1, 1, visitor, condition, order);
+}
+
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor = Visitor(), Condition condition = Condition()) {
+	return visitVolume<Order>(volume, region, 1, 1, 1, visitor, condition);
+}
+
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&visitor, Condition condition, VisitorOrder order) {
 	return visitVolume(volume, region, 1, 1, 1, visitor, condition, order);
 }
 
@@ -1072,8 +1179,13 @@ int visitVolume(const Volume &volume, const voxel::Region &region, Visitor &&vis
  * @sa visibleFaces()
  * @sa visitSurfaceVolume()
  */
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor>
+int visitInvisibleVolume(const Volume &volume, Visitor &&visitor = Visitor()) {
+	return visitVolume<Order>(volume, visitor, VisitInvisible());
+}
+
 template<class Volume, class Visitor = EmptyVisitor>
-int visitInvisibleVolume(const Volume &volume, Visitor &&visitor = Visitor(), VisitorOrder order = VisitorOrder::ZYX) {
+int visitInvisibleVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order) {
 	return visitVolume(volume, visitor, VisitInvisible(), order);
 }
 
@@ -1081,26 +1193,22 @@ int visitInvisibleVolume(const Volume &volume, Visitor &&visitor = Visitor(), Vi
  * @brief Visit only surface voxels - those voxels have at least one visible face (or an air voxel next to it)
  * @sa visitInvisibleVolume()
  */
-template<class Volume, class Visitor = EmptyVisitor>
-int visitSurfaceVolume(const Volume &volume, Visitor &&visitor = Visitor(), VisitorOrder order = VisitorOrder::ZYX) {
-	return visitVolume(volume, visitor, VisitVisible(), order);
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor>
+int visitSurfaceVolume(const Volume &volume, Visitor &&visitor = Visitor()) {
+	return visitVolume<Order>(volume, visitor, VisitVisible());
 }
 
-/**
- * @brief Visit only surface voxels - those voxels have at least one visible face (or an air voxel next to it)
- * @sa visitInvisibleVolume()
- */
 template<class Volume, class Visitor = EmptyVisitor>
-int visitSurfaceVolumeParallel(const Volume &volume, Visitor &&visitor = Visitor(), VisitorOrder order = VisitorOrder::ZYX) {
-	return visitVolumeParallel(volume, visitor, VisitVisible(), order);
+int visitSurfaceVolume(const Volume &volume, Visitor &&visitor, VisitorOrder order) {
+	return visitVolume(volume, visitor, VisitVisible(), order);
 }
 
 /**
  * @return The number of voxels visited.
  */
-template<class Volume, class Visitor = EmptyVisitor>
-int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor = Visitor(),
-			  VisitorOrder order = VisitorOrder::ZYX, bool searchSurface = false) {
+template<VisitorOrder Order, class Volume, class Visitor = EmptyVisitor>
+int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor,
+			  bool searchSurface) {
 	typename Volume::Sampler sampler(volume);
 	voxel::FaceBits faceBits = voxel::faceBits(face);
 	constexpr bool skipEmpty = true;
@@ -1118,7 +1226,16 @@ int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceName
 		}
 		return false;
 	};
-	return visitVolume(volume, region, 1, 1, 1, visitorInternal, VisitAll(), order);
+	return visitVolume<Order>(volume, region, 1, 1, 1, visitorInternal, VisitAll());
+}
+
+template<class Volume, class Visitor = EmptyVisitor>
+int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor,
+			  VisitorOrder order, bool searchSurface = false) {
+	return dispatchVisitorOrder(order, [&](auto orderTag) {
+		constexpr VisitorOrder Order = decltype(orderTag)::value;
+		return visitFace<Order>(volume, region, face, visitor, searchSurface);
+	});
 }
 
 /**
@@ -1128,30 +1245,22 @@ template<class Volume, class Visitor = EmptyVisitor>
 int visitFace(const Volume &volume, const voxel::Region &region, voxel::FaceNames face, Visitor &&visitor = Visitor(),
 			  bool searchSurface = false) {
 	// only the last axis matters here
-	VisitorOrder visitorOrder;
 	switch (face) {
 	case voxel::FaceNames::Front:
-		visitorOrder = VisitorOrder::mYmXZ;
-		break;
+		return visitFace<VisitorOrder::mYmXZ>(volume, region, face, visitor, searchSurface);
 	case voxel::FaceNames::Back:
-		visitorOrder = VisitorOrder::mYXmZ;
-		break;
+		return visitFace<VisitorOrder::mYXmZ>(volume, region, face, visitor, searchSurface);
 	case voxel::FaceNames::Right:
-		visitorOrder = VisitorOrder::mYmZmX;
-		break;
+		return visitFace<VisitorOrder::mYmZmX>(volume, region, face, visitor, searchSurface);
 	case voxel::FaceNames::Left:
-		visitorOrder = VisitorOrder::mYZX;
-		break;
+		return visitFace<VisitorOrder::mYZX>(volume, region, face, visitor, searchSurface);
 	case voxel::FaceNames::Up:
-		visitorOrder = VisitorOrder::mZmXmY;
-		break;
+		return visitFace<VisitorOrder::mZmXmY>(volume, region, face, visitor, searchSurface);
 	case voxel::FaceNames::Down:
-		visitorOrder = VisitorOrder::ZmXY;
-		break;
+		return visitFace<VisitorOrder::ZmXY>(volume, region, face, visitor, searchSurface);
 	default:
 		return 0;
 	}
-	return visitFace(volume, region, face, visitor, visitorOrder, searchSurface);
 }
 
 template<class Volume, class Visitor = EmptyVisitor>
@@ -1163,9 +1272,9 @@ int visitFace(const Volume &volume, voxel::FaceNames face, Visitor &&visitor = V
 	return visitFace(volume, region, face, visitor, order, searchSurface);
 }
 
-template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
 int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visitor &&visitor = Visitor(),
-						Condition condition = Condition(), VisitorOrder order = VisitorOrder::ZYX) {
+						Condition condition = Condition()) {
 	core_trace_scoped(VisitVolumeParallel);
 	core::AtomicInt cnt(0);
 
@@ -1265,16 +1374,7 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 		}
 	}
 
-	switch (order) {
-	case VisitorOrder::XYZ:
-	case VisitorOrder::XZmY:
-	case VisitorOrder::XmZmY:
-	case VisitorOrder::XZY:
-	case VisitorOrder::XmZY:
-	case VisitorOrder::mXZY:
-	case VisitorOrder::mXmZY:
-	case VisitorOrder::mXZmY:
-	case VisitorOrder::mXmZmY: {
+	if constexpr (visitorOrderOuterAxis(Order) == 0) {
 		// anything were the outer loop is x is handled here
 		const int lower = region.getLowerX();
 		const int upperExclusive = region.getUpperX() + 1;
@@ -1286,25 +1386,11 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 				// the first axis from the visitor order is the outer loop and has be to handled in the subRegion
 				const voxel::Region subRegion(start, region.getLowerY(), region.getLowerZ(), end - 1,
 											  region.getUpperY(), region.getUpperZ());
-				cnt.increment(visitVolume(volume, subRegion, visitor, condition, order));
+				cnt.increment(visitVolume<Order>(volume, subRegion, visitor, condition));
 				progress.add(end - start);
 			},
 			true);
-		break;
-	}
-
-	case VisitorOrder::YXZ:
-	case VisitorOrder::YZX:
-	case VisitorOrder::YmXZ:
-	case VisitorOrder::YZmX:
-	case VisitorOrder::YXmZ:
-	case VisitorOrder::mYZX:
-	case VisitorOrder::mYmXZ:
-	case VisitorOrder::mYXmZ:
-	case VisitorOrder::mYmZmX:
-	case VisitorOrder::mYmXmZ:
-	case VisitorOrder::mYZmX:
-	case VisitorOrder::mYXZ: {
+	} else if constexpr (visitorOrderOuterAxis(Order) == 1) {
 		// anything were the outer loop is y is handled here
 		const int lower = region.getLowerY();
 		const int upperExclusive = region.getUpperY() + 1;
@@ -1316,21 +1402,11 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 				// the first axis from the visitor order is the outer loop and has be to handled in the subRegion
 				const voxel::Region subRegion(region.getLowerX(), start, region.getLowerZ(), region.getUpperX(),
 											  end - 1, region.getUpperZ());
-				cnt.increment(visitVolume(volume, subRegion, visitor, condition, order));
+				cnt.increment(visitVolume<Order>(volume, subRegion, visitor, condition));
 				progress.add(end - start);
 			},
 			true);
-		break;
-	}
-	case VisitorOrder::ZYX:
-	case VisitorOrder::ZXY:
-	case VisitorOrder::ZXmY:
-	case VisitorOrder::ZmXmY:
-	case VisitorOrder::ZmXY:
-	case VisitorOrder::mZXY:
-	case VisitorOrder::mZXmY:
-	case VisitorOrder::mZmXY:
-	case VisitorOrder::mZmXmY: {
+	} else if constexpr (visitorOrderOuterAxis(Order) == 2) {
 		// anything were the outer loop is z is handled here
 		const int lower = region.getLowerZ();
 		const int upperExclusive = region.getUpperZ() + 1;
@@ -1342,23 +1418,47 @@ int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visit
 				// the first axis from the visitor order is the outer loop and has be to handled in the subRegion
 				const voxel::Region subRegion(region.getLowerX(), region.getLowerY(), start, region.getUpperX(),
 											  region.getUpperY(), end - 1);
-				cnt.increment(visitVolume(volume, subRegion, visitor, condition, order));
+				cnt.increment(visitVolume<Order>(volume, subRegion, visitor, condition));
 				progress.add(end - start);
 			},
 			true);
-		break;
-	}
-	case voxelutil::VisitorOrder::Max:
-		break;
 	}
 	return cnt;
 }
 
 template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
-int visitVolumeParallel(const Volume &volume, Visitor &&visitor = Visitor(), Condition condition = Condition(),
-						VisitorOrder order = VisitorOrder::ZYX) {
+int visitVolumeParallel(const Volume &volume, const voxel::Region &region, Visitor &&visitor, Condition condition,
+						VisitorOrder order) {
+	return dispatchVisitorOrder(order, [&](auto orderTag) {
+		constexpr VisitorOrder Order = decltype(orderTag)::value;
+		return visitVolumeParallel<Order>(volume, region, visitor, condition);
+	});
+}
+
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolumeParallel(const Volume &volume, Visitor &&visitor = Visitor(), Condition condition = Condition()) {
+	const voxel::Region &region = volume.region();
+	return visitVolumeParallel<Order>(volume, region, visitor, condition);
+}
+
+template<class Volume, class Visitor = EmptyVisitor, typename Condition = VisitSolid>
+int visitVolumeParallel(const Volume &volume, Visitor &&visitor, Condition condition, VisitorOrder order) {
 	const voxel::Region &region = volume.region();
 	return visitVolumeParallel(volume, region, visitor, condition, order);
+}
+
+/**
+ * @brief Visit only surface voxels - those voxels have at least one visible face (or an air voxel next to it)
+ * @sa visitInvisibleVolume()
+ */
+template<VisitorOrder Order = VisitorOrder::ZYX, class Volume, class Visitor = EmptyVisitor>
+int visitSurfaceVolumeParallel(const Volume &volume, Visitor &&visitor = Visitor()) {
+	return visitVolumeParallel<Order>(volume, visitor, VisitVisible());
+}
+
+template<class Volume, class Visitor = EmptyVisitor>
+int visitSurfaceVolumeParallel(const Volume &volume, Visitor &&visitor, VisitorOrder order) {
+	return visitVolumeParallel(volume, visitor, VisitVisible(), order);
 }
 
 template<class Volume>

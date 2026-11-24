@@ -653,7 +653,7 @@ uint32_t VoxFormat::saveModel(const scenegraph::SceneGraph &sceneGraph, scenegra
 	uint8_t *dataptr = (uint8_t *)core_malloc(voxelSize);
 	ogt_model.voxel_data = dataptr;
 	auto func = [&](int, int, int, const voxel::Voxel &voxel) { *dataptr++ = voxel.getColor(); };
-	voxelutil::visitVolume(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll(), voxelutil::VisitorOrder::YZmX);
+	voxelutil::visitVolume<voxelutil::VisitorOrder::YZmX>(*sceneGraph.resolveVolume(node), func, voxelutil::VisitAll());
 	ctx.models.push_back(ogt_model);
 	return (uint32_t)(ctx.models.size() - 1);
 }

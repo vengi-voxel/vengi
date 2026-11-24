@@ -429,7 +429,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	core::Buffer<priv::VoxtypeKV6> voxdata;
 	voxdata.reserve(MAXVOXS);
 
-	const uint32_t numvoxs = voxelutil::visitSurfaceVolume(
+	const uint32_t numvoxs = voxelutil::visitSurfaceVolume<voxelutil::VisitorOrder::XZmY>(
 		*node->volume(),
 		[&](int x, int y, int z, const voxel::Voxel &voxel) {
 			const int shiftedX = x - region.getLowerX();
@@ -448,8 +448,7 @@ bool KV6Format::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 				vd.normal = normalRemap[voxel.getNormal() - NORMAL_PALETTE_OFFSET];
 			}
 			voxdata.push_back(vd);
-		},
-		voxelutil::VisitorOrder::XZmY);
+		});
 
 	if (numvoxs > MAXVOXS) {
 		Log::error("Max allowed voxels exceeded: %u (max is %u)", numvoxs, MAXVOXS);
