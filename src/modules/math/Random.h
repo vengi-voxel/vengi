@@ -5,7 +5,6 @@
 #pragma once
 
 #include "core/Algorithm.h"
-#include <random>
 #include <stdlib.h>
 
 namespace math {
@@ -15,6 +14,12 @@ public:
 	Random();
 
 	Random(unsigned int seed);
+
+	Random(const Random &other);
+
+	Random &operator=(const Random &other);
+
+	~Random();
 
 	void setSeed(unsigned int seed);
 
@@ -34,9 +39,11 @@ public:
 	}
 
 	unsigned int seed() const;
+
 private:
-	unsigned int _seed;
-	mutable std::default_random_engine _engine;
+	struct Engine;
+	unsigned int _seed = 0;
+	mutable Engine *_engine = nullptr;
 };
 
 inline bool Random::fithyFifthy() const {

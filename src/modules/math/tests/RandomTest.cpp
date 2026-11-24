@@ -28,6 +28,22 @@ TEST_F(RandomTest, testRandomBinomial) {
 	EXPECT_LE(val, 10.0f);
 }
 
+TEST_F(RandomTest, testCopyKeepsEngineState) {
+	Random r(1);
+	r.randomf();
+	r.random(0, 1000);
+	Random copy(r);
+	EXPECT_EQ(r.seed(), copy.seed());
+	EXPECT_FLOAT_EQ(r.randomf(), copy.randomf());
+	EXPECT_EQ(r.random(0, 1000), copy.random(0, 1000));
+
+	Random assigned(0);
+	assigned = copy;
+	EXPECT_EQ(copy.seed(), assigned.seed());
+	EXPECT_FLOAT_EQ(copy.randomf(), assigned.randomf());
+	EXPECT_EQ(copy.random(0, 1000), assigned.random(0, 1000));
+}
+
 TEST_F(RandomTest, testRandomElement) {
 	Random r(0);
 	core::Array<int, 5> v = {1, 2, 3, 4, 5};

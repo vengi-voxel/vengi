@@ -39,6 +39,7 @@ double sqrt(double) MATH_LIBM_NOEXCEPT;
 double pow(double, double) MATH_LIBM_NOEXCEPT;
 double exp2(double) MATH_LIBM_NOEXCEPT;
 double ldexp(double, int) MATH_LIBM_NOEXCEPT;
+double log(double) MATH_LIBM_NOEXCEPT;
 double sin(double) MATH_LIBM_NOEXCEPT;
 double cos(double) MATH_LIBM_NOEXCEPT;
 double tan(double) MATH_LIBM_NOEXCEPT;
@@ -140,6 +141,7 @@ inline double exp2(double v) { return ::exp2(v); }
 inline float ldexp(float v, int e) { return ldexpf(v, e); }
 inline double ldexp(double v, int e) { return ::ldexp(v, e); }
 inline float log(float v) { return logf(v); }
+inline double log(double v) { return ::log(v); }
 inline float log2(float v) { return log2f(v); }
 inline float sin(float v) { return sinf(v); }
 inline double sin(double v) { return ::sin(v); }
