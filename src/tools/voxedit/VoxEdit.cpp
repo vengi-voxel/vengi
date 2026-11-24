@@ -385,7 +385,7 @@ app::AppState VoxEdit::onConstruct() {
 			video::Camera *camera = _sceneMgr->activeCamera();
 			const float value = args.floatVal("value");
 			const float speed = core::getVar(cfg::ClientCameraZoomSpeed)->floatVal();
-			if (camera == nullptr || !std::isfinite(value) || value <= 0.0f || speed <= 0.0f) {
+			if (camera == nullptr || !math::isfinite(value) || value <= 0.0f || speed <= 0.0f) {
 				Log::error("camera_zoom needs an active camera and a positive finite value");
 				return;
 			}
