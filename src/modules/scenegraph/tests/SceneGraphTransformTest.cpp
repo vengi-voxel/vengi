@@ -439,4 +439,12 @@ TEST_F(SceneGraphTransformTest, testDirtyFlagManagement) {
 	EXPECT_FALSE(resultTransform.dirty()) << "Transform should not be dirty after update";
 }
 
+TEST_F(SceneGraphTransformTest, testLocalMatrixReturnsStoredMatrix) {
+	SceneGraphTransform transform;
+	const math::Mat4f &first = transform.localMatrix();
+	const math::Mat4f &second = transform.localMatrix();
+	EXPECT_EQ(&first, &second);
+	EXPECT_MAT_NEAR(math::Mat4f::identity(), first, 0.0001f);
+}
+
 } // namespace scenegraph

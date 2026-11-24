@@ -260,8 +260,7 @@ bool VENGIFormat::saveNodeKeyFrame(const scenegraph::SceneGraphKeyFrame &keyfram
 	wrapBool(stream.writeBool(keyframe.longRotation))
 	wrapBool(stream.writePascalStringUInt16LE(scenegraph::InterpolationTypeStr[(int)keyframe.interpolation]))
 	const scenegraph::SceneGraphTransform &transform = keyframe.transform();
-	const math::Mat4f matrix = transform.localMatrix();
-	const float *localMatrix = math::value_ptr(matrix);
+	const float *localMatrix = math::value_ptr(transform.localMatrix());
 	for (int i = 0; i < 16; ++i) {
 		wrapBool(stream.writeFloat(localMatrix[i]))
 	}

@@ -217,7 +217,7 @@ void SceneGraphTransform::lerp(const SceneGraphTransform &dest, double deltaFram
 	_localMat = math::translate(_localTranslation) * math::mat4_cast(_localOrientation) * math::scale(_localScale);
 }
 
-math::Mat4f SceneGraphTransform::localMatrix() const {
+const math::Mat4f &SceneGraphTransform::localMatrix() const {
 	core_assert_msg((_dirty & DIRTY_LOCALVALUES) == 0u, "dirty flag: %u", _dirty);
 	return _localMat;
 }

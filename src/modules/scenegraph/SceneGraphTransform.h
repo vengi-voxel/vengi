@@ -93,7 +93,7 @@ public:
 	math::Quatf worldOrientation() const;
 	const math::Vec3f &worldScale() const;
 
-	math::Mat4f localMatrix() const;
+	const math::Mat4f &localMatrix() const;
 	const math::Vec3f &localTranslation() const;
 	math::Quatf localOrientation() const;
 	const math::Vec3f &localScale() const;
