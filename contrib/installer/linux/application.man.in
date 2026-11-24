@@ -26,6 +26,8 @@ Print the version of the application.
 
 .SH LOAD
 .TP
+3D Manufacturing Format (*.3mf)
+.TP
 AceOfSpades (*.kv6)
 .TP
 AceOfSpades (*.vxl)

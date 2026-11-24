@@ -346,6 +346,10 @@
 		<comment>Standard Triangle Language</comment>
 		<glob pattern="*.stl"/>
 	</mime-type>
+	<mime-type type="model/3mf">
+		<comment>3D Manufacturing Format</comment>
+		<glob pattern="*.3mf"/>
+	</mime-type>
 	<mime-type type="text/plain">
 		<comment>LDraw Model</comment>
 		<glob pattern="*.ldr"/>

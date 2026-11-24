@@ -94,6 +94,18 @@ TEST_F(CoordinateSystemTest, test3dsMax) {
 	testConvert(CoordinateSystem::Autodesk3dsmax, CoordinateSystem::Vengi);
 }
 
+TEST_F(CoordinateSystemTest, test3MF) {
+	testConvertIdentity(CoordinateSystem::ThreeMF, CoordinateSystem::Vengi);
+	testConvert(CoordinateSystem::ThreeMF, CoordinateSystem::Vengi);
+	// 3MF: X right, Y back, Z up
+	testAxisConversion(CoordinateSystem::ThreeMF, CoordinateSystem::Vengi, math::Vec3f(1.0f, 0.0f, 0.0f),
+					   math::Vec3f(1.0f, 0.0f, 0.0f));
+	testAxisConversion(CoordinateSystem::ThreeMF, CoordinateSystem::Vengi, math::Vec3f(0.0f, 1.0f, 0.0f),
+					   math::Vec3f(0.0f, 0.0f, -1.0f));
+	testAxisConversion(CoordinateSystem::ThreeMF, CoordinateSystem::Vengi, math::Vec3f(0.0f, 0.0f, 1.0f),
+					   math::Vec3f(0.0f, 1.0f, 0.0f));
+}
+
 TEST_F(CoordinateSystemTest, testMagicaVoxelAxisConversion) {
 	// MagicaVoxel: Z-up, Y-forward, X-right (right-handed) (TODO: check this assumption)
 	// VENGI: Y-up, -Z-forward, X-right (right-handed, same as OpenGL)

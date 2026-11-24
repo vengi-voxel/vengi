@@ -75,6 +75,23 @@ TEST(MathTest, testTransformVec3) {
 	EXPECT_NEAR(expected.z, destination.z, 0.0001f);
 }
 
+TEST(MathTest, testMat3x4Affine) {
+	const math::Mat3x4f translation(math::Vec4f(1.0f, 0.0f, 0.0f, 2.0f), math::Vec4f(0.0f, 1.0f, 0.0f, 0.0f),
+								   math::Vec4f(0.0f, 0.0f, 1.0f, 0.0f));
+	const math::Vec3f moved = math::transform(translation, math::Vec3f(1.0f, 0.0f, 0.0f));
+	EXPECT_NEAR(moved.x, 3.0f, 0.0001f);
+	EXPECT_NEAR(moved.y, 0.0f, 0.0001f);
+	EXPECT_NEAR(moved.z, 0.0f, 0.0001f);
+
+	// 90 degrees about Z: (x, y) -> (-y, x)
+	const math::Mat3x4f rotation(math::Vec4f(0.0f, 1.0f, 0.0f, 0.0f), math::Vec4f(-1.0f, 0.0f, 0.0f, 0.0f),
+								 math::Vec4f(0.0f, 0.0f, 1.0f, 0.0f));
+	const math::Vec3f spun = math::transform(rotation * translation, math::Vec3f(1.0f, 0.0f, 0.0f));
+	EXPECT_NEAR(spun.x, 0.0f, 0.0001f);
+	EXPECT_NEAR(spun.y, 3.0f, 0.0001f);
+	EXPECT_NEAR(spun.z, 0.0f, 0.0001f);
+}
+
 TEST(MathTest, testFloorCeilToInt) {
 	EXPECT_EQ(2, math::floorToInt(2.0f));
 	EXPECT_EQ(2, math::ceilToInt(2.0f));

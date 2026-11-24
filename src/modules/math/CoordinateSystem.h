@@ -18,6 +18,7 @@ enum class CoordinateSystem : uint8_t {
 	Maya,
 	SceneKit, // same axes as OpenGL/vengi: right-handed, Y-up, +Z toward viewer
 	Autodesk3dsmax,
+	ThreeMF, // same basis as MagicaVoxel, VXL and 3ds Max: right-handed, Z-up, Y to the back
 
 	Max
 };

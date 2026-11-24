@@ -51,6 +51,7 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"
+#include "voxelformat/private/mesh/ThreeMFFormat.h"
 #include "voxelformat/private/mesh/lego/LDrawFormat.h"
 #include "voxelformat/private/mesh/lego/LXFFormat.h"
 #include "voxelformat/private/mesh/lego/StudioIOFormat.h"
@@ -149,6 +150,7 @@ const io::FormatDescription *voxelFormats() {
 												 OBJFormat::format(),
 												 GLTFFormat::format(),
 												 STLFormat::format(),
+												 ThreeMFFormat::format(),
 												 LDrawFormat::format(),
 												 LXFFormat::format(),
 												 StudioIOFormat::format(),
@@ -293,6 +295,8 @@ static core::SharedPtr<Format> getFormat(const io::FormatDescription &desc, uint
 			return core::make_shared<SkinFormat>();
 		} else if (io::isA(STLFormat::format(), desc, ext, magic)) {
 			return core::make_shared<STLFormat>();
+		} else if (io::isA(ThreeMFFormat::format(), desc, ext, magic)) {
+			return core::make_shared<ThreeMFFormat>();
 		} else if (io::isA(LDrawFormat::format(), desc, ext, magic)) {
 			return core::make_shared<LDrawFormat>();
 		} else if (io::isA(LXFFormat::format(), desc, ext, magic)) {

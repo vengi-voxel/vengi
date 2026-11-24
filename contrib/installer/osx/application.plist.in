@@ -1164,6 +1164,28 @@
       </dict>
       <dict>
         <key>CFBundleTypeName</key>
+        <string>3D Manufacturing Format</string>
+        <key>CFBundleTypeIconFile</key>
+        <string>icon.icns</string>
+        <key>CFBundleTypeMIMETypes</key>
+        <array>
+          <string>model/3mf</string>
+        </array>
+        <key>CFBundleTypeExtensions</key>
+        <array>
+          <string>3mf</string>
+        </array>
+        <key>LSItemContentTypes</key>
+        <array>
+          <string>com.github.vengi.3d-manufacturing-format</string>
+        </array>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>NSDocumentClass</key>
+        <string>AppDocument</string>
+      </dict>
+      <dict>
+        <key>CFBundleTypeName</key>
         <string>LDraw Model</string>
         <key>CFBundleTypeIconFile</key>
         <string>icon.icns</string>
@@ -2849,6 +2871,27 @@
           <key>public.mime-type</key>
           <array>
             <string>application/x-standard-triangle-language</string>
+          </array>
+        </dict>
+      </dict>
+      <dict>
+        <key>UTTypeIdentifier</key>
+        <string>com.github.vengi.3d-manufacturing-format</string>
+        <key>UTTypeDescription</key>
+        <string>3D Manufacturing Format</string>
+        <key>UTTypeConformsTo</key>
+        <array>
+          <string>public.data</string>
+        </array>
+        <key>UTTypeTagSpecification</key>
+        <dict>
+          <key>public.filename-extension</key>
+          <array>
+            <string>3mf</string>
+          </array>
+          <key>public.mime-type</key>
+          <array>
+            <string>model/3mf</string>
           </array>
         </dict>
       </dict>

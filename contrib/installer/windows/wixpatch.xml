@@ -186,6 +186,9 @@
 		<RegistryKey Root="HKCR" Key=".stl">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
+		<RegistryKey Root="HKCR" Key=".3mf">
+			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
+		</RegistryKey>
 		<RegistryKey Root="HKCR" Key=".ldr">
 			<RegistryValue Key="ShellEx\{E357FCCD-A995-4576-B01F-234630154E96}" Type="string" Value="{CD1F0EA0-283C-4D90-A41D-DEBD9207D91F}" />
 		</RegistryKey>
@@ -542,6 +545,10 @@
 			</Feature>
 			<Feature Id="Assoc_stl" Title=".stl" Description="Open .stl files with VoxEdit (Standard Triangle Language). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
 				<ComponentRef Id="AssocRegistration_stl" />
+				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
+			</Feature>
+			<Feature Id="Assoc_3mf" Title=".3mf" Description="Open .3mf files with VoxEdit (3D Manufacturing Format). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
+				<ComponentRef Id="AssocRegistration_3mf" />
 				<ComponentRef Id="CM_CP_voxedit.voxedit.vengi_voxedit.exe" />
 			</Feature>
 			<Feature Id="Assoc_ldr" Title=".ldr" Description="Open .ldr files with VoxEdit (LDraw Model). Existing Windows per-user defaults take precedence." Level="2" AllowAdvertise="no">
@@ -1328,6 +1335,17 @@
 					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
 				</RegistryKey>
 				<RegistryValue Root="HKCR" Key=".stl" Type="string" Value="vengi-voxedit.stl" />
+			</Component>
+			<Component Id="AssocRegistration_3mf" Guid="*">
+				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".3mf" Value="vengi-voxedit.3mf" Type="string" />
+				<RegistryValue Root="HKCR" Key="Applications\vengi-voxedit.exe\SupportedTypes" Name=".3mf" Value="" Type="string" />
+				<RegistryValue Root="HKCR" Key=".3mf\OpenWithProgids" Name="vengi-voxedit.3mf" Value="" Type="string" />
+				<RegistryKey Root="HKCR" Key="vengi-voxedit.3mf">
+					<RegistryValue Type="string" Value="3D Manufacturing Format" KeyPath="yes" />
+					<RegistryValue Key="DefaultIcon" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot;,0" />
+					<RegistryValue Key="shell\open\command" Type="string" Value="&quot;[#CM_FP_voxedit.voxedit.vengi_voxedit.exe]&quot; &quot;%1&quot;" />
+				</RegistryKey>
+				<RegistryValue Root="HKCR" Key=".3mf" Type="string" Value="vengi-voxedit.3mf" />
 			</Component>
 			<Component Id="AssocRegistration_ldr" Guid="*">
 				<RegistryValue Root="HKLM" Key="Software\vengi-voxedit\Capabilities\FileAssociations" Name=".ldr" Value="vengi-voxedit.ldr" Type="string" />

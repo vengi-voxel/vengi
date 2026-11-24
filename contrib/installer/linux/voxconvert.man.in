@@ -171,6 +171,8 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxel_texture_dedupe\fP: Reuse identical color patches in the greedy texture atlas to pack more faces
 .PP
+\fBvoxformat_3mfvolumetric\fP: Embed the 3MF volumetric extension as a PNG slice stack so interior voxel colors are kept. The printable mesh is still written.
+.PP
 \fBvoxformat_ambientocclusion\fP: Extra vertices for ambient occlusion
 .PP
 \fBvoxformat_binvoxversion\fP: Save in version 1, 2 or the unofficial version 3
@@ -229,7 +231,7 @@ Allow to specify input file filter if --input is a directory.
 .PP
 \fBvoxformat_mesh_simplify_ratio\fP: Target fraction of triangle indices to keep when simplifying meshes on import or export (0 or 1 = disable)
 .PP
-\fBvoxformat_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture
+\fBvoxformat_meshmode\fP: 0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture, 4 = dual contouring
 .PP
 \fBvoxformat_mvapplytransform\fP: Bake MagicaVoxel transforms into voxels
 .PP
@@ -401,6 +403,8 @@ You can export your volume model into a obj or ply.
 
 .SH LOAD
 .TP
+3D Manufacturing Format (*.3mf)
+.TP
 AceOfSpades (*.kv6)
 .TP
 AceOfSpades (*.vxl)
@@ -558,6 +562,8 @@ VoxelMax (*.vmax.zip, *.vmax, *.vmaxb)
 Wavefront Object (*.obj)
 
 .SH SAVE
+.TP
+3D Manufacturing Format (*.3mf)
 .TP
 AceOfSpades (*.kv6)
 .TP

@@ -47,6 +47,7 @@ public:
 		case math::CoordinateSystem::Autodesk3dsmax:
 		case math::CoordinateSystem::MagicaVoxel:
 		case math::CoordinateSystem::VXL:
+		case math::CoordinateSystem::ThreeMF:
 			v.z = v.y;
 			v.y = zFlipped;
 			break;

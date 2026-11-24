@@ -75,6 +75,7 @@
           <string>com.github.vengi.wavefront-object</string>
           <string>com.github.vengi.gl-transmission-format</string>
           <string>com.github.vengi.standard-triangle-language</string>
+          <string>com.github.vengi.3d-manufacturing-format</string>
           <string>com.github.vengi.ldraw-model</string>
           <string>com.github.vengi.lego-digital-designer</string>
           <string>com.github.vengi.bricklink-studio</string>

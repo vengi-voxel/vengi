@@ -27,6 +27,7 @@
 #include "voxelformat/private/mesh/OBJFormat.h"
 #include "voxelformat/private/mesh/PLYFormat.h"
 #include "voxelformat/private/mesh/STLFormat.h"
+#include "voxelformat/private/mesh/ThreeMFFormat.h"
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "voxelformat/private/mesh/gis/OSMFormat.h"
 #include "voxelformat/private/mesh/lego/LDrawFormat.h"
@@ -229,6 +230,11 @@ bool FormatConfig::init() {
 		N_("Create project.godot beside the scene and set it as the main scene. Existing projects are preserved."),
 		core::CV_NOPERSIST);
 	core::registerVar(voxformatGodotProject);
+	const core::VarDef voxformat3MFVolumetric(
+		cfg::Voxformat3MFVolumetric, false, N_("3MF volumetric"),
+		N_("Embed the 3MF volumetric extension as a PNG slice stack so interior voxel colors are kept. The printable mesh is still written."),
+		core::CV_NOPERSIST);
+	core::registerVar(voxformat3MFVolumetric);
 	const core::VarDef voxformatWithMaterials(cfg::VoxformatWithMaterials, true, N_("Export materials"),
 											  N_("Try to export material properties if the formats support it"),
 											  core::CV_NOPERSIST);
@@ -424,6 +430,7 @@ static const FormatVarMeta g_formatCVars[] = {
 	{cfg::VoxformatGLTF_KHR_materials_pbrSpecularGlossiness, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {&GLTFFormat::format()}, {}},
 	{cfg::VoxformatGLTF_KHR_materials_specular, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {&GLTFFormat::format()}, {}},
 	{cfg::VoxformatGodotProject, FormatCVarFlag_Save, {&GodotSceneFormat::format()}, {}},
+	{cfg::Voxformat3MFVolumetric, FormatCVarFlag_Save, {&ThreeMFFormat::format()}, {}},
 	{cfg::VoxformatWithMaterials, FormatCVarFlag_Save | FormatCVarFlag_Mesh, {}, {}},
 	{cfg::VoxformatMeshMode, FormatCVarFlag_Save | FormatCVarFlag_Mesh | FormatCVarFlag_Primary, {}, {g_meshModeTitles[0], g_meshModeTitles[1], g_meshModeTitles[2], g_meshModeTitles[3], g_meshModeTitles[4]}},
 	{cfg::VoxformatBinvoxVersion, FormatCVarFlag_Save, {&BinVoxFormat::format()}, {nullptr, N_("Binvox 1 (white)"), N_("Binvox 2 (multi colors)"), N_("Binvox 3 (unofficial)")}},

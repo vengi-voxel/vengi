@@ -77,7 +77,9 @@ bool coordinateSystemToMatrix(CoordinateSystem sys, math::Mat4f &matrix) {
 	case CoordinateSystem::Autodesk3dsmax:
 	case CoordinateSystem::MagicaVoxel:
 	case CoordinateSystem::VXL:
-		// Z-up right-handed systems: X=right, Y=forward, Z=up
+	case CoordinateSystem::ThreeMF:
+		// Z-up right-handed systems: X=right, Y=back (vengi forward, -Z), Z=up
+		// 3MF names +Y "back" of the build volume; MagicaVoxel, VXL and 3ds Max use the same basis.
 		// Map to vengi (X=right, Y=up, Z=backward/-Z=forward):
 		// Matrix columns represent where MV's X, Y, Z axes map in vengi's standard basis:
 		//   MV's X (right) -> vengi's X (right): (1, 0, 0)

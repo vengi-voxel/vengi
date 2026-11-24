@@ -68,6 +68,7 @@
 
 | Name                       | Extension | Loading | Saving    | Animations |
 | :------------------------- | --------- | ------- | --------- | ---------- |
+| 3D Manufacturing Format    | 3mf       | X       | X         |            |
 | Autodesk 3D Studio         | 3ds       | X       |           |            |
 | Blockbench                 | bbmodel   | X       | X         | X          |
 | BrickLink Studio           | io        | X       |           |            |

@@ -11,6 +11,7 @@ set(SRCS
 	VarUtil.h
 	Version.h Version.cpp
 	VersionCheck.h VersionCheck.cpp
+	XMLUtil.h XMLUtil.cpp
 )
 set(LIB util)
 engine_add_module(TARGET ${LIB} SRCS ${SRCS} DEPENDENCIES math command http json)
@@ -27,6 +28,7 @@ set(TEST_SRCS
 	tests/VarUtilTest.cpp
 	tests/VersionCheckTest.cpp
 	tests/VersionTest.cpp
+	tests/XMLUtilTest.cpp
 )
 set(TEST_FILES
 	tests/palette.settings.vmaxpsb

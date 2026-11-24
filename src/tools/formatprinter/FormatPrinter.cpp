@@ -16,6 +16,7 @@
 #include "palette/PaletteFormatDescription.h"
 #include "voxedit-util/modifier/brush/LUABrush.h"
 #include "voxedit-util/modifier/brush/LUASelectionMode.h"
+#include "util/XMLUtil.h"
 #include "voxelformat/FormatConfig.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelgenerator/LUAApi.h"
@@ -930,31 +931,13 @@ void FormatPrinter::printMimeInfo() {
 				}
 			}
 			if (useString) {
-				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"");
+				core::String raw;
+				raw.reserve((size_t)e.size());
 				for (int i = 0; i < e.size(); ++i) {
-					const char c = (char)e.data.u8[i];
-					switch (c) {
-					case '&':
-						Log::printf("&amp;");
-						break;
-					case '<':
-						Log::printf("&lt;");
-						break;
-					case '>':
-						Log::printf("&gt;");
-						break;
-					case '"':
-						Log::printf("&quot;");
-						break;
-					case '\'':
-						Log::printf("&apos;");
-						break;
-					default:
-						Log::printf("%c", c);
-						break;
-					}
+					raw += (char)e.data.u8[i];
 				}
-				Log::printf("\"/>\n");
+				const core::String value = util::xmlEscape(raw.c_str());
+				Log::printf("\t\t\t<match type=\"string\" offset=\"0\" value=\"%s\"/>\n", value.c_str());
 			} else {
 				for (int i = 0; i < e.size(); ++i) {
 					Log::printf("\t\t\t<match type=\"byte\" offset=\"%i\" value=\"0x%x\"/>\n", (int)i, (uint8_t)e.data.u8[i]);

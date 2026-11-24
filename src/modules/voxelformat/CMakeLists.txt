@@ -119,6 +119,7 @@ set(SRCS
 	private/mesh/OBJFormat.h                 private/mesh/OBJFormat.cpp
 	private/mesh/PLYFormat.h                 private/mesh/PLYFormat.cpp
 	private/mesh/STLFormat.h                 private/mesh/STLFormat.cpp
+	private/mesh/ThreeMFFormat.h             private/mesh/ThreeMFFormat.cpp
 	private/mesh/lego/LegoUtil.h             private/mesh/lego/LegoUtil.cpp
 	private/mesh/lego/LDrawFormat.h          private/mesh/lego/LDrawFormat.cpp
 	private/mesh/lego/LXFFormat.h            private/mesh/lego/LXFFormat.cpp
@@ -244,6 +245,7 @@ set(TEST_SRCS
 	tests/SMFormatTest.cpp
 	tests/SMTPLFormatTest.cpp
 	tests/STLFormatTest.cpp
+	tests/ThreeMFFormatTest.cpp
 	tests/LDrawFormatTest.cpp
 	tests/LXFFormatTest.cpp
 	tests/StudioIOFormatTest.cpp

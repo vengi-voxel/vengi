@@ -1018,6 +1018,18 @@ const jsonData = {
       "save": true
     },
     {
+      "name": "3D Manufacturing Format",
+      "extensions": [
+        "3mf"
+      ],
+      "magics": [],
+      "mimetype": "model/3mf",
+      "mesh": true,
+      "animation": false,
+      "load": true,
+      "save": true
+    },
+    {
       "name": "LDraw Model",
       "extensions": [
         "ldr",
