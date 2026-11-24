@@ -272,8 +272,6 @@ set(TEST_SRCS
 	tests/TextureLookupTest.cpp
 
 	tests/TestHelper.cpp tests/TestHelper.h
-	tests/8ontop.h
-	tests/vox_character.h
 	tests/vox_glasses.h
 )
 set(TEST_FILES
@@ -288,6 +286,7 @@ set(TEST_FILES
 	"tests/2voxel.vmax.zip"
 	"tests/5voxel.vmax.zip"
 	"tests/8ontop.vox"
+	"tests/8ontop.vengi"
 	"tests/aceofspades.vxl"
 	"tests/ambient-occlusion.vengi"
 	"tests/Anima Toon anim.scn"
@@ -472,6 +471,7 @@ set(TEST_FILES
 	"tests/Untitled.vox"
 	"tests/ufoai.bsp"
 	"tests/vox_character.vox"
+	"tests/vox_character.vengi"
 	"tests/voxelbuilder.vbx"
 	"tests/vox_glasses.vox"
 	"tests/voxlap5.kv6"
