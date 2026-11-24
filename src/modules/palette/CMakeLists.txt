@@ -22,6 +22,7 @@ set(SRCS
 	FormatConfig.cpp FormatConfig.h
 	Material.cpp Material.h
 	NormalPalette.cpp NormalPalette.h
+	NormalPaletteColorUtil.cpp NormalPaletteColorUtil.h
 	NormalPaletteLookup.h
 
 	PaletteFormatDescription.cpp PaletteFormatDescription.h
@@ -30,6 +31,7 @@ set(SRCS
 
 	PaletteView.h PaletteView.cpp
 	Palette.h Palette.cpp
+	PaletteColorUtil.h PaletteColorUtil.cpp
 	PaletteLookup.h PaletteLookup.cpp
 	PaletteUtil.h PaletteUtil.cpp
 	PaletteCompleter.h

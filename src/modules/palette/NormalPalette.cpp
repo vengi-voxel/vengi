@@ -13,7 +13,6 @@
 #include "io/FileStream.h"
 #include "palette/Palette.h"
 #include "palette/private/PaletteFormat.h"
-#include "math/Vec4f.h"
 #include "math/Vec3f.h"
 #include "math/Scalar.h"
 
@@ -275,20 +274,6 @@ bool NormalPalette::isBuiltIn() const {
 
 math::Vec3f NormalPalette::normal3f(uint8_t index) const {
 	return toVec3(_normals[index]);
-}
-
-void NormalPalette::toVec4f(math::Vec4f *vec4f) const {
-	core_memset(vec4f, 0, sizeof(math::Vec4f) * NormalPaletteMaxNormals);
-	constexpr float scale = 2.0f / 255.0f;
-	for (int i = 0; i < _size; ++i) {
-		const color::RGBA &rgba = _normals[i];
-		if (rgba.a == 0) {
-			continue;
-		}
-		vec4f[i].x = (float)rgba.r * scale - 1.0f;
-		vec4f[i].y = (float)rgba.g * scale - 1.0f;
-		vec4f[i].z = (float)rgba.b * scale - 1.0f;
-	}
 }
 
 uint32_t NormalPalette::hash() const {

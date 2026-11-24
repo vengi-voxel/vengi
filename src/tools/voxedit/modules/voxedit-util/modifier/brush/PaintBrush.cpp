@@ -7,6 +7,7 @@
 #include "color/RGBA.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
+#include "palette/PaletteColorUtil.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"
@@ -82,8 +83,8 @@ voxel::Voxel PaintBrush::VoxelColor::evaluate(const voxel::Voxel &old) {
 static voxel::Voxel mix(ModifierVolumeWrapper &wrapper, const voxel::Voxel &from, const voxel::Voxel &to,
 						float factor) {
 	const palette::Palette &palette = wrapper.node().palette();
-	const math::Vec4f colorA = palette.color4(from.getColor());
-	const math::Vec4f colorB = palette.color4(to.getColor());
+	const math::Vec4f colorA = palette::color4(palette, from.getColor());
+	const math::Vec4f colorB = palette::color4(palette, to.getColor());
 	const math::Vec4f newColor = math::mix(colorA, colorB, factor);
 	const int index = palette.getClosestMatch(color::getRGBA(newColor), from.getColor());
 	if (index == palette::PaletteColorNotFound) {

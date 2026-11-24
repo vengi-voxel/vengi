@@ -10,6 +10,7 @@
 #include "core/String.h"
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
+#include "palette/PaletteColorUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
@@ -152,7 +153,7 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 				ImPlot::SetupAxisLimits(ImAxis_X1, -0.5, n - 0.5, ImGuiCond_Always);
 				for (int i = 0; i < n; i++) {
 					const ColorBar &bar = chartBars[i];
-					const math::Vec4f &c = palette.color4(bar.index);
+					const math::Vec4f &c = palette::color4(palette, bar.index);
 					const core::String label = core::String::format("Color %d##c%d", bar.index, bar.index);
 					const float x = (float)i;
 					const float y = (float)bar.count;
@@ -211,7 +212,7 @@ void NodeInspectorPanel::modelProperties(scenegraph::SceneGraphNode &node) {
 				while (clipper.Step()) {
 					for (int row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
 						const ColorBar &bar = bars[row];
-						const math::Vec4f &c = palette.color4(bar.index);
+						const math::Vec4f &c = palette::color4(palette, bar.index);
 						const ImVec4 col(c.r, c.g, c.b, 1.0f);
 						ImGui::TableNextRow();
 						if (bar.index == (int)hoveredColorIdx) {

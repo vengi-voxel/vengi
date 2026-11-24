@@ -4,6 +4,7 @@
 
 #include "color/ColorUtil.h"
 #include "palette/Palette.h"
+#include "palette/PaletteColorUtil.h"
 #include "app/tests/AbstractTest.h"
 #include "core/ArrayLength.h"
 #include "core/ConfigVar.h"
@@ -491,6 +492,28 @@ TEST_F(PaletteTest, testHash) {
 	pal.setColor(0, color::RGBA(0, 0, 0, 0));
 	const uint64_t h2 = pal.hash();
 	EXPECT_NE(h1, h2);
+}
+
+TEST_F(PaletteTest, testColor4AndUpload) {
+	Palette pal;
+	pal.setColor(0, color::RGBA(255, 128, 0, 255));
+	EXPECT_EQ(color::fromRGBA(pal.color(0)), color4(pal, 0));
+
+	Material material;
+	material.mask = 1u << MaterialEmit;
+	material.emit = 2.0f;
+	pal.setMaterial(0, material);
+
+	math::Vec4f colors[PaletteMaxColors];
+	math::Vec4f emit[PaletteMaxColors];
+	toVec4f(pal, colors, emit);
+	EXPECT_FLOAT_EQ(1.0f, colors[0].r);
+	EXPECT_NEAR(128.0f / 255.0f, colors[0].g, 0.0001f);
+	EXPECT_FLOAT_EQ(0.0f, colors[0].b);
+	EXPECT_FLOAT_EQ(1.0f, colors[0].a);
+	EXPECT_FLOAT_EQ(2.0f, emit[0].r);
+	EXPECT_EQ(math::Vec4f(0.0f), colors[1]);
+	EXPECT_EQ(math::Vec4f(0.0f), emit[1]);
 }
 
 TEST_F(PaletteTest, testMoveConstructor) {

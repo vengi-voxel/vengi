@@ -136,10 +136,6 @@ void Palette::markDirty() {
 	_hashDirty = true;
 }
 
-math::Vec4f Palette::color4(uint8_t i) const {
-	return color::fromRGBA(color(i));
-}
-
 void Palette::reduce(uint8_t targetColors) {
 	const core::VarPtr &var = core::getVar(cfg::CoreColorReduction);
 	const core::String &strVal = var->strVal();
@@ -1235,25 +1231,6 @@ void Palette::setMedia(uint8_t paletteColorIdx, float factor) {
 
 void Palette::setLowDynamicRange(uint8_t paletteColorIdx, float factor) {
 	setMaterialValue(paletteColorIdx, MaterialLowDynamicRange, factor);
-}
-
-void Palette::toVec4f(math::Vec4f *materialColors, math::Vec4f *emitColors) const {
-	core_memset(materialColors, 0, sizeof(math::Vec4f) * PaletteMaxColors);
-	core_memset(emitColors, 0, sizeof(math::Vec4f) * PaletteMaxColors);
-	constexpr float scale = 1.0f / 255.0f;
-	constexpr uint32_t emitBit = 1u << MaterialEmit;
-	for (int i = 0; i < _colorCount; ++i) {
-		const color::RGBA &rgba = _colors[i];
-		const float r = (float)rgba.r * scale;
-		const float g = (float)rgba.g * scale;
-		const float b = (float)rgba.b * scale;
-		const float a = (float)rgba.a * scale;
-		materialColors[i] = math::Vec4f(r, g, b, a);
-		if (_materials[i].mask & emitBit) {
-			const float emit = _materials[i].emit;
-			emitColors[i] = math::Vec4f(r * emit, g * emit, b * emit, a * emit);
-		}
-	}
 }
 
 const core::String &Palette::colorName(uint8_t paletteColorIdx) const {

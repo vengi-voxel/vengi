@@ -11,6 +11,7 @@
 #include "io/ZipArchive.h"
 #include "palette/Material.h"
 #include "palette/Palette.h"
+#include "palette/PaletteColorUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
@@ -526,7 +527,7 @@ TEST_F(VMaxFormatTest, testEmissionNormalizesSliderRangeAndRetainsColor) {
 	const scenegraph::SceneGraphNode *node = graph.firstModelNode();
 	ASSERT_NE(nullptr, node);
 	math::Vec4f colors[palette::PaletteMaxColors], emissions[palette::PaletteMaxColors];
-	node->palette().toVec4f(colors, emissions);
+	palette::toVec4f(node->palette(), colors, emissions);
 	const float expected[] = {0.14f, 1.0f, 1.0f, 0.0f, 0.0f};
 	EXPECT_EQ(5, voxelutil::countVoxels(*node->volume()));
 	for (int count = 0; count < 5; ++count) {

@@ -8,7 +8,6 @@
 #include "color/RGBA.h"
 #include "core/String.h"
 #include "image/ImageFwd.h"
-#include "math/Vec4f.h"
 #include "math/Vec3f.h"
 
 namespace palette {
@@ -47,11 +46,6 @@ public:
 	math::Vec3f normal3f(uint8_t index) const;
 	void setNormal(uint8_t index, const color::RGBA &normal);
 	void setNormal(uint8_t index, const math::Vec3f &normal);
-
-	/**
-	 * @note The target buffer must at least have space for 256 entries
-	 */
-	void toVec4f(math::Vec4f *vec4f) const;
 
 	const core::String &name() const;
 	void setName(const core::String &name);

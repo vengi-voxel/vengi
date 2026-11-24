@@ -16,7 +16,9 @@
 #include "core/StandardLib.h"
 #include "core/Var.h"
 #include "palette/NormalPalette.h"
+#include "palette/NormalPaletteColorUtil.h"
 #include "palette/Palette.h"
+#include "palette/PaletteColorUtil.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Camera.h"
 #include "video/Renderer.h"
@@ -623,7 +625,7 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 
 	if (palette.hash() != _paletteHash) {
 		_paletteHash = palette.hash();
-		palette.toVec4f(_voxelShaderVertData.materialcolor, _voxelShaderVertData.glowcolor);
+		palette::toVec4f(palette, _voxelShaderVertData.materialcolor, _voxelShaderVertData.glowcolor);
 		static_assert(lengthof(_voxelShaderVertData.materialcolor) == palette::PaletteMaxColors);
 		static_assert(lengthof(_voxelShaderVertData.glowcolor) == palette::PaletteMaxColors);
 	}
@@ -632,7 +634,7 @@ void RawVolumeRenderer::updatePalette(const voxel::MeshStatePtr &meshState, int 
 	if (normalsPalette.hash() != _normalsPaletteHash) {
 		_normalsPaletteHash = normalsPalette.hash();
 		_voxelShaderVertData.normals[NO_NORMAL] = math::Vec4f(1.0f, 0.0f, 0.0f, 1.0f);
-		normalsPalette.toVec4f(&_voxelShaderVertData.normals[NORMAL_PALETTE_OFFSET]);
+		palette::toVec4f(normalsPalette, &_voxelShaderVertData.normals[NORMAL_PALETTE_OFFSET]);
 		static_assert(lengthof(_voxelShaderVertData.normals) == palette::NormalPaletteMaxNormals + NORMAL_PALETTE_OFFSET);
 	}
 }

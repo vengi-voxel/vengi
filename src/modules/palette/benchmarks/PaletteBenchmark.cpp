@@ -6,7 +6,9 @@
 #include "color/ColorUtil.h"
 #include "color/RGBA.h"
 #include "palette/NormalPalette.h"
+#include "palette/NormalPaletteColorUtil.h"
 #include "palette/Palette.h"
+#include "palette/PaletteColorUtil.h"
 #include "palette/PaletteLookup.h"
 #include "palette/PaletteUtil.h"
 #include "math/Vec4f.h"
@@ -69,7 +71,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fPalette)(benchmark::State &state) {
 	for (auto _ : state) {
 		math::Vec4f materialColors[256];
 		math::Vec4f emitColors[256];
-		palette.toVec4f(materialColors, emitColors);
+		palette::toVec4f(palette, materialColors, emitColors);
 		benchmark::DoNotOptimize(materialColors);
 		benchmark::DoNotOptimize(emitColors);
 	}
@@ -80,7 +82,7 @@ BENCHMARK_DEFINE_F(PaletteBenchmark, toVec4fNormalPalette)(benchmark::State &sta
 	normalPalette.redAlert2();
 	math::Vec4f vec4f[palette::NormalPaletteMaxNormals];
 	for (auto _ : state) {
-		normalPalette.toVec4f(vec4f);
+		palette::toVec4f(normalPalette, vec4f);
 		benchmark::DoNotOptimize(vec4f);
 	}
 }

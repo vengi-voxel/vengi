@@ -3,6 +3,7 @@
  */
 
 #include "palette/NormalPalette.h"
+#include "palette/NormalPaletteColorUtil.h"
 #include "app/tests/AbstractTest.h"
 #include "palette/NormalPaletteLookup.h"
 #include "math/Vec4f.h"
@@ -69,7 +70,7 @@ TEST_F(NormalPaletteTest, testEmptySlotsAreNotDirections) {
 	source.createRemap(palette, remap);
 	EXPECT_EQ(4, remap[0]);
 	math::Vec4f vectors[256];
-	palette.toVec4f(vectors);
+	toVec4f(palette, vectors);
 	for (int i = 0; i < NormalPaletteMaxNormals; ++i) {
 		if (i != 4) {
 			EXPECT_EQ(math::Vec4f(0.0f), vectors[i]);
