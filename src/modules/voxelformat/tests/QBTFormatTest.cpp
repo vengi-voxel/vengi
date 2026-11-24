@@ -13,6 +13,7 @@
 #include "util/VarUtil.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/qubicle/QBTFormat.h"
+#include "math/Constants.h"
 #include "math/Mat4f.h"
 #include "math/Vec4f.h"
 #include "math/Vec3u.h"
@@ -188,7 +189,7 @@ TEST_F(QBTFormatTest, testRejectsInvalidScalesAndPivot) {
 	const io::MemoryArchivePtr invalidGlobal = fixture(math::Vec3u(1), math::Vec3f(0), math::Vec3f(0));
 	graph.clear();
 	EXPECT_FALSE(format.load("synthetic.qbt", invalidGlobal, graph, testLoadCtx));
-	const io::MemoryArchivePtr invalidPivot = fixture(math::Vec3u(1), math::Vec3f(nanf("")));
+	const io::MemoryArchivePtr invalidPivot = fixture(math::Vec3u(1), math::Vec3f((float)math::NotANumber));
 	graph.clear();
 	EXPECT_FALSE(format.load("synthetic.qbt", invalidPivot, graph, testLoadCtx));
 }
