@@ -2,7 +2,7 @@
  * @file
  */
 
-#include "BrushDraft.h"
+#include "TypedBrushDraft.h"
 #include "BrushRegistry.h"
 #include "brush/ExtrudeBrush.h"
 #include "brush/LineBrush.h"

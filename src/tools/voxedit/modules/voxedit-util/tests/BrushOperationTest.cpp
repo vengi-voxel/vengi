@@ -3,7 +3,7 @@
  */
 
 #include "AbstractSceneManagerTest.h"
-#include "voxedit-util/modifier/DraftEditSession.h"
+#include "voxedit-util/modifier/TypedBrushDraft.h"
 #include "voxedit-util/modifier/Modifier.h"
 #include "voxedit-util/modifier/brush/ShapeBrush.h"
 #include "voxedit-util/modifier/brush/LineBrush.h"

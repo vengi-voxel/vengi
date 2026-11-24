@@ -5,7 +5,6 @@
 #pragma once
 
 #include "BrushApply.h"
-#include "BrushDraft.h"
 #include "BrushEditSession.h"
 #include "BrushRegistry.h"
 #include "IModifierRenderer.h"

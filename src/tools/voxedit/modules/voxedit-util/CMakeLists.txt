@@ -42,7 +42,7 @@ set(SRCS
 
 	modifier/IModifierRenderer.h
 	modifier/BrushApply.h modifier/BrushApply.cpp
-	modifier/DraftEditSession.h modifier/BrushDraft.h
+	modifier/DraftEditSession.h modifier/BrushDraft.h modifier/TypedBrushDraft.h
 	modifier/BrushRegistry.h modifier/BrushRegistry.cpp modifier/BuiltinBrushes.cpp
 	modifier/BrushEditSession.h modifier/BrushEditSession.cpp
 	modifier/brush/PaintStrokeState.h
