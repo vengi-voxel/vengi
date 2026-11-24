@@ -303,6 +303,8 @@ TEST_F(FilesystemTest, testRelativeScriptsFolder) {
 	ASSERT_TRUE(file);
 	EXPECT_TRUE(file->exists()) << file->name().c_str();
 	EXPECT_TRUE(core::string::endsWith(file->name(), "scripts/relscript-mod.lua")) << file->name().c_str();
+	// Windows cannot unlink a file that still has an open handle
+	file->close();
 
 	ASSERT_TRUE(fs.sysPopDir());
 	EXPECT_TRUE(io::Filesystem::sysRemoveFile(core::string::path(sandbox, "scripts", "relscript-mod.lua")));
