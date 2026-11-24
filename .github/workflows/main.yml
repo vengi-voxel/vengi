@@ -648,3 +648,70 @@ jobs:
               fi
             done
             mkdocs gh-deploy --dirty --force
+
+    # Linux voxconvert stays off itch: the linux job only builds a voxedit AppImage,
+    # and the itch app does not install the deb.
+    publish-itch:
+        needs: [linux, mac, windows]
+        if: success() && startsWith(github.ref, 'refs/tags/')
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@v5
+
+        - name: Download voxedit Linux
+          uses: actions/download-artifact@v8
+          with:
+            name: linux-appimage-voxedit
+            path: itch/voxedit/linux
+
+        - name: Download voxedit Windows
+          uses: actions/download-artifact@v8
+          with:
+            name: win-voxedit
+            path: itch/voxedit/windows
+
+        - name: Download voxedit macOS
+          uses: actions/download-artifact@v8
+          with:
+            name: mac-vengi-voxedit-app
+            path: itch/voxedit/mac/vengi-voxedit.app
+
+        - name: Download voxconvert Windows
+          uses: actions/download-artifact@v8
+          with:
+            name: win-voxconvert
+            path: itch/voxconvert/windows
+
+        - name: Download voxconvert macOS
+          uses: actions/download-artifact@v8
+          with:
+            name: mac-vengi-voxconvert-app
+            path: itch/voxconvert/mac/vengi-voxconvert.app
+
+        - name: Prepare uploads
+          run: |
+            test -f itch/voxedit/windows/voxedit/vengi-voxedit.exe
+            test -f itch/voxedit/mac/vengi-voxedit.app/Contents/Info.plist
+            test -f itch/voxconvert/windows/voxconvert/vengi-voxconvert.exe
+            test -f itch/voxconvert/mac/vengi-voxconvert.app/Contents/Info.plist
+            test -n "$(find itch/voxedit/linux -maxdepth 1 -name '*.AppImage' -print -quit)"
+            chmod +x itch/voxedit/linux/*.AppImage
+            cp contrib/installer/windows/voxconvert.itch.toml itch/voxconvert/windows/.itch.toml
+
+        - name: Install Butler
+          run: |
+            curl --fail --location --retry 5 --retry-all-errors \
+              -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+            unzip butler.zip
+            chmod +x butler
+
+        - name: Push to itch.io
+          env:
+            BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+            VERSION: ${{ github.ref_name }}
+          run: |
+            ./butler push itch/voxedit/windows mgerhardy/vengi-voxel-editor:windows --userversion "$VERSION"
+            ./butler push itch/voxedit/linux   mgerhardy/vengi-voxel-editor:linux   --userversion "$VERSION"
+            ./butler push itch/voxedit/mac     mgerhardy/vengi-voxel-editor:mac     --userversion "$VERSION"
+            ./butler push itch/voxconvert/windows mgerhardy/voxel-voxconvert:windows --userversion "$VERSION"
+            ./butler push itch/voxconvert/mac     mgerhardy/voxel-voxconvert:mac     --userversion "$VERSION"

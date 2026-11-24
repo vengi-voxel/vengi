@@ -1,0 +1,3 @@
+[[actions]]
+name = "play"
+path = "voxconvert/vengi-voxconvert.exe"
