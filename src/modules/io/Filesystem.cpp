@@ -466,9 +466,9 @@ io::FilePtr Filesystem::open(const core::Path &filename, FileMode mode) const {
 	}
 	if (mode == FileMode::SysWrite) {
 		Log::trace("Use absolute path to open file %s for writing", filename.c_str());
-		return core::make_shared<io::File>(filename.str(), mode);
+		return core::make_shared<io::File>(filename, mode);
 	} else if (mode == FileMode::SysRead && fs_exists(filename)) {
-		return core::make_shared<io::File>(filename.str(), mode);
+		return core::make_shared<io::File>(filename, mode);
 	} else if (mode == FileMode::Write) {
 		if (!sysIsRelativePath(filename)) {
 			Log::error("%s can't get opened in write mode", filename.c_str());
@@ -476,7 +476,7 @@ io::FilePtr Filesystem::open(const core::Path &filename, FileMode mode) const {
 		}
 		const core::Path fullpath = _homePath.append(filename);
 		sysCreateDir(core::Path(core::string::extractDir(fullpath.str())), true);
-		return core::make_shared<io::File>(fullpath.str(), mode);
+		return core::make_shared<io::File>(fullpath, mode);
 	}
 	FileMode openmode = mode;
 	if (openmode == FileMode::ReadNoHome) {
@@ -490,7 +490,7 @@ io::FilePtr Filesystem::open(const core::Path &filename, FileMode mode) const {
 		const core::Path fullpath = p.append(filename);
 		if (fs_exists(fullpath)) {
 			Log::trace("loading file %s from %s for mode %i", filename.c_str(), p.c_str(), (int)openmode);
-			return core::make_shared<io::File>(fullpath.str(), openmode);
+			return core::make_shared<io::File>(fullpath, openmode);
 		}
 		if (sysIsRelativePath(p)) {
 			for (const core::Path &s : _paths) {
@@ -500,21 +500,21 @@ io::FilePtr Filesystem::open(const core::Path &filename, FileMode mode) const {
 				const core::Path fullrelpath = s + p + filename;
 				if (fs_exists(fullrelpath)) {
 					Log::trace("loading file %s from %s%s for mode %i", filename.c_str(), s.c_str(), p.c_str(), (int)openmode);
-					return core::make_shared<io::File>(fullrelpath.str(), openmode);
+					return core::make_shared<io::File>(fullrelpath, openmode);
 				}
 			}
 		}
 	}
 	if (fs_exists(filename)) {
 		Log::trace("loading file '%s'", filename.c_str());
-		return core::make_shared<io::File>(filename.str(), openmode);
+		return core::make_shared<io::File>(filename, openmode);
 	}
 	if (!sysIsRelativePath(filename)) {
 		Log::trace("'%s' not found for mode %i", filename.c_str(), (int)openmode);
 		return core::make_shared<io::File>("", openmode);
 	}
 	Log::trace("Use %s from %s for mode %i", filename.c_str(), _basePath.c_str(), (int)openmode);
-	return core::make_shared<io::File>(_basePath.append(filename).str(), openmode);
+	return core::make_shared<io::File>(_basePath.append(filename), openmode);
 }
 
 core::String Filesystem::load(const char *filename, ...) {
@@ -572,7 +572,7 @@ bool Filesystem::homeWrite(const core::String &filename, const core::String &str
 
 bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, size_t length) {
 	io::File f(filename, FileMode::SysWrite);
-	const core::String dir = f.dir();
+	const core::Path dir = f.dir();
 	if (!dir.empty() && !sysCreateDir(dir)) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
 		return false;
@@ -583,7 +583,7 @@ bool Filesystem::sysWrite(const core::String &filename, const uint8_t *content, 
 
 long Filesystem::sysWrite(const core::String &filename, io::ReadStream &stream) {
 	io::File f(filename, FileMode::SysWrite);
-	const core::String dir = f.dir();
+	const core::Path dir = f.dir();
 	if (!dir.empty() && !sysCreateDir(dir)) {
 		Log::error("Failed to write to %s: Could not create the directory", filename.c_str());
 		return false;

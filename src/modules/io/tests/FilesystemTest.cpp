@@ -224,7 +224,7 @@ TEST_F(FilesystemTest, testWriteNewDir) {
 	{
 		const io::FilePtr& file = fs.open("dir123/testfile");
 		filename = file->name();
-		filepath = file->dir();
+		filepath = file->dir().str();
 		content = file->load();
 		file->close();
 	}
