@@ -8,6 +8,7 @@
 #include "core/ScopedPtr.h"
 #include "core/collection/Buffer.h"
 #include "palette/NormalPalette.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/SparseVolume.h"
 #include "voxel/Voxel.h"

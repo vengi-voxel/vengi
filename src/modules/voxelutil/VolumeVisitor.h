@@ -5,15 +5,12 @@
 #pragma once
 
 #include "app/ForParallel.h"
-#include "core/TraceScoped.h"
-#include "color/Distance.h"
-#include "core/Common.h"
-#include "math/Vec3f.h"
 #include "core/ProgressScope.h"
+#include "core/TraceScoped.h"
+#include "core/Common.h"
 #include "core/collection/DynamicArray.h"
 #include "core/collection/DynamicSet.h"
 #include "core/concurrent/Atomic.h"
-#include "palette/Palette.h"
 #include "voxel/Connectivity.h"
 #include "math/Axis.h"
 #include "voxel/Face.h"
@@ -22,8 +19,11 @@
 #include "voxel/VolumeSamplerDispatch.h"
 #include "voxel/Voxel.h"
 #include <type_traits>
-#include <stdint.h>
 #include "math/Vec3i.h"
+
+namespace palette {
+class Palette;
+}
 
 namespace voxelutil {
 
@@ -320,9 +320,9 @@ struct VisitVoxelFuzzyColor {
 	const uint8_t _colorIndex;
 	const float _threshold;
 
-	VisitVoxelFuzzyColor(const palette::Palette &palette, uint8_t colorIndex, float threshold)
-		: _palette(palette), _colorIndex(colorIndex), _threshold(threshold) {
-	}
+	VisitVoxelFuzzyColor(const palette::Palette &palette, uint8_t colorIndex, float threshold);
+
+	float getDistance(uint8_t colorIndex) const;
 
 	template<class Sampler>
 	inline bool operator()(const Sampler &sampler) const {
@@ -333,9 +333,7 @@ struct VisitVoxelFuzzyColor {
 		if (voxelColorIndex == _colorIndex) {
 			return true;
 		}
-		const color::RGBA c1 = _palette.color(_colorIndex);
-		const color::RGBA c2 = _palette.color(voxelColorIndex);
-		return color::getDistance(c1, c2, color::Distance::Approximation) < _threshold;
+		return getDistance(voxelColorIndex) < _threshold;
 	}
 };
 

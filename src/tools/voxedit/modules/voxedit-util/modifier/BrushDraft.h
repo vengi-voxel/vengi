@@ -1,6 +1,7 @@
 /**
  * @file
  */
+
 #pragma once
 
 #include "BrushApply.h"

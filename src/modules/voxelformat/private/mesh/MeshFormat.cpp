@@ -22,6 +22,7 @@
 #include "meshoptimizer.h"
 #include "palette/NormalPalette.h"
 #include "palette/NormalPaletteLookup.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

@@ -6,6 +6,7 @@
 #include "ModifierVolumeWrapper.h"
 #include "core/ScopedPtr.h"
 #include "palette/NormalPalette.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
 #include "math/Vec3i.h"

@@ -4,15 +4,16 @@
 
 #pragma once
 
-#include "brush/LUABrush.h"
-#include "brush/LUASelectionMode.h"
-#include "brush/SelectBrush.h"
 #include "core/Function.h"
 #include "core/IComponent.h"
+#include "core/SharedPtr.h"
 #include "core/collection/DynamicArray.h"
 
 namespace voxedit {
 
+class LUABrush;
+class LUASelectionMode;
+class SelectBrush;
 class BrushRegistry;
 
 /**
@@ -43,6 +44,7 @@ public:
 	void construct() override;
 	bool init() override;
 	void shutdown() override;
+	~ScriptManager() override;
 
 	void setBeforeScriptChange(const core::Function<void()> &callback) {
 		_beforeScriptChange = callback;

@@ -4,6 +4,7 @@
 
 #include "Modifier.h"
 #include "app/I18NMarkers.h"
+#include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "memento/MementoHandler.h"
 #include "voxedit-util/SceneManager.h"
 

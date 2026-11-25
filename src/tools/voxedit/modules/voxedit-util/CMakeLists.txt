@@ -50,7 +50,7 @@ set(SRCS
 	modifier/ModifierButton.h modifier/ModifierButton.cpp
 	modifier/ModifierRenderer.h modifier/ModifierRenderer.cpp
 	modifier/ModifierType.h
-	modifier/ModifierVolumeWrapper.h
+	modifier/ModifierVolumeWrapper.h modifier/ModifierVolumeWrapper.cpp
 	modifier/PreviewManager.h modifier/PreviewManager.cpp
 	modifier/BrushRadiusPreview.h modifier/BrushRadiusPreview.cpp
 	modifier/ScriptManager.h modifier/ScriptManager.cpp

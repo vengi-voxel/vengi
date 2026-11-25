@@ -4,6 +4,7 @@
 
 #include "ShapeOperation.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxelgenerator/ShapeGenerator.h"
 #include "math/Vec3i.h"

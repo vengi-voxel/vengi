@@ -5,13 +5,15 @@
 #pragma once
 
 #include "ModifierType.h"
-#include "scenegraph/SceneGraphNode.h"
 #include "voxel/Connectivity.h"
 #include "voxel/RawVolumeWrapper.h"
 #include "voxel/Voxel.h"
-#include "voxelutil/VolumeVisitor.h"
 #include "math/AlignedVec4i.h"
 #include "math/Vec3i.h"
+
+namespace scenegraph {
+class SceneGraphNode;
+}
 
 namespace voxedit {
 
@@ -133,15 +135,7 @@ public:
 	};
 
 	ModifierVolumeWrapper(scenegraph::SceneGraphNode &node, ModifierType modifierType,
-						  const voxel::Region &box3DSelectionRegion = voxel::Region::InvalidRegion)
-		: Super(node.volume()), _modifierType(modifierType), _node(node) {
-		_erase = (_modifierType & ModifierType::Erase) != ModifierType::None;
-		_override = _modifierType == ModifierType::Override;
-		_paint = _modifierType == ModifierType::Paint;
-		_normalPaint = (_modifierType & ModifierType::NormalPaint) != ModifierType::None;
-		_hasSelection = _node.hasSelection();
-		_box3DSelectionRegion = box3DSelectionRegion;
-	}
+						  const voxel::Region &box3DSelectionRegion = voxel::Region::InvalidRegion);
 	scenegraph::SceneGraphNode &node() const {
 		return _node;
 	}
@@ -243,32 +237,13 @@ public:
 	 * @brief After a brush stroke, mark newly placed voxels as selected if they are
 	 * adjacent to an originally selected voxel. Called once per brush execution.
 	 */
-	void growSelectionToNewVoxels() {
-		if (!_hasSelection || !_dirtyRegion.isValid()) {
-			return;
-		}
-		auto func = [this](int x, int y, int z, const voxel::Voxel & /*solidVoxel*/) {
-			setFlagAt(x, y, z, voxel::FlagOutline);
-		};
-		voxelutil::visitVolumeParallel(*this, _dirtyRegion, func, voxelutil::VisitSolid());
-	}
+	void growSelectionToNewVoxels();
 
 	/**
 	 * @brief Clear any existing selection and select all solid voxels in the dirty region.
 	 * Used by auto-select to select newly placed shapes.
 	 */
-	void autoSelectNewVoxels() {
-		if (!_dirtyRegion.isValid()) {
-			return;
-		}
-		if (_hasSelection) {
-			_node.clearSelection();
-		}
-		auto func = [this](int x, int y, int z, const voxel::Voxel & /*solidVoxel*/) {
-			setFlagAt(x, y, z, voxel::FlagOutline);
-		};
-		voxelutil::visitVolumeParallel(*this, _dirtyRegion, func, voxelutil::VisitSolid());
-	}
+	void autoSelectNewVoxels();
 
 	bool setVoxel(int x, int y, int z, const voxel::Voxel &voxel) override {
 		Sampler sampler(*this);

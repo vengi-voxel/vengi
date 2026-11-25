@@ -6,6 +6,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "core/Var.h"
 #include "palette/Material.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "voxel/ChunkMesh.h"
 #include "voxel/RawVolume.h"

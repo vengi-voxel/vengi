@@ -4,6 +4,7 @@
 
 #include "FuzzyColor.h"
 #include "palette/Palette.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxedit-util/modifier/brush/Brush.h"
 #include "voxel/Voxel.h"

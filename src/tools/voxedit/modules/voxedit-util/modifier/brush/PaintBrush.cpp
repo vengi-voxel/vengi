@@ -8,6 +8,7 @@
 #include "core/collection/DynamicArray.h"
 #include "palette/Palette.h"
 #include "palette/PaletteColorUtil.h"
+#include "scenegraph/SceneGraphNode.h"
 #include "voxedit-util/modifier/ModifierVolumeWrapper.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/VolumeVisitor.h"

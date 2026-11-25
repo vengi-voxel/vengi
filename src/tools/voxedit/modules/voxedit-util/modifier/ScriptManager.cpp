@@ -7,8 +7,13 @@
 #include "app/App.h"
 #include "core/Log.h"
 #include "io/Filesystem.h"
+#include "brush/SelectBrush.h"
+#include "brush/LUASelectionMode.h"
+#include "brush/LUABrush.h"
 
 namespace voxedit {
+
+ScriptManager::~ScriptManager() = default;
 
 void ScriptManager::construct() {
 }
