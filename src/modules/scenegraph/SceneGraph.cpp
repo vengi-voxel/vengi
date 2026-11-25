@@ -19,6 +19,7 @@
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/IKSolver.h"
 #include "scenegraph/Physics.h"
+#include "scenegraph/CollisionNode.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphKeyFrame.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -41,6 +42,7 @@
 #include "math/Vec3i.h"
 #include "math/Vec3f.h"
 #include "math/Mat4Ops.h"
+
 namespace scenegraph {
 
 SceneGraph::MergeResult::MergeResult(voxel::RawVolume *volume, const palette::Palette &palette,

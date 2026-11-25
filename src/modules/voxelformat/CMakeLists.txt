@@ -271,7 +271,7 @@ set(TEST_SRCS
 	tests/NamedBinaryTagTest.cpp
 	tests/TextureLookupTest.cpp
 
-	tests/TestHelper.cpp tests/TestHelper.h
+	tests/TestHelper.cpp tests/TestHelper.h tests/ValidateFlags.h
 	tests/vox_glasses.h
 )
 set(TEST_FILES

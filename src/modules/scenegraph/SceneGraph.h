@@ -18,7 +18,6 @@
 #include "core/concurrent/Lock.h"
 #include "core/Optional.h"
 #include "math/AABB.h"
-#include "scenegraph/CollisionNode.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/FrameTransformCache.h"
 #include "scenegraph/SceneGraphListener.h"
@@ -43,6 +42,9 @@ using OBBF = OBB<float>;
 }
 
 namespace scenegraph {
+
+class CollisionNode;
+using CollisionNodes = core::DynamicArray<CollisionNode>;
 
 class SceneGraphNodeCamera;
 using SceneGraphAnimationIds = core::DynamicArray<core::String>;

@@ -13,6 +13,7 @@
 #include "util/VarUtil.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
+#include "voxel/tests/VoxelPrinter.h"
 #include "core/ScopedPtr.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/minecraft/MCRFormat.h"

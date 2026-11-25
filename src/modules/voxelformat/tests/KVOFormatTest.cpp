@@ -7,6 +7,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryArchive.h"
 #include "palette/NormalPalette.h"
+#include "palette/Palette.h"
 #include "voxelutil/VolumeVisitor.h"
 #include "math/Vec3f.h"
 

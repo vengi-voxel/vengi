@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "math/tests/TestMathHelper.h"
 #include "core/ConfigVar.h"
 #include "io/CachingArchive.h"
 #include "io/MemoryArchive.h"

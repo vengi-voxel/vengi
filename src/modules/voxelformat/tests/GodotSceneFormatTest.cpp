@@ -9,6 +9,7 @@
 #include "core/ScopedPtr.h"
 #include "io/MemoryArchive.h"
 #include "palette/Material.h"
+#include "palette/Palette.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
 #include "util/VarUtil.h"

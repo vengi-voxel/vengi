@@ -4,6 +4,7 @@
 
 #include "voxelformat/private/mesh/gis/GMLFormat.h"
 #include "AbstractFormatTest.h"
+#include "voxel/RawVolume.h"
 #include "core/ConfigVar.h"
 #include "core/Var.h"
 #include "io/MemoryArchive.h"

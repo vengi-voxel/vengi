@@ -4,6 +4,7 @@
 
 #include "color/ColorUtil.h"
 #include "AbstractFormatTest.h"
+#include "core/concurrent/Concurrency.h"
 #include "app/App.h"
 #include "core/ConfigVar.h"
 #include "core/Log.h"
@@ -46,6 +47,10 @@
 namespace voxelformat {
 
 const voxel::Voxel AbstractFormatTest::Empty;
+
+AbstractFormatTest::AbstractFormatTest() : voxel::AbstractVoxelTest(core::cpus()) {
+	testSaveCtx.thumbnailCreator = helper_testThumbnailCreator;
+}
 
 io::ArchivePtr AbstractFormatTest::helper_archive(const core::String &filename) {
 #if WRITE_TO_FILE

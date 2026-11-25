@@ -4,15 +4,23 @@
 
 #pragma once
 
-#include "TestHelper.h"
+#include "ValidateFlags.h"
 #include "core/String.h"
-#include "core/concurrent/Concurrency.h"
+#include "core/collection/Buffer.h"
+#include "palette/Material.h"
+#include "voxel/Voxel.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
 #include "math/Vec3f.h"
 
+namespace palette {
+class Palette;
+}
 namespace scenegraph {
 class SceneGraph;
+}
+namespace voxel {
+class RawVolume;
 }
 
 namespace voxelformat {
@@ -37,9 +45,7 @@ protected:
 
 	SaveContext testSaveCtx;
 	LoadContext testLoadCtx;
-	AbstractFormatTest() : voxel::AbstractVoxelTest(core::cpus()) {
-		testSaveCtx.thumbnailCreator = helper_testThumbnailCreator;
-	}
+	AbstractFormatTest();
 
 	io::ArchivePtr helper_archive(const core::String &filename = "");
 	io::ArchivePtr helper_filesystemarchive();

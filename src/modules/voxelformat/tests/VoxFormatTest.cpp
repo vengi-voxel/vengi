@@ -6,6 +6,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "voxelformat/private/magicavoxel/MagicaVoxel.h"
 #include "AbstractFormatTest.h"
+#include "voxelformat/tests/TestHelper.h"
 #include "core/ConfigVar.h"
 #include "core/IProgress.h"
 #include "core/ScopedPtr.h"

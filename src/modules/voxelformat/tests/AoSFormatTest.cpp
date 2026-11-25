@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "voxelformat/tests/TestHelper.h"
 #include "scenegraph/SceneGraph.h"
 #include "core/FourCC.h"
 #include "core/ScopedPtr.h"

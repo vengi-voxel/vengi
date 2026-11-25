@@ -6,6 +6,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "color/ColorUtil.h"
+#include "palette/Palette.h"
 #include "color/Distance.h"
 #include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"

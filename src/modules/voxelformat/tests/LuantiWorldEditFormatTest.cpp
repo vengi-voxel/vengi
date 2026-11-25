@@ -3,6 +3,8 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "palette/Palette.h"
+#include "voxel/RawVolume.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 
