@@ -2497,7 +2497,7 @@ bool SceneManager::globalCopyVisible() {
 	scenegraph::SceneGraph newSceneGraph;
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	newNode.setVolume(merged.volume());
-	newNode.setPalette(merged.palette);
+	newNode.setPalette(merged.palette());
 	newSceneGraph.emplace(core::move(newNode));
 	const core::String clipboardFile = _filesystem->homeWritePath("globalclipboard.vengi");
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
@@ -2993,8 +2993,8 @@ int SceneManager::mergeVisibleToTemp() {
 	// Create the merged temporary node
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	newNode.setVolume(merged.volume());
-	newNode.setPalette(merged.palette);
-	newNode.setNormalPalette(merged.normalPalette);
+	newNode.setPalette(merged.palette());
+	newNode.setNormalPalette(merged.normalPalette());
 	newNode.setName(C_("Temporary merged scene graph node name", "merged_temp"));
 	newNode.setVisible(true);
 
@@ -3285,8 +3285,8 @@ int SceneManager::mergeNodes(const core::Buffer<int>& nodeIds) {
 	memento::ScopedMementoGroup mementoGroup(*_mementoHandler, "merge");
 	scenegraph::SceneGraphNode newNode(scenegraph::SceneGraphNodeType::Model);
 	newNode.setVolume(merged.volume());
-	newNode.setPalette(merged.palette);
-	newNode.setNormalPalette(merged.normalPalette);
+	newNode.setPalette(merged.palette());
+	newNode.setNormalPalette(merged.normalPalette());
 	if (firstNode) {
 		newNode.setName(firstNode->name());
 		newNode.setVisible(firstNode->visible());

@@ -8,6 +8,7 @@
 #include "Util.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
+#include "palette/Palette.h"
 #include "voxel/RawVolume.h"
 #include "voxel/VolumeTileDispatch.h"
 #include "math/Vec3i.h"

@@ -235,7 +235,7 @@ bool SchematicFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const
 						sampler3.movePositiveX();
 						continue;
 					}
-					color::RGBA c = merged.palette.color(voxel.getColor());
+					color::RGBA c = merged.palette().color(voxel.getColor());
 					const int currentPalIdx = palLookup.findClosestIndex(c);
 					const core::String &blockState = findPaletteName(currentPalIdx);
 					int8_t blockDataIdx;

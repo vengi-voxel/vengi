@@ -546,16 +546,16 @@ void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph
 		ASSERT_NE(nullptr, v1);
 		ASSERT_NE(nullptr, v2);
 		if ((flags & ValidateFlags::Palette) == ValidateFlags::Palette) {
-			voxel::paletteComparator(merged1.palette, merged2.palette, maxDelta);
+			voxel::paletteComparator(merged1.palette(), merged2.palette(), maxDelta);
 		} else if ((flags & ValidateFlags::PaletteMinMatchingColors) == ValidateFlags::PaletteMinMatchingColors) {
-			voxel::partialPaletteComparator(merged1.palette, merged2.palette, flags, maxDelta);
+			voxel::partialPaletteComparator(merged1.palette(), merged2.palette(), flags, maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
-			voxel::paletteComparatorScaled(merged1.palette, merged2.palette, (int)maxDelta);
+			voxel::paletteComparatorScaled(merged1.palette(), merged2.palette(), (int)maxDelta);
 		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==
 				   voxel::ValidateFlags::PaletteColorOrderDiffers) {
-			voxel::orderPaletteComparator(merged1.palette, merged2.palette, maxDelta);
+			voxel::orderPaletteComparator(merged1.palette(), merged2.palette(), maxDelta);
 		}
-		volumeComparator(*v1, merged1.palette, *v2, merged2.palette, flags, maxDelta);
+		volumeComparator(*v1, merged1.palette(), *v2, merged2.palette(), flags, maxDelta);
 		return;
 	}
 	ASSERT_EQ(graph1.size(scenegraph::SceneGraphNodeType::AllModels), graph2.size(scenegraph::SceneGraphNodeType::AllModels));

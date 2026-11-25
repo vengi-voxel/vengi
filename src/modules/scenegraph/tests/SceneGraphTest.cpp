@@ -494,7 +494,7 @@ TEST_F(SceneGraphTest, testMergeTwoSimpleVoxelNodes) {
 	}
 	const SceneGraph::MergeResult &mergeResult = sceneGraph.merge();
 	core::ScopedPtr<voxel::RawVolume> mergedVolume(mergeResult.volume());
-	const palette::Palette &mergedPalette = mergeResult.palette;
+	const palette::Palette &mergedPalette = mergeResult.palette();
 	ASSERT_NE(nullptr, mergedVolume);
 	EXPECT_EQ(2, mergedVolume->region().getWidthInVoxels());
 

@@ -11,6 +11,7 @@
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
 #include "io/ZipWriteStream.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxel/RawVolume.h"

@@ -7,6 +7,7 @@
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
 #include "scenegraph/SceneGraph.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxel/RawVolume.h"
 #include "math/Vec3i.h"

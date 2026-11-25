@@ -12,6 +12,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/MaterialColor.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "voxelformat/Format.h"
 #include "math/Vec3i.h"

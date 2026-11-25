@@ -13,6 +13,7 @@
 #include "core/StandardLib.h"
 #include "core/collection/DynamicArray.h"
 #include "core/concurrent/Lock.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/FrameTransform.h"
@@ -42,13 +43,48 @@
 #include "math/Mat4Ops.h"
 namespace scenegraph {
 
-SceneGraph::MergeResult::MergeResult(voxel::RawVolume *volume, const palette::Palette &_palette,
-									 const palette::NormalPalette &_normalPalette)
-	: _volume(volume), palette(_palette), normalPalette(_normalPalette) {
+SceneGraph::MergeResult::MergeResult(voxel::RawVolume *volume, const palette::Palette &palette,
+									 const palette::NormalPalette &normalPalette)
+	: _volume(volume) {
+	_palette.setValue(palette);
+	_normalPalette.setValue(normalPalette);
+}
+
+SceneGraph::MergeResult::MergeResult(MergeResult &&other) noexcept
+	: _volume(other._volume), _palette(core::move(other._palette)), _normalPalette(core::move(other._normalPalette)) {
+	other._volume = nullptr;
+}
+
+SceneGraph::MergeResult &SceneGraph::MergeResult::operator=(MergeResult &&other) noexcept {
+	if (this == &other) {
+		return *this;
+	}
+	delete _volume;
+	_volume = other._volume;
+	other._volume = nullptr;
+	_palette = core::move(other._palette);
+	_normalPalette = core::move(other._normalPalette);
+	return *this;
 }
 
 SceneGraph::MergeResult::~MergeResult() {
 	delete _volume;
+}
+
+const palette::Palette &SceneGraph::MergeResult::palette() const {
+	if (!_palette.hasValue()) {
+		static palette::Palette empty;
+		return empty;
+	}
+	return *_palette.value();
+}
+
+const palette::NormalPalette &SceneGraph::MergeResult::normalPalette() const {
+	if (!_normalPalette.hasValue()) {
+		static palette::NormalPalette empty;
+		return empty;
+	}
+	return *_normalPalette.value();
 }
 
 voxel::RawVolume *SceneGraph::MergeResult::volume() const {

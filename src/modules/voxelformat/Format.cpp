@@ -16,6 +16,7 @@
 #include "image/Image.h"
 #include "io/Archive.h"
 #include "palette/ColorPalette.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteUtil.h"
 #include "scenegraph/SceneGraph.h"
@@ -285,8 +286,8 @@ bool Format::save(const scenegraph::SceneGraph &sceneGraph, const core::String &
 		} else {
 			scenegraph::SceneGraph::MergeResult merged = sceneGraph.merge(saveVisibleOnly);
 			volume = merged.volume();
-			palette = merged.palette;
-			normalPalette = merged.normalPalette;
+			palette = merged.palette();
+			normalPalette = merged.normalPalette();
 		}
 		if (volume == nullptr) {
 			Log::error("Failed to merge volumes for saving");

@@ -10,6 +10,7 @@
 #include "io/StreamUtil.h"
 #include "io/StreamUtilQuat.h"
 #include "io/ZipReadStream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"

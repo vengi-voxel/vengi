@@ -9,6 +9,7 @@
 #include "io/BufferedReadWriteStream.h"
 #include "io/Stream.h"
 #include "io/ZipReadStream.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeProperties.h"

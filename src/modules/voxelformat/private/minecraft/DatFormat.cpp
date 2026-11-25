@@ -17,6 +17,7 @@
 #include "core/concurrent/Atomic.h"
 #include "io/Archive.h"
 #include "io/ZipReadStream.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"

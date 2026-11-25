@@ -16,9 +16,8 @@
 #include "core/collection/DynamicMap.h"
 #include "core/collection/DynamicParallelMap.h"
 #include "core/concurrent/Lock.h"
+#include "core/Optional.h"
 #include "math/AABB.h"
-#include "palette/NormalPalette.h"
-#include "palette/Palette.h"
 #include "scenegraph/CollisionNode.h"
 #include "scenegraph/FrameTransform.h"
 #include "scenegraph/FrameTransformCache.h"
@@ -30,6 +29,11 @@
 namespace voxel {
 class RawVolume;
 class SparseVolume;
+}
+
+namespace palette {
+class Palette;
+class NormalPalette;
 }
 
 namespace math {
@@ -328,11 +332,17 @@ public:
 	class MergeResult {
 	private:
 		mutable voxel::RawVolume *_volume = nullptr;
+		core::Optional<palette::Palette> _palette;
+		core::Optional<palette::NormalPalette> _normalPalette;
 
 	public:
 		MergeResult() = default;
-		MergeResult(voxel::RawVolume *volume, const palette::Palette &_palette,
-					const palette::NormalPalette &_normalPalette);
+		MergeResult(voxel::RawVolume *volume, const palette::Palette &palette,
+					const palette::NormalPalette &normalPalette);
+		MergeResult(MergeResult &&other) noexcept;
+		MergeResult &operator=(MergeResult &&other) noexcept;
+		MergeResult(const MergeResult &) = delete;
+		MergeResult &operator=(const MergeResult &) = delete;
 		~MergeResult();
 		// now it's your pointer
 		voxel::RawVolume *volume() const;
@@ -340,8 +350,8 @@ public:
 			return _volume != nullptr;
 		}
 
-		palette::Palette palette;
-		palette::NormalPalette normalPalette;
+		const palette::Palette &palette() const;
+		const palette::NormalPalette &normalPalette() const;
 	};
 
 	void bakeIntoSparse(const FrameIndex &frameIdx, voxel::SparseVolume &merged, const SceneGraphNode &node, const palette::Palette &paletteConversion) const;

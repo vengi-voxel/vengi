@@ -26,6 +26,7 @@
 #include "io/FormatDescription.h"
 #include "io/StdoutWriteStream.h"
 #include "io/ZipArchive.h"
+#include "palette/NormalPalette.h"
 #include "palette/Palette.h"
 #include "palette/PaletteFormatDescription.h"
 #include "scenegraph/JsonExporter.h"
@@ -562,8 +563,8 @@ app::AppState VoxConvert::onInit() {
 		sceneGraph.clear();
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(merged.volume());
-		node.setPalette(merged.palette);
-		node.setNormalPalette(merged.normalPalette);
+		node.setPalette(merged.palette());
+		node.setNormalPalette(merged.normalPalette());
 		node.setName(infilesstr);
 		sceneGraph.emplace(core::move(node));
 	}
@@ -930,8 +931,8 @@ void VoxConvert::split(const math::Vec3i &size, scenegraph::SceneGraph &sceneGra
 		}
 		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 		node.setVolume(v);
-		node.setPalette(merged.palette);
-		node.setNormalPalette(merged.normalPalette);
+		node.setPalette(merged.palette());
+		node.setNormalPalette(merged.normalPalette());
 
 		sceneGraph.emplace(core::move(node));
 	}
