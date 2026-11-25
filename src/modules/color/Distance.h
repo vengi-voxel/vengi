@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "color/RGBA.h"
 #include <stdint.h>
 
 namespace color {
@@ -32,5 +33,19 @@ static constexpr float ApproximationDistanceModerate = 50000.0f;
 /** Suggested loose threshold for broadly similar colors */
 static constexpr float ApproximationDistanceLoose = 150000.0f;
 /** @} */
+
+/**
+ * @brief Calculates the distance between two colors based on the given Distance function.
+ */
+float getDistance(RGBA rgba, RGBA rgba2, Distance d);
+/**
+ * @brief Calculates the distance between a color and HSB values.
+ */
+float getDistance(RGBA color, float hue, float saturation, float brightness);
+/**
+ * @brief HSB distance between two already-converted HSB triples (same weights as getDistance HSB).
+ */
+float getDistanceHSB(float hue1, float saturation1, float brightness1, float hue2, float saturation2,
+					 float brightness2);
 
 } // namespace color

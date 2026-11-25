@@ -13,20 +13,6 @@
 namespace color {
 
 /**
- * @brief Calculates the distance between two colors based on the given Distance function.
- */
-float getDistance(RGBA rgba, RGBA rgba2, Distance d);
-/**
- * @brief Calculates the distance between a color and HSB values.
- */
-float getDistance(RGBA color, float hue, float saturation, float brightness);
-/**
- * @brief HSB distance between two already-converted HSB triples (same weights as getDistance HSB).
- */
-float getDistanceHSB(float hue1, float saturation1, float brightness1, float hue2, float saturation2,
-					 float brightness2);
-
-/**
  * @brief Converts an sRGB component (0-1) to linear space (IEC 61966-2-1).
  */
 float srgbToLinear(float c);

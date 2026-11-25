@@ -6,7 +6,7 @@
 
 #include "app/ForParallel.h"
 #include "core/TraceScoped.h"
-#include "color/ColorUtil.h"
+#include "color/Distance.h"
 #include "core/Common.h"
 #include "math/Vec3f.h"
 #include "core/ProgressScope.h"
