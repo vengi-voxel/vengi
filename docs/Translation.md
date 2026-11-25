@@ -15,7 +15,9 @@ If you create a new translation it would be nice if you would contribute it to t
 
 ## Missing glyphs
 
-If your translation uses unicode character which are not included in the default (Arimo) font, you can register additional fonts by putting them into a subdirectory called `font`. Put it into `voxedit/font/` (if the directory doesn't exist, just create it in any of the [search paths](Configuration.md)).
+If your translation uses unicode character which are not included in the default (Arimo) font, VoxEdit automatically searches standard system fonts for fallback CJK glyphs matching the selected language (such as Noto Sans CJK on Linux/macOS, or Meiryo, BIZ UDGothic, Yu Gothic, MS Gothic, Noto Sans JP, Microsoft YaHei, Microsoft JhengHei, and Malgun Gothic on Windows).
+
+You can also register additional fonts manually by putting `.ttf`, `.ttc`, or `.otf` files into a subdirectory called `font`. Put it into `voxedit/font/` (if the directory doesn't exist, just create it in any of the [search paths](Configuration.md)).
 
 For Chinese, Japanese or Korean (CJK) glyphs, download a Noto Sans CJK font from <https://github.com/notofonts/noto-cjk/releases> (e.g. `NotoSansCJKsc-Regular.ttf` for Simplified Chinese) and place it in the `font` directory.
 
