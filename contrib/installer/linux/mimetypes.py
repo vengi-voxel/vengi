@@ -8,7 +8,8 @@ def get_script_dir():
     return os.path.dirname(os.path.realpath(__file__))
 
 def thumbnailer_excludes(xml_file):
-    text = open(xml_file, encoding="utf-8").read()
+    with open(xml_file, encoding="utf-8") as infile:
+        text = infile.read()
     match = re.search(r"thumbnailer-exclude:\s*(.*?)\s*-->", text)
     if not match:
         return set()

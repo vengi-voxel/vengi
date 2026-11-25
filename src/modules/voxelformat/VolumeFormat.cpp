@@ -21,6 +21,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "video/Texture.h"
 #include "voxelformat/Format.h"
+#include "voxelformat/FormatConfig.h"
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
 #include "voxelformat/private/aceofspades/AoSFormat.h"
 #include "voxelformat/private/animatoon/AnimaToonFormat.h"
@@ -493,6 +494,18 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 
 bool isMeshFormat(const io::FormatDescription &desc) {
 	return desc.flags & VOX_FORMAT_FLAG_MESH;
+}
+
+bool isVoxelFormat(const io::FormatDescription &desc) {
+	if (!desc.valid() || isMeshFormat(desc) || FormatConfig::isImageFormat(desc)) {
+		return false;
+	}
+	for (const io::FormatDescription *d = voxelFormats(); d->valid(); ++d) {
+		if (*d == desc) {
+			return true;
+		}
+	}
+	return false;
 }
 
 bool isPaletteEmbedded(const io::FormatDescription &desc) {

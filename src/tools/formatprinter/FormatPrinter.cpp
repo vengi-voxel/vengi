@@ -902,13 +902,15 @@ void FormatPrinter::printMimeInfo() {
 	Log::printf("<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n");
 	core::String thumbnailerExclude;
 	for (const io::FormatDescription *desc = voxelformat::voxelLoad(); desc->valid(); ++desc) {
-		if (!voxelformat::FormatConfig::isImageFormat(*desc)) {
+		const core::String m = uniqueMimetype(*desc);
+		// Generic text types also occur on voxel formats, such as Sproxel CSV and Qubicle Exchange.
+		if (voxelformat::isVoxelFormat(*desc) && m != "text/plain" && m != "text/csv" && m != "application/xml") {
 			continue;
 		}
 		if (!thumbnailerExclude.empty()) {
 			thumbnailerExclude += ";";
 		}
-		thumbnailerExclude += uniqueMimetype(*desc);
+		thumbnailerExclude += m;
 	}
 	if (!thumbnailerExclude.empty()) {
 		// mimetypes.py drops these from the thumbnailer entry. The desktop file still lists them.

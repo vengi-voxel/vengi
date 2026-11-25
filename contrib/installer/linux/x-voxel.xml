@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-	<!-- thumbnailer-exclude: image/aseprite;application/x-pixelorama;image/png -->
+	<!-- thumbnailer-exclude: image/aseprite;application/x-pixelorama;application/x-blockbench;application/x-crocotile-3d;application/x-godot-scene;text/plain;application/x-quake-map;application/x-ufo-alien-invasion;application/x-quake-1;application/x-quake-2;application/x-quetoo;application/x-quetoo-pk3;application/x-quake-1-model;application/x-quake-2-model;application/x-quake-3-model;application/x-fbx;application/x-autodesk-3d-studio;text/csv;text/plain;application/x-gl-transmission-format;application/x-standard-triangle-language;model/3mf;text/plain;application/xml;application/x-bricklink-studio;application/x-polygon-file-format;application/x-geography-markup-language;application/x-openstreetmap-json;text/plain;image/png -->
 	<mime-type type="application/x-vengi">
 		<comment>Vengi</comment>
 		<glob pattern="*.vengi"/>

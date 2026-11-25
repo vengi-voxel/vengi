@@ -42,6 +42,8 @@ bool saveFormat(scenegraph::SceneGraph &sceneGraph, const core::String &filename
 
 bool isMeshFormat(const core::String &filename, bool save);
 bool isMeshFormat(const io::FormatDescription &desc);
+/** @brief Check for a registered voxel format, excluding mesh and image formats. */
+bool isVoxelFormat(const io::FormatDescription &desc);
 bool isAnimationSupported(const io::FormatDescription &desc);
 bool isModelFormat(const core::String &filename);
 bool isPaletteEmbedded(const io::FormatDescription &desc);

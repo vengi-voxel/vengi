@@ -30,7 +30,7 @@ Thumbnailer::Thumbnailer(const io::FilesystemPtr &filesystem, const core::TimePr
 	: Super(filesystem, timeProvider, 2) {
 	init(ORGANISATION, "thumbnailer");
 	_showWindow = false;
-	_wantCrashLogs = true;
+	_wantCrashLogs = false;
 	_initialLogLevel = Log::Level::Error;
 }
 
