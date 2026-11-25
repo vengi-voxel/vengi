@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/minecraft/SchematicFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "util/VarUtil.h"
 #include "voxelformat/tests/TestHelper.h"

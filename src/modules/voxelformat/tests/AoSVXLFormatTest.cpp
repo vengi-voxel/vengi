@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/aceofspades/AoSVXLFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "io/Archive.h"
 #include "io/MemoryArchive.h"

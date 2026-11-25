@@ -7,10 +7,13 @@
 #include "TestHelper.h"
 #include "core/String.h"
 #include "core/concurrent/Concurrency.h"
-#include "scenegraph/SceneGraph.h"
 #include "voxel/tests/AbstractVoxelTest.h"
 #include "voxelformat/Format.h"
 #include "math/Vec3f.h"
+
+namespace scenegraph {
+class SceneGraph;
+}
 
 namespace voxelformat {
 
@@ -47,10 +50,7 @@ protected:
 												voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 
 	void testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename, size_t expectedVolumes = 1, bool skipOnLoadFailure = false);
-	void testLoad(const core::String &filename, size_t expectedVolumes = 1) {
-		scenegraph::SceneGraph sceneGraph;
-		testLoad(sceneGraph, filename, expectedVolumes);
-	}
+	void testLoad(const core::String &filename, size_t expectedVolumes = 1);
 	void testRGB(const core::String &filename, float maxDelta = 0.001f);
 	void testRGBSmall(const core::String &filename);
 	// save as the same format

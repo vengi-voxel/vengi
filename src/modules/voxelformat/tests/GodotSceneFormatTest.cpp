@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/mesh/GodotSceneFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"

@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 
 namespace voxelformat {

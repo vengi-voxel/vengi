@@ -2,6 +2,7 @@
  * @file
  */
 #include "voxelformat/private/pnd3d/KVOFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryArchive.h"

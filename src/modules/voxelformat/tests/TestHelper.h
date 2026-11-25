@@ -4,21 +4,33 @@
 
 #pragma once
 
-#include "color/Color.h"
+#include "color/RGBA.h"
 #include "core/Common.h"
 #include "core/Enum.h"
-#include "palette/Palette.h"
-#include "voxel/RawVolume.h"
+#include "core/collection/Buffer.h"
+#include "palette/Material.h"
 #include "voxel/Voxel.h"
 #include "core/tests/TestHelper.h"
 #include "core/tests/TestColorHelper.h"
 #include "voxel/tests/VoxelPrinter.h"
 #include "math/tests/TestMathHelper.h"
-#include "scenegraph/SceneGraphNode.h"
 #include <gtest/gtest.h>
 #include "math/Vec3f.h"
 
+namespace palette {
+class Palette;
+}
+namespace voxel {
+class RawVolume;
+}
+namespace scenegraph {
+class SceneGraph;
+}
+
 namespace math {
+class Mat4f;
+class Mat3f;
+class Mat4x3f;
 ::std::ostream &operator<<(::std::ostream &os, const Mat4f &matrix);
 ::std::ostream &operator<<(::std::ostream &os, const Mat3f &matrix);
 ::std::ostream &operator<<(::std::ostream &os, const Mat4x3f &matrix);
@@ -84,7 +96,6 @@ void paletteComparator(const palette::Palette &pal1, const palette::Palette &pal
 void colorComparator(const palette::Palette &pal1, const palette::Palette &pal2, color::RGBA c1, color::RGBA c2, uint8_t palIdx, float maxDelta = 0.001f);
 void colorComparator(color::RGBA c1, color::RGBA c2, int maxDelta = 1);
 void colorComparatorDistance(color::RGBA c1, color::RGBA c2, float maxDelta = 0.001f);
-void keyFrameComparator(const scenegraph::SceneGraphKeyFrames &keyframes1, const scenegraph::SceneGraphKeyFrames &keyframes2, ValidateFlags flags);
 void volumeComparator(const voxel::RawVolume& volume1, const palette::Palette &pal1, const voxel::RawVolume& volume2, const palette::Palette &pal2, ValidateFlags flags, float maxDelta = 0.001f);
 void sceneGraphComparator(const scenegraph::SceneGraph &graph1, const scenegraph::SceneGraph &graph2, ValidateFlags flags, float maxDelta = 0.001f);
 bool occupiedWorldAABB(const scenegraph::SceneGraph &sceneGraph, math::Vec3f &mins, math::Vec3f &maxs);

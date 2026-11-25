@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/magicavoxel/VoxFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelformat/private/magicavoxel/MagicaVoxel.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"

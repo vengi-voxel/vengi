@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "scenegraph/SceneGraph.h"
 #include "core/ConfigVar.h"
 #include "io/Archive.h"
 #include "io/FormatDescription.h"

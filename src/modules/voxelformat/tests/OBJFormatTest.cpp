@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/mesh/OBJFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
 #include "io/MemoryArchive.h"

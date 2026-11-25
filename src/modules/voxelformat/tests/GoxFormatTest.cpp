@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/goxel/GoxFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "io/BufferedReadWriteStream.h"
 #include "io/MemoryArchive.h"

@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/cubzh/CubzhFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "voxelformat/VolumeFormat.h"
 #include "voxelformat/private/cubzh/PCubesFormat.h"

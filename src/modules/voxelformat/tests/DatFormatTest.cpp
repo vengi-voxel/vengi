@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "scenegraph/SceneGraph.h"
 #include "core/ConfigVar.h"
 #include "core/ScopedPtr.h"
 #include "core/collection/Buffer.h"

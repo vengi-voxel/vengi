@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/sandbox/VXBFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 
 namespace voxelformat {

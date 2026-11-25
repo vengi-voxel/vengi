@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/spritestack/SpriteStackFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "palette/Palette.h"
 #include "voxel/RawVolume.h"

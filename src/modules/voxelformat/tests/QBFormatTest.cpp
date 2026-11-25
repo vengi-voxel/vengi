@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "scenegraph/SceneGraph.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
 #include "io/MemoryArchive.h"

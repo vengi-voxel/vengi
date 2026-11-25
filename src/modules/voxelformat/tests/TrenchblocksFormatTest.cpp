@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/magicavoxel/TrenchblocksFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "color/ColorUtil.h"
 #include "color/Distance.h"

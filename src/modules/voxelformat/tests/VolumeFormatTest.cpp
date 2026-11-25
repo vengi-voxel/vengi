@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/VolumeFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "image/Image.h"
 #include "io/FilesystemArchive.h"

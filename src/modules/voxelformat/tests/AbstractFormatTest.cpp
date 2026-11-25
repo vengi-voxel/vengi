@@ -204,6 +204,11 @@ void AbstractFormatTest::testMaterial(scenegraph::SceneGraph &sceneGraph, const 
 	voxel::materialComparator(voxSceneGraph, sceneGraph, ignoredMaterials, ignoreType);
 }
 
+void AbstractFormatTest::testLoad(const core::String &filename, size_t expectedVolumes) {
+	scenegraph::SceneGraph sceneGraph;
+	testLoad(sceneGraph, filename, expectedVolumes);
+}
+
 void AbstractFormatTest::testLoad(scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 								  size_t expectedVolumes, bool skipOnLoadFailure) {
 	const io::ArchivePtr &archive = helper_filesystemarchive();

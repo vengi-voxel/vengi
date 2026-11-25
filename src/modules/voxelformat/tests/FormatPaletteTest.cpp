@@ -3,6 +3,7 @@
  */
 
 #include "color/ColorUtil.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "palette/Palette.h"
 #include "palette/PaletteUtil.h"

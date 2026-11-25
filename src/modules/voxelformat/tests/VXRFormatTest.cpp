@@ -3,6 +3,7 @@
  */
 
 #include "voxelformat/private/sandbox/VXRFormat.h"
+#include "scenegraph/SceneGraph.h"
 #include "AbstractFormatTest.h"
 #include "palette/Palette.h"
 #include "voxelformat/private/sandbox/VXMFormat.h"
