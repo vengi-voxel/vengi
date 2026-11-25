@@ -856,6 +856,12 @@ msgstr ""
 msgid "Renderer feature cvar"
 msgstr ""
 
+msgid "Renderer"
+msgstr ""
+
+msgid "Renderer backend at startup: opengl or vulkan"
+msgstr ""
+
 msgid "Show all images in the texture pool"
 msgstr ""
 
@@ -1032,7 +1038,7 @@ msgstr ""
 msgid "Mesh mode"
 msgstr ""
 
-msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 4 = dual contouring"
 msgstr ""
 
 msgid "Mesh allocation strategy"
@@ -1068,7 +1074,9 @@ msgid "Merge similar quads to optimize the mesh"
 msgstr ""
 
 msgctxt "Voxel mesh mode description"
-msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
+msgid ""
+"0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture, 4 = "
+"dual contouring"
 msgstr ""
 
 msgid "Reuse vertices"
@@ -1355,6 +1363,14 @@ msgid ""
 "projects are preserved."
 msgstr ""
 
+msgid "3MF volumetric"
+msgstr ""
+
+msgid ""
+"Embed the 3MF volumetric extension as a PNG slice stack so interior voxel "
+"colors are kept. The printable mesh is still written."
+msgstr ""
+
 msgid "Export materials"
 msgstr ""
 
@@ -1605,6 +1621,9 @@ msgstr ""
 msgid "Cubes"
 msgstr ""
 
+msgid "Dual contouring"
+msgstr ""
+
 msgid "Greedy texture"
 msgstr ""
 
@@ -1849,6 +1868,12 @@ msgid "Render scale"
 msgstr ""
 
 msgid "Trace at a fraction of the output resolution, then upsample"
+msgstr ""
+
+msgid "Hardware ray query"
+msgstr ""
+
+msgid "Use Vulkan hardware ray query acceleration when available"
 msgstr ""
 
 msgid "Movement speed"
@@ -3299,9 +3324,6 @@ msgstr ""
 msgid "Pathtracer"
 msgstr ""
 
-msgid "Renderer"
-msgstr ""
-
 msgid "Mesh Export"
 msgstr ""
 
@@ -3617,6 +3639,10 @@ msgstr ""
 
 #, c-format
 msgid "Free volume indices: %i"
+msgstr ""
+
+#, c-format
+msgid "Volume memory: %s (%i)"
 msgstr ""
 
 msgid "Render stats"
