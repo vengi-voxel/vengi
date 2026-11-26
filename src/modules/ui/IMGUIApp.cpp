@@ -691,9 +691,9 @@ void IMGUIApp::renderCvarDialog() {
 			if (_cvarFilter.size() >= 2u) {
 				for (core::Var *var : vars) {
 					const bool matchName = core::string::icontains(var->name(), _cvarFilter);
-					const bool matchValue = core::string::icontains(var->strVal(), _cvarFilter);
-					const bool matchHelp = !var->description().empty() ? core::string::icontains(var->description(), _cvarFilter) : false;
-					if (matchName || matchValue || matchHelp) {
+					const bool matchTitle = core::string::icontains(_(var->title().c_str()), _cvarFilter);
+					const bool matchDescription = core::string::icontains(_(var->description().c_str()), _cvarFilter);
+					if (matchName || matchTitle || matchDescription) {
 						filteredVars.push_back(var);
 					}
 				}

@@ -616,7 +616,7 @@ void OptionsPanel::renderAllVariables() {
 					ImGui::TooltipTextUnformatted(_("Reset to default value"));
 				}
 				ImGui::TableNextColumn();
-				ImGui::TextWrappedUnformatted(var->description().c_str());
+				ImGui::TextWrappedUnformatted(_(var->description().c_str()));
 			}
 		}
 		ImGui::EndTable();
