@@ -19,13 +19,13 @@ if(APPLE)
 		if (DEVELOPMENT_TEAM_ID)
 			message(STATUS "Development Team ID: ${DEVELOPMENT_TEAM_ID}")
 		else()
-			message(WARNING "No Development Team ID found")
+			message(STATUS "No Development Team ID found")
 		endif()
 	endif()
 
 	# With xcode versions >= 14 it is no longer possible to build unsigned binaries
 	# - is for signing locally
-	if (DEVELOPMENT_TEAM_ID STREQUAL "")
+	if ("${DEVELOPMENT_TEAM_ID}" STREQUAL "")
 		if(XCODE_VERSION VERSION_LESS 14)
 			set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "" CACHE INTERNAL "")
 		else()

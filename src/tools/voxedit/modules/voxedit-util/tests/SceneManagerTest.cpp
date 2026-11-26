@@ -3421,7 +3421,7 @@ TEST_F(SceneManagerTest, testRepeatSelectionBoundsAndUndo) {
 TEST_F(SceneManagerTest, testRepeatInvalidAndNoOp) {
 	ASSERT_TRUE(_sceneMgr->newScene(true, "repeat", voxel::Region{0, 1}));
 	const int id = _sceneMgr->activeNode();
-	const int states = _sceneMgr->mementoHandler().stateSize();
+	const size_t states = _sceneMgr->mementoHandler().stateSize();
 	command::executeCommands(core::String::format("noderepeat %i 0 1 1;noderepeat %i -1 1 1;noderepeat %i 2147483647 2 2;noderepeat -1 2 1 1;noderepeat %i 1 1 1;selectionrepeat 2 2 2", id, id, id, id));
 	EXPECT_EQ(1u, _sceneMgr->sceneGraph().size());
 	EXPECT_EQ(states, _sceneMgr->mementoHandler().stateSize());

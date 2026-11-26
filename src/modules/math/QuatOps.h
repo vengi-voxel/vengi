@@ -176,7 +176,6 @@ inline bool decompose(const Mat4f &model, Vec3f &scale, Quatf &orientation, Vec3
 		orientation.y = root * (row[2].x - row[0].z);
 		orientation.z = root * (row[0].y - row[1].x);
 	} else {
-		static const int next[3] = {1, 2, 0};
 		int i = 0;
 		if (row[1].y > row[0].x) {
 			i = 1;
@@ -184,8 +183,8 @@ inline bool decompose(const Mat4f &model, Vec3f &scale, Quatf &orientation, Vec3
 		if (row[2].z > row[i][i]) {
 			i = 2;
 		}
-		const int j = next[i];
-		const int k = next[j];
+		const int j = (i + 1) % 3;
+		const int k = (i + 2) % 3;
 		float root = sqrt(row[i][i] - row[j][j] - row[k][k] + 1.0f);
 		orientation[i] = 0.5f * root;
 		root = 0.5f / root;

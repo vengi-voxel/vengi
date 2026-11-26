@@ -2,7 +2,7 @@
 Version=1.0
 Name=@NAME@
 GenericName=Voxel Editor
-Comment=@DESCRIPTION@
+Comment=Create, edit and animate voxel models
 Exec=@COMMANDLINE@ %f
 Icon=@APPICON@
 Terminal=false

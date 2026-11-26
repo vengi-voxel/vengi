@@ -61,7 +61,7 @@ inline constexpr Vec4u operator/(uint32_t s, const Vec4u &a) { return Vec4u(s / 
 inline constexpr Vec4u operator%(const Vec4u &a, const Vec4u &o) { return Vec4u(a.x % o.x, a.y % o.y, a.z % o.z, a.w % o.w); }
 inline constexpr Vec4u operator%(const Vec4u &a, uint32_t s) { return Vec4u(a.x % s, a.y % s, a.z % s, a.w % s); }
 inline constexpr Vec4u operator%(uint32_t s, const Vec4u &a) { return Vec4u(s % a.x, s % a.y, s % a.z, s % a.w); }
-inline constexpr Vec4u operator-(const Vec4u &a) { return Vec4u(-a.x, -a.y, -a.z, -a.w); }
+inline constexpr Vec4u operator-(const Vec4u &a) { return Vec4u(0u - a.x, 0u - a.y, 0u - a.z, 0u - a.w); }
 inline constexpr bool operator==(const Vec4u &a, const Vec4u &o) { return a.x == o.x && a.y == o.y && a.z == o.z && a.w == o.w; }
 inline constexpr bool operator!=(const Vec4u &a, const Vec4u &o) { return !(a == o); }
 inline constexpr uint32_t dot(const Vec4u &a, const Vec4u &b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }

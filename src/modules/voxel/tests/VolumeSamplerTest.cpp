@@ -22,10 +22,10 @@ TEST_F(VolumeSamplerTest, testTriplanarSampling) {
 	voxel::Voxel voxel111 = sampleTrilinear(sampler, {1, 1, 1});
 	EXPECT_EQ(42, voxel111.getColor());
 
-	voxel::Voxel voxelfract = sampleTrilinear(sampler, {0.7, 0.6, 0.7});
+	voxel::Voxel voxelfract = sampleTrilinear(sampler, {0.7f, 0.6f, 0.7f});
 	EXPECT_EQ(42, voxelfract.getColor());
 
-	voxel::Voxel voxelfract2 = sampleTrilinear(sampler, {1.3, 1.4, 1.2});
+	voxel::Voxel voxelfract2 = sampleTrilinear(sampler, {1.3f, 1.4f, 1.2f});
 	EXPECT_EQ(42, voxelfract2.getColor());
 }
 
@@ -38,10 +38,10 @@ TEST_F(VolumeSamplerTest, testTriplanarSamplingNegativeCoordinates) {
 	voxel::Voxel voxel111 = sampleTrilinear(sampler, {-1, -1, -1});
 	EXPECT_EQ(42, voxel111.getColor());
 
-	voxel::Voxel voxelfract = sampleTrilinear(sampler, {-0.7, -0.6, -0.7});
+	voxel::Voxel voxelfract = sampleTrilinear(sampler, {-0.7f, -0.6f, -0.7f});
 	EXPECT_EQ(42, voxelfract.getColor());
 
-	voxel::Voxel voxelfract2 = sampleTrilinear(sampler, {-1.3, -1.4, -1.2});
+	voxel::Voxel voxelfract2 = sampleTrilinear(sampler, {-1.3f, -1.4f, -1.2f});
 	EXPECT_EQ(42, voxelfract2.getColor());
 }
 

@@ -102,7 +102,7 @@ static uint8_t calculateDir(const voxel::RawVolume *v, int x, int y, int z, cons
 	double zmulk = 2.0 / 255.0;
 	double zaddk = zmulk * 0.5 - 1.0;
 	const double GOLDRAT = 0.3819660112501052;
-	const float goldratpi2 = GOLDRAT * math::twoPiD;
+	const float goldratpi2 = (float)(GOLDRAT * math::twoPiD);
 
 	for (uint8_t i = 0; i < 255u; ++i) {
 		math::Vec3d result;

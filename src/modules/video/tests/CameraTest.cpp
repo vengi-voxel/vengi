@@ -135,7 +135,7 @@ TEST_F(CameraTest, testParallelLookAt) {
 }
 
 TEST_F(CameraTest, testCameraFrustumCullingPerspective) {
-	Camera camera = setup(math::Vec2f(1024, 768), math::Vec3f(0.1, 1.0, 0.1));
+	Camera camera = setup(math::Vec2f(1024.0f, 768.0f), math::Vec3f(0.1f, 1.0f, 0.1f));
 	camera.setMode(CameraMode::Perspective);
 	camera.update(0.0);
 	const math::Frustum &frustum = camera.frustum();
@@ -200,7 +200,7 @@ TEST_F(CameraTest, testCameraFrustumCullingOrthogonal) {
 	camera.setSize(math::Vec2f(100.0f, 100.0f));
 	camera.setMode(CameraMode::Orthogonal);
 	camera.setOrthoDepth(10.0f);
-	camera.setWorldPosition(math::Vec3f(0.1, 1.0, 0.1));
+	camera.setWorldPosition(math::Vec3f(0.1f, 1.0f, 0.1f));
 	camera.lookAt(math::Vec3f(0.0), math::forward());
 	camera.update(0.0);
 	const math::Frustum &frustum = camera.frustum();

@@ -59,7 +59,7 @@ inline constexpr Vec3u operator/(uint32_t s, const Vec3u &a) { return Vec3u(s / 
 inline constexpr Vec3u operator%(const Vec3u &a, const Vec3u &o) { return Vec3u(a.x % o.x, a.y % o.y, a.z % o.z); }
 inline constexpr Vec3u operator%(const Vec3u &a, uint32_t s) { return Vec3u(a.x % s, a.y % s, a.z % s); }
 inline constexpr Vec3u operator%(uint32_t s, const Vec3u &a) { return Vec3u(s % a.x, s % a.y, s % a.z); }
-inline constexpr Vec3u operator-(const Vec3u &a) { return Vec3u(-a.x, -a.y, -a.z); }
+inline constexpr Vec3u operator-(const Vec3u &a) { return Vec3u(0u - a.x, 0u - a.y, 0u - a.z); }
 inline constexpr bool operator==(const Vec3u &a, const Vec3u &o) { return a.x == o.x && a.y == o.y && a.z == o.z; }
 inline constexpr bool operator!=(const Vec3u &a, const Vec3u &o) { return !(a == o); }
 inline constexpr uint32_t dot(const Vec3u &a, const Vec3u &b) { return a.x * b.x + a.y * b.y + a.z * b.z; }

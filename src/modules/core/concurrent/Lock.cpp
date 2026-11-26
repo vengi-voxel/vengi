@@ -6,6 +6,7 @@
 #include <SDL3/SDL_mutex.h>
 
 #ifdef TRACY_ENABLE
+#include <stdio.h> // Tracy uses vsnprintf.
 #include "core/tracy/public/tracy/Tracy.hpp"
 #endif
 

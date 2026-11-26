@@ -368,9 +368,9 @@ TEST_F(MeshFormatTest, testVoxelNormalWriters) {
 TEST_F(MeshFormatTest, testSubdivide) {
 	MeshTriCollection tinyTris;
 	voxelformat::MeshTri meshTri;
-	meshTri.setVertices(math::Vec3f(-8.77272797, -11.43335, -0.154544264),
-						math::Vec3f(-8.77272701, 11.1000004, -0.154543981),
-						math::Vec3f(8.77272701, 11.1000004, -0.154543981));
+	meshTri.setVertices(math::Vec3f(-8.77272797f, -11.43335f, -0.154544264f),
+						math::Vec3f(-8.77272701f, 11.1000004f, -0.154543981f),
+						math::Vec3f(8.77272701f, 11.1000004f, -0.154543981f));
 	MeshFormat::subdivideTri(meshTri, tinyTris, 0);
 	EXPECT_EQ(1024u, tinyTris.size());
 }

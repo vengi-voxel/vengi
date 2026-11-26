@@ -1,6 +1,6 @@
 # Usage
 
-For cvars, environment variables and Windows DLL / shell integration, see [Settings](Settings.md).
+See [configuration](../Configuration.md) for cvars and environment variables, and [Windows Explorer](Index.md#windows-explorer) for shell integration.
 
 Print a detailed description of the program parameters for your particular version.
 

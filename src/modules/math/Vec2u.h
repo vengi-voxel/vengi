@@ -57,7 +57,7 @@ inline constexpr Vec2u operator/(uint32_t s, const Vec2u &a) { return Vec2u(s / 
 inline constexpr Vec2u operator%(const Vec2u &a, const Vec2u &o) { return Vec2u(a.x % o.x, a.y % o.y); }
 inline constexpr Vec2u operator%(const Vec2u &a, uint32_t s) { return Vec2u(a.x % s, a.y % s); }
 inline constexpr Vec2u operator%(uint32_t s, const Vec2u &a) { return Vec2u(s % a.x, s % a.y); }
-inline constexpr Vec2u operator-(const Vec2u &a) { return Vec2u(-a.x, -a.y); }
+inline constexpr Vec2u operator-(const Vec2u &a) { return Vec2u(0u - a.x, 0u - a.y); }
 inline constexpr bool operator==(const Vec2u &a, const Vec2u &o) { return a.x == o.x && a.y == o.y; }
 inline constexpr bool operator!=(const Vec2u &a, const Vec2u &o) { return !(a == o); }
 inline constexpr uint32_t dot(const Vec2u &a, const Vec2u &b) { return a.x * b.x + a.y * b.y; }

@@ -104,7 +104,7 @@ endfunction()
 function(engine_generated_library TARGET)
 	add_library(${TARGET} OBJECT)
 	set_target_properties(${TARGET} PROPERTIES LINKER_LANGUAGE CXX)
-	write_file(${GENERATE_DIR}/${TARGET}.cpp "#include <stdio.h>")
+	file(GENERATE OUTPUT "${GENERATE_DIR}/${TARGET}.cpp" CONTENT "#include <stdio.h>\n")
 	set_source_files_properties(${GENERATE_DIR}/${TARGET}.cpp PROPERTIES GENERATED TRUE)
 	target_sources(${TARGET} PRIVATE ${GENERATE_DIR}/${TARGET}.cpp)
 	add_dependencies(engine_codegen ${TARGET})
@@ -535,7 +535,10 @@ function(engine_add_build_executable)
 	cmake_parse_arguments(_EXE "${_OPTIONS_ARGS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN} )
 
 	engine_add_executable("${ARGN}")
-	set_property(TARGET ${_EXE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION False)
+	# MSVC code generators must use LTCG when linking project libraries built with IPO.
+	if (NOT MSVC)
+		set_property(TARGET ${_EXE_TARGET} PROPERTY INTERPROCEDURAL_OPTIMIZATION OFF)
+	endif()
 endfunction()
 
 # ui_test_engine is a full replacement for ui (same sources, plus imgui test

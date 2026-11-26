@@ -28,9 +28,9 @@ class SceneGraph;
 }
 
 namespace math {
-class Mat4f;
-class Mat3f;
-class Mat4x3f;
+struct Mat4f;
+struct Mat3f;
+struct Mat4x3f;
 ::std::ostream &operator<<(::std::ostream &os, const Mat4f &matrix);
 ::std::ostream &operator<<(::std::ostream &os, const Mat3f &matrix);
 ::std::ostream &operator<<(::std::ostream &os, const Mat4x3f &matrix);

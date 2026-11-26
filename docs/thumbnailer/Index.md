@@ -18,7 +18,7 @@ There is a `voxelthumb.dll` that must get registered via `regsvr32 /s voxelthumb
 
 The DLL starts `vengi-thumbnailer.exe` in the background. Because each request uses an isolated
 home path, Explorer thumbnails do **not** read `thumbnailer.vars`. Tune brightness and lighting
-with environment variables (for example `CL_GAMMA`) - see [Settings](Settings.md).
+with environment variables (for example `CL_GAMMA`) - see [Environment variables](../Configuration.md#environment).
 
 > You can still run this application from the windows command line to generate thumbnail images of your voxel models. See the [examples](Examples.md) for more details.
 

@@ -14,8 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:allowBackup="true"
         android:theme="@style/AppTheme"
-        android:hardwareAccelerated="true"
-        android:extractNativeLibs="true">
+        android:hardwareAccelerated="true">
 
         <activity
             android:name="io.github.vengi_voxel.voxedit.VoxEdit"

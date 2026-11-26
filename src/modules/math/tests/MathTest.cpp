@@ -33,6 +33,7 @@
 #include "math/BVec3.h"
 #include "math/BVec4.h"
 #include "math/Mat4Ops.h"
+#include "math/QuatOps.h"
 #include "math/Scalar.h"
 #include <type_traits>
 
@@ -63,6 +64,23 @@ TEST(MathTest, testVectorValueInitialization) {
 	EXPECT_EQ(zero4, math::Vec4f(0.0f));
 	const math::Vec3i zero3{};
 	EXPECT_EQ(zero3, math::Vec3i(0));
+}
+
+TEST(MathTest, testUnsignedVectorNegationWraps) {
+	EXPECT_TRUE(-math::Vec2u(1u, 0u) == math::Vec2u(UINT32_MAX, 0u));
+	EXPECT_TRUE(-math::Vec3u(1u, 0u, UINT32_MAX) == math::Vec3u(UINT32_MAX, 0u, 1u));
+	EXPECT_TRUE(-math::Vec4u(1u, 0u, UINT32_MAX, 0x80000000u) == math::Vec4u(UINT32_MAX, 0u, 1u, 0x80000000u));
+}
+
+TEST(MathTest, testDecomposeHalfTurns) {
+	for (const math::Vec3f &axis : {math::Vec3f(1, 0, 0), math::Vec3f(0, 1, 0), math::Vec3f(0, 0, 1)}) {
+		const math::Quatf input = math::angleAxis(math::pi, axis);
+		math::Quatf rotation;
+		math::Vec3f scale, translation, skew;
+		math::Vec4f perspective;
+		ASSERT_TRUE(math::decompose(math::mat4_cast(input), scale, rotation, translation, skew, perspective));
+		EXPECT_NEAR(1.0f, math::abs(math::dot(input, rotation)), 0.0001f);
+	}
 }
 
 TEST(MathTest, testTransform) {

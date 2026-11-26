@@ -52,7 +52,7 @@ TEST_F(Base64Test, ValidatesAlphabetGroupsAndTrailingPadding) {
 		EXPECT_FALSE(Base64::isValid(invalid)) << invalid;
 	}
 	core::String binary("AAAA");
-	binary[1] = (char)0xff;
+	binary[1] = '\xff';
 	EXPECT_FALSE(Base64::isValid(binary));
 	binary[1] = '\0';
 	EXPECT_FALSE(Base64::isValid(binary));

@@ -22,7 +22,7 @@ private:
 	using Super = ui ::Panel;
 	SceneManagerPtr _sceneMgr;
 	OptionsPanel *_optionsPanel;
-	SceneDebugPanel *_sceneDebugPanel;
+	[[maybe_unused]] SceneDebugPanel *_sceneDebugPanel;
 	voxelui::ScriptBrowserPanel *_scriptBrowserPanel;
 	VoxBoxBrowserPanel *_voxBoxBrowserPanel;
 
