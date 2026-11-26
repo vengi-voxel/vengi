@@ -29,6 +29,7 @@ private:
 		uint8_t versionMinor = 0;
 		ColorFormat colorFormat = ColorFormat::RGBA;
 		math::Vec3f globalScale{0};
+		palette::RGBABuffer *colors = nullptr;
 	};
 
 	bool loadHeader(io::SeekableReadStream &stream, Header &state);
@@ -56,6 +57,7 @@ private:
 	bool saveColorMap(io::SeekableWriteStream &stream, const palette::Palette &palette) const;
 	bool saveModel(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 				   const scenegraph::SceneGraphNode &node, bool colorMap) const;
+	bool onlyOnePalette() const override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 

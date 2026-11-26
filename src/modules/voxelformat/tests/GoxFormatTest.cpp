@@ -14,6 +14,11 @@ namespace voxelformat {
 
 class GoxFormatTest : public AbstractFormatTest {};
 
+TEST_F(GoxFormatTest, testPalettePerModel) {
+	GoxFormat format;
+	testModelPaletteRoundTrip("model-palettes.gox", format);
+}
+
 TEST_F(GoxFormatTest, testLoad) {
 	testLoad("test.gox");
 }

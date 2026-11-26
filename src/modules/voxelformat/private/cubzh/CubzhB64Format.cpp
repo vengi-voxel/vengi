@@ -6,14 +6,19 @@
 #include "CubzhB64Format.h"
 #include "color/Color.h"
 #include "core/Common.h"
+#include "core/ConfigVar.h"
 #include "core/IProgress.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StandardLib.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "io/Archive.h"
 #include "io/Base64ReadStream.h"
 #include "io/StreamUtil.h"
+#include "palette/Palette.h"
+#include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphUtil.h"
@@ -163,7 +168,13 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 	wrap(stream.readUInt16(numBlocks))
 	Log::debug("numBlocks: %i", (int)numBlocks);
 
-	voxel::SparseVolume v;
+	struct Block {
+		int index;
+		color::RGBA color;
+	};
+	core::Buffer<Block> blocks;
+	palette::RGBABuffer colors;
+	const bool createVolumePalette = core::getVar(cfg::VoxelCreatePalette)->boolVal();
 	for (int i = 0; i < (int)numBlocks; ++i) {
 		core::String key;
 		wrapBool(stream.readPascalStringUInt16LE(key))
@@ -171,15 +182,29 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 		uint8_t blockAction;
 		wrap(stream.readUInt8(blockAction))
 		if (blockAction == 1) {
-			color::RGBA color;
-			wrapBool(io::readColor(stream, color))
-			// the index is an encoded position using: X + Y * 1000 + Z * 1000000
-			const int x = i % 1000;
-			const int y = i / 1000 % 1000;
-			const int z = i / 1000000;
-			v.setVoxel(x, y, z, voxel::createVoxel(voxel::VoxelType::Generic, color));
-			Log::debug("set voxel to %i:%i:%i with color %s", x, y, z, color::toHex(color).c_str());
+			color::RGBA rgba;
+			wrapBool(io::readColor(stream, rgba))
+			rgba = flattenRGB(rgba);
+			blocks.push_back({i, rgba});
+			if (createVolumePalette) {
+				colors.insert(rgba);
+			}
 		}
+	}
+
+	palette::Palette blockPalette;
+	if (createVolumePalette) {
+		createPalette(colors, blockPalette);
+	}
+	const palette::Palette &voxelPalette = blockPalette.colorCount() != 0 ? blockPalette : palette;
+	palette::PaletteLookup lookup(voxelPalette, palette::PaletteLookup::Precision::Exact);
+	voxel::SparseVolume v;
+	for (const Block &block : blocks) {
+		// The index is an encoded position using X + Y * 1000 + Z * 1000000.
+		const int x = block.index % 1000;
+		const int y = block.index / 1000 % 1000;
+		const int z = block.index / 1000000;
+		v.setVoxel(x, y, z, voxel::createVoxel(voxelPalette, lookup.findClosestIndex(block.color)));
 	}
 
 	const voxel::Region &sparseRegion = v.calculateRegion();
@@ -190,6 +215,7 @@ bool CubzhB64Format::readBlocks(io::ReadStream &stream, scenegraph::SceneGraph &
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setName("Blocks");
+	node.setPalette(voxelPalette);
 	node.createVolume(sparseRegion);
 	v.copyTo(*node.volume());
 	const int nodeId = sceneGraph.emplace(core::move(node));

@@ -8,11 +8,14 @@
 #include "core/Assert.h"
 #include "color/Color.h"
 #include "core/FourCC.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "image/Image.h"
 #include "io/Archive.h"
+#include "io/StreamUtil.h"
 #include "io/Base64.h"
 #include "io/MemoryReadStream.h"
 #include "io/BufferedReadWriteStream.h"
@@ -365,291 +368,198 @@ size_t QBCLFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	}
 	Header header;
 	wrapBool(readHeader(*stream, header))
-	header.loadPalette = true;
 
-	scenegraph::SceneGraph sceneGraph;
-	wrapBool(readNodes(filename, *stream, sceneGraph, sceneGraph.root().id(), palette, header, ctx))
-
-	Log::debug("qbcl: loaded %i colors", palette.colorCount());
-	return palette.colorCount();
+	palette::RGBABuffer colors;
+	wrapBool(readNodes(*stream, nullptr, InvalidNodeId, &colors, ctx))
+	return createPalette(colors, palette);
 }
 
-bool QBCLFormat::readMatrix(const core::String &filename, io::SeekableReadStream &stream,
-							scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-							palette::Palette &palette, Header &header, const NodeHeader &nodeHeader) {
-	scenegraph::SceneGraphTransform transform;
-	Log::debug("Matrix name: %s", name.c_str());
-
-	math::Vec3u size;
-	wrap(stream.readUInt32(size.x));
-	wrap(stream.readUInt32(size.y));
-	wrap(stream.readUInt32(size.z));
-
-	math::Vec3i translation;
-	wrap(stream.readInt32(translation.x));
-	wrap(stream.readInt32(translation.y));
-	wrap(stream.readInt32(translation.z));
-	transform.setLocalTranslation(translation);
-
-	math::Vec3f pivot;
-	wrap(stream.readFloat(pivot.x));
-	wrap(stream.readFloat(pivot.y));
-	wrap(stream.readFloat(pivot.z));
-
-	uint32_t compressedDataSize;
-	wrap(stream.readUInt32(compressedDataSize));
-	Log::debug("Matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, compressedDataSize);
-	if (compressedDataSize == 0) {
-		Log::warn("Empty voxel chunk found");
-		return false;
-	}
-	if (compressedDataSize > 0xFFFFFF) {
-		Log::warn("Size of matrix exceeds the max allowed value");
-		return false;
-	}
-	if (math::any(math::greaterThan(size, math::Vec3u(MaxRegionSize)))) {
-		Log::warn("Size of matrix exceeds the max allowed value");
-		return false;
-	}
-	if (math::any(math::lessThan(size, math::Vec3u(1)))) {
-		Log::warn("Size of matrix results in empty space");
-		return false;
-	}
-
-	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i((int)size.x, (int)size.y, (int)size.z));
-	if (!region.isValid()) {
-		Log::error("Invalid region");
-		return false;
-	}
-
-	io::ZipReadStream zipStream(stream, (int)compressedDataSize);
-	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
-	uint32_t index = 0;
-
-	palette::PaletteLookup palLookup(palette);
-
-	const uint64_t columns = (uint64_t)size.x * size.z;
-	while (index < columns) {
-		int y = 0;
-		uint16_t rleEntries;
-		wrap(zipStream.readUInt16(rleEntries))
-		for (int i = 0; i < (int)rleEntries; i++) {
-			uint8_t red;
-			uint8_t green;
-			uint8_t blue;
-			uint8_t mask;
-
-			wrap(zipStream.readUInt8(red))
-			wrap(zipStream.readUInt8(green))
-			wrap(zipStream.readUInt8(blue))
-			wrap(zipStream.readUInt8(mask))
-
-			if (mask == qbcl::RLE_FLAG) {
-				uint8_t rleLength = red;
-				if (rleLength == 0 || y + rleLength > (int)size.y || i + 1 >= rleEntries) {
+template<class Visitor>
+bool QBCLFormat::readVoxels(io::SeekableReadStream &stream, const math::Vec3u &size, uint32_t compressedSize,
+							Visitor &&visit) {
+	const int64_t matrixEnd = stream.pos() + compressedSize;
+	io::ZipReadStream zipStream(stream, (int)compressedSize);
+	for (uint32_t x = 0; x < size.x; ++x) {
+		for (uint32_t z = 0; z < size.z; ++z) {
+			uint32_t y = 0;
+			uint16_t rleEntries;
+			wrap(zipStream.readUInt16(rleEntries))
+			for (int i = 0; i < rleEntries; ++i) {
+				color::RGBA color;
+				wrapBool(io::readColor(zipStream, color))
+				uint32_t count = 1;
+				if (color.a == qbcl::RLE_FLAG) {
+					count = color.r;
+					if (++i >= rleEntries) {
+						Log::error("Missing QBCL voxel run color");
+						return false;
+					}
+					wrapBool(io::readColor(zipStream, color))
+				}
+				if (count == 0 || count > size.y - y) {
 					Log::error("Invalid QBCL voxel run");
 					return false;
 				}
-				uint8_t alpha;
-				wrap(zipStream.readUInt8(red))
-				wrap(zipStream.readUInt8(green))
-				wrap(zipStream.readUInt8(blue))
-				wrap(zipStream.readUInt8(alpha))
-
-				if (alpha == 0) {
-					y += rleLength;
-				} else {
-					const color::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
-					if (header.loadPalette) {
-						palette.tryAdd(color, false);
-					} else {
-						const uint8_t palIndex = palLookup.findClosestIndex(color);
-						const voxel::Voxel &voxel = voxel::createVoxel(palette, palIndex);
-						const uint32_t x = (index / size.z);
-						const uint32_t z = index % size.z;
-						voxel::RawVolume::Sampler sampler(volume);
-						sampler.setPosition((int)x, y, (int)z);
-						for (int j = 0; j < rleLength; ++j) {
-							sampler.setVoxel(voxel);
-							sampler.movePositiveY();
-						}
-					}
-					y += rleLength;
+				if (color.a != 0) {
+					visit(flattenRGB(color.r, color.g, color.b), x, y, z, count);
 				}
-				// we've read another color value for the rle values
-				++i;
-			} else if (y >= (int)size.y) {
-				Log::error("QBCL column exceeds matrix height");
+				y += count;
+			}
+			if (y != size.y) {
+				Log::error("QBCL column has %u voxels, expected %u", y, size.y);
 				return false;
-			} else if (mask == 0) {
-				++y;
-			} else {
-				// Uncompressed
-				const color::RGBA color = flattenRGB(red, green, blue, 255 /* TODO: VOXELFORMAT: alpha support? */);
-				if (header.loadPalette) {
-					palette.tryAdd(color, false);
-				} else {
-					const uint32_t x = (index / size.z);
-					const uint32_t z = index % size.z;
-					const uint8_t palIndex = palLookup.findClosestIndex(color);
-					const voxel::Voxel &voxel = voxel::createVoxel(palette, palIndex);
-					volume->setVoxel((int)x, y, (int)z, voxel);
-				}
-				++y;
 			}
 		}
-
-		if (y != (int)size.y) {
-			Log::error("QBCL column has %i voxels, expected %u", y, size.y);
-			return false;
-		}
-		index++;
 	}
 	if (!zipStream.eos()) {
-		Log::error("Trailing QBCL voxel columns");
+		uint8_t trailing;
+		if (zipStream.read(&trailing, 1) != 0 || !zipStream.eos()) {
+			Log::error("Trailing QBCL voxel columns");
+			return false;
+		}
+	}
+	return stream.seek(matrixEnd) != -1;
+}
+
+bool QBCLFormat::readMatrix(io::SeekableReadStream &stream, scenegraph::SceneGraph *sceneGraph, int parent,
+							const core::String &name, const NodeHeader &nodeHeader, palette::RGBABuffer *colors) {
+	math::Vec3u size;
+	wrap(stream.readUInt32(size.x))
+	wrap(stream.readUInt32(size.y))
+	wrap(stream.readUInt32(size.z))
+
+	math::Vec3i translation;
+	wrap(stream.readInt32(translation.x))
+	wrap(stream.readInt32(translation.y))
+	wrap(stream.readInt32(translation.z))
+
+	math::Vec3f pivot;
+	wrap(stream.readFloat(pivot.x))
+	wrap(stream.readFloat(pivot.y))
+	wrap(stream.readFloat(pivot.z))
+
+	uint32_t compressedSize;
+	wrap(stream.readUInt32(compressedSize))
+	if (compressedSize == 0 || compressedSize > 0xFFFFFF || compressedSize > stream.remaining() ||
+		math::any(math::greaterThan(size, math::Vec3u(MaxRegionSize))) ||
+		math::any(math::lessThan(size, math::Vec3u(1)))) {
+		Log::error("Invalid QBCL matrix size: %u:%u:%u with %u bytes", size.x, size.y, size.z, compressedSize);
 		return false;
 	}
+	if (colors) {
+		const auto collect = [colors](color::RGBA color, uint32_t, uint32_t, uint32_t, uint32_t) {
+			colors->insert(color);
+		};
+		return readVoxels(stream, size, compressedSize, collect);
+	}
 
-	if (header.loadPalette) {
-		return true;
+	palette::Palette palette;
+	if (core::getVar(cfg::VoxelCreatePalette)->boolVal()) {
+		io::ScopedStreamPos streamPos(stream);
+		palette::RGBABuffer matrixColors;
+		const auto collect = [&matrixColors](color::RGBA color, uint32_t, uint32_t, uint32_t, uint32_t) {
+			matrixColors.insert(color);
+		};
+		wrapBool(readVoxels(stream, size, compressedSize, collect))
+		createPalette(matrixColors, palette);
+	}
+	if (palette.colorCount() == 0) {
+		palette = voxel::getPalette();
 	}
 
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(volume.release());
-	node.setVisible(nodeHeader.visible);
-	node.setLocked(nodeHeader.locked);
-	node.setPalette(palLookup.palette());
-	if (name.empty()) {
-		node.setName("Matrix");
-	} else {
-		node.setName(name);
-	}
-	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx, transform);
-	// the pivot is given in voxel coordinates
-	node.setPivot(pivot / math::Vec3f(size));
-	// Vengi stores translation at the pivot; QBCL stores the grid origin.
-	transform.setLocalTranslation(math::Vec3f(translation) + pivot);
-	node.setTransform(keyFrameIdx, transform);
-	const int id = sceneGraph.emplace(core::move(node), parent);
-	return id != InvalidNodeId;
-}
-
-bool QBCLFormat::readModel(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-						   palette::Palette &palette, Header &header, const NodeHeader &nodeHeader,
-						   const LoadContext &ctx) {
-	uint8_t modelBytes[36];
-	if (stream.read(modelBytes, sizeof(modelBytes)) != sizeof(modelBytes)) {
-		return false;
-	}
-	io::MemoryReadStream modelStream(modelBytes, sizeof(modelBytes));
-	const core::String modelData = io::Base64::encode(modelStream);
-	uint32_t childCount;
-	wrap(stream.readUInt32(childCount))
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
-	if (name.empty()) {
-		node.setName("Model");
-	} else {
-		node.setName(name);
-	}
-	node.setVisible(nodeHeader.visible);
-	node.setLocked(nodeHeader.locked);
-	node.setProperty("qbcl_model_data", modelData);
-	int nodeId;
-	if (parent == InvalidNodeId) {
-		scenegraph::SceneGraphNode &root = sceneGraph.node(sceneGraph.root().id());
-		root.setProperty("qbcl_model_data", modelData);
-		root.setName(node.name());
-		root.setVisible(nodeHeader.visible);
-		root.setLocked(nodeHeader.locked);
-		nodeId = root.id();
-	} else {
-		nodeId = sceneGraph.emplace(core::move(node), parent);
-		if (nodeId == InvalidNodeId) {
-			return false;
+	node.createVolume(voxel::Region::fromSize(math::Vec3i(size)));
+	palette::PaletteLookup lookup(palette, palette::PaletteLookup::Precision::Exact);
+	const auto place = [&](color::RGBA color, uint32_t x, uint32_t y, uint32_t z, uint32_t count) {
+		const voxel::Voxel voxel = voxel::createVoxel(palette, lookup.findClosestIndex(color));
+		voxel::RawVolume::Sampler sampler(node.volume());
+		sampler.setPosition((int)x, (int)y, (int)z);
+		for (uint32_t i = 0; i < count; ++i) {
+			sampler.setVoxel(voxel);
+			sampler.movePositiveY();
 		}
-	}
-	Log::debug("Found %u children in model '%s'", childCount, name.c_str());
-	for (uint32_t i = 0; i < childCount; ++i) {
-		ctx.report("node", (int)i, (int)childCount);
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, header, ctx))
-	}
-	ctx.report("node", (int)childCount, (int)childCount);
-	return true;
-}
-
-bool QBCLFormat::readCompound(const core::String &filename, io::SeekableReadStream &stream,
-							  scenegraph::SceneGraph &sceneGraph, int parent, const core::String &name,
-							  palette::Palette &palette, Header &header, const NodeHeader &nodeHeader,
-							  const LoadContext &ctx) {
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
-	if (name.empty()) {
-		node.setName("Compound");
-	} else {
-		node.setName(name);
-	}
+	};
+	wrapBool(readVoxels(stream, size, compressedSize, place))
 	node.setVisible(nodeHeader.visible);
 	node.setLocked(nodeHeader.locked);
-	int nodeId = sceneGraph.emplace(core::move(node), parent);
-	wrapBool(readMatrix(filename, stream, sceneGraph, nodeId, name, palette, header, nodeHeader))
-	uint32_t childCount;
-	wrap(stream.readUInt32(childCount))
-	Log::debug("Found %u children in compound '%s'", childCount, name.c_str());
-	for (uint32_t i = 0; i < childCount; ++i) {
-		ctx.report("node", (int)i, (int)childCount);
-		wrapBool(readNodes(filename, stream, sceneGraph, nodeId, palette, header, ctx))
-	}
-	ctx.report("node", (int)childCount, (int)childCount);
-	return true;
+	node.setPalette(palette);
+	node.setName(name.empty() ? "Matrix" : name);
+	// Vengi stores translation at the pivot; QBCL stores the grid origin.
+	node.setPivot(pivot / math::Vec3f(size));
+	node.transform(0).setLocalTranslation(math::Vec3f(translation) + pivot);
+	return sceneGraph->emplace(core::move(node), parent) != InvalidNodeId;
 }
 
-bool QBCLFormat::readNodes(const core::String &filename, io::SeekableReadStream &stream,
-						   scenegraph::SceneGraph &sceneGraph, int parent, palette::Palette &palette, Header &header,
-						   const LoadContext &ctx) {
+bool QBCLFormat::readNodes(io::SeekableReadStream &stream, scenegraph::SceneGraph *sceneGraph, int parent,
+							palette::RGBABuffer *colors, const LoadContext &ctx) {
 	uint32_t type;
 	wrap(stream.readUInt32(type))
 	uint32_t unknown;
-	wrap(stream.readUInt32(unknown));
-	Log::debug("unknown int: %u", unknown);
-
+	wrap(stream.readUInt32(unknown))
 	core::String name;
 	wrapBool(stream.readPascalStringUInt32LE(name))
 	NodeHeader nodeHeader;
 	nodeHeader.visible = stream.readBool();
 	nodeHeader.unknown = stream.readBool();
 	nodeHeader.locked = stream.readBool();
+
+	int nodeId = parent == InvalidNodeId ? 0 : parent;
 	switch (type) {
 	case qbcl::NODE_TYPE_MATRIX:
-		core_assert(parent != InvalidNodeId);
-		Log::debug("Found matrix");
-		if (!readMatrix(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader)) {
-			Log::error("Failed to load matrix %s", name.c_str());
+		return readMatrix(stream, sceneGraph, nodeId, name, nodeHeader, colors);
+	case qbcl::NODE_TYPE_MODEL: {
+		uint8_t modelBytes[36];
+		if (stream.read(modelBytes, sizeof(modelBytes)) != sizeof(modelBytes)) {
 			return false;
 		}
-		Log::debug("Matrix of size %u loaded", unknown);
-		break;
-	case qbcl::NODE_TYPE_MODEL:
-		Log::debug("Found model");
-		if (!readModel(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader, ctx)) {
-			Log::error("Failed to load model %s", name.c_str());
-			return false;
+		if (sceneGraph) {
+			io::MemoryReadStream modelStream(modelBytes, sizeof(modelBytes));
+			const core::String modelData = io::Base64::encode(modelStream);
+			if (parent == InvalidNodeId) {
+				scenegraph::SceneGraphNode &root = sceneGraph->node(nodeId);
+				root.setName(name.empty() ? "Model" : name);
+				root.setVisible(nodeHeader.visible);
+				root.setLocked(nodeHeader.locked);
+				root.setProperty("qbcl_model_data", modelData);
+			} else {
+				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+				node.setName(name.empty() ? "Model" : name);
+				node.setVisible(nodeHeader.visible);
+				node.setLocked(nodeHeader.locked);
+				node.setProperty("qbcl_model_data", modelData);
+				nodeId = sceneGraph->emplace(core::move(node), parent);
+			}
 		}
-		Log::debug("Model of size %u loaded", unknown);
 		break;
+	}
 	case qbcl::NODE_TYPE_COMPOUND:
-		core_assert(parent != InvalidNodeId);
-		Log::debug("Found compound");
-		if (!readCompound(filename, stream, sceneGraph, parent, name, palette, header, nodeHeader, ctx)) {
-			Log::error("Failed to load compound %s", name.c_str());
-			return false;
+		if (sceneGraph) {
+			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Group);
+			node.setName(name.empty() ? "Compound" : name);
+			node.setVisible(nodeHeader.visible);
+			node.setLocked(nodeHeader.locked);
+			nodeId = sceneGraph->emplace(core::move(node), nodeId);
+			if (nodeId == InvalidNodeId) {
+				return false;
+			}
 		}
-		Log::debug("Compound of size %u loaded", unknown);
+		wrapBool(readMatrix(stream, sceneGraph, nodeId, name, nodeHeader, colors))
 		break;
 	default:
-		Log::warn("Unknown type found: '%s'", name.c_str());
+		Log::warn("Unknown QBCL node type %u: '%s'", type, name.c_str());
 		return false;
 	}
+
+	if (nodeId == InvalidNodeId) {
+		return false;
+	}
+	uint32_t childCount;
+	wrap(stream.readUInt32(childCount))
+	for (uint32_t i = 0; i < childCount; ++i) {
+		ctx.report("node", (int)i, (int)childCount);
+		wrapBool(readNodes(stream, sceneGraph, nodeId, colors, ctx))
+	}
+	ctx.report("node", (int)childCount, (int)childCount);
 	return true;
 }
 
@@ -684,9 +594,8 @@ bool QBCLFormat::readHeader(io::SeekableReadStream &stream, Header &header) {
 	return true;
 }
 
-bool QBCLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-								const LoadContext &ctx) {
+bool QBCLFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
+							scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -695,8 +604,7 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	Header header;
 	wrapBool(readHeader(*stream, header))
 
-	palette::Palette palCopy = palette;
-	wrapBool(readNodes(filename, *stream, sceneGraph, InvalidNodeId, palCopy, header, ctx))
+	wrapBool(readNodes(*stream, &sceneGraph, InvalidNodeId, nullptr, ctx))
 
 	scenegraph::SceneGraphNode &rootNode = sceneGraph.node(sceneGraph.root().id());
 	rootNode.setProperty(scenegraph::PropTitle, header.title);
@@ -706,7 +614,7 @@ bool QBCLFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 	rootNode.setProperty(scenegraph::PropCompany, header.company);
 	rootNode.setProperty(scenegraph::PropWebsite, header.website);
 	rootNode.setProperty(scenegraph::PropCopyright, header.copyright);
-
+	sceneGraph.updateTransforms();
 	return true;
 }
 

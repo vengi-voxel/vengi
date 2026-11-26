@@ -83,6 +83,13 @@ protected:
 	}
 };
 
+TEST_F(QBTFormatTest, testPalettePerModel) {
+	util::ScopedVarChange paletteMode(cfg::VoxformatQBTPaletteMode, false);
+	util::ScopedVarChange mergeCompounds(cfg::VoxformatQBTMergeCompounds, false);
+	QBTFormat format;
+	testModelPaletteRoundTrip("model-palettes.qbt", format, true);
+}
+
 TEST_F(QBTFormatTest, testLoad) {
 	testLoad("qubicle.qbt", 17);
 }
@@ -114,7 +121,9 @@ TEST_F(QBTFormatTest, testSaveMultipleModels) {
 
 TEST_F(QBTFormatTest, testSave) {
 	QBTFormat f;
-	testConvert("qubicle.qbt", f, "qubicle-savetest.qbt", f);
+	// Indexed QBT combines the model palettes into its file-wide color map.
+	const voxel::ValidateFlags flags = voxel::ValidateFlags::All & ~voxel::ValidateFlags::Palette;
+	testConvert("qubicle.qbt", f, "qubicle-savetest.qbt", f, flags);
 }
 
 TEST_F(QBTFormatTest, testResaveMultipleModels) {

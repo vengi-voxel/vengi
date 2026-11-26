@@ -33,8 +33,15 @@ static inline size_t computeIndex(color::RGBA rgba) {
 
 } // namespace priv
 
-PaletteLookup::PaletteLookup(const palette::Palette &palette)
-	: _palette(palette), _cache(priv::CACHE_SIZE, PaletteColorNotFound) {
+PaletteLookup::PaletteLookup(const palette::Palette &palette, Precision precision)
+	: _palette(palette), _precision(precision) {
+	if (_precision == Precision::Exact) {
+		for (int i = 0; i < palette.colorCount(); ++i) {
+			_exactMatches.putIfAbsent(palette.color(i), (uint8_t)i);
+		}
+	} else {
+		_cache = core::Buffer<uint16_t>(priv::CACHE_SIZE, PaletteColorNotFound);
+	}
 }
 
 uint8_t PaletteLookup::findClosestIndex(const math::Vec4f &color) {
@@ -42,6 +49,13 @@ uint8_t PaletteLookup::findClosestIndex(const math::Vec4f &color) {
 }
 
 uint8_t PaletteLookup::findClosestIndex(color::RGBA rgba) {
+	if (_precision == Precision::Exact) {
+		uint8_t index;
+		if (_exactMatches.get(rgba, index)) {
+			return index;
+		}
+		return (uint8_t)_palette.getClosestMatch(rgba);
+	}
 	size_t idx = priv::computeIndex(rgba);
 
 #if defined(_MSC_VER)

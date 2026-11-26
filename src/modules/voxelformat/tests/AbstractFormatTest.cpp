@@ -474,6 +474,73 @@ void AbstractFormatTest::testSaveSmallVolume(const core::String &filename, Forma
 	voxel::sceneGraphComparator(sceneGraph, sceneGraphsave, flags);
 }
 
+void AbstractFormatTest::testModelPaletteRoundTrip(const core::String &filename, Format &format, bool nested) {
+	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, true);
+	util::ScopedVarChange flatten(cfg::VoxformatRGBFlattenFactor, "0");
+	util::ScopedVarChange targetColors(cfg::VoxformatTargetColors, "256");
+	constexpr int side = 12;
+	const auto colorAt = [](int model, int x, int y) {
+		return color::RGBA((uint8_t)(x + y * side), (uint8_t)(model * 255), 31);
+	};
+	static const char *names[] = {"first colors", "second colors"};
+	scenegraph::SceneGraph graph;
+	int parent = graph.root().id();
+	for (int model = 0; model < 2; ++model) {
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.setName(names[model]);
+		node.createVolume(voxel::Region(0, 0, 0, side - 1, side - 1, 1));
+		palette::Palette palette;
+		for (int y = 0; y < side; ++y) {
+			for (int x = 0; x < side; ++x) {
+				const uint8_t index = (uint8_t)(x + y * side);
+				palette.setColor(index, colorAt(model, x, y));
+				node.volume()->setVoxel(x, y, 0, voxel::createVoxel(palette, index));
+			}
+		}
+		node.setPalette(palette);
+		const int id = graph.emplace(core::move(node), parent);
+		ASSERT_NE(InvalidNodeId, id);
+		if (nested) {
+			parent = id;
+		}
+	}
+	graph.updateTransforms();
+
+	const io::MemoryArchivePtr archive = io::openMemoryArchive();
+	SaveContext saveCtx;
+	ASSERT_TRUE(format.save(graph, filename, archive, saveCtx));
+	scenegraph::SceneGraph loaded;
+	ASSERT_TRUE(format.load(filename, archive, loaded, testLoadCtx));
+	ASSERT_EQ(2u, loaded.size(scenegraph::SceneGraphNodeType::Model));
+	for (int model = 0; model < 2; ++model) {
+		const scenegraph::SceneGraphNode *loadedModel = nullptr;
+		for (auto iter = loaded.beginModel(); iter != loaded.end(); ++iter) {
+			if ((*iter).name() == names[model]) {
+				loadedModel = &*iter;
+				break;
+			}
+		}
+		ASSERT_NE(nullptr, loadedModel);
+		EXPECT_EQ(side * side, loadedModel->palette().colorCount());
+		EXPECT_EQ(side * side, voxelutil::countVoxels(*loadedModel->volume()));
+		for (int y = 0; y < side; ++y) {
+			for (int x = 0; x < side; ++x) {
+				const voxel::Voxel voxel = loadedModel->volume()->voxel(x, y, 0);
+				EXPECT_EQ(colorAt(model, x, y), loadedModel->palette().color(voxel.getColor()));
+			}
+		}
+	}
+
+	util::ScopedVarChange useDefaultPalette(cfg::VoxelCreatePalette, false);
+	scenegraph::SceneGraph remapped;
+	ASSERT_TRUE(format.load(filename, archive, remapped, testLoadCtx));
+	for (auto iter = remapped.beginModel(); iter != remapped.end(); ++iter) {
+		EXPECT_EQ(voxel::getPalette().hash(), (*iter).palette().hash());
+	}
+	palette::Palette extracted;
+	EXPECT_EQ(256u, format.loadPalette(filename, archive, extracted, testLoadCtx));
+}
+
 void AbstractFormatTest::testSaveMultipleModels(const core::String &filename, Format *format,
 												voxel::ValidateFlags flags) {
 	SCOPED_TRACE(filename.c_str());

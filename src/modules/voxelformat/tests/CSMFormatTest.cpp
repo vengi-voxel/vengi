@@ -3,6 +3,7 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "palette/Palette.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "voxel/RawVolume.h"
@@ -28,8 +29,10 @@ TEST_F(CSMFormatTest, testLoad) {
 	const voxel::RawVolume *v = sceneGraph.resolveVolume(*node);
 	ASSERT_NE(nullptr, v);
 	EXPECT_EQ(1606, voxelutil::countVoxels(*v));
-	EXPECT_EQ(79u, v->voxel(7, 2, 11).getColor());
-	EXPECT_EQ(191u, v->voxel(6, 4, 10).getColor());
+	EXPECT_EQ(6, node->palette().colorCount());
+	EXPECT_EQ(color::RGBA(74, 53, 8), node->palette().color(v->voxel(7, 2, 11).getColor()));
+	EXPECT_EQ(color::RGBA(106, 209, 248), node->palette().color(v->voxel(6, 4, 10).getColor()));
+	EXPECT_TRUE(sceneGraph.hasMoreThanOnePalette());
 }
 
 } // namespace voxelformat

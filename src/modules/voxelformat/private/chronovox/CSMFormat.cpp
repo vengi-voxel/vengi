@@ -4,13 +4,18 @@
 
 #include "CSMFormat.h"
 #include "core/FourCC.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
 #include "io/Archive.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
+#include "io/StreamUtil.h"
+#include "palette/Palette.h"
 #include "palette/PaletteLookup.h"
 #include "scenegraph/SceneGraphNodeProperties.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "math/Vec3f.h"
@@ -25,7 +30,7 @@ namespace voxelformat {
 
 #define wrapBool(read)                                                                                                 \
 	if (!(read)) {                                                                                                     \
-		Log::debug("Error: " CORE_STRINGIFY(read) " at " CORE_FILE ":%i", CORE_LINE);                                  \
+		Log::debug("Error: %s at %s:%i", CORE_STRINGIFY(read), CORE_FILE, CORE_LINE);                                  \
 		return false;                                                                                                  \
 	}
 
@@ -76,9 +81,8 @@ static core::String makeNameUnique(const scenegraph::SceneGraph &sceneGraph, cor
 	return name;
 }
 
-bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-							   const LoadContext &ctx) {
+bool CSMFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
+							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Failed to open stream for file: %s", filename.c_str());
@@ -101,8 +105,8 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 
 	const bool readStringAsInt = isNVM || version >= 4;
 
-	palette::PaletteLookup palLookup(palette);
-	for (uint16_t i = 0u; (uint16_t)i < matrixCount; ++i) {
+	const bool createVolumePalettes = core::getVar(cfg::VoxelCreatePalette)->boolVal();
+	for (uint32_t i = 0; i < matrixCount; ++i) {
 		ctx.report("matrix", (int)i, (int)matrixCount);
 		core::String name;
 		core::String parent;
@@ -131,42 +135,46 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 			return false;
 		}
 
-		uint32_t voxels = sizex * sizey * sizez;
-		uint32_t matrixIndex = 0u;
-
-		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(volume);
-
-		while (matrixIndex < voxels) {
-			uint8_t count;
-			wrap(stream->readUInt8(count))
-			uint8_t r;
-			wrap(stream->readUInt8(r))
-			uint8_t g;
-			wrap(stream->readUInt8(g))
-			uint8_t b;
-			wrap(stream->readUInt8(b))
-			uint8_t interactiontype;
-			wrap(stream->readUInt8(interactiontype))
-			if (interactiontype == 0u) {
+		const uint32_t planeSize = sizez * sizey;
+		const uint32_t voxelCount = sizex * planeSize;
+		const auto readRuns = [&](auto &&visit) {
+			for (uint32_t matrixIndex = 0; matrixIndex < voxelCount;) {
+				uint8_t count;
+				wrap(stream->readUInt8(count))
+				color::RGBA rgba;
+				wrapBool(io::readColor(*stream, rgba))
+				if (count == 0 || count > voxelCount - matrixIndex) {
+					Log::error("Invalid Chronovox voxel run");
+					return false;
+				}
+				if (rgba.a != 0) {
+					visit(flattenRGB(rgba.r, rgba.g, rgba.b), matrixIndex, count);
+				}
 				matrixIndex += count;
-				continue;
 			}
-			const color::RGBA color = flattenRGB(r, g, b);
-			const int index = palLookup.findClosestIndex(color);
-			const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
+			return true;
+		};
 
-			// TODO: PERF: use volume sampler
-			for (uint32_t v = matrixIndex; v < matrixIndex + count; ++v) {
-				const int x = (int)math::mod((float)math::floor((float)v / (float)(sizez * sizey)), (float)sizex);
-				const int y = (int)math::mod((float)math::floor((float)v / (float)(sizez)), (float)sizey);
-				const int z = (int)math::mod((float)v, (float)sizez);
-				volume->setVoxel(x, y, z, voxel);
-			}
-
-			matrixIndex += count;
+		palette::Palette palette;
+		if (createVolumePalettes) {
+			io::ScopedStreamPos streamPos(*stream);
+			palette::RGBABuffer colors;
+			wrapBool(readRuns([&](color::RGBA color, uint32_t, uint8_t) { colors.insert(color); }))
+			createPalette(colors, palette);
 		}
+		if (palette.colorCount() == 0) {
+			palette = voxel::getPalette();
+		}
+
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(region);
+		palette::PaletteLookup lookup(palette, palette::PaletteLookup::Precision::Exact);
+		wrapBool(readRuns([&](color::RGBA color, uint32_t start, uint8_t count) {
+			const voxel::Voxel voxel = voxel::createVoxel(palette, lookup.findClosestIndex(color));
+			for (uint32_t index = start; index < start + count; ++index) {
+				node.volume()->setVoxel((int)(index / planeSize), (int)(index / sizez % sizey), (int)(index % sizez), voxel);
+			}
+		}))
 		if (version >= 2) {
 			name = makeNameUnique(sceneGraph, name);
 		}
@@ -183,13 +191,14 @@ bool CSMFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		if (!parent.empty()) {
 			node.setProperty(scenegraph::PropParent, parent);
 		}
-		node.setPalette(palLookup.palette());
+		node.setPalette(palette);
 		sceneGraph.emplace(core::move(node));
 	}
 	ctx.report("matrix", (int)matrixCount, (int)matrixCount);
 	if (version > 1) {
 		updateParents(sceneGraph);
 	}
+	sceneGraph.updateTransforms();
 	return true;
 }
 

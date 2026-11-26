@@ -3,6 +3,7 @@
  */
 
 #include "SkinFormat.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
@@ -16,6 +17,7 @@
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphTransform.h"
 #include "voxel/Face.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelutil/ImageUtils.h"
@@ -321,9 +323,8 @@ size_t SkinFormat::loadPalette(const core::String &filename, const io::ArchivePt
 	return palette.size();
 }
 
-bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-								scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-								const LoadContext &ctx) {
+bool SkinFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
+								scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
@@ -355,6 +356,27 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		Log::debug("Detected classic skin format");
 	}
 
+	const bool createVolumePalettes = core::getVar(cfg::VoxelCreatePalette)->boolVal();
+	const auto assignPalette = [&](scenegraph::SceneGraphNode &node, const SkinBox &box, int firstFace, int endFace) {
+		palette::Palette palette;
+		if (createVolumePalettes) {
+			palette::RGBABuffer colors;
+			for (int face = firstFace; face < endFace; ++face) {
+				const UV &rect = box.part[face];
+				for (int y = rect.getMinZ(); y < rect.getMinZ() + rect.height(); ++y) {
+					for (int x = rect.getMinX(); x < rect.getMinX() + rect.width(); ++x) {
+						const color::RGBA rgba = image->colorAt(x, y);
+						if (rgba.a != 0) {
+							colors.insert(rgba);
+						}
+					}
+				}
+			}
+			createPalette(colors, palette);
+		}
+		node.setPalette(palette.colorCount() > 0 ? palette : voxel::getPalette());
+	};
+
 	for (int i = 0; i < nBoxes; ++i) {
 		ctx.report("skin part", i, nBoxes);
 		const SkinBox &skinBox = boxes[i];
@@ -365,14 +387,13 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		if (addGroup) {
 			scenegraph::SceneGraphNode groupNode(scenegraph::SceneGraphNodeType::Group);
 			groupNode.setName(core::String::format("Group %s", skinBox.name));
-			groupNode.setPalette(palette);
 			parentId = sceneGraph.emplace(core::move(groupNode));
 		}
 		if (mergeFaces) {
 			scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 			node.createVolume(region);
 			node.setName(skinBox.name);
-			node.setPalette(palette);
+			assignPalette(node, skinBox, 0, lengthof(order));
 			for (int faceIndex = 0; faceIndex < lengthof(order); ++faceIndex) {
 				importPart(image, skinBox, faceIndex, order[faceIndex], node);
 			}
@@ -384,7 +405,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 				scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 				node.createVolume(region);
 				node.setName(core::String::format("%s_%s", skinBox.name, voxel::faceNameString(faceName)));
-				node.setPalette(palette);
+				assignPalette(node, skinBox, faceIndex, faceIndex + 1);
 
 				importPart(image, skinBox, faceIndex, faceName, node);
 				addNode(sceneGraph, node, parentId, applyTransform, faceName, skinBox);
@@ -392,6 +413,7 @@ bool SkinFormat::loadGroupsRGBA(const core::String &filename, const io::ArchiveP
 		}
 	}
 	ctx.report("skin part", nBoxes, nBoxes);
+	sceneGraph.updateTransforms();
 	return true;
 }
 

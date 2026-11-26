@@ -5,6 +5,7 @@
 #pragma once
 
 #include "io/Stream.h"
+#include "math/Vec3u.h"
 #include "voxelformat/Format.h"
 
 namespace voxelformat {
@@ -20,7 +21,7 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-class QBCLFormat : public RGBAFormat {
+class QBCLFormat : public Format {
 private:
 	struct Header {
 		uint32_t magic = 0;
@@ -37,7 +38,6 @@ private:
 		core::String copyright;
 		uint64_t timestamp1;
 		uint64_t timestamp2;
-		bool loadPalette = false;
 	};
 	struct NodeHeader {
 		bool visible;
@@ -54,20 +54,14 @@ private:
 					  const scenegraph::SceneGraphNode &node) const;
 
 	bool readHeader(io::SeekableReadStream &stream, Header &header);
-	bool readMatrix(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					int parent, const core::String &name, palette::Palette &palette, Header &header,
-					const NodeHeader &nodeHeader);
-	bool readModel(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				   int parent, const core::String &name, palette::Palette &palette, Header &header,
-				   const NodeHeader &nodeHeader, const LoadContext &ctx);
-	bool readCompound(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					  int parent, const core::String &name, palette::Palette &palette, Header &header,
-					  const NodeHeader &nodeHeader, const LoadContext &ctx);
-	bool readNodes(const core::String &filename, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-				   int parent, palette::Palette &palette, Header &header, const LoadContext &ctx);
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-						const LoadContext &ctx) override;
+	template<class Visitor>
+	bool readVoxels(io::SeekableReadStream &stream, const math::Vec3u &size, uint32_t compressedSize, Visitor &&visit);
+	bool readMatrix(io::SeekableReadStream &stream, scenegraph::SceneGraph *sceneGraph, int parent,
+					const core::String &name, const NodeHeader &nodeHeader, palette::RGBABuffer *colors);
+	bool readNodes(io::SeekableReadStream &stream, scenegraph::SceneGraph *sceneGraph, int parent,
+				   palette::RGBABuffer *colors, const LoadContext &ctx);
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 

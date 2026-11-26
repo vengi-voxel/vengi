@@ -4,11 +4,10 @@
 
 #include "QBFormat.h"
 #include "color/Color.h"
-#include "core/Enum.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/Var.h"
-#include "core/collection/DynamicMap.h"
 #include "io/Stream.h"
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
@@ -92,9 +91,7 @@ public:
 		}
 		if (!_rleCompressed) {
 			color::RGBA color(0, 0, 0, 0);
-			if (voxel::isAir(voxel.getMaterial())) {
-				wrapSaveWriter(saveColor(_stream, color))
-			} else {
+			if (!voxel::isAir(voxel.getMaterial())) {
 				color = _palette.color(voxel.getColor());
 			}
 			wrapSaveWriter(saveColor(_stream, color))
@@ -223,19 +220,6 @@ bool QBFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::
 	return true;
 }
 
-voxel::Voxel QBFormat::getVoxel(State &state, io::SeekableReadStream &stream, palette::PaletteLookup &palLookup) {
-	color::RGBA color(0);
-	if (!readColor(state, stream, color)) {
-		return voxel::Voxel();
-	}
-	if (color.a == 0) {
-		return voxel::Voxel();
-	}
-	const uint8_t index = palLookup.findClosestIndex(flattenRGB(color.r, color.g, color.b));
-	voxel::Voxel v = voxel::createVoxel(palLookup.palette(), index);
-	return v;
-}
-
 bool QBFormat::readColor(State &state, io::SeekableReadStream &stream, color::RGBA &color) {
 	if (state._colorFormat == ColorFormat::RGBA) {
 		wrap(stream.readUInt8(color.r))
@@ -258,207 +242,52 @@ bool QBFormat::readColor(State &state, io::SeekableReadStream &stream, color::RG
 	return true;
 }
 
-bool QBFormat::readMatrix(State &state, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-						  palette::PaletteLookup &palLookup) {
-	core::String name;
-	wrapBool(stream.readPascalStringUInt8(name))
-	Log::debug("Matrix name: %s", name.c_str());
-
-	math::Vec3u size(0);
-	wrap(stream.readUInt32(size.x))
-	wrap(stream.readUInt32(size.y))
-	wrap(stream.readUInt32(size.z))
-	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
-
-	if (size.x == 0 || size.y == 0 || size.z == 0) {
-		Log::error("Invalid size (%i:%i:%i)", size.x, size.y, size.z);
+bool QBFormat::readHeader(io::SeekableReadStream &stream, State &state, uint32_t &numMatrices) {
+	wrap(stream.readUInt32(state._version))
+	uint32_t colorFormat;
+	wrap(stream.readUInt32(colorFormat))
+	state._colorFormat = (ColorFormat)colorFormat;
+	uint32_t zAxisOrientation;
+	wrap(stream.readUInt32(zAxisOrientation))
+	state._zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
+	uint32_t compressed;
+	wrap(stream.readUInt32(compressed))
+	state._compressed = (Compression)compressed;
+	uint32_t visibilityMaskEncoded;
+	wrap(stream.readUInt32(visibilityMaskEncoded))
+	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
+	wrap(stream.readUInt32(numMatrices))
+	if (numMatrices > 16384) {
+		Log::error("Max allowed matrices exceeded: %u", numMatrices);
 		return false;
 	}
-
-	if (size.x > 2048 || size.y > 2048 || size.z > 2048) {
-		Log::error("Volume exceeds the max allowed size: %i:%i:%i", size.x, size.y, size.z);
-		return false;
-	}
-
-	scenegraph::SceneGraphTransform transform;
-	{
-		math::Vec3i offset(0);
-		if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
-			wrap(stream.readInt32(offset.x))
-			wrap(stream.readInt32(offset.y))
-			wrap(stream.readInt32(offset.z))
-		} else {
-			wrap(stream.readInt32(offset.z))
-			wrap(stream.readInt32(offset.y))
-			wrap(stream.readInt32(offset.x))
-		}
-		Log::debug("Matrix offset: %i:%i:%i", offset.x, offset.y, offset.z);
-		transform.setWorldTranslation(offset);
-	}
-
-	voxel::Region region;
-	if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
-		region = voxel::Region(0, 0, 0, (int)size.z - 1, (int)size.y - 1, (int)size.x - 1);
-	} else {
-		region = voxel::Region(0, 0, 0, (int)size.x - 1, (int)size.y - 1, (int)size.z - 1);
-	}
-	if (!region.isValid()) {
-		Log::error("Invalid region");
-		return false;
-	}
-
-	if (region.getDepthInVoxels() >= 2048 || region.getHeightInVoxels() >= 2048 || region.getWidthInVoxels() >= 2048) {
-		Log::error("Region exceeds the max allowed boundaries");
-		return false;
-	}
-
-	core::ScopedPtr<voxel::RawVolume> v(new voxel::RawVolume(region));
-	if (state._compressed == Compression::None) {
-		Log::debug("qb matrix uncompressed");
-		voxel::RawVolume::Sampler sampler(*v);
-		sampler.setPosition(0, 0, 0);
-		if (state._zAxisOrientation == ZAxisOrientation::LeftHanded) {
-			for (uint32_t z = 0; z < size.z; ++z) {
-				voxel::RawVolume::Sampler sampler2 = sampler;
-				for (uint32_t y = 0; y < size.y; ++y) {
-					voxel::RawVolume::Sampler sampler3 = sampler2;
-					for (uint32_t x = 0; x < size.x; ++x) {
-						const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
-						sampler3.setVoxel(voxel);
-						sampler3.movePositiveX();
-					}
-					sampler2.movePositiveY();
-				}
-				sampler.movePositiveZ();
-			}
-		} else {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (uint32_t x = 0; x < size.x; ++x) {
-				for (uint32_t y = 0; y < size.y; ++y) {
-					voxel::RawVolume::Sampler sampler3 = sampler2;
-					for (uint32_t z = 0; z < size.z; ++z) {
-						const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
-						sampler3.setVoxel(voxel);
-						sampler3.movePositiveZ();
-					}
-					sampler2.movePositiveY();
-				}
-				sampler.movePositiveX();
-			}
-		}
-		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-		node.setVolume(v.release());
-		node.setName(name);
-		const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-		node.setTransform(keyFrameIdx, transform);
-		node.setPalette(palLookup.palette());
-		sceneGraph.emplace(core::move(node));
-		return true;
-	}
-
-	Log::debug("Matrix rle compressed");
-
-	uint32_t z = 0u;
-	while (z < size.z) {
-		uint32_t index = 0;
-		for (;;) {
-			uint32_t data;
-			wrap(stream.peekUInt32(data))
-			if (data == qb::NEXT_SLICE_FLAG) {
-				stream.skip(sizeof(data));
-				break;
-			}
-
-			uint32_t count = 1;
-			if (data == qb::RLE_FLAG) {
-				stream.skip(sizeof(data));
-				wrap(stream.readUInt32(count))
-				Log::trace("%u voxels of the same type", count);
-			}
-
-			if (count > size.x * size.y * size.z) {
-				Log::error("Max RLE count exceeded: %u (%u:%u:%u)", count, size.x, size.y, size.z);
-				return false;
-			}
-			const voxel::Voxel &voxel = getVoxel(state, stream, palLookup);
-			// TODO: PERF: use a sampler
-			if (state._zAxisOrientation == ZAxisOrientation::RightHanded) {
-				for (uint32_t j = 0; j < count; ++j) {
-					const uint32_t x = (index + j) % size.x;
-					const uint32_t y = (index + j) / size.x;
-					v->setVoxel((int)z, (int)y, (int)x, voxel);
-				}
-			} else {
-				for (uint32_t j = 0; j < count; ++j) {
-					const uint32_t x = (index + j) % size.x;
-					const uint32_t y = (index + j) / size.x;
-					v->setVoxel((int)x, (int)y, (int)z, voxel);
-				}
-			}
-			index += count;
-		}
-		++z;
-	}
-	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
-	node.setVolume(v.release());
-	node.setName(name);
-	node.setPalette(palLookup.palette());
-	const scenegraph::KeyFrameIndex keyFrameIdx = 0;
-	node.setTransform(keyFrameIdx, transform);
-	sceneGraph.emplace(core::move(node));
-	Log::debug("Matrix read");
 	return true;
 }
 
-bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette::RGBABuffer &colors) {
-	uint8_t nameLength;
-	wrap(stream.readUInt8(nameLength));
-	if (stream.skip(nameLength) == -1) {
-		Log::error("Failed to skip name bytes");
+bool QBFormat::readMatrixHeader(io::SeekableReadStream &stream, core::String &name, math::Vec3u &size,
+								math::Vec3i &offset) {
+	wrapBool(stream.readPascalStringUInt8(name))
+	wrap(stream.readUInt32(size.x))
+	wrap(stream.readUInt32(size.y))
+	wrap(stream.readUInt32(size.z))
+	if (math::any(math::lessThan(size, math::Vec3u(1))) || math::any(math::greaterThanEqual(size, math::Vec3u(2048)))) {
+		Log::error("Invalid matrix size: %u:%u:%u", size.x, size.y, size.z);
 		return false;
 	}
+	wrap(stream.readInt32(offset.x))
+	wrap(stream.readInt32(offset.y))
+	wrap(stream.readInt32(offset.z))
+	return true;
+}
 
-	math::Vec3u size(0);
-	wrap(stream.readUInt32(size.x));
-	wrap(stream.readUInt32(size.y));
-	wrap(stream.readUInt32(size.z));
-	Log::debug("Matrix size: %i:%i:%i", size.x, size.y, size.z);
-
-	if (size.x == 0 || size.y == 0 || size.z == 0) {
-		Log::error("Invalid size (%u:%u:%u)", size.x, size.y, size.z);
-		return false;
-	}
-
-	if (size.x > 2048 || size.y > 2048 || size.z > 2048) {
-		Log::error("Volume exceeds the max allowed size: %u:%u:%u", size.x, size.y, size.z);
-		return false;
-	}
-
-	int32_t tmp;
-	wrap(stream.readInt32(tmp));
-	wrap(stream.readInt32(tmp));
-	wrap(stream.readInt32(tmp));
-
-	if (state._compressed == Compression::None) {
-		Log::debug("qb matrix uncompressed");
-		// TODO: PERF: use a sampler
-		for (uint32_t z = 0; z < size.z; ++z) {
-			for (uint32_t y = 0; y < size.y; ++y) {
-				for (uint32_t x = 0; x < size.x; ++x) {
-					color::RGBA color(0);
-					wrapBool(readColor(state, stream, color))
-					if (color.a == 0) {
-						continue;
-					}
-					colors.put(flattenRGB(color.r, color.g, color.b), true);
-				}
-			}
-		}
-	} else {
-		Log::debug("qb matrix rle compressed");
-		uint32_t z = 0u;
-		while (z < size.z) {
-			for (;;) {
+template<class Visitor>
+bool QBFormat::readVoxels(State &state, io::SeekableReadStream &stream, const math::Vec3u &size, Visitor &&visit) {
+	const uint32_t sliceSize = size.x * size.y;
+	for (uint32_t z = 0; z < size.z; ++z) {
+		uint32_t index = 0;
+		while (state._compressed != Compression::None || index < sliceSize) {
+			uint32_t count = 1;
+			if (state._compressed != Compression::None) {
 				uint32_t data;
 				wrap(stream.peekUInt32(data))
 				if (data == qb::NEXT_SLICE_FLAG) {
@@ -467,18 +296,19 @@ bool QBFormat::readPalette(State &state, io::SeekableReadStream &stream, palette
 				}
 				if (data == qb::RLE_FLAG) {
 					stream.skip(sizeof(data));
-					uint32_t count;
 					wrap(stream.readUInt32(count))
 				}
-				color::RGBA color(0);
-				wrapBool(readColor(state, stream, color))
-				if (color.a == 0) {
-					continue;
-				}
-				const color::RGBA flattened = flattenRGB(color.r, color.g, color.b);
-				colors.put(flattened, true);
 			}
-			++z;
+			if (count == 0 || count > sliceSize - index) {
+				Log::error("Invalid QB voxel run of %u voxels at slice index %u", count, index);
+				return false;
+			}
+			color::RGBA color(0);
+			wrapBool(readColor(state, stream, color))
+			if (color.a != 0) {
+				visit(flattenRGB(color.r, color.g, color.b), z, index, count);
+			}
+			index += count;
 		}
 	}
 	return true;
@@ -491,90 +321,80 @@ size_t QBFormat::loadPalette(const core::String &filename, const io::ArchivePtr 
 		Log::error("Could not load file %s", filename.c_str());
 		return 0;
 	}
-
 	State state;
-	wrap(stream->readUInt32(state._version))
-	uint32_t colorFormat;
-	wrap(stream->readUInt32(colorFormat))
-	state._colorFormat = (ColorFormat)colorFormat;
-	uint32_t zAxisOrientation;
-	wrap(stream->readUInt32(zAxisOrientation))
-	state._zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
-	uint32_t compressed;
-	wrap(stream->readUInt32(compressed))
-	state._compressed = (Compression)compressed;
-	uint32_t visibilityMaskEncoded;
-	wrap(stream->readUInt32(visibilityMaskEncoded))
-	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
-
 	uint32_t numMatrices;
-	wrap(stream->readUInt32(numMatrices))
-	if (numMatrices > 16384) {
-		Log::error("Max allowed matrices exceeded: %u", numMatrices);
-		return 0;
-	}
+	wrapBool(readHeader(*stream, state, numMatrices))
 	palette::RGBABuffer colors;
-	colors.reserve(numMatrices * 256);
-	for (uint32_t i = 0; i < numMatrices; i++) {
+	const auto collect = [&colors](color::RGBA color, uint32_t, uint32_t, uint32_t) { colors.insert(color); };
+	for (uint32_t i = 0; i < numMatrices; ++i) {
 		ctx.report("matrix", (int)i, (int)numMatrices);
-		Log::debug("Loading matrix colors: %u", i);
-		if (!readPalette(state, *stream, colors)) {
-			Log::error("Failed to load the matrix colors %u", i);
-			break;
-		}
+		core::String name;
+		math::Vec3u size;
+		math::Vec3i offset;
+		wrapBool(readMatrixHeader(*stream, name, size, offset))
+		wrapBool(readVoxels(state, *stream, size, collect))
 	}
 	ctx.report("matrix", (int)numMatrices, (int)numMatrices);
 	return createPalette(colors, palette);
 }
 
-bool QBFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-							  scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-							  const LoadContext &ctx) {
+bool QBFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
+						  scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not load file %s", filename.c_str());
 		return false;
 	}
 	State state;
-	wrap(stream->readUInt32(state._version))
-	uint32_t colorFormat;
-	wrap(stream->readUInt32(colorFormat))
-	state._colorFormat = (ColorFormat)colorFormat;
-	uint32_t zAxisOrientation;
-	wrap(stream->readUInt32(zAxisOrientation))
-	state._zAxisOrientation = (ZAxisOrientation)zAxisOrientation;
-	uint32_t compressed;
-	wrap(stream->readUInt32(compressed))
-	state._compressed = (Compression)compressed;
-	uint32_t visibilityMaskEncoded;
-	wrap(stream->readUInt32(visibilityMaskEncoded))
-	state._visibilityMaskEncoded = (VisibilityMask)visibilityMaskEncoded;
-
 	uint32_t numMatrices;
-	wrap(stream->readUInt32(numMatrices))
-	if (numMatrices > 16384) {
-		Log::error("Max allowed matrices exceeded: %u", numMatrices);
-		return false;
-	}
-
-	Log::debug("Version: %u", state._version);
-	Log::debug("ColorFormat: %u", core::enumVal(state._colorFormat));
-	Log::debug("ZAxisOrientation: %u", core::enumVal(state._zAxisOrientation));
-	Log::debug("Compressed: %u", core::enumVal(state._compressed));
-	Log::debug("VisibilityMaskEncoded: %u", core::enumVal(state._visibilityMaskEncoded));
-	Log::debug("NumMatrices: %u", numMatrices);
-
+	wrapBool(readHeader(*stream, state, numMatrices))
 	sceneGraph.reserve(numMatrices);
-	palette::PaletteLookup palLookup(palette);
-	for (uint32_t i = 0; i < numMatrices; i++) {
+	const bool leftHanded = state._zAxisOrientation == ZAxisOrientation::LeftHanded;
+	const bool createVolumePalettes = core::getVar(cfg::VoxelCreatePalette)->boolVal();
+	for (uint32_t i = 0; i < numMatrices; ++i) {
 		ctx.report("matrix", (int)i, (int)numMatrices);
-		Log::debug("Loading matrix: %u", i);
-		if (!readMatrix(state, *stream, sceneGraph, palLookup)) {
-			Log::error("Failed to load the matrix %u", i);
-			break;
+		core::String name;
+		math::Vec3u size;
+		math::Vec3i offset;
+		wrapBool(readMatrixHeader(*stream, name, size, offset))
+
+		palette::Palette palette;
+		if (createVolumePalettes) {
+			io::ScopedStreamPos streamPos(*stream);
+			palette::RGBABuffer colors;
+			const auto collect = [&colors](color::RGBA color, uint32_t, uint32_t, uint32_t) { colors.insert(color); };
+			wrapBool(readVoxels(state, *stream, size, collect))
+			createPalette(colors, palette);
+		}
+		if (palette.colorCount() == 0) {
+			palette = voxel::getPalette();
+		}
+		const math::Vec3u dimensions = leftHanded ? size : math::Vec3u(size.z, size.y, size.x);
+		scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
+		node.createVolume(voxel::Region::fromSize(math::Vec3i(dimensions)));
+		palette::PaletteLookup colors(palette, palette::PaletteLookup::Precision::Exact);
+		const auto place = [&](color::RGBA color, uint32_t z, uint32_t index, uint32_t count) {
+			const voxel::Voxel voxel = voxel::createVoxel(palette, colors.findClosestIndex(color));
+			for (uint32_t n = index; n < index + count; ++n) {
+				const int x = (int)(n % size.x);
+				const int y = (int)(n / size.x);
+				if (leftHanded) {
+					node.volume()->setVoxel(x, y, (int)z, voxel);
+				} else {
+					node.volume()->setVoxel((int)z, y, x, voxel);
+				}
+			}
+		};
+		wrapBool(readVoxels(state, *stream, size, place))
+		node.setName(name);
+		node.setPalette(palette);
+		node.transform(0).setLocalTranslation(leftHanded ? offset : math::Vec3i(offset.z, offset.y, offset.x));
+		if (sceneGraph.emplace(core::move(node)) == InvalidNodeId) {
+			return false;
 		}
 	}
 	ctx.report("matrix", (int)numMatrices, (int)numMatrices);
+	sceneGraph.updateTransforms();
 	return true;
 }
 

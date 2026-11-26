@@ -29,7 +29,7 @@ namespace voxelformat {
  * @todo Animations are not yet working
  * @ingroup Formats
  */
-class AnimaToonFormat : public RGBAFormat {
+class AnimaToonFormat : public Format {
 protected:
 	struct AnimaToonPosition {
 		bool isModified;
@@ -57,8 +57,8 @@ protected:
 		core::Buffer<AnimaToonVoxel> voxels;
 	};
 
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
-						const palette::Palette &palette, const LoadContext &ctx) override;
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const LoadContext &ctx) override;
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 					   const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

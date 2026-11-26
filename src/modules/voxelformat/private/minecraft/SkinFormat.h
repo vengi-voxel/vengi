@@ -15,12 +15,12 @@ namespace voxelformat {
  * https://assets.mojang.com/SkinTemplates/alex.png
  * https://minecraft.wiki/w/Skin
  */
-class SkinFormat : public RGBAFormat {
+class SkinFormat : public Format {
 public:
 	size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 							   const LoadContext &ctx) override;
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
-						const palette::Palette &palette, const LoadContext &ctx) override;
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const LoadContext &ctx) override;
 
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;

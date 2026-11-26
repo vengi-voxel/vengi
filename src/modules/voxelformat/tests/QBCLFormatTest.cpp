@@ -19,6 +19,11 @@ namespace voxelformat {
 class QBCLFormatTest: public AbstractFormatTest {
 };
 
+TEST_F(QBCLFormatTest, testPalettePerModel) {
+	QBCLFormat format;
+	testModelPaletteRoundTrip("model-palettes.qbcl", format, true);
+}
+
 TEST_F(QBCLFormatTest, testLoad) {
 	testLoad("qubicle.qbcl", 30);
 }

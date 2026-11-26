@@ -3,6 +3,8 @@
  */
 
 #include "AbstractFormatTest.h"
+#include "core/ConfigVar.h"
+#include "util/VarUtil.h"
 #include "scenegraph/SceneGraph.h"
 #include "voxelformat/tests/TestHelper.h"
 #include "voxelformat/private/qubicle/QBFormat.h"
@@ -13,6 +15,15 @@ namespace voxelformat {
 
 class QBFormatTest: public AbstractFormatTest {
 };
+
+TEST_F(QBFormatTest, testPalettePerModel) {
+	QBFormat format;
+	testModelPaletteRoundTrip("model-palettes.qb", format);
+	util::ScopedVarChange compressed(cfg::VoxformatQBSaveCompressed, false);
+	testModelPaletteRoundTrip("matrix-palettes-uncompressed.qb", format);
+	util::ScopedVarChange leftHanded(cfg::VoxformatQBSaveLeftHanded, false);
+	testModelPaletteRoundTrip("matrix-palettes-right-handed.qb", format);
+}
 
 TEST_F(QBFormatTest, testLoad) {
 	testLoad("qubicle.qb", 10);

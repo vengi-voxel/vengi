@@ -7,9 +7,11 @@
 #include "color/ColorUtil.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
 #include "core/StringUtil.h"
+#include "core/Var.h"
 #include "core/collection/Map.h"
 #include "core/concurrent/Atomic.h"
 #include "image/Image.h"
@@ -22,6 +24,7 @@
 #include "scenegraph/SceneGraph.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
 #include "voxel/Voxel.h"
 #include "voxelformat/FormatThumbnail.h"
@@ -271,9 +274,9 @@ voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGB
 		return nullptr;
 	}
 
-	palette::PaletteLookup palLookup(palette);
+	palette::PaletteLookup palLookup(palette, palette::PaletteLookup::Precision::Exact);
 	const uint8_t palIdx =
-		palLookup.findClosestIndex(flattenRGB(shapeColor.r, shapeColor.g, shapeColor.b, shapeColor.a));
+		palLookup.findClosestIndex(flattenRGB(shapeColor));
 	const voxel::Voxel voxel = voxel::createVoxel(palette, palIdx);
 
 	voxel::RawVolume *vol = new voxel::RawVolume(region);
@@ -296,8 +299,19 @@ voxel::RawVolume *GoxFormat::loadShape(const core::String &shapeName, color::RGB
 	return vol;
 }
 
+void GoxFormat::collectColors(const image::ImagePtr &img, palette::RGBABuffer &colors) const {
+	for (int y = 0; y < img->height(); ++y) {
+		for (int x = 0; x < img->width(); ++x) {
+			const color::RGBA rgba = img->colorAt(x, y);
+			if (rgba.a != 0) {
+				colors.insert(flattenRGB(rgba));
+			}
+		}
+	}
+}
+
 bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
-							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
+							   scenegraph::SceneGraph &sceneGraph, bool createVolumePalettes,
 							   const LoadContext &ctx) {
 	const int size = (int)sceneGraph.size();
 	voxel::RawVolume *modelVolume = nullptr;
@@ -309,6 +323,28 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		return false;
 	}
 	Log::debug("Found LAYR chunk with %i blocks", blockCount);
+	palette::Palette palette;
+	if (createVolumePalettes && blockCount > 0) {
+		io::ScopedStreamPos streamPos(stream);
+		palette::RGBABuffer colors;
+		core::DynamicSet<uint32_t> visited;
+		for (uint32_t i = 0; i < blockCount; ++i) {
+			uint32_t index;
+			wrap(stream.readUInt32(index))
+			if (index >= state.images.size() || !state.images[index] || stream.skip(16) == -1) {
+				Log::error("Invalid GOX layer block %u", index);
+				return false;
+			}
+			if (visited.insert(index)) {
+				collectColors(state.images[index], colors);
+			}
+		}
+		createPalette(colors, palette);
+	}
+	if (palette.colorCount() == 0) {
+		palette = voxel::getPalette();
+	}
+	palette::PaletteLookup palLookup(palette, palette::PaletteLookup::Precision::Exact);
 	for (uint32_t i = 0; i < blockCount; ++i) {
 		ctx.report("block", (int)i, (int)blockCount);
 		uint32_t index;
@@ -372,7 +408,6 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 		core_assert(blockRegion.isValid());
 		voxel::RawVolume *blockVolume = new voxel::RawVolume(blockRegion);
 		core::AtomicBool empty{true};
-		palette::PaletteLookup palLookup(palette);
 		auto fn = [blockVolume, rgba, &palLookup, &palette, x, z, vengiZ0, this, &empty](int start, int end) {
 			voxel::RawVolume::Sampler sampler(blockVolume);
 			sampler.setPosition(x, z + start, vengiZ0);
@@ -521,6 +556,10 @@ bool GoxFormat::loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableRead
 
 	// Generate voxels for shape layers (shape transform is in mat)
 	if (blockCount == 0 && !shapeName.empty()) {
+		if (createVolumePalettes && shapeColor.a != 0) {
+			palette = palette::Palette();
+			palette.setColor(0, flattenRGB(shapeColor));
+		}
 		modelVolume = loadShape(shapeName, shapeColor, shapeMat, palette);
 		// Shape position is baked into the volume; reset node transform
 		scenegraph::SceneGraphTransform transform;
@@ -809,24 +848,15 @@ size_t GoxFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 	}
 
 	palette::RGBABuffer colors;
-	for (image::ImagePtr &img : state.images) {
-		for (int x = 0; x < img->width(); ++x) {
-			for (int y = 0; y < img->height(); ++y) {
-				const color::RGBA rgba = img->colorAt(x, y);
-				if (rgba.a == 0) {
-					continue;
-				}
-				colors.put(flattenRGB(rgba), true);
-			}
-		}
+	for (const image::ImagePtr &img : state.images) {
+		collectColors(img, colors);
 	}
 
 	return createPalette(colors, palette);
 }
 
-bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-							   scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-							   const LoadContext &ctx) {
+bool GoxFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
+							   scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
 	if (!stream) {
 		Log::error("Could not open file %s", filename.c_str());
@@ -848,12 +878,13 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		return false;
 	}
 
+	const bool createVolumePalettes = core::getVar(cfg::VoxelCreatePalette)->boolVal();
 	GoxChunk c;
 	while (loadChunk_Header(c, *stream)) {
 		if (c.type == FourCC('B', 'L', '1', '6')) {
 			wrapBool(loadChunk_BL16(state, c, *stream))
 		} else if (c.type == FourCC('L', 'A', 'Y', 'R')) {
-			wrapBool(loadChunk_LAYR(state, c, *stream, sceneGraph, palette, ctx))
+			wrapBool(loadChunk_LAYR(state, c, *stream, sceneGraph, createVolumePalettes, ctx))
 		} else if (c.type == FourCC('C', 'A', 'M', 'R')) {
 			wrapBool(loadChunk_CAMR(state, c, *stream, sceneGraph))
 		} else if (c.type == FourCC('M', 'A', 'T', 'E')) {
@@ -874,6 +905,7 @@ bool GoxFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePt
 		loadChunk_ValidateCRC(*stream);
 	}
 	applyLayerParents(state, sceneGraph);
+	sceneGraph.updateTransforms();
 	return !sceneGraph.empty();
 }
 

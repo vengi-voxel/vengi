@@ -4,8 +4,11 @@
 
 #include "AnimaToonFormat.h"
 #include "math/Axes.h"
+#include "core/ConfigVar.h"
 #include "core/Log.h"
 #include "core/ScopedPtr.h"
+#include "core/Var.h"
+#include "core/collection/Buffer.h"
 #include "core/collection/DynamicArray.h"
 #include "io/Archive.h"
 #include "io/Base64ReadStream.h"
@@ -18,7 +21,9 @@
 #include "scenegraph/SceneGraphAnimation.h"
 #include "scenegraph/SceneGraphNode.h"
 #include "scenegraph/SceneGraphNodeCamera.h"
+#include "voxel/MaterialColor.h"
 #include "voxel/RawVolume.h"
+#include "palette/PaletteLookup.h"
 #include "json/JSON.h"
 #include "math/Quatf.h"
 #include "math/Mat4f.h"
@@ -29,9 +34,8 @@
 namespace voxelformat {
 
 
-bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-									 scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-									 const LoadContext &ctx) {
+bool AnimaToonFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,
+									 scenegraph::SceneGraph &sceneGraph, const LoadContext &ctx) {
 	ctx.setProgressText("AnimaToon");
 	ctx.setProgress(0.0f);
 	core::ScopedPtr<io::SeekableReadStream> stream(archive->readStream(filename));
@@ -237,46 +241,45 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 			}
 		}
 		int parent = 0;
-		node.setPalette(palette);
 		const core::String modelBase64 = e.str();
 		io::MemoryReadStream inputStream(modelBase64.c_str(), modelBase64.size());
 		io::Base64ReadStream base64Stream(inputStream);
 		io::ZipReadStream readStream(base64Stream, -1, io::CompressionType::Gzip);
-		const voxel::Region &region = voxel::Region::fromSize(regionSize);
-		voxel::RawVolume *volume = new voxel::RawVolume(region);
-		node.setVolume(volume);
-		voxel::RawVolume::Sampler sampler(volume);
-		sampler.setPosition(region.getLowerCorner());
-		for (int32_t z = 0; z < regionSize.z; ++z) {
-			voxel::RawVolume::Sampler sampler2 = sampler;
-			for (int32_t y = 0; y < regionSize.y; ++y) {
-				voxel::RawVolume::Sampler sampler3 = sampler2;
-				for (int32_t x = 0; x < regionSize.x; ++x) {
-					AnimaToonVoxel v;
-					if (readStream.readUInt8((uint8_t &)v.state) != 0) {
-						Log::error("Failed to read voxel state for model %d", modelIdx);
-						return false;
-					}
-					if (readStream.readUInt8(v.val) != 0) {
-						Log::error("Failed to read voxel state for model %d", modelIdx);
-						return false;
-					}
-					if (readStream.readUInt32(v.rgba) != 0) {
-						Log::error("Failed to read voxel state for model %d", modelIdx);
-						return false;
-					}
-					if (v.rgba == 0) {
-						sampler3.movePositiveX();
-						continue;
-					}
-					const uint8_t color = palette.getClosestMatch(v.rgba);
-					const voxel::Voxel voxel = voxel::createVoxel(palette, color);
-					sampler3.setVoxel(voxel);
-					sampler3.movePositiveX();
-				}
-				sampler2.movePositiveY();
+		const bool createVolumePalette = core::getVar(cfg::VoxelCreatePalette)->boolVal();
+		palette::RGBABuffer colors;
+		core::Buffer<color::RGBA> voxels(regionSize.x * regionSize.y * regionSize.z);
+		for (color::RGBA &rgba : voxels) {
+			AnimaToonVoxel v;
+			if (readStream.readUInt8((uint8_t &)v.state) != 0 || readStream.readUInt8(v.val) != 0 ||
+				readStream.readUInt32(v.rgba) != 0) {
+				Log::error("Failed to read voxel data for model %d", modelIdx);
+				return false;
 			}
-			sampler.movePositiveZ();
+			rgba = color::RGBA(v.rgba);
+			if (createVolumePalette && v.rgba != 0) {
+				colors.insert(rgba);
+			}
+		}
+		palette::Palette palette;
+		if (createVolumePalette) {
+			createPalette(colors, palette);
+		}
+		if (palette.colorCount() == 0) {
+			palette = voxel::getPalette();
+		}
+		node.setPalette(palette);
+		node.createVolume(voxel::Region::fromSize(regionSize));
+		palette::PaletteLookup lookup(palette, palette::PaletteLookup::Precision::Exact);
+		size_t voxelIndex = 0;
+		for (int z = 0; z < regionSize.z; ++z) {
+			for (int y = 0; y < regionSize.y; ++y) {
+				for (int x = 0; x < regionSize.x; ++x) {
+					const color::RGBA rgba = voxels[voxelIndex++];
+					if (rgba.rgba != 0) {
+						node.volume()->setVoxel(x, y, z, voxel::createVoxel(palette, lookup.findClosestIndex(rgba)));
+					}
+				}
+			}
 		}
 		modelNodeIds.push_back(sceneGraph.emplace(core::move(node), parent));
 	}
@@ -417,6 +420,7 @@ bool AnimaToonFormat::loadGroupsRGBA(const core::String &filename, const io::Arc
 	}
 #endif
 
+	sceneGraph.updateTransforms();
 	ctx.setProgress(1.0f);
 	return true;
 }

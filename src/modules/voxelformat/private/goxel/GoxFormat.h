@@ -87,7 +87,7 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-class GoxFormat : public RGBAFormat {
+class GoxFormat : public Format {
 private:
 	static constexpr int BlockSize = 16;
 
@@ -115,8 +115,9 @@ private:
 	bool loadChunk_ReadData(io::SeekableReadStream &stream, char *buff, int size);
 	void loadChunk_ValidateCRC(io::SeekableReadStream &stream);
 	bool loadChunk_DictEntry(const GoxChunk &c, io::SeekableReadStream &stream, char *key, char *value, int &valueSize);
+	void collectColors(const image::ImagePtr &img, palette::RGBABuffer &colors) const;
 	bool loadChunk_LAYR(State &state, const GoxChunk &c, io::SeekableReadStream &stream,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette, const LoadContext &ctx);
+						scenegraph::SceneGraph &sceneGraph, bool createVolumePalettes, const LoadContext &ctx);
 	void applyLayerParents(State &state, scenegraph::SceneGraph &sceneGraph);
 	voxel::RawVolume *loadShape(const core::String &shapeName, color::RGBA shapeColor,
 								const float box[4][4], const palette::Palette &palette);
@@ -153,9 +154,8 @@ private:
 	bool saveChunk_MATE(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph);
 	// Write all the layers.
 	bool saveChunk_LAYR(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph, int numBlocks);
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-						const LoadContext &ctx) override;
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 

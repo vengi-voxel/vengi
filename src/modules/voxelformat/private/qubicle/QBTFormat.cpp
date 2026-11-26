@@ -3,6 +3,8 @@
  */
 
 #include "QBTFormat.h"
+#include "io/StreamUtil.h"
+#include "palette/PaletteLookup.h"
 #include "color/Color.h"
 #include "core/Common.h"
 #include "core/FourCC.h"
@@ -305,6 +307,10 @@ bool QBTFormat::saveModel(io::SeekableWriteStream &stream, const scenegraph::Sce
 	return scoped.success();
 }
 
+bool QBTFormat::onlyOnePalette() const {
+	return core::getVar(cfg::VoxformatQBTPaletteMode)->boolVal();
+}
+
 bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 						   const io::ArchivePtr &archive, const SaveContext &ctx) {
 	core::ScopedPtr<io::SeekableWriteStream> stream(archive->writeStream(filename));
@@ -333,7 +339,7 @@ bool QBTFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const core:
 	wrapSave(stream->writeFloat(globalScale.x)); // globalscale
 	wrapSave(stream->writeFloat(globalScale.y)); // globalscale
 	wrapSave(stream->writeFloat(globalScale.z)); // globalscale
-	const bool colorMap = core::getVar(cfg::VoxformatQBTPaletteMode)->boolVal();
+	const bool colorMap = onlyOnePalette();
 	if (colorMap) {
 		const palette::Palette &palette = sceneGraph.firstPalette();
 		if (!saveColorMap(*stream, palette)) {
@@ -378,7 +384,7 @@ bool QBTFormat::loadCompound(io::SeekableReadStream &stream, scenegraph::SceneGr
 	if (!loadMatrix(stream, sceneGraph, parent, palette, state, &nodeId)) {
 		return false;
 	}
-	const bool mergeCompounds = core::getVar(cfg::VoxformatQBTMergeCompounds)->boolVal();
+	const bool mergeCompounds = !state.colors && core::getVar(cfg::VoxformatQBTMergeCompounds)->boolVal();
 	uint32_t childCount;
 	wrap(stream.readUInt32(childCount));
 	Log::debug("Load %u children", childCount);
@@ -476,47 +482,58 @@ bool QBTFormat::loadMatrix(io::SeekableReadStream &stream, scenegraph::SceneGrap
 		Log::warn("Size of matrix results in empty space - voxelDataSize: %u", voxelDataSize);
 		return false;
 	}
-	io::ZipReadStream zipStream(stream, voxelDataSize);
-
-	const voxel::Region &region = voxel::Region::fromSize(math::Vec3i((int)size.x, (int)size.y, (int)size.z));
-	if (!region.isValid()) {
-		Log::error("Invalid region");
+	const int64_t voxelDataEnd = stream.pos() + voxelDataSize;
+	if (voxelDataSize > stream.remaining()) {
 		return false;
 	}
-	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
-	// TODO: PERF: use volume sampler
-	for (int32_t x = 0; x < (int)size.x; x++) {
-		for (int32_t z = 0; z < (int)size.z; z++) {
-			for (int32_t y = 0; y < (int)size.y; y++) {
-				uint8_t red;
-				wrap(zipStream.readUInt8(red))
-				uint8_t green;
-				wrap(zipStream.readUInt8(green))
-				uint8_t blue;
-				wrap(zipStream.readUInt8(blue))
-				uint8_t mask;
-				wrap(zipStream.readUInt8(mask))
-				if (mask == 0u) {
-					continue;
-				}
-				if (state.colorFormat == ColorFormat::Palette) {
-					const voxel::Voxel &voxel = voxel::createVoxel(palette, red);
-					volume->setVoxel(x, y, z, voxel);
-				} else {
-					const color::RGBA color = flattenRGB(red, green, blue);
-					uint8_t index = 1;
-					palette.tryAdd(color, false, &index);
-					const voxel::Voxel &voxel = voxel::createVoxel(palette, index);
-					volume->setVoxel(x, y, z, voxel);
+	const auto readVoxels = [&](auto &&visit) {
+		io::ZipReadStream zipStream(stream, voxelDataSize);
+		for (int x = 0; x < (int)size.x; ++x) {
+			for (int z = 0; z < (int)size.z; ++z) {
+				for (int y = 0; y < (int)size.y; ++y) {
+					color::RGBA rgba;
+					wrapBool(io::readColor(zipStream, rgba))
+					if (rgba.a != 0) {
+						visit(x, y, z, rgba);
+					}
 				}
 			}
 		}
+		return stream.seek(voxelDataEnd) != -1;
+	};
+	if (state.colors) {
+		if (nodeId) {
+			*nodeId = parent;
+		}
+		return readVoxels([&](int, int, int, color::RGBA rgba) {
+			state.colors->insert(flattenRGB(rgba.r, rgba.g, rgba.b));
+		});
 	}
+	palette::Palette matrixPalette;
+	if (state.colorFormat == ColorFormat::RGBA && core::getVar(cfg::VoxelCreatePalette)->boolVal()) {
+		io::ScopedStreamPos streamPos(stream);
+		palette::RGBABuffer colors;
+		wrapBool(readVoxels([&](int, int, int, color::RGBA rgba) {
+			colors.insert(flattenRGB(rgba.r, rgba.g, rgba.b));
+		}))
+		createPalette(colors, matrixPalette);
+	}
+	const palette::Palette &voxelPalette = state.colorFormat == ColorFormat::Palette ? palette
+		: matrixPalette.colorCount() > 0 ? matrixPalette : voxel::getPalette();
+
+	const voxel::Region region = voxel::Region::fromSize(math::Vec3i(size));
+	core::ScopedPtr<voxel::RawVolume> volume(new voxel::RawVolume(region));
+	palette::PaletteLookup lookup(voxelPalette, palette::PaletteLookup::Precision::Exact);
+	wrapBool(readVoxels([&](int x, int y, int z, color::RGBA rgba) {
+		const uint8_t index = state.colorFormat == ColorFormat::Palette ? rgba.r
+			: lookup.findClosestIndex(flattenRGB(rgba.r, rgba.g, rgba.b));
+		volume->setVoxel(x, y, z, voxel::createVoxel(voxelPalette, index));
+	}))
 	scenegraph::SceneGraphNode node(scenegraph::SceneGraphNodeType::Model);
 	node.setVolume(volume.release());
 	node.setName(name);
 	node.setPivot(pivot / math::Vec3f(size));
-	node.setPalette(palette);
+	node.setPalette(voxelPalette);
 	// Vengi translates at the pivot; QBT positions the unpivoted grid.
 	math::Vec3f localTranslation = math::Vec3f(translation) + math::Vec3f(localScale) * pivot;
 	const scenegraph::SceneGraphNode &parentNode = sceneGraph.node(parent);
@@ -681,8 +698,7 @@ size_t QBTFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 		return 0u;
 	}
 
-	const int64_t pos = stream->pos();
-
+	const int64_t sections = stream->pos();
 	while (stream->remaining() > 0) {
 		char buf[8];
 		if (!stream->readString(sizeof(buf), buf)) {
@@ -707,32 +723,24 @@ size_t QBTFormat::loadPalette(const core::String &filename, const io::ArchivePtr
 			break;
 		}
 	}
-	Log::debug("no palette found");
-
-	// no COLORMAP data was found
-	stream->seek(pos);
-
+	if (stream->seek(sections) == -1) {
+		return 0;
+	}
+	palette::RGBABuffer colors;
+	state.colors = &colors;
 	while (stream->remaining() > 0) {
 		char buf[8];
-		if (!stream->readString(sizeof(buf), buf)) {
-			Log::error("Could not load qbt file: Could not read chunk id");
-			return 0u;
-		}
-		if (0 == memcmp(buf, "DATATREE", 8)) {
+		wrapBool(stream->readString(sizeof(buf), buf))
+		if (0 == memcmp(buf, "COLORMAP", 8)) {
+			wrapBool(loadColorMap(*stream, palette))
+		} else if (0 == memcmp(buf, "DATATREE", 8)) {
 			scenegraph::SceneGraph sceneGraph;
-			if (!loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state, ctx)) {
-				Log::error("Failed to load node");
-				return 0u;
-			}
+			wrapBool(loadNode(*stream, sceneGraph, sceneGraph.root().id(), palette, state, ctx))
 		} else {
-			Log::error("Unknown section found: %c%c%c%c%c%c%c%c", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5],
-					   buf[6], buf[7]);
-			break;
+			return 0;
 		}
 	}
-
-	Log::debug("Failed to load qbt palette");
-	return 0;
+	return createPalette(colors, palette);
 }
 
 bool QBTFormat::loadGroupsPalette(const core::String &filename, const io::ArchivePtr &archive,
@@ -774,10 +782,6 @@ bool QBTFormat::loadGroupsPalette(const core::String &filename, const io::Archiv
 					   buf[6], buf[7]);
 			return false;
 		}
-	}
-	for (auto iter = sceneGraph.beginModel(); iter != sceneGraph.end(); ++iter) {
-		scenegraph::SceneGraphNode &node = *iter;
-		node.setPalette(palette);
 	}
 	return true;
 }

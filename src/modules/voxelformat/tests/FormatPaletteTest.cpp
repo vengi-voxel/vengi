@@ -28,9 +28,7 @@ protected:
 
 	// the palettes have to match, as all the colors from the rgb format are saved to the palette of the target format
 	void testRGBToPaletteFormat(voxelformat::Format &rgbFormat, const core::String &rgbFile, size_t rgbExpectedColors,
-								voxelformat::Format &paletteFormat, const core::String &palFile,
-								voxel::ValidateFlags flags = voxel::ValidateFlags::PaletteMinMatchingColors,
-								float maxDelta = 0.00001f) {
+								voxelformat::Format &paletteFormat, const core::String &palFile) {
 		SCOPED_TRACE("rgb file: " + rgbFile);
 		SCOPED_TRACE("pal file: " + palFile);
 
@@ -48,29 +46,8 @@ protected:
 			<< "Failed to write pal model " << palFile;
 
 		palette::Palette palPalette;
-		ASSERT_GT(paletteFormat.loadPalette(palFile, archive, palPalette, testLoadCtx), 0u)
-			<< "Found expected amount of colors in the palette format";
-		// ASSERT_TRUE(checkNoAlpha(palPalette));
-
-		if ((flags & voxel::ValidateFlags::Palette) == voxel::ValidateFlags::Palette) {
-			voxel::paletteComparator(palPalette, rgbPalette, maxDelta);
-		} else if ((flags & voxel::ValidateFlags::PaletteMinMatchingColors) ==
-				   voxel::ValidateFlags::PaletteMinMatchingColors) {
-			voxel::partialPaletteComparator(palPalette, rgbPalette, flags, maxDelta);
-		} else if ((flags & voxel::ValidateFlags::PaletteColorsScaled) == voxel::ValidateFlags::PaletteColorsScaled) {
-			voxel::paletteComparatorScaled(palPalette, rgbPalette, (int)maxDelta);
-		} else if ((flags & voxel::ValidateFlags::PaletteColorOrderDiffers) ==
-				   voxel::ValidateFlags::PaletteColorOrderDiffers) {
-			voxel::orderPaletteComparator(palPalette, rgbPalette, maxDelta);
-		}
-
-		for (size_t i = 0; i < rgbExpectedColors; ++i) {
-			ASSERT_EQ(rgbPalette.color(i), palPalette.color(i))
-				<< i << ": rgb " << color::print(rgbPalette.color(i)) << " versus pal "
-				<< color::print(palPalette.color(i)) << "\n"
-				<< palette::toString(rgbPalette) << "\n"
-				<< palette::toString(palPalette);
-		}
+		ASSERT_EQ(rgbExpectedColors, paletteFormat.loadPalette(palFile, archive, palPalette, testLoadCtx));
+		voxel::orderPaletteComparator(palPalette, rgbPalette, 0.0f);
 	}
 
 	// the colors have to match but can differ in their count - the rgb format only saves those colors that are used by

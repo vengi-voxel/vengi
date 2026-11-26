@@ -5,11 +5,7 @@
 #pragma once
 
 #include "voxelformat/Format.h"
-#include "voxel/Voxel.h"
-
-namespace palette {
-class PaletteLookup;
-}
+#include "math/Vec3u.h"
 
 namespace voxelformat {
 
@@ -24,7 +20,7 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-class QBFormat : public RGBAFormat {
+class QBFormat : public Format {
 private:
 	enum class ColorFormat : uint32_t { RGBA = 0, BGRA = 1 };
 	enum class ZAxisOrientation : uint32_t { LeftHanded = 0, RightHanded = 1 };
@@ -44,14 +40,14 @@ private:
 	// left shift values for the vis mask for the single faces
 	enum class VisMaskSides : uint8_t { Invisble, Left, Right, Top, Bottom, Front, Back };
 
+	bool readHeader(io::SeekableReadStream &stream, State &state, uint32_t &numMatrices);
+	bool readMatrixHeader(io::SeekableReadStream &stream, core::String &name, math::Vec3u &size,
+						  math::Vec3i &offset);
 	bool readColor(State &state, io::SeekableReadStream &stream, color::RGBA &color);
-	voxel::Voxel getVoxel(State &state, io::SeekableReadStream &stream, palette::PaletteLookup &palLookup);
-	bool readMatrix(State &state, io::SeekableReadStream &stream, scenegraph::SceneGraph &sceneGraph,
-					palette::PaletteLookup &palLookup);
-	bool readPalette(State &state, io::SeekableReadStream &stream, palette::RGBABuffer &colors);
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive,
-						scenegraph::SceneGraph &sceneGraph, const palette::Palette &palette,
-						const LoadContext &ctx) override;
+	template<class Visitor>
+	bool readVoxels(State &state, io::SeekableReadStream &stream, const math::Vec3u &size, Visitor &&visit);
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+					const LoadContext &ctx) override;
 	bool saveMatrix(io::SeekableWriteStream &stream, const scenegraph::SceneGraph &sceneGraph,
 					const scenegraph::SceneGraphNode &node, bool leftHanded, bool rleCompressed) const;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,

@@ -161,6 +161,20 @@ TEST_F(PaletteTest, testPaletteLookup) {
 	EXPECT_EQ(255u, palLookup.findClosestIndex(black));
 }
 
+TEST_F(PaletteTest, testExactPaletteLookupPreservesNearbyColors) {
+	palette::Palette palette;
+	const color::RGBA first(40, 128, 160);
+	const color::RGBA second(41, 128, 160);
+	palette.setColor(0, first);
+	palette.setColor(1, second);
+	palette.setColor(2, first);
+	palette::PaletteLookup lookup(palette, palette::PaletteLookup::Precision::Exact);
+	EXPECT_EQ(0u, lookup.findClosestIndex(first));
+	EXPECT_EQ(1u, lookup.findClosestIndex(second));
+	const color::RGBA unmatched(42, 128, 160);
+	EXPECT_EQ(palette.getClosestMatch(unmatched), lookup.findClosestIndex(unmatched));
+}
+
 TEST_F(PaletteTest, testReduce) {
 	Palette pal;
 	pal.nippon();

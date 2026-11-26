@@ -5,10 +5,20 @@
 #include "voxelformat/private/minecraft/SkinFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "scenegraph/SceneGraph.h"
 #include "util/VarUtil.h"
 #include <gtest/gtest.h>
 
 namespace voxelformat {
+
+class SkinFormatTest : public AbstractFormatTest {};
+
+TEST_F(SkinFormatTest, testPalettePerPart) {
+	scenegraph::SceneGraph graph;
+	SkinFormat format;
+	ASSERT_TRUE(format.load("minecraft-skin.png", helper_filesystemarchive(), graph, testLoadCtx));
+	EXPECT_TRUE(graph.hasMoreThanOnePalette());
+}
 
 struct Params {
 	bool groups;

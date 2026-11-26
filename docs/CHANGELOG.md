@@ -19,6 +19,7 @@ General:
    - Added support for Pixelorama `.pxo` files
    - Added support for VoxelCdx files `.vcdx`
    - Added support for Sandbox `vxm` version 13 and `vxa` version 10
+   - Added per-model palettes when importing Qubicle QB, QBCL and RGBA QBT, Goxel, Chronovox, AnimaToon, Minecraft skins and Cubzh block chunks
    - Added support for Trenchblock `vox` files
    - Added support for Ace Of Spades `aos` map support
    - Added support for Teardown version 2.1.0+

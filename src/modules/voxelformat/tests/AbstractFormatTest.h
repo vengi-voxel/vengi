@@ -74,6 +74,7 @@ protected:
 	// save as any other format
 	void testRGBSmallSaveLoad(const core::String &filename, const core::String &saveFilename);
 
+	void testModelPaletteRoundTrip(const core::String &filename, Format &format, bool nested = false);
 	void testSaveMultipleModels(const core::String &filename, Format *format,
 								voxel::ValidateFlags flags = voxel::ValidateFlags::All);
 	void testSaveSingleVoxel(const core::String &filename, Format *format,

@@ -13,10 +13,10 @@ namespace voxelformat {
  *
  * @ingroup Formats
  */
-class CSMFormat : public RGBAFormat {
+class CSMFormat : public Format {
 protected:
-	bool loadGroupsRGBA(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
-						const palette::Palette &palette, const LoadContext &ctx) override;
+	bool loadGroups(const core::String &filename, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
+						const LoadContext &ctx) override;
 	bool saveGroups(const scenegraph::SceneGraph &sceneGraph, const core::String &filename,
 					const io::ArchivePtr &archive, const SaveContext &ctx) override;
 
