@@ -673,6 +673,7 @@ function(engine_install_deps TARGET)
 
 	set(PO_FILES
 		de_DE.po
+		ja_JP.po
 	)
 
 	foreach (PO_FILE ${PO_FILES})

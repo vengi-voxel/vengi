@@ -1,0 +1,5798 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: vengi\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2026-11-26 01:00+0900\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"Language: ja_JP\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Log level"
+msgstr "ログレベル"
+
+msgid "The lower the value, the more you see. 1 is the highest log level, 5 is just fatal errors."
+msgstr "値が小さいほど多くの情報が表示されます。1が最も詳細なログレベルで、5は致命的なエラーのみを表示します。"
+
+msgid "Language"
+msgstr "言語"
+
+msgid "The language to use - empty means system default"
+msgstr "使用する言語（空欄の場合はシステムのデフォルト）"
+
+msgid "Max FPS"
+msgstr "最大 FPS"
+
+msgid "The maximum frames per second. Set to 0 to disable the cap."
+msgstr "1秒あたりの最大フレーム数です。0に設定すると上限を無効にします。"
+
+msgid "App version"
+msgstr "アプリバージョン"
+
+msgid "The application version"
+msgstr "アプリケーションのバージョン"
+
+msgid "Username"
+msgstr "ユーザー名"
+
+msgid "The username to use in network sessions"
+msgstr "ネットワークセッションで使用するユーザー名"
+
+msgid "Print the cvars in json format"
+msgstr "cvarをJSON形式で出力します"
+
+msgid "Print the version and quit"
+msgstr "バージョンを出力して終了します"
+
+msgid "Print this help and quit"
+msgstr "このヘルプを出力して終了します"
+
+msgid "Generate completion for bash, zsh and powershell"
+msgstr "bash、zsh、PowerShell用の補完スクリプトを生成します"
+
+msgid "Change log level from 1 (trace) to 6 (only critical)"
+msgstr "ログレベルを1（トレース）から6（重大エラーのみ）の範囲で変更します"
+
+msgid "Metric flavor"
+msgstr "メトリクス形式"
+
+msgid "The flavor of the metrics output. This can be used to integrate with different monitoring systems. If empty, metrics are disabled."
+msgstr "メトリクス出力の形式です。さまざまな監視システムとの連携に使用できます。空欄の場合、メトリクスは無効になります。"
+
+msgid "List all available translated strings"
+msgstr "利用可能なすべての翻訳文字列を一覧表示します"
+
+msgid "Set a variable value"
+msgstr "変数の値を設定します"
+
+msgid "Clear the variable value"
+msgstr "変数の値をクリアします"
+
+msgid "Quit the application"
+msgstr "アプリケーションを終了します"
+
+msgid "Trigger an assert"
+msgstr "アサートを発生させます"
+
+msgid "Create, update or list command aliases"
+msgstr "コマンドエイリアスの作成、更新、または一覧表示を行います"
+
+msgid "Remove a command alias"
+msgstr "コマンドエイリアスを削除します"
+
+msgid "Clear the value history of a variable"
+msgstr "変数の値履歴をクリアします"
+
+msgid "Just a no-operation command"
+msgstr "何もしない（NOP）コマンドです"
+
+msgid "Open the given url in a browser"
+msgstr "指定されたURLをブラウザーで開きます"
+
+msgid "Print the given arguments to the console (info log level)"
+msgstr "指定された引数をコンソールに出力します（infoログレベル）"
+
+msgid "Execute a file with script commands"
+msgstr "スクリプトコマンドを含むファイルを実行します"
+
+msgid "Toggle between true/false for a variable"
+msgstr "変数のtrue/falseを切り替えます"
+
+msgid "Increase a cvar value by the given value (default: 1)"
+msgstr "cvarの値を指定された値だけ増加させます（デフォルト: 1）"
+
+msgid "Decrease a cvar value by the given value (default: 1)"
+msgstr "cvarの値を指定された値だけ減少させます（デフォルト: 1）"
+
+msgid "Show the value of a variable"
+msgstr "変数の値を表示します"
+
+msgid "Print current milliseconds to console"
+msgstr "現在のミリ秒数をコンソールに出力します"
+
+msgid "Log given message as error"
+msgstr "指定されたメッセージをerrorとしてログ出力します"
+
+msgid "Log given message as info"
+msgstr "指定されたメッセージをinfoとしてログ出力します"
+
+msgid "Log given message as debug"
+msgstr "指定されたメッセージをdebugとしてログ出力します"
+
+msgid "Log given message as warn"
+msgstr "指定されたメッセージをwarnとしてログ出力します"
+
+msgid "Show the list of known variables (wildcards supported)"
+msgstr "登録されている変数の一覧を表示します（ワイルドカード対応）"
+
+msgid "Show the list of known commands (wildcards supported)"
+msgstr "登録されているコマンドの一覧を表示します（ワイルドカード対応）"
+
+msgid "Enable named pipe for input commands"
+msgstr "コマンド入力用の名前付きパイプを有効にします"
+
+msgid "Named pipe"
+msgstr "名前付きパイプ"
+
+msgid "HTTP timeout"
+msgstr "HTTPタイムアウト"
+
+msgid "The timeout for HTTP requests in seconds"
+msgstr "HTTPリクエストのタイムアウト時間（秒）"
+
+msgid "HTTP connect timeout"
+msgstr "HTTP接続タイムアウト"
+
+msgid "The timeout for HTTP connection in seconds"
+msgstr "HTTP接続のタイムアウト時間（秒）"
+
+msgid "Home Path"
+msgstr "ホームパス"
+
+msgid "The home directory path for the application"
+msgstr "アプリケーションのホームディレクトリパス"
+
+msgid "Metric UUID"
+msgstr "メトリクスUUID"
+
+msgid "The UUID to use for metrics - if empty, a random one will be generated"
+msgstr "メトリクスに使用するUUID（空欄の場合はランダムに生成されます）"
+
+msgid "Metric JSON URL"
+msgstr "メトリクスJSON URL"
+
+msgid "The URL to send JSON metrics to"
+msgstr "JSONメトリクスを送信するURL"
+
+msgid "Metric Host"
+msgstr "メトリクスホスト"
+
+msgid "The host to send metrics to"
+msgstr "メトリクスを送信するホスト"
+
+msgid "Metric Port"
+msgstr "メトリクスポート"
+
+msgid "The port to send metrics to"
+msgstr "メトリクスを送信するポート"
+
+msgid "Color reduction"
+msgstr "減色アルゴリズム"
+
+msgid "Controls the algorithm that is used to perform the color reduction"
+msgstr "減色処理に使用するアルゴリズムを制御します"
+
+msgid "6 bit colors"
+msgstr "6ビットカラー"
+
+msgid "Use 6 bit color values for the palette (0-63) - used e.g. in C&C pal files"
+msgstr "パレットに6ビットカラー値（0～63）を使用します（例: C&C .palファイル用）"
+
+msgid "Max image size"
+msgstr "最大画像サイズ"
+
+msgid "The maximum size of an image in x and y direction to quantize to a palette"
+msgstr "パレットへ量子化する画像のX・Y方向の最大サイズ"
+
+msgid "GIMP RGBA"
+msgstr "GIMP RGBA"
+
+msgid "Use RGBA format for GIMP palettes (instead of RGB / Aseprite extension)"
+msgstr "GIMPパレットにRGBA形式を使用します（RGB / Aseprite拡張形式の代わりに使用）"
+
+msgid "Palette"
+msgstr "パレット"
+
+msgid "This is the NAME part of palette-<NAME>.png or absolute png file to use (1x256)"
+msgstr "palette-<NAME>.png の NAME 部分、または使用するPNGファイル（1x256）の絶対パスです"
+
+msgid "Normal palette"
+msgstr "法線パレット"
+
+msgctxt "A palette of normal vectors converted to RGBA values"
+msgid "The normal palette"
+msgstr "法線パレット"
+
+msgctxt "InterpolationType"
+msgid "Instant"
+msgstr "即時"
+
+msgctxt "InterpolationType"
+msgid "Linear"
+msgstr "リニア"
+
+msgctxt "InterpolationType"
+msgid "QuadEaseIn"
+msgstr "2次イーズイン"
+
+msgctxt "InterpolationType"
+msgid "QuadEaseOut"
+msgstr "2次イーズアウト"
+
+msgctxt "InterpolationType"
+msgid "CubicEaseIn"
+msgstr "3次イーズイン"
+
+msgctxt "InterpolationType"
+msgid "QuadEaseInOut"
+msgstr "2次イーズインアウト"
+
+msgctxt "InterpolationType"
+msgid "CubicEaseInOut"
+msgstr "3次イーズインアウト"
+
+msgctxt "InterpolationType"
+msgid "CubicEaseOut"
+msgstr "3次イーズアウト"
+
+msgctxt "InterpolationType"
+msgid "CatmullRom"
+msgstr "Catmull-Rom"
+
+msgctxt "InterpolationType"
+msgid "CubicBezier"
+msgstr "3次ベジェ"
+
+msgctxt "SceneGraphNodeType"
+msgid "Model"
+msgstr "モデル"
+
+msgctxt "SceneGraphNodeType"
+msgid "Root"
+msgstr "ルート"
+
+msgctxt "SceneGraphNodeType"
+msgid "Group"
+msgstr "グループ"
+
+msgctxt "SceneGraphNodeType"
+msgid "ModelReference"
+msgstr "モデル参照"
+
+msgctxt "SceneGraphNodeType"
+msgid "Camera"
+msgstr "カメラ"
+
+msgctxt "SceneGraphNodeType"
+msgid "Point"
+msgstr "ポイント"
+
+msgctxt "SceneGraphNodeType"
+msgid "None"
+msgstr "なし"
+
+msgctxt "SceneGraphNodeType"
+msgid "Unknown"
+msgstr "不明"
+
+msgctxt "SceneGraphNodeType"
+msgid "All"
+msgstr "すべて"
+
+msgctxt "SceneGraphNodeType"
+msgid "AllModels"
+msgstr "すべてのモデル"
+
+msgid "Enable or disable sound playback"
+msgstr "サウンド再生を有効または無効にします"
+
+msgid "Sound enabled"
+msgstr "サウンド有効"
+
+msgid "Sound volume"
+msgstr "音量"
+
+msgid "Sound volume in percent (0-100)"
+msgstr "音量（パーセント: 0～100）"
+
+msgid "Camera free look on toggle"
+msgstr "カメラのフリールック切り替え"
+
+msgid "Toggle relative mouse rotation mode"
+msgstr "相対マウス回転モードを切り替えます"
+
+msgid "Show all commands"
+msgstr "すべてのコマンドを表示"
+
+msgid "Show all cvars"
+msgstr "すべてのcvarを表示"
+
+msgid "Bindings"
+msgstr "キー割り当て"
+
+msgid "Recording new binding for: %s"
+msgstr "新しいキー割り当てを記録中: %s"
+
+msgid "Press keys to set new binding, then click 'Apply' or press Escape to cancel"
+msgstr "キーを押して新しい割り当てを設定し、「適用」をクリックするか Escape でキャンセルしてください"
+
+msgid "New binding: %s"
+msgstr "新しい割り当て: %s"
+
+msgid "Apply"
+msgstr "適用"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Keys"
+msgstr "キー"
+
+msgid "Command"
+msgstr "コマンド"
+
+msgid "Context"
+msgstr "コンテキスト"
+
+msgid "Description"
+msgstr "説明"
+
+msgid "Failed to get command for %s"
+msgstr "%s のコマンド取得に失敗しました"
+
+msgid "Delete binding"
+msgstr "割り当てを削除"
+
+msgid "Reset to default"
+msgstr "デフォルトに戻す"
+
+msgid "Filter"
+msgstr "フィルター"
+
+msgid "Console history"
+msgstr "コンソール履歴"
+
+msgid "Parameters"
+msgstr "パラメーター"
+
+msgid "(optional)"
+msgstr "（任意）"
+
+msgid "Press Tab to autocomplete"
+msgstr "Tab キーで自動補完"
+
+msgid "Command Palette"
+msgstr "コマンドパレット"
+
+msgid "Filter commands and history"
+msgstr "コマンドと履歴をフィルター"
+
+msgid "recently used"
+msgstr "最近使用"
+
+msgid "commands"
+msgstr "コマンド"
+
+msgid "Cloud"
+msgstr "クラウド"
+
+msgid "Desktop"
+msgstr "デスクトップ"
+
+msgid "Documents"
+msgstr "ドキュメント"
+
+msgid "Download"
+msgstr "ダウンロード"
+
+msgid "Fonts"
+msgstr "フォント"
+
+msgid "Pictures"
+msgstr "ピクチャ"
+
+msgid "Public"
+msgstr "パブリック"
+
+msgid "Recent"
+msgstr "最近の項目"
+
+msgid "Quick Access"
+msgstr "クイックアクセス"
+
+msgid "This PC"
+msgstr "PC"
+
+msgid "Bookmarks"
+msgstr "ブックマーク"
+
+msgid "Remove bookmark"
+msgstr "ブックマークを削除"
+
+msgid "File"
+msgstr "ファイル"
+
+msgid "Size"
+msgstr "サイズ"
+
+msgid "Type"
+msgstr "種類"
+
+msgid "Date"
+msgstr "日時"
+
+msgid "link"
+msgstr "リンク"
+
+msgid "directory"
+msgstr "ディレクトリ"
+
+msgid "Add a bookmark for the current active folder"
+msgstr "現在開いているフォルダーをブックマークに追加します"
+
+msgid "Semicolon separated list of bookmarked directories"
+msgstr "ブックマークされたディレクトリのセミコロン区切りリスト"
+
+msgid "Show hidden"
+msgstr "隠し項目を表示"
+
+msgid "Show hidden file system entities"
+msgstr "非表示のファイルやフォルダーを表示します"
+
+msgid "Show model preview"
+msgstr "モデルプレビューを表示"
+
+msgid "Show model preview in file dialog"
+msgstr "ファイルダイアログにモデルのプレビューを表示します"
+
+msgid "Last directory"
+msgstr "前回のディレクトリ"
+
+msgid "The last opened directory in the file dialog"
+msgstr "ファイルダイアログで最後に開いたディレクトリ"
+
+msgid "Last filter (save)"
+msgstr "前回のフィルター（保存）"
+
+msgid "The last selected file type filter in the file dialog"
+msgstr "ファイルダイアログで最後に選択したファイル形式フィルター"
+
+msgid "Last filter (open)"
+msgstr "前回のフィルター（開く）"
+
+msgid "Not writeable"
+msgstr "書き込み不可"
+
+msgid "The selected file or directory is not writeable"
+msgstr "選択されたファイルまたはディレクトリに書き込みできません"
+
+msgid "Create folder"
+msgstr "フォルダーを作成"
+
+msgid "Enter a name for the new folder"
+msgstr "新しいフォルダー名を入力してください"
+
+msgid "Create"
+msgstr "作成"
+
+msgid "Folder name can't be empty"
+msgstr "フォルダー名は空にできません"
+
+msgid "Folder creation failed"
+msgstr "フォルダーの作成に失敗しました"
+
+msgid "Options"
+msgstr "オプション"
+
+msgid "File already exists"
+msgstr "ファイルが既に存在します"
+
+msgid ""
+"%s already exist.\n"
+"Do you want to overwrite the file?"
+msgstr ""
+"%s は既に存在します。\n"
+"ファイルを上書きしますか？"
+
+msgid "Save file"
+msgstr "ファイルを保存"
+
+msgid "Select a directory"
+msgstr "ディレクトリを選択"
+
+msgid "Select a file"
+msgstr "ファイルを選択"
+
+msgid "New folder"
+msgstr "新しいフォルダー"
+
+msgid "Filename"
+msgstr "ファイル名"
+
+msgid "Choose"
+msgstr "選択"
+
+msgid "Open"
+msgstr "開く"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Error: You must select a folder!"
+msgstr "エラー: フォルダーを選択してください！"
+
+msgid "Error: You must select a file!"
+msgstr "エラー: ファイルを選択してください！"
+
+msgid "Error: You must select a file type!"
+msgstr "エラー: ファイルの種類を選択してください！"
+
+msgid "Change the ui color theme"
+msgstr "UIのカラーテーマを変更します"
+
+msgid "UI style"
+msgstr "UIスタイル"
+
+msgid "Notification timeout"
+msgstr "通知のタイムアウト"
+
+msgid "Timeout for notifications in millis"
+msgstr "通知の表示時間（ミリ秒）"
+
+msgid "Allow multi monitor setups - requires a restart"
+msgstr "マルチモニター環境を許可します（再起動が必要です）"
+
+msgid "Multi monitor"
+msgstr "マルチモニター"
+
+msgid "Console"
+msgstr "コンソール"
+
+msgid "Show the console panel"
+msgstr "コンソールパネルを表示します"
+
+msgid "Render UI"
+msgstr "UIを描画"
+
+msgid "Render the ui"
+msgstr "UIを描画します"
+
+msgid "Show metric and debug window"
+msgstr "メトリクスおよびデバッグウィンドウを表示します"
+
+msgid "Show metrics"
+msgstr "メトリクスを表示"
+
+msgid "Only run tests that match the given filter"
+msgstr "指定されたフィルターに一致するテストのみを実行します"
+
+msgid "Test filter"
+msgstr "テストフィルター"
+
+msgid "Allow to change the ui font size"
+msgstr "UIのフォントサイズ変更を許可します"
+
+msgid "Font size"
+msgstr "フォントサイズ"
+
+msgid "Keymap"
+msgstr "キーマップ"
+
+msgid "Which keybinding to use"
+msgstr "使用するキー割り当て"
+
+msgid "Last opened files"
+msgstr "最近開いたファイル一覧"
+
+msgid "The last opened files in the file dialog, separated by ';'"
+msgstr "ファイルダイアログで最後に開いたファイルの一覧（';' 区切り）"
+
+msgid "Last opened file"
+msgstr "最後に開いたファイル"
+
+msgid "The last opened file in the file dialog"
+msgstr "ファイルダイアログで最後に開いたファイル"
+
+msgid "Open the command palette"
+msgstr "コマンドパレットを開きます"
+
+msgid "FPS"
+msgstr "FPS"
+
+msgid "Pause"
+msgstr "一時停止"
+
+msgid "Configuration variables"
+msgstr "設定変数"
+
+msgid "Name"
+msgstr "名前"
+
+msgid "Value"
+msgstr "値"
+
+msgid "Reset"
+msgstr "リセット"
+
+msgid "Reset to default value"
+msgstr "デフォルト値にリセット"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "Commands"
+msgstr "コマンド"
+
+msgid "Textures"
+msgstr "テクスチャ"
+
+msgid "Recently opened"
+msgstr "最近開いたファイル"
+
+msgid "Size column to fit###SizeOne"
+msgstr "列幅を自動調整###SizeOne"
+
+msgid "Size all columns to fit###SizeAll"
+msgstr "すべての列幅を自動調整###SizeAll"
+
+msgid "Size all columns to default###SizeAll"
+msgstr "すべての列幅をデフォルトに戻す###SizeAll"
+
+msgid "Reset###Reset"
+msgstr "リセット###Reset"
+
+msgid "Reset order###ResetOrder"
+msgstr "順序をリセット###ResetOrder"
+
+msgid "Reset visibility###ResetVisibility"
+msgstr "表示状態をリセット###ResetVisibility"
+
+msgid "(Main menu bar)"
+msgstr "(メインメニューバー)"
+
+msgid "(Popup)"
+msgstr "(ポップアップ)"
+
+msgid "(Untitled)"
+msgstr "(無題)"
+
+msgid "Open '%s'"
+msgstr "'%s' を開く"
+
+msgid "Copy Link###CopyLink"
+msgstr "リンクをコピー###CopyLink"
+
+msgid "Hide tab bar###HideTabBar"
+msgstr "タブバーを非表示###HideTabBar"
+
+msgid "Hold SHIFT to enable Docking window."
+msgstr "SHIFT キーを押したままにするとウィンドウのドッキングが有効になります。"
+
+msgid "Click and drag to move or undock whole node."
+msgstr "クリックしてドラッグすると、ノード全体を移動またはドッキング解除できます。"
+
+msgid "To change the language everywhere restart the application"
+msgstr "すべての箇所の言語を変更するにはアプリケーションを再起動してください"
+
+msgid "The color reduction algorithm that is used when importing RGBA colors from images or rgba formats"
+msgstr "画像や RGBA 形式から RGBA カラーをインポートする際に使用される減色アルゴリズム"
+
+msgid "Clear"
+msgstr "クリア"
+
+msgid "Copy"
+msgstr "コピー"
+
+msgid "Debug"
+msgstr "デバッグ"
+
+msgid "Enable debug logging for the console"
+msgstr "コンソールのデバッグログを有効にする"
+
+msgid "Auto scrolling"
+msgstr "自動スクロール"
+
+msgid "Unknown"
+msgstr "不明"
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Z"
+msgstr "Z"
+
+msgid "Ok"
+msgstr "OK"
+
+msgid "Yes"
+msgstr "はい"
+
+msgid "No"
+msgstr "いいえ"
+
+msgid ""
+"Open in browser\n"
+"%s"
+msgstr ""
+"ブラウザで開く\n"
+"%s"
+
+msgid "None selected"
+msgstr "未選択"
+
+msgid "None"
+msgstr "なし"
+
+msgid "Corporate Grey"
+msgstr "コーポレートグレー"
+
+msgid "Dark"
+msgstr "ダーク"
+
+msgid "Light"
+msgstr "ライト"
+
+msgid "Classic"
+msgstr "クラシック"
+
+msgid "Dark Pastel"
+msgstr "ダークパステル"
+
+msgid "Rose Quartz"
+msgstr "ローズクォーツ"
+
+msgid "Gruvbox Hard"
+msgstr "Gruvbox Hard"
+
+msgid "Dracula"
+msgstr "Dracula"
+
+msgid "Enable sending anonymous metrics"
+msgstr "匿名メトリクスの送信を有効にする"
+
+msgid "Send anonymous usage statistics"
+msgstr "匿名の利用統計を送信する"
+
+msgid "About"
+msgstr "バージョン情報"
+
+msgid "This is a beta release!"
+msgstr "これはベータ版リリースです！"
+
+msgid "A new version is available!"
+msgstr "新しいバージョンが利用可能です！"
+
+msgid "You are using the latest version."
+msgstr "最新バージョンを使用しています。"
+
+msgid "Debug build with reduced performance"
+msgstr "パフォーマンスが低下したデバッグビルド"
+
+msgid "Website"
+msgstr "ウェブサイト"
+
+msgid "Bug reports"
+msgstr "バグ報告"
+
+msgid "Mastodon"
+msgstr "Mastodon"
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Credits"
+msgstr "クレジット"
+
+msgid "Paths"
+msgstr "パス"
+
+msgid "Clear the text from the built-in console"
+msgstr "内蔵コンソールのテキストをクリアする"
+
+msgid "Print the command history"
+msgstr "コマンド履歴を表示する"
+
+msgid "Show all known key bindings"
+msgstr "登録されているすべてのキーバインドを表示する"
+
+msgid "Bind a command to a key"
+msgstr "キーにコマンドを割り当てる"
+
+msgid "Unbind a key"
+msgstr "キーの割り当てを解除する"
+
+msgid "Support for DXT/S3TC compressed texture formats"
+msgstr "DXT/S3TC 圧縮テクスチャ形式のサポート"
+
+msgid "Support for PVRTC compressed texture formats"
+msgstr "PVRTC 圧縮テクスチャ形式のサポート"
+
+msgid "Support for ETC2 compressed texture formats"
+msgstr "ETC2 圧縮テクスチャ形式のサポート"
+
+msgid "Support for ATC compressed texture formats"
+msgstr "ATC 圧縮テクスチャ形式のサポート"
+
+msgid "Support for 32-bit floating point textures"
+msgstr "32ビット浮動小数点テクスチャのサポート"
+
+msgid "Support for 16-bit half-precision floating point textures"
+msgstr "16ビット半精度浮動小数点テクスチャのサポート"
+
+msgid "Support for instanced rendering"
+msgstr "インスタンシングレンダリングのサポート"
+
+msgid "Support for renderer debug output messages"
+msgstr "レンダラーのデバッグ出力メッセージのサポート"
+
+msgid "Support for modifying renderer objects without binding them"
+msgstr "バインドせずにレンダラーオブジェクトを変更する機能のサポート"
+
+msgid "Support for immutable buffer storage"
+msgstr "イミュータブルバッファストレージのサポート"
+
+msgid "Support for compute shaders"
+msgstr "コンピュートシェーダーのサポート"
+
+msgid "Support for capturing shader output into buffers"
+msgstr "シェーダー出力をバッファへキャプチャする機能のサポート"
+
+msgid "Renderer feature cvar"
+msgstr "レンダラー機能 cvar"
+
+msgid "Show all images in the texture pool"
+msgstr "テクスチャプール内のすべての画像を表示する"
+
+msgid "Multisample buffers"
+msgstr "マルチサンプルバッファ"
+
+msgid "Window backbuffer MSAA buffers. 0 disables window MSAA."
+msgstr "ウィンドウバックバッファの MSAA バッファ数。0 でウィンドウの MSAA を無効にします。"
+
+msgid "Multisample samples"
+msgstr "マルチサンプル数"
+
+msgid "Scene viewport sample count. Also used for the window if cl_multisamplebuffers is > 0."
+msgstr "シーンビューポートのサンプル数。cl_multisamplebuffers が 0 より大きい場合はウィンドウにも使用されます。"
+
+msgid "Enable high DPI mode"
+msgstr "高 DPI モードを有効にする"
+
+msgid "High DPI"
+msgstr "高 DPI"
+
+msgid "Activate shadow map"
+msgstr "シャドウマップを有効にする"
+
+msgid "Shadow map"
+msgstr "シャドウマップ"
+
+msgid "Activate checkerboard rendering"
+msgstr "チェッカーボードレンダリングを有効にする"
+
+msgid "Checkerboard"
+msgstr "チェッカーボード"
+
+msgid "Activate culling for scene nodes"
+msgstr "シーンノードのカリングを有効にする"
+
+msgid "Cull nodes"
+msgstr "ノードをカリング"
+
+msgid "Activate bloom post processing"
+msgstr "ブルームのポストプロセスを有効にする"
+
+msgid "Bloom"
+msgstr "ブルーム"
+
+msgid "Bloom passes"
+msgstr "ブルームパス数"
+
+msgid "Number of bloom downsample/upsample passes. Does not reallocate FBOs."
+msgstr "ブルームのダウンサンプル/アップサンプルのパス数。FBO の再確保は行いません。"
+
+msgid "Activate shadow debug rendering"
+msgstr "シャドウのデバッグレンダリングを有効にする"
+
+msgid "Debug shadows"
+msgstr "シャドウをデバッグ"
+
+msgid "Shadow map size"
+msgstr "シャドウマップサイズ"
+
+msgid "The size of the shadow map"
+msgstr "シャドウマップのサイズ"
+
+msgid "Activate cascade shadow map debug rendering"
+msgstr "カスケードシャドウマップのデバッグレンダリングを有効にする"
+
+msgid "Debug cascades"
+msgstr "カスケードをデバッグ"
+
+msgid "Gamma"
+msgstr "ガンマ"
+
+msgid "Gamma correction"
+msgstr "ガンマ補正"
+
+msgid "The display index to create the window on"
+msgstr "ウィンドウを作成するディスプレイのインデックス"
+
+msgid "Window display"
+msgstr "ウィンドウディスプレイ"
+
+msgid "OpenGL Version"
+msgstr "OpenGL バージョン"
+
+msgid "The OpenGL version to use"
+msgstr "使用する OpenGL バージョン"
+
+msgid "Outlines"
+msgstr "アウトライン"
+
+msgid "Render voxel outline"
+msgstr "ボクセルのアウトラインをレンダリングする"
+
+msgid "Color tint applied to selected voxels (RGBA)"
+msgstr "選択したボクセルに適用されるカラーティント (RGBA)"
+
+msgid "Selection tint"
+msgstr "選択ティント"
+
+msgid "Normals"
+msgstr "法線"
+
+msgid "Render voxel normals"
+msgstr "ボクセルの法線をレンダリングする"
+
+msgid "None, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
+msgstr "なし, AgX, AgX Golden, AgX Punchy, ACES, Hable, Reinhard"
+
+msgid "Tone mapping"
+msgstr "トーンマッピング"
+
+msgid "Limit the framerate to the monitor refresh rate"
+msgstr "フレームレートをモニターのリフレッシュレートに制限する"
+
+msgid "VSync"
+msgstr "VSync"
+
+msgid "0 disables it, 1 only highest severity, 2 medium severity, 3 everything"
+msgstr "0 で無効、1 で最高重要度のみ、2 で中重要度以上、3 ですべて出力"
+
+msgid "Debug severity"
+msgstr "デバッグ重要度"
+
+msgid "Rotation speed"
+msgstr "回転速度"
+
+msgid "The rotation speed when using the mouse to rotate the camera"
+msgstr "マウスでカメラを回転する際の回転速度"
+
+msgid "The zoom speed when using the mouse to zoom the camera"
+msgstr "マウスでカメラをズームする際のズーム速度"
+
+msgid "Zoom speed"
+msgstr "ズーム速度"
+
+msgid "Max anisotropy"
+msgstr "最大異方性フィルタリング"
+
+msgid "The maximum anisotropy level for textures - -1 means use device max"
+msgstr "テクスチャの異方性フィルタリングの最大レベル（-1 でデバイスの最大値を使用）"
+
+msgid "Max zoom"
+msgstr "最大ズーム"
+
+msgid "The maximum zoom level for the camera"
+msgstr "カメラの最大ズームレベル"
+
+msgid "Min zoom"
+msgstr "最小ズーム"
+
+msgid "The minimum zoom level for the camera"
+msgstr "カメラの最小ズームレベル"
+
+msgid "Minimize the window"
+msgstr "ウィンドウを最小化する"
+
+msgid "A palette of normal vectors converted to RGBA values"
+msgstr "RGBA 値に変換された法線ベクトルのパレット"
+
+msgid "A palette of voxel colors"
+msgstr "ボクセルカラーのパレット"
+
+msgid "Voxel palette"
+msgstr "ボクセルパレット"
+
+msgid "The size of the voxel mesh"
+msgstr "ボクセルメッシュのサイズ"
+
+msgid "Voxel Mesh Size"
+msgstr "ボクセルメッシュサイズ"
+
+msgid "Mesh mode"
+msgstr "メッシュモード"
+
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
+msgstr "0 = キューブ, 1 = マーチングキューブ, 2 = バイナリメッシャー"
+
+msgid "Mesh allocation strategy"
+msgstr "メッシュ割り当て戦略"
+
+msgid "0 = full pre-alloc (best for small models), 1 = small alloc (best for large models)"
+msgstr "0 = 全量事前確保（小規模モデル向け）, 1 = 小規模確保（大規模モデル向け）"
+
+msgid "Local directory"
+msgstr "ローカルディレクトリ"
+
+msgid "The local directory to load voxel files from"
+msgstr "ボクセルファイルを読み込むローカルディレクトリ"
+
+msgid "HTTP connect timeout for assets"
+msgstr "アセットの HTTP 接続タイムアウト"
+
+msgid "The timeout for HTTP connection in seconds for assets"
+msgstr "アセット取得時の HTTP 接続タイムアウト（秒）"
+
+msgid "HTTP timeout for assets"
+msgstr "アセットの HTTP タイムアウト"
+
+msgid "The timeout for HTTP request in seconds for assets"
+msgstr "アセット取得時の HTTP リクエストタイムアウト（秒）"
+
+msgid "Merge quads"
+msgstr "四角形を結合"
+
+msgid "Merge similar quads to optimize the mesh"
+msgstr "類似の四角形を結合してメッシュを最適化する"
+
+msgctxt "Voxel mesh mode description"
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
+msgstr "0 = キューブ, 1 = マーチングキューブ, 2 = バイナリメッシャー, 3 = グリーディテクスチャ"
+
+msgid "Reuse vertices"
+msgstr "頂点を再利用"
+
+msgid "Reuse vertices or always create new ones"
+msgstr "頂点を再利用するか、常に新しい頂点を作成するかを指定します"
+
+msgid "RGB weighted average"
+msgstr "RGB 加重平均"
+
+msgid "If multiple triangles contribute to the same voxel the color values are averaged based on their area contribution - otherwise only the biggest triangle counts"
+msgstr "複数の三角形が同じボクセルに寄与する場合、面積の寄与度に基づいて色値を平均化します（無効時は最大の三角形のみが採用されます）"
+
+msgid "Ambient occlusion"
+msgstr "アンビエントオクルージョン"
+
+msgid "Extra vertices for ambient occlusion"
+msgstr "アンビエントオクルージョン用の追加頂点を生成する"
+
+msgid "RGB flatten factor"
+msgstr "RGB 平坦化係数"
+
+msgid "The RGB color flatten factor for importing color and mesh formats"
+msgstr "カラーおよびメッシュ形式をインポートする際の RGB カラー平坦化係数"
+
+msgid "Target"
+msgstr "ターゲット"
+
+msgid "Target number of colors after voxelization (0 = no limit, otherwise quantize to this amount)"
+msgstr "ボクセル化後の目標色数（0 = 無制限、それ以外は指定数に減色）"
+
+msgid "Save visible only"
+msgstr "表示中のみ保存"
+
+msgid "Save only visible nodes"
+msgstr "表示中のノードのみ保存する"
+
+msgid "Uniform scale"
+msgstr "均等スケール"
+
+msgid "Scale the vertices for voxelization on all axis by the given factor"
+msgstr "ボクセル化時にすべての軸の頂点を指定した倍率でスケーリングする"
+
+msgid "X axis scale"
+msgstr "X 軸スケール"
+
+msgid "Scale the vertices for voxelization X axis by the given factor"
+msgstr "ボクセル化時に X 軸の頂点を指定した倍率でスケーリングする"
+
+msgid "Y axis scale"
+msgstr "Y 軸スケール"
+
+msgid "Scale the vertices for voxelization Y axis by the given factor"
+msgstr "ボクセル化時に Y 軸の頂点を指定した倍率でスケーリングする"
+
+msgid "Z axis scale"
+msgstr "Z 軸スケール"
+
+msgid "Scale the vertices for voxelization Z axis by the given factor"
+msgstr "ボクセル化時に Z 軸の頂点を指定した倍率でスケーリングする"
+
+msgid "Exports quads"
+msgstr "四角形でエクスポート"
+
+msgid "Export as quads. If this false, triangles will be used."
+msgstr "四角形としてエクスポートします。無効の場合は三角形が使用されます。"
+
+msgid "Vertex colors"
+msgstr "頂点カラー"
+
+msgid "Export with vertex colors"
+msgstr "頂点カラー付きでエクスポートする"
+
+msgid "Export vertex normals"
+msgstr "頂点法線をエクスポート"
+
+msgid "Voxel normals"
+msgstr "ボクセル法線"
+
+msgid "Use stored voxel normals when exporting normals with Cubic or Binary extraction. May increase vertex count."
+msgstr "キューブ抽出またはバイナリ抽出で法線をエクスポートする際、保存されたボクセル法線を使用します。頂点数が増加する場合があります。"
+
+msgid "Vertex colors as float"
+msgstr "頂点カラーを浮動小数点で出力"
+
+msgid "Export with vertex colors as float values (if vertex colors are exported)"
+msgstr "頂点カラーを浮動小数点値としてエクスポートします（頂点カラー出力時）"
+
+msgid "Texture coordinates"
+msgstr "テクスチャ座標"
+
+msgid "Export with uv coordinates of the palette image"
+msgstr "パレット画像の UV 座標付きでエクスポートする"
+
+msgid "Apply transformations"
+msgstr "トランスフォームを適用"
+
+msgid "Apply the scene graph transform to mesh exports"
+msgstr "メッシュのエクスポート時にシーングラフのトランスフォームを適用する"
+
+msgid "Apply optimizations"
+msgstr "最適化を適用"
+
+msgid "Apply mesh optimization steps when saving mesh based formats"
+msgstr "メッシュベースの形式を保存する際にメッシュの最適化処理を適用する"
+
+msgid "Fill hollow"
+msgstr "空洞を埋める"
+
+msgid "Fill the hollows when voxelizing a mesh format"
+msgstr "メッシュ形式をボクセル化する際に内部の空洞を埋める"
+
+msgid "0 = high quality, 1 = faster and less memory"
+msgstr "0 = 高品質, 1 = 高速・省メモリ"
+
+msgid "Voxelize mode"
+msgstr "ボクセル化モード"
+
+msgid "Chunked voxelization"
+msgstr "チャンク分割ボクセル化"
+
+msgid "Enable chunked voxelization for large meshes"
+msgstr "大規模メッシュに対してチャンク分割ボクセル化を有効にする"
+
+msgid "Chunk size"
+msgstr "チャンクサイズ"
+
+msgid "Chunk size for chunked voxelization"
+msgstr "チャンク分割ボクセル化のチャンクサイズ"
+
+msgid "Voxel size"
+msgstr "ボクセルサイズ"
+
+msgid "The number of voxels on the largest scene axis (0 = disabled, use scale cvars instead)."
+msgstr "シーンの最大軸におけるボクセル数（0 = 無効、代わりにスケール用の cvar を使用）。"
+
+msgid "Palette mode"
+msgstr "パレットモード"
+
+msgid "Use palette mode in qubicle qbt export"
+msgstr "Qubicle QBT エクスポートでパレットモードを使用する"
+
+msgid "Merge compounds"
+msgstr "コンパウンドを結合"
+
+msgctxt "Merge compounds when loading Qubicle QBT files"
+msgid "Merge compounds on load"
+msgstr "読み込み時にコンパウンドを結合"
+
+msgid "Merge all objects into one"
+msgstr "すべてのオブジェクトを 1 つに結合する"
+
+msgid "Single object"
+msgstr "単一オブジェクト"
+
+msgid "Empty palette index"
+msgstr "空のパレットインデックス"
+
+msgid "The index of the empty color in the palette"
+msgstr "パレット内の空の色のインデックス"
+
+msgid "Load HVA"
+msgstr "HVA を読み込む"
+
+msgid "Load the hva for animations"
+msgstr "アニメーション用の HVA ファイルを読み込む"
+
+msgid "Load KFA"
+msgstr "KFA を読み込む"
+
+msgid "Load the kfa sidecar for kv6 hinge animations"
+msgstr "kv6 のヒンジアニメーション用 KFA サイドカーファイルを読み込む"
+
+msgid "Crop on load"
+msgstr "読み込み時にトリミング"
+
+msgid "Crop volumes to tight bounds on load to save memory"
+msgstr "メモリ節約のため、読み込み時にボリュームを最小境界でトリミングする"
+
+msgid "Dedupe texture atlas"
+msgstr "テクスチャアトラスを重複排除"
+
+msgid "Reuse identical color patches in the greedy texture atlas to pack more faces"
+msgstr "グリーディテクスチャアトラス内で同一の色パッチを再利用してより多くの面をパッキングする"
+
+msgid "Create groups"
+msgstr "グループを作成"
+
+msgctxt "Create groups when saving MagicaVoxel vox files"
+msgid "Create groups for vox file"
+msgstr "vox ファイル用にグループを作成"
+
+msgid "Create layers"
+msgstr "レイヤーを作成"
+
+msgctxt "Create layers when saving MagicaVoxel vox files"
+msgid "Create layers for vox file"
+msgstr "vox ファイル用にレイヤーを作成"
+
+msgid "Animation as nodes"
+msgstr "アニメーションをノードとして読み込む"
+
+msgctxt "Import MagicaVoxel animation frames as dedicated single volume nodes instead of keyframe animations"
+msgid "Import animation frames as nodes"
+msgstr "アニメーションフレームをノードとしてインポート"
+
+msgid "Apply transforms"
+msgstr "トランスフォームを適用"
+
+msgctxt "Bake MagicaVoxel nTRN transforms into voxels on load (default). Disable to keep shared models and node TRS"
+msgid "Bake MagicaVoxel transforms into voxels"
+msgstr "MagicaVoxel のトランスフォームをボクセルにベイク"
+
+msgid "Left handed"
+msgstr "左手座標系"
+
+msgid "Toggle between left and right handed"
+msgstr "左手座標系と右手座標系を切り替える"
+
+msgid "Compressed"
+msgstr "圧縮"
+
+msgctxt "Save qubicle voxel files with RLE compression enabled"
+msgid "Save RLE compressed"
+msgstr "RLE 圧縮で保存"
+
+msgid "Create palette"
+msgstr "パレットを作成"
+
+msgid "Create own palette from textures or colors or remap the existing palette colors to a new palette"
+msgstr "テクスチャやカラーから独自のパレットを作成するか、既存のパレットカラーを新しいパレットへ再マッピングする"
+
+msgid "Save as point cloud"
+msgstr "点群として保存"
+
+msgid "Export visible voxels as point samples for mesh formats that support point cloud saving"
+msgstr "点群保存に対応したメッシュ形式向けに、表示中のボクセルを点サンプルとしてエクスポートする"
+
+msgid "Point cloud size"
+msgstr "点群サイズ"
+
+msgid "Specify the side length for the voxels when loading a point cloud"
+msgstr "点群を読み込む際のボクセルの一辺の長さを指定します"
+
+msgid "KHR_materials_pbrSpecularGlossiness"
+msgstr "KHR_materials_pbrSpecularGlossiness"
+
+msgid "Apply KHR_materials_pbrSpecularGlossiness when saving into the glTF format (prefer KHR_materials_specular)"
+msgstr "glTF形式で保存する際にKHR_materials_pbrSpecularGlossinessを適用します（KHR_materials_specularを優先）"
+
+msgid "KHR_materials_specular"
+msgstr "KHR_materials_specular"
+
+msgid "Apply KHR_materials_specular when saving into the glTF format"
+msgstr "glTF形式で保存する際にKHR_materials_specularを適用します"
+
+msgid "Create Godot project"
+msgstr "Godotプロジェクトを作成"
+
+msgid "Create project.godot beside the scene and set it as the main scene. Existing projects are preserved."
+msgstr "シーンと同じ場所にproject.godotを作成し、メインシーンとして設定します。既存のプロジェクトは保持されます。"
+
+msgid "Export materials"
+msgstr "マテリアルをエクスポート"
+
+msgid "Try to export material properties if the formats support it"
+msgstr "フォーマットが対応している場合、マテリアルプロパティのエクスポートを試みます"
+
+msgid "Max depth"
+msgstr "最大深度"
+
+msgid "The maximum depth of the volume when importing an image as volume"
+msgstr "画像をボリュームとしてインポートする際の最大深度"
+
+msgid "Min height"
+msgstr "最小高さ"
+
+msgid "The minimum height of the heightmap when importing an image as heightmap"
+msgstr "画像をハイトマップとしてインポートする際の最小高さ"
+
+msgid "Both sides"
+msgstr "両面"
+
+msgid "Import the image as volume for both sides"
+msgstr "画像を両面のボリュームとしてインポートします"
+
+msgid "Texture search path"
+msgstr "テクスチャ検索パス"
+
+msgid "Register an additional search path for texture lookups"
+msgstr "テクスチャ検索用の追加パスを登録します"
+
+msgid "0 = plane, 1 = heightmap, 2 = volume"
+msgstr "0 = 平面、1 = ハイトマップ、2 = ボリューム"
+
+msgid "Image import type"
+msgstr "画像インポート形式"
+
+msgid "Image save type"
+msgstr "画像保存形式"
+
+msgctxt "Image save type"
+msgid "0 = plane, 1 = heightmap, 2 = volume, 3 = thumbnail"
+msgstr "0 = 平面、1 = ハイトマップ、2 = ボリューム、3 = サムネイル"
+
+msgid "Slice offset axis"
+msgstr "スライスオフセット軸"
+
+msgid "The axis to offset the slices when importing images as volumes or heightmaps"
+msgstr "画像をボリュームまたはハイトマップとしてインポートする際、スライスをオフセットする軸"
+
+msgid "Slice offset"
+msgstr "スライスオフセット"
+
+msgid "The offset of the slices when importing images as volumes or heightmaps"
+msgstr "画像をボリュームまたはハイトマップとしてインポートする際のスライスのオフセット"
+
+msgid "Schematic type"
+msgstr "Schematic形式"
+
+msgid "The type of schematic format to use when saving schematics"
+msgstr "Schematicを保存する際に使用するSchematicフォーマットの種類"
+
+msgid "Binvox version"
+msgstr "Binvoxバージョン"
+
+msgctxt "Binvox format version"
+msgid "Save in version 1, 2 or the unofficial version 3"
+msgstr "バージョン1、2、または非公式のバージョン3で保存します"
+
+msgid "Apply transforms to Minecraft skins"
+msgstr "Minecraftスキンに変換を適用"
+
+msgid "Add groups"
+msgstr "グループを追加"
+
+msgid "Add groups for body parts of Minecraft skins"
+msgstr "Minecraftスキンの体のパーツごとにグループを追加します"
+
+msgid "Merge faces"
+msgstr "面を結合"
+
+msgid "Merge face parts into single volume for Minecraft skins"
+msgstr "Minecraftスキンの顔のパーツを1つのボリュームに結合します"
+
+msgid "Separate water"
+msgstr "水を分離"
+
+msgid "Put Minecraft water voxels into a dedicated transparent volume as a child of each region"
+msgstr "Minecraftの水ボクセルを、各リージョンの子となる専用の透明ボリュームに配置します"
+
+msgid "Merge MC regions"
+msgstr "MCリージョンを結合"
+
+msgid "Merge each Minecraft region file into one volume on level.dat / mcworld load. Disable to keep per-chunk volumes (faster and less memory for large maps and thumbnails)"
+msgstr "level.dat / mcworldの読み込み時に、各Minecraftリージョンファイルを1つのボリュームに結合します。無効にするとチャンクごとのボリュームを維持します（大きなマップやサムネイルでより高速かつ省メモリになります）"
+
+msgid "MC load radius"
+msgstr "MC読み込み半径"
+
+msgid "Minecraft region files to load around spawn for level.dat / mcworld. -1 = all regions, 0 = spawn region only, N = Chebyshev distance in region units (512 blocks)"
+msgstr "level.dat / mcworldでスポーン地点周辺から読み込むMinecraftリージョンファイルの範囲。-1 = 全リージョン、0 = スポーンリージョンのみ、N = リージョン単位（512ブロック）のチェビシェフ距離"
+
+msgid "MC load region"
+msgstr "MC読み込み領域"
+
+msgid "Optional block AABB filter for Minecraft level.dat / mcworld import. Format: 'minX minY minZ maxX maxY maxZ'. Only region files intersecting this box are loaded. Combined with voxformat_mcloadradius when both are set."
+msgstr "Minecraft level.dat / mcworldインポート用の任意のブロックAABBフィルター。形式: 'minX minY minZ maxX maxY maxZ'。このボックスと交差するリージョンファイルのみ読み込まれます。両方設定されている場合はvoxformat_mcloadradiusと併用されます。"
+
+msgid "Simplify"
+msgstr "簡略化"
+
+msgid "Simplify the mesh when voxelizing a mesh format"
+msgstr "メッシュ形式をボクセル化する際にメッシュを簡略化します"
+
+msgid "Mesh simplify ratio"
+msgstr "メッシュ簡略化率"
+
+msgid "Target fraction of triangle indices to keep when simplifying meshes on import or export (0 or 1 = disable)"
+msgstr "インポートまたはエクスポート時にメッシュを簡略化する際、保持する三角形インデックスの目標割合（0または1 = 無効）"
+
+msgid "Region filter"
+msgstr "領域フィルター"
+
+msgid "World coordinate region filter for GML/CityGML import. Format: 'minX minY minZ maxX maxY maxZ' in GML world coordinates. Only applied when the estimated voxel region exceeds the size threshold. Objects fully inside this region are imported, others are skipped."
+msgstr "GML/CityGMLインポート用のワールド座標領域フィルター。形式: GMLワールド座標で 'minX minY minZ maxX maxY maxZ'。推定ボクセル領域がサイズしきい値を超えた場合のみ適用されます。この領域内に完全に収まるオブジェクトのみインポートされ、その他はスキップされます。"
+
+msgid "Filename filter"
+msgstr "ファイル名フィルター"
+
+msgid "Filename filter for GML/CityGML import. Only import files that contain this string in their filename. Wildcards are supported."
+msgstr "GML/CityGMLインポート用のファイル名フィルター。ファイル名にこの文字列を含むファイルのみインポートします。ワイルドカードに対応しています。"
+
+msgid "Overpass API URL"
+msgstr "Overpass API URL"
+
+msgid "The URL of the Overpass API endpoint"
+msgstr "Overpass APIエンドポイントのURL"
+
+msgid "Meters per voxel"
+msgstr "ボクセルあたりのメートル数"
+
+msgid "The number of real-world meters each voxel represents in OSM imports"
+msgstr "OSMインポートにおいて1ボクセルが表す現実世界のメートル数"
+
+msgid "LDraw library path"
+msgstr "LDrawライブラリパス"
+
+msgid "Path to the LDraw parts library directory for resolving part references"
+msgstr "パーツ参照を解決するためのLDrawパーツライブラリディレクトリへのパス"
+
+msgid "2D depth factor"
+msgstr "2D深度係数"
+
+msgid "Darken farther voxels when rendering a volume to a 2D image"
+msgstr "ボリュームを2D画像にレンダリングする際、遠くのボクセルを暗くします"
+
+msgid "Background"
+msgstr "背景"
+
+msgid "Background color for volume image renders (RGBA)"
+msgstr "ボリューム画像レンダリングの背景色（RGBA）"
+
+msgid "Image width"
+msgstr "画像の幅"
+
+msgid "Output width in pixels. -1 keeps the native size"
+msgstr "出力の幅（ピクセル単位）。-1で元のサイズを維持します"
+
+msgid "Image height"
+msgstr "画像の高さ"
+
+msgid "Output height in pixels. -1 keeps the native size"
+msgstr "出力の高さ（ピクセル単位）。-1で元のサイズを維持します"
+
+msgid "Upscale"
+msgstr "アップスケール"
+
+msgid "Allow enlarging the image when width or height exceed the native size"
+msgstr "幅または高さが元のサイズを超える場合に画像の拡大を許可します"
+
+msgid "Isometric"
+msgstr "アイソメトリック"
+
+msgid "Use isometric projection when rendering a volume to an image"
+msgstr "ボリュームを画像にレンダリングする際にアイソメトリック投影を使用します"
+
+msgid "Iso shading"
+msgstr "アイソメトリックシェーディング"
+
+msgid "Apply face shading to isometric renders"
+msgstr "アイソメトリックレンダリングに面シェーディングを適用します"
+
+msgid "Iso normals"
+msgstr "アイソメトリック法線"
+
+msgid "Light isometric voxels from their stored normal palette direction"
+msgstr "保存された法線パレットの方向からアイソメトリックボクセルをライティングします"
+
+msgid "Iso materials"
+msgstr "アイソメトリックマテリアル"
+
+msgid "Apply palette materials (emit, metal, roughness) to isometric renders"
+msgstr "アイソメトリックレンダリングにパレットのマテリアル（発光、金属、粗さ）を適用します"
+
+msgid "Iso transparency"
+msgstr "アイソメトリック透過"
+
+msgid "Blend palette alpha in isometric renders, and let those voxels show what is behind them"
+msgstr "アイソメトリックレンダリングでパレットのアルファ値をブレンドし、ボクセルの背後が透けて見えるようにします"
+
+msgid "Silhouette"
+msgstr "シルエット"
+
+msgid "Ink pixels that touch an empty neighbor in isometric renders"
+msgstr "アイソメトリックレンダリングで空き領域に隣接するピクセルに輪郭線を描画します"
+
+msgid "Iso outline color"
+msgstr "アイソメトリック輪郭線の色"
+
+msgid "Outline color for isometric renders (RGBA)"
+msgstr "アイソメトリックレンダリングの輪郭線の色（RGBA）"
+
+msgid "Binary"
+msgstr "バイナリ"
+
+msgid "Cubes"
+msgstr "キューブ"
+
+msgid "Greedy texture"
+msgstr "グリーディテクスチャ"
+
+msgid "Marching cubes"
+msgstr "マーチングキューブ"
+
+msgid "Binvox 1 (white)"
+msgstr "Binvox 1（白）"
+
+msgid "Binvox 2 (multi colors)"
+msgstr "Binvox 2（マルチカラー）"
+
+msgid "Binvox 3 (unofficial)"
+msgstr "Binvox 3（非公式）"
+
+msgid "Heightmap"
+msgstr "ハイトマップ"
+
+msgid "Plane"
+msgstr "平面"
+
+msgid "Thumbnail"
+msgstr "サムネイル"
+
+msgid "Volume"
+msgstr "ボリューム"
+
+msgid "Fast"
+msgstr "高速"
+
+msgid "High quality"
+msgstr "高品質"
+
+msgid "Draw line forwards"
+msgstr "前方に線を描画"
+
+msgid "Set voxel type"
+msgstr "ボクセルタイプを設定"
+
+msgid "Move backwards (no drawing)"
+msgstr "後方に移動（描画なし）"
+
+msgid "Leaf"
+msgstr "葉"
+
+msgid "Rotate right"
+msgstr "右へ回転"
+
+msgid "Rotate left"
+msgstr "左へ回転"
+
+msgid "Rotate forward"
+msgstr "前方へ回転"
+
+msgid "Rotate back"
+msgstr "後方へ回転"
+
+msgid "Increment width"
+msgstr "幅を増やす"
+
+msgid "Decrement width"
+msgstr "幅を減らす"
+
+msgid "Push"
+msgstr "プッシュ"
+
+msgid "Pop"
+msgstr "ポップ"
+
+msgid "Samples"
+msgstr "サンプル数"
+
+msgid "Per-pixel pathtracer samples"
+msgstr "ピクセルあたりのパストレーサーサンプル数"
+
+msgid "Bounces"
+msgstr "バウンス数"
+
+msgid "Maximum light bounces for the pathtracer"
+msgstr "パストレーサーの最大光バウンス回数"
+
+msgid "Pathtracer samples computed per frame"
+msgstr "フレームごとに計算されるパストレーサーサンプル数"
+
+msgid "Samples per pass"
+msgstr "パスあたりのサンプル数"
+
+msgid "Resolution"
+msgstr "解像度"
+
+msgid "Square pathtracer output size in pixels"
+msgstr "パストレーサーの正方形出力サイズ（ピクセル単位）"
+
+msgid "Exposure"
+msgstr "露出"
+
+msgid "Pathtracer exposure compensation in stops"
+msgstr "パストレーサーの露出補正（ストップ単位）"
+
+msgid "Pathtracer tone mapping operator"
+msgstr "パストレーサーのトーンマッピング演算子"
+
+msgid "Contrast"
+msgstr "コントラスト"
+
+msgid "Pathtracer contrast"
+msgstr "パストレーサーのコントラスト"
+
+msgid "Saturation"
+msgstr "彩度"
+
+msgid "Pathtracer saturation"
+msgstr "パストレーサーの彩度"
+
+msgid "Vignette"
+msgstr "ビネット"
+
+msgid "Pathtracer vignette strength"
+msgstr "パストレーサーのビネット強度"
+
+msgid "Aperture"
+msgstr "絞り"
+
+msgid "Pathtracer lens aperture for depth of field"
+msgstr "被写界深度用のパストレーサーレンズ絞り"
+
+msgid "Focus distance"
+msgstr "焦点距離"
+
+msgid "Pathtracer focus distance for depth of field"
+msgstr "被写界深度用のパストレーサー焦点距離"
+
+msgid "Pathtracer sun elevation angle in degrees"
+msgstr "パストレーサーの太陽高度角（度単位）"
+
+msgid "Sun elevation"
+msgstr "太陽高度"
+
+msgid "Sun azimuth"
+msgstr "太陽方位角"
+
+msgid "Pathtracer sun azimuth angle in degrees"
+msgstr "パストレーサーの太陽方位角（度単位）"
+
+msgid "Pathtracer sun intensity"
+msgstr "パストレーサーの太陽光の強さ"
+
+msgid "Sun intensity"
+msgstr "太陽光の強さ"
+
+msgid "Pathtracer sun disk size in degrees"
+msgstr "パストレーサーの太陽ディスクサイズ（度単位）"
+
+msgid "Sun softness"
+msgstr "太陽の柔らかさ"
+
+msgid "Sun color"
+msgstr "太陽光の色"
+
+msgid "Pathtracer sun color (RGB)"
+msgstr "パストレーサーの太陽光の色（RGB）"
+
+msgid "Sky top"
+msgstr "空の上部"
+
+msgid "Pathtracer sky top color (RGB)"
+msgstr "パストレーサーの空の上部の色（RGB）"
+
+msgid "Sky horizon"
+msgstr "空の地平線"
+
+msgid "Pathtracer sky horizon color (RGB)"
+msgstr "パストレーサーの空の地平線の色（RGB）"
+
+msgid "Pathtracer sky intensity"
+msgstr "パストレーサーの空の明るさ"
+
+msgid "Sky intensity"
+msgstr "空の明るさ"
+
+msgid "Floor"
+msgstr "床"
+
+msgid "Enable the pathtracer ground plane"
+msgstr "パストレーサーの地面を有効にします"
+
+msgid "Floor color"
+msgstr "床の色"
+
+msgid "Pathtracer ground plane color (RGB)"
+msgstr "パストレーサーの地面の色（RGB）"
+
+msgid "Floor Y"
+msgstr "床のY座標"
+
+msgid "Pathtracer ground plane height"
+msgstr "パストレーサーの地面の高さ"
+
+msgid "Depth of field"
+msgstr "被写界深度"
+
+msgid "Enable pathtracer depth of field"
+msgstr "パストレーサーの被写界深度を有効にします"
+
+msgid "0 = sky, 1 = solid, 2 = transparent"
+msgstr "0 = 空、1 = 単色、2 = 透明"
+
+msgid "Background color"
+msgstr "背景色"
+
+msgid "Pathtracer solid background color (RGB)"
+msgstr "パストレーサーの単色背景の色（RGB）"
+
+msgid "Fog density"
+msgstr "フォグの密度"
+
+msgid "Pathtracer fog density"
+msgstr "パストレーサーのフォグ密度"
+
+msgid "Fog color"
+msgstr "フォグの色"
+
+msgid "Pathtracer fog color (RGB)"
+msgstr "パストレーサーのフォグの色（RGB）"
+
+msgid "Voxel edge"
+msgstr "ボクセルエッジ"
+
+msgid "Fillet exposed voxel corners (0 = hard cube)"
+msgstr "露出したボクセルの角を丸めます（0 = 角張ったキューブ）"
+
+msgid "Pathtracer bloom strength"
+msgstr "パストレーサーのブルーム強度"
+
+msgid "Atmosphere"
+msgstr "大気"
+
+msgid "Pathtracer world haze that brightens toward the sun"
+msgstr "太陽に向かって明るくなるパストレーサーのワールドヘイズ"
+
+msgid "Render scale"
+msgstr "レンダリングスケール"
+
+msgid "Trace at a fraction of the output resolution, then upsample"
+msgstr "出力解像度より低い解像度でトレースしてからアップサンプリングします"
+
+msgid "Movement speed"
+msgstr "移動速度"
+
+msgid "Movement speed in world units per second in game mode"
+msgstr "ゲームモードでの移動速度（ワールド単位/秒）"
+
+msgid "Editor camera movement speed in screen pixels per second"
+msgstr "エディターカメラの移動速度（画面ピクセル/秒）"
+
+msgid "Editor movement speed"
+msgstr "エディター移動速度"
+
+msgid "Jump velocity"
+msgstr "ジャンプ速度"
+
+msgid "Jump velocity in game mode"
+msgstr "ゲームモードでのジャンプ速度"
+
+msgid "Body height"
+msgstr "体の高さ"
+
+msgid "Height of the body in game mode"
+msgstr "ゲームモードでの体の高さ"
+
+msgid "Gravity in game mode"
+msgstr "ゲームモードでの重力"
+
+msgid "Gravity strength"
+msgstr "重力の強さ"
+
+msgid "Friction"
+msgstr "摩擦"
+
+msgid "Friction in game mode"
+msgstr "ゲームモードでの摩擦"
+
+msgid "Body size"
+msgstr "体のサイズ"
+
+msgid "Body size in game mode"
+msgstr "ゲームモードでの体のサイズ"
+
+msgid "Speed multiplier when sprinting"
+msgstr "スプリント時の速度倍率"
+
+msgid "Sprint multiplier"
+msgstr "スプリント倍率"
+
+msgid "Camera clipping"
+msgstr "カメラクリッピング"
+
+msgid "Enable camera clipping"
+msgstr "カメラクリッピングを有効にする"
+
+msgid "Enable gravity"
+msgstr "重力を有効にする"
+
+msgid "Gravity"
+msgstr "重力"
+
+msgid "Bottom"
+msgstr "下"
+
+msgid "Free"
+msgstr "フリー"
+
+msgid "Left"
+msgstr "左"
+
+msgid "Top"
+msgstr "上"
+
+msgid "Back"
+msgstr "背面"
+
+msgid "Front"
+msgstr "正面"
+
+msgid "Right"
+msgstr "右"
+
+msgid "AgX"
+msgstr "AgX"
+
+msgid "AgX Golden"
+msgstr "AgX Golden"
+
+msgid "AgX Punchy"
+msgstr "AgX Punchy"
+
+msgid "ACES"
+msgstr "ACES"
+
+msgid "Hable"
+msgstr "Hable"
+
+msgid "Reinhard"
+msgstr "Reinhard"
+
+msgid "Map colors to palette"
+msgstr "色をパレットにマッピング"
+
+msgid "Layer information"
+msgstr "レイヤー情報"
+
+msgid ""
+"This is saving several images as layers per object.\n"
+"\n"
+"The name of the files will include the uuid of the node\n"
+"and the z layer index."
+msgstr ""
+"オブジェクトごとに複数の画像をレイヤーとして保存します。\n"
+"\n"
+"ファイル名にはノードのUUIDと\n"
+"Zレイヤーインデックスが含まれます。"
+
+msgid "Depth map: %s"
+msgstr "深度マップ: %s"
+
+msgid "Depth map not found: %s"
+msgstr "深度マップが見つかりません: %s"
+
+msgid "LUA scripts for manipulating the voxel volumes"
+msgstr "ボクセルボリュームを操作するためのLuaスクリプト"
+
+msgid "Run"
+msgstr "実行"
+
+msgid "Execute the selected script for the currently loaded voxel volumes"
+msgstr "現在読み込まれているボクセルボリュームに対して選択したスクリプトを実行します"
+
+msgid "Script parameters"
+msgstr "スクリプトパラメーター"
+
+msgid "Preview unavailable"
+msgstr "プレビュー利用不可"
+
+msgid "No model"
+msgstr "モデルなし"
+
+msgid "Drag to orbit, wheel to zoom, double-click to reset"
+msgstr "ドラッグで回転、ホイールでズーム、ダブルクリックでリセット"
+
+msgid "Select a model"
+msgstr "モデルを選択"
+
+msgid "Mesh preview not available"
+msgstr "メッシュプレビューは利用できません"
+
+msgid "No preview"
+msgstr "プレビューなし"
+
+msgid "Failed to load preview"
+msgstr "プレビューの読み込みに失敗しました"
+
+msgid "Script Browser"
+msgstr "スクリプトブラウザ"
+
+msgid "Fetching scripts..."
+msgstr "スクリプトを取得中..."
+
+msgid "Refresh"
+msgstr "更新"
+
+msgid "Filter scripts by name, description or author"
+msgstr "名前・説明・作者でスクリプトを絞り込み"
+
+msgid "No scripts available"
+msgstr "利用可能なスクリプトはありません"
+
+msgid "Author"
+msgstr "作者"
+
+msgid "Version"
+msgstr "バージョン"
+
+msgid "Installed"
+msgstr "インストール済み"
+
+msgid "Uninstall %s"
+msgstr "%s をアンインストール"
+
+msgid "Download %s"
+msgstr "%s をダウンロード"
+
+msgid "Quit"
+msgstr "終了"
+
+msgid "Edit"
+msgstr "編集"
+
+msgid "Color theme"
+msgstr "カラーテーマ"
+
+msgid "Show console"
+msgstr "コンソールを表示"
+
+msgid "Help"
+msgstr "ヘルプ"
+
+msgid "Input"
+msgstr "入力"
+
+msgid "Output"
+msgstr "出力"
+
+msgid "vengi-voxconvert not found in current dir or PATH"
+msgstr "現在のディレクトリまたは PATH に vengi-voxconvert が見つかりません"
+
+msgid "Overwrite existing output file"
+msgstr "既存の出力ファイルを上書き"
+
+msgid "Input options"
+msgstr "入力オプション"
+
+msgid "Output options"
+msgstr "出力オプション"
+
+msgid "Script options"
+msgstr "スクリプトオプション"
+
+msgid "Convert"
+msgstr "変換"
+
+msgid "Found vengi-voxconvert at %s"
+msgstr "%s に vengi-voxconvert が見つかりました"
+
+msgid "Open output file"
+msgstr "出力ファイルを開く"
+
+msgid "Last Directory"
+msgstr "前回のディレクトリ"
+
+msgid "The last directory used for opening/saving files"
+msgstr "ファイルの開閉に使用した最後のディレクトリです"
+
+msgid "Client Mouse Rotation Speed"
+msgstr "クライアントのマウス回転速度"
+
+msgid "The speed of mouse rotation for the client"
+msgstr "クライアントのマウスによる回転速度です"
+
+msgid "Client Camera Zoom Speed"
+msgstr "クライアントのカメラズーム速度"
+
+msgid "The speed of camera zoom for the client"
+msgstr "クライアントのカメラズーム速度です"
+
+msgid "Print mcp.json for MCP clients using the current network settings and quit"
+msgstr "現在のネットワーク設定を使用して MCP クライアント用の mcp.json を出力して終了します"
+
+msgid "Pen pressure controls radius"
+msgstr "筆圧で半径を制御"
+
+msgid "Map pen pressure to brush radius for radius-based brushes"
+msgstr "半径ベースのブラシで、筆圧をブラシ半径にマッピングします"
+
+msgid "Pen minimum radius"
+msgstr "ペンの最小半径"
+
+msgid "Minimum brush radius when pressure mapping is active"
+msgstr "筆圧マッピングが有効なときの最小ブラシ半径です"
+
+msgid "Pen maximum radius"
+msgstr "ペンの最大半径"
+
+msgid "Maximum brush radius when pressure mapping is active"
+msgstr "筆圧マッピングが有効なときの最大ブラシ半径です"
+
+msgid "Pen eraser switches mode"
+msgstr "ペン消しゴムでモード切替"
+
+msgid "Temporarily switch to erase mode while pen eraser is active"
+msgstr "ペンの消しゴムが有効な間、一時的に消去モードに切り替えます"
+
+msgid "Emulate pen"
+msgstr "ペンをエミュレート"
+
+msgid "Treat the primary pointer as a pen and map speed to pressure"
+msgstr "メインポインターをペンとして扱い、移動速度を筆圧にマッピングします"
+
+msgid "Save the current viewport as screenshot"
+msgstr "現在のビューポートをスクリーンショットとして保存します"
+
+msgid "Toggle scene mode on/off"
+msgstr "シーンモードのオン/オフを切り替えます"
+
+msgid "Toggle locked mouse look (FPS-style camera rotation)"
+msgstr "ロックされたマウスルック（FPS 風のカメラ回転）を切り替えます"
+
+msgid "Save the current scene to the given file"
+msgstr "現在のシーンを指定したファイルに保存します"
+
+msgid "Save the selection from the current active model node"
+msgstr "現在アクティブなモデルノードの選択範囲を保存します"
+
+msgid "Load a scene from the given volume file"
+msgstr "指定したボリュームファイルからシーンを開きます"
+
+msgid "Add a volume to the existing scene from the given file"
+msgstr "指定したファイルから既存のシーンにボリュームを追加します"
+
+msgid "Import all files from a given directory"
+msgstr "指定したディレクトリからすべてのファイルをインポートします"
+
+msgid "Import an image as a palette"
+msgstr "画像をパレットとしてインポートします"
+
+msgid "Start recording the editing session"
+msgstr "編集セッションの記録を開始します"
+
+msgid "Stop recording the editing session"
+msgstr "編集セッションの記録を停止します"
+
+msgid "Play back a recorded editing session"
+msgstr "記録された編集セッションを再生します"
+
+msgid "Stop playback of a recorded editing session"
+msgstr "記録された編集セッションの再生を停止します"
+
+msgid "Pause playback of a recorded editing session"
+msgstr "記録された編集セッションの再生を一時停止します"
+
+msgid "Resume playback of a recorded editing session"
+msgstr "記録された編集セッションの再生を再開します"
+
+msgid "Create a new scene with ui interaction"
+msgstr "UI 操作で新しいシーンを作成します"
+
+msgid "Set camera zoom for repeatable framing, respecting configured zoom limits"
+msgstr "設定されたズーム制限の範囲内で、再現可能なフレーミングのためにカメラズームを設定します"
+
+msgid "Reset cameras in viewports"
+msgstr "ビューポート内のカメラをリセットします"
+
+msgid "Set the scene camera mode"
+msgstr "シーンカメラモードを設定します"
+
+msgid "Install a lua script from a file path, file:// URI or http(s):// URL"
+msgstr "ファイルパス、file:// URI、または http(s):// URL から Lua スクリプトをインストールします"
+
+msgid "Uninstall a previously installed lua script by filename"
+msgstr "以前インストールした Lua スクリプトをファイル名でアンインストールします"
+
+msgid "The last directory used in the UI"
+msgstr "UI で使用した最後のディレクトリです"
+
+msgid "Create animation"
+msgstr "アニメーションを作成"
+
+msgid "Copy from existing animation"
+msgstr "既存のアニメーションからコピー"
+
+msgid "Animation"
+msgstr "アニメーション"
+
+msgid "Animation already exists"
+msgstr "アニメーションは既に存在します"
+
+msgid "Add new animation"
+msgstr "新しいアニメーションを追加"
+
+msgid "Delete"
+msgstr "削除"
+
+msgid "Add"
+msgstr "追加"
+
+msgid "Add a new keyframe to the current active node"
+msgstr "現在のアクティブなノードに新しいキーフレームを追加します"
+
+msgid "Add all"
+msgstr "すべて追加"
+
+msgid "Add a new keyframe to all nodes"
+msgstr "すべてのノードに新しいキーフレームを追加します"
+
+msgid "Delete the current keyframe of the active nodes"
+msgstr "アクティブなノードの現在のキーフレームを削除します"
+
+msgid "Frame all (Home)"
+msgstr "全体を表示 (Home)"
+
+msgid "Center playhead"
+msgstr "再生ヘッドを中央に表示"
+
+msgid "Max frames for this animation: %i"
+msgstr "このアニメーションの最大フレーム数: %i"
+
+msgid "Loop"
+msgstr "ループ"
+
+msgid "Keyframe %i, Interpolation: %s"
+msgstr "キーフレーム %i、補間: %s"
+
+msgid "Paste"
+msgstr "貼り付け"
+
+msgid "Duplicate keyframe"
+msgstr "キーフレームを複製"
+
+msgid "Delete keyframes"
+msgstr "キーフレームを削除"
+
+msgid "Delete %i keyframes"
+msgstr "%i 個のキーフレームを削除"
+
+msgid "Click on a voxel to pick the color"
+msgstr "ボクセルをクリックして色を取得します"
+
+msgid "Brushes"
+msgstr "ブラシ"
+
+msgid "Brushes are only available in edit mode - you are currently in scene mode"
+msgstr "ブラシは編集モードでのみ使用できます（現在はシーンモードです）"
+
+msgid "Brush settings"
+msgstr "ブラシ設定"
+
+msgctxt "Sculpt reskin apply mode"
+msgid "Replace"
+msgstr "置換"
+
+msgctxt "Sculpt reskin apply mode"
+msgid "Blend"
+msgstr "ブレンド"
+
+msgctxt "Sculpt reskin apply mode"
+msgid "Negate"
+msgstr "反転"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "None"
+msgstr "なし"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "Median"
+msgstr "中央値"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "Voxel"
+msgstr "ボクセル"
+
+msgctxt "Sculpt reskin surface follow"
+msgid "Corner Average"
+msgstr "コーナー平均"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Min/Max"
+msgstr "最小/最大"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Min/Min"
+msgstr "最小/最小"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Max/Max"
+msgstr "最大/最大"
+
+msgctxt "Sculpt reskin UV anchor"
+msgid "Max/Min"
+msgstr "最大/最小"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "0"
+msgstr "0"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "90"
+msgstr "90"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "180"
+msgstr "180"
+
+msgctxt "Sculpt reskin rotation degrees"
+msgid "270"
+msgstr "270"
+
+msgctxt "Sculpt reskin tiling"
+msgid "Once"
+msgstr "1回"
+
+msgctxt "Sculpt reskin tiling"
+msgid "Repeat"
+msgstr "繰り返し"
+
+msgctxt "Sculpt reskin tiling"
+msgid "Stretch"
+msgstr "引き伸ばし"
+
+msgctxt "Sculpt reskin skin axis"
+msgid "X"
+msgstr "X"
+
+msgctxt "Sculpt reskin skin axis"
+msgid "Y"
+msgstr "Y"
+
+msgctxt "Sculpt reskin skin axis"
+msgid "Z"
+msgstr "Z"
+
+msgctxt "Voxel scale sampling"
+msgid "Linear"
+msgstr "リニア"
+
+msgctxt "Voxel scale sampling"
+msgid "Nearest"
+msgstr "ニアレスト"
+
+msgctxt "Voxel scale sampling"
+msgid "Cubic"
+msgstr "キュービック"
+
+msgctxt "Sculpt smooth wall interpolation"
+msgid "Linear"
+msgstr "リニア"
+
+msgctxt "Sculpt smooth wall interpolation"
+msgid "Inverse Distance"
+msgstr "逆距離"
+
+msgctxt "Sculpt smooth wall interpolation"
+msgid "Edge Aware"
+msgstr "エッジ認識"
+
+msgid "Add new camera"
+msgstr "新しいカメラを追加"
+
+msgid "Camera rotation"
+msgstr "カメラ回転"
+
+msgid "Eye"
+msgstr "視点"
+
+msgid "Camera movement"
+msgstr "カメラ移動"
+
+msgid "Orthogonal"
+msgstr "平行投影"
+
+msgid "Perspective"
+msgstr "透視投影"
+
+msgid "Camera"
+msgstr "カメラ"
+
+msgid "Position"
+msgstr "位置"
+
+msgid "Farplane"
+msgstr "ファープレーン"
+
+msgid "Nearplane"
+msgstr "ニアプレーン"
+
+msgid "Target distance"
+msgstr "ターゲット距離"
+
+msgid "FOV"
+msgstr "視野角 (FOV)"
+
+msgid "Field of view in degrees"
+msgstr "視野角（度）"
+
+msgid "Aspect ratio"
+msgstr "アスペクト比"
+
+msgid "Game mode"
+msgstr "ゲームモード"
+
+msgid "Activating the game mode will enable clipping and switch the eye mode camera that is controlled by <cmd:+move_forward>, <cmd:+move_left>, <cmd:+move_backward>, <cmd:+move_right>, <cmd:+jump> for jumping and <cmd:+sprint> for sprinting"
+msgstr "ゲームモードを有効にするとクリッピングがオンになり、カメラが視点モードに切り替わります。<cmd:+move_forward>、<cmd:+move_left>、<cmd:+move_backward>、<cmd:+move_right> で移動、<cmd:+jump> でジャンプ、<cmd:+sprint> でスプリントの操作ができます"
+
+msgid "Enable"
+msgstr "有効化"
+
+msgctxt "Game mode preset"
+msgid "Minecraft"
+msgstr "Minecraft"
+
+msgctxt "Game mode preset"
+msgid "Ace Of Spades"
+msgstr "Ace Of Spades"
+
+msgctxt "Game mode preset"
+msgid "Teardown"
+msgstr "Teardown"
+
+msgid "Forward"
+msgstr "進む"
+
+msgid "Home"
+msgstr "ホーム"
+
+msgid "Images"
+msgstr "画像"
+
+msgid "L-System"
+msgstr "L-System"
+
+msgid "Axiom"
+msgstr "公理"
+
+msgid "The initial state of the L-System"
+msgstr "L-System の初期状態です"
+
+msgid "Rules"
+msgstr "ルール"
+
+msgid "The production rules for the L-System"
+msgstr "L-System の生成ルールです"
+
+msgid "Predecessor"
+msgstr "置換前"
+
+msgid "Successor"
+msgstr "置換後"
+
+msgid "Action"
+msgstr "操作"
+
+msgid "Add Rule"
+msgstr "ルールを追加"
+
+msgid "Angle"
+msgstr "角度"
+
+msgid "The angle in degrees"
+msgstr "角度（度）"
+
+msgid "Length"
+msgstr "長さ"
+
+msgid "The length of the segments"
+msgstr "セグメントの長さです"
+
+msgid "Length scale"
+msgstr "長さのスケール"
+
+msgid "Multiply segment length after drawing; 1 keeps the length constant"
+msgstr "描画後にセグメントの長さに乗算します。1 で長さを一定に保ちます"
+
+msgid "Minimum length"
+msgstr "最小の長さ"
+
+msgid "Angle variation"
+msgstr "角度のばらつき"
+
+msgid "Random angle variation in degrees; 0 disables variation"
+msgstr "ランダムな角度のばらつき（度）です。0 で無効になります"
+
+msgid "Seed"
+msgstr "シード値"
+
+msgid "Branch color"
+msgstr "枝の色"
+
+msgid "Wood color from the current palette selection. Change it in the palette panel."
+msgstr "現在のパレット選択から取得される木の色です。パレットパネルで変更できます。"
+
+msgid "Leaf color"
+msgstr "葉の色"
+
+msgid "Defaults to the closest green in the node palette. -1 uses the current voxel. Drag a palette color here."
+msgstr "デフォルトではノードパレット内の最も近い緑色になります。-1 で現在のボクセルを使用します。パレットの色をここにドラッグしてください。"
+
+msgid "Width"
+msgstr "幅"
+
+msgid "The initial width of the segments"
+msgstr "セグメントの初期幅です"
+
+msgid "Width increment"
+msgstr "幅の増分"
+
+msgid "The amount to increment/decrement the width"
+msgstr "幅を増減する量です"
+
+msgid "Iterations"
+msgstr "反復回数"
+
+msgid "The number of iterations to run"
+msgstr "実行する反復回数です"
+
+msgid "Leaves radius"
+msgstr "葉の半径"
+
+msgid "The radius of the leaves"
+msgstr "葉の半径です"
+
+msgid "Templates"
+msgstr "テンプレート"
+
+msgid "Select a template"
+msgstr "テンプレートを選択"
+
+msgid "Adopt Dimensions"
+msgstr "寸法を合わせる"
+
+msgid "Scale the L-System so the generated shape fits the current volume"
+msgstr "生成される形状が現在のボリュームに収まるように L-System をスケーリングします"
+
+msgid "Progress: %.1f%%"
+msgstr "進捗: %.1f%%"
+
+msgid "Tip of the day"
+msgstr "今日のヒント"
+
+msgid "Next"
+msgstr "次へ"
+
+msgid "Minecraft mapping"
+msgstr "Minecraft マッピング"
+
+msgid ""
+"The voxel editor uses a different mapping than Minecraft.\n"
+"\n"
+"Here you can see which block type is mapped to which color"
+msgstr ""
+"ボクセルエディターでは Minecraft とは異なるマッピングを使用しています。\n"
+"\n"
+"ここではどのブロックタイプがどの色にマッピングされているかを確認できます"
+
+msgid "Color"
+msgstr "色"
+
+msgid "Welcome"
+msgstr "ようこそ"
+
+msgid "Welcome to VoxEdit!"
+msgstr "VoxEdit へようこそ！"
+
+msgid "The mission: Create a free, open-source and multi-platform voxel editor with animation support for artists and developers."
+msgstr "ミッション：アーティストや開発者向けに、アニメーション対応の無料・オープンソース・マルチプラットフォームなボクセルエディターを作ること。"
+
+msgid "We would like to enable anonymous usage metrics to improve the editor. Please consider enabling it."
+msgstr "エディターの改善のため、匿名での利用状況データの送信を有効にすることをご検討ください。"
+
+msgid "Download scripts..."
+msgstr "スクリプトをダウンロード..."
+
+msgid "VoxBox Browser..."
+msgstr "VoxBox ブラウザ..."
+
+msgid "Unreference Model"
+msgstr "モデルの参照を解除"
+
+msgid ""
+"You can't edit a model reference.\n"
+"\n"
+"Do you want to convert the reference into a model?"
+msgstr ""
+"モデル参照は編集できません。\n"
+"\n"
+"参照をモデルに変換しますか？"
+
+msgid "New Scene"
+msgstr "新規シーン"
+
+msgid "Empty scene"
+msgstr "空のシーン"
+
+msgid "Height"
+msgstr "高さ"
+
+msgid "Depth"
+msgstr "奥行き"
+
+msgid "Failed to save"
+msgstr "保存に失敗しました"
+
+msgid "Failed to save the model!"
+msgstr "モデルの保存に失敗しました！"
+
+msgid "Unsaved Changes"
+msgstr "未保存の変更"
+
+msgid "Unsaved changes - are you sure to quit?"
+msgstr "未保存の変更があります。本当に終了しますか？"
+
+msgid "Unsaved Modifications"
+msgstr "未保存の変更"
+
+msgid ""
+"There are unsaved modifications.\n"
+"Do you wish to discard them?"
+msgstr ""
+"未保存の変更があります。\n"
+"破棄してもよろしいですか？"
+
+msgid "Volume split"
+msgstr "ボリューム分割"
+
+msgid ""
+"Some model volumes are too big for optimal performance.\n"
+"It's encouraged to split them into smaller volumes.\n"
+"Do you wish to split them now?"
+msgstr ""
+"最適なパフォーマンスを維持するには大きすぎるモデルボリュームがあります。\n"
+"より小さなボリュームに分割することをおすすめします。\n"
+"今すぐ分割しますか？"
+
+msgid "Model settings"
+msgstr "モデル設定"
+
+msgid "Resize node"
+msgstr "ノードのサイズ変更"
+
+msgid "Lower bound"
+msgstr "下限"
+
+msgid "Upper bound"
+msgstr "上限"
+
+msgid "Size: %ix%ix%i"
+msgstr "サイズ: %ix%ix%i"
+
+msgid "Rescale content"
+msgstr "内容をリスケール"
+
+msgid "Original: %i x %i x %i"
+msgstr "元のサイズ: %i x %i x %i"
+
+msgid "Maintain aspect ratio"
+msgstr "アスペクト比を維持"
+
+msgid "Target size"
+msgstr "目標サイズ"
+
+msgid "Scale (%)"
+msgstr "スケール (%)"
+
+msgid "Result: %i x %i x %i"
+msgstr "結果: %i x %i x %i"
+
+msgid "Rename node"
+msgstr "ノードの名前を変更"
+
+msgid "Node names should be unique"
+msgstr "ノード名は一意である必要があります"
+
+msgid "Formats"
+msgstr "フォーマット"
+
+msgid "Voxel load"
+msgstr "ボクセル読み込み"
+
+msgid "Extension"
+msgstr "拡張子"
+
+msgid "Voxel save"
+msgstr "ボクセル保存"
+
+msgid "Palettes"
+msgstr "パレット"
+
+msgid "History"
+msgstr "履歴"
+
+msgid "Current state: %i / %i"
+msgstr "現在の状態: %i / %i"
+
+msgid "Lit"
+msgstr "ライティングあり"
+
+msgid "Shadows"
+msgstr "シャドウ"
+
+msgid "Unlit"
+msgstr "ライティングなし"
+
+msgid "Shading"
+msgstr "シェーディング"
+
+msgid "New"
+msgstr "新規作成"
+
+msgid "Load"
+msgstr "開く"
+
+msgid "Save as"
+msgstr "名前を付けて保存"
+
+msgid "Save selection"
+msgstr "選択を保存"
+
+msgid "Add file to scene"
+msgstr "ファイルをシーンに追加"
+
+msgid "Add directory to scene"
+msgstr "ディレクトリをシーンに追加"
+
+msgid "Record"
+msgstr "記録"
+
+msgid "Start recording"
+msgstr "記録を開始"
+
+msgid "Stop recording"
+msgstr "記録を停止"
+
+msgid "Playback"
+msgstr "再生"
+
+msgid "Stop playback"
+msgstr "再生を停止"
+
+msgid "Resume"
+msgstr "再開"
+
+msgid "Speed (s)"
+msgstr "速度 (秒)"
+
+msgid "Undo"
+msgstr "元に戻す"
+
+msgid "Redo"
+msgstr "やり直し"
+
+msgid "Cut"
+msgstr "切り取り"
+
+msgid "Paste at reference"
+msgstr "参照位置に貼り付け"
+
+msgid "Paste at cursor"
+msgstr "カーソル位置に貼り付け"
+
+msgid "Paste as new node"
+msgstr "新しいノードとして貼り付け"
+
+msgid "New model from selection"
+msgstr "選択から新しいモデルを作成"
+
+msgid "Paste as stamp"
+msgstr "スタンプとして貼り付け"
+
+msgid "Global copy selected"
+msgstr "選択範囲をグローバルコピー"
+
+msgid "Global copy visible"
+msgstr "表示部分をグローバルコピー"
+
+msgid "Global paste to ref"
+msgstr "参照へグローバル貼り付け"
+
+msgid "Global paste as node"
+msgstr "ノードとしてグローバル貼り付け"
+
+msgid "Select"
+msgstr "選択"
+
+msgid "Invert"
+msgstr "反転"
+
+msgid "All"
+msgstr "すべて"
+
+msgid "Paint selection"
+msgstr "選択範囲をペイント"
+
+msgid "Select voxels by color"
+msgstr "色でボクセルを選択"
+
+msgid "Deselect by color"
+msgstr "色で選択解除"
+
+msgid "Keep only color in selection"
+msgstr "選択内の指定色のみ残す"
+
+msgid "Delete voxels by color"
+msgstr "指定色のボクセルを削除"
+
+msgid "Select Only Edges"
+msgstr "エッジのみ選択"
+
+msgid "Select Only Wall Edges"
+msgstr "壁のエッジのみ選択"
+
+msgid "Select Only Corners"
+msgstr "角のみ選択"
+
+msgid "Grow Selection"
+msgstr "選択範囲を拡大"
+
+msgid "View"
+msgstr "表示"
+
+msgid "Reset layout"
+msgstr "レイアウトをリセット"
+
+msgid "Extensions"
+msgstr "拡張機能"
+
+msgid "Install script..."
+msgstr "スクリプトをインストール..."
+
+msgid "Scene insights"
+msgstr "シーン分析"
+
+msgid "UI"
+msgstr "UI"
+
+msgid "Show FPS stats"
+msgstr "FPS統計を表示"
+
+msgid "Welcome screen"
+msgstr "ウェルカム画面"
+
+msgid "License"
+msgstr "ライセンス"
+
+msgid "Format"
+msgstr "フォーマット"
+
+msgid "Use stamp"
+msgstr "スタンプを使用"
+
+msgid "This is only possible if the model doesn't exceed the max allowed stamp size"
+msgstr "モデルがスタンプの最大許容サイズを超えていない場合にのみ使用できます"
+
+msgid "Add to scene"
+msgstr "シーンに追加"
+
+msgid "Hide thumbnails"
+msgstr "サムネイルを非表示"
+
+msgid "Show thumbnails"
+msgstr "サムネイルを表示"
+
+msgid "Open target file"
+msgstr "対象ファイルを開く"
+
+msgid "Open target dir"
+msgstr "対象ディレクトリを開く"
+
+msgid "Create thumbnail"
+msgstr "サムネイルを作成"
+
+msgid "Double click to create thumbnail"
+msgstr "ダブルクリックしてサムネイルを作成"
+
+msgid "No match for filter found"
+msgstr "フィルターに一致する項目が見つかりません"
+
+msgid "Models"
+msgstr "モデル"
+
+msgid "Reload collections"
+msgstr "コレクションを再読み込み"
+
+msgid "Re-download the collection source list and clear loaded online collections"
+msgstr "コレクションソース一覧を再ダウンロードし、読み込み済みのオンラインコレクションをクリアします"
+
+msgid "Reload"
+msgstr "再読み込み"
+
+msgid "Re-download the cached collection listing"
+msgstr "キャッシュされたコレクション一覧を再ダウンロードします"
+
+msgid "Loading..."
+msgstr "読み込み中..."
+
+msgid "Loading from cache..."
+msgstr "キャッシュから読み込み中..."
+
+msgid "Double click to load"
+msgstr "ダブルクリックして読み込む"
+
+msgid "Chat"
+msgstr "チャット"
+
+msgid "Send"
+msgstr "送信"
+
+msgid "Network"
+msgstr "ネットワーク"
+
+msgid "Client"
+msgstr "クライアント"
+
+msgid "Connect to server"
+msgstr "サーバーに接続"
+
+msgid "Connected to server"
+msgstr "サーバーに接続済み"
+
+msgid "Disconnect"
+msgstr "切断"
+
+msgid "Server"
+msgstr "サーバー"
+
+msgid "Server is running on port %i"
+msgstr "サーバーはポート %i で実行中です"
+
+msgid "Stop server"
+msgstr "サーバーを停止"
+
+msgid "Sent"
+msgstr "送信済み"
+
+msgid "Received"
+msgstr "受信済み"
+
+msgid "Actions"
+msgstr "アクション"
+
+msgid "Kick"
+msgstr "キック"
+
+msgid "Interface"
+msgstr "インターフェース"
+
+msgid "Start Server"
+msgstr "サーバーを開始"
+
+msgid "Region"
+msgstr "領域"
+
+msgid "Opacity"
+msgstr "不透明度"
+
+msgid "Fade the whole node without changing voxels"
+msgstr "ボクセルを変更せずにノード全体をフェードさせます"
+
+msgid "Color Histogram"
+msgstr "カラーヒストグラム"
+
+msgid "Analyze"
+msgstr "解析"
+
+msgid "%i colors used"
+msgstr "%i 色を使用"
+
+msgid "Voxels"
+msgstr "ボクセル"
+
+msgid "Index"
+msgstr "インデックス"
+
+msgid "Count"
+msgstr "カウント"
+
+msgid "Press Analyze to compute"
+msgstr "「解析」を押して計算します"
+
+msgid "Tools"
+msgstr "ツール"
+
+msgid "To transform"
+msgstr "トランスフォームへ変換"
+
+msgid "Convert the region offset into the keyframe transforms"
+msgstr "領域オフセットをキーフレームのトランスフォームに変換します"
+
+msgid "Region sizes"
+msgstr "領域サイズ"
+
+msgid "Reset region sizes"
+msgstr "領域サイズをリセット"
+
+msgid "Interpolation"
+msgstr "補間"
+
+msgid "Long rotation"
+msgstr "長い回転経路"
+
+msgid "Take the longer rotation path to the next keyframe. For a full turn, add an intermediate keyframe."
+msgstr "次のキーフレームへの長い回転経路を使用します。1回転させる場合は、中間にキーフレームを追加してください。"
+
+msgid "Interpolation details"
+msgstr "補間の詳細"
+
+msgid "Reset transforms"
+msgstr "トランスフォームをリセット"
+
+msgid "Mirror X"
+msgstr "ミラー X"
+
+msgid "Mirror Y"
+msgstr "ミラー Y"
+
+msgid "Mirror XZ"
+msgstr "ミラー XZ"
+
+msgid "XZ"
+msgstr "XZ"
+
+msgid "Mirror XYZ"
+msgstr "ミラー XYZ"
+
+msgid "XYZ"
+msgstr "XYZ"
+
+msgid "Update all locked nodes with this value"
+msgstr "ロックされたすべてのノードをこの値で更新します"
+
+msgid "Translation"
+msgstr "平行移動"
+
+msgid "Rotation"
+msgstr "回転"
+
+msgid "Scale"
+msgstr "スケール"
+
+msgid "Center pivot"
+msgstr "ピボットを中央へ"
+
+msgid "Pivot"
+msgstr "ピボット"
+
+msgid "IK Constraints"
+msgstr "IK 制約"
+
+msgid "Enable IK"
+msgstr "IK を有効にする"
+
+msgid "Anchor"
+msgstr "アンカー"
+
+msgid "Mark this node as a fixed point in the IK chain"
+msgstr "このノードを IK チェーン内の固定点としてマークします"
+
+msgid "Visible"
+msgstr "表示"
+
+msgid "Effector"
+msgstr "エフェクタ"
+
+msgid "The target node the IK chain tries to reach"
+msgstr "IK チェーンが到達しようとするターゲットノード"
+
+msgid "Roll min"
+msgstr "ロール最小"
+
+msgid "Roll max"
+msgstr "ロール最大"
+
+msgid "Swing Limits"
+msgstr "スイング制限"
+
+msgid "Yaw"
+msgstr "ヨー"
+
+msgid "Pitch"
+msgstr "ピッチ"
+
+msgid "Radius"
+msgstr "半径"
+
+msgid "Add swing limit"
+msgstr "スイング制限を追加"
+
+msgid "UUID: %s"
+msgstr "UUID: %s"
+
+msgid "Delete this node property"
+msgstr "このノードプロパティを削除"
+
+msgid "Add a new node property"
+msgstr "新しいノードプロパティを追加"
+
+msgid "Node Inspector"
+msgstr "ノードインスペクター"
+
+msgid "Volume Inspector"
+msgstr "ボリュームインスペクター"
+
+msgid "Node Properties"
+msgstr "ノードプロパティ"
+
+msgid "UUID"
+msgstr "UUID"
+
+msgid "Swap entries and preserve painted directions"
+msgstr "エントリを入れ替えてペイントされた方向を保持します"
+
+msgid "Normal %i: %.3f, %.3f, %.3f"
+msgstr "法線 %i: %.3f, %.3f, %.3f"
+
+msgid "Empty normal slot - select to create a direction"
+msgstr "空の法線スロット - 選択して方向を作成します"
+
+msgid "Copy normal"
+msgstr "法線をコピー"
+
+msgid "Paste normal"
+msgstr "法線を貼り付け"
+
+msgid "Duplicate normal"
+msgstr "法線を複製"
+
+msgid "Tiberian Sun"
+msgstr "Tiberian Sun"
+
+msgid "Red Alert 2"
+msgstr "Red Alert 2"
+
+msgid "Slab6"
+msgstr "Slab6"
+
+msgid "Export"
+msgstr "エクスポート"
+
+msgid "Auto normals"
+msgstr "自動法線"
+
+msgid "Flat"
+msgstr "フラット"
+
+msgid "Smooth"
+msgstr "スムーズ"
+
+msgid "Smoother"
+msgstr "よりスムーズ"
+
+msgid "Normal mode"
+msgstr "法線モード"
+
+msgid "Recalculate all normals"
+msgstr "すべての法線を再計算"
+
+msgid "If the model already has normals and you want to replace them"
+msgstr "モデルにすでに法線があり、それらを置き換える場合"
+
+msgid "Model is hollow"
+msgstr "モデルは中空"
+
+msgid ""
+"Fill hollows to re-calculate the normals and\n"
+"hollow the model afterwards again.\n"
+"\n"
+"For calculating normals it is needed that the model has a closed\n"
+"surface and the hollow area is filled.\n"
+"\n"
+"Either do it manually or activate this option."
+msgstr ""
+"中空部分を埋めて法線を再計算し、\n"
+"その後再びモデルを中空にします。\n"
+"\n"
+"法線を計算するには、モデルが閉じた表面を持ち、\n"
+"中空領域が埋められている必要があります。\n"
+"\n"
+"手動で行うか、このオプションを有効にしてください。"
+
+msgid "Calculate normals"
+msgstr "法線を計算"
+
+msgid "Calculate normals for the model"
+msgstr "モデルの法線を計算します"
+
+msgid "Remove all normals"
+msgstr "すべての法線を削除"
+
+msgid "Normal index: %i (scene normal index %i)"
+msgstr "法線インデックス: %i (シーン法線インデックス %i)"
+
+msgid "Normal"
+msgstr "法線"
+
+msgid "Longitude"
+msgstr "経度"
+
+msgid "Latitude"
+msgstr "緯度"
+
+msgid "Flip"
+msgstr "反転"
+
+msgid "Rotate 90 deg"
+msgstr "90度回転"
+
+msgid "Direction"
+msgstr "方向"
+
+msgid "Enter a finite, non-zero normal."
+msgstr "有限かつ非ゼロの法線を指定してください。"
+
+msgid "Add normal"
+msgstr "法線を追加"
+
+msgid "Direction edits affect every voxel using this entry."
+msgstr "方向の編集は、このエントリを使用しているすべてのボクセルに影響します。"
+
+msgid "Full pre-alloc"
+msgstr "全領域を事前確保"
+
+msgid "Small (grow as needed)"
+msgstr "小 (必要に応じて拡張)"
+
+msgid "Sky"
+msgstr "空"
+
+msgid "Solid"
+msgstr "ソリッド"
+
+msgid "Transparent"
+msgstr "透明"
+
+msgid "General"
+msgstr "一般"
+
+msgid "User Interface"
+msgstr "ユーザーインターフェース"
+
+msgid "Editor"
+msgstr "エディター"
+
+msgid "Metrics"
+msgstr "メトリクス"
+
+msgid "Layout"
+msgstr "レイアウト"
+
+msgid "Pen"
+msgstr "ペン"
+
+msgid "Viewport"
+msgstr "ビューポート"
+
+msgid "Display"
+msgstr "表示"
+
+msgid "Rendering"
+msgstr "レンダリング"
+
+msgid "Pathtracer"
+msgstr "パストレーサー"
+
+msgid "Renderer"
+msgstr "レンダラー"
+
+msgid "Mesh Export"
+msgstr "メッシュエクスポート"
+
+msgid "Voxel Import/Export"
+msgstr "ボクセルインポート/エクスポート"
+
+msgid "Minecraft"
+msgstr "Minecraft"
+
+msgid "Advanced"
+msgstr "詳細設定"
+
+msgid "All Variables"
+msgstr "すべての変数"
+
+msgid "Search"
+msgstr "検索"
+
+msgid "Copy color"
+msgstr "色をコピー"
+
+msgid "Paste color"
+msgstr "色を貼り付け"
+
+msgid "Remove alpha"
+msgstr "アルファを削除"
+
+msgid "Material"
+msgstr "マテリアル"
+
+msgid "Copy material"
+msgstr "マテリアルをコピー"
+
+msgid "Paste material"
+msgstr "マテリアルを貼り付け"
+
+msgid "Reset material"
+msgstr "マテリアルをリセット"
+
+msgid "Palette entries"
+msgstr "パレット項目"
+
+msgid "Model from selected colors"
+msgstr "選択した色からモデルを作成"
+
+msgid "Model from color"
+msgstr "この色からモデルを作成"
+
+msgid "Duplicate color"
+msgstr "色を複製"
+
+msgid "Remove color"
+msgstr "色を削除"
+
+msgid "Reduce to clicked color"
+msgstr "クリックした色に統合"
+
+msgid "Merge every other selected color into the clicked slot and remaps those voxels"
+msgstr "選択中の他のすべての色をクリックしたスロットに統合し、該当するボクセルを再マッピングします"
+
+msgid "Release CTRL to change the voxel color"
+msgstr "CTRL を離すとボクセルの色を変更できます"
+
+msgid "Press CTRL to re-order"
+msgstr "CTRL を押すと並べ替えできます"
+
+msgid "Empty color slot"
+msgstr "空の色スロット"
+
+msgid "Select Palette"
+msgstr "パレットを選択"
+
+msgid "Select the palette"
+msgstr "パレットを選択します"
+
+msgid ""
+"To add your own palettes here, put a palette-name.png into one of\n"
+"the search directories or load it into any node to appear here."
+msgstr ""
+"独自のパレットをここに追加するには、palette-name.png を検索ディレクトリのいずれかに\n"
+"配置するか、任意のノードに読み込んで表示させてください。"
+
+msgid "Color match"
+msgstr "カラーマッチ"
+
+msgid ""
+"Adopt the current voxels to the best fitting colors of\n"
+"the new palette."
+msgstr ""
+"現在のボクセルを、新しいパレットの最も近い色に\n"
+"合わせて調整します。"
+
+msgid "Selection"
+msgstr "選択"
+
+msgid "Select two or more colors (Ctrl/Shift+click)"
+msgstr "2つ以上の色を選択 (Ctrl/Shift+クリック)"
+
+msgid "Randomize colors"
+msgstr "色をランダム化"
+
+msgid "Gradient"
+msgstr "グラデーション"
+
+msgid "Interpolate colors between the first and last selected slots in palette order"
+msgstr "パレット順で最初と最後に選択したスロット間の色を補間します"
+
+msgid "Adjust"
+msgstr "調整"
+
+msgid "Brighter"
+msgstr "明るく"
+
+msgid "Darker"
+msgstr "暗く"
+
+msgid "Warmer"
+msgstr "暖色寄り"
+
+msgid "Colder"
+msgstr "寒色寄り"
+
+msgid "Quantize"
+msgstr "減色"
+
+msgid "Target colors"
+msgstr "目標色数"
+
+msgid "Merge similar selected colors, remap voxels, then clear the selection"
+msgstr "選択した類似色を統合し、ボクセルを再マッピングしてから選択を解除します"
+
+msgid "Import"
+msgstr "インポート"
+
+msgid "Switch"
+msgstr "切り替え"
+
+msgid "Lospec"
+msgstr "Lospec"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Export the palette"
+msgstr "パレットをエクスポート"
+
+msgid "Sort"
+msgstr "並び替え"
+
+msgid "Original"
+msgstr "元の順序"
+
+msgid "Hue"
+msgstr "色相"
+
+msgid "Brightness"
+msgstr "明度"
+
+msgid "CIELab"
+msgstr "CIELab"
+
+msgid "Remove unused color"
+msgstr "未使用の色を削除"
+
+msgid "Remove and re-create palette"
+msgstr "パレットを削除して再作成"
+
+msgid "Contrast stretching"
+msgstr "コントラストストレッチ"
+
+msgid "White balancing"
+msgstr "ホワイトバランス調整"
+
+msgid "Apply to all nodes"
+msgstr "すべてのノードに適用"
+
+msgid "Intensity"
+msgstr "強度"
+
+msgid "Modify"
+msgstr "変更"
+
+msgid "Color closest match"
+msgstr "最も近い色を検索"
+
+msgid "Select a color to find the closest match in the current loaded palette"
+msgstr "色を選択して、現在読み込まれているパレットから最も近い色を検索します"
+
+msgid "Palette index: %i (scene voxel index %i)"
+msgstr "パレットインデックス: %i (シーンボクセルインデックス %i)"
+
+msgid "Pixel art"
+msgstr "ピクセルアート"
+
+msgid "2D"
+msgstr "2D"
+
+msgid "Mode###pixelartmode"
+msgstr "モード###pixelartmode"
+
+msgid "View###pixelartview"
+msgstr "ビュー###pixelartview"
+
+msgid "The scene is larger than the suggested volume size. Isometric preview is disabled."
+msgstr "シーンが推奨ボリュームサイズを超えているため、アイソメトリックプレビューは無効です。"
+
+msgid "Select a voxel model to preview."
+msgstr "プレビューするボクセルモデルを選択してください。"
+
+msgid "Quality presets"
+msgstr "品質プリセット"
+
+msgid "Reset all"
+msgstr "すべてリセット"
+
+msgid "Restore default path tracer settings"
+msgstr "パストレーサー設定をデフォルトに戻します"
+
+msgid "Path tracing with high sample and bounce counts, voxel edge, and bloom"
+msgstr "高サンプル数・高バウンス数、ボクセルエッジ、ブルームを有効にしたパストレーシング"
+
+msgid "Preview"
+msgstr "プレビュー"
+
+msgid "Fast preview for checking lighting and materials"
+msgstr "ライティングとマテリアルを確認するための高速プレビュー"
+
+msgid "Quality"
+msgstr "品質"
+
+msgid "Per-pixel samples. Higher values reduce noise but take longer."
+msgstr "ピクセルあたりのサンプル数です。値を大きくするとノイズが減りますが、時間がかかります。"
+
+msgid "Maximum light bounces. Increase for glass."
+msgstr "光の最大バウンス数です。ガラス表現では値を大きくしてください。"
+
+msgid "Samples computed per frame"
+msgstr "フレームごとに計算するサンプル数"
+
+msgid "Fillet exposed voxel corners. 0 is a hard cube."
+msgstr "露出したボクセルの角を丸めます。0 で角張った立方体になります。"
+
+msgid "Trace at a fraction of the output resolution, then upsample."
+msgstr "出力解像度の一部 (低解像度) でトレースしてからアップサンプリングします。"
+
+msgid "Dimensions"
+msgstr "サイズ"
+
+msgid "Output image size in pixels (square)"
+msgstr "出力画像のサイズ (ピクセル単位・正方形)"
+
+msgid "Exposure compensation in stops for tonemapping."
+msgstr "トーンマッピングの露出補正 (絞り段数) です。"
+
+msgid "Threshold blur of bright emit and sun highlights."
+msgstr "強い発光や太陽光のハイライトに対するしきい値ぼかしです。"
+
+msgid "Lens aperture for depth of field. 0 means pinhole (no DOF)."
+msgstr "被写界深度用のレンズ絞り値です。0 でピンホール (被写界深度なし) になります。"
+
+msgid "Lighting"
+msgstr "ライティング"
+
+msgid "Sun disk size in degrees."
+msgstr "太陽円盤の視直径 (度) です。"
+
+msgid "World haze that brightens toward the sun."
+msgstr "太陽方向に向かって明るくなる空間のもや (ヘイズ) です。"
+
+msgid "Settings"
+msgstr "設定"
+
+msgid "Save image"
+msgstr "画像を保存"
+
+msgid "Sample %i / %i"
+msgstr "サンプル %i / %i"
+
+msgid "Volume truncated to GPU 3D texture / memory limits"
+msgstr "ボリュームが GPU の 3D テクスチャ / メモリ上限に合わせて切り詰められました"
+
+msgid "Preparing render"
+msgstr "レンダリングを準備中"
+
+msgid "Preparing"
+msgstr "準備中"
+
+msgid "Render"
+msgstr "レンダリング"
+
+msgid "Pending extractions: %i"
+msgstr "待機中の抽出: %i"
+
+msgid "Pending meshes: %i"
+msgstr "待機中のメッシュ: %i"
+
+msgid "Culled volumes: %i"
+msgstr "カリングされたボリューム: %i"
+
+msgid "Mapped nodes: %i"
+msgstr "マップ済みノード: %i"
+
+msgid "Volume index high-water: %i"
+msgstr "ボリュームインデックス最大使用値: %i"
+
+msgid "Free volume indices: %i"
+msgstr "空きボリュームインデックス: %i"
+
+msgid "Render stats"
+msgstr "レンダリング統計"
+
+msgid "Draw calls: %<PRIu64>"
+msgstr "ドローコール: %<PRIu64>"
+
+msgid "Pipeline binds: %<PRIu64>"
+msgstr "パイプラインバインド: %<PRIu64>"
+
+msgid "Descriptor binds: %<PRIu64>"
+msgstr "ディスクリプタバインド: %<PRIu64>"
+
+msgid "Buffer updates: %<PRIu64>"
+msgstr "バッファ更新: %<PRIu64>"
+
+msgid "Render passes: %<PRIu64>"
+msgstr "レンダーパス: %<PRIu64>"
+
+msgid "Fullscreen passes: %<PRIu64>"
+msgstr "フルスクリーンパス: %<PRIu64>"
+
+msgid "Blits: %<PRIu64>"
+msgstr "ブリット: %<PRIu64>"
+
+msgid "CPU render ms: %.3f"
+msgstr "CPU レンダリング (ms): %.3f"
+
+msgid "Camera position: %.2f %.2f %.2f"
+msgstr "カメラ位置: %.2f %.2f %.2f"
+
+msgid "Camera velocity: %.2f %.2f %.2f"
+msgstr "カメラ速度: %.2f %.2f %.2f"
+
+msgid "Collided on x axis: %s"
+msgstr "X 軸方向の衝突: %s"
+
+msgid "Collided on y axis: %s"
+msgstr "Y 軸方向の衝突: %s"
+
+msgid "Collided on z axis: %s"
+msgstr "Z 軸方向の衝突: %s"
+
+msgid "Camera extents"
+msgstr "カメラ範囲"
+
+msgid "Camera friction decay"
+msgstr "カメラ摩擦減衰"
+
+msgid "Recent contact point: %.2f %.2f %.2f"
+msgstr "直近の接触点: %.2f %.2f %.2f"
+
+msgid "Rename"
+msgstr "名前を変更"
+
+msgid "Show all"
+msgstr "すべて表示"
+
+msgid "Hide all"
+msgstr "すべて非表示"
+
+msgid "Hide others"
+msgstr "他を非表示"
+
+msgid "Lock all"
+msgstr "すべてロック"
+
+msgid "Unlock all"
+msgstr "すべてロック解除"
+
+msgid "Duplicate"
+msgstr "複製"
+
+msgid "Bake transform"
+msgstr "トランスフォームをベイク"
+
+msgid "Create reference"
+msgstr "参照を作成"
+
+msgid "Merge"
+msgstr "結合"
+
+msgid "Use as stamp"
+msgstr "スタンプとして使用"
+
+msgid "Merge all"
+msgstr "すべて結合"
+
+msgid "Merge visible"
+msgstr "表示中を結合"
+
+msgid "Merge locked"
+msgstr "ロック中を結合"
+
+msgid "Center origin"
+msgstr "原点を中央に配置"
+
+msgid "Center reference"
+msgstr "参照を中央に配置"
+
+msgid "Resize"
+msgstr "リサイズ"
+
+msgid "Convert to model"
+msgstr "モデルに変換"
+
+msgid "Use this camera"
+msgstr "このカメラを使用"
+
+msgid "Save all"
+msgstr "すべて保存"
+
+msgid "Add new model"
+msgstr "新しいモデルを追加"
+
+msgid "Add new group"
+msgstr "新しいグループを追加"
+
+msgid "Add new point"
+msgstr "新しいポイントを追加"
+
+msgid "Disabled because inactive nodes are hidden and the active node is always visible"
+msgstr "非アクティブなノードが非表示になっており、アクティブなノードは常に表示されるため無効です"
+
+msgid "Reference Node"
+msgstr "参照ノード"
+
+msgid "Reference Target Node"
+msgstr "参照先ノード"
+
+msgid "Delete this model"
+msgstr "このモデルを削除"
+
+msgid "Scene"
+msgstr "シーン"
+
+msgid "Add a new model node"
+msgstr "新しいモデルノードを追加"
+
+msgid "Toggle add node by face in scene view"
+msgstr "シーンビューでの面によるノード追加を切り替え"
+
+msgid "Add a new group"
+msgstr "新しいグループを追加"
+
+msgid "Remove the active node with all its children"
+msgstr "アクティブなノードとすべての子ノードを削除"
+
+msgid "Merge onto"
+msgstr "結合先"
+
+msgid "Merge %s onto %s"
+msgstr "%s を %s に結合"
+
+msgctxt "Scene graph panel node move"
+msgid "Move below"
+msgstr "配下に移動"
+
+msgctxt "Scene graph panel node move"
+msgid "Move below but keep position"
+msgstr "位置を維持して配下に移動"
+
+msgid "Base lighting that affects all surfaces equally"
+msgstr "すべての面に均等に影響する基本ライティング"
+
+msgid "Ambient color is disabled in Unlit mode"
+msgstr "アンリット (Unlit) モードでは環境光カラーは無効です"
+
+msgid "Directional lighting that varies based on surface angle"
+msgstr "面の角度に応じて変化する指向性ライティング"
+
+msgid "Diffuse color is disabled in Unlit mode"
+msgstr "アンリット (Unlit) モードでは拡散光カラーは無効です"
+
+msgid "Scene settings"
+msgstr "シーン設定"
+
+msgid "Lit (No Shadows)"
+msgstr "ライトあり (影なし)"
+
+msgid "Unlit (Pure Colors)"
+msgstr "アンリット (純色)"
+
+msgid "Shading Mode"
+msgstr "シェーディングモード"
+
+msgid "Scripts"
+msgstr "スクリプト"
+
+msgid "Create a new lua script"
+msgstr "新しい Lua スクリプトを作成"
+
+msgid "Edit script"
+msgstr "スクリプトを編集"
+
+msgid "Edit the selected lua script"
+msgstr "選択した Lua スクリプトを編集"
+
+msgid "Reload script"
+msgstr "スクリプトを再読み込み"
+
+msgid "Reload all scripts"
+msgstr "すべてのスクリプトを再読み込み"
+
+msgid "Browse and download scripts from the online repository"
+msgstr "オンラインリポジトリからスクリプトを閲覧・ダウンロード"
+
+msgid "Scripting manual"
+msgstr "スクリプティングマニュアル"
+
+msgid "Script Editor"
+msgstr "スクリプトエディタ"
+
+msgid "Overwrite scripts/%s"
+msgstr "scripts/%s を上書き"
+
+msgid "Select all"
+msgstr "すべて選択"
+
+msgid "Fit"
+msgstr "フィット"
+
+msgid "2D Views"
+msgstr "2D ビュー"
+
+msgid "Select a model node to edit its slices."
+msgstr "スライスを編集するにはモデルノードを選択してください。"
+
+msgid "This model is larger than the suggested volume size. 2D editing is disabled."
+msgstr "このモデルは推奨ボリュームサイズを超えているため、2D 編集は無効です。"
+
+msgid "Show voxels behind the current slice with reduced opacity."
+msgstr "現在のスライスの背後にあるボクセルを不透明度を下げて表示します。"
+
+msgid "Grid"
+msgstr "グリッド"
+
+msgid "Command: %s"
+msgstr "コマンド: %s"
+
+msgid "Command: %s (%s)"
+msgstr "コマンド: %s (%s)"
+
+msgid "FPS: %.2f"
+msgstr "FPS: %.2f"
+
+msgid "Load sun from scene"
+msgstr "シーンから太陽を読み込む"
+
+msgid "Apply the scene root's stored sun settings to the current controls."
+msgstr "シーンルートに保存されている太陽設定を現在のコントロールに適用します。"
+
+msgid "Save sun to scene"
+msgstr "太陽をシーンに保存"
+
+msgid "Store the current sun settings on the scene root for saving and export."
+msgstr "保存およびエクスポートのために、現在の太陽設定をシーンルートに格納します。"
+
+msgid "Sun angle"
+msgstr "太陽の角度"
+
+msgid "Controls the direction of the sun for shadow casting"
+msgstr "影を落とすための太陽の方向を制御します"
+
+msgid "Sun angle is only used in Shadows mode"
+msgstr "太陽の角度はシャドウモードでのみ使用されます"
+
+msgid "Elevation"
+msgstr "仰角"
+
+msgid "Sun elevation angle (pitch): -90 (below) to +90 (above)"
+msgstr "太陽の仰角 (ピッチ): -90 (下) ～ +90 (上)"
+
+msgid "Azimuth"
+msgstr "方位角"
+
+msgid "Sun azimuth angle (yaw): 0 (North) to 360"
+msgstr "太陽の方位角 (ヨー): 0 (北) ～ 360"
+
+msgid "Preset: Noon"
+msgstr "プリセット: 正午"
+
+msgid "Preset: Evening"
+msgstr "プリセット: 夕方"
+
+msgid "Preset: Morning"
+msgstr "プリセット: 朝"
+
+msgid "Switch between scene and edit mode (not in simple UI mode) by pressing the <cmd:togglescene> key."
+msgstr "<cmd:togglescene> キーを押すと、シーンモードと編集モードを切り替えられます (シンプル UI モードでは利用できません)。"
+
+msgid "Use the file dialog options for format specific options."
+msgstr "フォーマット固有のオプションを設定するには、ファイルダイアログのオプションを使用してください。"
+
+msgid "You can record a video of your rotating model in the viewport by using the 'View' menu and the 'Video' option. Make sure to set the camera rotation speed to e.g. 1."
+msgstr "ビューポートで回転するモデルの動画を録画するには、「表示」メニューの「ビデオ」オプションを使用します。カメラの回転速度を 1 などに設定してください。"
+
+msgid "When saving to a foreign format you might lose scene details if the format doesn't support particular features. Make sure to use the vengi format for highest compatibility."
+msgstr "外部フォーマットで保存すると、そのフォーマットが特定の機能に対応していない場合にシーンの詳細が失われることがあります。最大限の互換性を保つには、vengi フォーマットを使用してください。"
+
+msgid "Change the color reduction mode to improve the quality of the palette especially for importing RGBA or mesh based formats."
+msgstr "特に RGBA やメッシュベースのフォーマットをインポートする際は、減色モードを変更するとパレットの品質を向上できます。"
+
+msgid "Drag a model from the assets panel to the stamp brush to use it."
+msgstr "アセットパネルからスタンプブラシへモデルをドラッグすると、そのモデルをスタンプとして使用できます。"
+
+msgid "You can reset the camera simply by pressing <cmd:camera_reset>."
+msgstr "<cmd:camera_reset> を押すだけでカメラをリセットできます。"
+
+msgid "You can animate a camera and then move around in the scene when hitting the play button in the animation timeline."
+msgstr "カメラにアニメーションを設定し、アニメーションタイムラインの再生ボタンを押すと、シーン内を移動させることができます。"
+
+msgid "The editor shows the last executed console command in the status bar. You can use these commands and bind them to keys."
+msgstr "エディタのステータスバーには最後に実行されたコンソールコマンドが表示されます。これらのコマンドを使用してキーに割り当てることができます。"
+
+msgid "You can switch the camera scene movement by switching the 'Camera movement' to 'Eye' or 'Target' in the 'View' menu of the viewport or by pressing <cmd:camera_rotation>."
+msgstr "ビューポートの「表示」メニューで「カメラ移動」を「視点」または「ターゲット」に切り替えるか、<cmd:camera_rotation> を押すことで、シーン内のカメラ移動方式を切り替えられます。"
+
+msgid "In order to use the path modifier, you have to place the reference position on top of another voxel and place the end of the path on another existing and connected voxel."
+msgstr "パスモディファイアを使用するには、参照位置を別のボクセルの上に配置し、パスの終点を既存の連結された別のボクセル上に配置する必要があります。"
+
+msgid "When importing meshes, you can switch between different voxelization methods in the options menu."
+msgstr "メッシュをインポートする際、オプションメニューでさまざまなボクセル化方式を切り替えられます。"
+
+msgid "Delete voxels in edit mode by pressing <cmd:+actionexecutedelete> or by using the erase modifier."
+msgstr "編集モードでボクセルを削除するには、<cmd:+actionexecutedelete> を押すか、消しゴムモディファイアを使用します。"
+
+msgid "Switch between different color themes in the options menu."
+msgstr "オプションメニューからさまざまなカラーテーマを切り替えられます。"
+
+msgid "Please activate anonymous usage metrics in the options or the about dialog."
+msgstr "オプションまたはバージョン情報ダイアログで、匿名の使用状況メトリクスを有効にしてください。"
+
+msgid "You can change your default key bindings to Magicavoxel, Blender, Vengi, Qubicle, Goxel or 3dsMax style. Check the bindings window in the options menu."
+msgstr "デフォルトのキー割り当てを MagicaVoxel、Blender、Vengi、Qubicle、Goxel、または 3dsMax スタイルに変更できます。オプションメニューのキー割り当てウィンドウを確認してください。"
+
+msgid "You can save your viewport as video or as screenshot."
+msgstr "ビューポートを動画またはスクリーンショットとして保存できます。"
+
+msgid "Press <cmd:pickcolor> to pick a color from the scene."
+msgstr "<cmd:pickcolor> を押すと、シーンから色を取得できます。"
+
+msgid "Press <cmd:mirroraxisshapebrushx>, <cmd:mirroraxisshapebrushy> or <cmd:mirroraxisshapebrushz> to mirror the current selection."
+msgstr "<cmd:mirroraxisshapebrushx>、<cmd:mirroraxisshapebrushy>、または <cmd:mirroraxisshapebrushz> を押すと、現在の選択をミラーできます。"
+
+msgid "Use ctrl+tab to switch between the panels of the application."
+msgstr "Ctrl+Tab を使用して、アプリケーションのパネル間を切り替えられます。"
+
+msgid "It's possible to have multiple viewports and align them next to each other to get a left, top and so on view of the scene at the same time."
+msgstr "複数のビューポートを並べて配置し、シーンの左側面や上面などのビューを同時に表示できます。"
+
+msgid "Import/Export minecraft skins by using the 'Minecraft skin' option in the file menu - or by renaming the png the mcskin."
+msgstr "Minecraft スキンをインポート / エクスポートするには、ファイルメニューの「Minecraft スキン」オプションを使用するか、png の拡張子を mcskin に変更してください。"
+
+msgid "Extend the editor features by providing your own scripts. Check the scripting documentation for more information."
+msgstr "独自のスクリプトを作成してエディタの機能を拡張できます。詳細はスクリプティングドキュメントを参照してください。"
+
+msgid "You can use the asset panel to import models from local or remote locations."
+msgstr "アセットパネルを使用して、ローカルまたはリモートの場所からモデルをインポートできます。"
+
+msgid "The palette panel is able to directly import lospec palettes by the lospec palette identifier."
+msgstr "パレットパネルでは、Lospec パレットの識別子を指定して Lospec パレットを直接インポートできます。"
+
+msgid "Check the status bar to see the last executed console command of the last action."
+msgstr "直前の操作で最後に実行されたコンソールコマンドを確認するには、ステータスバーをご覧ください。"
+
+msgid "Imported scenes are placed centered around the reference position."
+msgstr "インポートされたシーンは、参照位置を中心にして配置されます。"
+
+msgid "Switch between different ui modes (Ace Of Spades, Command&Conquer, Minecraft, ...) in the options menu to enable/disable various features."
+msgstr "オプションメニューから各種UIモード（Ace Of Spades、Command&Conquer、Minecraftなど）を切り替えて、さまざまな機能の有効／無効を変更できます。"
+
+msgid "You can use the 'View' menu in the viewport to enable/disable various visual features such as the grid, axis, ..."
+msgstr "ビューポートの「表示」メニューから、グリッドや座標軸などの視覚的機能の有効／無効を切り替えられます。"
+
+msgid "You can use <cmd:camera_rotation> to switch between different camera rotation modes such as 'Target' and 'Eye'."
+msgstr "<cmd:camera_rotation> を使用すると、「ターゲット」や「アイ」などのカメラ回転モードを切り替えられます。"
+
+msgid "Open the bindings dialog in the options menu to change the default key bindings to Magicavoxel, Blender, Vengi, Qubicle, Goxel or 3dsMax style and also check which commands are available."
+msgstr "オプションメニューからキーバインドダイアログを開くと、デフォルトのキー割り当てをMagicavoxel、Blender、Vengi、Qubicle、Goxel、3dsMaxスタイルに変更したり、利用可能なコマンドを確認したりできます。"
+
+msgid "You can download and install community scripts for brushes, generators and selection modes from the Help menu."
+msgstr "ヘルプメニューから、ブラシ・ジェネレーター・選択モード用のコミュニティスクリプトをダウンロードしてインストールできます。"
+
+msgid "Rotate all scene models"
+msgstr "すべてのシーンモデルを回転"
+
+msgid "Rotate by 90 degree on the x axis"
+msgstr "X軸を中心に90度回転"
+
+msgid "Rotate by 90 degree on the y axis"
+msgstr "Y軸を中心に90度回転"
+
+msgid "Rotate by 90 degree on the z axis"
+msgstr "Z軸を中心に90度回転"
+
+msgid "Rotate on axis"
+msgstr "軸で回転"
+
+msgid "Flip on axis"
+msgstr "軸で反転"
+
+msgid "Move voxels"
+msgstr "ボクセルを移動"
+
+msgid "Move"
+msgstr "移動"
+
+msgid "Cursor"
+msgstr "カーソル"
+
+msgid "Details"
+msgstr "詳細"
+
+msgid "Disabled"
+msgstr "無効"
+
+msgid "Distance"
+msgstr "距離"
+
+msgid "Grid size"
+msgstr "グリッドサイズ"
+
+msgid "Apply this axis size to the other axes"
+msgstr "この軸のサイズを他の軸にも適用します"
+
+msgid "Gizmo settings"
+msgstr "ギズモ設定"
+
+msgid "Rotate"
+msgstr "回転"
+
+msgid "Activate the rotate operation"
+msgstr "回転操作を有効にします"
+
+msgid "Translate"
+msgstr "平行移動"
+
+msgid "Activate the translate operation"
+msgstr "平行移動操作を有効にします"
+
+msgid "Show gizmo for brushes that support it"
+msgstr "対応するブラシのギズモを表示します"
+
+msgid "Simple"
+msgstr "シンプル"
+
+msgid "Minecraft Skin"
+msgstr "Minecraft スキン"
+
+msgid "Ace Of Spades"
+msgstr "Ace Of Spades"
+
+msgid "Minimal"
+msgstr "最小"
+
+msgid "Default"
+msgstr "デフォルト"
+
+msgid "Scene jobs"
+msgstr "シーンジョブ"
+
+msgid "Abort"
+msgstr "中止"
+
+msgid "Pending: %i"
+msgstr "保留中: %i"
+
+msgid "Clear pending"
+msgstr "保留中をクリア"
+
+msgid "Abort all"
+msgstr "すべて中止"
+
+msgid "Slice at %s: %i"
+msgstr "%s でのスライス: %i"
+
+msgid "pos: %i:%i:%i"
+msgstr "位置: %i:%i:%i"
+
+msgid "size: %i:%i:%i"
+msgstr "サイズ: %i:%i:%i"
+
+msgid "cursor: %i:%i:%i"
+msgstr "カーソル: %i:%i:%i"
+
+msgid "rel cursor: %i:%i:%i"
+msgstr "相対カーソル: %i:%i:%i"
+
+msgid "dist: %i:%i:%i"
+msgstr "距離: %i:%i:%i"
+
+msgid "Slice view"
+msgstr "スライス表示"
+
+msgid "Loading"
+msgstr "読み込み中"
+
+msgid "Working"
+msgstr "処理中"
+
+msgid "Lines"
+msgstr "ライン"
+
+msgid "Points"
+msgstr "ポイント"
+
+msgid "Render mode"
+msgstr "レンダリングモード"
+
+msgid "Video"
+msgstr "動画"
+
+msgid "Finishing..."
+msgstr "終了処理中..."
+
+msgid "Pending frames: %u"
+msgstr "保留中のフレーム: %u"
+
+msgid ""
+"Recording at %i fps\n"
+"Pending frames: %u"
+msgstr ""
+"%i fps で録画中\n"
+"保留中のフレーム: %u"
+
+msgid "Screenshot"
+msgstr "スクリーンショット"
+
+msgid "Reset camera"
+msgstr "カメラをリセット"
+
+msgid "Scene Mode"
+msgstr "シーンモード"
+
+msgid "EditMode"
+msgstr "編集モード"
+
+msgid "SceneMode"
+msgstr "シーンモード"
+
+msgid "Create a reference node"
+msgstr "参照ノードを作成"
+
+msgid "Color picker"
+msgstr "カラーピッカー"
+
+msgid "Place"
+msgstr "配置"
+
+msgid "Erase"
+msgstr "消去"
+
+msgid "Override"
+msgstr "上書き"
+
+msgid "Paint"
+msgstr "ペイント"
+
+msgid "Normal paint"
+msgstr "法線ペイント"
+
+msgid "No brush"
+msgstr "ブラシなし"
+
+msgid "Click a voxel face to set extrusion direction"
+msgstr "ボクセルの面をクリックして押し出し方向を設定します"
+
+msgid "Select voxels first (Select brush)"
+msgstr "先にボクセルを選択してください（選択ブラシ）"
+
+msgid "Select voxels, then switch to Sculpt"
+msgstr "ボクセルを選択してからスカルプトに切り替えてください"
+
+msgid "Click a voxel face to set direction"
+msgstr "ボクセルの面をクリックして方向を設定します"
+
+msgid "Add node by face"
+msgstr "面からノードを追加"
+
+msgid "Click a face to place, Esc to cancel"
+msgstr "面をクリックして配置、Esc でキャンセル"
+
+msgid "VoxBox username"
+msgstr "VoxBox ユーザー名"
+
+msgid "Your VoxBox account username"
+msgstr "VoxBox アカウントのユーザー名"
+
+msgid "VoxBox password"
+msgstr "VoxBox パスワード"
+
+msgid "Your VoxBox account password"
+msgstr "VoxBox アカウントのパスワード"
+
+msgid "VoxBox API key"
+msgstr "VoxBox API キー"
+
+msgid "VoxBox refresh token for authenticated requests"
+msgstr "認証済みリクエスト用の VoxBox リフレッシュトークン"
+
+msgid "Logged in as %s"
+msgstr "%s としてログイン中"
+
+msgid "Logout"
+msgstr "ログアウト"
+
+msgid "Login required"
+msgstr "ログインが必要です"
+
+msgid "A VoxBox account is required to browse, download and upload assets."
+msgstr "アセットの閲覧、ダウンロード、アップロードには VoxBox アカウントが必要です。"
+
+msgid "API key"
+msgstr "API キー"
+
+msgid "Refresh token"
+msgstr "リフレッシュトークン"
+
+msgid "Connect"
+msgstr "接続"
+
+msgid "Use password"
+msgstr "パスワードを使用"
+
+msgid "Your VoxBox username"
+msgstr "VoxBox ユーザー名"
+
+msgid "Password"
+msgstr "パスワード"
+
+msgid "Your VoxBox password"
+msgstr "VoxBox パスワード"
+
+msgid "Login"
+msgstr "ログイン"
+
+msgid "Login failed"
+msgstr "ログインに失敗しました"
+
+msgid "Use API key"
+msgstr "API キーを使用"
+
+msgid "No account yet? Create one at voxbox.store."
+msgstr "アカウントをお持ちでない場合は voxbox.store で作成できます。"
+
+msgid "VoxBox Store"
+msgstr "VoxBox ストア"
+
+msgid "Fetching models..."
+msgstr "モデルを取得中..."
+
+msgid "Search by name..."
+msgstr "名前で検索..."
+
+msgid "Search Options"
+msgstr "検索オプション"
+
+msgid "Filter by author..."
+msgstr "作成者で絞り込み..."
+
+msgid "Category"
+msgstr "カテゴリ"
+
+msgid "Filter animated"
+msgstr "アニメーションで絞り込み"
+
+msgid "Animated only"
+msgstr "アニメーションのみ"
+
+msgid "No models found"
+msgstr "モデルが見つかりません"
+
+msgid "Rating"
+msgstr "評価"
+
+msgid "Load as new scene"
+msgstr "新しいシーンとして開く"
+
+msgid "Import into current scene"
+msgstr "現在のシーンにインポート"
+
+msgid "Remove downloaded file"
+msgstr "ダウンロード済みファイルを削除"
+
+msgid "Download and open"
+msgstr "ダウンロードして開く"
+
+msgid "Please log in to upload models"
+msgstr "モデルをアップロードするにはログインしてください"
+
+msgid "Animated"
+msgstr "アニメーションあり"
+
+msgid "Updating existing model: %s"
+msgstr "既存モデルを更新中: %s"
+
+msgid "Cover image"
+msgstr "カバー画像"
+
+msgid "Submit"
+msgstr "送信"
+
+msgid "VoxBox Browser"
+msgstr "VoxBox ブラウザー"
+
+msgid "Upload current scene..."
+msgstr "現在のシーンをアップロード..."
+
+msgid "Update on VoxBox..."
+msgstr "VoxBox で更新..."
+
+msgid "Click a voxel face in the viewport to set the extrusion direction"
+msgstr "ビューポート内のボクセルの面をクリックして押し出し方向を設定します"
+
+msgid "Direction: %s"
+msgstr "方向: %s"
+
+msgid "No selection active - use the Select brush first"
+msgstr "選択範囲がありません。先に選択ブラシを使用してください"
+
+msgid "Fill walls"
+msgstr "壁を埋める"
+
+msgid "Offset %s"
+msgstr "オフセット %s"
+
+msgid "Draws a line from the reference position to the current cursor position"
+msgstr "基準位置から現在のカーソル位置まで線を描画します"
+
+msgid "Continuous"
+msgstr "連続"
+
+msgid "Bezier"
+msgstr "ベジェ"
+
+msgid "First click locks the segment end, the gizmo edits its control point, and pending segments commit when you apply or leave the brush"
+msgstr "最初のクリックでセグメントの終端を固定し、ギズモで制御点を編集します。保留中のセグメントはブラシを適用するか切り替えると確定されます"
+
+msgid "Thickness"
+msgstr "太さ"
+
+msgid "Sag"
+msgstr "たわみ"
+
+msgid "Downward sag in voxels for rope/cable effect"
+msgstr "ロープやケーブルのような表現のための下向きのたわみ量（ボクセル単位）"
+
+msgid "Pending segments"
+msgstr "保留中のセグメント"
+
+msgid "Segment"
+msgstr "セグメント"
+
+msgid "Segment %i"
+msgstr "セグメント %i"
+
+msgid "Select a pending segment to edit its control point with the gizmo"
+msgstr "ギズモで制御点を編集する保留中のセグメントを選択してください"
+
+msgid "Stipple pattern"
+msgstr "点線パターン"
+
+msgid "Click cells to toggle: dash places a voxel, gap skips. Pattern length <= 1 disables stippling"
+msgstr "セルをクリックして切り替えます（実線部分はボクセルを配置、隙間部分はスキップ）。パターン長が 1 以下の場合は点線が無効になります"
+
+msgid "Enable normal rendering to see your changes"
+msgstr "変更を確認するには法線レンダリングを有効にしてください"
+
+msgid "Mode"
+msgstr "モード"
+
+msgid "Strength"
+msgstr "強さ"
+
+msgid "How strongly to apply the gaussian blur of neighboring colors (0 = none, 1 = full)"
+msgstr "周囲の色のガウスぼかしを適用する強さ（0 = なし、1 = 最大）"
+
+msgid "Opacity at the brush center (0 = none, 1 = full)"
+msgstr "ブラシ中心の不透明度（0 = 透明、1 = 不透明）"
+
+msgid "Amount of brighten or darken to apply"
+msgstr "適用する明暗の調整量"
+
+msgid "Variation chance (1 in N)"
+msgstr "変化の確率（1 / N）"
+
+msgid "Each voxel has a 1 in N chance to be varied"
+msgstr "各ボクセルが 1 / N の確率で色変化します"
+
+msgid "Random pool: %i selected colors"
+msgstr "ランダムプール: 選択中の %i 色"
+
+msgid "Multi-select colors in the palette panel to limit Random painting to that pool"
+msgstr "パレットパネルで複数の色を選択すると、ランダムペイントの色をその範囲に限定できます"
+
+msgid "Random pool: full palette"
+msgstr "ランダムプール: パレット全体"
+
+msgid "Multi-select two or more colors in the palette panel to limit Random painting"
+msgstr "パレットパネルで 2 色以上を選択すると、ランダムペイントの色を限定できます"
+
+msgid "Only selected colors"
+msgstr "選択色のみ"
+
+msgid "Skip voxels whose current color is outside the palette multi-selection"
+msgstr "現在の色がパレットの複数選択に含まれないボクセルをスキップします"
+
+msgid "Flood fill"
+msgstr "塗りつぶし"
+
+msgid "Fill connected voxels of the same color on the clicked face"
+msgstr "クリックした面上で同じ色の連結したボクセルを塗りつぶします"
+
+msgid "Blend from the hit color to the cursor color across the box"
+msgstr "ボックス全体でヒットした色からカーソルの色へグラデーションさせます"
+
+msgid "Fill the clicked face, or drag to extrude the plane"
+msgstr "クリックした面を埋めるか、ドラッグして平面を押し出します"
+
+msgid "Erase voxels on the clicked face, or drag to extrude"
+msgstr "クリックした面のボクセルを消去するか、ドラッグして押し出し消去します"
+
+msgid "Recolor voxels on the clicked face, or drag to extrude"
+msgstr "クリックした面のボクセルを再着色するか、ドラッグして押し出し再着色します"
+
+msgid "Use reference position"
+msgstr "基準位置を使用"
+
+msgid "Measure the distance from the reference position to the cursor"
+msgstr "基準位置からカーソルまでの距離を計測します"
+
+msgid "Click two points to measure the distance between them"
+msgstr "2点をクリックしてその間の距離を計測します"
+
+msgid "Measurement"
+msgstr "計測"
+
+msgid "Start"
+msgstr "始点"
+
+msgid "End"
+msgstr "終点"
+
+msgid "Delta"
+msgstr "差分"
+
+msgid "Length: %.2f"
+msgstr "長さ: %.2f"
+
+msgid "Manhattan: %i"
+msgstr "マンハッタン距離: %i"
+
+msgid "Grid distance: sum of steps along each axis"
+msgstr "グリッド距離: 各軸に沿ったステップ数の合計"
+
+msgid "Rescan"
+msgstr "再スキャン"
+
+msgid "Select voxels first, then switch to sculpt"
+msgstr "先にボクセルを選択してからスカルプトに切り替えてください"
+
+msgid "Sculpt mode"
+msgstr "スカルプトモード"
+
+msgid "Click a voxel face in the viewport to set the direction"
+msgstr "ビューポート内のボクセルの面をクリックして方向を設定します"
+
+msgid "Height threshold"
+msgstr "高さのしきい値"
+
+msgid "Preserve top height"
+msgstr "上面の高さを維持"
+
+msgid "Trim per step"
+msgstr "ステップごとの削り量"
+
+msgid "Kernel size"
+msgstr "カーネルサイズ"
+
+msgid "Sigma"
+msgstr "シグマ"
+
+msgid "Fill holes"
+msgstr "穴埋め"
+
+msgid "Fill enclosed empty areas with interpolated heights"
+msgstr "囲まれた空白領域を補間された高さで埋めます"
+
+msgid "Clear depth"
+msgstr "クリア深度"
+
+msgid "How many voxels above the smoothed surface to clear (0 = none)"
+msgstr "平滑化された表面より上のボクセルを何個分消去するか（0 = 消去なし）"
+
+msgid "Copy voxels to clipboard or load a skin file"
+msgstr "ボクセルをクリップボードにコピーするか、スキンファイルを読み込みます"
+
+msgid "Load skin"
+msgstr "スキンを読み込む"
+
+msgid "Reskin mode"
+msgstr "リスキンモード"
+
+msgid "Follow surface"
+msgstr "表面に沿う"
+
+msgid "Tile"
+msgstr "タイル"
+
+msgid "Offset U"
+msgstr "オフセット U"
+
+msgid "Offset V"
+msgstr "オフセット V"
+
+msgid "Surface offset"
+msgstr "表面オフセット"
+
+msgid "Positive = skin floats above surface, negative = sinks below"
+msgstr "正の値 = スキンが表面より上に浮く、負の値 = 下に沈む"
+
+msgid "Skin layers"
+msgstr "スキンレイヤー"
+
+msgid "Invert skin"
+msgstr "スキンを反転"
+
+msgid "Brush radius"
+msgstr "ブラシ半径"
+
+msgid "Extend only"
+msgstr "延長のみ"
+
+msgid "Only place voxels adjacent to existing solid voxels"
+msgstr "既存の実体ボクセルに隣接する位置にのみボクセルを配置します"
+
+msgid "Remove only"
+msgstr "削除のみ"
+
+msgid "Do not place any voxels - only carve away the voxels above the plane (set the Remove above depth)"
+msgstr "ボクセルを配置せず、平面より上のボクセルのみを削り取ります（「上部削除」の深さを設定してください）"
+
+msgid "Remove above"
+msgstr "上部削除"
+
+msgid "Perpendicular depth of voxels to remove above the plane (0 = no removal)"
+msgstr "平面より上で削除するボクセルの垂直方向の深さ（0 = 削除なし）"
+
+msgid "Selection bounds"
+msgstr "選択範囲の境界"
+
+msgid "Min"
+msgstr "最小"
+
+msgid "Max"
+msgstr "最大"
+
+msgid "Size: %d x %d x %d"
+msgstr "サイズ: %d x %d x %d"
+
+msgid "Circle selection"
+msgstr "円形選択"
+
+msgid "Center"
+msgstr "中心"
+
+msgid "Radius %s"
+msgstr "半径 %s"
+
+msgid "Depth %s"
+msgstr "深さ %s"
+
+msgid "How far from the center the selection extends along the face-normal axis (0 = single layer)"
+msgstr "中心から面の法線軸に沿って選択範囲をどこまで広げるか（0 = 単一レイヤー）"
+
+msgid "3D ellipsoid"
+msgstr "3D 楕円体"
+
+msgid "Select voxels in a 3D ellipsoid shape behind the clicked surface instead of a 2D ellipse with depth"
+msgstr "クリックした表面の奥を、深さ付きの 2D 楕円ではなく 3D 楕円体として選択します"
+
+msgid "Brush selection"
+msgstr "ブラシ選択"
+
+msgid "Radius of the round selection brush. Hold the mouse button and drag to select."
+msgstr "円形選択ブラシの半径です。マウスボタンを押したままドラッグして選択します。"
+
+msgid "Grow region"
+msgstr "領域を拡張"
+
+msgid "Only select voxels adjacent to already-selected voxels. Useful for expanding an existing selection."
+msgstr "すでに選択されているボクセルに隣接するボクセルのみを選択します。既存の選択範囲を広げるのに便利です。"
+
+msgid "Threshold"
+msgstr "しきい値"
+
+msgid "Color distance threshold for fuzzy matching (0 = exact, higher = more similar colors)"
+msgstr "あいまい一致の色距離しきい値（0 = 完全一致、値が大きいほど類似色も含む）"
+
+msgid "Surface deviation"
+msgstr "表面の偏差"
+
+msgid "How many voxels above or below the clicked face the fill may deviate from the start position"
+msgstr "クリックした面から開始位置の上下に何ボクセルまで塗りつぶしの範囲を広げるか"
+
+msgid "Lasso selection"
+msgstr "なげなわ選択"
+
+msgid "Click and drag to draw a selection polygon"
+msgstr "クリック＆ドラッグで選択ポリゴンを描画します"
+
+msgid "Selection actions"
+msgstr "選択アクション"
+
+msgid "Select by color"
+msgstr "色で選択"
+
+msgid "Draw with"
+msgstr "描画方法"
+
+msgid "Stroke"
+msgstr "ストローク"
+
+msgid "Drag shape"
+msgstr "ドラッグ形状"
+
+msgid "Shape"
+msgstr "形状"
+
+msgid "Hold and drag to draw with the selected shape."
+msgstr "押したままドラッグして、選択した形状で描画します。"
+
+msgid "Radius 0 draws a single cube. Increase the radius to use other shapes."
+msgstr "半径 0 では単一のキューブを描画します。他の形状を使用するには半径を大きくしてください。"
+
+msgid "Increase radius"
+msgstr "半径を増やす"
+
+msgid "Start from"
+msgstr "開始位置"
+
+msgid "Corner"
+msgstr "角"
+
+msgid "Drag to define the shape's size."
+msgstr "ドラッグして形状のサイズを定義します。"
+
+msgid "Minimum"
+msgstr "最小"
+
+msgid "Maximum"
+msgstr "最大"
+
+msgid "Mirror"
+msgstr "ミラー"
+
+msgid "Apply once per voxel per stroke"
+msgstr "ストロークごとに各ボクセルへ1回のみ適用"
+
+msgid "Use selection"
+msgstr "選択を使用"
+
+msgid "Model"
+msgstr "モデル"
+
+msgid "Select a model from the asset panel or scene graph panel"
+msgstr "アセットパネルまたはシーングラフパネルからモデルを選択します"
+
+msgid "Offset"
+msgstr "オフセット"
+
+msgid "Replace"
+msgstr "置換"
+
+msgid "Replace all voxels in the stamp with the selected color"
+msgstr "スタンプ内のすべてのボクセルを選択した色に置換します"
+
+msgid "Rotate 90"
+msgstr "90度回転"
+
+msgid "Crop stamp"
+msgstr "スタンプを切り抜き"
+
+msgid "Convert palette"
+msgstr "パレットを変換"
+
+msgid "Text"
+msgstr "テキスト"
+
+msgid "Horizontal spacing"
+msgstr "水平間隔"
+
+msgid "Font"
+msgstr "フォント"
+
+msgid "Font to use for rendering text"
+msgstr "テキストのレンダリングに使用するフォント"
+
+msgid "Texture"
+msgstr "テクスチャ"
+
+msgid "Project onto surface"
+msgstr "サーフェスに投影"
+
+msgid "UV min"
+msgstr "UV最小"
+
+msgid "Lower-left corner of the texture on the brush"
+msgstr "ブラシ上のテクスチャの左下隅"
+
+msgid "UV max"
+msgstr "UV最大"
+
+msgid "Upper-right corner of the texture on the brush"
+msgstr "ブラシ上のテクスチャの右上隅"
+
+msgid "UV editor"
+msgstr "UVエディター"
+
+msgid "Uniform"
+msgstr "均一"
+
+msgid "Sampling"
+msgstr "サンプリング"
+
+msgid "Off"
+msgstr "オフ"
+
+msgid "Box"
+msgstr "ボックス"
+
+msgid "No overlap"
+msgstr "重なりなし"
+
+msgid "Use a radius around the current voxel - 0 for spanning a box"
+msgstr "現在のボクセル周囲の半径を使用（0 でボックス範囲指定）"
+
+msgid "Clamp to volume"
+msgstr "ボリューム内に制限"
+
+msgid "Keep the brush inside the active volume bounds"
+msgstr "ブラシをアクティブなボリュームの境界内に保ちます"
+
+msgid "Test value"
+msgstr "テスト値"
+
+msgctxt "SceneJob"
+msgid "Scene job"
+msgstr "シーンジョブ"
+
+msgctxt "SceneJob"
+msgid "Cropping"
+msgstr "切り抜き中"
+
+msgctxt "SceneJob"
+msgid "Scaling up"
+msgstr "拡大中"
+
+msgctxt "SceneJob"
+msgid "Scaling down"
+msgstr "縮小中"
+
+msgctxt "SceneJob"
+msgid "Resizing"
+msgstr "サイズ変更中"
+
+msgctxt "SceneJob"
+msgid "Filling"
+msgstr "塗りつぶし中"
+
+msgctxt "SceneJob"
+msgid "Clearing"
+msgstr "クリア中"
+
+msgctxt "SceneJob"
+msgid "Deleting selected voxels"
+msgstr "選択したボクセルを削除中"
+
+msgctxt "SceneJob"
+msgid "Hollowing"
+msgstr "中空化中"
+
+msgctxt "SceneJob"
+msgid "Filling hollow voxels"
+msgstr "中空ボクセルを充填中"
+
+msgctxt "SceneJob"
+msgid "Splitting objects"
+msgstr "オブジェクトを分割中"
+
+msgctxt "SceneJob"
+msgid "Moving color to model"
+msgstr "色をモデルに移動中"
+
+msgctxt "SceneJob"
+msgid "Splat merging"
+msgstr "スプラット統合中"
+
+msgctxt "Temporary merged scene graph node name"
+msgid "merged_temp"
+msgstr "一時統合"
+
+msgid "Palette color cell size relative to the UI frame height"
+msgstr "UIフレームの高さに対するパレットカラーセルの相対サイズ"
+
+msgid "Palette color size"
+msgstr "パレットカラーサイズ"
+
+msgid "Color wheel"
+msgstr "カラーホイール"
+
+msgid "Use the color wheel in the palette color editing"
+msgstr "パレットの色編集でカラーホイールを使用します"
+
+msgid "Always show the color picker below the palette"
+msgstr "パレットの下にカラーピッカーを常に表示します"
+
+msgid "Milliseconds that a region should get highlighted in a few situations"
+msgstr "一部の状況で領域をハイライト表示する時間（ミリ秒）"
+
+msgid "Modification highlight"
+msgstr "変更ハイライト"
+
+msgid "Show fixed region sizes in the volume inspector"
+msgstr "ボリュームインスペクターに固定領域サイズを表示します"
+
+msgid "Local transforms"
+msgstr "ローカル変換"
+
+msgid "Use local space for transforms"
+msgstr "変換にローカル空間を使用します"
+
+msgid "Show the grid"
+msgstr "グリッドを表示"
+
+msgid "Show locked axis"
+msgstr "ロックされた軸を表示"
+
+msgid "Show the currently locked axis"
+msgstr "現在ロックされている軸を表示します"
+
+msgid "Bounding box"
+msgstr "バウンディングボックス"
+
+msgid "Show the axis aligned bounding box"
+msgstr "軸平行バウンディングボックス（AABB）を表示します"
+
+msgid "Bones"
+msgstr "ボーン"
+
+msgid "Show the bones in scene mode"
+msgstr "シーンモードでボーンを表示します"
+
+msgid "Render shadows"
+msgstr "影をレンダリング"
+
+msgid "Render with shadows - make sure to set the scene lighting up properly"
+msgstr "影付きでレンダリングします（シーンのライティングが適切に設定されていることを確認してください）"
+
+msgid "Shading mode"
+msgstr "シェーディングモード"
+
+msgid "Shading mode: 0=Unlit (pure colors), 1=Lit (no shadows), 2=Shadows"
+msgstr "シェーディングモード: 0=無照明（純色）、1=照明あり（影なし）、2=影あり"
+
+msgid "Millisecond delay between frames hide/unhide when using the scene graph panel play button to animate the models in the scene"
+msgstr "シーングラフパネルの再生ボタンでシーン内のモデルをアニメーション化する際の、フレーム表示/非表示の遅延時間（ミリ秒）"
+
+msgid "Model animation speed"
+msgstr "モデルアニメーション速度"
+
+msgid "Auto normal mode"
+msgstr "自動法線モード"
+
+msgid "The size of the voxel grid per axis (e.g. 1 or 1 2 3)"
+msgstr "軸ごとのボクセルグリッドのサイズ（例: 1 または 1 2 3）"
+
+msgid "Plane size"
+msgstr "平面サイズ"
+
+msgid "The size of the plane"
+msgstr "平面のサイズ"
+
+msgid "Show the plane"
+msgstr "平面を表示"
+
+msgid "Grayscale"
+msgstr "グレースケール"
+
+msgid "Render the inactive nodes in gray scale mode"
+msgstr "非アクティブなノードをグレースケールモードでレンダリングします"
+
+msgid "Hide the inactive nodes"
+msgstr "非アクティブなノードを非表示にします"
+
+msgid "Only active"
+msgstr "アクティブのみ"
+
+msgid "Scene mode"
+msgstr "シーンモード"
+
+msgid "Start in scene mode"
+msgstr "シーンモードで起動"
+
+msgid "Place new nodes adjacent to the active node face in scene view"
+msgstr "シーンビューでアクティブなノードの面に隣接して新しいノードを配置します"
+
+msgid "Allow overlap"
+msgstr "重なりを許可"
+
+msgid "Allow placing adjacent nodes even if the region overlaps other nodes"
+msgstr "領域が他のノードと重なる場合でも隣接ノードの配置を許可します"
+
+msgid "Clone voxels"
+msgstr "ボクセルをクローン"
+
+msgid "Copy voxels when adding a node by face"
+msgstr "面でノードを追加するときにボクセルをコピーします"
+
+msgid "Far plane for the camera"
+msgstr "カメラのファープレーン（遠クリップ面）"
+
+msgid "View distance"
+msgstr "描画距離"
+
+msgid "Show gizmo"
+msgstr "ギズモを表示"
+
+msgid "Show the axis"
+msgstr "軸を表示"
+
+msgid "Cursor details"
+msgstr "カーソル詳細"
+
+msgid "Print cursor details in edit mode - measure distance to reference position in mode 3"
+msgstr "編集モードでカーソル詳細を表示します（モード 3 では参照位置までの距離を計測します）"
+
+msgid "Face cursor for single voxel"
+msgstr "単一ボクセルに面カーソルを使用"
+
+msgid "Use the red face cursor instead of a full cube preview when the shape brush radius is 0"
+msgstr "形状ブラシの半径が 0 のときに、キューブ全体プレビューの代わりに赤い面カーソルを使用します"
+
+msgid "Auto Keyframe"
+msgstr "自動キーフレーム"
+
+msgid "Automatically create keyframes when changing transforms"
+msgstr "変換を変更したときに自動でキーフレームを作成します"
+
+msgid "Bitmask of gizmo operations in scene mode"
+msgstr "シーンモードでのギズモ操作のビットマスク"
+
+msgid "Gizmo operations"
+msgstr "ギズモ操作"
+
+msgid "Activate the pivot mode for the gizmo in scene mode"
+msgstr "シーンモードでギズモのピボットモードを有効にします"
+
+msgid "Flip axis"
+msgstr "軸を反転"
+
+msgid "Flip axis or stay along the positive world/local axis"
+msgstr "軸を反転するか、ワールド/ローカルの正の軸に沿った状態を維持します"
+
+msgid "Snap to grid"
+msgstr "グリッドにスナップ"
+
+msgid "Use the grid size for snap"
+msgstr "スナップにグリッドサイズを使用します"
+
+msgid "Model gizmo"
+msgstr "モデルギズモ"
+
+msgid "Show the gizmo to also translate the region"
+msgstr "領域も移動できるようにギズモを表示します"
+
+msgid "Brush gizmo"
+msgstr "ブラシギズモ"
+
+msgid "Show the gizmo for brushes that support it"
+msgstr "対応するブラシでギズモを表示します"
+
+msgid "Viewport HUD"
+msgstr "ビューポートHUD"
+
+msgid "Show status and hints in the viewport"
+msgstr "ビューポートにステータスとヒントを表示します"
+
+msgid "Last palette"
+msgstr "前回のパレット"
+
+msgid "The last used palette"
+msgstr "最後に使用したパレット"
+
+msgid "The amount of viewports (not in simple ui mode)"
+msgstr "ビューポートの数（シンプルUIモードでは無効）"
+
+msgid "Viewports"
+msgstr "ビューポート"
+
+msgid "Max volume size"
+msgstr "最大ボリュームサイズ"
+
+msgid "The maximum size of a volume before a few features are disabled (e.g. undo, autosave, isometric preview, 2D editing)"
+msgstr "一部の機能（元に戻す、自動保存、アイソメトリックプレビュー、2D編集など）が無効になるボリュームの最大サイズ"
+
+msgid "Configure the editor view mode"
+msgstr "エディターの表示モードを設定します"
+
+msgid "View mode"
+msgstr "表示モード"
+
+msgid "Show the palette panel"
+msgstr "パレットパネルを表示"
+
+msgid "Show the normal palette panel"
+msgstr "法線パレットパネルを表示"
+
+msgid "Memento"
+msgstr "履歴"
+
+msgid "Show the memento panel"
+msgstr "履歴パネルを表示"
+
+msgid "Show editable back, right and top slices of the selected model"
+msgstr "選択したモデルの編集可能な背面・右側面・上面スライスを表示します"
+
+msgid "Show the camera panel"
+msgstr "カメラパネルを表示"
+
+msgid "Show the L-System panel"
+msgstr "L-Systemパネルを表示"
+
+msgid "Script"
+msgstr "スクリプト"
+
+msgid "Show the script panel"
+msgstr "スクリプトパネルを表示"
+
+msgid "Show the network panel"
+msgstr "ネットワークパネルを表示"
+
+msgid "Show the game mode panel"
+msgstr "ゲームモードパネルを表示"
+
+msgid "Assets"
+msgstr "アセット"
+
+msgid "Show the asset panels"
+msgstr "アセットパネルを表示"
+
+msgid "Show the render panel"
+msgstr "レンダリングパネルを表示"
+
+msgid "Show the animation settings panel"
+msgstr "アニメーション設定パネルを表示"
+
+msgid "Animation timeline"
+msgstr "アニメーションタイムライン"
+
+msgid "Show the animation timeline panel"
+msgstr "アニメーションタイムラインパネルを表示"
+
+msgid "Show the scene panel"
+msgstr "シーンパネルを表示"
+
+msgid "Show the tools panel"
+msgstr "ツールパネルを表示"
+
+msgid "Show the scene settings panel"
+msgstr "シーン設定パネルを表示"
+
+msgid "Show the help panel"
+msgstr "ヘルプパネルを表示"
+
+msgid "Node properties"
+msgstr "ノードプロパティ"
+
+msgid "Show the node properties panel"
+msgstr "ノードプロパティパネルを表示"
+
+msgid "Show the volume/node inspector panel"
+msgstr "ボリューム/ノードインスペクターパネルを表示"
+
+msgid "Volume inspector"
+msgstr "ボリュームインスペクター"
+
+msgid "Show the brushes and brush settings panels"
+msgstr "ブラシおよびブラシ設定パネルを表示"
+
+msgid "Show the pixel art preview panel"
+msgstr "ピクセルアートプレビューパネルを表示"
+
+msgid "Show the tip of the day on startup"
+msgstr "起動時に今日のヒントを表示"
+
+msgid "Tip of the day popup"
+msgstr "今日のヒントポップアップ"
+
+msgid "Trigger opening of opup"
+msgstr "ポップアップを開くトリガー"
+
+msgid "Trigger opening of popup"
+msgstr "ポップアップを開くトリガー"
+
+msgid "Welcome popup"
+msgstr "ウェルカムポップアップ"
+
+msgid "Minecraft mapping popup"
+msgstr "Minecraftマッピングポップアップ"
+
+msgid "About popup"
+msgstr "バージョン情報ポップアップ"
+
+msgid "Rename node popup"
+msgstr "ノードの名前変更ポップアップ"
+
+msgid "Create animation popup"
+msgstr "アニメーション作成ポップアップ"
+
+msgid "Animation playing"
+msgstr "アニメーション再生中"
+
+msgid "Update the children of a node when the transform of the node changes"
+msgstr "ノードの変換が変更されたときに子ノードを更新します"
+
+msgid "Autosave delay in seconds"
+msgstr "自動保存の間隔（秒）"
+
+msgid "Delay in second between autosaves - 0 disables autosaves"
+msgstr "自動保存の間隔（秒単位、0 で自動保存を無効化）"
+
+msgid "Update children"
+msgstr "子ノードを更新"
+
+msgid "Resize the volume to the current selection"
+msgstr "現在の選択範囲に合わせてボリュームのサイズを変更します"
+
+msgid "Executes a lua script"
+msgstr "Luaスクリプトを実行します"
+
+msgid "Move the cursor by keys, not by viewport mouse trace"
+msgstr "ビューポートのマウス追跡ではなくキーでカーソルを移動します"
+
+msgid "Hold to toggle add-node-by-face mode in scene view"
+msgstr "長押しでシーンビューの面でノード追加モードを切り替えます"
+
+msgid "Hold shift over the scene gizmo and click to create a reference node"
+msgstr "シーンギズモ上で Shift を押しながらクリックすると参照ノードを作成します"
+
+msgid "Change intensity by scaling the rgb values of the palette"
+msgstr "パレットの RGB 値をスケーリングして明度を変更します"
+
+msgid "Make the palette colors warmer"
+msgstr "パレットの色を暖色寄りにします"
+
+msgid "Make the palette colors colder"
+msgstr "パレットの色を寒色寄りにします"
+
+msgid "Make the palette colors brighter"
+msgstr "パレットの色を明るくします"
+
+msgid "Make the palette colors darker"
+msgstr "パレットの色を暗くします"
+
+msgid "Add a color to the active node's palette. Supports: #RRGGBB, #RRGGBBAA, argb:AARRGGBB, \"R G B [A]\", \"R,G,B[,A]\", \"rgb(R,G,B)\", \"rgba(R,G,B,A)\""
+msgstr "アクティブノードのパレットに色を追加します。対応形式: #RRGGBB, #RRGGBBAA, argb:AARRGGBB, \"R G B [A]\", \"R,G,B[,A]\", \"rgb(R,G,B)\", \"rgba(R,G,B,A)\""
+
+msgid "Remove unused colors from palette"
+msgstr "パレットから未使用の色を削除します"
+
+msgid "Apply white balance to the current palette"
+msgstr "現在のパレットにホワイトバランスを適用します"
+
+msgid "Apply color stretching to the current palette"
+msgstr "現在のパレットにカラーストレッチを適用します"
+
+msgid "Apply the current palette to all model nodes"
+msgstr "現在のパレットをすべてのモデルノードに適用します"
+
+msgid "Remove normal information from the palette"
+msgstr "パレットから法線情報を削除します"
+
+msgid "Scene view interaction: add node by face or activate hovered node"
+msgstr "シーンビュー操作: 面でノードを追加、またはカーソル下のノードをアクティブ化します"
+
+msgid "Toggle lock on the hovered node"
+msgstr "カーソル下のノードのロックを切り替えます"
+
+msgid "Select all, nothing or invert"
+msgstr "すべて選択、選択解除、または選択反転を行います"
+
+msgid "Cycle through all scene objects"
+msgstr "すべてのシーンオブジェクトを順番に切り替えます"
+
+msgid "Create a new model node from the current selection"
+msgstr "現在の選択範囲から新しいモデルノードを作成します"
+
+msgid "Allow to align all nodes on the floor next to each other without overlapping"
+msgstr "すべてのノードを重ならないように床面へ横並びに整列できるようにします"
+
+msgid "Save all model nodes into filenames represented by their node names"
+msgstr "すべてのモデルノードをそれぞれのノード名のファイルとして保存します"
+
+msgid "Save a single node to the given path with their node names"
+msgstr "単一のノードをそのノード名で指定パスに保存します"
+
+msgid "Create a new scene (with a given name and width, height, depth)"
+msgstr "新しいシーンを作成します（名前と幅・高さ・奥行きを指定）"
+
+msgid "Crop the given node to the voxel boundaries"
+msgstr "指定したノードをボクセルの境界に合わせて切り抜きます"
+
+msgid "Split the given node into multiple nodes"
+msgstr "指定したノードを複数のノードに分割します"
+
+msgid "Scale the given node down"
+msgstr "指定したノードを縮小します"
+
+msgid "Scale the given node up"
+msgstr "指定したノードを拡大します"
+
+msgid "Move the voxels of the current selected palette index, the given index or a comma-separated list of indices into a new node"
+msgstr "現在選択中のパレットインデックス、指定したインデックス、またはカンマ区切りのインデックスリストに対応するボクセルを新しいノードへ移動します"
+
+msgid "Aborts the current modifier action or add-node mode"
+msgstr "現在のモディファイア操作またはノード追加モードを中止します"
+
+msgid "Apply pending brush changes without switching brushes"
+msgstr "ブラシを切り替えずに保留中のブラシ変更を適用します"
+
+msgid "Fill the inner parts of closed models"
+msgstr "閉じたモデルの内部を塗りつぶします"
+
+msgid "Remove non visible voxels"
+msgstr "見えないボクセルを削除します"
+
+msgid "Fill voxels in the current selection"
+msgstr "現在の選択範囲内をボクセルで埋めます"
+
+msgid "Remove all voxels in the current selection"
+msgstr "現在の選択範囲内のすべてのボクセルを削除します"
+
+msgid "Remove selected voxels"
+msgstr "選択したボクセルを削除"
+
+msgid "Recolor selected voxels with the active palette color"
+msgstr "選択したボクセルをアクティブなパレットカラーで塗り直します"
+
+msgid "Deselect all voxels matching the active palette color, or any multi-selected palette colors"
+msgstr "アクティブなパレットカラー、または複数選択されたいずれかのパレットカラーに一致するすべてのボクセルの選択を解除します"
+
+msgid "Deselect all voxels not matching the active palette color, or keep voxels matching any multi-selected palette colors"
+msgstr "アクティブなパレットカラーに一致しないすべてのボクセルの選択を解除するか、複数選択されたいずれかのパレットカラーに一致するボクセルを残します"
+
+msgid "Select all voxels matching the active palette color, or any multi-selected palette colors"
+msgstr "アクティブなパレットカラー、または複数選択されたいずれかのパレットカラーに一致するすべてのボクセルを選択します"
+
+msgid "Delete all voxels matching the active palette color, or any multi-selected palette colors"
+msgstr "アクティブなパレットカラー、または複数選択されたいずれかのパレットカラーに一致するすべてのボクセルを削除します"
+
+msgid "Filter selection to only keep edge voxels where two or more faces meet"
+msgstr "2つ以上の面が接するエッジボクセルのみを残すように選択を絞り込みます"
+
+msgid "Filter selection to only keep corner voxels where three faces meet"
+msgstr "3つの面が接するコーナーボクセルのみを残すように選択を絞り込みます"
+
+msgid "Filter selection to only keep wall edge voxels with at most one solid neighbor in a perpendicular ring"
+msgstr "垂直方向のリング内に隣接するソリッドボクセルが最大1つしかない壁エッジボクセルのみを残すように選択を絞り込みます"
+
+msgid "Expand the selection by one voxel in all directions"
+msgstr "選択範囲を全方向に1ボクセル拡張します"
+
+msgid "Set the reference position to the specified position"
+msgstr "参照位置を指定した位置に設定します"
+
+msgid "Move the cursor by the specified offsets"
+msgstr "カーソルを指定したオフセット分移動します"
+
+msgid "Change the normal palette"
+msgstr "法線パレットを変更します"
+
+msgid "Load a palette by name. E.g. 'built-in:nippon' or 'lospec:id'"
+msgstr "名前を指定してパレットを読み込みます（例: 'built-in:nippon' や 'lospec:id'）"
+
+msgid "Set the cursor to the specified position"
+msgstr "カーソルを指定した位置に設定します"
+
+msgid "Set the reference position to the current cursor position"
+msgstr "参照位置を現在のカーソル位置に設定します"
+
+msgid "Resize your current model node by the specified size"
+msgstr "現在のモデルノードのサイズを指定したサイズに変更します"
+
+msgid "Rescale the content of a model node to the specified target size"
+msgstr "モデルノードの内容を指定したターゲットサイズにリスケールします"
+
+msgid "Shift the volume by the given values"
+msgstr "ボリュームを指定した値だけシフトします"
+
+msgid "Center the current active nodes at the reference position"
+msgstr "現在アクティブなノードを参照位置の中央に配置します"
+
+msgid "Center the current active nodes at the origin"
+msgstr "現在アクティブなノードを原点の中央に配置します"
+
+msgid "Move the voxels inside the volume by the given values without changing the volume bounds"
+msgstr "ボリュームの境界を変更せずに、ボリューム内のボクセルを指定した値だけ移動します"
+
+msgid "Copy selection"
+msgstr "選択範囲をコピーします"
+
+msgid "Paste clipboard to current selection or reference position"
+msgstr "クリップボードを現在の選択範囲または参照位置に貼り付けます"
+
+msgid "Paste clipboard to current cursor position"
+msgstr "クリップボードを現在のカーソル位置に貼り付けます"
+
+msgid "Paste clipboard as a new node"
+msgstr "クリップボードを新しいノードとして貼り付けます"
+
+msgid "Cut selection"
+msgstr "選択範囲を切り取ります"
+
+msgid "Copy selection to a file-based clipboard shared across editor instances"
+msgstr "エディターインスタンス間で共有されるファイルベースのクリップボードに選択範囲をコピーします"
+
+msgid "Merge all visible nodes and copy to the file-based clipboard"
+msgstr "表示中のすべてのノードを結合してファイルベースのクリップボードにコピーします"
+
+msgid "Paste from the file-based clipboard shared across editor instances to the cursor position"
+msgstr "エディターインスタンス間で共有されるファイルベースのクリップボードからカーソル位置に貼り付けます"
+
+msgid "Paste from the file-based clipboard shared across editor instances to the reference position"
+msgstr "エディターインスタンス間で共有されるファイルベースのクリップボードから参照位置に貼り付けます"
+
+msgid "Paste from the file-based clipboard as a new node at the cursor position"
+msgstr "ファイルベースのクリップボードからカーソル位置に新しいノードとして貼り付けます"
+
+msgid "Merge active node voxels into all overlapping nodes and remove the source node"
+msgstr "アクティブノードのボクセルを重なるすべてのノードに結合し、元のノードを削除します"
+
+msgid "Stamp active node onto all other nodes, overwriting their content in overlapping regions"
+msgstr "アクティブノードを他のすべてのノードにスタンプし、重なる領域の内容を上書きします"
+
+msgid "Merge all visible nodes into a temporary editable node, hiding the originals"
+msgstr "表示中のすべてのノードを編集可能な一時ノードに結合し、元のノードを非表示にします"
+
+msgid "Undo your last step"
+msgstr "直前の操作を元に戻します"
+
+msgid "Redo your last step"
+msgstr "直前の操作をやり直します"
+
+msgid "Rotate active nodes around the given axis"
+msgstr "アクティブノードを指定した軸を中心に回転します"
+
+msgid "Rotate all model nodes around the given axis, preserving their relative positions"
+msgstr "相対位置を維持したまま、すべてのモデルノードを指定した軸を中心に回転します"
+
+msgid "Merge two given nodes or active model node with the next one"
+msgstr "指定した2つのノード、またはアクティブなモデルノードと次のノードを結合します"
+
+msgid "Merge all nodes"
+msgstr "すべてのノードを結合します"
+
+msgid "Merge all visible nodes"
+msgstr "表示中のすべてのノードを結合します"
+
+msgid "Merge all locked nodes"
+msgstr "ロックされたすべてのノードを結合します"
+
+msgid "Animate all nodes with the given delay in millis between the frames"
+msgstr "フレーム間を指定したミリ秒の間隔で、すべてのノードをアニメーション再生します"
+
+msgid "Use the given index to select the color from the current palette"
+msgstr "指定したインデックスを使用して現在のパレットから色を選択します"
+
+msgid "Set the current selected color by finding the closest rgb match in the palette"
+msgstr "パレット内で最も近い RGB の色を見つけて現在の選択色に設定します"
+
+msgid "Pick the current selected color from current cursor voxel"
+msgstr "現在のカーソル位置のボクセルから選択色を取得します"
+
+msgid "Pick the current selected material from current cursor voxel"
+msgstr "現在のカーソル位置のボクセルから選択マテリアルを取得します"
+
+msgid "Flip the selected nodes around the given axis"
+msgstr "選択したノードを指定した軸で反転します"
+
+msgid "Reset the transform of the current node and keyframe to the default transform"
+msgstr "現在のノードとキーフレームのトランスフォームをデフォルトにリセットします"
+
+msgid "Mirrors the transform at the given axes for the given node"
+msgstr "指定したノードのトランスフォームを指定した軸でミラーします"
+
+msgid "Add a new model node to the current active node (with a given name and width, height, depth)"
+msgstr "現在のアクティブノードに新しいモデルノードを追加します（名前、幅、高さ、奥行きを指定）"
+
+msgid "Add a new model node adjacent to the hovered face of the active node"
+msgstr "アクティブノードのホバー中の面に隣接して新しいモデルノードを追加します"
+
+msgid "Bake the current transform into the voxel data for a particular node by id - or the current active one"
+msgstr "ID で指定したノード、または現在のアクティブノードのボクセルデータに現在のトランスフォームをベイクします"
+
+msgid "Delete a particular node by id - or the current active one"
+msgstr "ID で指定したノード、または現在のアクティブノードを削除します"
+
+msgid "Lock a particular node by id - or the current active one"
+msgstr "ID で指定したノード、または現在のアクティブノードをロックします"
+
+msgid "Toggle the lock state of a particular node by id - or the current active one"
+msgstr "ID で指定したノード、または現在のアクティブノードのロック状態を切り替えます"
+
+msgid "Unlock a particular node by id - or the current active one"
+msgstr "ID で指定したノード、または現在のアクティブノードのロックを解除します"
+
+msgid "Set or print the current active node"
+msgstr "現在のアクティブノードを設定または表示します"
+
+msgid "Toggle the visible state of a node"
+msgstr "ノードの表示状態を切り替えます"
+
+msgid "Show all nodes"
+msgstr "すべてのノードを表示します"
+
+msgid "Hide all nodes"
+msgstr "すべてのノードを非表示にします"
+
+msgid "Show all children nodes"
+msgstr "すべての子ノードを表示します"
+
+msgid "Hide all children nodes"
+msgstr "すべての子ノードを非表示にします"
+
+msgid "Hide all nodes except the given one and its children"
+msgstr "指定したノードとその子ノード以外のすべてのノードを非表示にします"
+
+msgid "Lock all nodes"
+msgstr "すべてのノードをロックします"
+
+msgid "Unlock all nodes"
+msgstr "すべてのノードのロックを解除します"
+
+msgid "Set the pivot point for a node"
+msgstr "ノードのピボットポイントを設定します"
+
+msgid "Change the name of a node"
+msgstr "ノードの名前を変更します"
+
+msgid "Repeat a volume along its transformed axes; positive counts include the original (maximum 1024 tiles)"
+msgstr "トランスフォーム後の軸に沿ってボリュームを反復配置します。正の数は元のボリュームを含みます（最大 1024 タイル）"
+
+msgid "Repeat selected voxels by their bounds inside the active volume; positive counts include the original"
+msgstr "アクティブなボリューム内で選択したボクセルをその境界ごとに反復配置します。正の数は元のボクセルを含みます"
+
+msgid "Duplicates the current node or the given node id"
+msgstr "現在のノードまたは指定した ID のノードを複製します"
+
+msgid "Create a node reference for the given node id"
+msgstr "指定した ID のノードに対するノード参照を作成します"
+
+msgid "Unreference from model and allow to edit the voxels for this node"
+msgstr "モデルからの参照を解除し、このノードのボクセルを編集できるようにします"
+
+msgid "Interpolate to the camera node position and orientation"
+msgstr "カメラノードの位置と向きへ補間移動します"
+
+msgid "Set or toggle the camera rotation mode (target or eye)"
+msgstr "カメラの回転モード（ターゲットまたは視点）を設定または切り替えます"
+
+msgid "Set the camera orbit target to the reference point position"
+msgstr "カメラのオービットターゲットを参照点の位置に設定します"
+
+msgid "Set the camera world position"
+msgstr "カメラのワールド位置を設定します"
+
+msgid "Set the camera orbit target position"
+msgstr "カメラのオービットターゲット位置を設定します"
+
+msgid "Set or cycle the camera projection mode (perspective, orthogonal or isometric)"
+msgstr "カメラの投影モード（透視投影、平行投影、アイソメトリック）を設定または切り替えます"
+
+msgid "Start the local voxedit server"
+msgstr "ローカルの voxedit サーバーを起動します"
+
+msgid "Stop the local voxedit server"
+msgstr "ローカルの voxedit サーバーを停止します"
+
+msgid "Kick a client from the server"
+msgstr "サーバーからクライアントをキックします"
+
+msgid "Connect to a voxedit server"
+msgstr "voxedit サーバーに接続します"
+
+msgid "Disconnect from the current voxedit server"
+msgstr "現在の voxedit サーバーから切断します"
+
+msgid "Cancelling"
+msgstr "キャンセル中"
+
+msgid "Shading mode: 0=Unlit, 1=Lit, 2=Shadows"
+msgstr "シェーディングモード: 0=ライトなし, 1=ライトあり, 2=シャドウあり"
+
+msgid "Ambient color"
+msgstr "環境光カラー"
+
+msgid "Ambient color for lit rendering in r g b format"
+msgstr "ライトありレンダリング用の環境光カラー（r g b 形式）"
+
+msgid "Diffuse color"
+msgstr "拡散光カラー"
+
+msgid "Diffuse color for lit rendering in r g b format"
+msgstr "ライトありレンダリング用の拡散光カラー（r g b 形式）"
+
+msgid "pitch, yaw and ignored roll in degrees"
+msgstr "ピッチ、ヨー、および無視されるロール（度単位）"
+
+msgid "Change the modifier type to 'color picker'"
+msgstr "モディファイアタイプを 'カラーピッカー' に変更します"
+
+msgid "Change the modifier type to 'erase'"
+msgstr "モディファイアタイプを '消去' に変更します"
+
+msgid "Change the modifier type to 'place'"
+msgstr "モディファイアタイプを '配置' に変更します"
+
+msgid "Change the modifier type to 'override'"
+msgstr "モディファイアタイプを '上書き' に変更します"
+
+msgid "Change the brush type to '%s'"
+msgstr "ブラシタイプを '%s' に変更します"
+
+msgid "Change the brush type to 'none'"
+msgstr "ブラシタイプを 'なし' に変更します"
+
+msgid "Change the brush type to 'script'"
+msgstr "ブラシタイプを 'スクリプト' に変更します"
+
+msgid "Re-scan the brushes directory for new or changed Lua brush scripts"
+msgstr "新規または変更された Lua ブラシスクリプトがないか brushes ディレクトリを再スキャンします"
+
+msgid "Toggle locked mode for the given axis at the current cursor position"
+msgstr "現在のカーソル位置で指定した軸のロックモードを切り替えます"
+
+msgid "Toggle locked mode for the x axis at the current cursor position"
+msgstr "現在のカーソル位置で X 軸のロックモードを切り替えます"
+
+msgid "Toggle locked mode for the y axis at the current cursor position"
+msgstr "現在のカーソル位置で Y 軸のロックモードを切り替えます"
+
+msgid "Toggle locked mode for the z axis at the current cursor position"
+msgstr "現在のカーソル位置で Z 軸のロックモードを切り替えます"
+
+msgid "Auto select added"
+msgstr "追加分を自動選択"
+
+msgid "Automatically select newly placed voxels"
+msgstr "新しく配置したボクセルを自動的に選択します"
+
+msgid "Invalid operation parameters"
+msgstr "操作パラメーターが無効です"
+
+msgid "The edit target changed or has no selection"
+msgstr "編集対象が変更されたか、選択範囲がありません"
+
+msgid "The edit target changed"
+msgstr "編集対象が変更されました"
+
+msgid "Max preview size"
+msgstr "最大プレビューサイズ"
+
+msgid "The maximum size of the preview volume"
+msgstr "プレビューボリュームの最大サイズ"
+
+msgctxt "ShapeType"
+msgid "Box"
+msgstr "ボックス"
+
+msgctxt "ShapeType"
+msgid "Torus"
+msgstr "トーラス"
+
+msgctxt "ShapeType"
+msgid "Cylinder"
+msgstr "円柱"
+
+msgctxt "ShapeType"
+msgid "Cone"
+msgstr "円錐"
+
+msgctxt "ShapeType"
+msgid "Dome"
+msgstr "ドーム"
+
+msgctxt "ShapeType"
+msgid "Ellipse"
+msgstr "楕円"
+
+msgctxt "ShapeType"
+msgid "Circle"
+msgstr "円"
+
+msgid "Grow the box from the first click as the center"
+msgstr "最初のクリックを中心としてボックスを広げます"
+
+msgid "Click and drag to define a box of voxels"
+msgstr "クリック＆ドラッグしてボクセルのボックスを指定します"
+
+msgid "Place voxels along the cursor while the action button is held"
+msgstr "アクションボタンを押している間、カーソルに沿ってボクセルを配置します"
+
+msgid "Like stroke mode, but do not replace the same voxel twice"
+msgstr "ストロークモードと同様ですが、同じボクセルを2回置き換えません"
+
+msgid "Mirror along the x axis at the reference position"
+msgstr "参照位置で X 軸に沿ってミラーします"
+
+msgid "Mirror along the y axis at the reference position"
+msgstr "参照位置で Y 軸に沿ってミラーします"
+
+msgid "Mirror along the z axis at the reference position"
+msgstr "参照位置で Z 軸に沿ってミラーします"
+
+msgid "Turn off mirroring"
+msgstr "ミラーをオフにします"
+
+msgid "Brush script execution failed"
+msgstr "ブラシスクリプトの実行に失敗しました"
+
+msgid "Brush scripts must preserve the target volume bounds"
+msgstr "ブラシスクリプトは対象ボリュームの境界を維持する必要があります"
+
+msgid "Toggle continuous line drawing"
+msgstr "連続線描画を切り替えます"
+
+msgid "Toggle quadratic bezier mode for the line brush"
+msgstr "ラインブラシの2次ベジェモードを切り替えます"
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Manual"
+msgstr "手動"
+
+msgid "Brighten"
+msgstr "明るくする"
+
+msgid "Darken"
+msgstr "暗くする"
+
+msgid "Random"
+msgstr "ランダム"
+
+msgid "Blend"
+msgstr "ブレンド"
+
+msgid "Blur"
+msgstr "ぼかし"
+
+msgid "Variation"
+msgstr "バリエーション"
+
+msgid "Toggle measuring from the reference position"
+msgstr "参照位置からの計測を切り替えます"
+
+msgctxt "Sculpt brush mode"
+msgid "Erode"
+msgstr "浸食"
+
+msgctxt "Sculpt brush mode"
+msgid "Grow"
+msgstr "拡張"
+
+msgctxt "Sculpt brush mode"
+msgid "Flatten"
+msgstr "平坦化"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Additive"
+msgstr "スムーズ加算"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Erode"
+msgstr "スムーズ浸食"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Gaussian"
+msgstr "ガウシアンスムーズ"
+
+msgctxt "Sculpt brush mode"
+msgid "Bridge Gap"
+msgstr "隙間を埋める"
+
+msgctxt "Sculpt brush mode"
+msgid "Smooth Wall"
+msgstr "壁をスムーズ化"
+
+msgctxt "Sculpt brush mode"
+msgid "Extend Plane"
+msgstr "平面を延長"
+
+msgctxt "Sculpt brush mode"
+msgid "Squash to Plane"
+msgstr "平面に押しつぶす"
+
+msgctxt "Sculpt brush mode"
+msgid "Reskin"
+msgstr "リスキン"
+
+msgid "Selection script execution failed"
+msgstr "選択スクリプトの実行に失敗しました"
+
+msgctxt "SelectMode"
+msgid "All"
+msgstr "すべて"
+
+msgctxt "SelectMode"
+msgid "Same Color"
+msgstr "同じ色"
+
+msgctxt "SelectMode"
+msgid "Surface"
+msgstr "サーフェス"
+
+msgctxt "SelectMode"
+msgid "Connected"
+msgstr "連結部分"
+
+msgctxt "SelectMode"
+msgid "Flat Surface"
+msgstr "平面サーフェス"
+
+msgctxt "SelectMode"
+msgid "Fuzzy Color"
+msgstr "類似色"
+
+msgctxt "SelectMode"
+msgid "3D Box"
+msgstr "3D ボックス"
+
+msgctxt "SelectMode"
+msgid "Circle"
+msgstr "円"
+
+msgctxt "SelectMode"
+msgid "Brush select"
+msgstr "ブラシ選択"
+
+msgctxt "SelectMode"
+msgid "Lasso"
+msgstr "投げ縄"
+
+msgctxt "SelectMode"
+msgid "Script"
+msgstr "スクリプト"
+
+msgid "Change the shape type to %s"
+msgstr "シェイプタイプを %s に変更します"
+
+msgid "Toggle center at cursor"
+msgstr "カーソル中心のオン/オフを切り替えます"
+
+msgid "Toggle continuously placing the stamp voxels"
+msgstr "スタンプボクセルの連続配置を切り替えます"
+
+msgid "Rotate stamp volume around the given axis by 90 degrees"
+msgstr "スタンプボリュームを指定した軸を中心に90度回転します"
+
+msgid "Use the current selection as new stamp"
+msgstr "現在の選択範囲を新しいスタンプとして使用します"
+
+msgid "Use the current selected node volume as new stamp"
+msgstr "現在選択中のノードのボリュームを新しいスタンプとして使用します"
+
+msgid "Paste the current clipboard content as stamp"
+msgstr "現在のクリップボードの内容をスタンプとして貼り付けます"
+
+msgid "No stamp volume set"
+msgstr "スタンプボリュームが設定されていません"
+
+msgid "Change the text brush axis"
+msgstr "テキストブラシの軸を変更します"
+
+msgid "No image loaded for texture brush"
+msgstr "テクスチャブラシに画像が読み込まれていません"
+
+msgid "Mirror the uv coordinates along the u axis"
+msgstr "UV 座標を U 軸に沿ってミラーします"
+
+msgid "Mirror the uv coordinates along the v axis"
+msgstr "UV 座標を V 軸に沿ってミラーします"
+
+msgid "Reset the uv coordinates"
+msgstr "UV 座標をリセットします"
+
+msgid "Create a texture from the active model's face colors"
+msgstr "アクティブモデルの面の色からテクスチャを作成します"
+
+msgctxt "Transform Modes"
+msgid "Move"
+msgstr "移動"
+
+msgctxt "Transform Modes"
+msgid "Shear"
+msgstr "シアー"
+
+msgctxt "Transform Modes"
+msgid "Rotate"
+msgstr "回転"
+
+msgctxt "Transform Modes"
+msgid "Scale"
+msgstr "拡大・縮小"
+
+msgid "Host name"
+msgstr "ホスト名"
+
+msgid "The voxedit server hostname to connect to"
+msgstr "接続先の voxedit サーバーのホスト名"
+
+msgid "Port"
+msgstr "ポート"
+
+msgid "The port to run the voxedit server on"
+msgstr "voxedit サーバーを実行するポート"
+
+msgid "Server password"
+msgstr "サーバーパスワード"
+
+msgid "The password required to connect to the voxedit server"
+msgstr "voxedit サーバーへの接続に必要なパスワード"
+
+msgid "Remote console password"
+msgstr "リモートコンソールパスワード"
+
+msgid "The rcon password required to send commands to the voxedit server"
+msgstr "voxedit サーバーにコマンドを送信するために必要な rcon パスワード"
+
+msgid "Server interface"
+msgstr "サーバーインターフェース"
+
+msgid "The interface to run the voxedit server on"
+msgstr "voxedit サーバーを実行するインターフェース"
+
+msgid "Max connections"
+msgstr "最大接続数"
+
+msgid "The maximum number of clients that can connect to the server"
+msgstr "サーバーに接続できるクライアントの最大数"
