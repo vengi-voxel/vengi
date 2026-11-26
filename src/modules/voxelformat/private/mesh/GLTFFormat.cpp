@@ -979,10 +979,10 @@ bool GLTFFormat::importSkins(const cgltf_data *data, const core::String &filenam
 				// 100-times larger volume or display 100-times coarser voxels.
 				math::Mat4f jointWorld;
 				cgltf_node_transform_world(skin.joints[ji], math::value_ptr(jointWorld));
-				math::Vec3f units;
-				for (int axis = 0; axis < 3; ++axis) {
-					units[axis] = math::length(math::Vec3f(jointWorld[axis]));
-					if (math::isinf(units[axis]) || units[axis] < 1e-12f || math::isinf(1.0f / units[axis])) {
+				const float units[] = {math::length(math::Vec3f(jointWorld[0])), math::length(math::Vec3f(jointWorld[1])),
+									   math::length(math::Vec3f(jointWorld[2]))};
+				for (const float unit : units) {
+					if (math::isinf(unit) || unit < 1e-12f || math::isinf(1.0f / unit)) {
 						return false;
 					}
 				}
