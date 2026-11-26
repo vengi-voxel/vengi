@@ -210,6 +210,7 @@ bool Viewport::init() {
 	}
 
 	_camera.setRotationType(video::CameraRotationType::Target);
+	_camera.setSize(_app->frameBufferDimension());
 	if (viewModeAllViewports(_viewMode->intVal())) {
 		_renderContext.renderMode = _sceneMode->boolVal() ? voxelrender::RenderMode::Scene : voxelrender::RenderMode::Edit;
 	}

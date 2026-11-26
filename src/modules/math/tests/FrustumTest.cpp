@@ -2,8 +2,8 @@
  * @file
  */
 
-#include "app/tests/AbstractTest.h"
 #include "math/Frustum.h"
+#include "app/tests/AbstractTest.h"
 #include "core/StringUtil.h"
 #include "math/AABB.h"
 #include "math/Mat4f.h"

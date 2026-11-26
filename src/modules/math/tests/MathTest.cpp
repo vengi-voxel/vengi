@@ -49,15 +49,21 @@ static_assert(std::is_trivial<math::Mat2f>::value && std::is_trivial<math::Mat3f
 			  std::is_trivial<math::Mat4f>::value && std::is_trivial<math::Mat3x4f>::value && std::is_trivial<math::Mat4x3f>::value, "mat");
 static_assert(std::is_trivial<math::Quatf>::value, "quat");
 
-static constexpr math::Vec4f kZero = math::Vec4f();
-static_assert(kZero.x == 0.0f && kZero.y == 0.0f && kZero.z == 0.0f && kZero.w == 0.0f, "value init is zero");
-static constexpr math::Vec3i kRing[] = {math::Vec3i(), math::Vec3i(1, 0, 0)};
-static_assert(kRing[0].x == 0 && kRing[1].x == 1, "constexpr vec3i");
+static constexpr math::Vec3i kUnitX(1, 0, 0);
+static_assert(kUnitX.x == 1 && kUnitX.y == 0 && kUnitX.z == 0, "constexpr vec3i");
 static constexpr math::Mat4f kIdentity = math::Mat4f::identity();
 static_assert(kIdentity[0][0] == 1.0f && kIdentity[1][1] == 1.0f && kIdentity[2][2] == 1.0f && kIdentity[3][3] == 1.0f &&
 			  kIdentity[0][1] == 0.0f, "mat4 identity");
 static constexpr math::Quatf kQuatIdentity = math::Quatf::identity();
 static_assert(kQuatIdentity.x == 0.0f && kQuatIdentity.y == 0.0f && kQuatIdentity.z == 0.0f && kQuatIdentity.w == 1.0f, "quat identity");
+
+TEST(MathTest, testVectorValueInitialization) {
+	// MSVC rejects constexpr reads from value-initialized anonymous unions.
+	const math::Vec4f zero4{};
+	EXPECT_EQ(zero4, math::Vec4f(0.0f));
+	const math::Vec3i zero3{};
+	EXPECT_EQ(zero3, math::Vec3i(0));
+}
 
 TEST(MathTest, testTransform) {
 	const math::Mat4f &mat = math::eulerAngleY(math::radians(90.0f));

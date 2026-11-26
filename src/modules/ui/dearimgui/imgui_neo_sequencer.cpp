@@ -823,7 +823,7 @@ bool BeginNeoSequencer(const char *idin, FrameIndexType *frame, FrameIndexType *
 
 
 	ImVec2 backgroundSize = context.Size;
-	const float topCut = abs(context.TopLeftCursor.y - cursor.y);
+	const float topCut = ImFabs(context.TopLeftCursor.y - cursor.y);
 	backgroundSize.y = backgroundSize.y - (topCut);
 
 	ImDrawList *drawList = GetWindowDrawList();

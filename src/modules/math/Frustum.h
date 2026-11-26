@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Plane.h"
+#include <stddef.h>
 #include <stdint.h>
 #include "math/Mat4f.h"
 #include "math/Vec3f.h"

@@ -132,7 +132,7 @@ bool PathTracer::initGpu() {
 	core_assert_always(_vbo.addAttribute(traceShader.getTexcoordAttribute(_texIndex, &math::Vec2f::x)));
 	core_memset(&_paramsUniforms, 0, sizeof(_paramsUniforms));
 	core_memset(&_displayUniforms, 0, sizeof(_displayUniforms));
-	shader::VoxelpathtracerBloomData::FilterData filter{};
+	alignas(16) shader::VoxelpathtracerBloomData::FilterData filter{};
 	if (!_paramsUbo.create(_paramsUniforms) || !_displayUbo.create(_displayUniforms) || !_bloomUbo.create(filter)) {
 		Log::error("Failed to create pathtracer uniform buffers");
 		_paramsUbo.shutdown();
@@ -624,7 +624,7 @@ bool PathTracer::bloomPass(float exposure) {
 	video::ScopedShader scoped(shader);
 	FullscreenPassState passState;
 	core_assert_always(video::bindTexture(shader.getBoundTextureTexUnit(), _accum[1 - _writeAccum].texture()));
-	shader::VoxelpathtracerBloomData::FilterData filter{};
+	alignas(16) shader::VoxelpathtracerBloomData::FilterData filter{};
 	filter.resolution = math::Vec2f((float)_targetResolution);
 	filter.exposure = exposure;
 	core_assert_always(_bloomUbo.update(filter));
