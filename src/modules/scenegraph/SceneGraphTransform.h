@@ -88,14 +88,14 @@ public:
 
 	void lerp(const SceneGraphTransform &dest, double deltaFrameSeconds);
 
-	math::Mat4f worldMatrix() const;
+	const math::Mat4f &worldMatrix() const;
 	const math::Vec3f &worldTranslation() const;
-	math::Quatf worldOrientation() const;
+	const math::Quatf &worldOrientation() const;
 	const math::Vec3f &worldScale() const;
 
 	const math::Mat4f &localMatrix() const;
 	const math::Vec3f &localTranslation() const;
-	math::Quatf localOrientation() const;
+	const math::Quatf &localOrientation() const;
 	const math::Vec3f &localScale() const;
 
 	const math::Mat4f calculateLocalMatrix() const;

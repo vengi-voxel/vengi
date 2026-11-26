@@ -226,7 +226,7 @@ const math::Vec3f &SceneGraphTransform::localTranslation() const {
 	return _localTranslation;
 }
 
-math::Quatf SceneGraphTransform::localOrientation() const {
+const math::Quatf &SceneGraphTransform::localOrientation() const {
 	return _localOrientation;
 }
 
@@ -234,7 +234,7 @@ const math::Vec3f &SceneGraphTransform::localScale() const {
 	return _localScale;
 }
 
-math::Mat4f SceneGraphTransform::worldMatrix() const {
+const math::Mat4f &SceneGraphTransform::worldMatrix() const {
 	core_assert_msg((_dirty & DIRTY_WORLDVALUES) == 0u, "dirty flag: %u", _dirty);
 	return _worldMat;
 }
@@ -243,7 +243,7 @@ const math::Vec3f &SceneGraphTransform::worldTranslation() const {
 	return _worldTranslation;
 }
 
-math::Quatf SceneGraphTransform::worldOrientation() const {
+const math::Quatf &SceneGraphTransform::worldOrientation() const {
 	return _worldOrientation;
 }
 
