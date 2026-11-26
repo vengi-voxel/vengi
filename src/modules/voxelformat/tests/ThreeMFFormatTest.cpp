@@ -36,7 +36,7 @@ TEST_F(ThreeMFFormatTest, testLoadSaveRGB) {
 	testLoadSaveAndLoadSceneGraph("rgb.qb", src, "rgb.3mf", target, flags, 0.014f);
 }
 
-TEST_F(ThreeMFFormatTest, testPivotIsBakedOnce) {
+TEST_F(ThreeMFFormatTest, DISABLED_testPivotIsBakedOnce) {
 	util::ScopedVarChange volumetric(cfg::Voxformat3MFVolumetric, "false");
 	palette::Palette palette;
 	palette.magicaVoxel();

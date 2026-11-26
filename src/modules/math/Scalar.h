@@ -61,17 +61,22 @@ inline constexpr double min(double a, double b) { return a < b ? a : b; }
 inline constexpr int min(int a, int b) { return a < b ? a : b; }
 inline constexpr uint8_t min(uint8_t a, uint8_t b) { return a < b ? a : b; }
 inline constexpr uint16_t min(uint16_t a, uint16_t b) { return a < b ? a : b; }
-inline constexpr int64_t min(int64_t a, int64_t b) { return a < b ? a : b; }
-inline constexpr uint32_t min(uint32_t a, uint32_t b) { return a < b ? a : b; }
-inline constexpr uint64_t min(uint64_t a, uint64_t b) { return a < b ? a : b; }
+// Use fundamental types: size_t and uint64_t can alias different types on different platforms.
+inline constexpr unsigned int min(unsigned int a, unsigned int b) { return a < b ? a : b; }
+inline constexpr long min(long a, long b) { return a < b ? a : b; }
+inline constexpr unsigned long min(unsigned long a, unsigned long b) { return a < b ? a : b; }
+inline constexpr long long min(long long a, long long b) { return a < b ? a : b; }
+inline constexpr unsigned long long min(unsigned long long a, unsigned long long b) { return a < b ? a : b; }
 inline constexpr float max(float a, float b) { return a > b ? a : b; }
 inline constexpr double max(double a, double b) { return a > b ? a : b; }
 inline constexpr int max(int a, int b) { return a > b ? a : b; }
 inline constexpr uint8_t max(uint8_t a, uint8_t b) { return a > b ? a : b; }
 inline constexpr uint16_t max(uint16_t a, uint16_t b) { return a > b ? a : b; }
-inline constexpr int64_t max(int64_t a, int64_t b) { return a > b ? a : b; }
-inline constexpr uint32_t max(uint32_t a, uint32_t b) { return a > b ? a : b; }
-inline constexpr uint64_t max(uint64_t a, uint64_t b) { return a > b ? a : b; }
+inline constexpr unsigned int max(unsigned int a, unsigned int b) { return a > b ? a : b; }
+inline constexpr long max(long a, long b) { return a > b ? a : b; }
+inline constexpr unsigned long max(unsigned long a, unsigned long b) { return a > b ? a : b; }
+inline constexpr long long max(long long a, long long b) { return a > b ? a : b; }
+inline constexpr unsigned long long max(unsigned long long a, unsigned long long b) { return a > b ? a : b; }
 
 inline constexpr float clamp(float v, float lo, float hi) { return min(max(v, lo), hi); }
 inline constexpr double clamp(double v, double lo, double hi) { return min(max(v, lo), hi); }

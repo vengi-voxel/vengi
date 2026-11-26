@@ -43,7 +43,7 @@ using OBBF = OBB<float>;
 
 namespace scenegraph {
 
-class CollisionNode;
+struct CollisionNode;
 using CollisionNodes = core::DynamicArray<CollisionNode>;
 
 class SceneGraphNodeCamera;
