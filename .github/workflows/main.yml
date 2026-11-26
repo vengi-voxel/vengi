@@ -393,7 +393,7 @@ jobs:
         - name: Install host packages
           run: |
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends ninja-build ccache unzip ca-certificates
+            sudo apt-get install -y --no-install-recommends ninja-build ccache unzip ca-certificates libasound2-dev libcurl4-gnutls-dev
 
         - uses: actions/setup-java@v5
           with:
