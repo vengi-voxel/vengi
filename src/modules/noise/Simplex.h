@@ -150,7 +150,7 @@ inline float iqfBm(const math::Vec2f &v, uint8_t octaves = 4, float lacunarity =
 inline float iqfBm(const math::Vec3f &v, uint8_t octaves = 4, float lacunarity = 2.0f, float gain = 0.5f);
 
 //! Returns the 2D simplex noise fractal brownian motion sum variation by Iñigo Quilez that use a mat2 to transform each octave
-inline float iqMatfBm(const math::Vec2f &v, uint8_t octaves = 4, const math::Mat2f &mat = math::Mat2f(1.6, -1.2, 1.2, 1.6), float gain = 0.5f);
+inline float iqMatfBm(const math::Vec2f &v, uint8_t octaves = 4, const math::Mat2f &mat = math::Mat2f(1.6f, -1.2f, 1.2f, 1.6f), float gain = 0.5f);
 
 //! Seeds the permutation table with new random values
 inline void seed(uint32_t s);
