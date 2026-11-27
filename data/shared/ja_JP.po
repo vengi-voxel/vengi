@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vengi\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-11-26 01:00+0900\n"
+"PO-Revision-Date: 2026-11-26 13:38+0900\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -323,12 +323,14 @@ msgstr "すべてのcvarを表示"
 msgid "Bindings"
 msgstr "キー割り当て"
 
+#, c-format
 msgid "Recording new binding for: %s"
 msgstr "新しいキー割り当てを記録中: %s"
 
 msgid "Press keys to set new binding, then click 'Apply' or press Escape to cancel"
 msgstr "キーを押して新しい割り当てを設定し、「適用」をクリックするか Escape でキャンセルしてください"
 
+#, c-format
 msgid "New binding: %s"
 msgstr "新しい割り当て: %s"
 
@@ -350,6 +352,7 @@ msgstr "コンテキスト"
 msgid "Description"
 msgstr "説明"
 
+#, c-format
 msgid "Failed to get command for %s"
 msgstr "%s のコマンド取得に失敗しました"
 
@@ -500,6 +503,7 @@ msgstr "オプション"
 msgid "File already exists"
 msgstr "ファイルが既に存在します"
 
+#, c-format
 msgid ""
 "%s already exist.\n"
 "Do you want to overwrite the file?"
@@ -669,6 +673,7 @@ msgstr "(ポップアップ)"
 msgid "(Untitled)"
 msgstr "(無題)"
 
+#, c-format
 msgid "Open '%s'"
 msgstr "'%s' を開く"
 
@@ -726,6 +731,7 @@ msgstr "はい"
 msgid "No"
 msgstr "いいえ"
 
+#, c-format
 msgid ""
 "Open in browser\n"
 "%s"
@@ -855,6 +861,12 @@ msgstr "シェーダー出力をバッファへキャプチャする機能のサ
 
 msgid "Renderer feature cvar"
 msgstr "レンダラー機能 cvar"
+
+msgid "Renderer"
+msgstr "レンダラー"
+
+msgid "Renderer backend at startup: opengl or vulkan"
+msgstr "起動時のレンダラーバックエンド: opengl または vulkan"
 
 msgid "Show all images in the texture pool"
 msgstr "テクスチャプール内のすべての画像を表示する"
@@ -1030,8 +1042,8 @@ msgstr "ボクセルメッシュサイズ"
 msgid "Mesh mode"
 msgstr "メッシュモード"
 
-msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher"
-msgstr "0 = キューブ, 1 = マーチングキューブ, 2 = バイナリメッシャー"
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 4 = dual contouring"
+msgstr "0 = キューブ, 1 = マーチングキューブ, 2 = バイナリメッシャー, 4 = デュアルコンタリング"
 
 msgid "Mesh allocation strategy"
 msgstr "メッシュ割り当て戦略"
@@ -1064,8 +1076,8 @@ msgid "Merge similar quads to optimize the mesh"
 msgstr "類似の四角形を結合してメッシュを最適化する"
 
 msgctxt "Voxel mesh mode description"
-msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture"
-msgstr "0 = キューブ, 1 = マーチングキューブ, 2 = バイナリメッシャー, 3 = グリーディテクスチャ"
+msgid "0 = cubes, 1 = marching cubes, 2 = binary mesher, 3 = greedy texture, 4 = dual contouring"
+msgstr "0 = キューブ, 1 = マーチングキューブ, 2 = バイナリメッシャー, 3 = グリーディテクスチャ, 4 = デュアルコンタリング"
 
 msgid "Reuse vertices"
 msgstr "頂点を再利用"
@@ -1328,6 +1340,12 @@ msgstr "Godotプロジェクトを作成"
 msgid "Create project.godot beside the scene and set it as the main scene. Existing projects are preserved."
 msgstr "シーンと同じ場所にproject.godotを作成し、メインシーンとして設定します。既存のプロジェクトは保持されます。"
 
+msgid "3MF volumetric"
+msgstr "3MF ボリューメトリック"
+
+msgid "Embed the 3MF volumetric extension as a PNG slice stack so interior voxel colors are kept. The printable mesh is still written."
+msgstr "内部のボクセルカラーを保持するため、3MF ボリューメトリック拡張を PNG スライススタックとして埋め込みます。印刷可能なメッシュも引き続き書き出されます。"
+
 msgid "Export materials"
 msgstr "マテリアルをエクスポート"
 
@@ -1554,6 +1572,9 @@ msgstr "バイナリ"
 
 msgid "Cubes"
 msgstr "キューブ"
+
+msgid "Dual contouring"
+msgstr "デュアルコンタリング"
 
 msgid "Greedy texture"
 msgstr "グリーディテクスチャ"
@@ -1801,6 +1822,12 @@ msgstr "レンダリングスケール"
 msgid "Trace at a fraction of the output resolution, then upsample"
 msgstr "出力解像度より低い解像度でトレースしてからアップサンプリングします"
 
+msgid "Hardware ray query"
+msgstr "ハードウェアレイクエリ"
+
+msgid "Use Vulkan hardware ray query acceleration when available"
+msgstr "利用可能な場合、Vulkan ハードウェアレイクエリアクセラレーションを使用する"
+
 msgid "Movement speed"
 msgstr "移動速度"
 
@@ -1917,9 +1944,11 @@ msgstr ""
 "ファイル名にはノードのUUIDと\n"
 "Zレイヤーインデックスが含まれます。"
 
+#, c-format
 msgid "Depth map: %s"
 msgstr "深度マップ: %s"
 
+#, c-format
 msgid "Depth map not found: %s"
 msgstr "深度マップが見つかりません: %s"
 
@@ -1980,9 +2009,11 @@ msgstr "バージョン"
 msgid "Installed"
 msgstr "インストール済み"
 
+#, c-format
 msgid "Uninstall %s"
 msgstr "%s をアンインストール"
 
+#, c-format
 msgid "Download %s"
 msgstr "%s をダウンロード"
 
@@ -2025,6 +2056,7 @@ msgstr "スクリプトオプション"
 msgid "Convert"
 msgstr "変換"
 
+#, c-format
 msgid "Found vengi-voxconvert at %s"
 msgstr "%s に vengi-voxconvert が見つかりました"
 
@@ -2187,12 +2219,14 @@ msgstr "全体を表示 (Home)"
 msgid "Center playhead"
 msgstr "再生ヘッドを中央に表示"
 
+#, c-format
 msgid "Max frames for this animation: %i"
 msgstr "このアニメーションの最大フレーム数: %i"
 
 msgid "Loop"
 msgstr "ループ"
 
+#, c-format
 msgid "Keyframe %i, Interpolation: %s"
 msgstr "キーフレーム %i、補間: %s"
 
@@ -2205,6 +2239,7 @@ msgstr "キーフレームを複製"
 msgid "Delete keyframes"
 msgstr "キーフレームを削除"
 
+#, c-format
 msgid "Delete %i keyframes"
 msgstr "%i 個のキーフレームを削除"
 
@@ -2505,6 +2540,7 @@ msgstr "寸法を合わせる"
 msgid "Scale the L-System so the generated shape fits the current volume"
 msgstr "生成される形状が現在のボリュームに収まるように L-System をスケーリングします"
 
+#, c-format
 msgid "Progress: %.1f%%"
 msgstr "進捗: %.1f%%"
 
@@ -2617,12 +2653,14 @@ msgstr "下限"
 msgid "Upper bound"
 msgstr "上限"
 
+#, c-format
 msgid "Size: %ix%ix%i"
 msgstr "サイズ: %ix%ix%i"
 
 msgid "Rescale content"
 msgstr "内容をリスケール"
 
+#, c-format
 msgid "Original: %i x %i x %i"
 msgstr "元のサイズ: %i x %i x %i"
 
@@ -2635,6 +2673,7 @@ msgstr "目標サイズ"
 msgid "Scale (%)"
 msgstr "スケール (%)"
 
+#, c-format
 msgid "Result: %i x %i x %i"
 msgstr "結果: %i x %i x %i"
 
@@ -2662,6 +2701,7 @@ msgstr "パレット"
 msgid "History"
 msgstr "履歴"
 
+#, c-format
 msgid "Current state: %i / %i"
 msgstr "現在の状態: %i / %i"
 
@@ -2896,6 +2936,7 @@ msgstr "切断"
 msgid "Server"
 msgstr "サーバー"
 
+#, c-format
 msgid "Server is running on port %i"
 msgstr "サーバーはポート %i で実行中です"
 
@@ -2935,6 +2976,7 @@ msgstr "カラーヒストグラム"
 msgid "Analyze"
 msgstr "解析"
 
+#, c-format
 msgid "%i colors used"
 msgstr "%i 色を使用"
 
@@ -3058,6 +3100,7 @@ msgstr "半径"
 msgid "Add swing limit"
 msgstr "スイング制限を追加"
 
+#, c-format
 msgid "UUID: %s"
 msgstr "UUID: %s"
 
@@ -3082,6 +3125,7 @@ msgstr "UUID"
 msgid "Swap entries and preserve painted directions"
 msgstr "エントリを入れ替えてペイントされた方向を保持します"
 
+#, c-format
 msgid "Normal %i: %.3f, %.3f, %.3f"
 msgstr "法線 %i: %.3f, %.3f, %.3f"
 
@@ -3159,6 +3203,7 @@ msgstr "モデルの法線を計算します"
 msgid "Remove all normals"
 msgstr "すべての法線を削除"
 
+#, c-format
 msgid "Normal index: %i (scene normal index %i)"
 msgstr "法線インデックス: %i (シーン法線インデックス %i)"
 
@@ -3233,9 +3278,6 @@ msgstr "レンダリング"
 
 msgid "Pathtracer"
 msgstr "パストレーサー"
-
-msgid "Renderer"
-msgstr "レンダラー"
 
 msgid "Mesh Export"
 msgstr "メッシュエクスポート"
@@ -3425,6 +3467,7 @@ msgstr "最も近い色を検索"
 msgid "Select a color to find the closest match in the current loaded palette"
 msgstr "色を選択して、現在読み込まれているパレットから最も近い色を検索します"
 
+#, c-format
 msgid "Palette index: %i (scene voxel index %i)"
 msgstr "パレットインデックス: %i (シーンボクセルインデックス %i)"
 
@@ -3512,6 +3555,7 @@ msgstr "設定"
 msgid "Save image"
 msgstr "画像を保存"
 
+#, c-format
 msgid "Sample %i / %i"
 msgstr "サンプル %i / %i"
 
@@ -3527,63 +3571,86 @@ msgstr "準備中"
 msgid "Render"
 msgstr "レンダリング"
 
+#, c-format
 msgid "Pending extractions: %i"
 msgstr "待機中の抽出: %i"
 
+#, c-format
 msgid "Pending meshes: %i"
 msgstr "待機中のメッシュ: %i"
 
+#, c-format
 msgid "Culled volumes: %i"
 msgstr "カリングされたボリューム: %i"
 
+#, c-format
 msgid "Mapped nodes: %i"
 msgstr "マップ済みノード: %i"
 
+#, c-format
 msgid "Volume index high-water: %i"
 msgstr "ボリュームインデックス最大使用値: %i"
 
+#, c-format
 msgid "Free volume indices: %i"
 msgstr "空きボリュームインデックス: %i"
+
+#, c-format
+msgid "Volume memory: %s (%i)"
+msgstr "ボリュームメモリ: %s (%i)"
 
 msgid "Render stats"
 msgstr "レンダリング統計"
 
+#, c-format
 msgid "Draw calls: %<PRIu64>"
 msgstr "ドローコール: %<PRIu64>"
 
+#, c-format
 msgid "Pipeline binds: %<PRIu64>"
 msgstr "パイプラインバインド: %<PRIu64>"
 
+#, c-format
 msgid "Descriptor binds: %<PRIu64>"
 msgstr "ディスクリプタバインド: %<PRIu64>"
 
+#, c-format
 msgid "Buffer updates: %<PRIu64>"
 msgstr "バッファ更新: %<PRIu64>"
 
+#, c-format
 msgid "Render passes: %<PRIu64>"
 msgstr "レンダーパス: %<PRIu64>"
 
+#, c-format
 msgid "Fullscreen passes: %<PRIu64>"
 msgstr "フルスクリーンパス: %<PRIu64>"
 
+#, c-format
 msgid "Blits: %<PRIu64>"
 msgstr "ブリット: %<PRIu64>"
 
+#, c-format
 msgid "CPU render ms: %.3f"
 msgstr "CPU レンダリング (ms): %.3f"
 
+#, c-format
 msgid "Camera position: %.2f %.2f %.2f"
 msgstr "カメラ位置: %.2f %.2f %.2f"
 
+#, c-format
 msgid "Camera velocity: %.2f %.2f %.2f"
 msgstr "カメラ速度: %.2f %.2f %.2f"
 
+#, c-format
 msgid "Collided on x axis: %s"
 msgstr "X 軸方向の衝突: %s"
 
+#, c-format
 msgid "Collided on y axis: %s"
 msgstr "Y 軸方向の衝突: %s"
 
+#, c-format
 msgid "Collided on z axis: %s"
 msgstr "Z 軸方向の衝突: %s"
 
@@ -3593,6 +3660,7 @@ msgstr "カメラ範囲"
 msgid "Camera friction decay"
 msgstr "カメラ摩擦減衰"
 
+#, c-format
 msgid "Recent contact point: %.2f %.2f %.2f"
 msgstr "直近の接触点: %.2f %.2f %.2f"
 
@@ -3695,6 +3763,7 @@ msgstr "アクティブなノードとすべての子ノードを削除"
 msgid "Merge onto"
 msgstr "結合先"
 
+#, c-format
 msgid "Merge %s onto %s"
 msgstr "%s を %s に結合"
 
@@ -3757,6 +3826,7 @@ msgstr "スクリプティングマニュアル"
 msgid "Script Editor"
 msgstr "スクリプトエディタ"
 
+#, c-format
 msgid "Overwrite scripts/%s"
 msgstr "scripts/%s を上書き"
 
@@ -3781,12 +3851,15 @@ msgstr "現在のスライスの背後にあるボクセルを不透明度を下
 msgid "Grid"
 msgstr "グリッド"
 
+#, c-format
 msgid "Command: %s"
 msgstr "コマンド: %s"
 
+#, c-format
 msgid "Command: %s (%s)"
 msgstr "コマンド: %s (%s)"
 
+#, c-format
 msgid "FPS: %.2f"
 msgstr "FPS: %.2f"
 
@@ -4009,6 +4082,7 @@ msgstr "シーンジョブ"
 msgid "Abort"
 msgstr "中止"
 
+#, c-format
 msgid "Pending: %i"
 msgstr "保留中: %i"
 
@@ -4018,21 +4092,27 @@ msgstr "保留中をクリア"
 msgid "Abort all"
 msgstr "すべて中止"
 
+#, c-format
 msgid "Slice at %s: %i"
 msgstr "%s でのスライス: %i"
 
+#, c-format
 msgid "pos: %i:%i:%i"
 msgstr "位置: %i:%i:%i"
 
+#, c-format
 msgid "size: %i:%i:%i"
 msgstr "サイズ: %i:%i:%i"
 
+#, c-format
 msgid "cursor: %i:%i:%i"
 msgstr "カーソル: %i:%i:%i"
 
+#, c-format
 msgid "rel cursor: %i:%i:%i"
 msgstr "相対カーソル: %i:%i:%i"
 
+#, c-format
 msgid "dist: %i:%i:%i"
 msgstr "距離: %i:%i:%i"
 
@@ -4060,9 +4140,11 @@ msgstr "動画"
 msgid "Finishing..."
 msgstr "終了処理中..."
 
+#, c-format
 msgid "Pending frames: %u"
 msgstr "保留中のフレーム: %u"
 
+#, c-format
 msgid ""
 "Recording at %i fps\n"
 "Pending frames: %u"
@@ -4145,6 +4227,7 @@ msgstr "VoxBox API キー"
 msgid "VoxBox refresh token for authenticated requests"
 msgstr "認証済みリクエスト用の VoxBox リフレッシュトークン"
 
+#, c-format
 msgid "Logged in as %s"
 msgstr "%s としてログイン中"
 
@@ -4238,6 +4321,7 @@ msgstr "モデルをアップロードするにはログインしてください
 msgid "Animated"
 msgstr "アニメーションあり"
 
+#, c-format
 msgid "Updating existing model: %s"
 msgstr "既存モデルを更新中: %s"
 
@@ -4259,6 +4343,7 @@ msgstr "VoxBox で更新..."
 msgid "Click a voxel face in the viewport to set the extrusion direction"
 msgstr "ビューポート内のボクセルの面をクリックして押し出し方向を設定します"
 
+#, c-format
 msgid "Direction: %s"
 msgstr "方向: %s"
 
@@ -4268,6 +4353,7 @@ msgstr "選択範囲がありません。先に選択ブラシを使用してく
 msgid "Fill walls"
 msgstr "壁を埋める"
 
+#, c-format
 msgid "Offset %s"
 msgstr "オフセット %s"
 
@@ -4298,6 +4384,7 @@ msgstr "保留中のセグメント"
 msgid "Segment"
 msgstr "セグメント"
 
+#, c-format
 msgid "Segment %i"
 msgstr "セグメント %i"
 
@@ -4334,6 +4421,7 @@ msgstr "変化の確率（1 / N）"
 msgid "Each voxel has a 1 in N chance to be varied"
 msgstr "各ボクセルが 1 / N の確率で色変化します"
 
+#, c-format
 msgid "Random pool: %i selected colors"
 msgstr "ランダムプール: 選択中の %i 色"
 
@@ -4391,9 +4479,11 @@ msgstr "終点"
 msgid "Delta"
 msgstr "差分"
 
+#, c-format
 msgid "Length: %.2f"
 msgstr "長さ: %.2f"
 
+#, c-format
 msgid "Manhattan: %i"
 msgstr "マンハッタン距離: %i"
 
@@ -4502,6 +4592,7 @@ msgstr "最小"
 msgid "Max"
 msgstr "最大"
 
+#, c-format
 msgid "Size: %d x %d x %d"
 msgstr "サイズ: %d x %d x %d"
 
@@ -4511,9 +4602,11 @@ msgstr "円形選択"
 msgid "Center"
 msgstr "中心"
 
+#, c-format
 msgid "Radius %s"
 msgstr "半径 %s"
 
+#, c-format
 msgid "Depth %s"
 msgstr "深さ %s"
 
@@ -5476,6 +5569,7 @@ msgstr "モディファイアタイプを '配置' に変更します"
 msgid "Change the modifier type to 'override'"
 msgstr "モディファイアタイプを '上書き' に変更します"
 
+#, c-format
 msgid "Change the brush type to '%s'"
 msgstr "ブラシタイプを '%s' に変更します"
 
@@ -5703,6 +5797,7 @@ msgctxt "SelectMode"
 msgid "Script"
 msgstr "スクリプト"
 
+#, c-format
 msgid "Change the shape type to %s"
 msgstr "シェイプタイプを %s に変更します"
 
