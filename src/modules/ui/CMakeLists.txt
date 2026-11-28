@@ -22,6 +22,7 @@ set(SRCS
 	DragAndDropPayload.h
 
 	font/FontResolver.h
+	font/FontResolver.cpp
 	font/system/Unix.cpp
 	font/system/Windows.cpp
 	font/system/Emscripten.cpp
@@ -152,3 +153,11 @@ if (USE_IMGUITESTENGINE)
 	endif()
 	set_target_properties(${TEST_ENGINE} PROPERTIES UNITY_BUILD OFF)
 endif()
+
+set(TEST_SRCS
+	tests/FontResolverTest.cpp
+)
+gtest_suite_begin(tests-${LIB} TEMPLATE ${ROOT_DIR}/src/modules/core/tests/main.cpp.in)
+gtest_suite_sources(tests-${LIB} ${TEST_SRCS})
+gtest_suite_deps(tests-${LIB} ${LIB} test-app)
+gtest_suite_end(tests-${LIB})

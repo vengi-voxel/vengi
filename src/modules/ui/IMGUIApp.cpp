@@ -28,6 +28,7 @@
 #include "command/Command.h"
 #include "core/BindingContext.h"
 #include "color/Color.h"
+#include "core/ArrayLength.h"
 #include "core/Common.h"
 #include "core/Log.h"
 #include "core/StringUtil.h"
@@ -282,7 +283,10 @@ void IMGUIApp::loadFonts() {
 											&fontIconCfg);
 
 	core::DynamicArray<io::FilesystemEntry> entities;
-	io::filesystem()->list("font", entities, "*.ttf");
+	static const char *fontPatterns[] = {"*.ttf", "*.ttc", "*.otf"};
+	for (int i = 0; i < lengthof(fontPatterns); ++i) {
+		io::filesystem()->list("font", entities, fontPatterns[i]);
+	}
 	Log::debug("Found %i additional font files", (int)entities.size());
 	for (const io::FilesystemEntry &entry : entities) {
 		const core::String &name = io::filesystem()->filePath(entry.fullPath);
@@ -296,13 +300,16 @@ void IMGUIApp::loadFonts() {
 
 	if (entities.empty()) {
 		const core::DynamicArray<core::String> &systemFonts = ui::font::findSystemFonts();
-		for (const core::String &fontPath : systemFonts) {
-			if (!core::string::icontains(fontPath, "NotoSansCJK")) {
-				continue;
-			}
+		core::String language = _languageVar ? _languageVar->strVal() : core::String::Empty;
+		if (language.empty()) {
+			language = _dictManager.getLanguage().str();
+		}
+		const core::DynamicArray<core::String> &fallbackFonts = ui::font::selectFallbackSystemFonts(systemFonts, language);
+		for (const core::String &fontPath : fallbackFonts) {
 			Log::debug("Load system font from %s", fontPath.c_str());
 			ImFontConfig fontCfg;
 			fontCfg.MergeMode = true;
+			fontCfg.Flags |= ImFontFlags_NoLoadError;
 			if (io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 0.0f, &fontCfg) != nullptr) {
 				break; // one system font is enough
 			}
