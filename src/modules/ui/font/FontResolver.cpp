@@ -3,48 +3,27 @@
  */
 
 #include "ui/font/FontResolver.h"
+#include "core/Algorithm.h"
 #include "core/ArrayLength.h"
+#include "core/Path.h"
 #include "core/StringUtil.h"
 
 namespace ui {
 namespace font {
-
-static core::String extractBasename(const core::String &fontPath) {
-	const size_t slashPos = fontPath.rfind('/');
-	const size_t backslashPos = fontPath.rfind('\\');
-	size_t sepPos = core::String::npos;
-	if (slashPos != core::String::npos && backslashPos != core::String::npos) {
-		sepPos = slashPos > backslashPos ? slashPos : backslashPos;
-	} else if (slashPos != core::String::npos) {
-		sepPos = slashPos;
-	} else {
-		sepPos = backslashPos;
-	}
-	if (sepPos == core::String::npos) {
-		return fontPath;
-	}
-	return fontPath.substr(sepPos + 1);
-}
-
-static bool containsPath(const core::DynamicArray<core::String> &paths, const core::String &target) {
-	for (const core::String &path : paths) {
-		if (path == target) {
-			return true;
-		}
-	}
-	return false;
-}
 
 static void appendMatchingFonts(const core::DynamicArray<core::String> &systemFonts, const char *const *patterns,
 								int count, core::DynamicArray<core::String> &results) {
 	for (int i = 0; i < count; ++i) {
 		const char *pattern = patterns[i];
 		for (const core::String &fontPath : systemFonts) {
-			const core::String filename = extractBasename(fontPath);
+			if (fontPath.empty()) {
+				continue;
+			}
+			const core::String filename = core::Path(fontPath).basename().str();
 			if (!core::string::icontains(filename, pattern)) {
 				continue;
 			}
-			if (!containsPath(results, fontPath)) {
+			if (core::find(results.begin(), results.end(), fontPath) == results.end()) {
 				results.push_back(fontPath);
 			}
 		}
@@ -167,8 +146,8 @@ core::DynamicArray<core::String> selectFallbackSystemFonts(const core::DynamicAr
 		appendMatchingFonts(systemFonts, jaPatterns, lengthof(jaPatterns), results);
 		appendMatchingFonts(systemFonts, jaFallback, lengthof(jaFallback), results);
 	} else if (isLanguagePrefix(lang, "zh")) {
-		const bool isTraditional = core::string::icontains(lang, "tw") || core::string::icontains(lang, "hk") ||
-								   core::string::icontains(lang, "mo") || core::string::icontains(lang, "hant");
+		const bool isTraditional = core::string::contains(lang, "tw") || core::string::contains(lang, "hk") ||
+								   core::string::contains(lang, "mo") || core::string::contains(lang, "hant");
 		if (isTraditional) {
 			appendMatchingFonts(systemFonts, tcPatterns, lengthof(tcPatterns), results);
 			appendMatchingFonts(systemFonts, tcFallback, lengthof(tcFallback), results);
