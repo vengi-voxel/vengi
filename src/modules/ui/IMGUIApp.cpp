@@ -303,6 +303,7 @@ void IMGUIApp::loadFonts() {
 			Log::debug("Load system font from %s", fontPath.c_str());
 			ImFontConfig fontCfg;
 			fontCfg.MergeMode = true;
+			fontCfg.Flags |= ImFontFlags_NoLoadError;
 			if (io.Fonts->AddFontFromFileTTF(fontPath.c_str(), 0.0f, &fontCfg) != nullptr) {
 				break; // one system font is enough
 			}
