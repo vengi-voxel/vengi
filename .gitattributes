@@ -1,1 +1,2 @@
 *.vengi binary
+*.po text eol=lf
