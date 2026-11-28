@@ -478,7 +478,7 @@ void AbstractFormatTest::testModelPaletteRoundTrip(const core::String &filename,
 	util::ScopedVarChange createPalette(cfg::VoxelCreatePalette, true);
 	util::ScopedVarChange flatten(cfg::VoxformatRGBFlattenFactor, "0");
 	util::ScopedVarChange targetColors(cfg::VoxformatTargetColors, "256");
-	constexpr int side = 12;
+	static constexpr int side = 12;
 	const auto colorAt = [](int model, int x, int y) {
 		return color::RGBA((uint8_t)(x + y * side), (uint8_t)(model * 255), 31);
 	};
