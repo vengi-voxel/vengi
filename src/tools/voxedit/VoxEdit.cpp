@@ -32,6 +32,7 @@
 #include "voxedit-util/modifier/brush/AABBBrush.h"
 #include "voxedit-util/network/McpConfig.h"
 #include "voxelformat/VolumeFormat.h"
+#include "voxelformat/private/vengi/VENGIFormat.h"
 #include "voxelui/FileDialogOptions.h"
 #include "voxelui/ScriptApi.h"
 #include <SDL3/SDL_mouse.h>
@@ -146,6 +147,14 @@ void VoxEdit::toggleScene() {
 	_mainWindow->toggleScene();
 }
 
+void VoxEdit::saveProjectAs() {
+	static const io::FormatDescription formats[] = {voxelformat::VENGIFormat::format(), io::FormatDescription::END};
+	saveDialog([this](const core::String &file, const io::FormatDescription *desc) {
+		_mainWindow->save(file, desc, voxedit::SceneSaveMode::Project);
+	}, voxelui::FileDialogOptions::build(_paletteCache, false, &_fileDialogPreview), formats,
+		_sceneMgr->getSuggestedFilename());
+}
+
 app::AppState VoxEdit::onConstruct() {
 	const app::AppState state = Super::onConstruct();
 	registerArg("--mcpjson")
@@ -231,11 +240,11 @@ app::AppState VoxEdit::onConstruct() {
 			}
 			const core::String &file = args.str("file");
 			if (file.empty()) {
-				const core::String filename = _sceneMgr->getSuggestedFilename();
+				const core::String filename = _sceneMgr->projectFilename();
 				if (filename.empty()) {
-					saveDialog([this] (const core::String &f, const io::FormatDescription *desc) {_mainWindow->save(f, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false, &_fileDialogPreview), voxelformat::voxelSave(), "scene.vengi");
+					saveProjectAs();
 				} else {
-					_mainWindow->save(filename, nullptr);
+					_mainWindow->save(filename, nullptr, voxedit::SceneSaveMode::Project);
 				}
 				return;
 			}
@@ -244,12 +253,21 @@ app::AppState VoxEdit::onConstruct() {
 
 	command::Command::registerCommand("saveas")
 		.setHandler([this](const command::CommandArgs &args) {
+			if (_mainWindow != nullptr) {
+				saveProjectAs();
+			}
+		}).setHelp(_("Save the scene as a Vengi project"));
+
+	command::Command::registerCommand("export")
+		.setHandler([this](const command::CommandArgs &args) {
 			if (_mainWindow == nullptr) {
 				return;
 			}
-			const core::String &filename = _sceneMgr->getSuggestedFilename();
-			saveDialog([this] (const core::String &file, const io::FormatDescription *desc) {_mainWindow->save(file, desc); }, voxelui::FileDialogOptions::build(_paletteCache, false, &_fileDialogPreview), voxelformat::voxelSave(), filename);
-		}).setArgumentCompleter(command::fileCompleter(io::filesystem(), _lastDirectory)).setHelp(_("Save the current scene to the given file"));
+			const core::String filename = core::string::stripExtension(_sceneMgr->getSuggestedFilename("vox")) + "-export.vox";
+			saveDialog([this](const core::String &file, const io::FormatDescription *desc) {
+				_mainWindow->save(file, desc, voxedit::SceneSaveMode::Export);
+			}, voxelui::FileDialogOptions::build(_paletteCache, false, &_fileDialogPreview), voxelformat::voxelSave(), filename);
+		}).setHelp(_("Export a copy of the current scene"));
 
 	command::Command::registerCommand("exportselection")
 		.setHandler([&] (const command::CommandArgs& args) {

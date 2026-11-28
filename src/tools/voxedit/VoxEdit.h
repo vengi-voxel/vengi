@@ -68,6 +68,7 @@ protected:
 	void loadKeymap(int keymap) override;
 	void validateKeyBindings() override;
 	void importPalette(const core::String &file);
+	void saveProjectAs();
 	bool emulatePenActive(int32_t mouseId) const;
 	static float emulatedPenPressure(int relX, int relY);
 	void endEmulatedPen(void *windowHandle, int32_t x, int32_t y);

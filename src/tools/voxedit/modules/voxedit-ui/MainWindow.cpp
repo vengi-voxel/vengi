@@ -269,7 +269,7 @@ void MainWindow::shutdown() {
 	_imageAssetPanel.shutdown();
 }
 
-bool MainWindow::save(const core::String &file, const io::FormatDescription *desc) {
+bool MainWindow::save(const core::String &file, const io::FormatDescription *desc, SceneSaveMode mode) {
 	io::FileDescription fd;
 	const core::String &ext = core::string::extractExtension(file);
 	if (ext.empty()) {
@@ -281,7 +281,7 @@ bool MainWindow::save(const core::String &file, const io::FormatDescription *des
 	} else {
 		fd.set(file, desc);
 	}
-	if (!_sceneMgr->save(fd)) {
+	if (!_sceneMgr->save(fd, mode)) {
 		Log::warn("Failed to save the model");
 		_popupFailedToSave = true;
 		return false;

@@ -96,6 +96,8 @@ enum class NodeMergeFlags {
 };
 CORE_ENUM_BIT_OPERATIONS(NodeMergeFlags)
 
+enum class SceneSaveMode { ByExtension, Project, Export };
+
 class SceneManager;
 
 /**
@@ -127,11 +129,16 @@ class SceneManager : public core::DeltaFrameSeconds {
 	friend class CreateReferenceButton;
 
 protected:
+	struct SceneLoadResult {
+		scenegraph::SceneGraph graph;
+		io::FileDescription file;
+	};
+
 	scenegraph::SceneGraph _sceneGraph;
 	voxelrender::CameraMovement *_camMovement = nullptr;
 	memento::MementoHandler *_mementoHandler = nullptr;
 	voxel::ClipboardData _copy;
-	core::Future<scenegraph::SceneGraph> _loadingFuture;
+	core::Future<SceneLoadResult> _loadingFuture;
 	core::SharedProgress _loadingProgress;
 	core::Future<SceneJobResult> _sceneJobFuture;
 	core::DynamicArray<SceneJobRequest> _sceneJobQueue;
@@ -184,7 +191,7 @@ protected:
 	LSystemRuntime *_lsystem = nullptr;
 	bool _lsystemRunning = false;
 
-	io::FileDescription _lastFilename;
+	io::FileDescription _sceneFile;
 	double _lastAutoSave = 0u;
 
 	int _lastRaytraceX = -1;
@@ -318,6 +325,9 @@ protected:
 	void nodeMoveVoxels(int nodeId, const math::Vec3i &m);
 	void nodeRemoveUnusedColors(int nodeId, bool reindexPalette = false);
 	void autosave();
+	core::String autosaveFilename() const;
+	bool writeScene(const io::FileDescription &file);
+	bool replaceSceneGraph(scenegraph::SceneGraph &&sceneGraph, bool disconnect);
 	void setReferencePosition(const math::Vec3i &pos);
 	void updateDirtyRendererStates();
 	bool mouseRayTrace(bool force, const math::Mat4f &invModel);
@@ -528,6 +538,8 @@ public:
 
 	core::String getSuggestedFilename(const core::String &extension = "") const;
 	const io::FileDescription &filename() const;
+	/** @brief Established native project path, or empty if Save As is required. */
+	core::String projectFilename() const;
 	const voxel::Voxel &hitCursorVoxel() const;
 
 	/**
@@ -668,12 +680,11 @@ public:
 	void fillPlane(const image::ImagePtr &image);
 
 	/**
-	 * @brief Save the volume data to the given file
+	 * @brief Save a native project or export a copy of the scene to the given file.
 	 * @param[in] file The file to store the volume data in. The file extension defines the volume format.
-	 * @param[in] autosave @c true if this is an auto save action, @c false otherwise. This has e.g. an
-	 * influence on the dirty state handling of the scene.
+	 * @param[in] mode Only a successful project save updates the project path and clears unsaved changes.
 	 */
-	bool save(const io::FileDescription &file, bool autosave = false);
+	bool save(const io::FileDescription &file, SceneSaveMode mode = SceneSaveMode::ByExtension);
 	/** @brief Store current sun cvars on the scene root. UI actions support undo. */
 	bool sceneSaveSun(bool undo = true);
 	/** @brief Apply the scene root's sun properties to the editor and pathtracer cvars. */

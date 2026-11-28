@@ -175,7 +175,7 @@ public:
 	void stopViewportRecordings();
 
 	// commands
-	bool save(const core::String &file, const io::FormatDescription *desc);
+	bool save(const core::String &file, const io::FormatDescription *desc, SceneSaveMode mode = SceneSaveMode::ByExtension);
 	bool load(const core::String &file, const io::FormatDescription *desc);
 	bool createNew(bool force);
 

@@ -48,6 +48,7 @@
 #include "math/Vec3f.h"
 #include "math/Vec2i.h"
 #include "math/Scalar.h"
+#include <string.h>
 
 namespace voxedit {
 
@@ -1498,20 +1499,106 @@ TEST_F(SceneManagerTest, testSetColorTransparencyUndoRedo) {
 
 TEST_F(SceneManagerTest, testGetSuggestedFilename) {
 	EXPECT_EQ("scene.vengi", _sceneMgr->getSuggestedFilename());
-	sceneMgr()->setLastFilename("test.vengi");
+	EXPECT_TRUE(_sceneMgr->projectFilename().empty());
+	sceneMgr()->setSceneFilename("test.vengi", &voxelformat::VENGIFormat::format());
 	EXPECT_EQ("test.vengi", _sceneMgr->getSuggestedFilename());
+	EXPECT_EQ("test.vengi", _sceneMgr->projectFilename());
 	EXPECT_EQ("test.png", _sceneMgr->getSuggestedFilename("png"));
 	EXPECT_EQ("test.png", _sceneMgr->getSuggestedFilename(".png"));
-	sceneMgr()->setLastFilename("test", &voxelformat::VoxFormat::format());
-	EXPECT_EQ("test.vox", _sceneMgr->getSuggestedFilename());
-	// TODO: here we need to define which extension should be used - from the format, or the given one...
-	sceneMgr()->setLastFilename("test.vengi", &voxelformat::VoxFormat::format());
-	EXPECT_EQ("test.vengi", _sceneMgr->getSuggestedFilename());
-	{
-		const core::String fullPath = core::string::path("path", "to", "scenefull.vengi");
-		sceneMgr()->setLastFilename(fullPath);
-		EXPECT_EQ(fullPath, _sceneMgr->getSuggestedFilename());
-	}
+	sceneMgr()->setSceneFilename("path.to/test", &voxelformat::VoxFormat::format());
+	EXPECT_EQ("path.to/test.vengi", _sceneMgr->getSuggestedFilename());
+	sceneMgr()->setSceneFilename("path.to/test.vox", &voxelformat::VoxFormat::format());
+	EXPECT_EQ("path.to/test.vengi", _sceneMgr->getSuggestedFilename());
+	EXPECT_TRUE(_sceneMgr->projectFilename().empty());
+}
+
+TEST_F(SceneManagerTest, testImportedSceneRecoveryAndProjectSave) {
+	const io::FilesystemPtr &filesystem = _testApp->filesystem();
+	const core::String original = filesystem->load("rgb_small.vox");
+	ASSERT_FALSE(original.empty());
+	const core::String stem = "scene-save-test-" + core::UUID::generate().str();
+	const core::String sourceName = stem + ".vox";
+	const core::String sourcePath = filesystem->homeWritePath(sourceName);
+	const core::String projectPath = filesystem->homeWritePath(stem + ".vengi");
+	const core::String exportPath = filesystem->homeWritePath(stem + "-export.vox");
+	ASSERT_TRUE(filesystem->homeWrite(sourceName, original));
+	const auto sourceUnchanged = [&]() {
+		const core::String bytes = filesystem->load(sourcePath);
+		return bytes.size() == original.size() && memcmp(bytes.c_str(), original.c_str(), bytes.size()) == 0;
+	};
+	io::FileDescription source;
+	source.set(sourcePath);
+	ASSERT_TRUE(_sceneMgr->load(source));
+	ASSERT_TRUE(sceneMgr()->finishFileLoad());
+	EXPECT_EQ(sourcePath, _sceneMgr->filename().name);
+	EXPECT_EQ(projectPath, _sceneMgr->getSuggestedFilename());
+	EXPECT_TRUE(_sceneMgr->projectFilename().empty());
+
+	const math::Vec3i origin = testMins();
+	const uint8_t firstColor = testVolume()->voxel(origin).getColor() == 1 ? 2 : 1;
+	const uint8_t secondColor = firstColor == 1 ? 2 : 1;
+	ASSERT_TRUE(testSetVoxelOnRealNode(origin, firstColor));
+	const core::String snapshot = sceneMgr()->runAutosave();
+	const io::FormatDescription &nativeFormat = voxelformat::VENGIFormat::format();
+	EXPECT_TRUE(io::isA(snapshot, nativeFormat));
+	EXPECT_TRUE(_sceneMgr->dirty());
+	EXPECT_TRUE(_sceneMgr->projectFilename().empty());
+	EXPECT_TRUE(sourceUnchanged());
+	_sceneMgr->modifier().endBrush();
+	ASSERT_TRUE(testSetVoxelOnRealNode(origin, secondColor));
+	EXPECT_EQ(snapshot, sceneMgr()->runAutosave());
+	io::FileDescription recovery;
+	recovery.set(snapshot, &nativeFormat);
+	scenegraph::SceneGraph recovered;
+	const io::ArchivePtr archive = io::openFilesystemArchive(filesystem);
+	ASSERT_TRUE(voxelformat::loadFormat(recovery, archive, recovered, {}));
+	ASSERT_NE(recovered.firstModelNode(), nullptr);
+	EXPECT_EQ(secondColor, recovered.firstModelNode()->volume()->voxel(origin).getColor());
+
+	io::FileDescription output;
+	output.set(sourcePath);
+	EXPECT_FALSE(_sceneMgr->save(output, SceneSaveMode::Project));
+	EXPECT_TRUE(sourceUnchanged());
+	output.set(exportPath);
+	ASSERT_TRUE(_sceneMgr->save(output));
+	EXPECT_TRUE(filesystem->exists(exportPath));
+	EXPECT_TRUE(_sceneMgr->dirty());
+	EXPECT_TRUE(_sceneMgr->projectFilename().empty());
+
+	output.set(projectPath);
+	ASSERT_TRUE(_sceneMgr->save(output, SceneSaveMode::Project));
+	EXPECT_EQ(projectPath, _sceneMgr->projectFilename());
+	EXPECT_FALSE(_sceneMgr->dirty());
+	EXPECT_TRUE(sourceUnchanged());
+	ASSERT_TRUE(_sceneMgr->load(output));
+	ASSERT_TRUE(sceneMgr()->finishFileLoad());
+	EXPECT_EQ(projectPath, _sceneMgr->projectFilename());
+
+	_sceneMgr->markDirty();
+	io::FileDescription unwritable;
+	unwritable.set(projectPath + "/nested.vengi");
+	EXPECT_FALSE(_sceneMgr->save(unwritable, SceneSaveMode::Project));
+	EXPECT_EQ(projectPath, _sceneMgr->projectFilename());
+	EXPECT_TRUE(_sceneMgr->dirty());
+
+	io::FileDescription missing;
+	missing.set(filesystem->homeWritePath(stem + "-missing.vengi"));
+	ASSERT_TRUE(_sceneMgr->load(missing));
+	EXPECT_FALSE(sceneMgr()->finishFileLoad());
+	EXPECT_EQ(projectPath, _sceneMgr->projectFilename());
+	EXPECT_TRUE(_sceneMgr->dirty());
+	EXPECT_EQ(secondColor, testVolume()->voxel(origin).getColor());
+
+	ASSERT_TRUE(filesystem->homeWrite(stem + ".vengi", original));
+	ASSERT_TRUE(_sceneMgr->load(output));
+	ASSERT_TRUE(sceneMgr()->finishFileLoad());
+	EXPECT_TRUE(_sceneMgr->projectFilename().empty());
+	EXPECT_EQ(projectPath, _sceneMgr->filename().name);
+
+	EXPECT_TRUE(filesystem->sysRemoveFile(snapshot));
+	EXPECT_TRUE(filesystem->sysRemoveFile(sourcePath));
+	EXPECT_TRUE(filesystem->sysRemoveFile(projectPath));
+	EXPECT_TRUE(filesystem->sysRemoveFile(exportPath));
 }
 
 TEST_F(SceneManagerTest, testReduceColors) {

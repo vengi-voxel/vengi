@@ -448,7 +448,7 @@ size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, 
 }
 
 bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archive,
-				scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx) {
+				scenegraph::SceneGraph &newSceneGraph, const LoadContext &ctx, io::FormatDescription *loadedFormat) {
 	core_trace_scoped(LoadVolumeFormat);
 	const uint32_t magic = loadMagic(fileDesc.name, archive);
 	const io::FormatDescription *desc = io::getDescription(fileDesc, magic, voxelLoad());
@@ -488,6 +488,9 @@ bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archi
 	const core::String &ext = core::string::extractExtension(filename);
 	if (!ext.empty()) {
 		metric::count("load", 1, {{"type", ext.toLower()}});
+	}
+	if (loadedFormat) {
+		*loadedFormat = *desc;
 	}
 	return true;
 }

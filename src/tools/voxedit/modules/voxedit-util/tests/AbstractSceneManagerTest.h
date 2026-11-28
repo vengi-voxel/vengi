@@ -34,12 +34,19 @@ public:
 		return SceneManager::nodeColorToNewNode(nodeUUID, paletteIndices);
 	}
 
-	void setLastFilename(const core::String &name, const io::FormatDescription *desc = nullptr) {
-		_lastFilename.set(name, desc);
+	void setSceneFilename(const core::String &name, const io::FormatDescription *desc = nullptr) {
+		_sceneFile.set(name, desc);
 	}
 
-	void clearLastFilename() {
-		_lastFilename.clear();
+	bool finishFileLoad() {
+		_loadingFuture.wait();
+		return update(_timeProvider->tickSeconds());
+	}
+
+	core::String runAutosave() {
+		_timeProvider->setTickTime((uint64_t)(_lastAutoSave + _autoSaveSecondsDelay->intVal() + 1) * 1000);
+		autosave();
+		return autosaveFilename();
 	}
 
 	const voxelutil::PickResult &getPickResult() const {
@@ -194,6 +201,8 @@ protected:
 		const core::VarDef uILastDirectory(cfg::UILastDirectory, "", "Last Directory",
 										   "The last directory used in the UI", core::CV_NOPERSIST);
 		core::Var::registerVar(uILastDirectory);
+		core::Var::registerVar(core::VarDef(cfg::UIFileDialogLastFile, core::Path(), "Last file", "Last scene file",
+										   core::CV_NOPERSIST));
 		const core::VarDef clientMouseRotationSpeed(cfg::ClientMouseRotationSpeed, 0.01f, "Mouse Rotation Speed",
 													"The speed at which the camera rotates with the mouse",
 													core::CV_NONE);

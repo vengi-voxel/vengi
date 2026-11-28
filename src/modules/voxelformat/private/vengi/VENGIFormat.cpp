@@ -748,12 +748,14 @@ bool VENGIFormat::saveGroups(const scenegraph::SceneGraph &sceneGraph, const cor
 	}
 	Log::debug("Save scenegraph as vengi");
 	wrapBool(stream->writeUInt32(FourCC('V', 'E', 'N', 'G')))
-	io::ZipWriteStream zipStream(*stream, 4);
-	wrapBool(zipStream.writeUInt32(9))
-	if (!saveNode(sceneGraph, zipStream, sceneGraph.root())) {
-		return false;
+	{
+		io::ZipWriteStream zipStream(*stream, 4);
+		wrapBool(zipStream.writeUInt32(9))
+		if (!saveNode(sceneGraph, zipStream, sceneGraph.root()) || !zipStream.flush()) {
+			return false;
+		}
 	}
-	return true;
+	return stream->flush();
 }
 
 bool VENGIFormat::loadGroups(const core::String &filename, const io::ArchivePtr &archive,

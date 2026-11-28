@@ -31,8 +31,9 @@ bool importPalette(const core::String &filename, palette::Palette &palette);
 size_t loadPalette(const core::String &filename, const io::ArchivePtr &archive, palette::Palette &palette,
 				   const LoadContext &ctx);
 image::ImagePtr loadScreenshot(const core::String &filename, const io::ArchivePtr &archive, const LoadContext &ctx);
+/** @param[out] loadedFormat The resolved format description, assigned on successful load if provided. */
 bool loadFormat(const io::FileDescription &fileDesc, const io::ArchivePtr &archive, scenegraph::SceneGraph &sceneGraph,
-				const LoadContext &ctx);
+				const LoadContext &ctx, io::FormatDescription *loadedFormat = nullptr);
 
 /**
  * @brief Save both to volume or to mesh - depends on the given file extension

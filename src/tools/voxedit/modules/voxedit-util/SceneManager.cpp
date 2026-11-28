@@ -23,6 +23,7 @@
 #include "command/CommandCompleter.h"
 #include "core/ArrayLength.h"
 #include "core/Common.h"
+#include "core/Hash.h"
 #include "core/IProgress.h"
 #include "core/ProgressScope.h"
 #include "core/Log.h"
@@ -39,7 +40,6 @@
 #include "math/Axis.h"
 #include "math/Ray.h"
 #include "memento/MementoHandler.h"
-#include "metric/MetricFacade.h"
 #include "palette/Material.h"
 #include "palette/NormalPalette.h"
 #include "palette/Palette.h"
@@ -270,29 +270,44 @@ bool SceneManager::nodeCalculateNormals(int nodeId, voxel::Connectivity connecti
 	return false;
 }
 
+core::String SceneManager::autosaveFilename() const {
+	const core::String extension = voxelformat::VENGIFormat::format().mainExtension(true);
+	if (_sceneFile.empty()) {
+		return _filesystem->homeWritePath("autosave-noname" + extension);
+	}
+	core::String stem = core::string::extractFilename(getSuggestedFilename());
+	if (stem.size() > 180) {
+		stem = "scene";
+	}
+	const core::String pathHash = core::string::toString(core::hash(_sceneFile.c_str()));
+	return _filesystem->homeWritePath("autosave-" + stem + "-" + pathHash + extension);
+}
+
 void SceneManager::autosave() {
-	if (!_needAutoSave) {
+	if (!_needAutoSave || isLoading() || isLocked()) {
 		return;
 	}
 	const int delay = _autoSaveSecondsDelay->intVal();
 	if (delay <= 0 || _lastAutoSave + (double)delay > _timeProvider->tickSeconds()) {
 		return;
 	}
-	// autosaves go into the write path directory (which is usually the home directory of the user)
-	io::FileDescription autoSaveFilename;
-	if (_lastFilename.empty()) {
-		autoSaveFilename.set(_filesystem->homeWritePath("autosave-noname." + voxelformat::VENGIFormat::format().mainExtension()));
-	} else {
-		const core::String &filename = core::string::extractFilename(_lastFilename.name);
-		const core::String &prefix = core::string::startsWith(filename, "autosave-") ? "" : "autosave-";
-		const core::String &ext = core::string::extractExtension(_lastFilename.name);
-		const core::String &autosaveFilename =
-			core::String::format("%s%s.%s", prefix.c_str(), filename.c_str(), ext.c_str());
-		autoSaveFilename.set(_filesystem->homeWritePath(autosaveFilename), &_lastFilename.desc);
+	const core::String path = autosaveFilename();
+	if (path.empty()) {
+		_lastAutoSave = _timeProvider->tickSeconds();
+		return;
 	}
-	if (save(autoSaveFilename, true)) {
-		Log::info("Autosave file %s", autoSaveFilename.c_str());
+	const io::FormatDescription &format = voxelformat::VENGIFormat::format();
+	io::FileDescription temporary;
+	// Publish the snapshot only after the writer closes it successfully.
+	const core::String temporaryName = ".autosave-" + core::UUID::generate().str() + ".tmp" + format.mainExtension(true);
+	temporary.set(_filesystem->homeWritePath(temporaryName), &format);
+	if (!temporary.empty() && writeScene(temporary) && io::Filesystem::sysRenamePath(temporary.name, path)) {
+		_needAutoSave = false;
+		Log::info("Autosave file %s", path.c_str());
 	} else {
+		if (!temporary.empty() && io::Filesystem::sysExists(temporary.name)) {
+			io::Filesystem::sysRemoveFile(temporary.name);
+		}
 		Log::warn("Failed to autosave");
 	}
 	_lastAutoSave = _timeProvider->tickSeconds();
@@ -318,7 +333,7 @@ bool SceneManager::nodeSave(int nodeId, const core::String& file) {
 	voxelformat::SaveContext saveCtx;
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
-	if (voxelformat::saveFormat(newSceneGraph, file, &_lastFilename.desc, archive, saveCtx)) {
+	if (voxelformat::saveFormat(newSceneGraph, file, &_sceneFile.desc, archive, saveCtx)) {
 		Log::info("Saved node %i to %s", nodeId, file.c_str());
 		return true;
 	}
@@ -846,11 +861,34 @@ bool SceneManager::sceneLoadSun() {
 		   !root.property(scenegraph::PropSunArea).empty() || !root.property(scenegraph::PropSunShadows).empty();
 }
 
-bool SceneManager::save(const io::FileDescription &file, bool autosave) {
-	if (!autosave && _modifier->applyDraft().failed()) {
+bool SceneManager::save(const io::FileDescription &file, SceneSaveMode mode) {
+	const io::FormatDescription &nativeFormat = voxelformat::VENGIFormat::format();
+	const bool native = io::isA(file.name, nativeFormat);
+	if (mode == SceneSaveMode::Project && !native) {
+		Log::warn("Project filename must end in %s", nativeFormat.mainExtension(true).c_str());
 		return false;
 	}
-	if (isLocked()) {
+	if (isLoading() || isLocked() || _modifier->applyDraft().failed()) {
+		return false;
+	}
+	io::FileDescription output = file;
+	if (native) {
+		output.desc = nativeFormat;
+	}
+	if (!writeScene(output)) {
+		return false;
+	}
+	if (native && mode != SceneSaveMode::Export) {
+		_sceneFile = core::move(output);
+		_dirty = false;
+		_needAutoSave = false;
+		core::getVar(cfg::UIFileDialogLastFile)->setVal(_sceneFile.name);
+	}
+	return true;
+}
+
+bool SceneManager::writeScene(const io::FileDescription &file) {
+	if (isLoading() || isLocked()) {
 		return false;
 	}
 	if (_sceneGraph.empty()) {
@@ -867,14 +905,6 @@ bool SceneManager::save(const io::FileDescription &file, bool autosave) {
 	saveCtx.thumbnailCreator = voxelrender::volumeThumbnail;
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	if (voxelformat::saveFormat(_sceneGraph, file.name, &file.desc, archive, saveCtx)) {
-		if (!autosave) {
-			_dirty = false;
-			_lastFilename = file;
-			const core::String &ext = core::string::extractExtension(file.name);
-			metric::count("save", 1, {{"type", ext.toLower()}});
-			core::getVar(cfg::UIFileDialogLastFile)->setVal(file.name);
-		}
-		_needAutoSave = false;
 		return true;
 	}
 	Log::warn("Failed to save to desired format (%s)", file.c_str());
@@ -963,32 +993,26 @@ bool SceneManager::load(const io::FileDescription& file) {
 	const io::ArchivePtr &archive = io::openFilesystemArchive(_filesystem);
 	core::SharedProgress *progress = &_loadingProgress;
 	_loadingFuture = app::async([archive, file, progress] () {
-		scenegraph::SceneGraph newSceneGraph;
+		SceneLoadResult result;
 		voxelformat::LoadContext loadCtx;
 		loadCtx.progress = progress;
-		voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
-		return core::move(newSceneGraph);
+		if (voxelformat::loadFormat(file, archive, result.graph, loadCtx, &result.file.desc)) {
+			result.file.name = file.name;
+		}
+		return result;
 	});
-	_lastFilename.set(file.name, &file.desc);
-	core::getVar(cfg::UIFileDialogLastFile)->setVal(file.name);
 	return true;
 }
 
 bool SceneManager::load(const io::FileDescription& file, const uint8_t *data, size_t size) {
-	if (isLocked()) {
+	if (isLocked() || isLoading()) {
 		return false;
 	}
 	scenegraph::SceneGraph newSceneGraph;
 	io::MemoryArchivePtr archive = io::openMemoryArchive();
 	archive->add(file.name, data, size);
 	voxelformat::LoadContext loadCtx;
-	voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx);
-	if (loadSceneGraph(core::move(newSceneGraph))) {
-		_needAutoSave = false;
-		_dirty = false;
-		_lastFilename.clear();
-	}
-	return true;
+	return voxelformat::loadFormat(file, archive, newSceneGraph, loadCtx) && loadSceneGraph(core::move(newSceneGraph));
 }
 
 void SceneManager::setMousePos(int x, int y) {
@@ -3479,6 +3503,15 @@ int SceneManager::moveNodeToSceneGraph(scenegraph::SceneGraphNode &node, int par
 }
 
 bool SceneManager::loadSceneGraph(scenegraph::SceneGraph&& sceneGraph, bool disconnect) {
+	if (!replaceSceneGraph(core::move(sceneGraph), disconnect)) {
+		return false;
+	}
+	_sceneFile.clear();
+	_needAutoSave = false;
+	return true;
+}
+
+bool SceneManager::replaceSceneGraph(scenegraph::SceneGraph &&sceneGraph, bool disconnect) {
 	beforeSceneMutation();
 	core_trace_scoped(LoadSceneGraph);
 
@@ -3525,12 +3558,12 @@ bool SceneManager::splitVolumes() {
 	const math::Vec3i maxSize(splitSize);
 	scenegraph::SceneGraph newSceneGraph;
 	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph, false, false, false, maxSize)) {
-		return loadSceneGraph(core::move(newSceneGraph));
+		return replaceSceneGraph(core::move(newSceneGraph), true);
 	}
 
 	scenegraph::SceneGraph newSceneGraph2;
 	if (scenegraph::splitVolumes(_sceneGraph, newSceneGraph2, false, true, false, maxSize)) {
-		return loadSceneGraph(core::move(newSceneGraph2));
+		return replaceSceneGraph(core::move(newSceneGraph2), true);
 	}
 	return false;
 }
@@ -3739,7 +3772,8 @@ bool SceneManager::newScene(bool force, const core::String &name, voxel::RawVolu
 	}
 	setReferencePosition(v->region().getLowerCenter());
 	resetSceneState();
-	_lastFilename.clear();
+	_sceneFile.clear();
+	_needAutoSave = false;
 	return true;
 }
 
@@ -6362,12 +6396,13 @@ bool SceneManager::update(double nowSeconds) {
 	_player.update(deltaSeconds());
 	bool loadedNewScene = false;
 	if (_loadingFuture.ready()) {
-		if (loadSceneGraph(core::move(_loadingFuture.get()))) {
-			_needAutoSave = false;
-			_dirty = false;
+		SceneLoadResult result = _loadingFuture.get();
+		_loadingFuture = {};
+		if (!result.file.empty() && loadSceneGraph(core::move(result.graph))) {
+			_sceneFile = core::move(result.file);
+			core::getVar(cfg::UIFileDialogLastFile)->setVal(_sceneFile.name);
 			loadedNewScene = true;
 		}
-		_loadingFuture = {};
 		_loadingProgress.reset();
 	}
 
@@ -8642,29 +8677,36 @@ void SceneManager::setActiveCamera(video::Camera *camera, bool fixedCamera) {
 }
 
 const io::FileDescription &SceneManager::filename() const {
-	return _lastFilename;
+	return _sceneFile;
+}
+
+core::String SceneManager::projectFilename() const {
+	const io::FormatDescription &nativeFormat = voxelformat::VENGIFormat::format();
+	if (_sceneFile.desc == nativeFormat && io::isA(_sceneFile.name, nativeFormat)) {
+		return _sceneFile.name;
+	}
+	return {};
 }
 
 core::String SceneManager::getSuggestedFilename(const core::String &extension) const {
 	if (extension.first() == '.') {
 		return getSuggestedFilename(extension.substr(1));
 	}
-	const io::FileDescription &fileDesc = _lastFilename;
-	core::String name = "scene";
-	core::String ext = extension;
-	if (!fileDesc.empty()) {
-		name = core::string::stripExtension(fileDesc.name);
-		if (ext.empty()) {
-			ext = core::string::extractExtension(fileDesc.name);
+	if (extension.empty()) {
+		const core::String project = projectFilename();
+		if (!project.empty()) {
+			return project;
 		}
 	}
-	if (ext.empty()) {
-		ext = fileDesc.desc.mainExtension();
+	const core::String ext = extension.empty() ? voxelformat::VENGIFormat::format().mainExtension() : extension;
+	if (_sceneFile.empty()) {
+		return "scene." + ext;
 	}
-	if (ext.empty()) {
-		ext = voxelformat::VENGIFormat::format().mainExtension();
-	}
-	return name + "." + ext;
+	const core::String filename = core::string::extractFilenameWithExtension(_sceneFile.name);
+	const core::String sourceExt = io::getFormatExtension(filename, voxelformat::voxelLoad());
+	const core::String stem = sourceExt.empty() ? core::string::stripExtension(filename)
+										   : filename.substr(0, filename.size() - sourceExt.size() - 1);
+	return core::string::extractDir(_sceneFile.name) + stem + "." + ext;
 }
 
 const voxel::Region &SceneManager::sliceRegion() const {

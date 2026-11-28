@@ -7,12 +7,14 @@
 #include "../WindowTitles.h"
 #include "TestUtil.h"
 #include "core/StringUtil.h"
+#include "io/Filesystem.h"
 #include "ui/PopupAbout.h"
 #include "util/KeybindingHandler.h"
 #include "util/VarUtil.h"
 #include "voxedit-util/SceneManager.h"
 #include "voxel/RawVolume.h"
 #include "math/Vec3i.h"
+#include <SDL3/SDL.h>
 
 namespace voxedit {
 
@@ -344,6 +346,84 @@ void MainWindow::registerUITests(ImGuiTestEngine *engine, const char *id) {
 		}
 		IM_CHECK(!_sceneMgr->isLoading());
 		IM_CHECK_STR_EQ(_sceneMgr->getSuggestedFilename().c_str(), suggestedFilename.c_str());
+	};
+
+	IM_REGISTER_TEST(engine, testCategory(), "save imported scene as project")->TestFunc = [=](ImGuiTestContext *ctx) {
+		IM_CHECK(prepareUITest(ctx));
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Save");
+		ctx->Yield();
+		IM_CHECK(cancelSaveFile(ctx));
+		IM_CHECK(_sceneMgr->projectFilename().empty());
+
+		const io::FilesystemPtr &filesystem = _app->filesystem();
+		const core::String stem = "uitest-project-" + core::UUID::generate().str();
+		const core::String sourcePath = filesystem->homeWritePath(stem + ".vox");
+		const core::String projectPath = filesystem->homeWritePath(stem + ".vengi");
+		const core::String exportName = stem + "-export.vox";
+		const core::String exportPath = filesystem->homeWritePath(exportName);
+		IM_CHECK(setVoxel(_sceneMgr, _sceneMgr->sceneGraphModelNode(_sceneMgr->activeNode()), math::Vec3i(1, 1, 1),
+						  voxel::createVoxel(voxel::VoxelType::Generic, 1)));
+		io::FileDescription source;
+		source.set(sourcePath);
+		IM_CHECK(_sceneMgr->save(source, SceneSaveMode::Export));
+		const core::String original = filesystem->load(sourcePath);
+		IM_CHECK(!original.empty());
+		const auto sourceUnchanged = [&]() {
+			const core::String bytes = filesystem->load(sourcePath);
+			return bytes.size() == original.size() && SDL_memcmp(bytes.c_str(), original.c_str(), bytes.size()) == 0;
+		};
+		const auto pressSaveShortcut = [&]() {
+			SDL_Event event{};
+			event.type = SDL_EVENT_KEY_DOWN;
+			event.key.windowID = SDL_GetWindowID(static_cast<SDL_Window *>(_app->windowHandle()));
+			event.key.key = SDLK_S;
+			event.key.scancode = SDL_SCANCODE_S;
+			event.key.mod = SDL_KMOD_LCTRL;
+			SDL_PushEvent(&event);
+			ctx->Yield(2);
+			event.type = SDL_EVENT_KEY_UP;
+			SDL_PushEvent(&event);
+			SDL_CleanupTLS();
+			ctx->Yield();
+		};
+		IM_CHECK(_sceneMgr->load(source));
+		for (int i = 0; i < 60 && _sceneMgr->isLoading(); ++i) {
+			ctx->Yield();
+		}
+		IM_CHECK(!_sceneMgr->isLoading());
+		IM_CHECK(_sceneMgr->filename().name == sourcePath);
+		_sceneMgr->markDirty();
+
+		IM_CHECK(focusWindow(ctx, id));
+		pressSaveShortcut();
+		IM_CHECK(cancelSaveFile(ctx));
+		IM_CHECK(_sceneMgr->dirty());
+		IM_CHECK(!filesystem->exists(projectPath));
+		IM_CHECK(sourceUnchanged());
+
+		IM_CHECK(focusWindow(ctx, id));
+		pressSaveShortcut();
+		IM_CHECK(saveFile(ctx, stem.c_str()));
+		IM_CHECK(_sceneMgr->projectFilename() == projectPath);
+		IM_CHECK(!_sceneMgr->dirty());
+
+		_sceneMgr->markDirty();
+		IM_CHECK(focusWindow(ctx, id));
+		ctx->MenuClick("File/Export");
+		ctx->Yield();
+		IM_CHECK(saveFile(ctx, exportName.c_str()));
+		IM_CHECK(filesystem->exists(exportPath));
+		IM_CHECK(_sceneMgr->dirty());
+		IM_CHECK(_sceneMgr->projectFilename() == projectPath);
+
+		IM_CHECK(focusWindow(ctx, id));
+		pressSaveShortcut();
+		IM_CHECK(!_sceneMgr->dirty());
+		IM_CHECK(sourceUnchanged());
+		IM_CHECK(filesystem->sysRemoveFile(sourcePath));
+		IM_CHECK(filesystem->sysRemoveFile(projectPath));
+		IM_CHECK(filesystem->sysRemoveFile(exportPath));
 	};
 
 	IM_REGISTER_TEST(engine, testCategory(), "bindings dialog delete")->TestFunc = [=](ImGuiTestContext *ctx) {

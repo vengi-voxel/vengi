@@ -208,7 +208,7 @@ bool FileDialog::openDir(video::OpenFileMode type, const io::FormatDescription* 
 		if (type == video::OpenFileMode::Open) {
 			io::createGroupPatterns(formats, _filterEntries);
 		}
-		_filterAll = io::convertToAllFilePattern(formats);
+		_filterAll = _filterEntries.size() > 1 ? io::convertToAllFilePattern(formats) : core::String();
 		if (!_filterAll.empty()) {
 			// must be the first entry - see applyFilter()
 			_filterEntries.insert(_filterEntries.begin(), io::ALL_SUPPORTED());
@@ -972,7 +972,10 @@ bool FileDialog::buttons(core::String &entityPath, video::OpenFileMode type, boo
 							_error = TimedString(_("Error: You must select a file type!"), timeProvider->tickNow(), 1500UL);
 							return false;
 						}
-						fullPath.append(_currentFilterFormat->mainExtension(true));
+						const core::String suffix = _currentFilterFormat->mainExtension(true);
+						_selectedEntry.name.append(suffix);
+						fullPath.append(suffix);
+						_selectedEntry.fullPath = fullPath;
 					}
 				}
 				if (type == video::OpenFileMode::Save && io::Filesystem::sysExists(fullPath)) {

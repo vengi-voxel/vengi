@@ -39,13 +39,21 @@ A few of the features are:
 * [Session recording and playback](usage/SessionRecording.md) (`.vrec`), with pause/resume and adjustable playback delay
 * Configurable viewport shading modes (unlit, lit, shadows) with bloom post-processing
 * Fill and hollow operations for volumes
-* Auto-save with configurable interval
+* Auto-save to `.vengi` recovery files with a configurable interval
 * Drag-and-drop between panels for models, palette colors and assets
 * Embedded documentation browser and tip of the day
 * Not only voxels but also named points are supported as scene graph nodes - for e.g. defining positions for characters to hold an item.
 * Manual and automatic [normal painting](usage/Brushes.md#normal-brush), plus editable [normal palettes](usage/Palette.md#normal-palette), for formats such as Command & Conquer VXL
 * [View modes](usage/ViewModes.md) for general editing, minimal layouts, Tiberian Sun, Red Alert 2, Minecraft skins and Ace Of Spades
 * [voxbox.store](https://voxbox.store/) integration to browse, download and upload models (requires a VoxBox account)
+
+## Saving and exporting scenes
+
+Use **File > Save** (`Ctrl+S`) to write a `.vengi` project. For a new scene or an opened file such as `.vox` or `.obj`, VoxEdit asks where to save the project and suggests a `.vengi` filename. Subsequent saves update the chosen project.
+
+Use **File > Export** to write a copy in another format. VoxEdit asks before replacing an existing export file and keeps the current project path and unsaved changes.
+
+Autosave writes edited scenes to separate `autosave-*.vengi` files in VoxEdit's application data directory. The snapshots use Vengi format even when the scene came from another format.
 
 ## Usage
 

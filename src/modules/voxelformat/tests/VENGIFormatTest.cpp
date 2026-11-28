@@ -5,6 +5,8 @@
 #include "voxelformat/private/vengi/VENGIFormat.h"
 #include "AbstractFormatTest.h"
 #include "core/ConfigVar.h"
+#include "io/BufferedReadWriteStream.h"
+#include "io/MemoryArchive.h"
 #include "palette/Palette.h"
 #include "scenegraph/IKConstraint.h"
 #include "scenegraph/SceneGraph.h"
@@ -25,6 +27,25 @@
 namespace voxelformat {
 
 class VENGIFormatTest : public AbstractFormatTest {};
+
+TEST_F(VENGIFormatTest, testSaveReportsFlushFailure) {
+	class FailingStream : public io::BufferedReadWriteStream {
+	public:
+		bool flush() override {
+			return false;
+		}
+	};
+	class FailingArchive : public io::MemoryArchive {
+	public:
+		io::SeekableWriteStream *writeStream(const core::String &) override {
+			return new FailingStream();
+		}
+	};
+	scenegraph::SceneGraph sceneGraph;
+	ASSERT_NO_FATAL_FAILURE(testLoad(sceneGraph, "cube.vengi", 1));
+	VENGIFormat format;
+	EXPECT_FALSE(format.save(sceneGraph, "failed.vengi", core::make_shared<FailingArchive>(), testSaveCtx));
+}
 
 TEST_F(VENGIFormatTest, testMeshChrKnightGreedyTexture) {
 	util::ScopedVarChange var(cfg::VoxformatMeshMode, (int)voxel::SurfaceExtractionType::GreedyTexture);
